@@ -115,16 +115,18 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
    - Coverage reports uploaded to Codecov
 
 2. **Build Job** - Only if tests pass
-   - Next.js production build
+   - Next.js build
    - Build artifacts uploaded
 
-3. **Deploy Job** - Only on main branch after successful build
-   - Deploys to Vercel production
-   - Outputs deployment URL
+3. **Deploy Job** - Runs on all branches after successful build
+   - Deploys to Vercel Preview
+   - Outputs preview deployment URL
 
-4. **E2E Job** - Only on main branch after successful deployment
-   - Runs Playwright/Cucumber tests against deployed URL
+4. **E2E Job** - Runs on all branches after successful deployment
+   - Runs Playwright/Cucumber tests against preview URL
    - Uploads test reports and screenshots as artifacts
+
+**Note:** Production deployments are done manually from the `main` branch when needed.
 
 ### Required GitHub Secrets
 - `VERCEL_TOKEN` - Vercel deployment token (required)
@@ -140,7 +142,7 @@ To enforce code quality, configure branch protection for `main`:
 3. Enable:
    - ✅ **Require a pull request before merging**
    - ✅ **Require status checks to pass before merging**
-     - Required checks: `Run Tests`, `Build Application`
+     - Required checks: `Run Tests`, `Build Application`, `E2E Tests`
    - ✅ **Do not allow bypassing the above settings**
 
 **See `.github/BRANCH_PROTECTION_SETUP.md` for detailed instructions.**
@@ -164,18 +166,71 @@ git push origin feature/my-feature
 
 # 5. Create Pull Request
 # - All tests run automatically
+# - Preview deployment created
+# - E2E tests run against preview
 # - Must pass before merge is allowed
-# - After merge to main, deployment and E2E tests run
 
 # 6. Merge when all checks pass ✅
+# - Deploy to production manually when ready
 ```
 
 ### Rules for Contributors
 - ❌ **No direct commits to main** - All changes via Pull Requests
 - ✅ **All tests must pass** - Unit tests with 100% coverage
 - ✅ **Build must succeed** - No broken builds allowed
+- ✅ **Preview deployment required** - Every PR gets tested preview
+- ✅ **E2E tests required** - Must pass against preview before merge
 - ✅ **Code review recommended** - Enable PR approvals in branch protection
-- ✅ **E2E tests run post-deployment** - Automatic verification of live app
+- ⚠️ **CRITICAL: Always wait for CI to pass** - After pushing code, monitor the CI/CD pipeline and verify all checks pass before considering the task complete
+
+## ⚠️ CRITICAL RULE: CI/CD Verification
+
+**IMPORTANT FOR CLAUDE CODE AGENTS:**
+
+When working on this repository, you **MUST** follow this process for every code change:
+
+1. **Push your changes** to a feature branch
+2. **Create a Pull Request** (or push to existing PR)
+3. **Wait for CI checks to start** - Don't assume success
+4. **Monitor the CI pipeline** - Use `gh pr checks` or `gh run view` commands
+5. **Verify ALL checks pass**:
+   - ✅ Run Tests (unit tests with 100% coverage)
+   - ✅ Build Application (Next.js build)
+   - ✅ Deploy to Vercel Preview (preview deployment)
+   - ✅ E2E Tests (Playwright/Cucumber tests against preview)
+   - ✅ Codecov (optional, for coverage reporting)
+6. **Fix any failures immediately** - Do not leave failing CI
+7. **Only consider the task complete** when all checks are green ✅
+
+### How to Monitor CI Status
+
+```bash
+# Check PR status
+gh pr view <PR-NUMBER> --json statusCheckRollup
+
+# View specific check details
+gh pr checks <PR-NUMBER>
+
+# Watch a specific workflow run
+gh run view <RUN-ID> --log-failed
+
+# Wait for checks to complete (use sleep and poll)
+sleep 30 && gh pr checks <PR-NUMBER>
+```
+
+### Common CI Failures and Fixes
+
+1. **Tests fail** → Fix the code, ensure `npm run test:coverage` passes locally
+2. **Build fails** → Check TypeScript errors, ensure `npm run build` works locally
+3. **Lint fails** → Run `npm run lint` and fix issues
+4. **Coverage drops** → Add tests to maintain 100% coverage
+
+**DO NOT mark a task as complete if:**
+- CI is still running (status: IN_PROGRESS, PENDING)
+- Any check has failed (conclusion: FAILURE)
+- You haven't verified the status after pushing
+
+**Recurring Issue:** Agents often assume tasks are done after pushing code, without waiting for CI verification. This leads to broken builds in the repository. Always wait and verify!
 
 ## Adding New Features
 

@@ -145,7 +145,7 @@ The project uses GitHub Actions for automated testing and deployment:
 
 ### Pipeline Stages
 
-1. **Test** → 2. **Build** → 3. **Deploy** → 4. **E2E**
+1. **Test** → 2. **Build** → 3. **Deploy Preview** → 4. **E2E**
 
 #### 1. Test Job (Runs on all PRs and pushes)
 - ✅ Linting
@@ -153,16 +153,18 @@ The project uses GitHub Actions for automated testing and deployment:
 - ✅ Upload coverage to Codecov
 
 #### 2. Build Job (Only if tests pass)
-- ✅ Next.js production build
+- ✅ Next.js build
 - ✅ Upload build artifacts
 
-#### 3. Deploy Job (Only on main branch)
-- ✅ Deploy to Vercel production
-- ✅ Output deployment URL
+#### 3. Deploy Job (Runs on all branches after build)
+- ✅ Deploy to Vercel Preview
+- ✅ Output preview deployment URL
 
-#### 4. E2E Job (Only after successful deployment)
-- ✅ Run Playwright/Cucumber tests against live deployment
+#### 4. E2E Job (Runs on all branches after deployment)
+- ✅ Run Playwright/Cucumber tests against preview deployment
 - ✅ Upload test reports and screenshots
+
+**Note:** Production deployments are done manually from the `main` branch when needed.
 
 ### Required Secrets
 
@@ -185,7 +187,7 @@ To enforce code quality, you **must** set up branch protection for `main`:
    - Branch name pattern: `main`
    - ✅ Require a pull request before merging
    - ✅ Require status checks to pass before merging
-     - Required checks: `Run Tests`, `Build Application`
+     - Required checks: `Run Tests`, `Build Application`, `E2E Tests`
    - ✅ Do not allow bypassing the above settings
 
 **📖 See `.github/BRANCH_PROTECTION_SETUP.md` for detailed instructions.**
@@ -210,11 +212,12 @@ git push origin feature/my-feature
 
 # 5. Create Pull Request on GitHub
 # - Tests run automatically
+# - Preview deployment created
+# - E2E tests run against preview
 # - Must pass before merge is allowed
 
 # 6. Merge when all checks pass ✅
-# - Deployment happens automatically
-# - E2E tests run against deployed app
+# - Deploy to production manually when ready
 ```
 
 ### Rules
@@ -222,8 +225,9 @@ git push origin feature/my-feature
 - ❌ **No direct commits to main** - All changes via Pull Requests
 - ✅ **All tests must pass** - 100% coverage required
 - ✅ **Build must succeed** - No broken builds
+- ✅ **Preview deployment required** - Every PR gets tested preview
+- ✅ **E2E tests required** - Must pass against preview before merge
 - ✅ **CI checks required** - Cannot merge with failing tests
-- ✅ **E2E tests post-deployment** - Automatic verification
 
 ## 🛠️ Tech Stack
 
