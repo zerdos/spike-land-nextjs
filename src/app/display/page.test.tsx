@@ -3,7 +3,7 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import DisplayPage from './page';
 
 // Mock PeerJS module with vi.hoisted
-const { mockPeerInstance, MockPeer } = vi.hoisted(() => {
+const { mockPeerInstance: _mockPeerInstance, MockPeer } = vi.hoisted(() => {
   const mockPeerInstance = {
     on: vi.fn(),
     destroy: vi.fn(),
