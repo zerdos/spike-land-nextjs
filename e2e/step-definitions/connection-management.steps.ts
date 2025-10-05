@@ -150,7 +150,7 @@ When('a client attempts to connect', async function (this: VideoWallWorld) {
 Then('the display should establish a WebRTC peer connection', async function (this: VideoWallWorld) {
   // Verify PeerJS connection was established
   const hasPeerConnection = await this.displayPage.evaluate(() => {
-    return typeof (window as any).Peer !== 'undefined';
+    return typeof (window as unknown as { Peer?: unknown }).Peer !== 'undefined';
   });
   expect(hasPeerConnection).toBeTruthy();
 });
@@ -546,7 +546,7 @@ Then('the remaining clients should stay connected', async function (this: VideoW
   }
 });
 
-Then('the layout should adjust to {int}-column', async function (this: VideoWallWorld, columns: number) {
+Then('the layout should adjust to {int}-column', async function (this: VideoWallWorld, _columns: number) {
   await this.displayPage.waitForTimeout(1000);
   const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
   await expect(videoFeeds).toHaveCount(2);

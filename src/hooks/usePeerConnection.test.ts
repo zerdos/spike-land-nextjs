@@ -535,7 +535,7 @@ describe('usePeerConnection', () => {
       peer: 'incoming-peer',
     } as DataConnection;
 
-    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+    renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
     const connectionHandler = peerOnHandler.mock.calls.find(
@@ -563,7 +563,7 @@ describe('usePeerConnection', () => {
       peer: 'incoming-peer',
     } as DataConnection;
 
-    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+    renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
     const connectionHandler = peerOnHandler.mock.calls.find(
@@ -591,7 +591,7 @@ describe('usePeerConnection', () => {
       peer: 'incoming-peer',
     } as DataConnection;
 
-    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+    renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
     const connectionHandler = peerOnHandler.mock.calls.find(
@@ -619,7 +619,7 @@ describe('usePeerConnection', () => {
       peer: 'caller',
     } as MediaConnection;
 
-    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+    renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
     const callHandler = peerOnHandler.mock.calls.find((call) => call[0] === 'call')?.[1] as (

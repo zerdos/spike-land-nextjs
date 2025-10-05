@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { VideoWallWorld } from '../support/video-wall-world';
 
 // Client connection states
-Given('{int} client is connected with camera enabled', async function (this: VideoWallWorld, count: number) {
+Given('{int} client is connected with camera enabled', async function (this: VideoWallWorld, _count: number) {
   await this.mockPeerJS(this.displayPage);
 
   const clientContext = await this.createClientContext(`client-0`, 'Client 1');
@@ -42,7 +42,7 @@ When('a second client connects with camera enabled', async function (this: Video
   await this.displayPage.waitForTimeout(500);
 });
 
-Then('the layout should transition from full screen to {int}-column', async function (this: VideoWallWorld, columns: number) {
+Then('the layout should transition from full screen to {int}-column', async function (this: VideoWallWorld, _columns: number) {
   // Wait for transition to complete
   await this.displayPage.waitForTimeout(1000);
 
@@ -58,7 +58,7 @@ Then('the layout should transition from full screen to {int}-column', async func
 Then('the transition should be smooth without flickering', async function (this: VideoWallWorld) {
   // Verify CSS transition is applied
   const container = this.displayPage.locator('[data-testid="video-grid"], [data-layout]').first();
-  const hasTransition = await container.evaluate((el: HTMLElement) => {
+  await container.evaluate((el: HTMLElement) => {
     const style = window.getComputedStyle(el);
     return style.transition !== 'none' || style.transitionProperty !== 'none';
   });
@@ -126,7 +126,7 @@ Then('the transition should be smooth', async function (this: VideoWallWorld) {
 });
 
 // Rapid connections
-When('{int} clients connect rapidly within {int} seconds', async function (this: VideoWallWorld, count: number, timeSeconds: number) {
+When('{int} clients connect rapidly within {int} seconds', async function (this: VideoWallWorld, count: number, _timeSeconds: number) {
   await this.mockPeerJS(this.displayPage);
 
   // Connect all clients in quick succession
@@ -147,7 +147,7 @@ When('{int} clients connect rapidly within {int} seconds', async function (this:
   await this.displayPage.waitForTimeout(1000);
 });
 
-Then('the layout should settle on {int}-column layout', async function (this: VideoWallWorld, columns: number) {
+Then('the layout should settle on {int}-column layout', async function (this: VideoWallWorld, _columns: number) {
   // Wait for layout to stabilize
   await this.displayPage.waitForTimeout(1500);
 
@@ -174,7 +174,7 @@ Then('there should be no layout flickering', async function (this: VideoWallWorl
 });
 
 // Aspect ratio optimization
-Given('the display viewport is set to ultrawide \\({int}:{int})', async function (this: VideoWallWorld, width: number, height: number) {
+Given('the display viewport is set to ultrawide \\({int}:{int})', async function (this: VideoWallWorld, _width: number, _height: number) {
   // Set viewport to ultrawide (e.g., 2560x1080 for 21:9)
   await this.displayPage.setViewportSize({ width: 2560, height: 1080 });
 });
@@ -253,11 +253,11 @@ Then('all feeds should be clearly visible', async function (this: VideoWallWorld
 });
 
 // Active speaker detection
-When('client {string} becomes the active speaker', async function (this: VideoWallWorld, clientName: string) {
+When('client {string} becomes the active speaker', async function (this: VideoWallWorld, _clientName: string) {
   // Simulate active speaker event
   await this.displayPage.evaluate((name) => {
     window.dispatchEvent(new CustomEvent('active-speaker-changed', { detail: { name } }));
-  }, clientName);
+  }, _clientName);
 
   await this.displayPage.waitForTimeout(500);
 });
@@ -268,14 +268,14 @@ Then('{string} video feed should be highlighted', async function (this: VideoWal
   await expect(highlightedFeed.first()).toBeVisible({ timeout: 5000 });
 });
 
-Then('{string} video feed should have a visual indicator', async function (this: VideoWallWorld, clientName: string) {
+Then('{string} video feed should have a visual indicator', async function (this: VideoWallWorld, _clientName: string) {
   const indicator = this.displayPage.locator(`[data-testid="active-speaker-indicator"]`);
   await expect(indicator.first()).toBeVisible({ timeout: 5000 });
 });
 
-Then('{string} video feed should no longer be highlighted', async function (this: VideoWallWorld, clientName: string) {
+Then('{string} video feed should no longer be highlighted', async function (this: VideoWallWorld, _clientName: string) {
   // Verify previous active speaker is no longer highlighted
-  const feed = this.displayPage.locator(`[data-client-name="${clientName}"]`);
+  const feed = this.displayPage.locator(`[data-client-name="${_clientName}"]`);
   const isActive = await feed.evaluate((el: HTMLElement) => {
     return el.dataset.active === 'true' || el.classList.contains('active');
   });
@@ -321,7 +321,7 @@ Then('other clients should be shown in smaller tiles', async function (this: Vid
   }
 });
 
-When('I unpin client {string} video feed', async function (this: VideoWallWorld, clientName: string) {
+When('I unpin client {string} video feed', async function (this: VideoWallWorld, _clientName: string) {
   const unpinButton = this.displayPage.locator(`[data-testid="unpin-button"], button:has-text("Unpin")`).first();
   await unpinButton.click();
   await this.displayPage.waitForTimeout(500);

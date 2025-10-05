@@ -80,7 +80,7 @@ export class VideoWallWorld extends World {
         ctx.font = '48px Arial';
         ctx.fillText('Test Video', 200, 250);
 
-        // @ts-ignore - Canvas captureStream
+        // @ts-expect-error - Canvas captureStream is not in standard types but exists in browsers
         const stream = canvas.captureStream(30) as MediaStream;
 
         // Add audio track if requested
@@ -98,7 +98,6 @@ export class VideoWallWorld extends World {
 
       // Mock navigator.mediaDevices.getUserMedia
       if (navigator.mediaDevices) {
-        const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
         navigator.mediaDevices.getUserMedia = async (constraints) => {
           console.log('[Mock] getUserMedia called with constraints:', constraints);
           // Return fake stream instead of real camera
@@ -149,16 +148,13 @@ export class VideoWallWorld extends World {
    */
   async mockPeerJS(page: Page) {
     await page.addInitScript(() => {
-      // Store original Peer if it exists
-      const OriginalPeer = (window as any).Peer;
-
       // Mock Peer class
       class MockPeer {
         id: string;
-        private callbacks: Map<string, Function[]> = new Map();
-        private connections: Map<string, any> = new Map();
+        private callbacks: Map<string, (() => void)[]> = new Map();
+        private connections: Map<string, unknown> = new Map();
 
-        constructor(id?: string, options?: any) {
+        constructor(id?: string) {
           this.id = id || `mock-peer-${Math.random().toString(36).substr(2, 9)}`;
           console.log('[MockPeer] Created with id:', this.id);
 
@@ -168,7 +164,7 @@ export class VideoWallWorld extends World {
           }, 100);
         }
 
-        on(event: string, callback: Function) {
+        on(event: string, callback: (...args: unknown[]) => void) {
           if (!this.callbacks.has(event)) {
             this.callbacks.set(event, []);
           }
@@ -176,14 +172,14 @@ export class VideoWallWorld extends World {
           return this;
         }
 
-        emit(event: string, ...args: any[]) {
+        emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
             callbacks.forEach(cb => cb(...args));
           }
         }
 
-        connect(peerId: string, options?: any) {
+        connect(peerId: string) {
           console.log('[MockPeer] Connecting to:', peerId);
           const connection = new MockDataConnection(peerId, this);
           this.connections.set(peerId, connection);
@@ -196,7 +192,7 @@ export class VideoWallWorld extends World {
           return connection;
         }
 
-        call(peerId: string, stream: MediaStream, options?: any) {
+        call(peerId: string, stream: MediaStream) {
           console.log('[MockPeer] Calling:', peerId);
           const call = new MockMediaConnection(peerId, stream, this);
 
@@ -206,7 +202,7 @@ export class VideoWallWorld extends World {
             const canvas = document.createElement('canvas');
             canvas.width = 640;
             canvas.height = 480;
-            // @ts-ignore
+            // @ts-expect-error - Canvas captureStream is not in standard types but exists in browsers
             const answerStream = canvas.captureStream(30) as MediaStream;
             call.emit('stream', answerStream);
           }, 300);
@@ -227,14 +223,14 @@ export class VideoWallWorld extends World {
 
       class MockDataConnection {
         peer: string;
-        private callbacks: Map<string, Function[]> = new Map();
+        private callbacks: Map<string, (() => void)[]> = new Map();
         open: boolean = false;
 
         constructor(peer: string, private peerInstance: MockPeer) {
           this.peer = peer;
         }
 
-        on(event: string, callback: Function) {
+        on(event: string, callback: (...args: unknown[]) => void) {
           if (!this.callbacks.has(event)) {
             this.callbacks.set(event, []);
           }
@@ -242,7 +238,7 @@ export class VideoWallWorld extends World {
           return this;
         }
 
-        emit(event: string, ...args: any[]) {
+        emit(event: string, ...args: unknown[]) {
           if (event === 'open') {
             this.open = true;
           }
@@ -252,7 +248,7 @@ export class VideoWallWorld extends World {
           }
         }
 
-        send(data: any) {
+        send(data: unknown) {
           console.log('[MockDataConnection] Sending data:', data);
         }
 
@@ -263,13 +259,13 @@ export class VideoWallWorld extends World {
 
       class MockMediaConnection {
         peer: string;
-        private callbacks: Map<string, Function[]> = new Map();
+        private callbacks: Map<string, (() => void)[]> = new Map();
 
-        constructor(peer: string, private stream: MediaStream, private peerInstance: MockPeer) {
+        constructor(peer: string, private stream: MediaStream, private _peerInstance: MockPeer) {
           this.peer = peer;
         }
 
-        on(event: string, callback: Function) {
+        on(event: string, callback: (...args: unknown[]) => void) {
           if (!this.callbacks.has(event)) {
             this.callbacks.set(event, []);
           }
@@ -277,14 +273,14 @@ export class VideoWallWorld extends World {
           return this;
         }
 
-        emit(event: string, ...args: any[]) {
+        emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
             callbacks.forEach(cb => cb(...args));
           }
         }
 
-        answer(stream: MediaStream) {
+        answer() {
           console.log('[MockMediaConnection] Answering with stream');
           // Simulate receiving remote stream
           setTimeout(() => {
@@ -298,7 +294,7 @@ export class VideoWallWorld extends World {
       }
 
       // Replace global Peer
-      (window as any).Peer = MockPeer;
+      (window as unknown as { Peer?: unknown }).Peer = MockPeer;
     });
   }
 
