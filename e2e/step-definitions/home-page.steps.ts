@@ -28,7 +28,7 @@ Then('I should see {string} heading', async function (this: CustomWorld, heading
 });
 
 Then('I should see the following tech stack items:', async function (this: CustomWorld, dataTable: DataTable) {
-  const items = dataTable.rows().map(row => row[0]);
+  const items = dataTable.rows().map(row => row[0]).filter((item): item is string => item !== undefined);
 
   for (const item of items) {
     const element = this.page.getByText(item);
