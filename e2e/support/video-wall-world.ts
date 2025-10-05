@@ -80,8 +80,7 @@ export class VideoWallWorld extends World {
         ctx.font = '48px Arial';
         ctx.fillText('Test Video', 200, 250);
 
-        // @ts-expect-error - Canvas captureStream is not in standard types but exists in browsers
-        const stream = canvas.captureStream(30) as MediaStream;
+        const stream = (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream }).captureStream(30);
 
         // Add audio track if requested
         if (constraints?.audio) {
@@ -90,7 +89,10 @@ export class VideoWallWorld extends World {
           const dest = audioContext.createMediaStreamDestination();
           oscillator.connect(dest);
           oscillator.start();
-          stream.addTrack(dest.stream.getAudioTracks()[0]);
+          const audioTrack = dest.stream.getAudioTracks()[0];
+          if (audioTrack) {
+            stream.addTrack(audioTrack);
+          }
         }
 
         return stream;
@@ -175,7 +177,7 @@ export class VideoWallWorld extends World {
         emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => cb(...args));
+            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 
@@ -202,8 +204,7 @@ export class VideoWallWorld extends World {
             const canvas = document.createElement('canvas');
             canvas.width = 640;
             canvas.height = 480;
-            // @ts-expect-error - Canvas captureStream is not in standard types but exists in browsers
-            const answerStream = canvas.captureStream(30) as MediaStream;
+            const answerStream = (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream }).captureStream(30);
             call.emit('stream', answerStream);
           }, 300);
 
@@ -226,7 +227,7 @@ export class VideoWallWorld extends World {
         private callbacks: Map<string, (() => void)[]> = new Map();
         open: boolean = false;
 
-        constructor(peer: string, private peerInstance: MockPeer) {
+        constructor(peer: string, private _peerInstance: MockPeer) {
           this.peer = peer;
         }
 
@@ -276,7 +277,7 @@ export class VideoWallWorld extends World {
         emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => cb(...args));
+            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 
