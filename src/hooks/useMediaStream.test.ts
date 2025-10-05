@@ -3,18 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { useMediaStream } from './useMediaStream';
 
 // Mock WebRTC utilities
-const mockGetUserMediaStream = vi.fn();
-const mockGetDisplayMediaStream = vi.fn();
-const mockStopMediaStream = vi.fn();
-const mockGetStreamMetadata = vi.fn();
-const mockMonitorStreamHealth = vi.fn();
-
 vi.mock('@/lib/webrtc/utils', () => ({
-  getUserMediaStream: mockGetUserMediaStream,
-  getDisplayMediaStream: mockGetDisplayMediaStream,
-  stopMediaStream: mockStopMediaStream,
-  getStreamMetadata: mockGetStreamMetadata,
-  monitorStreamHealth: mockMonitorStreamHealth,
+  getUserMediaStream: vi.fn(),
+  getDisplayMediaStream: vi.fn(),
+  stopMediaStream: vi.fn(),
+  getStreamMetadata: vi.fn(),
+  monitorStreamHealth: vi.fn(),
 }));
 
 describe('useMediaStream', () => {
@@ -37,12 +31,18 @@ describe('useMediaStream', () => {
     },
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockGetUserMediaStream.mockResolvedValue(mockStream);
-    mockGetDisplayMediaStream.mockResolvedValue(mockStream);
-    mockGetStreamMetadata.mockReturnValue(mockMetadata);
-    mockMonitorStreamHealth.mockReturnValue(vi.fn()); // Cleanup function
+    const {
+      getUserMediaStream,
+      getDisplayMediaStream,
+      getStreamMetadata,
+      monitorStreamHealth,
+    } = await import('@/lib/webrtc/utils');
+    vi.mocked(getUserMediaStream).mockResolvedValue(mockStream);
+    vi.mocked(getDisplayMediaStream).mockResolvedValue(mockStream);
+    vi.mocked(getStreamMetadata).mockReturnValue(mockMetadata);
+    vi.mocked(monitorStreamHealth).mockReturnValue(vi.fn()); // Cleanup function
   });
 
   it('should initialize with null stream', () => {

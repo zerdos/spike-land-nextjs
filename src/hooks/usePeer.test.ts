@@ -3,18 +3,22 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { usePeer } from './usePeer';
 import type { PeerConfig } from '@/types/webrtc';
 
-// Mock PeerJS
-const mockPeerInstance = {
-  on: vi.fn(),
-  off: vi.fn(),
-  destroy: vi.fn(),
-  disconnect: vi.fn(),
-  reconnect: vi.fn(),
-  disconnected: false,
-  destroyed: false,
-};
+// Mock PeerJS with vi.hoisted
+const { mockPeerInstance, MockPeer } = vi.hoisted(() => {
+  const mockPeerInstance = {
+    on: vi.fn(),
+    off: vi.fn(),
+    destroy: vi.fn(),
+    disconnect: vi.fn(),
+    reconnect: vi.fn(),
+    disconnected: false,
+    destroyed: false,
+  };
 
-const MockPeer = vi.fn(() => mockPeerInstance);
+  const MockPeer = vi.fn(() => mockPeerInstance);
+
+  return { mockPeerInstance, MockPeer };
+});
 
 vi.mock('peerjs', () => ({
   default: MockPeer,

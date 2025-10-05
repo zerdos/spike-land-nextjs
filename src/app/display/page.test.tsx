@@ -2,16 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import DisplayPage from './page';
 
-// Mock PeerJS module completely BEFORE imports
-vi.mock('peerjs', () => {
+// Mock PeerJS module with vi.hoisted
+const { mockPeerInstance, MockPeer } = vi.hoisted(() => {
   const mockPeerInstance = {
     on: vi.fn(),
     destroy: vi.fn(),
+    id: 'mock-peer-id',
   };
-  return {
-    default: vi.fn(() => mockPeerInstance),
-  };
+  const MockPeer = vi.fn(() => mockPeerInstance);
+  return { mockPeerInstance, MockPeer };
 });
+
+vi.mock('peerjs', () => ({
+  default: MockPeer,
+}));
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
@@ -32,10 +36,9 @@ vi.mock('next/image', () => ({
 }));
 
 // Mock QRCode
-const mockToDataURL = vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode'));
 vi.mock('qrcode', () => ({
   default: {
-    toDataURL: mockToDataURL,
+    toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode')),
   },
 }));
 
