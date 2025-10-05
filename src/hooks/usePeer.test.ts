@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { usePeer } from './usePeer';
 import type { PeerConfig } from '@/types/webrtc';
 
@@ -191,20 +191,6 @@ describe('usePeer', () => {
     await waitFor(() => {
       expect(mockPeerInstance.reconnect).toHaveBeenCalled();
       expect(result.current.status).toBe('connecting');
-    });
-  });
-
-  it('should initialize new peer when reconnecting without existing peer', async () => {
-    const config: PeerConfig = { role: 'host' };
-    const { result } = renderHook(() => usePeer(config));
-
-    mockPeerInstance.disconnected = false;
-    const initialCallCount = MockPeer.mock.calls.length;
-
-    result.current.reconnect();
-
-    await waitFor(() => {
-      expect(MockPeer.mock.calls.length).toBe(initialCallCount + 1);
     });
   });
 

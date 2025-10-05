@@ -3,14 +3,15 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import DisplayPage from './page';
 
 // Mock PeerJS module with vi.hoisted
-const { mockPeerInstance: _mockPeerInstance, MockPeer } = vi.hoisted(() => {
+const { mockPeerInstance, MockPeer, mockToDataURL } = vi.hoisted(() => {
   const mockPeerInstance = {
     on: vi.fn(),
     destroy: vi.fn(),
     id: 'mock-peer-id',
   };
   const MockPeer = vi.fn(() => mockPeerInstance);
-  return { mockPeerInstance, MockPeer };
+  const mockToDataURL = vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode'));
+  return { mockPeerInstance, MockPeer, mockToDataURL };
 });
 
 vi.mock('peerjs', () => ({
@@ -38,7 +39,7 @@ vi.mock('next/image', () => ({
 // Mock QRCode
 vi.mock('qrcode', () => ({
   default: {
-    toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode')),
+    toDataURL: mockToDataURL,
   },
 }));
 
@@ -107,9 +108,6 @@ describe('DisplayPage', () => {
   });
 
   it('should handle peer open event and generate QR code', async () => {
-    const Peer = (await import('peerjs')).default;
-    const mockPeerInstance = vi.mocked(Peer).mock.results[0]?.value;
-
     render(<DisplayPage />);
 
     await waitFor(() => {
@@ -144,9 +142,6 @@ describe('DisplayPage', () => {
   });
 
   it('should destroy peer on unmount', async () => {
-    const Peer = (await import('peerjs')).default;
-    const mockPeerInstance = vi.mocked(Peer).mock.results[0]?.value;
-
     const { unmount } = render(<DisplayPage />);
 
     await act(async () => {

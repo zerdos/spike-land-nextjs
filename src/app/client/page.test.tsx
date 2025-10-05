@@ -208,10 +208,9 @@ describe('ClientPage', () => {
   });
 
   it('should handle camera permission denied', async () => {
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue({
-      name: 'NotAllowedError',
-      message: 'Permission denied',
-    });
+    const error = new Error('Permission denied');
+    error.name = 'NotAllowedError';
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue(error);
 
     render(<ClientPage />);
 
@@ -224,10 +223,9 @@ describe('ClientPage', () => {
   });
 
   it('should handle no camera found error', async () => {
-    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue({
-      name: 'NotFoundError',
-      message: 'No camera found',
-    });
+    const error = new Error('No camera found');
+    error.name = 'NotFoundError';
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue(error);
 
     render(<ClientPage />);
 
