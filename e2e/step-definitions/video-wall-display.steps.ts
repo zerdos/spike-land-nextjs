@@ -54,8 +54,11 @@ When('{int} client connects with camera enabled', async function (this: VideoWal
 });
 
 When('{int} clients connect with camera enabled', async function (this: VideoWallWorld, count: number) {
-  // Reuse the singular step
-  await this['When'](`${count} client connects with camera enabled`);
+  // Connect multiple clients
+  for (let i = 0; i < count; i++) {
+    await this.connectClient({ enableCamera: true, enableMicrophone: false });
+    await this.displayPage.waitForTimeout(1000);
+  }
 });
 
 Then('I should see {int} video feed displayed', async function (this: VideoWallWorld, count: number) {
@@ -175,13 +178,19 @@ Then('I should see {string} label on the second video feed', async function (thi
 
 // Disconnection handling
 Given('{int} clients are connected with camera enabled', async function (this: VideoWallWorld, count: number) {
-  await this['When'](`${count} clients connect with camera enabled`);
+  for (let i = 0; i < count; i++) {
+    await this.connectClient({ enableCamera: true, enableMicrophone: false });
+    await this.displayPage.waitForTimeout(1000);
+  }
 });
 
 When('{int} client disconnects', async function (this: VideoWallWorld, count: number) {
   const allClients = this.getAllClientContexts();
   for (let i = 0; i < count && i < allClients.length; i++) {
-    await this.closeClientContext(allClients[i].clientId);
+    const client = allClients[i];
+    if (client) {
+      await this.closeClientContext(client.clientId);
+    }
   }
 
   // Wait for display to update
