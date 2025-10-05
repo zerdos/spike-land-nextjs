@@ -6,8 +6,8 @@ This workflow automatically tests, builds, deploys, and validates your Next.js a
 
 1. **Test** - Runs linter and unit tests with 100% coverage requirement
 2. **Build** - Builds the Next.js application (only if tests pass)
-3. **Deploy** - Deploys to Vercel (only on main branch, only if build succeeds)
-4. **E2E** - Runs end-to-end tests against deployed application (only after successful deployment)
+3. **Deploy** - Deploys to Vercel Preview (only if build succeeds, runs on all branches)
+4. **E2E** - Runs end-to-end tests against deployed preview (only after successful deployment, runs on all branches)
 
 ## Required Secrets
 
@@ -65,14 +65,13 @@ The workflow automatically runs when:
 - You push commits to `main` or `develop` branches
 - You create a pull request targeting `main` or `develop`
 
-Deployment only happens when:
+All jobs run on all branches when:
 - Tests pass ✅
 - Build succeeds ✅
-- Push is to the `main` branch ✅
+- Preview deployment succeeds ✅
+- E2E tests run against preview deployment ✅
 
-E2E tests only run when:
-- Deployment succeeds ✅
-- Push is to the `main` branch ✅
+**Note:** Production deployments to Vercel are done manually from the `main` branch when needed.
 
 ## Branch Protection (RECOMMENDED)
 
@@ -85,7 +84,7 @@ To prevent merging broken code to `main`, set up branch protection rules:
 3. Enable these settings:
    - ✅ **Require a pull request before merging**
    - ✅ **Require status checks to pass before merging**
-     - Required status checks: `Run Tests`, `Build Application`
+     - Required status checks: `Run Tests`, `Build Application`, `E2E Tests`
    - ✅ **Do not allow bypassing the above settings**
 
 **See `BRANCH_PROTECTION_SETUP.md` for detailed setup instructions.**
@@ -95,9 +94,9 @@ To prevent merging broken code to `main`, set up branch protection rules:
 With branch protection enabled:
 - ❌ **No direct commits to main** - All changes via Pull Requests
 - ✅ **100% test coverage enforced** - Tests must pass before merge
-- ✅ **Build verification** - No broken builds reach production
-- ✅ **Automated deployment** - Only tested code gets deployed
-- ✅ **E2E validation** - Live app tested after each deployment
+- ✅ **Build verification** - No broken builds reach main
+- ✅ **Preview deployment** - Every PR gets a preview deployment
+- ✅ **E2E validation** - Preview apps tested before merge
 
 ### Development Workflow
 
@@ -119,11 +118,12 @@ git push origin feature/my-feature
 # 5. Wait for CI checks ✅
 # - Tests run automatically
 # - Build verification
+# - Preview deployment
+# - E2E tests against preview
 # - Merge button enabled only when all checks pass
 
 # 6. Merge to main
-# - Automatic deployment to Vercel
-# - E2E tests run against deployed app
+# - Deploy to production manually when ready
 ```
 
 ## Pipeline Jobs
@@ -148,22 +148,22 @@ git push origin feature/my-feature
 - **Artifacts**: `.next` directory
 
 ### 3. Deploy Job
-- **Triggers**: Only on `main` branch after successful build
+- **Triggers**: On all branches after successful build
 - **Steps**:
   - Install Vercel CLI
-  - Pull Vercel environment
-  - Build for production
-  - Deploy to Vercel
+  - Pull Vercel preview environment
+  - Build for preview
+  - Deploy to Vercel Preview
   - Output deployment URL
-- **Outputs**: `deployment-url` - URL of the deployed application
+- **Outputs**: `deployment-url` - URL of the preview deployment
 
 ### 4. E2E Job
-- **Triggers**: Only on `main` branch after successful deployment
+- **Triggers**: On all branches after successful deployment
 - **Steps**:
   - Checkout code
   - Install dependencies
   - Install Playwright browsers
-  - Run Cucumber/Playwright tests against deployed URL
+  - Run Cucumber/Playwright tests against preview URL
   - Upload test reports and screenshots
 - **Artifacts**: E2E test reports and failure screenshots
 

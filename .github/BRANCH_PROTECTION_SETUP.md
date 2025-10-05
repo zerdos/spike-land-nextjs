@@ -29,7 +29,7 @@ This guide explains how to configure GitHub branch protection rules to ensure no
    - In the search box, add these status checks (they appear after your first CI run):
      - `Run Tests` (unit tests)
      - `Build Application` (build verification)
-     - Note: `Deploy to Vercel` and `E2E Tests` will only run after merge to main, so don't add them here
+     - `E2E Tests` (end-to-end tests against preview deployment)
 
 ✅ **Require conversation resolution before merging** (recommended)
    - Ensures all PR comments are addressed
@@ -88,10 +88,9 @@ The following checks must pass before merging:
 
 - ✅ **Run Tests** - Unit tests with 100% coverage (Vitest)
 - ✅ **Build Application** - Next.js build must succeed
+- ✅ **E2E Tests** - Playwright/Cucumber tests against preview deployment
 
-After merge to main, these run automatically:
-- **Deploy to Vercel** - Automatic deployment
-- **E2E Tests** - Playwright/Cucumber tests against deployed URL
+All checks run on every branch and pull request.
 
 ## Testing the Protection
 
@@ -118,7 +117,7 @@ remote: error: GH006: Protected branch update failed for refs/heads/main.
 
 ### Can't Find Status Checks
 - Make sure you've run the workflow at least once
-- The job names must match exactly: "Run Tests" and "Build Application"
+- The job names must match exactly: "Run Tests", "Build Application", and "E2E Tests"
 - Check for spaces and capitalization
 
 ### Need to Override Protection
@@ -144,6 +143,7 @@ gh api repos/zerdos/spike-land-nextjs/branches/main/protection \
   --field required_status_checks[strict]=true \
   --field required_status_checks[contexts][]=Run Tests \
   --field required_status_checks[contexts][]=Build Application \
+  --field required_status_checks[contexts][]=E2E Tests \
   --field required_pull_request_reviews[required_approving_review_count]=0 \
   --field enforce_admins=true \
   --field restrictions=null
