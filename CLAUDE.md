@@ -176,6 +176,55 @@ git push origin feature/my-feature
 - ✅ **Build must succeed** - No broken builds allowed
 - ✅ **Code review recommended** - Enable PR approvals in branch protection
 - ✅ **E2E tests run post-deployment** - Automatic verification of live app
+- ⚠️ **CRITICAL: Always wait for CI to pass** - After pushing code, monitor the CI/CD pipeline and verify all checks pass before considering the task complete
+
+## ⚠️ CRITICAL RULE: CI/CD Verification
+
+**IMPORTANT FOR CLAUDE CODE AGENTS:**
+
+When working on this repository, you **MUST** follow this process for every code change:
+
+1. **Push your changes** to a feature branch
+2. **Create a Pull Request** (or push to existing PR)
+3. **Wait for CI checks to start** - Don't assume success
+4. **Monitor the CI pipeline** - Use `gh pr checks` or `gh run view` commands
+5. **Verify ALL checks pass**:
+   - ✅ Run Tests (unit tests with 100% coverage)
+   - ✅ Build Application (Next.js build)
+   - ✅ Vercel deployment (preview deployment for PRs)
+   - ✅ Codecov (optional, for coverage reporting)
+6. **Fix any failures immediately** - Do not leave failing CI
+7. **Only consider the task complete** when all checks are green ✅
+
+### How to Monitor CI Status
+
+```bash
+# Check PR status
+gh pr view <PR-NUMBER> --json statusCheckRollup
+
+# View specific check details
+gh pr checks <PR-NUMBER>
+
+# Watch a specific workflow run
+gh run view <RUN-ID> --log-failed
+
+# Wait for checks to complete (use sleep and poll)
+sleep 30 && gh pr checks <PR-NUMBER>
+```
+
+### Common CI Failures and Fixes
+
+1. **Tests fail** → Fix the code, ensure `npm run test:coverage` passes locally
+2. **Build fails** → Check TypeScript errors, ensure `npm run build` works locally
+3. **Lint fails** → Run `npm run lint` and fix issues
+4. **Coverage drops** → Add tests to maintain 100% coverage
+
+**DO NOT mark a task as complete if:**
+- CI is still running (status: IN_PROGRESS, PENDING)
+- Any check has failed (conclusion: FAILURE)
+- You haven't verified the status after pushing
+
+**Recurring Issue:** Agents often assume tasks are done after pushing code, without waiting for CI verification. This leads to broken builds in the repository. Always wait and verify!
 
 ## Adding New Features
 
