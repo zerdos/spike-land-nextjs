@@ -82,15 +82,18 @@ Then('both video feeds should be visible', async function (this: VideoWallWorld)
 When('{int} clients disconnect', async function (this: VideoWallWorld, count: number) {
   const allClients = this.getAllClientContexts();
   for (let i = 0; i < count && i < allClients.length; i++) {
-    await this.closeClientContext(allClients[i].clientId);
+    const client = allClients[i];
+    if (client) {
+      await this.closeClientContext(client.clientId);
+    }
   }
   await this.displayPage.waitForTimeout(1000);
 });
 
 Then('the layout should transition from {int}x{int} grid to {int}-column', async function (
   this: VideoWallWorld,
-  fromRows: number,
-  fromCols: number,
+  _fromRows: number,
+  _fromCols: number,
   toColumns: number
 ) {
   // Wait for transition
@@ -348,9 +351,11 @@ Then('all feeds should be equal size', async function (this: VideoWallWorld) {
   // All sizes should be approximately equal (within 10% tolerance)
   if (sizes.length > 1) {
     const firstSize = sizes[0];
-    for (const size of sizes) {
-      expect(Math.abs(size.width - firstSize.width)).toBeLessThan(firstSize.width * 0.1);
-      expect(Math.abs(size.height - firstSize.height)).toBeLessThan(firstSize.height * 0.1);
+    if (firstSize) {
+      for (const size of sizes) {
+        expect(Math.abs(size.width - firstSize.width)).toBeLessThan(firstSize.width * 0.1);
+        expect(Math.abs(size.height - firstSize.height)).toBeLessThan(firstSize.height * 0.1);
+      }
     }
   }
 });
