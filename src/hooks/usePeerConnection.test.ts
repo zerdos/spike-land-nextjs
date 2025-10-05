@@ -9,7 +9,10 @@ vi.mock('@/lib/webrtc/utils', () => ({
 }));
 
 describe('usePeerConnection', () => {
-  const mockStream = {} as MediaStream;
+  const mockTrack = { stop: vi.fn() };
+  const mockStream = {
+    getTracks: vi.fn(() => [mockTrack]),
+  } as unknown as MediaStream;
   const mockMetadata = {
     peerId: 'remote-peer',
     streamType: 'video' as const,
@@ -22,6 +25,7 @@ describe('usePeerConnection', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockTrack.stop.mockClear();
     const { getStreamMetadata } = await import('@/lib/webrtc/utils');
     vi.mocked(getStreamMetadata).mockReturnValue(mockMetadata);
 
@@ -647,9 +651,9 @@ describe('usePeerConnection', () => {
 
   it('should disconnect all peers on unmount', async () => {
     mockDataConnection.open = true;
-    const mockTrack = { stop: vi.fn() };
+    const unmountMockTrack = { stop: vi.fn() };
     const streamWithTracks = {
-      getTracks: vi.fn(() => [mockTrack]),
+      getTracks: vi.fn(() => [unmountMockTrack]),
     } as unknown as MediaStream;
 
     const { result, unmount } = renderHook(() => usePeerConnection(mockPeer as Peer));
@@ -662,11 +666,24 @@ describe('usePeerConnection', () => {
       expect(result.current.connections.size).toBe(1);
     });
 
+    // Trigger the stream event to set the stream in connection state
+    const onHandler = vi.mocked(mockMediaConnection.on);
+    const streamHandler = onHandler.mock.calls.find((call) => call[0] === 'stream')?.[1];
+
+    act(() => {
+      streamHandler?.(streamWithTracks);
+    });
+
+    await waitFor(() => {
+      const connection = result.current.connections.get('peer-1');
+      expect(connection?.stream).toBe(streamWithTracks);
+    });
+
     act(() => {
       unmount();
     });
 
     // Verify cleanup was initiated
-    expect(mockTrack.stop).toHaveBeenCalled();
+    expect(unmountMockTrack.stop).toHaveBeenCalled();
   });
 });
