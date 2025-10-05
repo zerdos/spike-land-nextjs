@@ -183,7 +183,7 @@ export class VideoWallWorld extends World {
 
         connect(peerId: string) {
           console.log('[MockPeer] Connecting to:', peerId);
-          const connection = new MockDataConnection(peerId, this);
+          const connection = new MockDataConnection(peerId);
           this.connections.set(peerId, connection);
 
           // Simulate connection open
@@ -196,7 +196,7 @@ export class VideoWallWorld extends World {
 
         call(peerId: string, stream: MediaStream) {
           console.log('[MockPeer] Calling:', peerId);
-          const call = new MockMediaConnection(peerId, stream, this);
+          const call = new MockMediaConnection(peerId, stream);
 
           // Simulate call answered with a mock stream
           setTimeout(() => {
@@ -227,7 +227,7 @@ export class VideoWallWorld extends World {
         private callbacks: Map<string, (() => void)[]> = new Map();
         open: boolean = false;
 
-        constructor(peer: string, private _peerInstance: MockPeer) {
+        constructor(peer: string) {
           this.peer = peer;
         }
 
@@ -245,7 +245,7 @@ export class VideoWallWorld extends World {
           }
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => cb(...args));
+            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 
@@ -261,9 +261,11 @@ export class VideoWallWorld extends World {
       class MockMediaConnection {
         peer: string;
         private callbacks: Map<string, (() => void)[]> = new Map();
+        private stream: MediaStream;
 
-        constructor(peer: string, private stream: MediaStream, private _peerInstance: MockPeer) {
+        constructor(peer: string, stream: MediaStream) {
           this.peer = peer;
+          this.stream = stream;
         }
 
         on(event: string, callback: (...args: unknown[]) => void) {
