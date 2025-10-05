@@ -207,6 +207,29 @@ describe('getStreamMetadata', () => {
       frameRate: 0,
     });
   });
+
+  it('should handle settings with missing height property', () => {
+    const mockSettings = {
+      width: 1920,
+      height: undefined,
+      frameRate: 60,
+    };
+    const mockTrack = {
+      getSettings: vi.fn().mockReturnValue(mockSettings),
+    };
+    const mockStream = {
+      active: true,
+      getVideoTracks: vi.fn().mockReturnValue([mockTrack]),
+    } as unknown as MediaStream;
+
+    const metadata = getStreamMetadata(mockStream, 'peer-123', 'video');
+
+    expect(metadata.videoSettings).toEqual({
+      width: 1920,
+      height: 0,
+      frameRate: 60,
+    });
+  });
 });
 
 describe('isWebRTCSupported', () => {
