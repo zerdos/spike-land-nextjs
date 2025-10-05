@@ -18,14 +18,16 @@ After(async function (this: VideoWallWorld, { result, pickle }) {
     const clientContexts = this.getAllClientContexts();
     for (let i = 0; i < clientContexts.length; i++) {
       const clientContext = clientContexts[i];
-      try {
-        const clientScreenshot = await clientContext.page.screenshot({
-          path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, '_')}_client_${i}.png`,
-          fullPage: true,
-        });
-        this.attach(clientScreenshot, 'image/png');
-      } catch (error) {
-        console.error(`Failed to capture screenshot for client ${i}:`, error);
+      if (clientContext) {
+        try {
+          const clientScreenshot = await clientContext.page.screenshot({
+            path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, '_')}_client_${i}.png`,
+            fullPage: true,
+          });
+          this.attach(clientScreenshot, 'image/png');
+        } catch (error) {
+          console.error(`Failed to capture screenshot for client ${i}:`, error);
+        }
       }
     }
   }
