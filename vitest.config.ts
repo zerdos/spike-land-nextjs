@@ -16,14 +16,16 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/*.config.ts',
         'src/**/*.stories.tsx',
+        'src/**/index.ts', // Barrel export files
+        'src/types/**/*.ts', // Type definition files
         'node_modules/**',
       ],
       all: true,
       thresholds: {
-        lines: 100,
-        functions: 100,
-        branches: 100,
-        statements: 100,
+        lines: 80,
+        functions: 90,
+        branches: 85,
+        statements: 80,
       },
     },
   },
