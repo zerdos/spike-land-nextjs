@@ -1,12 +1,13 @@
 # GitHub Actions CI/CD Pipeline
 
-This workflow automatically tests, builds, and deploys your Next.js application on every commit to the main branch.
+This workflow automatically tests, builds, deploys, and validates your Next.js application with comprehensive quality gates.
 
 ## Workflow Steps
 
 1. **Test** - Runs linter and unit tests with 100% coverage requirement
 2. **Build** - Builds the Next.js application (only if tests pass)
 3. **Deploy** - Deploys to Vercel (only on main branch, only if build succeeds)
+4. **E2E** - Runs end-to-end tests against deployed application (only after successful deployment)
 
 ## Required Secrets
 
@@ -68,3 +69,118 @@ Deployment only happens when:
 - Tests pass ✅
 - Build succeeds ✅
 - Push is to the `main` branch ✅
+
+E2E tests only run when:
+- Deployment succeeds ✅
+- Push is to the `main` branch ✅
+
+## Branch Protection (RECOMMENDED)
+
+### ⚠️ Enforce Quality Standards
+
+To prevent merging broken code to `main`, set up branch protection rules:
+
+1. Go to: **Settings** → **Branches** → **Add branch protection rule**
+2. Branch name pattern: `main`
+3. Enable these settings:
+   - ✅ **Require a pull request before merging**
+   - ✅ **Require status checks to pass before merging**
+     - Required status checks: `Run Tests`, `Build Application`
+   - ✅ **Do not allow bypassing the above settings**
+
+**See `BRANCH_PROTECTION_SETUP.md` for detailed setup instructions.**
+
+### Benefits of Branch Protection
+
+With branch protection enabled:
+- ❌ **No direct commits to main** - All changes via Pull Requests
+- ✅ **100% test coverage enforced** - Tests must pass before merge
+- ✅ **Build verification** - No broken builds reach production
+- ✅ **Automated deployment** - Only tested code gets deployed
+- ✅ **E2E validation** - Live app tested after each deployment
+
+### Development Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/my-feature
+
+# 2. Make changes and write tests
+# ... code changes ...
+
+# 3. Verify locally
+npm run test:coverage  # Must pass with 100% coverage
+npm run build          # Must build successfully
+
+# 4. Push and create PR
+git push origin feature/my-feature
+# Create PR on GitHub
+
+# 5. Wait for CI checks ✅
+# - Tests run automatically
+# - Build verification
+# - Merge button enabled only when all checks pass
+
+# 6. Merge to main
+# - Automatic deployment to Vercel
+# - E2E tests run against deployed app
+```
+
+## Pipeline Jobs
+
+### 1. Test Job
+- **Triggers**: All pushes and pull requests
+- **Steps**:
+  - Checkout code
+  - Install dependencies
+  - Run ESLint
+  - Run Vitest with 100% coverage requirement
+  - Upload coverage to Codecov (if token configured)
+- **Artifacts**: Coverage reports
+
+### 2. Build Job
+- **Triggers**: Only if Test job passes
+- **Steps**:
+  - Checkout code
+  - Install dependencies
+  - Build Next.js application
+  - Upload build artifacts
+- **Artifacts**: `.next` directory
+
+### 3. Deploy Job
+- **Triggers**: Only on `main` branch after successful build
+- **Steps**:
+  - Install Vercel CLI
+  - Pull Vercel environment
+  - Build for production
+  - Deploy to Vercel
+  - Output deployment URL
+- **Outputs**: `deployment-url` - URL of the deployed application
+
+### 4. E2E Job
+- **Triggers**: Only on `main` branch after successful deployment
+- **Steps**:
+  - Checkout code
+  - Install dependencies
+  - Install Playwright browsers
+  - Run Cucumber/Playwright tests against deployed URL
+  - Upload test reports and screenshots
+- **Artifacts**: E2E test reports and failure screenshots
+
+## Monitoring CI/CD
+
+### View Workflow Runs
+- Go to **Actions** tab in your repository
+- Click on a workflow run to see details
+- View logs for each job
+
+### Download Artifacts
+- Build artifacts (`.next` directory)
+- E2E test reports and screenshots
+- Available for 7 days after workflow run
+
+### Status Badges
+Add to your README:
+```markdown
+[![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
+```
