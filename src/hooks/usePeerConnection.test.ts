@@ -686,4 +686,72 @@ describe('usePeerConnection', () => {
     // Verify cleanup was initiated
     expect(unmountMockTrack.stop).toHaveBeenCalled();
   });
+
+  it('should update existing connection when updateConnection is called', async () => {
+    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+
+    act(() => {
+      result.current.callPeer('remote-peer', mockStream);
+    });
+
+    await waitFor(() => {
+      expect(result.current.connections.size).toBe(1);
+    });
+
+    // Simulate data connection open which calls updateConnection
+    const onHandler = vi.mocked(mockDataConnection.on);
+    const openHandler = onHandler.mock.calls.find((call) => call[0] === 'open')?.[1];
+
+    act(() => {
+      openHandler?.();
+    });
+
+    await waitFor(() => {
+      const connection = result.current.connections.get('remote-peer');
+      expect(connection?.client.status).toBe('connected');
+    });
+  });
+
+  it('should update existing connection with dataConnection when connection exists on incoming connection', async () => {
+    const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
+
+    // First create a connection via callPeer (which creates mediaConnection but not dataConnection yet)
+    act(() => {
+      result.current.callPeer('remote-peer', mockStream);
+    });
+
+    await waitFor(() => {
+      expect(result.current.connections.size).toBe(1);
+    });
+
+    // Now simulate incoming data connection for the same peer
+    const incomingDataConn = {
+      ...mockDataConnection,
+      peer: 'remote-peer',
+      on: vi.fn(),
+    } as unknown as DataConnection;
+
+    const peerOnHandler = vi.mocked(mockPeer.on);
+    const connectionHandler = peerOnHandler.mock.calls.find(
+      (call) => call[0] === 'connection'
+    )?.[1] as (conn: DataConnection) => void;
+
+    act(() => {
+      connectionHandler(incomingDataConn);
+    });
+
+    // Simulate the open event on incoming connection
+    const connOnHandler = vi.mocked(incomingDataConn.on);
+    const openHandler = connOnHandler.mock.calls.find((call) => call[0] === 'open')?.[1];
+
+    act(() => {
+      openHandler?.();
+    });
+
+    // Verify that the existing connection was updated with the dataConnection (line 267)
+    await waitFor(() => {
+      const connection = result.current.connections.get('remote-peer');
+      expect(connection?.dataConnection).toBe(incomingDataConn);
+    });
+  });
 });

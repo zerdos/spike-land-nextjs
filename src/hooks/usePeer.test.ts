@@ -332,4 +332,150 @@ describe('usePeer', () => {
 
     expect(mockPeerInstance.destroy).not.toHaveBeenCalled();
   });
+
+  it('should initialize when reconnect is called and peer is not disconnected', async () => {
+    const config: PeerConfig = { role: 'host' };
+    const { result } = renderHook(() => usePeer(config));
+
+    // Set peer to not be disconnected (already connected or in another state)
+    mockPeerInstance.disconnected = false;
+    mockPeerInstance.reconnect.mockClear();
+    MockPeer.mockClear();
+
+    result.current.reconnect();
+
+    // Should call initialize which creates new peer, not reconnect
+    await waitFor(() => {
+      expect(mockPeerInstance.reconnect).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should not reinitialize if peer exists and is not disconnected and not destroyed', async () => {
+    const config: PeerConfig = { role: 'host' };
+    const { result } = renderHook(() => usePeer(config));
+
+    // Wait for initial peer creation
+    await waitFor(() => {
+      expect(MockPeer).toHaveBeenCalled();
+    });
+
+    // Simulate peer opening
+    const openHandler = mockPeerInstance.on.mock.calls.find(
+      (call) => call[0] === 'open'
+    )?.[1];
+    openHandler?.('test-peer-id');
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('connected');
+    });
+
+    const initialCallCount = MockPeer.mock.calls.length;
+
+    // Set peer to be in a valid state (not disconnected, not destroyed)
+    mockPeerInstance.disconnected = false;
+    mockPeerInstance.destroyed = false;
+
+    // Try to reconnect, but since peer is already connected and valid
+    // initialize should return early (line 37)
+    result.current.reconnect();
+
+    // Wait a bit to ensure no new peer is created
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Should not create a new peer instance
+    expect(MockPeer.mock.calls.length).toBe(initialCallCount);
+  });
+
+  it('should handle error in error handler without message property', async () => {
+    const config: PeerConfig = { role: 'host' };
+    const { result } = renderHook(() => usePeer(config));
+
+    const errorHandler = mockPeerInstance.on.mock.calls.find(
+      (call) => call[0] === 'error'
+    )?.[1];
+
+    // Simulate error event with error object that has no message
+    const errorWithoutMessage = { type: 'network' };
+    errorHandler?.(errorWithoutMessage);
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('failed');
+      expect(result.current.error).toBeTruthy();
+    });
+  });
+
+  it('should handle reconnect logic for disconnected peer', async () => {
+    const config: PeerConfig = { role: 'host' };
+    const { result } = renderHook(() => usePeer(config));
+
+    // Wait for peer to be created
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalled();
+    });
+
+    // Simulate peer being disconnected but not destroyed
+    mockPeerInstance.disconnected = true;
+    mockPeerInstance.destroyed = false;
+    mockPeerInstance.reconnect.mockClear();
+
+    // Call reconnect
+    result.current.reconnect();
+
+    await waitFor(() => {
+      expect(mockPeerInstance.reconnect).toHaveBeenCalled();
+      expect(result.current.status).toBe('connecting');
+    });
+  });
+
+  it('should use debug level 2 in development environment', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+
+    const config: PeerConfig = { role: 'host' };
+    renderHook(() => usePeer(config));
+
+    await waitFor(() => {
+      expect(MockPeer).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          debug: 2,
+        })
+      );
+    });
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it('should use debug level 0 in production environment', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    const config: PeerConfig = { role: 'host' };
+    renderHook(() => usePeer(config));
+
+    await waitFor(() => {
+      expect(MockPeer).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          debug: 0,
+        })
+      );
+    });
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it('should handle non-Error exception in initialization catch block', async () => {
+    MockPeer.mockImplementationOnce(() => {
+      throw 'String error thrown';
+    });
+
+    const config: PeerConfig = { role: 'host' };
+    const { result } = renderHook(() => usePeer(config));
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('failed');
+      expect(result.current.error).toBe('Failed to initialize peer');
+    });
+  });
 });

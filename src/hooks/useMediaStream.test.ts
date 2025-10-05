@@ -396,4 +396,80 @@ describe('useMediaStream', () => {
       expect(result.current.error).toBeNull();
     });
   });
+
+  it('should handle replaceVideoTrack when no new video track exists', async () => {
+    const { getUserMediaStream } = await import('@/lib/webrtc/utils');
+    const newStream = {
+      getVideoTracks: vi.fn(() => []), // No video tracks
+    } as unknown as MediaStream;
+
+    const oldVideoTrack = { stop: vi.fn(), enabled: true };
+    const streamWithVideo = {
+      getTracks: vi.fn(() => [oldVideoTrack]),
+      getVideoTracks: vi.fn(() => [oldVideoTrack]),
+      getAudioTracks: vi.fn(() => []),
+      addTrack: vi.fn(),
+      removeTrack: vi.fn(),
+    } as unknown as MediaStream;
+
+    // Mock initial stream with video track
+    vi.mocked(getUserMediaStream).mockResolvedValueOnce(streamWithVideo);
+
+    const { result } = renderHook(() => useMediaStream('peer-123'));
+
+    await result.current.startStream('camera');
+
+    // Now mock the new stream without video tracks
+    vi.mocked(getUserMediaStream).mockResolvedValueOnce(newStream);
+
+    await result.current.replaceVideoTrack('camera');
+
+    // Old track should be removed and stopped
+    expect(streamWithVideo.removeTrack).toHaveBeenCalledWith(oldVideoTrack);
+    expect(oldVideoTrack.stop).toHaveBeenCalled();
+    // addTrack should not be called when there's no new video track (because newVideoTrack is undefined)
+  });
+
+  it('should update state with streamRef.current when replacing video track with existing stream', async () => {
+    const { getUserMediaStream } = await import('@/lib/webrtc/utils');
+
+    const oldVideoTrack = { stop: vi.fn(), enabled: true };
+    const newVideoTrack = { id: 'new-track', enabled: true };
+
+    const existingStream = {
+      getTracks: vi.fn(() => [oldVideoTrack]),
+      getVideoTracks: vi.fn(() => [oldVideoTrack]),
+      getAudioTracks: vi.fn(() => []),
+      addTrack: vi.fn(),
+      removeTrack: vi.fn(),
+    } as unknown as MediaStream;
+
+    const newStream = {
+      getVideoTracks: vi.fn(() => [newVideoTrack]),
+    } as unknown as MediaStream;
+
+    // Mock initial stream
+    vi.mocked(getUserMediaStream).mockResolvedValueOnce(existingStream);
+
+    const { result } = renderHook(() => useMediaStream('peer-123'));
+
+    await result.current.startStream('camera');
+
+    // Verify initial state
+    await waitFor(() => {
+      expect(result.current.stream).toBe(existingStream);
+    });
+
+    // Mock the new stream for replacement
+    vi.mocked(getUserMediaStream).mockResolvedValueOnce(newStream);
+
+    await result.current.replaceVideoTrack('camera');
+
+    // Verify setState was called with streamRef.current (lines 198-199)
+    await waitFor(() => {
+      expect(result.current.stream).toBe(existingStream);
+      expect(existingStream.addTrack).toHaveBeenCalledWith(newVideoTrack);
+      expect(existingStream.removeTrack).toHaveBeenCalledWith(oldVideoTrack);
+    });
+  });
 });
