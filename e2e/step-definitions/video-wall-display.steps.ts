@@ -56,7 +56,11 @@ When('{int} client connects with camera enabled', async function (this: VideoWal
 When('{int} clients connect with camera enabled', async function (this: VideoWallWorld, count: number) {
   // Connect multiple clients
   for (let i = 0; i < count; i++) {
-    await this.connectClient({ enableCamera: true, enableMicrophone: false });
+    const clientContext = await this.createClientContext(`client-${i}`, `Client ${i + 1}`);
+    await this.mockPeerJS(clientContext.page);
+
+    const connectionId = this.displayId || 'test-display-id';
+    await clientContext.page.goto(`${this.baseUrl}/client?displayId=${connectionId}`);
     await this.displayPage.waitForTimeout(1000);
   }
 });
@@ -179,7 +183,11 @@ Then('I should see {string} label on the second video feed', async function (thi
 // Disconnection handling
 Given('{int} clients are connected with camera enabled', async function (this: VideoWallWorld, count: number) {
   for (let i = 0; i < count; i++) {
-    await this.connectClient({ enableCamera: true, enableMicrophone: false });
+    const clientContext = await this.createClientContext(`client-${i}`, `Client ${i + 1}`);
+    await this.mockPeerJS(clientContext.page);
+
+    const connectionId = this.displayId || 'test-display-id';
+    await clientContext.page.goto(`${this.baseUrl}/client?displayId=${connectionId}`);
     await this.displayPage.waitForTimeout(1000);
   }
 });
