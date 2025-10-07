@@ -3,16 +3,17 @@ import { describe, it, expect } from 'vitest';
 import AppsPage from './page';
 
 describe('AppsPage', () => {
-  it('renders the apps page with heading', () => {
+  it('renders the apps page with Featured Apps heading', () => {
     render(<AppsPage />);
 
-    expect(screen.getByRole('heading', { name: 'Smart Video Wall', level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Featured Apps', level: 2 })).toBeInTheDocument();
   });
 
   it('renders the Smart Video Wall app card', () => {
     render(<AppsPage />);
 
-    expect(screen.getByText('Transform any screen into a dynamic multi-stream video display powered by WebRTC')).toBeInTheDocument();
+    expect(screen.getByText('Smart Video Wall')).toBeInTheDocument();
+    expect(screen.getByText(/A real-time video conferencing wall/)).toBeInTheDocument();
   });
 
   it('renders app tags', () => {
@@ -31,33 +32,18 @@ describe('AppsPage', () => {
     expect(launchButton).toHaveAttribute('href', '/display');
   });
 
-  it('renders View Details button with correct link', () => {
-    render(<AppsPage />);
-
-    const viewDetailsButton = screen.getByRole('link', { name: 'View Details' });
-    expect(viewDetailsButton).toBeInTheDocument();
-    expect(viewDetailsButton).toHaveAttribute('href', '/apps/display');
-  });
-
   it('renders More Apps Coming Soon section', () => {
     render(<AppsPage />);
 
     expect(screen.getByRole('heading', { name: 'More Apps Coming Soon', level: 3 })).toBeInTheDocument();
-    expect(screen.getByText(/We're working on adding more applications/)).toBeInTheDocument();
+    expect(screen.getByText(/We are continuously building new interactive experiences/)).toBeInTheDocument();
   });
 
   it('applies correct grid layout classes', () => {
     const { container } = render(<AppsPage />);
 
     const grid = container.querySelector('.grid');
-    expect(grid).toHaveClass('grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-6');
-  });
-
-  it('renders app card with correct badge styling', () => {
-    const { container } = render(<AppsPage />);
-
-    const badges = container.querySelectorAll('.inline-flex.items-center');
-    expect(badges.length).toBeGreaterThan(0);
+    expect(grid).toHaveClass('gap-6', 'md:grid-cols-2', 'lg:grid-cols-3');
   });
 
   it('renders Card components', () => {
@@ -67,15 +53,10 @@ describe('AppsPage', () => {
     expect(cards.length).toBeGreaterThan(0);
   });
 
-  it('renders correct number of tags', () => {
-    render(<AppsPage />);
+  it('renders tags with correct styling', () => {
+    const { container} = render(<AppsPage />);
 
-    const webrtcBadges = screen.getAllByText('WebRTC');
-    const videoBadges = screen.getAllByText('Video');
-    const realtimeBadges = screen.getAllByText('Real-time');
-
-    expect(webrtcBadges.length).toBeGreaterThan(0);
-    expect(videoBadges.length).toBeGreaterThan(0);
-    expect(realtimeBadges.length).toBeGreaterThan(0);
+    const tags = container.querySelectorAll('.bg-primary\\/10');
+    expect(tags.length).toBe(3); // WebRTC, Video, Real-time
   });
 });

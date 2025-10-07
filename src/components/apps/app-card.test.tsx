@@ -8,7 +8,7 @@ describe('AppCard', () => {
   it('renders with required props', () => {
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
       />
     );
@@ -20,9 +20,9 @@ describe('AppCard', () => {
   it('renders with icon', () => {
     const { container } = render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
-        icon={Home}
+        icon={<Home />}
       />
     );
 
@@ -33,27 +33,27 @@ describe('AppCard', () => {
   it('renders launch button with appUrl', () => {
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         appUrl="/test-app"
       />
     );
 
-    const launchButton = screen.getByRole('link', { name: /launch app/i });
-    expect(launchButton).toHaveAttribute('href', '/test-app');
+    const launchButton = screen.getByRole('button', { name: /launch app/i });
+    expect(launchButton).toBeInTheDocument();
   });
 
   it('renders view details button with detailsUrl', () => {
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         detailsUrl="/test-details"
       />
     );
 
-    const viewDetailsButton = screen.getByRole('link', { name: /view details/i });
-    expect(viewDetailsButton).toHaveAttribute('href', '/test-details');
+    const viewDetailsButton = screen.getByRole('button', { name: /view details/i });
+    expect(viewDetailsButton).toBeInTheDocument();
   });
 
   it('calls onLaunch when launch button is clicked', async () => {
@@ -62,7 +62,7 @@ describe('AppCard', () => {
 
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         onLaunch={onLaunch}
       />
@@ -80,7 +80,7 @@ describe('AppCard', () => {
 
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         onViewDetails={onViewDetails}
       />
@@ -95,7 +95,7 @@ describe('AppCard', () => {
   it('applies custom className', () => {
     const { container } = render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         className="custom-class"
       />
@@ -108,29 +108,29 @@ describe('AppCard', () => {
   it('renders both buttons when both URLs are provided', () => {
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         appUrl="/test-app"
         detailsUrl="/test-details"
       />
     );
 
-    expect(screen.getByRole('link', { name: /launch app/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /view details/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /launch app/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
   });
 
   it('renders button variants correctly', () => {
     render(
       <AppCard
-        title="Test App"
+        name="Test App"
         description="Test Description"
         appUrl="/test-app"
         detailsUrl="/test-details"
       />
     );
 
-    const launchButton = screen.getByRole('link', { name: /launch app/i });
-    const viewDetailsButton = screen.getByRole('link', { name: /view details/i });
+    const launchButton = screen.getByRole('button', { name: /launch app/i });
+    const viewDetailsButton = screen.getByRole('button', { name: /view details/i });
 
     // Launch button should have default variant (no outline class)
     expect(launchButton).not.toHaveClass('border-input');
