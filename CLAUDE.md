@@ -150,14 +150,19 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
    - Build artifacts uploaded
 
 3. **Deploy Job** - Runs on all branches after successful build
-   - Deploys to Vercel Preview
-   - Outputs preview deployment URL
+   - **Main branch**: Deploys to Vercel Production (https://next.spike.land)
+   - **Other branches**: Deploys to Vercel Preview (temporary URLs)
+   - Outputs deployment URL
 
 4. **E2E Job** - Runs on all branches after successful deployment
-   - Runs Playwright/Cucumber tests against preview URL
+   - Runs Playwright/Cucumber tests against deployment URL
    - Uploads test reports and screenshots as artifacts
 
-**Note:** Production deployments are done manually from the `main` branch when needed.
+### Deployment Strategy
+- **Production**: `main` branch automatically deploys to https://next.spike.land
+- **Preview**: All other branches get temporary preview URLs for testing
+- **Domain**: Custom domain `next.spike.land` managed via Cloudflare DNS (see `CLOUDFLARE_DNS_SETUP.md`)
+- **Configuration**: See `VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
 
 ### Required GitHub Secrets
 - `VERCEL_TOKEN` - Vercel deployment token (required)
