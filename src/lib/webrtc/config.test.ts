@@ -1,5 +1,72 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getPeerServerConfig, createPeerConfig, getAppBaseUrl } from './config';
+import { getIceServers, getPeerServerConfig, createPeerConfig, getAppBaseUrl } from './config';
+
+describe('getIceServers', () => {
+  it('should return an array of ICE servers', () => {
+    const servers = getIceServers();
+    expect(Array.isArray(servers)).toBe(true);
+    expect(servers.length).toBeGreaterThan(0);
+  });
+
+  it('should include STUN servers', () => {
+    const servers = getIceServers();
+    const stunServers = servers.filter(s => s.urls.toString().startsWith('stun:'));
+    expect(stunServers.length).toBeGreaterThan(0);
+  });
+
+  it('should include TURN servers', () => {
+    const servers = getIceServers();
+    const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
+    expect(turnServers.length).toBeGreaterThan(0);
+  });
+
+  it('should include Google STUN servers', () => {
+    const servers = getIceServers();
+    const googleStun = servers.find(s => s.urls === 'stun:stun.l.google.com:19302');
+    expect(googleStun).toBeDefined();
+  });
+
+  it('should include TURN servers with credentials', () => {
+    const servers = getIceServers();
+    const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
+
+    turnServers.forEach(server => {
+      expect(server).toHaveProperty('username');
+      expect(server).toHaveProperty('credential');
+      expect(typeof server.username).toBe('string');
+      expect(typeof server.credential).toBe('string');
+    });
+  });
+
+  it('should include metered.ca TURN servers', () => {
+    const servers = getIceServers();
+    const meteredTurn = servers.find(s =>
+      s.urls.toString().includes('openrelay.metered.ca')
+    );
+    expect(meteredTurn).toBeDefined();
+  });
+
+  it('should include TURN servers on multiple ports', () => {
+    const servers = getIceServers();
+    const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
+
+    const ports = turnServers.map(s => {
+      const match = s.urls.toString().match(/:(\d+)/);
+      return match ? match[1] : null;
+    });
+
+    expect(ports).toContain('80');
+    expect(ports).toContain('443');
+  });
+
+  it('should include TCP transport option for TURN', () => {
+    const servers = getIceServers();
+    const tcpTurn = servers.find(s =>
+      s.urls.toString().includes('transport=tcp')
+    );
+    expect(tcpTurn).toBeDefined();
+  });
+});
 
 describe('getPeerServerConfig', () => {
   const originalEnv = process.env;

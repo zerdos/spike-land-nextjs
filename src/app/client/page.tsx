@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Peer, { MediaConnection } from 'peerjs';
+import { getIceServers } from '@/lib/webrtc/config';
 
 type CameraFacingMode = 'user' | 'environment';
 
@@ -166,13 +167,10 @@ function ClientPageContent() {
 
         if (!mounted) return;
 
-        // Initialize PeerJS
+        // Initialize PeerJS with TURN servers for 4G/5G support
         const peer = new Peer({
           config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
+            iceServers: getIceServers()
           }
         });
 
