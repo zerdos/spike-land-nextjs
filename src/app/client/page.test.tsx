@@ -1557,6 +1557,13 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /Toggle menu/i })).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
     const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
     await act(async () => {
       await user.click(menuButton);
@@ -1584,6 +1591,13 @@ describe('ClientPage', () => {
     await waitFor(
       () => {
         expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /Toggle menu/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
