@@ -5,9 +5,9 @@
 import type { PeerConfig } from "@/types/webrtc";
 
 /**
- * Get ICE servers configuration for WebRTC
- * Includes both STUN and TURN servers for NAT traversal
- * TURN servers enable connections for clients on 4G/5G networks
+ * Get ICE servers configuration for WebRTC (fallback)
+ * Includes Google STUN servers
+ * Use getTwilioIceServers() for production use with reliable TURN servers
  */
 export function getIceServers(): RTCIceServer[] {
   return [
@@ -17,24 +17,28 @@ export function getIceServers(): RTCIceServer[] {
     { urls: 'stun:stun2.l.google.com:19302' },
     { urls: 'stun:stun3.l.google.com:19302' },
     { urls: 'stun:stun4.l.google.com:19302' },
-
-    // Free TURN servers from metered.ca (https://www.metered.ca/tools/openrelay/)
-    {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
   ];
+}
+
+/**
+ * Fetch Twilio TURN server credentials for reliable 4G/5G connectivity
+ * Falls back to basic STUN servers if Twilio API is unavailable
+ */
+export async function getTwilioIceServers(): Promise<RTCIceServer[]> {
+  try {
+    const response = await fetch('/api/turn-credentials');
+
+    if (!response.ok) {
+      console.warn('Failed to fetch Twilio TURN credentials, using fallback STUN servers');
+      return getIceServers();
+    }
+
+    const data = await response.json();
+    return data.iceServers || getIceServers();
+  } catch (error) {
+    console.error('Error fetching Twilio TURN credentials:', error);
+    return getIceServers();
+  }
 }
 
 /**

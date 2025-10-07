@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getIceServers, getPeerServerConfig, createPeerConfig, getAppBaseUrl } from './config';
+import { getIceServers, getTwilioIceServers, getPeerServerConfig, createPeerConfig, getAppBaseUrl } from './config';
 
 describe('getIceServers', () => {
   it('should return an array of ICE servers', () => {
@@ -14,57 +14,75 @@ describe('getIceServers', () => {
     expect(stunServers.length).toBeGreaterThan(0);
   });
 
-  it('should include TURN servers', () => {
-    const servers = getIceServers();
-    const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
-    expect(turnServers.length).toBeGreaterThan(0);
-  });
-
   it('should include Google STUN servers', () => {
     const servers = getIceServers();
     const googleStun = servers.find(s => s.urls === 'stun:stun.l.google.com:19302');
     expect(googleStun).toBeDefined();
   });
 
-  it('should include TURN servers with credentials', () => {
+  it('should only include STUN servers (no TURN)', () => {
     const servers = getIceServers();
     const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
+    expect(turnServers.length).toBe(0);
+  });
+});
 
-    turnServers.forEach(server => {
-      expect(server).toHaveProperty('username');
-      expect(server).toHaveProperty('credential');
-      expect(typeof server.username).toBe('string');
-      expect(typeof server.credential).toBe('string');
+describe('getTwilioIceServers', () => {
+  beforeEach(() => {
+    global.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should fetch and return Twilio ICE servers on success', async () => {
+    const mockServers = [
+      { urls: 'stun:global.stun.twilio.com:3478' },
+      {
+        urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+        username: 'test_user',
+        credential: 'test_pass',
+      },
+    ];
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ iceServers: mockServers }),
     });
+
+    const servers = await getTwilioIceServers();
+    expect(servers).toEqual(mockServers);
+    expect(global.fetch).toHaveBeenCalledWith('/api/turn-credentials');
   });
 
-  it('should include metered.ca TURN servers', () => {
-    const servers = getIceServers();
-    const meteredTurn = servers.find(s =>
-      s.urls.toString().includes('openrelay.metered.ca')
-    );
-    expect(meteredTurn).toBeDefined();
-  });
-
-  it('should include TURN servers on multiple ports', () => {
-    const servers = getIceServers();
-    const turnServers = servers.filter(s => s.urls.toString().startsWith('turn:'));
-
-    const ports = turnServers.map(s => {
-      const match = s.urls.toString().match(/:(\d+)/);
-      return match ? match[1] : null;
+  it('should return fallback servers when API request fails', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
     });
 
-    expect(ports).toContain('80');
-    expect(ports).toContain('443');
+    const servers = await getTwilioIceServers();
+    expect(servers).toEqual(getIceServers());
   });
 
-  it('should include TCP transport option for TURN', () => {
-    const servers = getIceServers();
-    const tcpTurn = servers.find(s =>
-      s.urls.toString().includes('transport=tcp')
+  it('should return fallback servers when fetch throws error', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('Network error')
     );
-    expect(tcpTurn).toBeDefined();
+
+    const servers = await getTwilioIceServers();
+    expect(servers).toEqual(getIceServers());
+  });
+
+  it('should return fallback servers when response has no iceServers', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    const servers = await getTwilioIceServers();
+    expect(servers).toEqual(getIceServers());
   });
 });
 

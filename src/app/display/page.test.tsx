@@ -69,6 +69,21 @@ describe('DisplayPage', () => {
       configurable: true,
     });
 
+    // Mock fetch for Twilio ICE servers
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+            username: 'test',
+            credential: 'test',
+          },
+        ],
+      }),
+    });
+
     // Mock ResizeObserver
     global.ResizeObserver = vi.fn().mockImplementation(() => ({
       observe: vi.fn(),
@@ -104,14 +119,21 @@ describe('DisplayPage', () => {
 
   it('should initialize PeerJS on mount', async () => {
     const Peer = (await import('peerjs')).default;
-    const { getIceServers } = await import('@/lib/webrtc/config');
 
     render(<DisplayPage />);
 
+    // Wait for async initialization with Twilio ICE servers
     await waitFor(() => {
       expect(Peer).toHaveBeenCalledWith({
         config: {
-          iceServers: getIceServers(),
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            {
+              urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+              username: 'test',
+              credential: 'test',
+            },
+          ],
         },
       });
     });
@@ -154,6 +176,11 @@ describe('DisplayPage', () => {
   it('should destroy peer on unmount', async () => {
     const { unmount } = render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     await act(async () => {
       unmount();
     });
@@ -177,6 +204,11 @@ describe('DisplayPage', () => {
 
   it('should display QR code when generated', async () => {
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
@@ -203,6 +235,11 @@ describe('DisplayPage', () => {
 
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
@@ -226,6 +263,11 @@ describe('DisplayPage', () => {
   it('should handle incoming data connection from client', async () => {
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Get the connection handler
     const connectionHandler = mockPeerInstance.on.mock.calls.find(
@@ -265,6 +307,11 @@ describe('DisplayPage', () => {
   it('should handle incoming media call and receive stream', async () => {
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
@@ -306,6 +353,11 @@ describe('DisplayPage', () => {
 
   it('should not add duplicate stream from same client', async () => {
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
@@ -366,6 +418,11 @@ describe('DisplayPage', () => {
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
@@ -407,6 +464,11 @@ describe('DisplayPage', () => {
   it('should handle call error and remove stream', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
@@ -451,6 +513,11 @@ describe('DisplayPage', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Get error handler
     const errorHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'error'
@@ -468,6 +535,11 @@ describe('DisplayPage', () => {
 
   it('should render video grid when clients are connected', async () => {
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // First trigger open event to set displayId
     const openHandler = mockPeerInstance.on.mock.calls.find(
@@ -519,6 +591,11 @@ describe('DisplayPage', () => {
   it('should show QR code in corner when clients are connected', async () => {
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
@@ -566,6 +643,11 @@ describe('DisplayPage', () => {
   it('should render VideoCell component with stream', async () => {
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
@@ -610,6 +692,11 @@ describe('DisplayPage', () => {
 
   it('should update video srcObject when stream changes', async () => {
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     const callHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
@@ -701,6 +788,11 @@ describe('DisplayPage', () => {
 
     render(<DisplayPage />);
 
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
@@ -740,6 +832,11 @@ describe('DisplayPage', () => {
 
   it('should apply grid layout styles based on calculated layout', async () => {
     render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
