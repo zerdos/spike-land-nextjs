@@ -356,7 +356,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -397,7 +398,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -434,7 +436,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -463,7 +466,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -500,7 +504,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -531,7 +536,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -564,7 +570,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -607,7 +614,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -637,7 +645,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -678,7 +687,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -931,7 +941,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -1010,7 +1021,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -1081,7 +1093,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -1125,7 +1138,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
@@ -1164,7 +1178,8 @@ describe('ClientPage', () => {
       { timeout: 3000 }
     );
 
-    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
     await act(async () => {
       await user.click(menuButton);
     });
