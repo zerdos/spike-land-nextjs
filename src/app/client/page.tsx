@@ -17,7 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Peer, { MediaConnection } from 'peerjs';
-import { getIceServers } from '@/lib/webrtc/config';
+import { getTwilioIceServers } from '@/lib/webrtc/config';
 
 type CameraFacingMode = 'user' | 'environment';
 
@@ -167,10 +167,13 @@ function ClientPageContent() {
 
         if (!mounted) return;
 
+        // Fetch Twilio ICE servers for reliable 4G/5G connectivity
+        const iceServers = await getTwilioIceServers();
+
         // Initialize PeerJS with TURN servers for 4G/5G support
         const peer = new Peer({
           config: {
-            iceServers: getIceServers()
+            iceServers
           }
         });
 

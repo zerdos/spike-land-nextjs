@@ -5,7 +5,7 @@ import Peer, { MediaConnection } from 'peerjs';
 import QRCode from 'qrcode';
 import Image from 'next/image';
 import { calculateOptimalLayout } from '@/lib/layout-optimizer';
-import { getIceServers } from '@/lib/webrtc/config';
+import { getTwilioIceServers } from '@/lib/webrtc/config';
 
 interface VideoStream {
   id: string;
@@ -24,99 +24,112 @@ export default function DisplayPage() {
 
   // Initialize PeerJS and generate QR code
   useEffect(() => {
-    // Create a new Peer instance with TURN servers for 4G/5G support
-    const peer = new Peer({
-      config: {
-        iceServers: getIceServers(),
-      },
-    });
+    let peer: Peer | null = null;
 
-    peerRef.current = peer;
+    // Initialize peer with Twilio TURN servers
+    const initializePeer = async () => {
+      // Fetch Twilio ICE servers for reliable 4G/5G connectivity
+      const iceServers = await getTwilioIceServers();
 
-    // Handle peer open event - we now have an ID
-    peer.on('open', (id) => {
-      console.log('Display Peer ID:', id);
-      setDisplayId(id);
-
-      // Generate QR code URL
-      const clientUrl = `${window.location.origin}/client?displayId=${id}`;
-      QRCode.toDataURL(clientUrl, {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF',
+      // Create a new Peer instance with TURN servers for 4G/5G support
+      peer = new Peer({
+        config: {
+          iceServers,
         },
-      })
-        .then((url) => {
-          setQrCodeUrl(url);
+      });
+
+      peerRef.current = peer;
+
+      // Handle peer open event - we now have an ID
+      peer.on('open', (id) => {
+        console.log('Display Peer ID:', id);
+        setDisplayId(id);
+
+        // Generate QR code URL
+        const clientUrl = `${window.location.origin}/client?displayId=${id}`;
+        QRCode.toDataURL(clientUrl, {
+          width: 200,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
         })
-        .catch((err) => {
-          console.error('Failed to generate QR code:', err);
-        });
-    });
-
-    // Handle incoming connections from clients
-    peer.on('connection', (dataConnection) => {
-      console.log('New data connection from:', dataConnection.peer);
-
-      // Send a welcome message
-      dataConnection.on('open', () => {
-        dataConnection.send({ type: 'welcome', message: 'Connected to display' });
+          .then((url) => {
+            setQrCodeUrl(url);
+          })
+          .catch((err) => {
+            console.error('Failed to generate QR code:', err);
+          });
       });
-    });
 
-    // Handle incoming media calls from clients
-    peer.on('call', (call) => {
-      console.log('Incoming call from:', call.peer);
+      // Handle incoming connections from clients
+      peer.on('connection', (dataConnection) => {
+        console.log('New data connection from:', dataConnection.peer);
 
-      // Answer the call (we don't send our own stream)
-      call.answer();
-
-      // Receive the remote stream
-      call.on('stream', (remoteStream) => {
-        console.log('Received stream from:', call.peer);
-
-        setVideoStreams((prev) => {
-          // Check if stream already exists
-          const exists = prev.some((vs) => vs.id === call.peer);
-          if (exists) {
-            return prev;
-          }
-
-          // Add new stream
-          return [
-            ...prev,
-            {
-              id: call.peer,
-              stream: remoteStream,
-              connection: call,
-            },
-          ];
+        // Send a welcome message
+        dataConnection.on('open', () => {
+          dataConnection.send({ type: 'welcome', message: 'Connected to display' });
         });
       });
 
-      // Handle call close
-      call.on('close', () => {
-        console.log('Call closed:', call.peer);
-        setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+      // Handle incoming media calls from clients
+      peer.on('call', (call) => {
+        console.log('Incoming call from:', call.peer);
+
+        // Answer the call (we don't send our own stream)
+        call.answer();
+
+        // Receive the remote stream
+        call.on('stream', (remoteStream) => {
+          console.log('Received stream from:', call.peer);
+
+          setVideoStreams((prev) => {
+            // Check if stream already exists
+            const exists = prev.some((vs) => vs.id === call.peer);
+            if (exists) {
+              return prev;
+            }
+
+            // Add new stream
+            return [
+              ...prev,
+              {
+                id: call.peer,
+                stream: remoteStream,
+                connection: call,
+              },
+            ];
+          });
+        });
+
+        // Handle call close
+        call.on('close', () => {
+          console.log('Call closed:', call.peer);
+          setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+        });
+
+        // Handle errors
+        call.on('error', (err) => {
+          console.error('Call error:', err);
+          setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+        });
       });
 
       // Handle errors
-      call.on('error', (err) => {
-        console.error('Call error:', err);
-        setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+      peer.on('error', (err) => {
+        console.error('Peer error:', err);
       });
-    });
+    };
 
-    // Handle errors
-    peer.on('error', (err) => {
-      console.error('Peer error:', err);
-    });
+    // Start initialization
+    initializePeer();
 
     // Cleanup on unmount
     return () => {
-      peer.destroy();
+      if (peerRef.current) {
+        peerRef.current.destroy();
+      }
     };
   }, []);
 
