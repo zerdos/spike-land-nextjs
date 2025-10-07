@@ -5,6 +5,39 @@
 import type { PeerConfig } from "@/types/webrtc";
 
 /**
+ * Get ICE servers configuration for WebRTC
+ * Includes both STUN and TURN servers for NAT traversal
+ * TURN servers enable connections for clients on 4G/5G networks
+ */
+export function getIceServers(): RTCIceServer[] {
+  return [
+    // Google public STUN servers
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+
+    // Free TURN servers from metered.ca (https://www.metered.ca/tools/openrelay/)
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject',
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject',
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject',
+    },
+  ];
+}
+
+/**
  * Get PeerJS server configuration from environment variables
  */
 export function getPeerServerConfig() {

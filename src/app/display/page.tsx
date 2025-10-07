@@ -5,6 +5,7 @@ import Peer, { MediaConnection } from 'peerjs';
 import QRCode from 'qrcode';
 import Image from 'next/image';
 import { calculateOptimalLayout } from '@/lib/layout-optimizer';
+import { getIceServers } from '@/lib/webrtc/config';
 
 interface VideoStream {
   id: string;
@@ -23,13 +24,10 @@ export default function DisplayPage() {
 
   // Initialize PeerJS and generate QR code
   useEffect(() => {
-    // Create a new Peer instance
+    // Create a new Peer instance with TURN servers for 4G/5G support
     const peer = new Peer({
       config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-        ],
+        iceServers: getIceServers(),
       },
     });
 
