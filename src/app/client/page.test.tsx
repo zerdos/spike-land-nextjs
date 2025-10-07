@@ -119,6 +119,21 @@ describe('ClientPage', () => {
       configurable: true,
     });
 
+    // Mock fetch for Twilio ICE servers
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+            username: 'test',
+            credential: 'test',
+          },
+        ],
+      }),
+    });
+
     // Mock localStorage
     const localStorageMock = {
       getItem: vi.fn(),
