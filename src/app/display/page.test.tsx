@@ -104,16 +104,14 @@ describe('DisplayPage', () => {
 
   it('should initialize PeerJS on mount', async () => {
     const Peer = (await import('peerjs')).default;
+    const { getIceServers } = await import('@/lib/webrtc/config');
 
     render(<DisplayPage />);
 
     await waitFor(() => {
       expect(Peer).toHaveBeenCalledWith({
         config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-          ],
+          iceServers: getIceServers(),
         },
       });
     });
