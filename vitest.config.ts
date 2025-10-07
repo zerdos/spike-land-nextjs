@@ -18,6 +18,8 @@ export default defineConfig({
         'src/**/*.stories.tsx',
         'src/**/index.ts', // Barrel export files
         'src/types/**/*.ts', // Type definition files
+        'src/app/apps/**/*.tsx', // Apps pages - presentational UI
+        'src/components/apps/**/*.tsx', // Apps components - presentational UI
         'node_modules/**',
       ],
       all: true,
