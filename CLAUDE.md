@@ -254,21 +254,27 @@ npm install
 npm run test:coverage  # Must pass with 100% coverage
 npm run build          # Must build successfully
 
-# 5. Commit and push
+# 5. Rebase with latest main before creating PR
+cd ../main
+git pull origin main  # Update main worktree
+cd ../feature/my-feature
+git rebase main  # Rebase your feature branch on latest main
+
+# 6. Commit and push
 git add .
 git commit -m "Add new feature"
 git push origin feature/my-feature
 
-# 6. Create Pull Request
+# 7. Create Pull Request
 # - All tests run automatically
 # - Preview deployment created
 # - E2E tests run against preview
 # - Must pass before merge is allowed
 
-# 7. Merge when all checks pass ✅
+# 8. Merge when all checks pass ✅
 # - Deploy to production automatically on merge to main
 
-# 8. Clean up worktree after merge
+# 9. Clean up worktree after merge
 cd ../main
 git worktree remove ../feature/my-feature
 git pull  # Update main with merged changes
@@ -276,6 +282,7 @@ git pull  # Update main with merged changes
 
 ### Rules for Contributors
 - ❌ **No direct commits to main** - All changes via Pull Requests
+- ✅ **Rebase before creating PR** - Always rebase your branch with latest main from origin before creating a pull request
 - ✅ **All tests must pass** - Unit tests with 100% coverage
 - ✅ **Build must succeed** - No broken builds allowed
 - ✅ **Preview deployment required** - Every PR gets tested preview
