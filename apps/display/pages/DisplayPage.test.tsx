@@ -226,7 +226,7 @@ describe('DisplayPage', () => {
       expect(qrImage).toHaveAttribute('src', 'data:image/png;base64,mockqrcode');
     });
 
-    expect(screen.getByText(/Scan to connect your camera/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scan this QR code with your mobile phone to connect/i)).toBeInTheDocument();
   });
 
   it('should handle QR code generation error', async () => {
@@ -628,9 +628,9 @@ describe('DisplayPage', () => {
       streamHandler?.(new MediaStream());
     });
 
-    // Should show "Add Client" text when clients are connected
+    // Should show "Scan with mobile phone" text when clients are connected
     await waitFor(() => {
-      expect(screen.getByText(/Add Client/i)).toBeInTheDocument();
+      expect(screen.getByText(/Scan with mobile phone/i)).toBeInTheDocument();
     });
   });
 
@@ -822,6 +822,136 @@ describe('DisplayPage', () => {
         })
       );
     });
+  });
+
+  it('should render "Open Client in New Window" button when QR code is generated', async () => {
+    render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
+    // Trigger open event to generate QR code
+    const openHandler = mockPeerInstance.on.mock.calls.find(
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+    )?.[1];
+
+    await act(async () => {
+      openHandler?.('display-123');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Wait for QR code to be generated
+    await waitFor(() => {
+      expect(screen.getByText(/Open Client in New Window/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should open client URL in new window when button is clicked', async () => {
+    // Mock window.open
+    const mockOpen = vi.fn();
+    global.window.open = mockOpen;
+
+    render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
+    // Trigger open event to generate QR code
+    const openHandler = mockPeerInstance.on.mock.calls.find(
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+    )?.[1];
+
+    await act(async () => {
+      openHandler?.('display-123');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Wait for button to be rendered
+    await waitFor(() => {
+      expect(screen.getByText(/Open Client in New Window/i)).toBeInTheDocument();
+    });
+
+    // Click the button
+    const button = screen.getByText(/Open Client in New Window/i);
+    await act(async () => {
+      button.click();
+    });
+
+    // Verify window.open was called with correct URL
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:3000/apps/display/client?displayId=display-123',
+      '_blank'
+    );
+  });
+
+  it('should show "Open in New Window" button in corner when clients are connected', async () => {
+    // Mock window.open
+    const mockOpen = vi.fn();
+    global.window.open = mockOpen;
+
+    render(<DisplayPage />);
+
+    // Wait for peer to be initialized
+    await waitFor(() => {
+      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+    });
+
+    // Trigger open event to generate QR code and set displayId
+    const openHandler = mockPeerInstance.on.mock.calls.find(
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+    )?.[1];
+
+    await act(async () => {
+      openHandler?.('display-123');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Get call handler and add a client
+    const callHandler = mockPeerInstance.on.mock.calls.find(
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+    )?.[1];
+
+    const mockCall = {
+      peer: 'client-corner-test',
+      answer: vi.fn(),
+      on: vi.fn(),
+    };
+
+    await act(async () => {
+      callHandler?.(mockCall);
+    });
+
+    const streamHandler = mockCall.on.mock.calls.find(
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+    )?.[1];
+
+    await act(async () => {
+      streamHandler?.(new MediaStream());
+    });
+
+    // Should show "Open in New Window" button when clients are connected
+    await waitFor(() => {
+      const buttons = screen.getAllByText(/Open in New Window/i);
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // Click the corner button (the second "Open in New Window" button)
+    const buttons = screen.getAllByText(/Open in New Window/i);
+    const cornerButton = buttons[buttons.length - 1]; // Get the last button (corner button)
+
+    await act(async () => {
+      cornerButton.click();
+    });
+
+    // Verify window.open was called with correct URL from corner button
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:3000/apps/display/client?displayId=display-123',
+      '_blank'
+    );
   });
 
   it('should apply grid layout styles based on calculated layout', async () => {
