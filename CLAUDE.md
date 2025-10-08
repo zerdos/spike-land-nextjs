@@ -25,6 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Task 7 combines small config/doc updates to prevent over-splitting
 
 ### Feature Implementation Guidelines
+- **CRITICAL**: Use git worktrees for all feature development (see "Git Worktree Setup" section)
 - **CRITICAL**: Make MINIMAL CHANGES to existing patterns and structures
 - **CRITICAL**: Preserve existing naming conventions and file organization
 - Follow project's established architecture and component patterns
@@ -36,6 +37,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This is a Next.js 15 application with TypeScript, Tailwind CSS 4, and shadcn/ui components. It uses the App Router architecture and React Server Components (RSC). The project includes comprehensive testing (unit and E2E), automated CI/CD pipeline, and enforced code quality standards.
+
+## Git Worktree Setup
+
+**IMPORTANT**: This repository uses **git worktrees** for parallel development. The current directory structure is:
+
+```
+/Volumes/Dev/github.com/zerdos/spike-land-nextjs/
+├── .bare/           # Bare repository (DO NOT work here directly)
+└── main/            # Main branch worktree (primary working directory)
+```
+
+### Working with Worktrees
+
+When you need to work on a new feature or fix:
+
+```bash
+# Navigate to the main worktree first
+cd /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
+
+# Create a new worktree for a feature branch
+git worktree add ../feature-name -b feature-name
+
+# Or checkout an existing remote branch
+git worktree add ../existing-branch existing-branch
+
+# Work in the new worktree
+cd ../feature-name
+npm install  # Install dependencies if needed
+npm run dev
+
+# List all active worktrees
+git worktree list
+
+# Remove a worktree when done (after merging)
+git worktree remove ../feature-name
+# Or if you're inside the worktree:
+cd ../main && git worktree remove ../feature-name
+```
+
+### Worktree Best Practices
+
+- **DO**: Always create new worktrees for feature branches from the `main` worktree
+- **DO**: Work in separate worktrees for parallel tasks
+- **DO**: Remove worktrees after merging branches to keep the workspace clean
+- **DON'T**: Make changes directly in the `.bare/` directory
+- **DON'T**: Create worktrees inside other worktrees
+
+### Quick Navigation Alias
+
+There's a shell alias configured for quick navigation:
+```bash
+cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
+```
 
 ## Development Commands
 
@@ -185,33 +239,50 @@ To enforce code quality, configure branch protection for `main`:
 
 ### Development Workflow
 ```bash
-# 1. Create feature branch
-git checkout -b feature/my-feature
+# 1. Create feature worktree (from main worktree)
+cd /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
+git worktree add ../feature/my-feature -b feature/my-feature
+cd ../feature/my-feature
 
-# 2. Make changes, write tests (100% coverage required)
+# 2. Install dependencies (if needed)
+npm install
+
+# 3. Make changes, write tests (100% coverage required)
 # Add your code and corresponding tests
 
-# 3. Run tests locally
+# 4. Run tests locally
 npm run test:coverage  # Must pass with 100% coverage
 npm run build          # Must build successfully
 
-# 4. Commit and push
+# 5. Rebase with latest main before creating PR
+cd ../main
+git pull origin main  # Update main worktree
+cd ../feature/my-feature
+git rebase main  # Rebase your feature branch on latest main
+
+# 6. Commit and push
 git add .
 git commit -m "Add new feature"
 git push origin feature/my-feature
 
-# 5. Create Pull Request
+# 7. Create Pull Request
 # - All tests run automatically
 # - Preview deployment created
 # - E2E tests run against preview
 # - Must pass before merge is allowed
 
-# 6. Merge when all checks pass ✅
-# - Deploy to production manually when ready
+# 8. Merge when all checks pass ✅
+# - Deploy to production automatically on merge to main
+
+# 9. Clean up worktree after merge
+cd ../main
+git worktree remove ../feature/my-feature
+git pull  # Update main with merged changes
 ```
 
 ### Rules for Contributors
 - ❌ **No direct commits to main** - All changes via Pull Requests
+- ✅ **Rebase before creating PR** - Always rebase your branch with latest main from origin before creating a pull request
 - ✅ **All tests must pass** - Unit tests with 100% coverage
 - ✅ **Build must succeed** - No broken builds allowed
 - ✅ **Preview deployment required** - Every PR gets tested preview
