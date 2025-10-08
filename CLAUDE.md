@@ -351,6 +351,107 @@ When adding new features:
 5. **Create Pull Request** and wait for CI checks
 6. **Merge only when all checks pass**
 
+## Issue Management
+
+### Resolving Project Issues
+
+When the user asks to resolve project issues, follow this workflow:
+
+1. **Fetch open issues** using the GitHub CLI:
+   ```bash
+   gh issue list --state open --json number,title,author,body,url
+   ```
+
+2. **Check issue authorship**:
+   - **If created by `zerdos`**: Proceed with resolving the issue automatically
+   - **If created by someone else**: Ask the user what to do with the issue before proceeding
+
+3. **Delegate to agents**: Use the Task tool to delegate each issue to a specialized agent for resolution
+   - Create separate agents for independent issues to work in parallel
+   - Each agent **MUST** complete the full workflow:
+     - Analyze the issue requirements
+     - Implement the fix or feature
+     - Write tests with 100% coverage
+     - **Commit changes** with issue number in commit message
+     - **Push to GitHub** on a feature branch
+     - **Create Pull Request** using `gh pr create` with issue number in description
+     - **Monitor CI/CD pipeline** using `gh pr checks`
+     - **Wait for all CI checks to complete** - Do not assume success
+     - **Fix any CI failures immediately** and push fixes
+     - **Verify all checks pass** before marking task complete
+     - Only complete the task when PR is ready to merge (all checks green ✅)
+
+4. **Reference issues in commits and PRs**: **CRITICAL** - All changes from GitHub issues MUST include the issue number:
+   ```bash
+   # Commit message format (REQUIRED)
+   git commit -m "Fix authentication bug
+
+   Resolves #123"
+
+   # PR creation with issue reference (REQUIRED)
+   gh pr create --title "Fix authentication bug (#123)" --body "$(cat <<'EOF'
+   ## Summary
+   - Fixed authentication bug by updating session validation
+
+   ## Issue
+   Resolves #123
+
+   ## Test plan
+   - [x] Unit tests pass with 100% coverage
+   - [x] E2E tests pass
+   - [x] Build succeeds
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+   EOF
+   )"
+   ```
+
+### Example Workflow
+
+```bash
+# User: "Please resolve all open issues"
+
+# 1. Fetch issues
+gh issue list --state open --json number,title,author,body,url
+
+# 2. For each issue from zerdos:
+#    - Launch Task agent with context about the issue
+#    - Agent workflow:
+#      a. Create worktree for feature branch
+#      b. Implement fix/feature
+#      c. Write tests (100% coverage)
+#      d. Commit with "Resolves #<issue-number>"
+#      e. Push to GitHub
+#      f. Create PR with gh pr create (include issue number)
+#      g. Monitor CI with gh pr checks
+#      h. Wait for CI to complete
+#      i. If CI fails: fix issues, commit, push, repeat from step g
+#      j. When all checks pass: mark task complete
+
+# 3. For issues from others:
+#    - Present issue details to user
+#    - Wait for user decision before proceeding
+```
+
+### CI Monitoring Commands for Agents
+
+Agents working on issues **MUST** use these commands to monitor CI:
+
+```bash
+# After creating PR, get the PR number
+PR_NUMBER=$(gh pr view --json number -q .number)
+
+# Check PR status (run this multiple times until complete)
+gh pr checks $PR_NUMBER
+
+# View detailed status
+gh pr view $PR_NUMBER --json statusCheckRollup
+
+# If checks fail, view logs
+gh run list --branch <branch-name> --limit 1
+gh run view <run-id> --log-failed
+```
+
 ## Troubleshooting
 
 ### Coverage Not 100%
