@@ -230,7 +230,6 @@ describe('DisplayPage', () => {
   });
 
   it('should handle QR code generation error', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockToDataURL.mockRejectedValueOnce(new Error('QR generation failed'));
 
     render(<DisplayPage />);
@@ -250,18 +249,12 @@ describe('DisplayPage', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
-    await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to generate QR code:',
-        expect.any(Error)
-      );
-    });
-
-    consoleErrorSpy.mockRestore();
+    // QR code generation error is handled silently
+    // The display should still render normally without a QR code
+    expect(screen.getByText(/Display Ready/i)).toBeInTheDocument();
   });
 
   it('should handle incoming data connection from client', async () => {
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
@@ -285,8 +278,6 @@ describe('DisplayPage', () => {
       connectionHandler?.(mockDataConnection);
     });
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('New data connection from:', 'client-456');
-
     // Trigger the open event on data connection
     const dataOpenHandler = mockDataConnection.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
@@ -300,12 +291,9 @@ describe('DisplayPage', () => {
       type: 'welcome',
       message: 'Connected to display',
     });
-
-    consoleLogSpy.mockRestore();
   });
 
   it('should handle incoming media call and receive stream', async () => {
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
@@ -329,7 +317,6 @@ describe('DisplayPage', () => {
       callHandler?.(mockCall);
     });
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('Incoming call from:', 'client-789');
     expect(mockCall.answer).toHaveBeenCalled();
 
     // Get the stream handler
@@ -344,11 +331,10 @@ describe('DisplayPage', () => {
       streamHandler?.(mockStream);
     });
 
+    // Verify stream was added (peer ID is truncated to first 8 chars)
     await waitFor(() => {
-      expect(consoleLogSpy).toHaveBeenCalledWith('Received stream from:', 'client-789');
+      expect(screen.getByText(/client-7/i)).toBeInTheDocument();
     });
-
-    consoleLogSpy.mockRestore();
   });
 
   it('should not add duplicate stream from same client', async () => {
@@ -415,7 +401,6 @@ describe('DisplayPage', () => {
   });
 
   it('should handle call close and remove stream', async () => {
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
@@ -447,6 +432,11 @@ describe('DisplayPage', () => {
       streamHandler?.(new MediaStream());
     });
 
+    // Verify stream was added (peer ID is truncated to first 8 chars)
+    await waitFor(() => {
+      expect(screen.getByText(/client-c/i)).toBeInTheDocument();
+    });
+
     // Get close handler
     const closeHandler = mockCall.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'close'
@@ -456,13 +446,13 @@ describe('DisplayPage', () => {
       closeHandler?.();
     });
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('Call closed:', 'client-close-test');
-
-    consoleLogSpy.mockRestore();
+    // Verify stream was removed
+    await waitFor(() => {
+      expect(screen.queryByText(/client-c/i)).not.toBeInTheDocument();
+    });
   });
 
   it('should handle call error and remove stream', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
@@ -494,6 +484,11 @@ describe('DisplayPage', () => {
       streamHandler?.(new MediaStream());
     });
 
+    // Verify stream was added (peer ID is truncated to first 8 chars)
+    await waitFor(() => {
+      expect(screen.getByText(/client-e/i)).toBeInTheDocument();
+    });
+
     // Get error handler
     const errorHandler = mockCall.on.mock.calls.find(
       (call: [string, (...args: unknown[]) => void]) => call[0] === 'error'
@@ -504,13 +499,13 @@ describe('DisplayPage', () => {
       errorHandler?.(mockError);
     });
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Call error:', mockError);
-
-    consoleErrorSpy.mockRestore();
+    // Verify stream was removed after error
+    await waitFor(() => {
+      expect(screen.queryByText(/client-e/i)).not.toBeInTheDocument();
+    });
   });
 
   it('should handle peer error', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
@@ -528,9 +523,8 @@ describe('DisplayPage', () => {
       errorHandler?.(mockError);
     });
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Peer error:', mockError);
-
-    consoleErrorSpy.mockRestore();
+    // Peer error is handled silently, display should still be functional
+    expect(screen.getByText(/Initializing/i)).toBeInTheDocument();
   });
 
   it('should render video grid when clients are connected', async () => {

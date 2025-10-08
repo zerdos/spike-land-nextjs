@@ -76,11 +76,8 @@ export function usePeerConnection(peer: Peer | null) {
   const callPeer = useCallback(
     (remotePeerId: string, stream: MediaStream) => {
       if (!peer) {
-        console.error("[usePeerConnection] Cannot call peer: peer not initialized");
         return;
       }
-
-      console.log(`[usePeerConnection] Calling peer: ${remotePeerId}`);
 
       // Establish data connection first
       const dataConn = peer.connect(remotePeerId, {
@@ -111,26 +108,22 @@ export function usePeerConnection(peer: Peer | null) {
 
       // Handle data connection events
       dataConn.on("open", () => {
-        console.log(`[usePeerConnection] Data connection opened with ${remotePeerId}`);
         updateConnection(remotePeerId, {
           client: { ...clientMetadata, status: "connected" },
         });
       });
 
-      dataConn.on("data", (data) => {
-        console.log(`[usePeerConnection] Data received from ${remotePeerId}:`, data);
+      dataConn.on("data", () => {
         // Handle incoming messages here
       });
 
       dataConn.on("close", () => {
-        console.log(`[usePeerConnection] Data connection closed with ${remotePeerId}`);
         updateConnection(remotePeerId, {
           client: { ...clientMetadata, status: "closed" },
         });
       });
 
-      dataConn.on("error", (error) => {
-        console.error(`[usePeerConnection] Data connection error with ${remotePeerId}:`, error);
+      dataConn.on("error", () => {
         updateConnection(remotePeerId, {
           client: { ...clientMetadata, status: "failed" },
         });
@@ -138,7 +131,6 @@ export function usePeerConnection(peer: Peer | null) {
 
       // Handle media connection events
       mediaConn.on("stream", (remoteStream) => {
-        console.log(`[usePeerConnection] Receiving stream from ${remotePeerId}`);
         const metadata = getStreamMetadata(remoteStream, remotePeerId);
 
         updateConnection(remotePeerId, {
@@ -148,11 +140,11 @@ export function usePeerConnection(peer: Peer | null) {
       });
 
       mediaConn.on("close", () => {
-        console.log(`[usePeerConnection] Media connection closed with ${remotePeerId}`);
+        // Connection closed
       });
 
-      mediaConn.on("error", (error) => {
-        console.error(`[usePeerConnection] Media connection error with ${remotePeerId}:`, error);
+      mediaConn.on("error", () => {
+        // Error occurred
       });
     },
     [peer, updateConnection]
@@ -163,8 +155,6 @@ export function usePeerConnection(peer: Peer | null) {
    */
   const answerCall = useCallback(
     (call: MediaConnection, stream: MediaStream) => {
-      console.log(`[usePeerConnection] Answering call from ${call.peer}`);
-
       call.answer(stream);
 
       const clientMetadata: ClientMetadata = {
@@ -185,7 +175,6 @@ export function usePeerConnection(peer: Peer | null) {
       setConnections((prev) => new Map(prev).set(call.peer, connectionState));
 
       call.on("stream", (remoteStream) => {
-        console.log(`[usePeerConnection] Receiving stream from ${call.peer}`);
         const metadata = getStreamMetadata(remoteStream, call.peer);
 
         updateConnection(call.peer, {
@@ -195,14 +184,12 @@ export function usePeerConnection(peer: Peer | null) {
       });
 
       call.on("close", () => {
-        console.log(`[usePeerConnection] Call closed with ${call.peer}`);
         updateConnection(call.peer, {
           client: { ...clientMetadata, status: "closed" },
         });
       });
 
-      call.on("error", (error) => {
-        console.error(`[usePeerConnection] Call error with ${call.peer}:`, error);
+      call.on("error", () => {
         updateConnection(call.peer, {
           client: { ...clientMetadata, status: "failed" },
         });
@@ -257,10 +244,7 @@ export function usePeerConnection(peer: Peer | null) {
     if (!peer) return;
 
     const handleConnection = (dataConn: DataConnection) => {
-      console.log(`[usePeerConnection] Incoming data connection from ${dataConn.peer}`);
-
       dataConn.on("open", () => {
-        console.log(`[usePeerConnection] Data connection opened with ${dataConn.peer}`);
 
         const existing = connectionsRef.current.get(dataConn.peer);
         if (existing) {
@@ -285,21 +269,20 @@ export function usePeerConnection(peer: Peer | null) {
         }
       });
 
-      dataConn.on("data", (data) => {
-        console.log(`[usePeerConnection] Data received from ${dataConn.peer}:`, data);
+      dataConn.on("data", () => {
+        // Data received
       });
 
       dataConn.on("close", () => {
-        console.log(`[usePeerConnection] Data connection closed with ${dataConn.peer}`);
+        // Connection closed
       });
 
-      dataConn.on("error", (error) => {
-        console.error(`[usePeerConnection] Data connection error with ${dataConn.peer}:`, error);
+      dataConn.on("error", () => {
+        // Error occurred
       });
     };
 
-    const handleCall = (call: MediaConnection) => {
-      console.log(`[usePeerConnection] Incoming call from ${call.peer}`);
+    const handleCall = () => {
       // Note: Call must be answered by the application, not automatically
       // Store the call in a pending state or emit an event
     };

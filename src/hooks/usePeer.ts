@@ -72,7 +72,6 @@ export function usePeer(config: PeerConfig) {
 
       // Handle successful connection
       peer.on("open", (id) => {
-        console.log(`[usePeer] Peer connection opened with ID: ${id}`);
         setState({
           peer,
           peerId: id,
@@ -84,7 +83,6 @@ export function usePeer(config: PeerConfig) {
 
       // Handle errors
       peer.on("error", (error) => {
-        console.error("[usePeer] Peer error:", error);
         const errorInfo = createWebRTCError(
           "network-error",
           error.message || "Peer connection error",
@@ -100,7 +98,6 @@ export function usePeer(config: PeerConfig) {
 
       // Handle disconnection
       peer.on("disconnected", () => {
-        console.log("[usePeer] Peer disconnected");
         setState((prev) => ({
           ...prev,
           status: "disconnected",
@@ -110,7 +107,6 @@ export function usePeer(config: PeerConfig) {
 
       // Handle close
       peer.on("close", () => {
-        console.log("[usePeer] Peer connection closed");
         setState({
           peer: null,
           peerId: null,
@@ -122,7 +118,6 @@ export function usePeer(config: PeerConfig) {
 
       peerRef.current = peer;
     } catch (error) {
-      console.error("[usePeer] Failed to initialize peer:", error);
       setState((prev) => ({
         ...prev,
         status: "failed",

@@ -29,14 +29,12 @@ export async function getTwilioIceServers(): Promise<RTCIceServer[]> {
     const response = await fetch('/api/turn-credentials');
 
     if (!response.ok) {
-      console.warn('Failed to fetch Twilio TURN credentials, using fallback STUN servers');
       return getIceServers();
     }
 
     const data = await response.json();
     return data.iceServers || getIceServers();
-  } catch (error) {
-    console.error('Error fetching Twilio TURN credentials:', error);
+  } catch {
     return getIceServers();
   }
 }

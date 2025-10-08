@@ -39,8 +39,7 @@ export async function GET() {
       iceServers: data.ice_servers,
       ttl: data.ttl,
     });
-  } catch (error) {
-    console.error('Error fetching TURN credentials:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch TURN credentials' },
       { status: 500 }
