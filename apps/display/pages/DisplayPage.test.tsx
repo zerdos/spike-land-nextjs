@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import DisplayPage from './page';
+import DisplayPage from './DisplayPage';
 
 // Mock PeerJS module with vi.hoisted
 const { mockPeerInstance, MockPeer, mockToDataURL } = vi.hoisted(() => {
@@ -44,7 +44,7 @@ vi.mock('qrcode', () => ({
 }));
 
 // Mock layout optimizer
-vi.mock('@/lib/layout-optimizer', () => ({
+vi.mock('@apps/display/lib/layout-optimizer', () => ({
   calculateOptimalLayout: vi.fn(() => ({
     rows: 2,
     cols: 2,
@@ -164,7 +164,7 @@ describe('DisplayPage', () => {
 
     await waitFor(() => {
       expect(mockToDataURL).toHaveBeenCalledWith(
-        'http://localhost:3000/client?displayId=display-123',
+        'http://localhost:3000/apps/display/client?displayId=display-123',
         expect.objectContaining({
           width: 200,
           margin: 2,
@@ -189,7 +189,7 @@ describe('DisplayPage', () => {
   });
 
   it('should calculate optimal layout with correct dimensions', async () => {
-    const { calculateOptimalLayout } = await import('@/lib/layout-optimizer');
+    const { calculateOptimalLayout } = await import('@apps/display/lib/layout-optimizer');
 
     render(<DisplayPage />);
 
@@ -778,7 +778,7 @@ describe('DisplayPage', () => {
   });
 
   it('should calculate layout with multiple clients', async () => {
-    const { calculateOptimalLayout } = await import('@/lib/layout-optimizer');
+    const { calculateOptimalLayout } = await import('@apps/display/lib/layout-optimizer');
 
     render(<DisplayPage />);
 

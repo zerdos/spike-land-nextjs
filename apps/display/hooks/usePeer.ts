@@ -6,7 +6,7 @@ import type {
   PeerConfig,
   PeerConnectionState,
 } from "@/types/webrtc";
-import { generatePeerId, isWebRTCSupported, createWebRTCError } from "@/lib/webrtc/utils";
+import { generatePeerId, isWebRTCSupported, createWebRTCError } from "@apps/display/lib/webrtc/utils";
 
 /**
  * Hook for managing a PeerJS connection

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Peer, { MediaConnection } from 'peerjs';
 import QRCode from 'qrcode';
 import Image from 'next/image';
-import { calculateOptimalLayout } from '@/lib/layout-optimizer';
-import { getTwilioIceServers } from '@/lib/webrtc/config';
+import { calculateOptimalLayout } from '@apps/display/lib/layout-optimizer';
+import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
 
 interface VideoStream {
   id: string;
@@ -45,7 +45,7 @@ export default function DisplayPage() {
         setDisplayId(id);
 
         // Generate QR code URL
-        const clientUrl = `${window.location.origin}/client?displayId=${id}`;
+        const clientUrl = `${window.location.origin}/apps/display/client?displayId=${id}`;
         QRCode.toDataURL(clientUrl, {
           width: 200,
           margin: 2,

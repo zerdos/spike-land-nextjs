@@ -7,7 +7,7 @@ import type {
   ClientMetadata,
   PeerMessage,
 } from "@/types/webrtc";
-import { getStreamMetadata } from "@/lib/webrtc/utils";
+import { getStreamMetadata } from "@apps/display/lib/webrtc/utils";
 
 /**
  * Hook for managing peer-to-peer connections (calls and data channels)
