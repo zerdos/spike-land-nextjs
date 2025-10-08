@@ -42,7 +42,6 @@ export default function DisplayPage() {
 
       // Handle peer open event - we now have an ID
       peer.on('open', (id) => {
-        console.log('Display Peer ID:', id);
         setDisplayId(id);
 
         // Generate QR code URL
@@ -58,15 +57,13 @@ export default function DisplayPage() {
           .then((url) => {
             setQrCodeUrl(url);
           })
-          .catch((err) => {
-            console.error('Failed to generate QR code:', err);
+          .catch(() => {
+            // QR code generation failed
           });
       });
 
       // Handle incoming connections from clients
       peer.on('connection', (dataConnection) => {
-        console.log('New data connection from:', dataConnection.peer);
-
         // Send a welcome message
         dataConnection.on('open', () => {
           dataConnection.send({ type: 'welcome', message: 'Connected to display' });
@@ -75,15 +72,11 @@ export default function DisplayPage() {
 
       // Handle incoming media calls from clients
       peer.on('call', (call) => {
-        console.log('Incoming call from:', call.peer);
-
         // Answer the call (we don't send our own stream)
         call.answer();
 
         // Receive the remote stream
         call.on('stream', (remoteStream) => {
-          console.log('Received stream from:', call.peer);
-
           setVideoStreams((prev) => {
             // Check if stream already exists
             const exists = prev.some((vs) => vs.id === call.peer);
@@ -105,20 +98,18 @@ export default function DisplayPage() {
 
         // Handle call close
         call.on('close', () => {
-          console.log('Call closed:', call.peer);
           setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
         });
 
         // Handle errors
-        call.on('error', (err) => {
-          console.error('Call error:', err);
+        call.on('error', () => {
           setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
         });
       });
 
       // Handle errors
-      peer.on('error', (err) => {
-        console.error('Peer error:', err);
+      peer.on('error', () => {
+        // Error occurred
       });
     };
 

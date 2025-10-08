@@ -78,7 +78,6 @@ export function useMediaStream(peerId: string) {
 
         // Monitor stream health
         cleanupMonitorRef.current = monitorStreamHealth(stream, () => {
-          console.log("[useMediaStream] Stream became inactive");
           setState((prev) => ({ ...prev, isActive: false }));
         });
 

@@ -128,8 +128,6 @@ function ClientPageContent() {
       setIsLoading(false);
       return stream;
     } catch (err) {
-      console.error('Camera access error:', err);
-
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError') {
           setError({
@@ -179,27 +177,22 @@ function ClientPageContent() {
 
         peerRef.current = peer;
 
-        peer.on('open', (id) => {
-          console.log('Peer connected with ID:', id);
-
+        peer.on('open', () => {
           // Call the display
           if (stream) {
             const call = peer.call(displayId, stream);
             callRef.current = call;
 
             call.on('stream', () => {
-              console.log('Connected to display');
               setIsConnected(true);
               setError(null);
             });
 
             call.on('close', () => {
-              console.log('Call closed');
               setIsConnected(false);
             });
 
-            call.on('error', (err) => {
-              console.error('Call error:', err);
+            call.on('error', () => {
               setError({
                 message: 'Connection to display failed. Please try again.',
                 type: 'connection'
@@ -209,16 +202,15 @@ function ClientPageContent() {
           }
         });
 
-        peer.on('error', (err) => {
-          console.error('Peer error:', err);
+        peer.on('error', () => {
           setError({
             message: 'Failed to establish peer connection. Please check your internet.',
             type: 'connection'
           });
         });
 
-      } catch (err) {
-        console.error('Initialization error:', err);
+      } catch {
+        // Initialization failed
       }
     };
 
@@ -257,8 +249,8 @@ function ClientPageContent() {
             // @ts-expect-error - zoom is not in standard MediaTrackConstraints types yet
             advanced: [{ zoom: newZoom }]
           });
-        } catch (err) {
-          console.error('Zoom error:', err);
+        } catch {
+          // Zoom constraint failed
         }
       }
     }
@@ -290,8 +282,8 @@ function ClientPageContent() {
           setIsConnected(false);
         });
       }
-    } catch (err) {
-      console.error('Switch camera error:', err);
+    } catch {
+      // Switch camera failed
     }
   }, [facingMode, startCamera, displayId]);
 
@@ -372,8 +364,7 @@ function ClientPageContent() {
           };
         }
       }
-    } catch (err) {
-      console.error('Screen share error:', err);
+    } catch {
       setError({
         message: 'Failed to share screen. Please try again.',
         type: 'general'
