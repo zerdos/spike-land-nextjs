@@ -1805,4 +1805,268 @@ describe('ClientPage', () => {
     // Should switch from 'environment' to 'user'
     expect(window.localStorage.setItem).toHaveBeenCalledWith('preferredCamera', 'user');
   });
+
+  describe('Dual Camera Mode', () => {
+    const waitForDualPeerAndTriggerOpen = async () => {
+      await waitFor(
+        () => {
+          expect(mockPeerInstances.length).toBeGreaterThanOrEqual(2);
+        },
+        { timeout: 3000 }
+      );
+
+      await act(async () => {
+        mockPeerInstances[0].handlers.open?.('peer-id-front');
+        mockPeerInstances[1].handlers.open?.('peer-id-back');
+      });
+    };
+
+    it('should enable dual camera mode when button is clicked', async () => {
+      const user = userEvent.setup();
+
+      render(<ClientPage />);
+
+      // Wait for peer and trigger initialization
+      await waitForPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
+
+      const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+      await act(async () => {
+        await user.click(menuButton);
+      });
+
+      await waitFor(() => {
+        const buttons = screen.getAllByRole('button');
+        const dualCameraButton = buttons.find((btn) =>
+          btn.textContent?.includes('Dual Camera Mode: OFF')
+        );
+        expect(dualCameraButton).toBeInTheDocument();
+      });
+
+      const buttons = screen.getAllByRole('button');
+      const dualCameraButton = buttons.find((btn) =>
+        btn.textContent?.includes('Dual Camera Mode: OFF')
+      );
+
+      await act(async () => {
+        await user.click(dualCameraButton!);
+      });
+
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('dualCameraMode', 'true');
+    });
+
+    it('should show dual camera connection status when both cameras are connected', async () => {
+      vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => {
+        if (key === 'dualCameraMode') return 'true';
+        return null;
+      });
+
+      render(<ClientPage />);
+
+      // Wait for both peers and trigger initialization
+      await waitForDualPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 5000 }
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Front:/i)).toBeInTheDocument();
+        expect(screen.getByText(/Back:/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should show front and back camera labels in dual camera mode', async () => {
+      vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => {
+        if (key === 'dualCameraMode') return 'true';
+        return null;
+      });
+
+      render(<ClientPage />);
+
+      // Wait for both peers and trigger initialization
+      await waitForDualPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 5000 }
+      );
+
+      // In dual camera mode, the layout shows both cameras (multiple instances)
+      await waitFor(() => {
+        const frontLabels = screen.queryAllByText(/Front Camera/i);
+        const backLabels = screen.queryAllByText(/Back Camera/i);
+        expect(frontLabels.length).toBeGreaterThan(0);
+        expect(backLabels.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('should show front camera controls in dual camera mode when menu is opened', async () => {
+      const user = userEvent.setup();
+      vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => {
+        if (key === 'dualCameraMode') return 'true';
+        return null;
+      });
+
+      render(<ClientPage />);
+
+      // Wait for both peers and trigger initialization
+      await waitForDualPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 5000 }
+      );
+
+      const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+      await act(async () => {
+        await user.click(menuButton);
+      });
+
+      // Verify front camera controls are shown (multiple instances expected)
+      await waitFor(() => {
+        const frontCameraLabels = screen.queryAllByText(/Front Camera/i);
+        expect(frontCameraLabels.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+
+      const buttons = screen.getAllByRole('button');
+      const muteButtons = buttons.filter((btn) => btn.textContent?.includes('Mute'));
+      expect(muteButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should show both camera controls in dual camera mode when menu is opened', async () => {
+      const user = userEvent.setup();
+      vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => {
+        if (key === 'dualCameraMode') return 'true';
+        return null;
+      });
+
+      render(<ClientPage />);
+
+      // Wait for both peers and trigger initialization
+      await waitForDualPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 5000 }
+      );
+
+      const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+      await act(async () => {
+        await user.click(menuButton);
+      });
+
+      // In dual camera mode, we should have dual camera toggle visible
+      const dualCameraToggle = await screen.findByText(/Dual Camera Mode: ON/i, {}, { timeout: 3000 });
+      expect(dualCameraToggle).toBeInTheDocument();
+
+      // Check that multiple controls are present (for both cameras)
+      const buttons = screen.getAllByRole('button');
+      const muteButtons = buttons.filter((btn) => btn.textContent?.includes('Mute'));
+      const videoButtons = buttons.filter((btn) => btn.textContent?.includes('Disable Video'));
+
+      expect(muteButtons.length).toBeGreaterThanOrEqual(2);
+      expect(videoButtons.length).toBeGreaterThanOrEqual(2);
+
+      // Toggle front camera video and mute to cover all branches (lines 975-988, 998-1001)
+      const frontVideoButton = videoButtons[0]; // First video button is front camera
+      const frontMuteButton = muteButtons[0]; // First mute button is front camera
+
+      await act(async () => {
+        await user.click(frontVideoButton);
+      });
+
+      await waitFor(() => {
+        const updatedButtons = screen.getAllByRole('button');
+        const enableButtons = updatedButtons.filter((btn) => btn.textContent?.includes('Enable Video'));
+        expect(enableButtons.length).toBeGreaterThan(0);
+      });
+
+      await act(async () => {
+        await user.click(frontMuteButton);
+      });
+
+      await waitFor(() => {
+        const updatedButtons = screen.getAllByRole('button');
+        const unmuteButtons = updatedButtons.filter((btn) => btn.textContent?.includes('Unmute'));
+        expect(unmuteButtons.length).toBeGreaterThan(0);
+      });
+
+      // Toggle back camera video and mute to cover all branches
+      const backVideoButton = videoButtons[1]; // Second video button is back camera
+      const backMuteButton = muteButtons[1]; // Second mute button is back camera
+
+      await act(async () => {
+        await user.click(backVideoButton);
+      });
+
+      await waitFor(() => {
+        const updatedButtons = screen.getAllByRole('button');
+        const enableButtons = updatedButtons.filter((btn) => btn.textContent?.includes('Enable Video'));
+        expect(enableButtons.length).toBeGreaterThan(0);
+      });
+
+      await act(async () => {
+        await user.click(backMuteButton);
+      });
+
+      await waitFor(() => {
+        const updatedButtons = screen.getAllByRole('button');
+        const unmuteButtons = updatedButtons.filter((btn) => btn.textContent?.includes('Unmute'));
+        expect(unmuteButtons.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should disable dual camera toggle when screen sharing', async () => {
+      const user = userEvent.setup();
+
+      render(<ClientPage />);
+
+      // Wait for peer and trigger initialization
+      await waitForPeerAndTriggerOpen();
+
+      await waitFor(
+        () => {
+          expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
+
+      const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+      await act(async () => {
+        await user.click(menuButton);
+      });
+
+      // Start screen sharing
+      const buttons = screen.getAllByRole('button');
+      const shareButton = buttons.find((btn) => btn.textContent?.includes('Share Screen'));
+
+      await act(async () => {
+        await user.click(shareButton!);
+      });
+
+      await waitFor(() => {
+        const updatedButtons = screen.getAllByRole('button');
+        const dualCameraButton = updatedButtons.find((btn) =>
+          btn.textContent?.includes('Dual Camera Mode')
+        );
+        expect(dualCameraButton).toBeDisabled();
+      });
+    });
+  });
 });
