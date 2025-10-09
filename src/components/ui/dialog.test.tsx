@@ -145,7 +145,7 @@ describe('Dialog', () => {
     });
 
     it('should apply custom className', () => {
-      const { container } = render(
+      render(
         <Dialog open>
           <DialogContent className="custom-content" data-testid="dialog-content">
             Content
