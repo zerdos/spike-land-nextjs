@@ -801,21 +801,12 @@ describe('ClientPage', () => {
       expect(mockPeerHandlers.open).toBeDefined();
     });
 
-    // Simulate peer 'open' event
+    // Simulate peer 'open' event - connection is established immediately
     await act(async () => {
       mockPeerHandlers.open('peer-id-123');
     });
 
-    // Wait for call handlers to be registered
-    await waitFor(() => {
-      expect(mockCallHandlers.stream).toBeDefined();
-    });
-
-    // Simulate call 'stream' event
-    await act(async () => {
-      mockCallHandlers.stream(mockStream);
-    });
-
+    // Connection status should be set immediately when call is made
     await waitFor(() => {
       expect(screen.getByText(/Connected/i)).toBeInTheDocument();
     });
@@ -1238,24 +1229,14 @@ describe('ClientPage', () => {
       await user.click(switchButton!);
     });
 
-    // Should create new call
+    // Should create new call and set connected immediately
     expect(mockPeerInstance.call).toHaveBeenCalled();
-
-    // Wait for new call handlers to be registered
-    await waitFor(() => {
-      expect(mockCallHandlers.stream).toBeDefined();
-    });
-
-    // Trigger the new call's stream event to cover line 285
-    await act(async () => {
-      mockCallHandlers.stream(mockStream);
-    });
 
     await waitFor(() => {
       expect(screen.getByText(/Connected/i)).toBeInTheDocument();
     });
 
-    // Trigger the new call's close event to cover line 289
+    // Trigger the close event to test disconnection
     await act(async () => {
       mockCallHandlers.close();
     });
@@ -1463,24 +1444,14 @@ describe('ClientPage', () => {
       await user.click(shareButton!);
     });
 
-    // Should create new call with screen stream
+    // Should create new call with screen stream and set connected immediately
     expect(mockPeerInstance.call).toHaveBeenCalled();
-
-    // Wait for new call handlers to be registered
-    await waitFor(() => {
-      expect(mockCallHandlers.stream).toBeDefined();
-    });
-
-    // Trigger the new call's stream event to cover line 362
-    await act(async () => {
-      mockCallHandlers.stream(mockStream);
-    });
 
     await waitFor(() => {
       expect(screen.getByText(/Connected/i)).toBeInTheDocument();
     });
 
-    // Trigger the new call's close event to cover line 363
+    // Trigger the close event to test disconnection
     await act(async () => {
       mockCallHandlers.close();
     });
@@ -1545,24 +1516,14 @@ describe('ClientPage', () => {
       await user.click(stopButton!);
     });
 
-    // Should create new call with camera stream
+    // Should create new call with camera stream and set connected immediately
     expect(mockPeerInstance.call).toHaveBeenCalled();
-
-    // Wait for new call handlers to be registered
-    await waitFor(() => {
-      expect(mockCallHandlers.stream).toBeDefined();
-    });
-
-    // Trigger the new call's stream event to cover line 333
-    await act(async () => {
-      mockCallHandlers.stream(mockStream);
-    });
 
     await waitFor(() => {
       expect(screen.getByText(/Connected/i)).toBeInTheDocument();
     });
 
-    // Trigger the new call's close event to cover line 334
+    // Trigger the close event to test disconnection
     await act(async () => {
       mockCallHandlers.close();
     });
