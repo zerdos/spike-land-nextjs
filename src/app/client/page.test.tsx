@@ -19,7 +19,6 @@ interface MockCallInstance {
 
 let mockPeerInstances: MockPeerInstance[] = [];
 let mockCallInstances: MockCallInstance[] = [];
-let currentCallIndex = 0;
 
 // Create a new call instance
 const createMockCallInstance = (): MockCallInstance => {
@@ -149,7 +148,6 @@ describe('ClientPage', () => {
     vi.clearAllMocks();
     mockPeerInstances = [];
     mockCallInstances = [];
-    currentCallIndex = 0;
 
     // Setup search params
     mockSearchParams.set('displayId', 'display-123');
