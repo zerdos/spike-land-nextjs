@@ -25,7 +25,7 @@ vi.mock('peerjs', () => ({
 }));
 
 // Mock WebRTC utils
-vi.mock('@/lib/webrtc/utils', () => ({
+vi.mock('@apps/display/lib/webrtc/utils', () => ({
   generatePeerId: vi.fn(() => 'generated-peer-id'),
   isWebRTCSupported: vi.fn(() => true),
   createWebRTCError: vi.fn((type, message, error) => ({
@@ -218,7 +218,7 @@ describe('usePeer', () => {
   });
 
   it('should not initialize if WebRTC is not supported', async () => {
-    const { isWebRTCSupported } = await import('@/lib/webrtc/utils');
+    const { isWebRTCSupported } = await import('@apps/display/lib/webrtc/utils');
     vi.mocked(isWebRTCSupported).mockReturnValue(false);
 
     const config: PeerConfig = { role: 'host' };

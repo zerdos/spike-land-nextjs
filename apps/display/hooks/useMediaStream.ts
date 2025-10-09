@@ -8,7 +8,7 @@ import {
   stopMediaStream,
   getStreamMetadata,
   monitorStreamHealth,
-} from "@/lib/webrtc/utils";
+} from "@apps/display/lib/webrtc/utils";
 
 /**
  * Stream type that can be acquired
