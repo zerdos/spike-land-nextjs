@@ -8,6 +8,7 @@ A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4, shadc
 
 - ⚡ **Next.js 15** - App Router with React Server Components
 - 🔷 **TypeScript** - Strict mode enabled
+- 🔐 **NextAuth.js v5** - Authentication with GitHub and Google OAuth
 - 🎨 **Tailwind CSS 4** - Modern styling with CSS variables
 - 🧩 **shadcn/ui** - Beautiful, accessible UI components
 - ✅ **100% Test Coverage** - Vitest + React Testing Library
@@ -36,11 +37,88 @@ npm install
 # Install Playwright browsers (for E2E tests)
 npx playwright install chromium
 
+# Set up environment variables (see Authentication Setup below)
+cp .env.example .env.local
+# Edit .env.local with your actual credentials
+
 # Start development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
+
+### Authentication Setup
+
+This application uses [NextAuth.js v5](https://authjs.dev/) for authentication with support for GitHub and Google OAuth providers.
+
+#### 1. Generate AUTH_SECRET
+
+```bash
+# Generate a random secret key
+openssl rand -base64 32
+```
+
+Or visit [https://generate-secret.vercel.app/32](https://generate-secret.vercel.app/32)
+
+#### 2. Configure OAuth Providers
+
+**GitHub OAuth:**
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Fill in the details:
+   - Application name: Your app name
+   - Homepage URL: `http://localhost:3000`
+   - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+4. Click "Register application"
+5. Copy the **Client ID** and generate a **Client Secret**
+6. Add them to your `.env.local` file
+
+**Google OAuth:**
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Navigate to "APIs & Services" > "Credentials"
+4. Click "Create Credentials" > "OAuth client ID"
+5. Configure the OAuth consent screen if prompted
+6. Choose "Web application" as application type
+7. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+8. Copy the **Client ID** and **Client Secret**
+9. Add them to your `.env.local` file
+
+#### 3. Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your actual credentials:
+
+```env
+AUTH_SECRET=your-generated-secret-from-step-1
+NEXTAUTH_URL=http://localhost:3000
+
+# Optional: Remove if not using this provider
+GITHUB_ID=your-github-client-id
+GITHUB_SECRET=your-github-client-secret
+
+# Optional: Remove if not using this provider
+GOOGLE_ID=your-google-client-id
+GOOGLE_SECRET=your-google-client-secret
+```
+
+**Note:** `.env.local` is gitignored and will not be committed to the repository.
+
+#### 4. Production Configuration
+
+For production deployment, set these environment variables in your hosting platform (e.g., Vercel):
+
+- `AUTH_SECRET` - Your generated secret key
+- `NEXTAUTH_URL` - Your production domain (e.g., `https://yourdomain.com`)
+- `GITHUB_ID` and `GITHUB_SECRET` - Update GitHub OAuth callback URL to your production domain
+- `GOOGLE_ID` and `GOOGLE_SECRET` - Update Google OAuth redirect URI to your production domain
 
 ## 📋 Available Scripts
 
