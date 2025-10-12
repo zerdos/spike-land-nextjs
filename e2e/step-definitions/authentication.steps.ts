@@ -36,8 +36,12 @@ async function mockSession(world: CustomWorld, user: { name: string; email: stri
   // Intercept signIn calls to prevent actual OAuth redirects
   await world.page.addInitScript(() => {
     // Store original signIn for testing
-    (window as any).__mockSignInCalled = false;
-    (window as any).__mockSignInProvider = null;
+    interface WindowWithMocks extends Window {
+      __mockSignInCalled?: boolean;
+      __mockSignInProvider?: string | null;
+    }
+    (window as WindowWithMocks).__mockSignInCalled = false;
+    (window as WindowWithMocks).__mockSignInProvider = null;
   });
 }
 
