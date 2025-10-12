@@ -4,7 +4,7 @@ import { usePeerConnection } from './usePeerConnection';
 import type { Peer, DataConnection, MediaConnection } from 'peerjs';
 
 // Mock getStreamMetadata
-vi.mock('@/lib/webrtc/utils', () => ({
+vi.mock('@apps/display/lib/webrtc/utils', () => ({
   getStreamMetadata: vi.fn(),
 }));
 
@@ -26,7 +26,7 @@ describe('usePeerConnection', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockTrack.stop.mockClear();
-    const { getStreamMetadata } = await import('@/lib/webrtc/utils');
+    const { getStreamMetadata } = await import('@apps/display/lib/webrtc/utils');
     vi.mocked(getStreamMetadata).mockReturnValue(mockMetadata);
 
     mockDataConnection = {
@@ -187,7 +187,7 @@ describe('usePeerConnection', () => {
       expect(connection?.streamMetadata).toEqual(mockMetadata);
     });
 
-    const { getStreamMetadata } = await import('@/lib/webrtc/utils');
+    const { getStreamMetadata } = await import('@apps/display/lib/webrtc/utils');
     expect(getStreamMetadata).toHaveBeenCalledWith(mockStream, 'remote-peer');
   });
 

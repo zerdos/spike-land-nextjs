@@ -18,7 +18,7 @@ import {
   Camera
 } from 'lucide-react';
 import Peer, { MediaConnection } from 'peerjs';
-import { getTwilioIceServers } from '@/lib/webrtc/config';
+import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
 
 type CameraFacingMode = 'user' | 'environment';
 
@@ -202,7 +202,6 @@ function ClientPageContent() {
     return call;
   }, [displayId]);
 
-  // Initialize PeerJS connection
   useEffect(() => {
     if (!displayId) return;
 
@@ -213,14 +212,87 @@ function ClientPageContent() {
         // Fetch Twilio ICE servers
         const iceServers = await getTwilioIceServers();
 
-        // Initialize PeerJS
-        const peer = new Peer({
-          config: { iceServers }
-        });
+        let peersInitialized = 0;
+        const peersNeeded = isDualCameraMode ? 2 : 1;
 
-        peerRef.current = peer;
+        // Initialize PeerJS instances
+        if (isDualCameraMode) {
+          // Create two separate Peer instances with unique IDs
+          const frontPeer = new Peer({
+            config: { iceServers }
+          });
 
-        peer.on('open', async () => {
+          const backPeer = new Peer({
+            config: { iceServers }
+          });
+
+          frontPeerRef.current = frontPeer;
+          backPeerRef.current = backPeer;
+
+          // Wait for both peers to be ready
+          frontPeer.on('open', async (id) => {
+            console.log('Front peer opened with ID:', id);
+            peersInitialized++;
+            if (peersInitialized === peersNeeded && mounted) {
+              await initializeCameras();
+            }
+          });
+
+          backPeer.on('open', async (id) => {
+            console.log('Back peer opened with ID:', id);
+            peersInitialized++;
+            if (peersInitialized === peersNeeded && mounted) {
+              await initializeCameras();
+            }
+          });
+
+          frontPeer.on('error', () => {
+            setError({
+              message: 'Failed to establish front camera peer connection.',
+              type: 'connection'
+            });
+          });
+
+          backPeer.on('error', () => {
+            setError({
+              message: 'Failed to establish back camera peer connection.',
+              type: 'connection'
+            });
+          });
+        } else {
+          // Single camera mode - create one peer
+          const peer = new Peer({
+            config: { iceServers }
+          });
+
+          // Determine which peer ref to use based on camera preference
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+          const defaultMode = isMobile ? 'environment' : 'user';
+          const savedMode = localStorage.getItem('preferredCamera');
+          const facingMode = (savedMode === 'user' || savedMode === 'environment') ? savedMode : defaultMode;
+
+          if (facingMode === 'user') {
+            frontPeerRef.current = peer;
+          } else {
+            backPeerRef.current = peer;
+          }
+
+          peer.on('open', async () => {
+            if (!mounted) return;
+            await initializeCameras();
+          });
+
+          peer.on('error', () => {
+            setError({
+              message: 'Failed to establish peer connection. Please check your internet.',
+              type: 'connection'
+            });
+          });
+        }
+
+        async function initializeCameras() {
           if (!mounted) return;
 
           try {
@@ -315,14 +387,7 @@ function ClientPageContent() {
           } catch {
             setIsLoading(false);
           }
-        });
-
-        peer.on('error', () => {
-          setError({
-            message: 'Failed to establish peer connection. Please check your internet.',
-            type: 'connection'
-          });
-        });
+        }
 
       } catch {
         setIsLoading(false);
@@ -334,24 +399,17 @@ function ClientPageContent() {
     return () => {
       mounted = false;
 
-      // Cleanup
-      if (frontCamera.call) {
-        frontCamera.call.close();
+      // Cleanup - access current state via refs, not dependencies
+      // Note: We intentionally don't add camera state to dependencies to avoid infinite loops
+      if (frontPeerRef.current) {
+        frontPeerRef.current.destroy();
       }
-      if (backCamera.call) {
-        backCamera.call.close();
-      }
-      if (peerRef.current) {
-        peerRef.current.destroy();
-      }
-      if (frontCamera.stream) {
-        frontCamera.stream.getTracks().forEach(track => track.stop());
-      }
-      if (backCamera.stream) {
-        backCamera.stream.getTracks().forEach(track => track.stop());
+      if (backPeerRef.current) {
+        backPeerRef.current.destroy();
       }
     };
-  }, [displayId, isDualCameraMode, startCamera, createCameraCall]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayId, isDualCameraMode]);
 
   // Toggle dual camera mode
   const handleToggleDualCamera = useCallback(async () => {

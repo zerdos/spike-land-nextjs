@@ -11,7 +11,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['src/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
         'src/**/*.config.ts',
@@ -39,6 +39,7 @@ export default defineConfig({
       '@/lib': path.resolve(__dirname, './src/lib'),
       '@/utils': path.resolve(__dirname, './src/lib/utils'),
       '@/hooks': path.resolve(__dirname, './src/hooks'),
+      '@apps': path.resolve(__dirname, './apps'),
     },
   },
 })

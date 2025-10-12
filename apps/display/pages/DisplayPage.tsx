@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Peer, { MediaConnection } from 'peerjs';
 import QRCode from 'qrcode';
 import Image from 'next/image';
-import { calculateOptimalLayout } from '@/lib/layout-optimizer';
-import { getTwilioIceServers } from '@/lib/webrtc/config';
+import { calculateOptimalLayout } from '@apps/display/lib/layout-optimizer';
+import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
 
 interface VideoStream {
   id: string;
@@ -45,7 +45,7 @@ export default function DisplayPage() {
         setDisplayId(id);
 
         // Generate QR code URL
-        const clientUrl = `${window.location.origin}/client?displayId=${id}`;
+        const clientUrl = `${window.location.origin}/apps/display/client?displayId=${id}`;
         QRCode.toDataURL(clientUrl, {
           width: 200,
           margin: 2,
@@ -195,12 +195,21 @@ export default function DisplayPage() {
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-4">Smart Video Wall Display</h1>
             <p className="text-xl text-gray-300 mb-8">Waiting for clients to connect...</p>
-            {qrCodeUrl && (
+            {qrCodeUrl && displayId && (
               <div className="bg-white p-6 rounded-lg inline-block">
                 <Image src={qrCodeUrl} alt="QR Code" width={200} height={200} className="mx-auto" />
                 <p className="mt-4 text-sm text-gray-600">
-                  Scan to connect your camera
+                  Scan this QR code with your mobile phone to connect
                 </p>
+                <button
+                  onClick={() => {
+                    const clientUrl = `${window.location.origin}/apps/display/client?displayId=${displayId}`;
+                    window.open(clientUrl, '_blank');
+                  }}
+                  className="mt-4 w-full px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Open Client in New Window
+                </button>
               </div>
             )}
           </div>
@@ -208,10 +217,19 @@ export default function DisplayPage() {
       )}
 
       {/* QR Code in corner when clients are connected */}
-      {videoStreams.length > 0 && qrCodeUrl && (
+      {videoStreams.length > 0 && qrCodeUrl && displayId && (
         <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg transition-opacity duration-300 hover:opacity-100 opacity-75">
           <Image src={qrCodeUrl} alt="QR Code" width={128} height={128} />
-          <p className="text-xs text-center mt-2 text-gray-600">Add Client</p>
+          <p className="text-xs text-center mt-2 text-gray-600">Scan with mobile phone</p>
+          <button
+            onClick={() => {
+              const clientUrl = `${window.location.origin}/apps/display/client?displayId=${displayId}`;
+              window.open(clientUrl, '_blank');
+            }}
+            className="mt-2 w-full px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Open in New Window
+          </button>
         </div>
       )}
 
