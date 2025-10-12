@@ -419,9 +419,7 @@ function ClientPageContent() {
         backCamera.stream.getTracks().forEach(track => track.stop());
       }
     };
-
-    init();
-  }, [displayId, isDualCameraMode, startCamera, createCameraCall]);
+  }, [displayId, isDualCameraMode, startCamera, createCameraCall, backCamera.call, backCamera.stream, frontCamera.call, frontCamera.stream]);
 
   // Toggle dual camera mode
   const handleToggleDualCamera = useCallback(async () => {

@@ -248,14 +248,15 @@ function VideoCell({ stream, peerId, layout }: VideoCellProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    const video = videoRef.current;
+    if (video && stream) {
+      video.srcObject = stream;
     }
 
     // Cleanup when component unmounts or stream changes
     return () => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+      if (video) {
+        video.srcObject = null;
       }
     };
   }, [stream]);
