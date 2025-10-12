@@ -399,27 +399,17 @@ function ClientPageContent() {
     return () => {
       mounted = false;
 
-      // Cleanup
-      if (frontCamera.call) {
-        frontCamera.call.close();
-      }
-      if (backCamera.call) {
-        backCamera.call.close();
-      }
+      // Cleanup - access current state via refs, not dependencies
+      // Note: We intentionally don't add camera state to dependencies to avoid infinite loops
       if (frontPeerRef.current) {
         frontPeerRef.current.destroy();
       }
       if (backPeerRef.current) {
         backPeerRef.current.destroy();
       }
-      if (frontCamera.stream) {
-        frontCamera.stream.getTracks().forEach(track => track.stop());
-      }
-      if (backCamera.stream) {
-        backCamera.stream.getTracks().forEach(track => track.stop());
-      }
     };
-  }, [displayId, isDualCameraMode, startCamera, createCameraCall, backCamera.call, backCamera.stream, frontCamera.call, frontCamera.stream]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayId, isDualCameraMode]);
 
   // Toggle dual camera mode
   const handleToggleDualCamera = useCallback(async () => {
