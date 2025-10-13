@@ -33,7 +33,7 @@ export function UserAvatar({ className }: UserAvatarProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className={`cursor-pointer ${className}`}>
+        <Avatar className={`cursor-pointer ${className}`} data-testid="user-avatar">
           <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
           <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
