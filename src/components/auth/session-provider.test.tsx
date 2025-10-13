@@ -2,16 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { SessionProvider } from './session-provider'
 import { Session } from 'next-auth'
-
-const mockSessionProvider = vi.fn(({ children }) => <div data-testid="next-auth-provider">{children}</div>)
+import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react'
 
 vi.mock('next-auth/react', () => ({
-  SessionProvider: mockSessionProvider,
+  SessionProvider: vi.fn(({ children }) => <div data-testid="next-auth-provider">{children}</div>),
 }))
 
 describe('SessionProvider Component', () => {
   beforeEach(() => {
-    mockSessionProvider.mockClear()
+    vi.mocked(NextAuthSessionProvider).mockClear()
   })
 
   it('should render children', () => {
@@ -47,11 +46,12 @@ describe('SessionProvider Component', () => {
       </SessionProvider>
     )
 
-    expect(mockSessionProvider).toHaveBeenCalledWith(
+    expect(NextAuthSessionProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         session: mockSession,
+        children: expect.anything(),
       }),
-      {}
+      undefined
     )
   })
 
@@ -62,11 +62,12 @@ describe('SessionProvider Component', () => {
       </SessionProvider>
     )
 
-    expect(mockSessionProvider).toHaveBeenCalledWith(
+    expect(NextAuthSessionProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         session: null,
+        children: expect.anything(),
       }),
-      {}
+      undefined
     )
   })
 
@@ -77,11 +78,12 @@ describe('SessionProvider Component', () => {
       </SessionProvider>
     )
 
-    expect(mockSessionProvider).toHaveBeenCalledWith(
+    expect(NextAuthSessionProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         session: undefined,
+        children: expect.anything(),
       }),
-      {}
+      undefined
     )
   })
 
@@ -114,12 +116,12 @@ describe('SessionProvider Component', () => {
       </SessionProvider>
     )
 
-    expect(mockSessionProvider).toHaveBeenCalledWith(
+    expect(NextAuthSessionProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         session: mockSession,
         children: expect.anything(),
       }),
-      {}
+      undefined
     )
   })
 
@@ -153,11 +155,12 @@ describe('SessionProvider Component', () => {
     )
 
     expect(screen.getByText('Complex Session Test')).toBeInTheDocument()
-    expect(mockSessionProvider).toHaveBeenCalledWith(
+    expect(NextAuthSessionProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         session: complexSession,
+        children: expect.anything(),
       }),
-      {}
+      undefined
     )
   })
 })
