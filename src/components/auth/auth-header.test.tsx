@@ -31,8 +31,9 @@ describe('AuthHeader Component', () => {
       update: vi.fn(),
     })
 
-    render(<AuthHeader />)
-    const loadingElement = screen.getByRole('generic')
+    const { container } = render(<AuthHeader />)
+    const loadingElement = container.querySelector('.animate-pulse')
+    expect(loadingElement).toBeInTheDocument()
     expect(loadingElement).toHaveClass('animate-pulse', 'rounded-full', 'bg-gray-200')
   })
 
@@ -43,8 +44,9 @@ describe('AuthHeader Component', () => {
       update: vi.fn(),
     })
 
-    render(<AuthHeader />)
-    const loadingElement = screen.getByRole('generic')
+    const { container } = render(<AuthHeader />)
+    const loadingElement = container.querySelector('.animate-pulse')
+    expect(loadingElement).toBeInTheDocument()
     expect(loadingElement).toHaveClass('h-10', 'w-10')
   })
 
