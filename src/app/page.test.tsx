@@ -1,11 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Home from './page'
-
-const mockUseSession = vi.fn(() => ({ data: null, status: 'unauthenticated' }))
+import { useSession } from 'next-auth/react'
 
 vi.mock('next-auth/react', () => ({
-  useSession: mockUseSession,
+  useSession: vi.fn(),
 }))
 
 vi.mock('@/components/auth/auth-header', () => ({
@@ -14,6 +13,10 @@ vi.mock('@/components/auth/auth-header', () => ({
 }))
 
 describe('Home Page', () => {
+  beforeEach(() => {
+    vi.mocked(useSession).mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() })
+  })
+
   it('should render the page', () => {
     render(<Home />)
     expect(screen.getByText('Welcome to Your App')).toBeInTheDocument()
@@ -32,24 +35,21 @@ describe('Home Page', () => {
   })
 
   it('should show sign in prompt when not authenticated', () => {
-    mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated' })
-
     render(<Home />)
     expect(screen.getByText('Sign in to get started')).toBeInTheDocument()
     expect(screen.getByText('Choose your preferred sign-in method to access all features.')).toBeInTheDocument()
   })
 
   it('should render AuthSection when not authenticated', () => {
-    mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated' })
-
     render(<Home />)
     expect(screen.getByText('AuthSection Mock')).toBeInTheDocument()
   })
 
   it('should show tech stack when authenticated', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'Test User', email: 'test@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
@@ -63,9 +63,10 @@ describe('Home Page', () => {
   })
 
   it('should personalize welcome message when authenticated', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'John Doe', email: 'john@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
@@ -73,9 +74,10 @@ describe('Home Page', () => {
   })
 
   it('should show default User when name is not available', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { email: 'test@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
@@ -83,9 +85,10 @@ describe('Home Page', () => {
   })
 
   it('should render Get Started button when authenticated', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'Test User', email: 'test@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
@@ -93,9 +96,10 @@ describe('Home Page', () => {
   })
 
   it('should render Learn More button when authenticated', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'Test User', email: 'test@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
@@ -103,9 +107,10 @@ describe('Home Page', () => {
   })
 
   it('should render buttons with correct variants when authenticated', () => {
-    mockUseSession.mockReturnValue({
+    vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'Test User', email: 'test@example.com' } },
       status: 'authenticated',
+      update: vi.fn(),
     })
 
     render(<Home />)
