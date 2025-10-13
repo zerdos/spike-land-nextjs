@@ -1339,6 +1339,71 @@ describe('ClientPage', () => {
     expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
   });
 
+  it('should stop back camera stream and close call when starting screen share from back camera', async () => {
+    const user = userEvent.setup();
+
+    // Set initial facingMode to 'environment' (back camera)
+    vi.mocked(window.localStorage.getItem).mockReturnValue('environment');
+
+    render(<ClientPage />);
+
+    // Wait for peer and trigger initialization
+    await waitForPeerAndTriggerOpen();
+
+    await waitFor(
+      () => {
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
+
+    // Capture the initial call instance before screen sharing
+    const initialCallCount = mockCallInstances.length;
+    expect(initialCallCount).toBeGreaterThan(0);
+
+    // Capture references to back camera stream tracks before screen sharing
+    const initialBackCameraStopCalls = mockVideoTrack.stop.mock.calls.length;
+
+    // Wait for component to fully render after async Peer initialization
+    const menuButton = await screen.findByRole('button', { name: /Toggle menu/i }, { timeout: 5000 });
+    await act(async () => {
+      await user.click(menuButton);
+    });
+
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      const switchButton = buttons.find((btn) => btn.textContent?.includes('Switch Camera'));
+      expect(switchButton).toBeInTheDocument();
+    });
+
+    const buttons = screen.getAllByRole('button');
+    const shareButton = buttons.find((btn) => btn.textContent?.includes('Share Screen'));
+
+    // Start screen sharing while back camera is active (covers lines 734-739)
+    await act(async () => {
+      await user.click(shareButton!);
+    });
+
+    // Verify screen sharing started
+    await waitFor(() => {
+      expect(navigator.mediaDevices.getDisplayMedia).toHaveBeenCalled();
+    });
+
+    // Verify back camera tracks were stopped (line 735) - getTracks().forEach(track => track.stop())
+    // The stop method should be called more times after screen share than before
+    expect(mockVideoTrack.stop.mock.calls.length).toBeGreaterThan(initialBackCameraStopCalls);
+
+    // Verify the original back camera call was closed (line 736-738)
+    expect(mockCallInstances[0].close).toHaveBeenCalled();
+
+    // Verify screen sharing UI is active
+    await waitFor(() => {
+      const updatedButtons = screen.getAllByRole('button');
+      const stopButton = updatedButtons.find((btn) => btn.textContent?.includes('Stop Sharing'));
+      expect(stopButton).toBeInTheDocument();
+    });
+  });
+
   it('should show enable video button when video is disabled', async () => {
     const user = userEvent.setup();
 
@@ -1804,6 +1869,55 @@ describe('ClientPage', () => {
 
     // Should switch from 'environment' to 'user'
     expect(window.localStorage.setItem).toHaveBeenCalledWith('preferredCamera', 'user');
+  });
+
+  it('should set backVideoRef srcObject when switching from front to back camera', async () => {
+    const user = userEvent.setup();
+
+    // Set initial facingMode to 'user' (front camera)
+    vi.mocked(window.localStorage.getItem).mockReturnValue('user');
+
+    render(<ClientPage />);
+
+    // Wait for peer and trigger initialization
+    await waitForPeerAndTriggerOpen();
+
+    await waitFor(
+      () => {
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /Toggle menu/i })).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    const menuButton = screen.getByRole('button', { name: /Toggle menu/i });
+    await act(async () => {
+      await user.click(menuButton);
+    });
+
+    const buttons = screen.getAllByRole('button');
+    const switchButton = buttons.find((btn) => btn.textContent?.includes('Switch Camera'));
+
+    // Switch from front to back camera
+    await act(async () => {
+      await user.click(switchButton!);
+    });
+
+    // Wait for camera switch to complete
+    await waitFor(() => {
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('preferredCamera', 'environment');
+    });
+
+    // Verify backVideoRef.current.srcObject is set (line 690-692)
+    await waitFor(() => {
+      expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('Dual Camera Mode', () => {
