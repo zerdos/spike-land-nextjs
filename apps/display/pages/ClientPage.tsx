@@ -17,7 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Peer, { MediaConnection } from 'peerjs';
-import { getTwilioIceServers } from '@/lib/webrtc/config';
+import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
 
 type CameraFacingMode = 'user' | 'environment';
 
