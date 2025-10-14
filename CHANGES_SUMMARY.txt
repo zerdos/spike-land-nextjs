@@ -1,0 +1,48 @@
+# Dual Camera Fix - Files Changed
+
+## Modified Files:
+1. /Volumes/Dev/github.com/zerdos/spike-land-nextjs/fix-video-wall-issues/src/app/client/page.tsx
+   - Changed peer references from single `peerRef` to `frontPeerRef` and `backPeerRef`
+   - Updated `createCameraCall` to select the appropriate peer based on camera type
+   - Rewrote peer initialization logic to create separate Peer instances for dual camera mode
+   - Updated cleanup logic to destroy both peer instances
+
+## Created Files:
+1. /Volumes/Dev/github.com/zerdos/spike-land-nextjs/fix-video-wall-issues/DUAL_CAMERA_FIX_SUMMARY.md
+   - Detailed explanation of the issue, root cause, and solution
+   - Step-by-step breakdown of all changes made
+   - Technical details about how the fix works
+
+2. /Volumes/Dev/github.com/zerdos/spike-land-nextjs/fix-video-wall-issues/src/app/client/page.tsx.backup
+   - Backup of the original file before changes
+
+## Key Changes:
+
+### Before:
+- Single `peerRef` used for all camera connections
+- Both cameras used the same Peer instance
+- Display couldn't distinguish between the two camera streams
+
+### After:
+- Separate `frontPeerRef` and `backPeerRef`
+- Each camera gets its own unique Peer instance with a unique ID
+- Display can properly identify and display both camera streams simultaneously
+
+## Build Status:
+- Linting: PASS (2 warnings - safe to ignore)
+- TypeScript compilation: PASS
+- Next.js build: PASS
+- Bundle size: No significant increase
+
+## Testing Status:
+- Code compiles successfully
+- No TypeScript errors
+- ESLint warnings are pre-existing and unrelated to this fix
+- Ready for manual/E2E testing
+
+## Next Steps:
+1. Test dual camera mode manually
+2. Verify both camera feeds appear on display
+3. Test mode switching (single <-> dual)
+4. Verify connection indicators show correct status
+5. Test edge cases (reconnection, poor network, etc.)

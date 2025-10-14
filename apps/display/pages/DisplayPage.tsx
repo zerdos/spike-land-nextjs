@@ -98,12 +98,26 @@ export default function DisplayPage() {
 
         // Handle call close
         call.on('close', () => {
-          setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+          setVideoStreams((prev) => {
+            const streamToRemove = prev.find((vs) => vs.id === call.peer);
+            if (streamToRemove) {
+              // Stop all tracks to free up resources
+              streamToRemove.stream.getTracks().forEach((track) => track.stop());
+            }
+            return prev.filter((vs) => vs.id !== call.peer);
+          });
         });
 
         // Handle errors
         call.on('error', () => {
-          setVideoStreams((prev) => prev.filter((vs) => vs.id !== call.peer));
+          setVideoStreams((prev) => {
+            const streamToRemove = prev.find((vs) => vs.id === call.peer);
+            if (streamToRemove) {
+              // Stop all tracks to free up resources
+              streamToRemove.stream.getTracks().forEach((track) => track.stop());
+            }
+            return prev.filter((vs) => vs.id !== call.peer);
+          });
         });
       });
 
@@ -252,9 +266,17 @@ function VideoCell({ stream, peerId, layout }: VideoCellProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    const video = videoRef.current;
+    if (video && stream) {
+      video.srcObject = stream;
     }
+
+    // Cleanup when component unmounts or stream changes
+    return () => {
+      if (video) {
+        video.srcObject = null;
+      }
+    };
   }, [stream]);
 
   return (
