@@ -51,11 +51,7 @@ export function AppFeatureList({
         >
           {feature.icon && (
             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              {typeof feature.icon === "function" ? (
-                <feature.icon className="w-5 h-5 text-primary" />
-              ) : (
-                feature.icon
-              )}
+              {feature.icon}
             </div>
           )}
           <div className="flex-1 space-y-1">
