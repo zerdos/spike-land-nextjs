@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils"
-import { LucideIcon } from "lucide-react"
 
 export interface Feature {
   id: string
-  icon?: LucideIcon | React.ReactNode
+  icon?: React.ReactNode
   title: string
   description: string
 }
