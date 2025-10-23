@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { AuthButtons } from "@/components/auth/auth-buttons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,10 +8,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import Link from "next/link"
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
-  const _callbackUrl = searchParams.get("callbackUrl") || "/"
 
   const errorMessages: Record<string, string> = {
     OAuthSignin: "Error starting OAuth sign in",
@@ -60,5 +60,13 @@ export default function SignInPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto flex min-h-screen items-center justify-center">Loading...</div>}>
+      <SignInContent />
+    </Suspense>
   )
 }

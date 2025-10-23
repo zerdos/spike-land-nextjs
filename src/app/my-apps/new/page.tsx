@@ -56,7 +56,7 @@ export default function NewAppPage() {
     name: "",
     description: "",
     requirements: "",
-    monetizationModel: undefined as typeof MONETIZATION_MODELS[number] | undefined,
+    monetizationModel: "free" as typeof MONETIZATION_MODELS[number],
   })
 
   const form = useForm<AppCreationFormData>({

@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,7 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Home, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 
@@ -79,9 +80,8 @@ export default function AuthErrorPage() {
     },
   }
 
-  const currentError = error
-    ? errorDetails[error] || errorDetails.default
-    : errorDetails.default
+  const currentError = (error ? errorDetails[error] : undefined) ?? errorDetails.default
+  const { title, description } = currentError!
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
@@ -99,8 +99,8 @@ export default function AuthErrorPage() {
           <CardContent className="space-y-6">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{currentError.title}</AlertTitle>
-              <AlertDescription>{currentError.description}</AlertDescription>
+              <AlertTitle>{title}</AlertTitle>
+              <AlertDescription>{description}</AlertDescription>
             </Alert>
 
             <div className="flex flex-col gap-3">
@@ -134,5 +134,13 @@ export default function AuthErrorPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto flex min-h-screen items-center justify-center">Loading...</div>}>
+      <AuthErrorContent />
+    </Suspense>
   )
 }
