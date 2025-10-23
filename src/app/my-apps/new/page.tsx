@@ -56,7 +56,7 @@ export default function NewAppPage() {
     name: "",
     description: "",
     requirements: "",
-    monetizationModel: undefined as any,
+    monetizationModel: undefined as typeof MONETIZATION_MODELS[number] | undefined,
   })
 
   const form = useForm<AppCreationFormData>({
@@ -261,7 +261,7 @@ export default function NewAppPage() {
                 <FormLabel>Monetization Model</FormLabel>
                 <Select
                   onValueChange={(value) => {
-                    setFormState({ ...formState, monetizationModel: value as any })
+                    setFormState({ ...formState, monetizationModel: value as typeof MONETIZATION_MODELS[number] })
                     field.onChange(value)
                   }}
                   value={formState.monetizationModel}
