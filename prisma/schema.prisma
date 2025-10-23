@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  apps     App[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum AppStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+model App {
+  id          String    @id @default(cuid())
+  name        String
+  description String?   @db.Text
+  userId      String
+  forkedFrom  String?
+  status      AppStatus @default(DRAFT)
+  domain      String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id], onDelete: SetNull)
+  forks              App[]               @relation("AppForks")
+  requirements       Requirement[]
+  monetizationModels MonetizationModel[]
+
+  @@index([userId])
+  @@index([forkedFrom])
+  @@index([status])
+  @@map("apps")
+}
+
+enum RequirementPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RequirementStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+model Requirement {
+  id          String              @id @default(cuid())
+  appId       String
+  description String              @db.Text
+  priority    RequirementPriority @default(MEDIUM)
+  status      RequirementStatus   @default(PENDING)
+  version     Int                 @default(1)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId])
+  @@index([status])
+  @@index([priority])
+  @@map("requirements")
+}
+
+enum MonetizationType {
+  FREE
+  ONE_TIME
+  SUBSCRIPTION
+  FREEMIUM
+  USAGE_BASED
+}
+
+enum SubscriptionInterval {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model MonetizationModel {
+  id                   String                @id @default(cuid())
+  appId                String
+  type                 MonetizationType      @default(FREE)
+  price                Decimal?              @db.Decimal(10, 2)
+  subscriptionInterval SubscriptionInterval?
+  features             String[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId])
+  @@index([type])
+  @@map("monetization_models")
+}

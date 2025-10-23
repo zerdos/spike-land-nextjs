@@ -29,8 +29,12 @@ import {
   GitBranch,
 } from "lucide-react"
 import Link from "next/link"
+import { AuthHeader, AuthSection } from "@/components/auth/auth-header"
+import { useSession } from "next-auth/react"
 
 export default function Home() {
+  const { data: session } = useSession()
+
   const platformFeatures: Feature[] = [
     {
       id: "vibe-coding",
@@ -126,6 +130,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Auth Header - Fixed top-right */}
+      <AuthHeader />
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/5">
         <div className="container mx-auto px-4 py-24 sm:py-32">
@@ -139,13 +146,28 @@ export default function Home() {
               </div>
             </div>
             <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Welcome to{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Spike Land
-              </span>
+              {session ? (
+                <>
+                  Welcome back,{" "}
+                  <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    {session.user?.name?.split(" ")[0] || "User"}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Welcome to{" "}
+                  <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    Spike Land
+                  </span>
+                </>
+              )}
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-              A platform for vibe-coded apps, where ideas transform into polished applications through the magic of Claude Code and modern web technologies.
+              {session ? (
+                "Ready to continue your journey? Explore our vibe-coded apps or create something new with Claude Code."
+              ) : (
+                "A platform for vibe-coded apps, where ideas transform into polished applications through the magic of Claude Code and modern web technologies."
+              )}
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="text-base">
@@ -164,6 +186,23 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Authentication Section - Only for unauthenticated users */}
+      {!session && (
+        <section className="py-16 sm:py-24 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-md text-center mb-8">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight">
+                Sign in to Get Started
+              </h2>
+              <p className="text-muted-foreground">
+                Join Spike Land to access personalized features, save your progress, and unlock the full potential of our platform.
+              </p>
+            </div>
+            <AuthSection />
+          </div>
+        </section>
+      )}
 
       {/* Platform Features */}
       <section className="py-16 sm:py-24">
