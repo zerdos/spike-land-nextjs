@@ -1,7 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
-import { ProfilePage } from '../support/page-objects/ProfilePage';
+import { ProfilePage } from '../support/page-objects/ProfilePage.js';
 
 // Helper to get or create page object
 function getProfilePage(world: CustomWorld): ProfilePage {

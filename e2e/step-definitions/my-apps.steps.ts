@@ -1,7 +1,7 @@
 import { When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
-import { MyAppsPage } from '../support/page-objects/MyAppsPage';
+import { MyAppsPage } from '../support/page-objects/MyAppsPage.js';
 
 // Helper to get or create page object
 function getMyAppsPage(world: CustomWorld): MyAppsPage {
