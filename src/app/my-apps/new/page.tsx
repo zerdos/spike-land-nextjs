@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm, useWatch } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   appCreationSchema,
@@ -52,7 +52,12 @@ export default function NewAppPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [isClient, setIsClient] = useState(false)
-  const [cachedFormData, setCachedFormData] = useState<Partial<AppCreationFormData>>({})
+  const [formState, setFormState] = useState<AppCreationFormData>({
+    name: "",
+    description: "",
+    requirements: "",
+    monetizationModel: undefined as any,
+  })
 
   const form = useForm<AppCreationFormData>({
     resolver: zodResolver(appCreationSchema),
@@ -72,7 +77,7 @@ export default function NewAppPage() {
       if (saved) {
         try {
           const data = JSON.parse(saved)
-          setCachedFormData(data)
+          setFormState(data)
           form.reset(data)
         } catch (error) {
           console.error("Failed to load draft:", error)
@@ -83,15 +88,10 @@ export default function NewAppPage() {
 
   useEffect(() => {
     if (!isClient) return
-
-    const subscription = form.watch((value) => {
-      setCachedFormData(value as Partial<AppCreationFormData>)
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [form, isClient])
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formState))
+    }
+  }, [formState, isClient])
 
   const validateCurrentStep = async () => {
     let isValid = false
@@ -119,29 +119,23 @@ export default function NewAppPage() {
   const handleNext = async () => {
     const isValid = await validateCurrentStep()
     if (isValid && currentStep < STEPS.length - 1) {
-      const currentValues = form.getValues()
-      setCachedFormData(currentValues)
       setCurrentStep(currentStep + 1)
     }
   }
 
   const handleBack = () => {
     if (currentStep > 0) {
-      const currentValues = form.getValues()
-      setCachedFormData(currentValues)
       setCurrentStep(currentStep - 1)
     }
   }
 
   const onSubmit = () => {
-    const currentFormData = cachedFormData.name ? cachedFormData : form.getValues()
-
     if (typeof window !== "undefined") {
       const existingApps = localStorage.getItem("my-apps")
       const apps = existingApps ? JSON.parse(existingApps) : []
 
       apps.push({
-        ...currentFormData,
+        ...formState,
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       })
@@ -165,11 +159,6 @@ export default function NewAppPage() {
 
   const progressValue = ((currentStep + 1) / STEPS.length) * 100
 
-  const name = useWatch({ control: form.control, name: "name" })
-  const description = useWatch({ control: form.control, name: "description" })
-  const requirements = useWatch({ control: form.control, name: "requirements" })
-  const monetizationModel = useWatch({ control: form.control, name: "monetizationModel" })
-
   const renderStep = () => {
     switch (currentStep) {
       case 0:
@@ -185,6 +174,12 @@ export default function NewAppPage() {
                     <Input
                       placeholder="My Awesome App"
                       {...field}
+                      value={formState.name}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setFormState({ ...formState, name: value })
+                        field.onChange(value)
+                      }}
                       data-testid="app-name-input"
                     />
                   </FormControl>
@@ -206,6 +201,12 @@ export default function NewAppPage() {
                       placeholder="Describe what your app does..."
                       className="min-h-[100px]"
                       {...field}
+                      value={formState.description}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setFormState({ ...formState, description: value })
+                        field.onChange(value)
+                      }}
                       data-testid="app-description-input"
                     />
                   </FormControl>
@@ -232,6 +233,12 @@ export default function NewAppPage() {
                     placeholder="List your app requirements, features, and functionality..."
                     className="min-h-[200px]"
                     {...field}
+                    value={formState.requirements}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormState({ ...formState, requirements: value })
+                      field.onChange(value)
+                    }}
                     data-testid="app-requirements-input"
                   />
                 </FormControl>
@@ -252,7 +259,13 @@ export default function NewAppPage() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Monetization Model</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={(value) => {
+                    setFormState({ ...formState, monetizationModel: value as any })
+                    field.onChange(value)
+                  }}
+                  value={formState.monetizationModel}
+                >
                   <FormControl>
                     <SelectTrigger data-testid="monetization-select">
                       <SelectValue placeholder="Select a monetization model" />
@@ -281,25 +294,25 @@ export default function NewAppPage() {
             <div>
               <h3 className="font-semibold mb-2">App Name</h3>
               <p className="text-muted-foreground" data-testid="review-name">
-                {cachedFormData.name || name}
+                {formState.name}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="text-muted-foreground" data-testid="review-description">
-                {cachedFormData.description || description}
+                {formState.description}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Requirements</h3>
               <p className="text-muted-foreground whitespace-pre-wrap" data-testid="review-requirements">
-                {cachedFormData.requirements || requirements}
+                {formState.requirements}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Monetization Model</h3>
               <p className="text-muted-foreground" data-testid="review-monetization">
-                {(cachedFormData.monetizationModel || monetizationModel) ? MONETIZATION_LABELS[cachedFormData.monetizationModel || monetizationModel] : ""}
+                {formState.monetizationModel ? MONETIZATION_LABELS[formState.monetizationModel] : ""}
               </p>
             </div>
           </div>
