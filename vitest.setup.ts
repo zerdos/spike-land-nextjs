@@ -12,6 +12,13 @@ if (typeof Element !== 'undefined') {
   Element.prototype.scrollIntoView = Element.prototype.scrollIntoView || function () {}
 }
 
+// Polyfill for ResizeObserver (required by Radix UI)
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // Suppress console warnings and errors during tests
 beforeAll(() => {
   // Suppress console.error

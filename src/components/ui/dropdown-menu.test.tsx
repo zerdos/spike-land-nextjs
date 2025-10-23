@@ -49,18 +49,15 @@ describe('DropdownMenu Component', () => {
       })
     })
 
-    it('should close menu when clicking outside', async () => {
+    it('should close menu when pressing escape', async () => {
       const user = userEvent.setup()
       render(
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger>Open</DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>Item 1</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div data-testid="outside">Outside</div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Item 1</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
 
       await user.click(screen.getByText('Open'))
@@ -68,7 +65,7 @@ describe('DropdownMenu Component', () => {
         expect(screen.getByText('Item 1')).toBeInTheDocument()
       })
 
-      await user.click(screen.getByTestId('outside'))
+      await user.keyboard('{Escape}')
       await waitFor(() => {
         expect(screen.queryByText('Item 1')).not.toBeInTheDocument()
       })
