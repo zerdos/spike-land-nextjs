@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
+import React from 'react'
 import AppsPage from './page'
 
 vi.mock('@/components/ui/card', () => ({
@@ -26,7 +27,9 @@ vi.mock('@/components/ui/card', () => ({
 vi.mock('@/components/ui/button', () => ({
   Button: ({ children, asChild, className }: { children: React.ReactNode; asChild?: boolean; className?: string }) => {
     if (asChild) {
-      return <>{children}</>
+      // When asChild is true, clone the child element and pass className to it
+      const child = children as React.ReactElement
+      return React.cloneElement(child, { className: `${child.props.className || ''} ${className || ''}`.trim() })
     }
     return <button data-testid="button" className={className}>{children}</button>
   },
