@@ -3,54 +3,200 @@ import { render, screen } from '@testing-library/react'
 import Home from './page'
 
 describe('Home Page', () => {
-  it('should render the page', () => {
-    render(<Home />)
-    expect(screen.getByText('Welcome to Your App')).toBeInTheDocument()
+  describe('Hero Section', () => {
+    it('should render the hero title with Spike Land', () => {
+      render(<Home />)
+      expect(screen.getByText('Welcome to')).toBeInTheDocument()
+      expect(screen.getByText('Spike Land')).toBeInTheDocument()
+    })
+
+    it('should display the hero description about vibe-coded apps', () => {
+      render(<Home />)
+      expect(
+        screen.getByText(/A platform for vibe-coded apps/i)
+      ).toBeInTheDocument()
+    })
+
+    it('should render Try Smart Video Wall button', () => {
+      render(<Home />)
+      const button = screen.getByRole('link', { name: /Try Smart Video Wall/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveAttribute('href', '/apps/display')
+    })
+
+    it('should render View on GitHub button', () => {
+      render(<Home />)
+      const button = screen.getByRole('link', { name: /View on GitHub/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveAttribute('href', 'https://github.com/zerdos/spike-land-nextjs')
+      expect(button).toHaveAttribute('target', '_blank')
+    })
   })
 
-  it('should display the correct description', () => {
-    render(<Home />)
-    expect(
-      screen.getByText('Built with Next.js 15, TypeScript, Tailwind CSS 4, and shadcn/ui')
-    ).toBeInTheDocument()
+  describe('Platform Capabilities Section', () => {
+    it('should render the platform capabilities heading', () => {
+      render(<Home />)
+      expect(screen.getByText('Platform Capabilities')).toBeInTheDocument()
+    })
+
+    it('should display all 6 platform features', () => {
+      render(<Home />)
+      expect(screen.getByText('Vibe-Coded Development')).toBeInTheDocument()
+      expect(screen.getByText('Modern Tech Stack')).toBeInTheDocument()
+      expect(screen.getByText('Instant Deployment')).toBeInTheDocument()
+      expect(screen.getByText('Mobile-First Design')).toBeInTheDocument()
+      expect(screen.getByText('Lightning Fast')).toBeInTheDocument()
+      expect(screen.getByText('100% Test Coverage')).toBeInTheDocument()
+    })
+
+    it('should display platform feature descriptions', () => {
+      render(<Home />)
+      expect(
+        screen.getByText(/Rapid app creation with AI-powered code generation/i)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/Built with Next.js 15, TypeScript, Tailwind CSS 4/i)
+      ).toBeInTheDocument()
+    })
   })
 
-  it('should display the tech stack section', () => {
-    render(<Home />)
-    expect(screen.getByText('Tech Stack:')).toBeInTheDocument()
+  describe('Featured App Section', () => {
+    it('should render the featured app heading', () => {
+      render(<Home />)
+      expect(screen.getByText('Featured App: Smart Video Wall')).toBeInTheDocument()
+    })
+
+    it('should display Smart Video Wall description', () => {
+      render(<Home />)
+      expect(
+        screen.getByText(/Turn any display into a collaborative video wall/i)
+      ).toBeInTheDocument()
+    })
+
+    it('should display Smart Video Wall benefits', () => {
+      render(<Home />)
+      expect(screen.getByText('No Installation Required')).toBeInTheDocument()
+      expect(screen.getByText('Real-Time Streaming')).toBeInTheDocument()
+      expect(screen.getByText('Privacy First')).toBeInTheDocument()
+    })
+
+    it('should display Smart Video Wall features', () => {
+      render(<Home />)
+      expect(screen.getByText('QR Code Connection')).toBeInTheDocument()
+      expect(screen.getByText('WebRTC Streaming')).toBeInTheDocument()
+      expect(screen.getByText('Multi-Camera Support')).toBeInTheDocument()
+      expect(screen.getByText('Collaborative Display')).toBeInTheDocument()
+    })
+
+    it('should render Launch App button for Smart Video Wall', () => {
+      render(<Home />)
+      const buttons = screen.getAllByRole('link', { name: /Launch App/i })
+      expect(buttons[0]).toBeInTheDocument()
+      expect(buttons[0]).toHaveAttribute('href', '/apps/display')
+    })
   })
 
-  it('should list all tech stack items', () => {
-    render(<Home />)
-    expect(screen.getByText('✓ Next.js 15 with App Router')).toBeInTheDocument()
-    expect(screen.getByText('✓ Strict TypeScript configuration')).toBeInTheDocument()
-    expect(screen.getByText('✓ Tailwind CSS 4 (latest)')).toBeInTheDocument()
-    expect(screen.getByText('✓ shadcn/ui components')).toBeInTheDocument()
-    expect(screen.getByText('✓ ESLint configured')).toBeInTheDocument()
+  describe('Built with Claude Code Section', () => {
+    it('should render the Claude Code heading', () => {
+      render(<Home />)
+      expect(screen.getByText('Vibe Coded with Claude Code')).toBeInTheDocument()
+    })
+
+    it('should display Claude Code description', () => {
+      render(<Home />)
+      expect(
+        screen.getByText(/Experience the future of development where natural language meets production-ready code/i)
+      ).toBeInTheDocument()
+    })
+
+    it('should display all Claude features', () => {
+      render(<Home />)
+      expect(screen.getByText('AI-Powered Development')).toBeInTheDocument()
+      expect(screen.getByText('Best Practices Built-In')).toBeInTheDocument()
+      expect(screen.getByText('Iterative Refinement')).toBeInTheDocument()
+      expect(screen.getByText('Full-Stack Capabilities')).toBeInTheDocument()
+    })
+
+    it('should display the vibe coding philosophy', () => {
+      render(<Home />)
+      expect(screen.getByText('The Vibe Coding Philosophy')).toBeInTheDocument()
+      expect(
+        screen.getByText(/Stop wrestling with boilerplate and configuration/i)
+      ).toBeInTheDocument()
+    })
+
+    it('should display vibe coding principles badges', () => {
+      render(<Home />)
+      expect(screen.getByText('Type Safety')).toBeInTheDocument()
+      expect(screen.getByText('Accessibility')).toBeInTheDocument()
+      expect(screen.getByText('Performance')).toBeInTheDocument()
+      expect(screen.getByText('Testing')).toBeInTheDocument()
+      expect(screen.getByText('CI/CD')).toBeInTheDocument()
+    })
   })
 
-  it('should render Get Started button', () => {
-    render(<Home />)
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument()
+  describe('Call to Action Section', () => {
+    it('should render the CTA heading', () => {
+      render(<Home />)
+      expect(screen.getByText('Ready to Explore?')).toBeInTheDocument()
+    })
+
+    it('should display CTA description', () => {
+      render(<Home />)
+      expect(
+        screen.getByText(/Discover the power of vibe-coded applications/i)
+      ).toBeInTheDocument()
+    })
+
+    it('should render Launch Smart Video Wall button in CTA', () => {
+      render(<Home />)
+      const button = screen.getByRole('link', { name: /Launch Smart Video Wall/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveAttribute('href', '/apps/display')
+    })
+
+    it('should render Try Claude Code button in CTA', () => {
+      render(<Home />)
+      const button = screen.getByRole('link', { name: /Try Claude Code/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveAttribute('href', 'https://claude.ai')
+      expect(button).toHaveAttribute('target', '_blank')
+    })
   })
 
-  it('should render Learn More button', () => {
-    render(<Home />)
-    expect(screen.getByRole('button', { name: 'Learn More' })).toBeInTheDocument()
+  describe('Page Structure', () => {
+    it('should have proper semantic structure', () => {
+      render(<Home />)
+      const sections = document.querySelectorAll('section')
+      expect(sections.length).toBeGreaterThan(0)
+    })
+
+    it('should render all main sections', () => {
+      const { container } = render(<Home />)
+      const sections = container.querySelectorAll('section')
+      // Hero, Platform Features, Featured App, Claude Code, CTA
+      expect(sections.length).toBe(5)
+    })
   })
 
-  it('should render buttons with correct variants', () => {
-    render(<Home />)
-    const getStartedButton = screen.getByRole('button', { name: 'Get Started' })
-    const learnMoreButton = screen.getByRole('button', { name: 'Learn More' })
+  describe('Accessibility', () => {
+    it('should have descriptive link text for external links', () => {
+      render(<Home />)
+      const githubLink = screen.getByRole('link', { name: /View on GitHub/i })
+      const claudeLink = screen.getByRole('link', { name: /Try Claude Code/i })
+      expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer')
+      expect(claudeLink).toHaveAttribute('rel', 'noopener noreferrer')
+    })
 
-    expect(getStartedButton).toHaveClass('bg-primary')
-    expect(learnMoreButton).toHaveClass('border')
-  })
+    it('should have proper heading hierarchy', () => {
+      const { container } = render(<Home />)
+      const h1 = container.querySelector('h1')
+      const h2s = container.querySelectorAll('h2')
+      const h3s = container.querySelectorAll('h3')
 
-  it('should have proper page layout structure', () => {
-    render(<Home />)
-    const container = screen.getByText('Welcome to Your App').closest('div')
-    expect(container?.parentElement?.parentElement?.parentElement).toHaveClass('flex', 'min-h-screen', 'items-center', 'justify-center')
+      expect(h1).toBeInTheDocument()
+      expect(h2s.length).toBeGreaterThan(0)
+      expect(h3s.length).toBeGreaterThan(0)
+    })
   })
 })
