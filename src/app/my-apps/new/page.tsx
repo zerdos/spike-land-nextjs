@@ -52,11 +52,11 @@ export default function NewAppPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [isClient, setIsClient] = useState(false)
-  const [formState, setFormState] = useState<AppCreationFormData>({
+  const [formState, setFormState] = useState({
     name: "",
     description: "",
     requirements: "",
-    monetizationModel: "free" as typeof MONETIZATION_MODELS[number],
+    monetizationModel: "" as typeof MONETIZATION_MODELS[number] | "",
   })
 
   const form = useForm<AppCreationFormData>({
@@ -66,7 +66,7 @@ export default function NewAppPage() {
       name: "",
       description: "",
       requirements: "",
-      monetizationModel: undefined,
+      monetizationModel: "" as typeof MONETIZATION_MODELS[number],
     },
   })
 
