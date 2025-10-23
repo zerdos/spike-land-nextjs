@@ -298,7 +298,8 @@ describe('AppsPage', () => {
 
     it('should mention real-time functionality', () => {
       render(<AppsPage />)
-      expect(screen.getByText(/real-time/i)).toBeInTheDocument()
+      const realTimeElements = screen.getAllByText(/real-time/i)
+      expect(realTimeElements.length).toBeGreaterThan(0)
     })
 
     it('should mention automatic layout optimization', () => {
@@ -363,9 +364,9 @@ describe('AppsPage', () => {
 
   describe('Button Styling', () => {
     it('should render button with full width', () => {
-      const { container } = render(<AppsPage />)
-      const button = container.querySelector('.w-full')
-      expect(button).toBeInTheDocument()
+      render(<AppsPage />)
+      const button = screen.getByRole('link', { name: 'Launch App' })
+      expect(button).toHaveClass('w-full')
     })
   })
 
