@@ -9,7 +9,9 @@ vi.mock('@/auth', () => ({
 }))
 
 vi.mock('next/navigation', () => ({
-  redirect: vi.fn(),
+  redirect: vi.fn(() => {
+    throw new Error('NEXT_REDIRECT')
+  }),
 }))
 
 vi.mock('@/components/ui/card', () => ({
@@ -32,31 +34,31 @@ vi.mock('@/components/ui/avatar', () => ({
   ),
 }))
 
-describe('ProfilePage', () => {
+describe('ProfilePage', async () => {
   const mockAuth = vi.mocked((await import('@/auth')).auth)
 
   describe('Protected Route Behavior', () => {
     it('should redirect when no session exists', async () => {
       mockAuth.mockResolvedValue(null)
-      await ProfilePage()
+      await expect(ProfilePage()).rejects.toThrow('NEXT_REDIRECT')
       expect(redirect).toHaveBeenCalledWith('/auth/signin?callbackUrl=/profile')
     })
 
     it('should redirect when session exists but user is missing', async () => {
       mockAuth.mockResolvedValue({ expires: '2024-12-31' } as Session)
-      await ProfilePage()
+      await expect(ProfilePage()).rejects.toThrow('NEXT_REDIRECT')
       expect(redirect).toHaveBeenCalledWith('/auth/signin?callbackUrl=/profile')
     })
 
     it('should redirect when session user is null', async () => {
       mockAuth.mockResolvedValue({ user: null, expires: '2024-12-31' } as unknown as Session)
-      await ProfilePage()
+      await expect(ProfilePage()).rejects.toThrow('NEXT_REDIRECT')
       expect(redirect).toHaveBeenCalledWith('/auth/signin?callbackUrl=/profile')
     })
 
     it('should redirect with correct callback URL', async () => {
       mockAuth.mockResolvedValue(null)
-      await ProfilePage()
+      await expect(ProfilePage()).rejects.toThrow('NEXT_REDIRECT')
       expect(redirect).toHaveBeenCalledWith(expect.stringContaining('callbackUrl=/profile'))
     })
   })
@@ -336,7 +338,7 @@ describe('ProfilePage', () => {
       const page = await ProfilePage()
       render(page as React.ReactElement)
       const avatar = screen.getByTestId('avatar-image')
-      expect(avatar).toHaveAttribute('src', undefined)
+      expect(avatar).not.toHaveAttribute('src')
     })
 
     it('should use fallback avatar when image is missing', async () => {

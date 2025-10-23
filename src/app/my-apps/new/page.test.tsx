@@ -646,8 +646,8 @@ describe("NewAppPage", () => {
 
       await waitFor(
         () => {
-          const freeOption = screen.queryByText("Free - No charge for users")
-          if (freeOption) {
+          const freeOptions = screen.queryAllByText("Free - No charge for users")
+          if (freeOptions.length > 0) {
             return true
           }
           throw new Error("Waiting for select options")
