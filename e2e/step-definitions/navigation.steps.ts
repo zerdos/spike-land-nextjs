@@ -6,14 +6,14 @@ import {
   clickOutside,
   goBack,
   navigateToPath
-} from '../support/helpers/navigation-helper.js';
+} from '../support/helpers/navigation-helper';
 import {
   assertDropdownVisible,
   assertDropdownNotVisible,
   assertDropdownOptionVisible as _assertDropdownOptionVisible,
   assertTextVisible as _assertTextVisible,
   assertUrlPath as _assertUrlPath
-} from '../support/helpers/assertion-helper.js';
+} from '../support/helpers/assertion-helper';
 
 When('I click the logo in the header', async function (this: CustomWorld) {
   const logo = this.page.locator('header a[href="/"], .fixed.top-4.left-4 a[href="/"]').first();
