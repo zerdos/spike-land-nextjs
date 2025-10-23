@@ -2,7 +2,7 @@ module.exports = {
   default: {
     paths: ['e2e/features/**/*.feature'],
     require: ['e2e/step-definitions/**/*.ts', 'e2e/support/**/*.ts'],
-    requireModule: ['ts-node/register'],
+    requireModule: ['tsx/cjs'],
     format: ['progress-bar', 'html:e2e/reports/cucumber-report.html'],
     formatOptions: { snippetInterface: 'async-await' },
     publishQuiet: true,
