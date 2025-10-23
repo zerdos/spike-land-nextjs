@@ -2,7 +2,7 @@ import { When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import {
-  clickAvatar,
+  clickAvatar as _clickAvatar,
   clickOutside,
   goBack,
   navigateToPath
@@ -10,9 +10,9 @@ import {
 import {
   assertDropdownVisible,
   assertDropdownNotVisible,
-  assertDropdownOptionVisible,
-  assertTextVisible,
-  assertUrlPath
+  assertDropdownOptionVisible as _assertDropdownOptionVisible,
+  assertTextVisible as _assertTextVisible,
+  assertUrlPath as _assertUrlPath
 } from '../support/helpers/assertion-helper';
 
 When('I click the logo in the header', async function (this: CustomWorld) {

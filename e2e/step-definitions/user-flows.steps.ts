@@ -1,11 +1,8 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
-import { mockAuthCallback } from '../support/helpers/auth-helper';
 import {
-  assertButtonVisible,
-  assertTextVisible,
-  assertAvatarVisible
+  assertButtonVisible
 } from '../support/helpers/assertion-helper';
 
 Then('I should see sign-in options', async function (this: CustomWorld) {

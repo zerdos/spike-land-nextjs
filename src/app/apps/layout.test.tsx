@@ -307,7 +307,7 @@ describe('AppsLayout', () => {
     })
 
     it('should have margin top on description', () => {
-      const { container } = render(<AppsLayout>{mockChildren}</AppsLayout>)
+      render(<AppsLayout>{mockChildren}</AppsLayout>)
       const description = screen.getByText(/Discover and explore/i)
       expect(description).toHaveClass('mt-2')
     })

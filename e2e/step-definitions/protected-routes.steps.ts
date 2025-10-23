@@ -1,7 +1,7 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
-import { mockLogin, mockLogout, mockAuthCallback, mockSessionExpired } from '../support/helpers/auth-helper';
+import { mockAuthCallback, mockSessionExpired } from '../support/helpers/auth-helper';
 import { navigateToPath, getCurrentUrl, getQueryParam, verifyUrlContains } from '../support/helpers/navigation-helper';
 import { assertTextVisible, assertUrlPath } from '../support/helpers/assertion-helper';
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { useSearchParams } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
 import AuthErrorPage from "./page"
 
 // Mock next/navigation
@@ -12,7 +13,7 @@ describe("AuthErrorPage", () => {
   beforeEach(() => {
     vi.mocked(useSearchParams).mockReturnValue({
       get: vi.fn().mockReturnValue(null),
-    } as any)
+    } as unknown as ReadonlyURLSearchParams)
   })
 
   describe("Page Structure", () => {
@@ -64,7 +65,7 @@ describe("AuthErrorPage", () => {
     it("should display Configuration error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "Configuration" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Server Configuration Error")).toBeInTheDocument()
@@ -76,7 +77,7 @@ describe("AuthErrorPage", () => {
     it("should display AccessDenied error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "AccessDenied" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Access Denied")).toBeInTheDocument()
@@ -88,7 +89,7 @@ describe("AuthErrorPage", () => {
     it("should display Verification error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "Verification" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Verification Error")).toBeInTheDocument()
@@ -100,7 +101,7 @@ describe("AuthErrorPage", () => {
     it("should display OAuthSignin error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "OAuthSignin" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("OAuth Sign In Error")).toBeInTheDocument()
@@ -109,7 +110,7 @@ describe("AuthErrorPage", () => {
     it("should display OAuthCallback error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "OAuthCallback" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("OAuth Callback Error")).toBeInTheDocument()
@@ -118,7 +119,7 @@ describe("AuthErrorPage", () => {
     it("should display OAuthCreateAccount error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "OAuthCreateAccount" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("OAuth Account Creation Error")).toBeInTheDocument()
@@ -127,7 +128,7 @@ describe("AuthErrorPage", () => {
     it("should display EmailCreateAccount error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "EmailCreateAccount" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Email Account Creation Error")).toBeInTheDocument()
@@ -136,7 +137,7 @@ describe("AuthErrorPage", () => {
     it("should display Callback error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "Callback" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Callback Error")).toBeInTheDocument()
@@ -145,7 +146,7 @@ describe("AuthErrorPage", () => {
     it("should display OAuthAccountNotLinked error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "OAuthAccountNotLinked" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Account Already Linked")).toBeInTheDocument()
@@ -154,7 +155,7 @@ describe("AuthErrorPage", () => {
     it("should display EmailSignin error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "EmailSignin" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Email Sign In Error")).toBeInTheDocument()
@@ -163,7 +164,7 @@ describe("AuthErrorPage", () => {
     it("should display CredentialsSignin error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "CredentialsSignin" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Sign In Failed")).toBeInTheDocument()
@@ -172,7 +173,7 @@ describe("AuthErrorPage", () => {
     it("should display SessionRequired error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "SessionRequired" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Session Required")).toBeInTheDocument()
@@ -181,7 +182,7 @@ describe("AuthErrorPage", () => {
     it("should display error code when error param exists", () => {
       vi.mocked(useSearchParams).mockReturnValue({
         get: vi.fn((param) => (param === "error" ? "OAuthSignin" : null)),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<AuthErrorPage />)
       expect(screen.getByText("Error Code:")).toBeInTheDocument()

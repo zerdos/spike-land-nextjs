@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { useSearchParams } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
 import SignInPage from "./page"
 
 // Mock next/navigation
@@ -21,7 +22,7 @@ describe("SignInPage", () => {
   beforeEach(() => {
     vi.mocked(useSearchParams).mockReturnValue({
       get: vi.fn().mockReturnValue(null),
-    } as any)
+    } as unknown as ReadonlyURLSearchParams)
   })
 
   describe("Page Structure", () => {
@@ -68,7 +69,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "OAuthSignin" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(screen.getByRole("alert")).toBeInTheDocument()
@@ -82,7 +83,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "OAuthCallback" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -95,7 +96,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "OAuthCreateAccount" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -108,7 +109,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "EmailCreateAccount" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -121,7 +122,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "Callback" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(screen.getByText("Error in callback handler")).toBeInTheDocument()
@@ -132,7 +133,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "OAuthAccountNotLinked" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -145,7 +146,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "EmailSignin" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -158,7 +159,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "CredentialsSignin" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -171,7 +172,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "SessionRequired" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -184,7 +185,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "error" ? "UnknownError" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       expect(
@@ -199,7 +200,7 @@ describe("SignInPage", () => {
         get: vi.fn((param) =>
           param === "callbackUrl" ? "/my-apps" : null
         ),
-      } as any)
+      } as unknown as ReadonlyURLSearchParams)
 
       render(<SignInPage />)
       // Component renders without errors when callbackUrl is present

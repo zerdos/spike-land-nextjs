@@ -10,7 +10,7 @@ import Link from "next/link"
 export default function SignInPage() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const _callbackUrl = searchParams.get("callbackUrl") || "/"
 
   const errorMessages: Record<string, string> = {
     OAuthSignin: "Error starting OAuth sign in",

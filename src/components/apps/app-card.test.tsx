@@ -73,7 +73,7 @@ describe('AppCard', () => {
   describe('Icon Display', () => {
     it('renders icon in correct container', () => {
       const icon = <svg data-testid="svg-icon" />
-      const { container } = render(<AppCard {...defaultProps} icon={icon} />)
+      render(<AppCard {...defaultProps} icon={icon} />)
 
       expect(screen.getByTestId('svg-icon')).toBeInTheDocument()
       const iconContainer = screen.getByTestId('svg-icon').parentElement
