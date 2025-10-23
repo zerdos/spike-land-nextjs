@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   appCreationSchema,
@@ -52,9 +52,11 @@ export default function NewAppPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [isClient, setIsClient] = useState(false)
+  const [cachedFormData, setCachedFormData] = useState<Partial<AppCreationFormData>>({})
 
   const form = useForm<AppCreationFormData>({
     resolver: zodResolver(appCreationSchema),
+    shouldUnregister: false,
     defaultValues: {
       name: "",
       description: "",
@@ -70,6 +72,7 @@ export default function NewAppPage() {
       if (saved) {
         try {
           const data = JSON.parse(saved)
+          setCachedFormData(data)
           form.reset(data)
         } catch (error) {
           console.error("Failed to load draft:", error)
@@ -82,6 +85,7 @@ export default function NewAppPage() {
     if (!isClient) return
 
     const subscription = form.watch((value) => {
+      setCachedFormData(value as Partial<AppCreationFormData>)
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
       }
@@ -115,23 +119,29 @@ export default function NewAppPage() {
   const handleNext = async () => {
     const isValid = await validateCurrentStep()
     if (isValid && currentStep < STEPS.length - 1) {
+      const currentValues = form.getValues()
+      setCachedFormData(currentValues)
       setCurrentStep(currentStep + 1)
     }
   }
 
   const handleBack = () => {
     if (currentStep > 0) {
+      const currentValues = form.getValues()
+      setCachedFormData(currentValues)
       setCurrentStep(currentStep - 1)
     }
   }
 
-  const onSubmit = (data: AppCreationFormData) => {
+  const onSubmit = () => {
+    const currentFormData = cachedFormData.name ? cachedFormData : form.getValues()
+
     if (typeof window !== "undefined") {
       const existingApps = localStorage.getItem("my-apps")
       const apps = existingApps ? JSON.parse(existingApps) : []
 
       apps.push({
-        ...data,
+        ...currentFormData,
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       })
@@ -147,16 +157,18 @@ export default function NewAppPage() {
     e.preventDefault()
 
     if (currentStep === STEPS.length - 1) {
-      const isValid = await form.trigger()
-      if (isValid) {
-        form.handleSubmit(onSubmit)()
-      }
+      onSubmit()
     } else {
       handleNext()
     }
   }
 
   const progressValue = ((currentStep + 1) / STEPS.length) * 100
+
+  const name = useWatch({ control: form.control, name: "name" })
+  const description = useWatch({ control: form.control, name: "description" })
+  const requirements = useWatch({ control: form.control, name: "requirements" })
+  const monetizationModel = useWatch({ control: form.control, name: "monetizationModel" })
 
   const renderStep = () => {
     switch (currentStep) {
@@ -264,31 +276,30 @@ export default function NewAppPage() {
         )
 
       case 3:
-        const values = form.getValues()
         return (
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold mb-2">App Name</h3>
               <p className="text-muted-foreground" data-testid="review-name">
-                {values.name}
+                {cachedFormData.name || name}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="text-muted-foreground" data-testid="review-description">
-                {values.description}
+                {cachedFormData.description || description}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Requirements</h3>
               <p className="text-muted-foreground whitespace-pre-wrap" data-testid="review-requirements">
-                {values.requirements}
+                {cachedFormData.requirements || requirements}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Monetization Model</h3>
               <p className="text-muted-foreground" data-testid="review-monetization">
-                {values.monetizationModel ? MONETIZATION_LABELS[values.monetizationModel] : ""}
+                {(cachedFormData.monetizationModel || monetizationModel) ? MONETIZATION_LABELS[cachedFormData.monetizationModel || monetizationModel] : ""}
               </p>
             </div>
           </div>
