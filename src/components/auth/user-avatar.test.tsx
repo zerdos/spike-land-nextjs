@@ -140,6 +140,7 @@ describe('UserAvatar Component', () => {
     render(<UserAvatar />)
 
     await user.click(screen.getByTestId('user-avatar'))
+    expect(screen.getByText('My Apps')).toBeInTheDocument()
     expect(screen.getByText('Profile')).toBeInTheDocument()
     expect(screen.getByText('Settings')).toBeInTheDocument()
     expect(screen.getByText('Log out')).toBeInTheDocument()
@@ -202,6 +203,69 @@ describe('UserAvatar Component', () => {
 
     await user.click(screen.getByTestId('user-avatar'))
     expect(screen.getByText('No email')).toBeInTheDocument()
+  })
+
+  it('should have My Apps link pointing to /my-apps', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+        },
+        expires: '2024-01-01',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+
+    const user = userEvent.setup()
+    render(<UserAvatar />)
+
+    await user.click(screen.getByTestId('user-avatar'))
+    const myAppsLink = screen.getByRole('menuitem', { name: /my apps/i })
+    expect(myAppsLink).toHaveAttribute('href', '/my-apps')
+  })
+
+  it('should have Profile link pointing to /profile', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+        },
+        expires: '2024-01-01',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+
+    const user = userEvent.setup()
+    render(<UserAvatar />)
+
+    await user.click(screen.getByTestId('user-avatar'))
+    const profileLink = screen.getByRole('menuitem', { name: /profile/i })
+    expect(profileLink).toHaveAttribute('href', '/profile')
+  })
+
+  it('should have Settings link pointing to /settings', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+        },
+        expires: '2024-01-01',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+
+    const user = userEvent.setup()
+    render(<UserAvatar />)
+
+    await user.click(screen.getByTestId('user-avatar'))
+    const settingsLink = screen.getByRole('menuitem', { name: /settings/i })
+    expect(settingsLink).toHaveAttribute('href', '/settings')
   })
 
   it('should call signOut when logout menu item is clicked', async () => {
