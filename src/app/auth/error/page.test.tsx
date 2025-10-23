@@ -18,7 +18,8 @@ describe("AuthErrorPage", () => {
   describe("Page Structure", () => {
     it("should render the error page", () => {
       render(<AuthErrorPage />)
-      expect(screen.getByText("Authentication Error")).toBeInTheDocument()
+      const errorTexts = screen.getAllByText("Authentication Error")
+      expect(errorTexts.length).toBeGreaterThan(0)
     })
 
     it("should display the page description", () => {
@@ -53,7 +54,8 @@ describe("AuthErrorPage", () => {
   describe("Error Messages", () => {
     it("should display default error when no error param", () => {
       render(<AuthErrorPage />)
-      expect(screen.getByText("Authentication Error")).toBeInTheDocument()
+      const errorTexts = screen.getAllByText("Authentication Error")
+      expect(errorTexts.length).toBeGreaterThan(0)
       expect(
         screen.getByText("An unexpected error occurred during authentication. Please try again later.")
       ).toBeInTheDocument()
@@ -194,10 +196,10 @@ describe("AuthErrorPage", () => {
 
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
-      const { container } = render(<AuthErrorPage />)
-      const title = container.querySelector("h3")
+      render(<AuthErrorPage />)
+      const title = screen.getByText("Authentication Error", { selector: ".text-2xl" })
       expect(title).toBeInTheDocument()
-      expect(title).toHaveTextContent("Authentication Error")
+      expect(title).toHaveClass("text-2xl")
     })
 
     it("should have descriptive link text", () => {

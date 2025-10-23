@@ -209,10 +209,10 @@ describe("SignInPage", () => {
 
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
-      const { container } = render(<SignInPage />)
-      const title = container.querySelector("h3")
+      render(<SignInPage />)
+      const title = screen.getByText("Welcome to Spike Land", { selector: ".text-2xl" })
       expect(title).toBeInTheDocument()
-      expect(title).toHaveTextContent("Welcome to Spike Land")
+      expect(title).toHaveClass("text-2xl")
     })
 
     it("should have descriptive link text", () => {

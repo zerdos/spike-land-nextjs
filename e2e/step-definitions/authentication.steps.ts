@@ -209,3 +209,73 @@ Then('the avatar should display the custom image', async function (this: CustomW
   const src = await avatarImage.getAttribute('src');
   expect(src).toBeTruthy();
 });
+
+// Navigation steps
+When('I visit {string}', async function (this: CustomWorld, path: string) {
+  await this.page.goto(`${this.baseUrl}${path}`);
+  await this.page.waitForLoadState('networkidle');
+});
+
+Then('I should be on the {string} page', async function (this: CustomWorld, path: string) {
+  const currentUrl = this.page.url();
+  // Handle both exact match and query parameters
+  const expectedUrl = `${this.baseUrl}${path}`;
+  expect(currentUrl.startsWith(expectedUrl)).toBe(true);
+});
+
+Then('I should see {string} heading', async function (this: CustomWorld, headingText: string) {
+  const heading = this.page.locator('h1', { hasText: headingText });
+  await expect(heading).toBeVisible();
+});
+
+Then('I should see {string} text', async function (this: CustomWorld, text: string) {
+  await expect(this.page.getByText(text)).toBeVisible();
+});
+
+Then('I should see {string} link', async function (this: CustomWorld, linkText: string) {
+  const link = this.page.getByRole('link', { name: linkText });
+  await expect(link).toBeVisible();
+});
+
+When('I click the {string} link', async function (this: CustomWorld, linkText: string) {
+  const link = this.page.getByRole('link', { name: linkText });
+  await expect(link).toBeVisible();
+  await link.click();
+  await this.page.waitForLoadState('networkidle');
+});
+
+When('I click the {string} button', async function (this: CustomWorld, buttonText: string) {
+  const button = this.page.getByRole('button', { name: buttonText });
+  await expect(button).toBeVisible();
+  await button.click();
+  await this.page.waitForLoadState('networkidle');
+});
+
+Then('the URL should contain {string}', async function (this: CustomWorld, urlPart: string) {
+  const currentUrl = this.page.url();
+  expect(currentUrl).toContain(urlPart);
+});
+
+// Error message steps
+Then('I should see error message {string}', async function (this: CustomWorld, errorMessage: string) {
+  const alert = this.page.locator('[role="alert"]');
+  await expect(alert).toBeVisible();
+  await expect(alert).toContainText(errorMessage);
+});
+
+Then('I should see error title {string}', async function (this: CustomWorld, errorTitle: string) {
+  const alertTitle = this.page.locator('[role="alert"]').getByText(errorTitle);
+  await expect(alertTitle).toBeVisible();
+});
+
+Then('I should see error description containing {string}', async function (this: CustomWorld, descriptionPart: string) {
+  const alert = this.page.locator('[role="alert"]');
+  await expect(alert).toBeVisible();
+  const text = await alert.textContent();
+  expect(text?.toLowerCase()).toContain(descriptionPart.toLowerCase());
+});
+
+Then('I should see error code {string}', async function (this: CustomWorld, errorCode: string) {
+  const codeElement = this.page.locator('code', { hasText: errorCode });
+  await expect(codeElement).toBeVisible();
+});

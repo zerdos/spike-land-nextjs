@@ -364,8 +364,10 @@ describe("NewAppPage", () => {
       })
     })
 
-    it("should display all entered data", () => {
-      expect(screen.getByTestId("review-name")).toHaveTextContent("My Test App")
+    it("should display all entered data", async () => {
+      await waitFor(() => {
+        expect(screen.getByTestId("review-name")).toHaveTextContent("My Test App")
+      }, { timeout: 5000 })
       expect(screen.getByTestId("review-description")).toHaveTextContent(
         "This is my test app description"
       )
@@ -572,8 +574,10 @@ describe("NewAppPage", () => {
         expect(screen.getByText(/Step 1 of 4/)).toBeInTheDocument()
       })
 
-      const nameInput = screen.getByTestId("app-name-input") as HTMLInputElement
-      expect(nameInput.value).toBe("Test App")
+      await waitFor(() => {
+        const nameInput = screen.getByTestId("app-name-input") as HTMLInputElement
+        expect(nameInput.value).toBe("Test App")
+      })
     })
   })
 
@@ -651,8 +655,8 @@ describe("NewAppPage", () => {
         { timeout: 2000 }
       )
 
-      const freeOption = screen.getByText("Free - No charge for users")
-      await user.click(freeOption)
+      const freeOptions = screen.getAllByText("Free - No charge for users")
+      await user.click(freeOptions[freeOptions.length - 1])
 
       await user.click(screen.getByTestId("next-button"))
 
