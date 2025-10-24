@@ -77,6 +77,30 @@ When('I am logged in as {string} with avatar image {string}', async function (th
   await this.page.waitForLoadState('networkidle');
 });
 
+When('I log out and log in as {string}', async function (this: CustomWorld, name: string) {
+  // First log out by mocking null session
+  await mockSession(this, null);
+  await this.page.reload();
+  await this.page.waitForLoadState('networkidle');
+
+  // Then log in as the new user
+  await mockSession(this, { name, email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com` });
+  await this.page.reload();
+  await this.page.waitForLoadState('networkidle');
+});
+
+When('I log out and log in as {string} with email {string}', async function (this: CustomWorld, name: string, email: string) {
+  // First log out by mocking null session
+  await mockSession(this, null);
+  await this.page.reload();
+  await this.page.waitForLoadState('networkidle');
+
+  // Then log in as the new user with specified email
+  await mockSession(this, { name, email });
+  await this.page.reload();
+  await this.page.waitForLoadState('networkidle');
+});
+
 When('authentication is loading', async function (this: CustomWorld) {
   // Delay the session response to simulate loading state
   await this.page.route('**/api/auth/session', async (route) => {

@@ -23,10 +23,7 @@ Given('I am on the client page with displayId parameter', async function (this: 
   await this.page.waitForLoadState('domcontentloaded');
 });
 
-When('I navigate to {string}', async function (this: CustomWorld, path: string) {
-  await this.page.goto(`${this.baseUrl}${path}`);
-  await this.page.waitForLoadState('networkidle');
-});
+// NOTE: "I navigate to {string}" step is defined in protected-routes.steps.ts
 
 When('I navigate directly to {string}', async function (this: CustomWorld, path: string) {
   await this.page.goto(`${this.baseUrl}${path}`);
@@ -39,10 +36,7 @@ Then('I should see the page heading {string}', async function (this: CustomWorld
   await expect(headingElement).toBeVisible({ timeout: 10000 });
 });
 
-Then('I should see the description {string}', async function (this: CustomWorld, description: string) {
-  const element = this.page.getByText(description);
-  await expect(element).toBeVisible({ timeout: 10000 });
-});
+// NOTE: "I should see the description {string}" step is defined in home-page.steps.ts
 
 Then('I should see {string} section', async function (this: CustomWorld, sectionName: string) {
   const section = this.page.getByRole('heading', { name: sectionName });
@@ -127,10 +121,7 @@ Then('I should see the QR code for connecting clients', async function (this: Cu
 });
 
 // Client page verification
-Then('I should see error message {string}', async function (this: CustomWorld, errorMessage: string) {
-  const error = this.page.getByText(errorMessage);
-  await expect(error).toBeVisible({ timeout: 10000 });
-});
+// NOTE: "I should see error message {string}" step is defined in authentication.steps.ts
 
 Then('the client page should load', async function (this: CustomWorld) {
   // Wait for the page to load - either loading state or error/content

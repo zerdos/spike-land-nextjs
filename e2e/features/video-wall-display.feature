@@ -5,7 +5,7 @@ Feature: Smart Video Wall Display
   So that I can show connected client camera feeds
 
   Background:
-    Given I am on the display page
+    Given the video wall display page is open
 
   Scenario: Display shows QR code when no clients connected
     Then I should see a QR code for connection

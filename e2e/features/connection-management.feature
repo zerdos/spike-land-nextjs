@@ -5,13 +5,13 @@ Feature: Connection Management
   So that users have a stable experience
 
   Scenario: Display generates unique connection ID on load
-    Given I am on the display page
+    Given the video wall display page is open
     Then a unique connection ID should be generated
     And the connection ID should be displayed
     And the connection ID should be encoded in the QR code
 
   Scenario: Client connects using QR code scan
-    Given I am on the display page
+    Given the video wall display page is open
     And a QR code is displayed
     When I scan the QR code with a client device
     Then the client page should open with the connection ID
@@ -31,14 +31,14 @@ Feature: Connection Management
     And I should not be able to connect
 
   Scenario: Display handles WebRTC connection establishment
-    Given I am on the display page
+    Given the video wall display page is open
     When a client attempts to connect
     Then the display should establish a WebRTC peer connection
     And the connection should use STUN/TURN servers
     And the connection state should be "connected"
 
   Scenario: Display handles client connection timeout
-    Given I am on the display page
+    Given the video wall display page is open
     When a client attempts to connect but network is slow
     And the connection takes longer than 30 seconds
     Then the connection should timeout
@@ -46,7 +46,7 @@ Feature: Connection Management
     And the client should be able to retry
 
   Scenario: Display handles simultaneous client connections
-    Given I am on the display page
+    Given the video wall display page is open
     When 3 clients attempt to connect simultaneously
     Then all 3 clients should connect successfully
     And the display should show 3 video feeds
@@ -74,7 +74,7 @@ Feature: Connection Management
     And the layout should adjust for remaining clients
 
   Scenario: Display shows connection status indicators
-    Given I am on the display page
+    Given the video wall display page is open
     When 2 clients are connected
     Then I should see connection status for each client
     And the status should show "Connected" in green

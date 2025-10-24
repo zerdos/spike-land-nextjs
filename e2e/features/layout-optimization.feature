@@ -5,7 +5,7 @@ Feature: Layout Optimization
   So that all participants are displayed clearly regardless of count
 
   Background:
-    Given I am on the display page
+    Given the video wall display page is open
 
   Scenario: Layout transitions smoothly when clients join
     Given 1 client is connected with camera enabled

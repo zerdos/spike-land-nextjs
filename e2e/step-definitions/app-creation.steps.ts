@@ -111,6 +111,16 @@ Given('I complete step 1 with name {string} and description {string}', async fun
   await this.page.waitForLoadState('networkidle');
 });
 
+When('I complete step {int} with name {string}', async function (this: CustomWorld, step: number, name: string) {
+  if (step === 1) {
+    const wizard = getWizard(this);
+    await wizard.fillBasicInfo(name, 'Test description for step 1');
+    this.wizardFormData = { name, description: 'Test description for step 1' };
+    await wizard.clickNext();
+    await this.page.waitForLoadState('networkidle');
+  }
+});
+
 Then('the {string} field should contain {string}', async function (this: CustomWorld, fieldName: string, value: string) {
   const field = this.page.getByLabel(new RegExp(fieldName, 'i'));
   await expect(field).toHaveValue(value);

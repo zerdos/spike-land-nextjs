@@ -93,7 +93,7 @@ Given('I am connected with camera enabled', async function (this: VideoWallWorld
   await expect(video).toBeVisible({ timeout: 5000 });
 });
 
-When('I click the {string} button', async function (this: VideoWallWorld, buttonText: string) {
+When('I click the client camera {string} button', async function (this: VideoWallWorld, buttonText: string) {
   const clientContext = this.getClientContext('main-client');
   if (!clientContext) {
     throw new Error('Client context not found');
