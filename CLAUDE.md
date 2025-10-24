@@ -2,6 +2,196 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## 🚀 PLATFORM VISION & MANIFESTO
+
+### **Spike Land: AI-Powered App Platform**
+
+Spike Land is an innovative platform that democratizes app development by connecting users with AI agents to create, modify, and deploy applications on demand.
+
+### **Core Vision**
+
+We are building a platform where:
+- **Anyone can create apps** without coding knowledge
+- **AI agents build apps** based on user requirements
+- **Users can fork and modify** existing apps
+- **Apps generate revenue** through flexible monetization models
+- **External domains** host successful apps independently
+
+### **Platform Architecture**
+
+#### **User Roles & Capabilities**
+
+**Visitors (Unauthenticated)**
+- Browse public apps and features
+- View platform capabilities
+- Sign up / Log in
+
+**Authenticated Users**
+- Access protected "My Apps" section
+- Create new apps from scratch
+- Fork existing apps
+- Add and modify app requirements
+- Manage app settings
+- Deploy apps (future)
+- Monetize apps (future)
+
+#### **Key Features**
+
+1. **Authentication System**
+   - Multi-provider OAuth (GitHub, Google)
+   - Phone-based authentication (Twilio)
+   - User profiles and settings
+   - Protected routes and content
+
+2. **My Apps Dashboard** (Protected Route)
+   - User's app collection
+   - Create new app wizard
+   - Fork existing apps
+   - App management interface
+
+3. **Requirements Management**
+   - Natural language app requirements
+   - Structured requirement storage
+   - Version control for requirements
+   - Safe, secure database storage
+
+4. **AI Agent Integration** (Future Phase)
+   - Claude Code agents build apps on demand
+   - Interpret user requirements
+   - Generate production-ready code
+   - Iterative refinement based on feedback
+   - Automated testing and deployment
+
+5. **App Deployment** (Future Phase)
+   - Custom domain support
+   - One-click deployment
+   - External domain hosting
+   - Scalable infrastructure
+
+6. **Monetization Models** (Future Phase)
+   - One-off payments
+   - Subscription models
+   - Freemium + Pro tiers
+   - Revenue sharing with platform
+
+### **Technical Stack**
+
+**Current:**
+- Next.js 15 (App Router)
+- TypeScript (Strict Mode)
+- NextAuth.js (Multi-provider)
+- Tailwind CSS 4
+- shadcn/ui components
+- Prisma (Database ORM) - To be added
+- PostgreSQL (Database) - To be added
+
+**Future:**
+- AI Agent Orchestration
+- Payment Processing (Stripe)
+- Domain Management
+- CDN & Hosting Infrastructure
+
+### **Development Phases**
+
+**Phase 1: Authentication & Foundation** ✅ (Current)
+- [x] NextAuth setup (GitHub, Google, Phone)
+- [ ] Protected routes
+- [ ] User profiles
+- [ ] Settings page
+
+**Phase 2: My Apps Platform** (In Progress)
+- [ ] "My Apps" protected section
+- [ ] App creation wizard
+- [ ] Fork functionality
+- [ ] Requirements management UI
+- [ ] Database schema for apps & requirements
+
+**Phase 3: AI Agent Integration**
+- [ ] AI agent orchestration system
+- [ ] Requirement-to-code pipeline
+- [ ] Automated app generation
+- [ ] Quality assurance & testing
+
+**Phase 4: Deployment & Hosting**
+- [ ] App deployment system
+- [ ] Custom domain support
+- [ ] External hosting
+- [ ] Monitoring & analytics
+
+**Phase 5: Monetization**
+- [ ] Payment integration
+- [ ] Subscription management
+- [ ] Revenue tracking
+- [ ] Payout system
+
+### **Database Schema (Future)**
+
+```typescript
+// Core Models
+User {
+  id: string
+  email: string
+  name: string
+  image: string
+  apps: App[]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+App {
+  id: string
+  name: string
+  description: string
+  userId: string (owner)
+  forkedFrom: string? (original app id)
+  requirements: Requirement[]
+  status: "draft" | "building" | "deployed" | "archived"
+  domain: string?
+  monetization: MonetizationModel?
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+Requirement {
+  id: string
+  appId: string
+  description: text
+  priority: "high" | "medium" | "low"
+  status: "pending" | "in-progress" | "completed"
+  version: int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+MonetizationModel {
+  id: string
+  appId: string
+  type: "free" | "one-time" | "subscription" | "freemium"
+  price: decimal?
+  subscriptionInterval: string?
+  features: json
+}
+```
+
+### **Security & Privacy**
+
+- All user data encrypted at rest
+- Secure requirement storage
+- No unauthorized AI access to user data
+- GDPR & privacy compliant
+- Regular security audits
+
+### **Business Model**
+
+- Platform fee on paid apps (10-20%)
+- Premium features for power users
+- White-label solutions for enterprises
+- AI agent usage-based pricing
+
+---
+
 ## Feature Implementation System Guidelines
 
 ### Feature Implementation Priority Rules

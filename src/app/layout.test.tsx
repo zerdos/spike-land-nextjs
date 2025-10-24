@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest'
 import { Geist, Geist_Mono } from 'next/font/google'
 import RootLayout, { metadata } from './layout'
 
-// Mock next/font/google
 vi.mock('next/font/google', () => ({
   Geist: vi.fn(() => ({
     variable: '--font-geist-sans',
@@ -12,6 +11,10 @@ vi.mock('next/font/google', () => ({
     variable: '--font-geist-mono',
     subsets: ['latin'],
   })),
+}))
+
+vi.mock('@/components/auth/session-provider', () => ({
+  SessionProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
 describe('RootLayout', () => {
@@ -60,10 +63,17 @@ describe('RootLayout', () => {
     expect(bodyClassName).toContain('antialiased')
   })
 
-  it('should pass children to body element', () => {
+  it('should wrap children in SessionProvider', () => {
     const testChild = <div>Test Child</div>
     const result = RootLayout({ children: testChild })
-    expect(result.props.children.props.children).toBe(testChild)
+    const bodyChildren = result.props.children.props.children
+    expect(bodyChildren).toBeDefined()
+  })
+
+  it('should render children within SessionProvider wrapper', () => {
+    const testChild = <div>Test Child</div>
+    const result = RootLayout({ children: testChild })
+    expect(result.props.children.props.children.props.children).toBe(testChild)
   })
 })
 

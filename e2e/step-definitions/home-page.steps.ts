@@ -22,10 +22,7 @@ When('I view the tech stack section', async function (this: CustomWorld) {
   await expect(section).toBeVisible();
 });
 
-Then('I should see {string} heading', async function (this: CustomWorld, heading: string) {
-  const headingElement = this.page.getByText(heading);
-  await expect(headingElement).toBeVisible();
-});
+// NOTE: "I should see {string} heading" step is defined in authentication.steps.ts
 
 Then('I should see the following tech stack items:', async function (this: CustomWorld, dataTable: DataTable) {
   const items = dataTable.rows().map(row => row[0]).filter((item): item is string => item !== undefined);
@@ -41,10 +38,7 @@ Then('I should see a {string} button', async function (this: CustomWorld, button
   await expect(button).toBeVisible();
 });
 
-When('I click the {string} button', async function (this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: buttonName });
-  await button.click();
-});
+// NOTE: "I click the {string} button" step is defined in authentication.steps.ts
 
 Then('the button should be interactive', async function (this: CustomWorld) {
   // Button click was successful if we got here without error

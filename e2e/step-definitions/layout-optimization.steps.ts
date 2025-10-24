@@ -210,6 +210,11 @@ Then('there should be no excessive black bars', async function (this: VideoWallW
 });
 
 // Maximum capacity
+Then('the layout should show all {int} video feeds', async function (this: VideoWallWorld, count: number) {
+  const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
+  await expect(videoFeeds).toHaveCount(count, { timeout: 10000 });
+});
+
 Then('the video feeds should be in {int}x{int} grid layout', async function (this: VideoWallWorld, rows: number, cols: number) {
   const expectedCount = rows * cols;
   const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
