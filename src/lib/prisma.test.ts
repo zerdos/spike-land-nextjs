@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('@/generated/prisma', () => {
+vi.mock('@prisma/client', () => {
   const mockPrismaClient = vi.fn().mockImplementation(() => ({
     $connect: vi.fn(),
     $disconnect: vi.fn(),
