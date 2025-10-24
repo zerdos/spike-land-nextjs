@@ -328,7 +328,7 @@ export default function NewAppPage() {
       <Card>
         <CardHeader>
           <CardTitle>Create New App</CardTitle>
-          <CardDescription>
+          <CardDescription data-testid="wizard-step-title">
             Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]?.title}
           </CardDescription>
           <div className="pt-2">

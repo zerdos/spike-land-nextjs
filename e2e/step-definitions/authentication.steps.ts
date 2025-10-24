@@ -15,7 +15,7 @@ async function mockSession(world: CustomWorld, user: { name: string; email: stri
       }
     : null;
 
-  // Mock the NextAuth session endpoint
+  // Mock the NextAuth session endpoint for both client and server requests
   await world.page.route('**/api/auth/session', async (route) => {
     await route.fulfill({
       status: 200,
@@ -32,6 +32,23 @@ async function mockSession(world: CustomWorld, user: { name: string; email: stri
       body: JSON.stringify({ csrfToken: 'mock-csrf-token' }),
     });
   });
+
+  // Set NextAuth session cookie to bypass middleware authentication
+  if (user) {
+    // Set a mock session token cookie that the middleware will recognize
+    await world.page.context().addCookies([{
+      name: 'authjs.session-token',
+      value: 'mock-session-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+      expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
+    }]);
+  } else {
+    // Clear session cookies when logging out
+    await world.page.context().clearCookies();
+  }
 
   // Intercept signIn calls to prevent actual OAuth redirects
   await world.page.addInitScript(() => {
@@ -143,12 +160,14 @@ When('I click the {string} option in the dropdown', async function (this: Custom
 });
 
 Then('I should see the {string} button', async function (this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole('button', { name: buttonText });
+  // Use first() to handle cases where Next.js dev tools add extra buttons
+  const button = this.page.getByRole('button', { name: buttonText }).first();
   await expect(button).toBeVisible();
 });
 
 Then('I should see {string} button', async function (this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole('button', { name: buttonText });
+  // Use first() to handle cases where Next.js dev tools add extra buttons
+  const button = this.page.getByRole('button', { name: buttonText }).first();
   await expect(button).toBeVisible();
 });
 

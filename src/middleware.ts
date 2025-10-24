@@ -77,6 +77,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Skip authentication check in E2E test environment
+  if (process.env.E2E_BYPASS_AUTH === 'true') {
+    return NextResponse.next()
+  }
+
   // Check authentication status
   const session = await auth()
 
