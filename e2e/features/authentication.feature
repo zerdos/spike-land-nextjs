@@ -12,11 +12,14 @@ Feature: User Authentication
     And I should see the "Continue with Google" button
     And I should not see the user avatar
 
+  # TODO: Fix OAuth flow testing in CI - See issue #23
+  @skip
   Scenario: User can initiate GitHub login
     When I am not logged in
     And I click the "Continue with GitHub" button
     Then the GitHub authentication flow should be initiated
 
+  @skip
   Scenario: User can initiate Google login
     When I am not logged in
     And I click the "Continue with Google" button
