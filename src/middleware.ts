@@ -87,9 +87,21 @@ export async function middleware(request: NextRequest) {
   const hostname = request.nextUrl.hostname
   const isVercelPreview = hostname.includes('.vercel.app') && hostname !== 'next.spike.land'
 
+  // Debug logging for E2E troubleshooting
+  if (pathname.startsWith('/my-apps')) {
+    console.log('[Middleware] Protected path check:', {
+      pathname,
+      hostname,
+      isVercelPreview,
+      E2E_BYPASS_AUTH: process.env.E2E_BYPASS_AUTH,
+      VERCEL_ENV: process.env.VERCEL_ENV,
+    })
+  }
+
   if (process.env.E2E_BYPASS_AUTH === 'true' ||
       process.env.VERCEL_ENV === 'preview' ||
       isVercelPreview) {
+    console.log('[Middleware] Bypassing auth for:', pathname)
     return NextResponse.next()
   }
 
