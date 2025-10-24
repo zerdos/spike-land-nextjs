@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { VideoWallWorld } from '../support/video-wall-world';
 
 // Background steps
-Given('I am on the display page', async function (this: VideoWallWorld) {
+Given('the video wall display page is open', async function (this: VideoWallWorld) {
   await this.displayPage.goto(`${this.baseUrl}/display`);
   await this.displayPage.waitForLoadState('networkidle');
 });
@@ -14,10 +14,7 @@ Then('I should see a QR code for connection', async function (this: VideoWallWor
   await expect(qrCode).toBeVisible({ timeout: 10000 });
 });
 
-Then('I should see {string} text', async function (this: VideoWallWorld, text: string) {
-  const element = this.displayPage.getByText(text);
-  await expect(element).toBeVisible();
-});
+// NOTE: "I should see {string} text" step is defined in authentication.steps.ts
 
 Then('I should see the connection URL displayed', async function (this: VideoWallWorld) {
   // Look for a URL pattern or connection ID display
@@ -119,15 +116,7 @@ Then('the video feeds should be in {int}-column layout', async function (this: V
   expect(gridColumns).toBeGreaterThanOrEqual(columns);
 });
 
-Then('the video feeds should be in {int}x{int} grid layout', async function (this: VideoWallWorld, rows: number, columns: number) {
-  const container = this.displayPage.locator('[data-testid="video-grid"], [data-layout]').first();
-  await expect(container).toBeVisible();
-
-  // Verify grid structure
-  const totalFeeds = rows * columns;
-  const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
-  await expect(videoFeeds).toHaveCount(totalFeeds, { timeout: 5000 });
-});
+// NOTE: "the video feeds should be in {int}x{int} grid layout" step is defined in layout-optimization.steps.ts
 
 Then('each video feed should be clearly visible', async function (this: VideoWallWorld) {
   const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
@@ -181,16 +170,7 @@ Then('I should see {string} label on the second video feed', async function (thi
 });
 
 // Disconnection handling
-Given('{int} clients are connected with camera enabled', async function (this: VideoWallWorld, count: number) {
-  for (let i = 0; i < count; i++) {
-    const clientContext = await this.createClientContext(`client-${i}`, `Client ${i + 1}`);
-    await this.mockPeerJS(clientContext.page);
-
-    const connectionId = this.displayId || 'test-display-id';
-    await clientContext.page.goto(`${this.baseUrl}/client?displayId=${connectionId}`);
-    await this.displayPage.waitForTimeout(1000);
-  }
-});
+// NOTE: "{int} clients are connected with camera enabled" step is defined in layout-optimization.steps.ts
 
 When('{int} client disconnects', async function (this: VideoWallWorld, count: number) {
   const allClients = this.getAllClientContexts();

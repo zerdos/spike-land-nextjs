@@ -1,21 +1,144 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Home from './page'
+import { useSession } from 'next-auth/react'
+import type { Session } from 'next-auth'
+
+// Mock next-auth
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
+}))
+
+// Mock auth components
+vi.mock('@/components/auth/auth-header', () => ({
+  AuthHeader: () => <div data-testid="auth-header">Auth Header</div>,
+  AuthSection: () => <div data-testid="auth-section">Auth Section</div>,
+}))
 
 describe('Home Page', () => {
-  describe('Hero Section', () => {
-    it('should render the hero title with Spike Land', () => {
+  beforeEach(() => {
+    // Default to unauthenticated state
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
+    })
+  })
+
+  describe('Authentication Integration', () => {
+    it('should render AuthHeader component', () => {
       render(<Home />)
-      expect(screen.getByText('Welcome to')).toBeInTheDocument()
-      expect(screen.getByText('Spike Land')).toBeInTheDocument()
+      expect(screen.getByTestId('auth-header')).toBeInTheDocument()
     })
 
-    it('should display the hero description about vibe-coded apps', () => {
-      render(<Home />)
-      expect(
-        screen.getByText(/A platform for vibe-coded apps/i)
-      ).toBeInTheDocument()
+    describe('when user is not authenticated', () => {
+      beforeEach(() => {
+        vi.mocked(useSession).mockReturnValue({
+          data: null,
+          status: 'unauthenticated',
+          update: vi.fn(),
+        })
+      })
+
+      it('should show default welcome message', () => {
+        render(<Home />)
+        expect(screen.getByText('Welcome to')).toBeInTheDocument()
+        expect(screen.getByText('Spike Land')).toBeInTheDocument()
+      })
+
+      it('should show default description', () => {
+        render(<Home />)
+        expect(
+          screen.getByText(/A platform for vibe-coded apps, where ideas transform into polished applications/i)
+        ).toBeInTheDocument()
+      })
+
+      it('should display the authentication section with sign-in prompt', () => {
+        render(<Home />)
+        expect(screen.getByText('Sign in to Get Started')).toBeInTheDocument()
+        expect(
+          screen.getByText(/Join Spike Land to access personalized features/i)
+        ).toBeInTheDocument()
+      })
+
+      it('should render AuthSection component for unauthenticated users', () => {
+        render(<Home />)
+        expect(screen.getByTestId('auth-section')).toBeInTheDocument()
+      })
     })
+
+    describe('when user is authenticated', () => {
+      const mockSession: Session = {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          image: 'https://example.com/avatar.jpg',
+        },
+        expires: '2024-12-31',
+      }
+
+      beforeEach(() => {
+        vi.mocked(useSession).mockReturnValue({
+          data: mockSession,
+          status: 'authenticated',
+          update: vi.fn(),
+        })
+      })
+
+      it('should show personalized welcome message with user first name', () => {
+        render(<Home />)
+        expect(screen.getByText('Welcome back,')).toBeInTheDocument()
+        expect(screen.getByText('John')).toBeInTheDocument()
+      })
+
+      it('should show personalized description for authenticated users', () => {
+        render(<Home />)
+        expect(
+          screen.getByText(/Ready to continue your journey\? Explore our vibe-coded apps/i)
+        ).toBeInTheDocument()
+      })
+
+      it('should not display AuthSection for authenticated users', () => {
+        render(<Home />)
+        expect(screen.queryByTestId('auth-section')).not.toBeInTheDocument()
+      })
+
+      it('should not display sign-in prompt for authenticated users', () => {
+        render(<Home />)
+        expect(screen.queryByText('Sign in to Get Started')).not.toBeInTheDocument()
+      })
+
+      it('should handle user without name', () => {
+        vi.mocked(useSession).mockReturnValue({
+          data: {
+            ...mockSession,
+            user: { ...mockSession.user, name: undefined },
+          },
+          status: 'authenticated',
+          update: vi.fn(),
+        })
+        render(<Home />)
+        expect(screen.getByText('Welcome back,')).toBeInTheDocument()
+        expect(screen.getByText('User')).toBeInTheDocument()
+      })
+
+      it('should handle user with single name', () => {
+        vi.mocked(useSession).mockReturnValue({
+          data: {
+            ...mockSession,
+            user: { ...mockSession.user, name: 'Madonna' },
+          },
+          status: 'authenticated',
+          update: vi.fn(),
+        })
+        render(<Home />)
+        expect(screen.getByText('Welcome back,')).toBeInTheDocument()
+        expect(screen.getByText('Madonna')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Hero Section', () => {
 
     it('should render Try Smart Video Wall button', () => {
       render(<Home />)
@@ -171,10 +294,28 @@ describe('Home Page', () => {
       expect(sections.length).toBeGreaterThan(0)
     })
 
-    it('should render all main sections', () => {
+    it('should render all main sections for unauthenticated users', () => {
       const { container } = render(<Home />)
       const sections = container.querySelectorAll('section')
-      // Hero, Platform Features, Featured App, Claude Code, CTA
+      // Hero, Auth Section, Platform Features, Featured App, Claude Code, CTA
+      expect(sections.length).toBe(6)
+    })
+
+    it('should render all main sections for authenticated users', () => {
+      vi.mocked(useSession).mockReturnValue({
+        data: {
+          user: {
+            name: 'John Doe',
+            email: 'john@example.com',
+          },
+          expires: '2024-12-31',
+        },
+        status: 'authenticated',
+        update: vi.fn(),
+      })
+      const { container } = render(<Home />)
+      const sections = container.querySelectorAll('section')
+      // Hero, Platform Features, Featured App, Claude Code, CTA (no Auth Section)
       expect(sections.length).toBe(5)
     })
   })
