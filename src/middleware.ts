@@ -82,8 +82,10 @@ export async function middleware(request: NextRequest) {
   // 1. E2E_BYPASS_AUTH environment variable
   // 2. VERCEL_ENV set to "preview" (build-time variable)
   // 3. Vercel preview deployment URL pattern (runtime check)
+  //    Preview URLs: spike-land-nextjs-*.vercel.app
+  //    Production URL: next.spike.land
   const hostname = request.nextUrl.hostname
-  const isVercelPreview = hostname.includes('vercel.app') && !hostname.startsWith('next.spike.land')
+  const isVercelPreview = hostname.includes('.vercel.app') && hostname !== 'next.spike.land'
 
   if (process.env.E2E_BYPASS_AUTH === 'true' ||
       process.env.VERCEL_ENV === 'preview' ||
