@@ -92,10 +92,7 @@ Then('the email should contain {string} symbol', async function (this: CustomWor
   expect(emailText).toContain(symbol);
 });
 
-Given('I am on the home page', async function (this: CustomWorld) {
-  await this.page.goto(this.baseUrl);
-  await this.page.waitForLoadState('networkidle');
-});
+// NOTE: "I am on the home page" step is defined in home-page.steps.ts
 
 Then('I should be on the profile page', async function (this: CustomWorld) {
   await expect(this.page).toHaveURL(/\/profile$/);

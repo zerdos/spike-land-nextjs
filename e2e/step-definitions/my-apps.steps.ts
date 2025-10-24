@@ -53,10 +53,7 @@ Then('I should see {string}', async function (this: CustomWorld, text: string) {
   await expect(element).toBeVisible();
 });
 
-Then('I should see the {string} button', async function (this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
-  await expect(button).toBeVisible();
-});
+// NOTE: "I should see the {string} button" step is defined in authentication.steps.ts
 
 Then('the button should be enabled', async function (this: CustomWorld) {
   const myAppsPage = getMyAppsPage(this);
@@ -64,10 +61,7 @@ Then('the button should be enabled', async function (this: CustomWorld) {
   await expect(button).toBeEnabled();
 });
 
-When('I click the {string} button', async function (this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
-  await button.click();
-});
+// NOTE: "I click the {string} button" step is defined in authentication.steps.ts
 
 Then('I should be redirected to {string}', async function (this: CustomWorld, url: string) {
   await this.page.waitForURL(new RegExp(url));
@@ -206,18 +200,7 @@ Then('I should be redirected to the app details page', async function (this: Cus
   await expect(this.page).toHaveURL(/\/my-apps\/.+/);
 });
 
-When('I am not logged in', async function (this: CustomWorld) {
-  // Clear session
-  await this.page.route('**/api/auth/session', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(null),
-    });
-  });
-  await this.page.reload();
-  await this.page.waitForLoadState('networkidle');
-});
+// NOTE: "I am not logged in" step is defined in authentication.steps.ts
 
 Then('I should be redirected to the home page', async function (this: CustomWorld) {
   await expect(this.page).toHaveURL(/\/$|\/home/);

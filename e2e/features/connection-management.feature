@@ -1,3 +1,4 @@
+@video-wall
 Feature: Connection Management
   As a video wall system
   I want to handle client connections reliably

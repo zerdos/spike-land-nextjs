@@ -6,5 +6,7 @@ module.exports = {
     format: ['progress-bar', 'html:e2e/reports/cucumber-report.html'],
     formatOptions: { snippetInterface: 'async-await' },
     publishQuiet: true,
+    failFast: true, // Stop on first failure
+    retry: 0, // Don't retry failed scenarios
   },
 };

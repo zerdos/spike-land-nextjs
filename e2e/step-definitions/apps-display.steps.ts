@@ -68,10 +68,7 @@ Then('I should see the following tags:', async function (this: CustomWorld, data
   }
 });
 
-Then('I should see {string} heading', async function (this: CustomWorld, heading: string) {
-  const headingElement = this.page.getByRole('heading', { name: heading });
-  await expect(headingElement).toBeVisible({ timeout: 10000 });
-});
+// NOTE: "I should see {string} heading" and "I should see {string} text" are defined in authentication.steps.ts
 
 // Button interactions
 When('I click the {string} button for {string}', async function (this: CustomWorld, buttonText: string, appName: string) {
@@ -85,16 +82,6 @@ When('I click the {string} button for {string}', async function (this: CustomWor
 // Display page verification
 Then('I should be on the display page', async function (this: CustomWorld) {
   await expect(this.page).toHaveURL(/\/display/, { timeout: 10000 });
-});
-
-Then('I should see {string} heading', async function (this: CustomWorld, heading: string) {
-  const headingElement = this.page.getByText(heading);
-  await expect(headingElement).toBeVisible({ timeout: 10000 });
-});
-
-Then('I should see {string} text', async function (this: CustomWorld, text: string) {
-  const element = this.page.getByText(text);
-  await expect(element).toBeVisible({ timeout: 10000 });
 });
 
 Then('I should see {string} text initially', async function (this: CustomWorld, text: string) {

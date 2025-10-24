@@ -1,3 +1,4 @@
+@video-wall
 Feature: Layout Optimization
   As a presenter
   I want the video wall to automatically optimize layouts

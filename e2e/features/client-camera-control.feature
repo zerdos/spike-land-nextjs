@@ -1,3 +1,4 @@
+@video-wall
 Feature: Client Camera Control
   As a video wall participant
   I want to control my camera settings from the client interface

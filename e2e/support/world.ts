@@ -21,7 +21,9 @@ export class CustomWorld extends World {
     this.browser = await chromium.launch({
       headless: process.env.CI === 'true',
     });
-    this.context = await this.browser.newContext();
+    this.context = await this.browser.newContext({
+      baseURL: this.baseUrl,
+    });
     this.page = await this.context.newPage();
   }
 

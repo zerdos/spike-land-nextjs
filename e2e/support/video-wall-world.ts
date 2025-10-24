@@ -27,6 +27,7 @@ export class VideoWallWorld extends World {
       headless: process.env.CI === 'true',
     });
     this.displayContext = await this.browser.newContext({
+      baseURL: this.baseUrl,
       permissions: ['camera', 'microphone'],
     });
     this.displayPage = await this.displayContext.newPage();
@@ -40,6 +41,7 @@ export class VideoWallWorld extends World {
    */
   async createClientContext(clientId: string, name?: string): Promise<ClientContext> {
     const context = await this.browser.newContext({
+      baseURL: this.baseUrl,
       permissions: ['camera', 'microphone', 'display-capture'],
     });
     const page = await context.newPage();

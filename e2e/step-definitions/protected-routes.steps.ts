@@ -39,27 +39,14 @@ When('I attempt to access the following protected routes:', async function (this
   }
 });
 
-Then('I should be redirected to {string}', async function (this: CustomWorld, expectedPath: string) {
-  await this.page.waitForTimeout(500);
-
-  const currentUrl = await getCurrentUrl(this.page);
-  const url = new URL(currentUrl);
-
-  expect(url.pathname).toBe(expectedPath);
-});
+// NOTE: "I should be redirected to {string}" and "the URL should contain {string}" steps are defined in my-apps.steps.ts and authentication.steps.ts
 
 Then('I should remain on {string}', async function (this: CustomWorld, expectedPath: string) {
   await this.page.waitForTimeout(300);
   await assertUrlPath(this.page, expectedPath);
 });
 
-Then('the URL should contain {string}', async function (this: CustomWorld, fragment: string) {
-  await verifyUrlContains(this.page, fragment);
-});
-
-Then('I should see {string} heading', async function (this: CustomWorld, headingText: string) {
-  await assertTextVisible(this.page, headingText);
-});
+// NOTE: "I should see {string} heading" step is defined in authentication.steps.ts
 
 Then('I should not be redirected', async function (this: CustomWorld) {
   await this.page.waitForTimeout(300);

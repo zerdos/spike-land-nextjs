@@ -1,3 +1,4 @@
+@video-wall
 Feature: Smart Video Wall Display
   As a presenter
   I want to display a video wall on a large screen
