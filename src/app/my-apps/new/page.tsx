@@ -333,6 +333,9 @@ export default function NewAppPage() {
           </CardDescription>
           <div className="pt-2">
             <Progress value={progressValue} data-testid="wizard-progress" />
+            <p className="text-xs text-muted-foreground mt-1" data-testid="wizard-progress-text">
+              Step {currentStep + 1} of {STEPS.length}
+            </p>
           </div>
         </CardHeader>
         <CardContent>

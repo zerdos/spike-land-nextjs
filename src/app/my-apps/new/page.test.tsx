@@ -336,7 +336,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
@@ -346,7 +346,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 3 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.click(screen.getByTestId("monetization-select"))
@@ -494,7 +494,7 @@ describe("NewAppPage", () => {
       const user = userEvent.setup()
       render(<NewAppPage />)
 
-      expect(screen.getByText(/Step 1 of 4/)).toBeInTheDocument()
+      expect(screen.getAllByText(/Step 1 of 4/)[0]).toBeInTheDocument()
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
@@ -504,7 +504,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
@@ -514,7 +514,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 3 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.click(screen.getByTestId("monetization-select"))
@@ -527,7 +527,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 4 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 4 of 4/)[0]).toBeInTheDocument()
       })
     })
 
@@ -543,13 +543,13 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.click(screen.getByTestId("back-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 1 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 1 of 4/)[0]).toBeInTheDocument()
       })
     })
 
@@ -565,13 +565,13 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.click(screen.getByTestId("back-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 1 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 1 of 4/)[0]).toBeInTheDocument()
       })
 
       await waitFor(() => {
@@ -598,7 +598,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
     })
   })
@@ -628,7 +628,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
@@ -638,7 +638,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 3 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
       })
 
       const selectTrigger = screen.getByTestId("monetization-select")
@@ -661,7 +661,7 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 4 of 4/)).toBeInTheDocument()
+        expect(screen.getAllByText(/Step 4 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.click(screen.getByTestId("submit-button"))

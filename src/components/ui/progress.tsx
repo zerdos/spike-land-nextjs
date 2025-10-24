@@ -15,6 +15,7 @@ const Progress = React.forwardRef<
       "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
       className
     )}
+    aria-valuenow={value ?? 0}
     {...props}
   >
     <ProgressPrimitive.Indicator
