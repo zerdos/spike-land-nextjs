@@ -94,10 +94,7 @@ When('I navigate to the client page with ID {string}', async function (this: Vid
   await clientContext.page.waitForLoadState('networkidle');
 });
 
-When('I grant camera permissions', async function (this: VideoWallWorld) {
-  // Permissions already granted via createClientContext
-  await this.displayPage.waitForTimeout(500);
-});
+// NOTE: "I grant camera permissions" step is defined in client-camera-control.steps.ts
 
 Then('I should be connected to the display', async function (this: VideoWallWorld) {
   const clientContext = this.getClientContext('manual-client') || this.getClientContext('scanned-client');
@@ -116,15 +113,7 @@ Then('the display should show my video feed', async function (this: VideoWallWor
 });
 
 // Invalid connection ID
-Then('I should see {string} error message', async function (this: VideoWallWorld, errorMessage: string) {
-  const clientContext = this.getClientContext('manual-client');
-  if (!clientContext) {
-    throw new Error('Client context not found');
-  }
-
-  const error = clientContext.page.getByText(errorMessage);
-  await expect(error).toBeVisible({ timeout: 5000 });
-});
+// NOTE: "I should see {string} error message" step is defined in client-camera-control.steps.ts
 
 Then('I should not be able to connect', async function (this: VideoWallWorld) {
   const clientContext = this.getClientContext('manual-client');
@@ -360,6 +349,12 @@ Then('I should reconnect to the same display', async function (this: VideoWallWo
   expect(url).toContain(this.displayId || 'test-display-id');
 });
 
+Then('my video feed should appear on the display', async function (this: VideoWallWorld) {
+  await this.displayPage.waitForTimeout(1000);
+  const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
+  await expect(videoFeeds.first()).toBeVisible({ timeout: 10000 });
+});
+
 // Prolonged disconnection
 When('the network connection is lost for more than {int} seconds', async function (this: VideoWallWorld, seconds: number) {
   const clientContext = this.getClientContext('reconnect-client');
@@ -372,10 +367,7 @@ When('the network connection is lost for more than {int} seconds', async functio
   await this.displayPage.waitForTimeout(seconds * 1000);
 });
 
-Then('the display should remove my video feed', async function (this: VideoWallWorld) {
-  const videoFeeds = this.displayPage.locator('[data-testid="video-feed"], video');
-  await expect(videoFeeds).toHaveCount(0, { timeout: 5000 });
-});
+// NOTE: "the display should remove my video feed" step is defined in client-camera-control.steps.ts
 
 Then('the display should show {string} notification', async function (this: VideoWallWorld, notification: string) {
   const notificationElement = this.displayPage.getByText(notification);

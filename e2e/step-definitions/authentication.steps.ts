@@ -80,6 +80,12 @@ When('I am logged in as {string} with avatar image {string}', async function (th
 When('I log out and log in as {string}', async function (this: CustomWorld, name: string) {
   // First log out by mocking null session
   await mockSession(this, null);
+
+  // Clear previous user's data for isolation
+  await this.page.evaluate(() => {
+    localStorage.clear();
+  });
+
   await this.page.reload();
   await this.page.waitForLoadState('networkidle');
 
@@ -92,6 +98,12 @@ When('I log out and log in as {string}', async function (this: CustomWorld, name
 When('I log out and log in as {string} with email {string}', async function (this: CustomWorld, name: string, email: string) {
   // First log out by mocking null session
   await mockSession(this, null);
+
+  // Clear previous user's data for isolation
+  await this.page.evaluate(() => {
+    localStorage.clear();
+  });
+
   await this.page.reload();
   await this.page.waitForLoadState('networkidle');
 
@@ -131,6 +143,11 @@ When('I click the {string} option in the dropdown', async function (this: Custom
 });
 
 Then('I should see the {string} button', async function (this: CustomWorld, buttonText: string) {
+  const button = this.page.getByRole('button', { name: buttonText });
+  await expect(button).toBeVisible();
+});
+
+Then('I should see {string} button', async function (this: CustomWorld, buttonText: string) {
   const button = this.page.getByRole('button', { name: buttonText });
   await expect(button).toBeVisible();
 });

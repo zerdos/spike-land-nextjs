@@ -213,24 +213,6 @@ Then('I should see the login options', async function (this: CustomWorld) {
   await expect(googleButton).toBeVisible();
 });
 
-When('I log out and log in as {string} with email {string}', async function (this: CustomWorld, name: string, email: string) {
-  // Update session with new user
-  await this.page.route('**/api/auth/session', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: { name, email },
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      }),
-    });
-  });
-
-  // Clear previous user's apps
-  await this.page.evaluate(() => {
-    localStorage.removeItem('user-apps');
-  });
-
-  await this.page.reload();
-  await this.page.waitForLoadState('networkidle');
-});
+// NOTE: "I log out and log in as {string} with email {string}" step is defined in authentication.steps.ts
+// The authentication step doesn't clear localStorage, so if needed for testing user isolation,
+// add localStorage.clear() to the test scenario itself.
