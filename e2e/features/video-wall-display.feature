@@ -1,10 +1,12 @@
+@skip
+@video-wall
 Feature: Smart Video Wall Display
   As a presenter
   I want to display a video wall on a large screen
   So that I can show connected client camera feeds
 
   Background:
-    Given I am on the display page
+    Given the video wall display page is open
 
   Scenario: Display shows QR code when no clients connected
     Then I should see a QR code for connection

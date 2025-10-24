@@ -1,4 +1,4 @@
-import { setWorldConstructor, World, IWorldOptions } from '@cucumber/cucumber';
+import { World, IWorldOptions } from '@cucumber/cucumber';
 import { Browser, BrowserContext, Page, chromium } from '@playwright/test';
 
 export interface CucumberWorldConstructorParams {
@@ -21,7 +21,9 @@ export class CustomWorld extends World {
     this.browser = await chromium.launch({
       headless: process.env.CI === 'true',
     });
-    this.context = await this.browser.newContext();
+    this.context = await this.browser.newContext({
+      baseURL: this.baseUrl,
+    });
     this.page = await this.context.newPage();
   }
 
@@ -32,4 +34,6 @@ export class CustomWorld extends World {
   }
 }
 
-setWorldConstructor(CustomWorld);
+// NOTE: setWorldConstructor is NOT called here because VideoWallWorld (which extends CustomWorld)
+// is set as the world constructor in video-wall-world.ts. This allows VideoWallWorld to be used
+// for all scenarios, while maintaining backward compatibility with step definitions that expect CustomWorld.
