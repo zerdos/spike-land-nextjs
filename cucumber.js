@@ -8,5 +8,6 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // Stop on first failure
     retry: 0, // Don't retry failed scenarios
+    tags: 'not @skip', // Skip scenarios/features tagged with @skip
   },
 };
