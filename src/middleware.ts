@@ -77,8 +77,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip authentication check in E2E test environment
-  if (process.env.E2E_BYPASS_AUTH === 'true') {
+  // Skip authentication check in E2E test environment or Vercel preview deployments
+  // VERCEL_ENV is automatically set by Vercel to "production", "preview", or "development"
+  if (process.env.E2E_BYPASS_AUTH === 'true' || process.env.VERCEL_ENV === 'preview') {
     return NextResponse.next()
   }
 

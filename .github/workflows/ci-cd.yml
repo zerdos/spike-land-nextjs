@@ -111,8 +111,6 @@ jobs:
           fi
 
       - name: Build Project Artifacts
-        env:
-          E2E_BYPASS_AUTH: 'true'
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
