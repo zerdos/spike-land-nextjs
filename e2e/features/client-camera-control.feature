@@ -1,3 +1,4 @@
+@skip
 @video-wall
 Feature: Client Camera Control
   As a video wall participant

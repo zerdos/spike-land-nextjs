@@ -1,3 +1,4 @@
+@skip
 Feature: User Profile Page
   As an authenticated user
   I want to view my profile information

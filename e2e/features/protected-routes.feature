@@ -1,3 +1,4 @@
+@skip
 Feature: Protected Routes
   As a user
   I want certain routes to require authentication

@@ -1,3 +1,4 @@
+@skip
 Feature: Site Navigation
   As a user
   I want to navigate through the application

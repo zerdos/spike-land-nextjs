@@ -42,7 +42,9 @@ export class VideoWallWorld extends World {
   async createClientContext(clientId: string, name?: string): Promise<ClientContext> {
     const context = await this.browser.newContext({
       baseURL: this.baseUrl,
-      permissions: ['camera', 'microphone', 'display-capture'],
+      permissions: ['camera', 'microphone'],
+      // Note: 'display-capture' is not a valid Playwright permission
+      // Screen sharing will be mocked via mockMediaDevices instead
     });
     const page = await context.newPage();
 

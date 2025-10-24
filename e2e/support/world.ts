@@ -34,4 +34,6 @@ export class CustomWorld extends World {
   }
 }
 
-setWorldConstructor(CustomWorld);
+// NOTE: setWorldConstructor is NOT called here because VideoWallWorld (which extends CustomWorld)
+// is set as the world constructor in video-wall-world.ts. This allows VideoWallWorld to be used
+// for all scenarios, while maintaining backward compatibility with step definitions that expect CustomWorld.

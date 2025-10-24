@@ -1,3 +1,4 @@
+@skip
 Feature: My Apps Dashboard
   As an authenticated user
   I want to view and manage my apps

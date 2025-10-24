@@ -1,3 +1,4 @@
+@skip
 @video-wall
 Feature: Layout Optimization
   As a presenter

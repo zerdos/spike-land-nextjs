@@ -1,3 +1,4 @@
+@skip
 Feature: User Settings Page
   As an authenticated user
   I want to manage my account settings

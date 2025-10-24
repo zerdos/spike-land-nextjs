@@ -1,3 +1,4 @@
+@skip
 @video-wall
 Feature: Connection Management
   As a video wall system

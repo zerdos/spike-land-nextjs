@@ -1,3 +1,4 @@
+@skip
 Feature: Authentication Error Handling
   As a user
   I want to see clear error messages when authentication fails

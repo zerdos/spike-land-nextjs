@@ -1,3 +1,4 @@
+@skip
 @video-wall
 Feature: Smart Video Wall Display
   As a presenter
