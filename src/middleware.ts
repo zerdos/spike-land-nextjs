@@ -15,6 +15,10 @@
  * - /apps/* - Public applications directory
  * - /api/auth/* - NextAuth authentication endpoints
  * - All other routes not explicitly protected
+ *
+ * E2E Test Bypass:
+ * - Requests with header 'x-e2e-auth-bypass' matching E2E_BYPASS_SECRET env var bypass authentication
+ * - This allows E2E tests to access protected routes securely without real authentication
  */
 
 import { auth } from "@/auth"
@@ -77,22 +81,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip authentication check in E2E test environment or Vercel preview deployments
-  // Check for:
-  // 1. E2E_BYPASS_AUTH environment variable
-  // 2. VERCEL_ENV set to "preview" (available in Vercel environment)
-  // 3. VERCEL_URL doesn't match production domain (runtime check)
-  //    Preview URLs: spike-land-nextjs-*.vercel.app
-  //    Production URL: next.spike.land
-  const hostname = request.nextUrl.hostname
-  const vercelUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL
-  const isProduction = hostname === 'next.spike.land' || vercelUrl === 'next.spike.land'
-  const isVercelDeployment = hostname.includes('.vercel.app') || (vercelUrl && vercelUrl.includes('.vercel.app'))
+  // Check for E2E test bypass header with secret validation
+  // This allows E2E tests to bypass authentication securely
+  const e2eBypassHeader = request.headers.get('x-e2e-auth-bypass')
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET
 
-  // Bypass auth for non-production Vercel deployments (preview/development)
-  if (process.env.E2E_BYPASS_AUTH === 'true' ||
-      process.env.VERCEL_ENV === 'preview' ||
-      (isVercelDeployment && !isProduction)) {
+  if (e2eBypassSecret && e2eBypassHeader === e2eBypassSecret) {
     return NextResponse.next()
   }
 
