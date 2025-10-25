@@ -1,0 +1,65 @@
+name: Security Audit
+
+on:
+  # Run on every pull request
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  # Run weekly on Monday at 9 AM UTC
+  schedule:
+    - cron: '0 9 * * 1'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: false
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+        continue-on-error: true
+
+      - name: Generate security report
+        if: failure()
+        run: |
+          echo "## Security Audit Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The security audit has detected vulnerabilities." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please review the audit results and update dependencies:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          npm audit >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To fix vulnerabilities, run:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "npm audit fix" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Success summary
+        if: success()
+        run: |
+          echo "## ✅ Security Audit Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No security vulnerabilities detected!" >> $GITHUB_STEP_SUMMARY
