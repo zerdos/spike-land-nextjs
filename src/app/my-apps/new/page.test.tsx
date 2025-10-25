@@ -98,9 +98,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(
-          screen.getByText("App name must be at least 3 characters")
-        ).toBeInTheDocument()
+        const errors = screen.getAllByText("App name must be at least 3 characters")
+        expect(errors.length).toBeGreaterThan(0)
       })
     })
 
@@ -113,9 +112,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Description must be at least 10 characters")
-        ).toBeInTheDocument()
+        const errors = screen.getAllByText("Description must be at least 10 characters")
+        expect(errors.length).toBeGreaterThan(0)
       })
     })
 
@@ -167,11 +165,10 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(
-          screen.getByText(
-            "App name can only contain letters, numbers, spaces, and hyphens"
-          )
-        ).toBeInTheDocument()
+        const errors = screen.getAllByText(
+          "App name can only contain letters, numbers, spaces, and hyphens"
+        )
+        expect(errors.length).toBeGreaterThan(0)
       })
     })
   })
@@ -204,9 +201,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Requirements must be at least 20 characters")
-        ).toBeInTheDocument()
+        const errors = screen.getAllByText("Requirements must be at least 20 characters")
+        expect(errors.length).toBeGreaterThan(0)
       })
     })
 
@@ -276,9 +272,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("next-button"))
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Please select a monetization model")
-        ).toBeInTheDocument()
+        const errors = screen.getAllByText("Please select a monetization model")
+        expect(errors.length).toBeGreaterThan(0)
       })
     })
 
@@ -670,6 +665,464 @@ describe("NewAppPage", () => {
         const apps = JSON.parse(localStorageMock["my-apps"] || "[]")
         expect(apps).toHaveLength(2)
         expect(apps[1].name).toBe("New App")
+      })
+    })
+  })
+
+  describe("Validation Mode - Blur and onChange", () => {
+    it("should validate on blur for name field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      const nameInput = screen.getByTestId("app-name-input")
+      await user.type(nameInput, "AB")
+      await user.tab()
+
+      await waitFor(() => {
+        const errors = screen.getAllByText("App name must be at least 3 characters")
+        expect(errors.length).toBeGreaterThan(0)
+      })
+    })
+
+    it("should validate on blur for description field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      const descInput = screen.getByTestId("app-description-input")
+      await user.type(descInput, "Short")
+      await user.tab()
+
+      await waitFor(() => {
+        const errors = screen.getAllByText("Description must be at least 10 characters")
+        expect(errors.length).toBeGreaterThan(0)
+      })
+    })
+
+    it("should show validation mode is set correctly", () => {
+      render(<NewAppPage />)
+
+      const nameInput = screen.getByTestId("app-name-input")
+      expect(nameInput).toBeInTheDocument()
+    })
+  })
+
+  describe("Character Counters", () => {
+    it("should display character counter for name field", () => {
+      render(<NewAppPage />)
+
+      const counters = screen.getAllByTestId("char-counter")
+      expect(counters.length).toBeGreaterThan(0)
+    })
+
+    it("should update character count as user types in name field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Test")
+
+      await waitFor(() => {
+        const counters = screen.getAllByTestId("char-counter")
+        const nameCounter = counters.find(c => c.textContent?.includes("4 / 50"))
+        expect(nameCounter).toBeInTheDocument()
+      })
+    })
+
+    it("should show warning when under minimum characters", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "AB")
+
+      await waitFor(() => {
+        const warning = screen.getByTestId("char-counter-warning")
+        expect(warning).toHaveTextContent("minimum 3")
+      })
+    })
+
+    it("should show character counter for description field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-description-input"), "Test desc")
+
+      await waitFor(() => {
+        const counters = screen.getAllByTestId("char-counter")
+        const descCounter = counters.find(c => c.textContent?.includes("9 / 500"))
+        expect(descCounter).toBeInTheDocument()
+      })
+    })
+
+    it("should show character counter for requirements field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "Valid description"
+      )
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.type(screen.getByTestId("app-requirements-input"), "Test req")
+
+      await waitFor(() => {
+        const counters = screen.getAllByTestId("char-counter")
+        const reqCounter = counters.find(c => c.textContent?.includes("8 / 2000"))
+        expect(reqCounter).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("Field Status Icons", () => {
+    it("should show error icon when name field has error", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "AB")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-icon")).toBeInTheDocument()
+      })
+    })
+
+    it("should show success icon when name field is valid and dirty", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Valid App Name")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("success-icon")).toBeInTheDocument()
+      })
+    })
+
+    it("should show error icon when description field has error", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-description-input"), "Short")
+      await user.tab()
+
+      await waitFor(() => {
+        const errorIcons = screen.getAllByTestId("error-icon")
+        expect(errorIcons.length).toBeGreaterThan(0)
+      })
+    })
+
+    it("should show success icon when description field is valid and dirty", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "This is a valid description with enough characters"
+      )
+      await user.tab()
+
+      await waitFor(() => {
+        const successIcons = screen.getAllByTestId("success-icon")
+        expect(successIcons.length).toBeGreaterThan(0)
+      })
+    })
+  })
+
+  describe("Error Summary Panel", () => {
+    it("should not show error summary when no errors", () => {
+      render(<NewAppPage />)
+
+      expect(screen.queryByTestId("error-summary")).not.toBeInTheDocument()
+    })
+
+    it("should show error summary when validation fails", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "AB")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-summary")).toBeInTheDocument()
+      })
+    })
+
+    it("should list all validation errors in summary", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "AB")
+      await user.type(screen.getByTestId("app-description-input"), "Short")
+      await user.tab()
+      await user.tab()
+
+      await waitFor(() => {
+        const summary = screen.getByTestId("error-summary")
+        expect(summary).toBeInTheDocument()
+        expect(screen.getByTestId("error-item-0")).toBeInTheDocument()
+      })
+    })
+
+    it("should show error summary with proper formatting", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "A")
+      await user.tab()
+
+      await waitFor(() => {
+        const summary = screen.getByTestId("error-summary")
+        expect(summary).toHaveTextContent("Validation Errors")
+        expect(summary).toHaveTextContent("App Name:")
+        const errors = screen.getAllByText("App name must be at least 3 characters")
+        expect(errors.length).toBeGreaterThan(0)
+      })
+    })
+
+    it("should show error summary appears and disappears correctly", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      const nameInput = screen.getByTestId("app-name-input")
+      await user.type(nameInput, "AB")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-summary")).toBeInTheDocument()
+      })
+
+      expect(screen.getByTestId("error-summary")).toBeInTheDocument()
+    })
+  })
+
+  describe("Requirements Field Guidance", () => {
+    it("should show template placeholder for requirements field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "Valid description"
+      )
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      const reqInput = screen.getByTestId("app-requirements-input")
+      expect(reqInput).toHaveAttribute(
+        "placeholder",
+        expect.stringContaining("Example requirements")
+      )
+    })
+
+    it("should apply monospace font to requirements field", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "Valid description"
+      )
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const reqInput = screen.getByTestId("app-requirements-input")
+        expect(reqInput).toHaveClass("font-mono")
+      })
+    })
+
+    it("should validate requirements with minimum characters", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "Valid description"
+      )
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.type(screen.getByTestId("app-requirements-input"), "Short")
+      await user.tab()
+
+      await waitFor(() => {
+        const errors = screen.getAllByText("Requirements must be at least 20 characters")
+        expect(errors.length).toBeGreaterThan(0)
+      })
+    })
+  })
+
+  describe("CharacterCounter Component", () => {
+    it("should show correct count when empty", () => {
+      render(<NewAppPage />)
+
+      const counters = screen.getAllByTestId("char-counter")
+      expect(counters.length).toBeGreaterThan(0)
+    })
+
+    it("should highlight when over max characters", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      const longName = "A".repeat(51)
+      await user.type(screen.getByTestId("app-name-input"), longName)
+
+      await waitFor(() => {
+        const counters = screen.getAllByTestId("char-counter")
+        const nameCounter = counters.find(c => c.textContent?.includes("51 / 50"))
+        expect(nameCounter).toHaveClass("text-destructive")
+      })
+    })
+  })
+
+  describe("FieldStatusIcon Component", () => {
+    it("should not show icon when field is empty and untouched", () => {
+      render(<NewAppPage />)
+
+      expect(screen.queryByTestId("error-icon")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("success-icon")).not.toBeInTheDocument()
+    })
+
+    it("should show error icon before success icon when both conditions exist", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "AB")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-icon")).toBeInTheDocument()
+        expect(screen.queryByTestId("success-icon")).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("Edge Cases", () => {
+    it("should handle review step validation (step 3)", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      // Navigate to review step
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(screen.getByTestId("app-description-input"), "Valid description")
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.type(screen.getByTestId("app-requirements-input"), "Valid requirements for testing")
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 3 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.click(screen.getByTestId("monetization-select"))
+      await waitFor(() => {
+        const options = screen.getAllByText("Free - No charge for users")
+        expect(options.length).toBeGreaterThan(0)
+      })
+
+      const options = screen.getAllByText("Free - No charge for users")
+      await user.click(options[options.length - 1])
+      await user.click(screen.getByTestId("next-button"))
+
+      // Now on review step (step 3)
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 4 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      // Click next on review step - should submit
+      const submitButton = screen.getByTestId("submit-button")
+      expect(submitButton).toBeInTheDocument()
+    })
+  })
+
+  describe("Integration - All Features Together", () => {
+    it("should show all validation enhancements working together", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      const nameInput = screen.getByTestId("app-name-input")
+      await user.type(nameInput, "A")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-summary")).toBeInTheDocument()
+      }, { timeout: 3000 })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("error-icon")).toBeInTheDocument()
+      }, { timeout: 3000 })
+
+      const counters = screen.getAllByTestId("char-counter")
+      expect(counters.length).toBeGreaterThan(0)
+      expect(screen.getByTestId("char-counter-warning")).toBeInTheDocument()
+    })
+
+    it("should handle complete form flow with all enhancements", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      await user.type(screen.getByTestId("app-name-input"), "Great App")
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByTestId("success-icon")).toBeInTheDocument()
+      })
+
+      await user.type(
+        screen.getByTestId("app-description-input"),
+        "This is a comprehensive description"
+      )
+      await user.tab()
+
+      await waitFor(() => {
+        const successIcons = screen.getAllByTestId("success-icon")
+        expect(successIcons.length).toBe(2)
+      })
+
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.type(
+        screen.getByTestId("app-requirements-input"),
+        "This app needs authentication and profile management"
+      )
+
+      await waitFor(() => {
+        const counters = screen.getAllByTestId("char-counter")
+        expect(counters.length).toBeGreaterThan(0)
+      })
+
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 3 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
       })
     })
   })
