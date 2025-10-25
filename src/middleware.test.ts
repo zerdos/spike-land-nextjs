@@ -75,7 +75,8 @@ describe("middleware", () => {
       return {
         nextUrl: new URL(baseUrl),
         url: baseUrl,
-      } as NextRequest
+        headers: new Headers(),
+      } as unknown as NextRequest
     }
 
     describe("public paths", () => {
@@ -226,6 +227,128 @@ describe("middleware", () => {
 
         expect(response.status).toBe(200)
         expect(response.headers.get("x-middleware-next")).toBe("1")
+      })
+    })
+
+    describe("E2E test bypass with secret header", () => {
+      const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
+        const baseUrl = `http://localhost:3000${pathname}`
+        const headers = new Headers()
+        if (headerValue !== undefined) {
+          headers.set('x-e2e-auth-bypass', headerValue)
+        }
+        return {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers,
+        } as unknown as NextRequest
+      }
+
+      it("should bypass auth for protected path with correct secret header", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should NOT bypass auth with incorrect secret header", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "wrong-secret")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should NOT bypass auth when header is missing", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequest("/my-apps")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should NOT bypass auth when E2E_BYPASS_SECRET is not configured", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        delete process.env.E2E_BYPASS_SECRET
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "any-secret")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should bypass auth for all protected paths with correct secret", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        const protectedPaths = ["/my-apps", "/my-apps/app-123", "/settings", "/profile"]
+
+        for (const path of protectedPaths) {
+          vi.mocked(auth).mockResolvedValue(null)
+          const request = createMockRequestWithHeader(path, "test-secret-123")
+          const response = await middleware(request)
+
+          expect(response.status).toBe(200)
+          expect(response.headers.get("x-middleware-next")).toBe("1")
+        }
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should still allow public paths without bypass header", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequest("/")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
+      })
+
+      it("should bypass auth with empty string secret if configured", async () => {
+        const originalEnv = process.env.E2E_BYPASS_SECRET
+        process.env.E2E_BYPASS_SECRET = ''
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "")
+        const response = await middleware(request)
+
+        // Empty string secret should NOT bypass (falsy check in middleware)
+        expect(response.status).toBe(307)
+        expect(auth).toHaveBeenCalled()
+
+        process.env.E2E_BYPASS_SECRET = originalEnv
       })
     })
 
