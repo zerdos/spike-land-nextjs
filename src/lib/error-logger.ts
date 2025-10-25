@@ -59,12 +59,12 @@ class ErrorLogger {
   /**
    * Send error to external tracking service (Sentry, LogRocket, etc.)
    */
-  private sendToErrorTracking(error: Error, errorInfo: Record<string, unknown>): void {
+  private sendToErrorTracking(_error: Error, errorInfo: Record<string, unknown>): void {
     // This is where you would integrate with Sentry or other services
     // For now, we'll just console.error in production as a fallback
     if (this.config.sentryDsn) {
       // Future: Initialize and use Sentry SDK
-      // Sentry.captureException(error, { contexts: { errorInfo } });
+      // Sentry.captureException(_error, { contexts: { errorInfo } });
       console.error('[ErrorLogger] Error would be sent to Sentry:', errorInfo);
     } else {
       console.error('[ErrorLogger] Production error:', errorInfo);
