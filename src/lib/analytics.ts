@@ -37,7 +37,14 @@ export function trackEvent(
     return;
   }
 
-  track(event, properties);
+  // Filter out undefined values to match Vercel Analytics type requirements
+  const cleanProperties = properties
+    ? Object.fromEntries(
+        Object.entries(properties).filter(([, value]) => value !== undefined)
+      )
+    : undefined;
+
+  track(event, cleanProperties as Record<string, string | number | boolean | null> | undefined);
 }
 
 export const analytics = {
