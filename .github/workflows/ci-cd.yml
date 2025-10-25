@@ -111,6 +111,8 @@ jobs:
           fi
 
       - name: Build Project Artifacts
+        env:
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
@@ -165,6 +167,7 @@ jobs:
       - name: Run E2E tests
         env:
           BASE_URL: ${{ needs.deploy.outputs.deployment-url }}
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
         run: npm run test:e2e:ci
 
       - name: Upload E2E test reports
