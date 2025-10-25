@@ -27,7 +27,7 @@ export default function SettingsError({
         <CardHeader>
           <CardTitle className="text-destructive">Error Loading Settings</CardTitle>
           <CardDescription>
-            We couldn't load your settings. Please try again.
+            We couldn&apos;t load your settings. Please try again.
           </CardDescription>
         </CardHeader>
         <CardContent>

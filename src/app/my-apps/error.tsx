@@ -27,7 +27,7 @@ export default function MyAppsError({
         <CardHeader>
           <CardTitle className="text-destructive">Error Loading My Apps</CardTitle>
           <CardDescription>
-            We couldn't load your apps. This might be a temporary issue.
+            We couldn&apos;t load your apps. This might be a temporary issue.
           </CardDescription>
         </CardHeader>
         <CardContent>
