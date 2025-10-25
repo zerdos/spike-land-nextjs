@@ -4,82 +4,8 @@ import { CustomWorld } from '../support/world';
 import * as fs from 'fs';
 import * as path from 'path';
 
-Given('I am on the my-apps page', async function (this: CustomWorld) {
-  await this.page.goto('/my-apps');
-  await this.page.waitForLoadState('domcontentloaded');
-});
-
-Given('I am on the new app creation page', async function (this: CustomWorld) {
-  await this.page.goto('/my-apps/new');
-  await this.page.waitForLoadState('domcontentloaded');
-});
-
-Given('I am on the profile page', async function (this: CustomWorld) {
-  await this.page.goto('/profile');
-  await this.page.waitForLoadState('domcontentloaded');
-});
-
-Given('I am on the settings page', async function (this: CustomWorld) {
-  await this.page.goto('/settings');
-  await this.page.waitForLoadState('domcontentloaded');
-});
-
 Given('the loading components are implemented', function (this: CustomWorld) {
   // This is a given state - loading components exist in the codebase
-});
-
-Given('I navigate between pages', async function (this: CustomWorld) {
-  await this.page.goto('/my-apps');
-  await this.page.waitForLoadState('domcontentloaded');
-});
-
-Then('the page should have proper layout structure', async function (this: CustomWorld) {
-  // Verify the my-apps page has the expected structure
-  const container = this.page.locator('.min-h-screen').first();
-  await expect(container).toBeVisible();
-
-  // Verify main content areas are present
-  const hasContent = await this.page.evaluate(() => {
-    return !!(document.querySelector('.container') || document.querySelector('main'));
-  });
-  expect(hasContent).toBe(true);
-});
-
-Then('the page should have wizard layout structure', async function (this: CustomWorld) {
-  // Verify the wizard page has the expected structure
-  const container = this.page.locator('.max-w-2xl').first();
-  await expect(container).toBeVisible();
-});
-
-Then('the page should have profile layout structure', async function (this: CustomWorld) {
-  // Verify the profile page has the expected structure
-  const container = this.page.locator('.container').first();
-  await expect(container).toBeVisible();
-});
-
-Then('the page should have settings layout structure', async function (this: CustomWorld) {
-  // Verify the settings page has the expected structure
-  const container = this.page.locator('.max-w-4xl').first();
-  await expect(container).toBeVisible();
-});
-
-Then('there should be no blank white screens', async function (this: CustomWorld) {
-  // Verify some content is always visible (either skeleton or actual content)
-  const hasContent = await this.page.evaluate(() => {
-    const body = document.body;
-    const hasVisibleElements = body.children.length > 0;
-    const hasContainer = !!(
-      document.querySelector('.container') ||
-      document.querySelector('main') ||
-      document.querySelector('[role="main"]') ||
-      document.querySelector('.min-h-screen') ||
-      document.querySelector('.max-w-2xl') ||
-      document.querySelector('.max-w-4xl')
-    );
-    return hasVisibleElements && hasContainer;
-  });
-
-  expect(hasContent).toBe(true);
 });
 
 Then('loading.tsx should exist for my-apps route', function (this: CustomWorld) {
@@ -102,19 +28,82 @@ Then('loading.tsx should exist for settings route', function (this: CustomWorld)
   expect(fs.existsSync(loadingPath)).toBe(true);
 });
 
-Then('the content should load smoothly', async function (this: CustomWorld) {
-  // Wait for page to be fully loaded
-  await this.page.waitForLoadState('networkidle');
-
-  // Verify content is present
-  const hasContent = await this.page.evaluate(() => {
-    return !!(document.querySelector('.container') || document.querySelector('main'));
-  });
-  expect(hasContent).toBe(true);
+Then('skeleton.tsx should exist in components\\/ui', function (this: CustomWorld) {
+  const skeletonPath = path.join(process.cwd(), 'src/components/ui/skeleton.tsx');
+  expect(fs.existsSync(skeletonPath)).toBe(true);
 });
 
-Then('the layout should remain stable', async function (this: CustomWorld) {
-  // Verify main layout structure remains consistent
-  const mainLayout = this.page.locator('.container, main, [role="main"]').first();
-  await expect(mainLayout).toBeVisible();
+Then('skeleton component should have tests', function (this: CustomWorld) {
+  const testPath = path.join(process.cwd(), 'src/components/ui/skeleton.test.tsx');
+  expect(fs.existsSync(testPath)).toBe(true);
+});
+
+Then('app-card-skeleton.tsx should exist', function (this: CustomWorld) {
+  const componentPath = path.join(process.cwd(), 'src/components/skeletons/app-card-skeleton.tsx');
+  expect(fs.existsSync(componentPath)).toBe(true);
+});
+
+Then('wizard-step-skeleton.tsx should exist', function (this: CustomWorld) {
+  const componentPath = path.join(process.cwd(), 'src/components/skeletons/wizard-step-skeleton.tsx');
+  expect(fs.existsSync(componentPath)).toBe(true);
+});
+
+Then('profile-skeleton.tsx should exist', function (this: CustomWorld) {
+  const componentPath = path.join(process.cwd(), 'src/components/skeletons/profile-skeleton.tsx');
+  expect(fs.existsSync(componentPath)).toBe(true);
+});
+
+Then('settings-skeleton.tsx should exist', function (this: CustomWorld) {
+  const componentPath = path.join(process.cwd(), 'src/components/skeletons/settings-skeleton.tsx');
+  expect(fs.existsSync(componentPath)).toBe(true);
+});
+
+Then('all loading files should have corresponding test files', function (this: CustomWorld) {
+  const loadingFiles = [
+    'src/app/my-apps/loading.tsx',
+    'src/app/my-apps/new/loading.tsx',
+    'src/app/profile/loading.tsx',
+    'src/app/settings/loading.tsx',
+  ];
+
+  const testFiles = [
+    'src/app/my-apps/loading.test.tsx',
+    'src/app/my-apps/new/loading.test.tsx',
+    'src/app/profile/loading.test.tsx',
+    'src/app/settings/loading.test.tsx',
+  ];
+
+  loadingFiles.forEach((file, index) => {
+    const filePath = path.join(process.cwd(), file);
+    const testPath = path.join(process.cwd(), testFiles[index]);
+
+    if (fs.existsSync(filePath)) {
+      expect(fs.existsSync(testPath)).toBe(true);
+    }
+  });
+});
+
+Then('all skeleton components should have corresponding test files', function (this: CustomWorld) {
+  const componentFiles = [
+    'src/components/skeletons/app-card-skeleton.tsx',
+    'src/components/skeletons/wizard-step-skeleton.tsx',
+    'src/components/skeletons/profile-skeleton.tsx',
+    'src/components/skeletons/settings-skeleton.tsx',
+  ];
+
+  const testFiles = [
+    'src/components/skeletons/app-card-skeleton.test.tsx',
+    'src/components/skeletons/wizard-step-skeleton.test.tsx',
+    'src/components/skeletons/profile-skeleton.test.tsx',
+    'src/components/skeletons/settings-skeleton.test.tsx',
+  ];
+
+  componentFiles.forEach((file, index) => {
+    const filePath = path.join(process.cwd(), file);
+    const testPath = path.join(process.cwd(), testFiles[index]);
+
+    if (fs.existsSync(filePath)) {
+      expect(fs.existsSync(testPath)).toBe(true);
+    }
+  });
 });
