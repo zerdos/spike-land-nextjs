@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 
 const STORAGE_KEY = "app-creation-draft"
 
@@ -48,6 +50,70 @@ const MONETIZATION_LABELS: Record<typeof MONETIZATION_MODELS[number], string> = 
   "usage-based": "Usage-based - Pay per use",
 }
 
+const REQUIREMENTS_TEMPLATE = `Example requirements:
+• User authentication (login/signup)
+• Dashboard with data visualization
+• Mobile responsive design
+• Dark mode support
+• Export data to CSV/PDF
+• Real-time notifications`
+
+function CharacterCounter({
+  current,
+  max,
+  min
+}: {
+  current: number
+  max: number
+  min?: number
+}) {
+  const isOverMax = current > max
+  const isUnderMin = min !== undefined && current > 0 && current < min
+  const isValid = current >= (min || 0) && current <= max && current > 0
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span
+        className={`${
+          isOverMax || isUnderMin
+            ? "text-destructive font-medium"
+            : isValid
+            ? "text-muted-foreground"
+            : "text-muted-foreground"
+        }`}
+        data-testid="char-counter"
+      >
+        {current} / {max} characters
+      </span>
+      {min !== undefined && current > 0 && current < min && (
+        <span className="text-destructive text-xs" data-testid="char-counter-warning">
+          (minimum {min})
+        </span>
+      )}
+    </div>
+  )
+}
+
+function FieldStatusIcon({
+  error,
+  value,
+  isDirty
+}: {
+  error?: string
+  value: string
+  isDirty?: boolean
+}) {
+  if (error) {
+    return <XCircle className="h-4 w-4 text-destructive" data-testid="error-icon" />
+  }
+
+  if (value && isDirty) {
+    return <CheckCircle2 className="h-4 w-4 text-green-600" data-testid="success-icon" />
+  }
+
+  return null
+}
+
 export default function NewAppPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
@@ -61,6 +127,8 @@ export default function NewAppPage() {
 
   const form = useForm<AppCreationFormData>({
     resolver: zodResolver(appCreationSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     shouldUnregister: false,
     defaultValues: {
       name: "",
@@ -159,6 +227,28 @@ export default function NewAppPage() {
 
   const progressValue = ((currentStep + 1) / STEPS.length) * 100
 
+  const getFormErrors = () => {
+    const errors = form.formState.errors
+    const errorList: Array<{ field: string; message: string }> = []
+
+    if (errors.name?.message) {
+      errorList.push({ field: "App Name", message: errors.name.message })
+    }
+    if (errors.description?.message) {
+      errorList.push({ field: "Description", message: errors.description.message })
+    }
+    if (errors.requirements?.message) {
+      errorList.push({ field: "Requirements", message: errors.requirements.message })
+    }
+    if (errors.monetizationModel?.message) {
+      errorList.push({ field: "Monetization Model", message: errors.monetizationModel.message })
+    }
+
+    return errorList
+  }
+
+  const formErrors = getFormErrors()
+
   const renderStep = () => {
     switch (currentStep) {
       case 0:
@@ -167,25 +257,38 @@ export default function NewAppPage() {
             <FormField
               control={form.control}
               name="name"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>App Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="My Awesome App"
-                      {...field}
-                      value={formState.name}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        setFormState({ ...formState, name: value })
-                        field.onChange(value)
-                      }}
-                      data-testid="app-name-input"
-                    />
+                    <div className="relative">
+                      <Input
+                        placeholder="My Awesome App"
+                        {...field}
+                        value={formState.name}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setFormState({ ...formState, name: value })
+                          field.onChange(value)
+                        }}
+                        data-testid="app-name-input"
+                        className={fieldState.error ? "pr-10" : ""}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <FieldStatusIcon
+                          error={fieldState.error?.message}
+                          value={formState.name}
+                          isDirty={fieldState.isDirty}
+                        />
+                      </div>
+                    </div>
                   </FormControl>
-                  <FormDescription>
-                    Choose a unique name for your application
-                  </FormDescription>
+                  <div className="flex justify-between items-center">
+                    <FormDescription>
+                      Choose a unique name for your application
+                    </FormDescription>
+                    <CharacterCounter current={formState.name.length} max={50} min={3} />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -193,26 +296,38 @@ export default function NewAppPage() {
             <FormField
               control={form.control}
               name="description"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Describe what your app does..."
-                      className="min-h-[100px]"
-                      {...field}
-                      value={formState.description}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        setFormState({ ...formState, description: value })
-                        field.onChange(value)
-                      }}
-                      data-testid="app-description-input"
-                    />
+                    <div className="relative">
+                      <Textarea
+                        placeholder="Describe what your app does..."
+                        className="min-h-[100px]"
+                        {...field}
+                        value={formState.description}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setFormState({ ...formState, description: value })
+                          field.onChange(value)
+                        }}
+                        data-testid="app-description-input"
+                      />
+                      <div className="absolute right-3 top-3">
+                        <FieldStatusIcon
+                          error={fieldState.error?.message}
+                          value={formState.description}
+                          isDirty={fieldState.isDirty}
+                        />
+                      </div>
+                    </div>
                   </FormControl>
-                  <FormDescription>
-                    Provide a brief description of your application
-                  </FormDescription>
+                  <div className="flex justify-between items-center">
+                    <FormDescription>
+                      Provide a brief description of your application
+                    </FormDescription>
+                    <CharacterCounter current={formState.description.length} max={500} min={10} />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -225,26 +340,38 @@ export default function NewAppPage() {
           <FormField
             control={form.control}
             name="requirements"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel>Initial Requirements</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="List your app requirements, features, and functionality..."
-                    className="min-h-[200px]"
-                    {...field}
-                    value={formState.requirements}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setFormState({ ...formState, requirements: value })
-                      field.onChange(value)
-                    }}
-                    data-testid="app-requirements-input"
-                  />
+                  <div className="relative">
+                    <Textarea
+                      placeholder={REQUIREMENTS_TEMPLATE}
+                      className="min-h-[200px] font-mono text-sm"
+                      {...field}
+                      value={formState.requirements}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setFormState({ ...formState, requirements: value })
+                        field.onChange(value)
+                      }}
+                      data-testid="app-requirements-input"
+                    />
+                    <div className="absolute right-3 top-3">
+                      <FieldStatusIcon
+                        error={fieldState.error?.message}
+                        value={formState.requirements}
+                        isDirty={fieldState.isDirty}
+                      />
+                    </div>
+                  </div>
                 </FormControl>
-                <FormDescription>
-                  Describe the features and functionality you want in your app
-                </FormDescription>
+                <div className="flex justify-between items-start gap-4">
+                  <FormDescription className="flex-1">
+                    Describe the features and functionality you want in your app. Use bullet points (•) for clarity.
+                  </FormDescription>
+                  <CharacterCounter current={formState.requirements.length} max={2000} min={20} />
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -341,6 +468,21 @@ export default function NewAppPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {formErrors.length > 0 && (
+                <Alert variant="destructive" data-testid="error-summary">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Validation Errors</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc list-inside space-y-1 mt-2">
+                      {formErrors.map((error, index) => (
+                        <li key={index} data-testid={`error-item-${index}`}>
+                          <strong>{error.field}:</strong> {error.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="space-y-4">{renderStep()}</div>
 
               <div className="flex justify-between pt-4">
