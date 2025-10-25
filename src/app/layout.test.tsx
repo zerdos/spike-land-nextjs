@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { render } from '@testing-library/react'
 import { Geist, Geist_Mono } from 'next/font/google'
 import RootLayout, { metadata } from './layout'
 
@@ -15,6 +16,18 @@ vi.mock('next/font/google', () => ({
 
 vi.mock('@/components/auth/session-provider', () => ({
   SessionProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
+vi.mock('@vercel/analytics/react', () => ({
+  Analytics: () => <div data-testid="analytics">Analytics</div>,
+}))
+
+vi.mock('@vercel/speed-insights/next', () => ({
+  SpeedInsights: () => <div data-testid="speed-insights">SpeedInsights</div>,
+}))
+
+vi.mock('@/components/analytics/cookie-consent', () => ({
+  CookieConsent: () => <div data-testid="cookie-consent">CookieConsent</div>,
 }))
 
 describe('RootLayout', () => {
@@ -73,7 +86,24 @@ describe('RootLayout', () => {
   it('should render children within SessionProvider wrapper', () => {
     const testChild = <div>Test Child</div>
     const result = RootLayout({ children: testChild })
-    expect(result.props.children.props.children.props.children).toBe(testChild)
+    const bodyChildren = result.props.children.props.children
+    // SessionProvider is the first child, children are wrapped inside it
+    expect(bodyChildren[0].props.children).toBe(testChild)
+  })
+
+  it('should render CookieConsent component', () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }))
+    expect(getByTestId('cookie-consent')).toBeInTheDocument()
+  })
+
+  it('should render Analytics component', () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }))
+    expect(getByTestId('analytics')).toBeInTheDocument()
+  })
+
+  it('should render SpeedInsights component', () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }))
+    expect(getByTestId('speed-insights')).toBeInTheDocument()
   })
 })
 
