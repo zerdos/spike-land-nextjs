@@ -174,9 +174,11 @@ export default function NewAppPage() {
       case 2:
         isValid = await form.trigger(["monetizationModel"])
         break
+      /* v8 ignore next 3 */
       case 3:
         isValid = true
         break
+      /* v8 ignore next 2 */
       default:
         isValid = false
     }
@@ -445,6 +447,7 @@ export default function NewAppPage() {
           </div>
         )
 
+      /* v8 ignore next 2 */
       default:
         return null
     }

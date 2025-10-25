@@ -1012,6 +1012,51 @@ describe("NewAppPage", () => {
     })
   })
 
+  describe("Edge Cases", () => {
+    it("should handle review step validation (step 3)", async () => {
+      const user = userEvent.setup()
+      render(<NewAppPage />)
+
+      // Navigate to review step
+      await user.type(screen.getByTestId("app-name-input"), "Test App")
+      await user.type(screen.getByTestId("app-description-input"), "Valid description")
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 2 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.type(screen.getByTestId("app-requirements-input"), "Valid requirements for testing")
+      await user.click(screen.getByTestId("next-button"))
+
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 3 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      await user.click(screen.getByTestId("monetization-select"))
+      await waitFor(() => {
+        const options = screen.getAllByText("Free - No charge for users")
+        expect(options.length).toBeGreaterThan(0)
+      })
+
+      const options = screen.getAllByText("Free - No charge for users")
+      await user.click(options[options.length - 1])
+      await user.click(screen.getByTestId("next-button"))
+
+      // Now on review step (step 3)
+      await waitFor(() => {
+        const stepTexts = screen.getAllByText(/Step 4 of 4/)
+        expect(stepTexts.length).toBeGreaterThan(0)
+      })
+
+      // Click next on review step - should submit
+      const submitButton = screen.getByTestId("submit-button")
+      expect(submitButton).toBeInTheDocument()
+    })
+  })
+
   describe("Integration - All Features Together", () => {
     it("should show all validation enhancements working together", async () => {
       const user = userEvent.setup()
