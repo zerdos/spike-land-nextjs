@@ -242,7 +242,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Start dev server
-        run: npm run start &
+        run: npm run dev &
         env:
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
           NODE_OPTIONS: --max-old-space-size=3072
