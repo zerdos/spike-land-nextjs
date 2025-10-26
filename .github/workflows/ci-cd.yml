@@ -333,8 +333,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
+          script: |-
             const deploymentUrl = '${{ steps.deploy.outputs.url }}';
             const comment = `## 🚀 Test Deployment Ready
 
