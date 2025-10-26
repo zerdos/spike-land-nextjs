@@ -180,11 +180,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-
 
-      - name: Disable Next.js telemetry
-        run: npx next telemetry disable
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
 
-      - name: Build application
-        run: npm run build
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build application for Vercel
+        run: vercel build
         env:
           NODE_OPTIONS: --max-old-space-size=3072
 
@@ -193,7 +196,7 @@ jobs:
         with:
           name: build-output
           path: |
-            .next
+            .vercel/output
             node_modules
             package.json
             package-lock.json
