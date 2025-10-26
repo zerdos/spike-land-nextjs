@@ -92,7 +92,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: .next
+          path: |
+            .next
+            node_modules
+            package.json
+            package-lock.json
           retention-days: 7
 
   e2e:
@@ -111,8 +115,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Get Playwright version
         id: playwright-version
@@ -130,9 +136,6 @@ jobs:
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
-
-      - name: Build application for E2E
-        run: npm run build
 
       - name: Start dev server
         run: npm run start &
@@ -152,7 +155,7 @@ jobs:
           echo "Server failed to start"
           exit 1
 
-      - name: Run E2E tests
+      - name: Run E2E tests (localhost)
         env:
           BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
@@ -187,16 +190,16 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        env:
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel (Test)
         id: deploy
@@ -204,6 +207,67 @@ jobs:
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to TEST: $DEPLOYMENT_URL"
+
+      - name: Wait for deployment to be live
+        run: |
+          for i in {1..30}; do
+            if curl -f "${{ steps.deploy.outputs.url }}" > /dev/null 2>&1; then
+              echo "Deployment is live!"
+              exit 0
+            fi
+            echo "Waiting for deployment... ($i/30)"
+            sleep 2
+          done
+          echo "Deployment failed to become live"
+          exit 1
+
+      - name: Run smoke tests
+        run: chmod +x scripts/smoke-test.sh && ./scripts/smoke-test.sh "${{ steps.deploy.outputs.url }}"
+
+      - name: Comment on PR with deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const deploymentUrl = '${{ steps.deploy.outputs.url }}';
+            const comment = `## 🚀 Test Deployment Ready
+
+**URL:** [${deploymentUrl}](${deploymentUrl})
+
+✅ E2E tests passed
+✅ Smoke tests passed
+
+**Commit:** ${context.payload.pull_request?.head.sha.substring(0, 7)}
+**Workflow:** [#${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+
+            // Try to update existing comment, otherwise create new one
+            const existingComments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = existingComments.data.find(comment =>
+              comment.body.includes('Test Deployment Ready')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment,
+              });
+            }
 
   deploy-production:
     name: Deploy to Production
@@ -228,16 +292,16 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        env:
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel (Production)
         id: deploy
@@ -245,3 +309,19 @@ jobs:
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to PRODUCTION: $DEPLOYMENT_URL"
+
+      - name: Wait for production deployment to be live
+        run: |
+          for i in {1..30}; do
+            if curl -f "https://next.spike.land" > /dev/null 2>&1; then
+              echo "Production deployment is live!"
+              exit 0
+            fi
+            echo "Waiting for production deployment... ($i/30)"
+            sleep 2
+          done
+          echo "Production deployment failed to become live"
+          exit 1
+
+      - name: Run smoke tests on production
+        run: chmod +x scripts/smoke-test.sh && ./scripts/smoke-test.sh "https://next.spike.land"

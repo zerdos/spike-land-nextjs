@@ -1,0 +1,134 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - production
+          - test
+      deployment_id:
+        description: 'Vercel Deployment ID to rollback to (leave empty for previous)'
+        required: false
+        type: string
+
+jobs:
+  rollback:
+    name: Rollback ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Get Vercel Project Info
+        id: project
+        run: |
+          VERCEL_ORG_ID=$(vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .teamId')
+          VERCEL_PROJECT_ID=$(vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .id')
+          echo "org_id=$VERCEL_ORG_ID" >> $GITHUB_OUTPUT
+          echo "project_id=$VERCEL_PROJECT_ID" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: List recent deployments
+        id: deployments
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            DEPLOYMENTS=$(vercel deploy list --json --limit=5 --prod)
+          else
+            DEPLOYMENTS=$(vercel deploy list --json --limit=5)
+          fi
+          echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
+          echo "Recent deployments:"
+          echo "$DEPLOYMENTS" | jq -r '.[] | "  \(.created): \(.uid) - \(.status)"'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Determine rollback target
+        id: target
+        run: |
+          DEPLOYMENT_ID="${{ github.event.inputs.deployment_id }}"
+
+          if [ -z "$DEPLOYMENT_ID" ]; then
+            # Get the second most recent deployment (previous)
+            DEPLOYMENT_ID=$(echo '${{ steps.deployments.outputs.deployments }}' | jq -r '.[1].uid')
+            if [ -z "$DEPLOYMENT_ID" ] || [ "$DEPLOYMENT_ID" = "null" ]; then
+              echo "Error: Could not find previous deployment"
+              exit 1
+            fi
+            echo "Using previous deployment: $DEPLOYMENT_ID"
+          else
+            echo "Using specified deployment: $DEPLOYMENT_ID"
+          fi
+
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Promote deployment to ${{ github.event.inputs.environment }}
+        run: |
+          DEPLOYMENT_ID="${{ steps.target.outputs.deployment_id }}"
+
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            vercel promote "$DEPLOYMENT_ID" --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            echo "Promotion to preview environment not applicable"
+            exit 1
+          fi
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Verify rollback
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            for i in {1..30}; do
+              if curl -f "https://next.spike.land" > /dev/null 2>&1; then
+                echo "✓ Rollback successful!"
+                exit 0
+              fi
+              echo "Waiting for rollback verification... ($i/30)"
+              sleep 2
+            done
+            echo "Error: Rollback verification failed"
+            exit 1
+          fi
+
+      - name: Comment on recent commits about rollback
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `🔄 **Rollback Executed**
+
+Environment: ${{ github.event.inputs.environment }}
+Deployment ID: ${{ steps.target.outputs.deployment_id }}
+Triggered by: @${context.actor}
+
+The ${{ github.event.inputs.environment }} environment has been rolled back to the previous deployment.`;
+
+            // Create commit status
+            try {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: context.sha,
+                state: 'success',
+                description: 'Rollback completed',
+                context: 'Deployment Rollback',
+              });
+            } catch (error) {
+              console.log('Could not update commit status:', error.message);
+            }
