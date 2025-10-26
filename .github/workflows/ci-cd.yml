@@ -196,7 +196,7 @@ jobs:
         with:
           name: build-output
           path: |
-            .vercel/output
+            .vercel
             node_modules
             package.json
             package-lock.json
