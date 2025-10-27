@@ -199,22 +199,30 @@ export default function NewAppPage() {
     }
   }
 
-  const onSubmit = () => {
-    if (typeof window !== "undefined") {
-      const existingApps = localStorage.getItem("my-apps")
-      const apps = existingApps ? JSON.parse(existingApps) : []
-
-      apps.push({
-        ...formState,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
+  const onSubmit = async () => {
+    try {
+      const response = await fetch("/api/apps", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formState),
       })
 
-      localStorage.setItem("my-apps", JSON.stringify(apps))
-      localStorage.removeItem(STORAGE_KEY)
-    }
+      if (!response.ok) {
+        const error = await response.json()
+        console.error("Failed to create app:", error)
+        return
+      }
 
-    router.push("/my-apps")
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+
+      router.push("/my-apps")
+    } catch (error) {
+      console.error("Error creating app:", error)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
