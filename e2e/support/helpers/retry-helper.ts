@@ -1,0 +1,199 @@
+import { Page, Locator, expect } from '@playwright/test';
+
+/**
+ * Environment-specific timeout configuration
+ * CI environments typically need longer timeouts due to varying network conditions
+ */
+export const TIMEOUTS = {
+  DEFAULT: process.env.CI ? 10000 : 5000,
+  LONG: process.env.CI ? 20000 : 10000,
+  SHORT: process.env.CI ? 5000 : 2500,
+  RETRY_INTERVAL: 500,
+};
+
+/**
+ * Waits for an element to be visible with retry logic
+ * Useful for handling flaky selectors and race conditions
+ *
+ * @param page - Playwright Page instance
+ * @param selector - CSS selector or data-testid
+ * @param options - Configuration options
+ * @returns The visible locator
+ */
+export async function waitForElementWithRetry(
+  page: Page,
+  selector: string,
+  options: {
+    timeout?: number;
+    retryInterval?: number;
+    state?: 'visible' | 'attached' | 'hidden';
+  } = {}
+): Promise<Locator> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const retryInterval = options.retryInterval || TIMEOUTS.RETRY_INTERVAL;
+  const state = options.state || 'visible';
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const element = page.locator(selector);
+
+      if (state === 'visible') {
+        await expect(element).toBeVisible({ timeout: retryInterval * 2 });
+      } else if (state === 'attached') {
+        await expect(element).toBeAttached({ timeout: retryInterval * 2 });
+      } else if (state === 'hidden') {
+        await expect(element).toBeHidden({ timeout: retryInterval * 2 });
+      }
+
+      return element;
+    } catch (e) {
+      // Element not found or not in expected state, retry
+      await page.waitForTimeout(retryInterval);
+    }
+  }
+
+  throw new Error(
+    `Element with selector "${selector}" not found in state "${state}" after ${timeout}ms`
+  );
+}
+
+/**
+ * Waits for an element by test ID with retry logic
+ * Preferred method for locating elements to avoid selector conflicts
+ *
+ * @param page - Playwright Page instance
+ * @param testId - data-testid attribute value
+ * @param options - Configuration options
+ * @returns The visible locator
+ */
+export async function waitForTestId(
+  page: Page,
+  testId: string,
+  options: {
+    timeout?: number;
+    state?: 'visible' | 'attached' | 'hidden';
+  } = {}
+): Promise<Locator> {
+  return waitForElementWithRetry(page, `[data-testid="${testId}"]`, options);
+}
+
+/**
+ * Waits for a button by test ID and clicks it with retry logic
+ * Handles cases where button might not be immediately clickable
+ *
+ * @param page - Playwright Page instance
+ * @param testId - data-testid attribute value
+ * @param options - Configuration options
+ */
+export async function clickButtonWithRetry(
+  page: Page,
+  testId: string,
+  options: { timeout?: number } = {}
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const button = page.getByTestId(testId);
+      await expect(button).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await expect(button).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await button.click();
+      return;
+    } catch (e) {
+      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+    }
+  }
+
+  throw new Error(`Button with testId "${testId}" not clickable after ${timeout}ms`);
+}
+
+/**
+ * Waits for navigation and ensures page is fully loaded
+ * More reliable than waitForLoadState alone
+ *
+ * @param page - Playwright Page instance
+ * @param options - Configuration options
+ */
+export async function waitForPageLoad(
+  page: Page,
+  options: {
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle';
+  } = {}
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const waitUntil = options.waitUntil || 'networkidle';
+
+  await page.waitForLoadState(waitUntil, { timeout });
+
+  // Additional wait for any client-side rendering
+  await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+}
+
+/**
+ * Fills an input field with retry logic
+ * Ensures the field is visible and enabled before filling
+ *
+ * @param page - Playwright Page instance
+ * @param testId - data-testid attribute value
+ * @param value - Value to fill
+ * @param options - Configuration options
+ */
+export async function fillInputWithRetry(
+  page: Page,
+  testId: string,
+  value: string,
+  options: { timeout?: number } = {}
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const input = page.getByTestId(testId);
+      await expect(input).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await expect(input).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await input.fill(value);
+
+      // Verify the value was set correctly
+      await expect(input).toHaveValue(value, { timeout: TIMEOUTS.RETRY_INTERVAL });
+      return;
+    } catch (e) {
+      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+    }
+  }
+
+  throw new Error(`Input with testId "${testId}" not fillable after ${timeout}ms`);
+}
+
+/**
+ * Waits for text to appear on the page with retry logic
+ *
+ * @param page - Playwright Page instance
+ * @param text - Text or regex to match
+ * @param options - Configuration options
+ * @returns The locator containing the text
+ */
+export async function waitForTextWithRetry(
+  page: Page,
+  text: string | RegExp,
+  options: { timeout?: number; exact?: boolean } = {}
+): Promise<Locator> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const exact = options.exact ?? false;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const element = page.getByText(text, { exact });
+      await expect(element).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      return element;
+    } catch (e) {
+      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+    }
+  }
+
+  throw new Error(`Text "${text}" not found after ${timeout}ms`);
+}
