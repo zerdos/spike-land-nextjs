@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { middleware, isProtectedPath } from "./middleware"
+import { middleware, isProtectedPath, constantTimeCompare } from "./middleware"
 import { NextRequest } from "next/server"
 
 // Mock the auth module
@@ -22,6 +22,40 @@ import { auth } from "@/auth"
 describe("middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe("constantTimeCompare", () => {
+    it("should return true for identical strings", () => {
+      expect(constantTimeCompare("secret123", "secret123")).toBe(true)
+    })
+
+    it("should return false for different strings of same length", () => {
+      expect(constantTimeCompare("secret123", "secret456")).toBe(false)
+    })
+
+    it("should return false for different strings of different length", () => {
+      expect(constantTimeCompare("secret", "secret123")).toBe(false)
+      expect(constantTimeCompare("secret123", "secret")).toBe(false)
+    })
+
+    it("should return true for empty strings", () => {
+      expect(constantTimeCompare("", "")).toBe(true)
+    })
+
+    it("should return false when one string is empty", () => {
+      expect(constantTimeCompare("", "secret")).toBe(false)
+      expect(constantTimeCompare("secret", "")).toBe(false)
+    })
+
+    it("should handle unicode characters correctly", () => {
+      expect(constantTimeCompare("🔐secret🔑", "🔐secret🔑")).toBe(true)
+      expect(constantTimeCompare("🔐secret🔑", "🔐secret🔒")).toBe(false)
+    })
+
+    it("should be case-sensitive", () => {
+      expect(constantTimeCompare("Secret", "secret")).toBe(false)
+      expect(constantTimeCompare("SECRET", "secret")).toBe(false)
+    })
   })
 
   describe("isProtectedPath", () => {
@@ -231,6 +265,8 @@ describe("middleware", () => {
     })
 
     describe("E2E test bypass with secret header", () => {
+      let originalEnv: string | undefined
+
       const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
         const baseUrl = `http://localhost:3000${pathname}`
         const headers = new Headers()
@@ -244,8 +280,19 @@ describe("middleware", () => {
         } as unknown as NextRequest
       }
 
+      beforeEach(() => {
+        originalEnv = process.env.E2E_BYPASS_SECRET
+      })
+
+      afterEach(() => {
+        if (originalEnv === undefined) {
+          delete process.env.E2E_BYPASS_SECRET
+        } else {
+          process.env.E2E_BYPASS_SECRET = originalEnv
+        }
+      })
+
       it("should bypass auth for protected path with correct secret header", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -255,12 +302,9 @@ describe("middleware", () => {
         expect(response.status).toBe(200)
         expect(response.headers.get("x-middleware-next")).toBe("1")
         expect(auth).not.toHaveBeenCalled()
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
       it("should NOT bypass auth with incorrect secret header", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -270,12 +314,9 @@ describe("middleware", () => {
         expect(response.status).toBe(307)
         expect(response.headers.get("location")).toContain("callbackUrl")
         expect(auth).toHaveBeenCalled()
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
       it("should NOT bypass auth when header is missing", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -285,12 +326,9 @@ describe("middleware", () => {
         expect(response.status).toBe(307)
         expect(response.headers.get("location")).toContain("callbackUrl")
         expect(auth).toHaveBeenCalled()
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
       it("should NOT bypass auth when E2E_BYPASS_SECRET is not configured", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         delete process.env.E2E_BYPASS_SECRET
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -300,12 +338,9 @@ describe("middleware", () => {
         expect(response.status).toBe(307)
         expect(response.headers.get("location")).toContain("callbackUrl")
         expect(auth).toHaveBeenCalled()
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
       it("should bypass auth for all protected paths with correct secret", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
 
         const protectedPaths = ["/my-apps", "/my-apps/app-123", "/settings", "/profile"]
@@ -318,12 +353,9 @@ describe("middleware", () => {
           expect(response.status).toBe(200)
           expect(response.headers.get("x-middleware-next")).toBe("1")
         }
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
       it("should still allow public paths without bypass header", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -332,12 +364,9 @@ describe("middleware", () => {
 
         expect(response.status).toBe(200)
         expect(response.headers.get("x-middleware-next")).toBe("1")
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
 
-      it("should bypass auth with empty string secret if configured", async () => {
-        const originalEnv = process.env.E2E_BYPASS_SECRET
+      it("should NOT bypass auth with empty string secret", async () => {
         process.env.E2E_BYPASS_SECRET = ''
 
         vi.mocked(auth).mockResolvedValue(null)
@@ -347,8 +376,6 @@ describe("middleware", () => {
         // Empty string secret should NOT bypass (falsy check in middleware)
         expect(response.status).toBe(307)
         expect(auth).toHaveBeenCalled()
-
-        process.env.E2E_BYPASS_SECRET = originalEnv
       })
     })
 

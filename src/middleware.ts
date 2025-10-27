@@ -24,6 +24,21 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { timingSafeEqual } from "crypto"
+
+/**
+ * Performs constant-time string comparison to prevent timing attacks
+ *
+ * @param a - First string to compare
+ * @param b - Second string to compare
+ * @returns true if strings are equal, false otherwise
+ */
+export function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  const bufA = Buffer.from(a, 'utf8')
+  const bufB = Buffer.from(b, 'utf8')
+  return timingSafeEqual(bufA, bufB)
+}
 
 /**
  * List of path patterns that require authentication
@@ -83,10 +98,11 @@ export async function middleware(request: NextRequest) {
 
   // Check for E2E test bypass header with secret validation
   // This allows E2E tests to bypass authentication securely
+  // Uses constant-time comparison to prevent timing attacks
   const e2eBypassHeader = request.headers.get('x-e2e-auth-bypass')
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET
 
-  if (e2eBypassSecret && e2eBypassHeader === e2eBypassSecret) {
+  if (e2eBypassSecret && e2eBypassHeader && constantTimeCompare(e2eBypassHeader, e2eBypassSecret)) {
     return NextResponse.next()
   }
 
