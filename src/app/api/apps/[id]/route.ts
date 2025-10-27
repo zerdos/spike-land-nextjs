@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
 import { appCreationSchema } from "@/lib/validations/app"
 import { ZodError } from "zod"
+import type { RequirementPriority, RequirementStatus, MonetizationType } from "@prisma/client"
 
 export async function GET(
   _request: NextRequest,
@@ -98,8 +99,8 @@ export async function PATCH(
     const updateData: {
       name?: string
       description?: string
-      requirements?: { create: { description: string; priority: string; status: string } }
-      monetizationModels?: { create: { type: string; features: string[] } }
+      requirements?: { create: { description: string; priority: RequirementPriority; status: RequirementStatus } }
+      monetizationModels?: { create: { type: MonetizationType; features: string[] } }
     } = {}
 
     if (validatedData.name !== undefined) {

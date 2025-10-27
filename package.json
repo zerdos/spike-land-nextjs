@@ -15,6 +15,7 @@
     "test:e2e": "cucumber-js",
     "test:e2e:local": "BASE_URL=http://localhost:3000 cucumber-js",
     "test:e2e:ci": "cucumber-js",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
