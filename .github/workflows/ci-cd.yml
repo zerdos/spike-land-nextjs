@@ -201,6 +201,7 @@ jobs:
             package.json
             package-lock.json
           retention-days: 7
+          include-hidden-files: true
 
   e2e:
     name: E2E Tests
