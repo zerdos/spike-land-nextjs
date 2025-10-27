@@ -33,14 +33,14 @@ describe('MyAppsPage', () => {
   describe('Authentication', () => {
     it('should redirect to signin when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null)
-      mockRedirect.mockImplementation((url) => {
+      mockRedirect.mockImplementation((url: string) => {
         throw new Error(`REDIRECT:${url}`)
       })
 
       try {
         await MyAppsPage()
-      } catch (error: any) {
-        expect(error.message).toBe('REDIRECT:/auth/signin')
+      } catch (error) {
+        expect((error as Error).message).toBe('REDIRECT:/auth/signin')
       }
 
       expect(mockAuth).toHaveBeenCalled()
@@ -302,7 +302,7 @@ describe('MyAppsPage', () => {
       mockPrisma.app.findMany.mockResolvedValue(mockApps)
 
       const component = await MyAppsPage()
-      const { container } = render(component)
+      render(component)
 
       const requirementsText = screen.getByText(/Requirements:/)
       expect(requirementsText).toBeInTheDocument()

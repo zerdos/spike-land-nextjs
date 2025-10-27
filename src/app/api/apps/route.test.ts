@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { POST, GET } from "./route"
+import type { Session } from "next-auth"
+import type { App, Requirement, MonetizationModel } from "@prisma/client"
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -46,7 +48,8 @@ describe("POST /api/apps", () => {
   it("should create an app successfully", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+      expires: "2025-12-31",
+    } as Session)
 
     const mockApp = {
       id: "app-1",
@@ -71,7 +74,7 @@ describe("POST /api/apps", () => {
       ],
     }
 
-    vi.mocked(prisma.app.create).mockResolvedValue(mockApp as any)
+    vi.mocked(prisma.app.create).mockResolvedValue(mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -118,7 +121,7 @@ describe("POST /api/apps", () => {
   it("should return 400 for invalid data", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -140,7 +143,7 @@ describe("POST /api/apps", () => {
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.create).mockRejectedValue(new Error("Database error"))
 
@@ -180,7 +183,7 @@ describe("GET /api/apps", () => {
   it("should return user's apps", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const mockApps = [
       {
@@ -203,7 +206,7 @@ describe("GET /api/apps", () => {
       },
     ]
 
-    vi.mocked(prisma.app.findMany).mockResolvedValue(mockApps as any)
+    vi.mocked(prisma.app.findMany).mockResolvedValue(mockApps as (App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })[])
 
     const response = await GET()
     const data = await response.json()
@@ -238,7 +241,7 @@ describe("GET /api/apps", () => {
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findMany).mockRejectedValue(new Error("Database error"))
 

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET, PATCH, DELETE } from "./route"
+import type { Session } from "next-auth"
+import type { App, Requirement, MonetizationModel } from "@prisma/client"
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -39,7 +41,7 @@ describe("GET /api/apps/[id]", () => {
   it("should return 404 if app not found", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(null)
 
@@ -56,7 +58,7 @@ describe("GET /api/apps/[id]", () => {
   it("should return app details", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const mockApp = {
       id: "app-1",
@@ -68,7 +70,7 @@ describe("GET /api/apps/[id]", () => {
       monetizationModels: [],
     }
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockApp as any)
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })
 
     const request = new NextRequest("http://localhost/api/apps/app-1")
     const context = { params: Promise.resolve({ id: "app-1" }) }
@@ -83,7 +85,7 @@ describe("GET /api/apps/[id]", () => {
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"))
 
@@ -122,7 +124,7 @@ describe("PATCH /api/apps/[id]", () => {
   it("should return 404 if app not found", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(null)
 
@@ -142,7 +144,7 @@ describe("PATCH /api/apps/[id]", () => {
   it("should update app successfully", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const mockExistingApp = {
       id: "app-1",
@@ -159,8 +161,8 @@ describe("PATCH /api/apps/[id]", () => {
       monetizationModels: [],
     }
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as any)
-    vi.mocked(prisma.app.update).mockResolvedValue(mockUpdatedApp as any)
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as App)
+    vi.mocked(prisma.app.update).mockResolvedValue(mockUpdatedApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "PATCH",
@@ -178,7 +180,7 @@ describe("PATCH /api/apps/[id]", () => {
   it("should return 400 for invalid data", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const mockExistingApp = {
       id: "app-1",
@@ -187,7 +189,7 @@ describe("PATCH /api/apps/[id]", () => {
       status: "DRAFT",
     }
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as any)
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as App)
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "PATCH",
@@ -205,7 +207,7 @@ describe("PATCH /api/apps/[id]", () => {
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"))
 
@@ -246,7 +248,7 @@ describe("DELETE /api/apps/[id]", () => {
   it("should return 404 if app not found", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(null)
 
@@ -265,7 +267,7 @@ describe("DELETE /api/apps/[id]", () => {
   it("should delete app successfully", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     const mockExistingApp = {
       id: "app-1",
@@ -274,11 +276,11 @@ describe("DELETE /api/apps/[id]", () => {
       status: "DRAFT",
     }
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as any)
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as App)
     vi.mocked(prisma.app.update).mockResolvedValue({
       ...mockExistingApp,
       status: "DELETED",
-    } as any)
+    } as Session)
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "DELETE",
@@ -295,7 +297,7 @@ describe("DELETE /api/apps/[id]", () => {
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as any)
+    } as Session)
 
     vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"))
 
