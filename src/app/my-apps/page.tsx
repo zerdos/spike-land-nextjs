@@ -122,17 +122,25 @@ export default async function MyAppsPage() {
                   All ({apps.length})
                 </Badge>
                 <Badge variant="outline" className="cursor-not-allowed opacity-50">
-                  Active ({apps.filter(app => app.status === "ACTIVE").length})
+                  Active ({apps.filter((app: { status: string }) => app.status === "ACTIVE").length})
                 </Badge>
                 <Badge variant="outline" className="cursor-not-allowed opacity-50">
-                  Draft ({apps.filter(app => app.status === "DRAFT").length})
+                  Draft ({apps.filter((app: { status: string }) => app.status === "DRAFT").length})
                 </Badge>
               </div>
             </div>
 
             {/* Grid Layout */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {apps.map((app) => (
+              {apps.map((app: {
+                id: string
+                name: string
+                description: string | null
+                status: string
+                createdAt: Date
+                requirements: Array<{ id: string }>
+                monetizationModels: Array<{ id: string; type: string }>
+              }) => (
                 <Card key={app.id} className="flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between">
