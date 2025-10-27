@@ -32,14 +32,14 @@ test_endpoint() {
 
   echo -n "Testing $name... "
 
-  # Build curl command with bypass cookie if available
-  local curl_cmd="curl -s -w \"\n%{http_code}\" -X \"$method\""
+  # Build URL with bypass token if available
+  local test_url="$DEPLOYMENT_URL$path"
   if [ -n "$BYPASS_TOKEN" ]; then
-    curl_cmd="$curl_cmd -H \"Cookie: __Secure-vercel-protection-bypass=$BYPASS_TOKEN\""
+    # Use query parameters for Vercel deployment protection bypass
+    test_url="$test_url?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$BYPASS_TOKEN"
   fi
-  curl_cmd="$curl_cmd \"$DEPLOYMENT_URL$path\""
 
-  response=$(eval "$curl_cmd")
+  response=$(curl -s -w "\n%{http_code}" -X "$method" "$test_url")
   http_code=$(echo "$response" | tail -n1)
   body=$(echo "$response" | sed '$d')
 
