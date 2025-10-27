@@ -16,7 +16,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - ✅ Parallel execution of quality checks and test shards
 - ✅ 8-way test sharding for faster test execution
 - ✅ Content-based caching for 80%+ cache hit rates
-- ✅ Artifact reuse across jobs (no rebuilding)
+- ✅ Cached node_modules and Next.js builds across jobs
 - ✅ Concurrency control (cancels old runs)
 - ✅ Skip CI for documentation-only changes
 
@@ -37,15 +37,13 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - **Time:** ~1.5-2 minutes (with sharding)
 
 ### 3. **Build** (Automatic)
-- Builds Vercel application with `vercel build`
+- Builds Next.js application with `npm run build`
 - Uses content-based cache keys for Next.js (high hit rate)
-- Uploads only `.vercel/` directory (~50MB vs ~500MB)
+- Validates build succeeds before deployment
 - **Time:** ~2-2.5 minutes (with cache hits)
-- **Reused by:** E2E tests and deployment jobs
 
 ### 4. **E2E Tests** (Automatic)
 - Restores node_modules from cache (fast)
-- Downloads pre-built Vercel artifacts
 - Builds production app (`npm run build`)
 - Starts production server (`npm run start`)
 - Runs E2E tests against `localhost:3000`
@@ -54,19 +52,20 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - **Time:** ~3-3.5 minutes
 
 ### 5a. **Deploy to Test** (Manual on PRs)
-- Downloads pre-built Vercel artifacts
-- Deploys directly to Vercel preview (no rebuild!)
+- Pulls Vercel preview environment configuration
+- Builds with `vercel build` using preview settings
+- Deploys to Vercel preview environment
 - Runs smoke tests against deployed URL
 - **Adds comment to PR** with deployment URL
 - Requires GitHub environment approval (can be auto-approved)
-- **Time:** ~1-1.5 minutes
+- **Time:** ~2-3 minutes
 
 ### 5b. **Deploy to Production** (Auto on main, manual elsewhere)
-- Downloads pre-built Vercel artifacts
-- Rebuilds for production environment configuration
+- Pulls Vercel production environment configuration
+- Builds with `vercel build --prod`
 - Deploys to Vercel production (`next.spike.land`)
 - Runs smoke tests against production URL
-- **Time:** ~2-2.5 minutes
+- **Time:** ~2.5-3 minutes
 
 ## Smoke Tests
 
@@ -144,16 +143,9 @@ The workflow will:
 - Verify rollback succeeded
 - Record the rollback in commit status
 
-## Build Artifact Reuse & Caching Strategy
+## Caching Strategy
 
-The pipeline is heavily optimized for speed:
-
-### Artifact Reuse
-1. **Build job** creates `.vercel/` build output (~50MB)
-2. **E2E job** downloads artifacts and reuses them
-3. **Deploy jobs** download artifacts (test deploys directly, production rebuilds for environment)
-
-This saves ~8-12 minutes per CI run compared to rebuilding 3 times.
+The pipeline is heavily optimized for speed through multi-layer caching:
 
 ### Multi-Layer Caching
 1. **node_modules cache** - 95%+ hit rate, saves ~60s per job
@@ -244,9 +236,9 @@ vercel deploy --prebuilt --prod
 - Unit Tests: ~2 min (8-way sharding, was 5+ min with 4 shards)
 - Build: ~2.5 min (content-based cache, was 4-5 min)
 - E2E: ~3.5 min (production build, was 6-7 min)
-- Deploy (test): ~1.5 min (no rebuild, was 5 min)
-- Deploy (production): ~2.5 min
-- **Total (PR to test):** ~11 minutes ⚡ (was ~30 minutes)
+- Deploy (test): ~2.5 min (fresh build for environment, was 5 min)
+- Deploy (production): ~2.5 min (fresh build for environment)
+- **Total (PR to test):** ~12 minutes ⚡ (was ~30 minutes)
 - **Total (main to prod):** ~12.5 minutes ⚡ (was ~30 minutes)
 
 **Overall speedup: 2.5x faster (60% reduction in CI time)**
@@ -255,7 +247,6 @@ vercel deploy --prebuilt --prod
 - ✅ 8-way test sharding (parallel execution)
 - ✅ Merged lint + security audit (single setup)
 - ✅ Content-based Next.js caching (80%+ hit rate)
-- ✅ Artifact reuse (50MB vs 500MB uploads)
 - ✅ node_modules caching (95%+ hit rate)
 - ✅ Playwright browser caching (version-locked)
 - ✅ Production build for E2E (consistent testing)

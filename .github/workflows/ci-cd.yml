@@ -155,25 +155,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build application for Vercel
-        run: vercel build
+      - name: Build application
+        run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=3072
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: .vercel/
-          retention-days: 1
-          include-hidden-files: true
-          compression-level: 6
 
   e2e:
     name: E2E Tests
@@ -221,12 +206,6 @@ jobs:
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .vercel/
 
       - name: Build production app
         run: npm run build
@@ -302,26 +281,21 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .vercel/
-
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Deploy prebuilt artifacts to Test
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+
+      - name: Deploy to Test
         id: deploy
         run: |
-          # Verify .vercel/output exists
-          if [ ! -d ".vercel/output" ]; then
-            echo "Error: .vercel/output directory not found"
-            ls -la .vercel/ || echo ".vercel directory does not exist"
-            exit 1
-          fi
-
-          # Deploy the prebuilt artifacts directly
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to TEST: $DEPLOYMENT_URL"
@@ -438,22 +412,17 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .vercel/
-
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
       - name: Pull Vercel Environment Information (Production)
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Rebuild for Production environment
+      - name: Build for Production environment
         run: vercel build --prod
         env:
           NODE_OPTIONS: --max-old-space-size=3072
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
 
       - name: Deploy to Production
         id: deploy
