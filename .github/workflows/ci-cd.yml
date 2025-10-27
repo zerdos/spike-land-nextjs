@@ -226,7 +226,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: .vercel/
+          path: .
 
       - name: Build production app
         run: npm run build
@@ -306,7 +306,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: .vercel/
+          path: .
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
@@ -314,6 +314,13 @@ jobs:
       - name: Deploy prebuilt artifacts to Test
         id: deploy
         run: |
+          # Verify .vercel/output exists
+          if [ ! -d ".vercel/output" ]; then
+            echo "Error: .vercel/output directory not found"
+            ls -la .vercel/ || echo ".vercel directory does not exist"
+            exit 1
+          fi
+
           # Deploy the prebuilt artifacts directly
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
@@ -435,7 +442,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: .vercel/
+          path: .
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
