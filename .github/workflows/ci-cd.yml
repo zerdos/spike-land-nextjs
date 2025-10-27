@@ -307,6 +307,9 @@ jobs:
           name: build-output
           path: .
 
+      - name: Restore dependencies and fix permissions
+        run: npm ci --prefer-offline --no-audit
+
       - name: Debug artifact contents
         run: |
           echo "Current directory: $(pwd)"
