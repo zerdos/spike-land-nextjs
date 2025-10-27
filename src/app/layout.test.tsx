@@ -1,18 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { Geist, Geist_Mono } from 'next/font/google'
 import RootLayout, { metadata } from './layout'
-
-vi.mock('next/font/google', () => ({
-  Geist: vi.fn(() => ({
-    variable: '--font-geist-sans',
-    subsets: ['latin'],
-  })),
-  Geist_Mono: vi.fn(() => ({
-    variable: '--font-geist-mono',
-    subsets: ['latin'],
-  })),
-}))
 
 vi.mock('@/components/auth/session-provider', () => ({
   SessionProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -31,19 +19,9 @@ vi.mock('@/components/analytics/cookie-consent', () => ({
 }))
 
 describe('RootLayout', () => {
-  it('should call Geist font with correct config', () => {
-    expect(Geist).toHaveBeenCalledWith({
-      variable: '--font-geist-sans',
-      subsets: ['latin'],
-    })
-  })
-
-  it('should call Geist_Mono font with correct config', () => {
-    expect(Geist_Mono).toHaveBeenCalledWith({
-      variable: '--font-geist-mono',
-      subsets: ['latin'],
-    })
-  })
+  // Note: Font loading tests removed as we're using system fonts temporarily
+  // to avoid Google Fonts network issues in CI. Tests can be re-added when
+  // switching back to Geist fonts or using local font files.
 
   it('should be a function component', () => {
     expect(typeof RootLayout).toBe('function')
