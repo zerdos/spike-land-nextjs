@@ -1,14 +1,15 @@
 #!/bin/bash
 # Smoke tests for post-deployment validation
-# Usage: ./scripts/smoke-test.sh <deployment-url>
+# Usage: ./scripts/smoke-test.sh <deployment-url> [bypass-token]
 
 set -e
 
 DEPLOYMENT_URL="${1}"
+BYPASS_TOKEN="${2}"
 
 if [ -z "$DEPLOYMENT_URL" ]; then
   echo "Error: Deployment URL not provided"
-  echo "Usage: $0 <deployment-url>"
+  echo "Usage: $0 <deployment-url> [bypass-token]"
   exit 1
 fi
 
@@ -31,7 +32,14 @@ test_endpoint() {
 
   echo -n "Testing $name... "
 
-  response=$(curl -s -w "\n%{http_code}" -X "$method" "$DEPLOYMENT_URL$path")
+  # Build curl command with bypass cookie if available
+  local curl_cmd="curl -s -w \"\n%{http_code}\" -X \"$method\""
+  if [ -n "$BYPASS_TOKEN" ]; then
+    curl_cmd="$curl_cmd -H \"Cookie: __Secure-vercel-protection-bypass=$BYPASS_TOKEN\""
+  fi
+  curl_cmd="$curl_cmd \"$DEPLOYMENT_URL$path\""
+
+  response=$(eval "$curl_cmd")
   http_code=$(echo "$response" | tail -n1)
   body=$(echo "$response" | sed '$d')
 
@@ -53,7 +61,14 @@ test_endpoint_contains() {
 
   echo -n "Testing $name... "
 
-  response=$(curl -s -w "\n%{http_code}" "$DEPLOYMENT_URL$path")
+  # Build curl command with bypass cookie if available
+  local curl_cmd="curl -s -w \"\n%{http_code}\""
+  if [ -n "$BYPASS_TOKEN" ]; then
+    curl_cmd="$curl_cmd -H \"Cookie: __Secure-vercel-protection-bypass=$BYPASS_TOKEN\""
+  fi
+  curl_cmd="$curl_cmd \"$DEPLOYMENT_URL$path\""
+
+  response=$(eval "$curl_cmd")
   http_code=$(echo "$response" | tail -n1)
   body=$(echo "$response" | sed '$d')
 
