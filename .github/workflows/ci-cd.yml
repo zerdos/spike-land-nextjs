@@ -304,12 +304,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
+          path: .
+
+      - name: Verify build output exists
+        run: |
+          if [ -d ".vercel/output" ]; then
+            echo "✓ .vercel/output directory found"
+            ls -la .vercel/
+          else
+            echo "✗ .vercel/output directory NOT found"
+            find . -name "output" -type d 2>/dev/null | head -10
+            exit 1
+          fi
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
-
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel (Test)
         id: deploy
