@@ -289,6 +289,19 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
