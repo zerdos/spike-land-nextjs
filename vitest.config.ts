@@ -8,6 +8,18 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    // Optimize for parallel execution and sharding
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: false,
+        isolate: true,
+      },
+    },
+    // Enable file parallelism for faster execution
+    fileParallelism: true,
+    // Use reporter optimized for CI
+    reporters: process.env.CI ? ['github-actions'] : ['default'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
