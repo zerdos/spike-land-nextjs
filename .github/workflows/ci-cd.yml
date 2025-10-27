@@ -337,12 +337,21 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Deploy Project Artifacts to Vercel (Test)
+      - name: Build and Deploy to Test Environment
         id: deploy
         run: |
+          # Remove the prebuilt output since we'll rebuild
+          rm -rf .vercel/output
+
+          # Build fresh for this environment
+          vercel build
+
+          # Deploy the fresh build
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to TEST: $DEPLOYMENT_URL"
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
 
       - name: Wait for deployment to be live
         run: |
