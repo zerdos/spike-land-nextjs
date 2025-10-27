@@ -306,14 +306,30 @@ jobs:
           name: build-output
           path: .
 
+      - name: Debug artifact contents
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la | head -20
+          echo ""
+          echo "Checking for .vercel directory:"
+          if [ -d ".vercel" ]; then
+            echo "✓ .vercel directory exists"
+            echo "Contents of .vercel:"
+            ls -la .vercel/ | head -20
+          else
+            echo "✗ .vercel directory NOT found"
+          fi
+
       - name: Verify build output exists
         run: |
           if [ -d ".vercel/output" ]; then
             echo "✓ .vercel/output directory found"
-            ls -la .vercel/
+            ls -la .vercel/output | head -20
           else
             echo "✗ .vercel/output directory NOT found"
-            find . -name "output" -type d 2>/dev/null | head -10
+            echo "Trying to find any .vercel/output paths:"
+            find . -path "*/.vercel/output" -type d 2>/dev/null | head -10
             exit 1
           fi
 
