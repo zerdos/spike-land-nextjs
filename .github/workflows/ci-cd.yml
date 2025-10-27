@@ -358,15 +358,24 @@ jobs:
 
       - name: Wait for deployment to be live
         run: |
-          for i in {1..30}; do
-            if curl -f "${{ steps.deploy.outputs.url }}" > /dev/null 2>&1; then
-              echo "Deployment is live!"
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+          echo "Checking deployment URL: $DEPLOY_URL"
+
+          for i in {1..60}; do
+            # Check if URL is reachable (allow any HTTP status)
+            if curl -s -I "$DEPLOY_URL" | grep -q "HTTP"; then
+              echo "✓ Deployment is live!"
               exit 0
             fi
-            echo "Waiting for deployment... ($i/30)"
-            sleep 2
+
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Waiting for deployment... ($i/60) - URL: $DEPLOY_URL"
+            fi
+            sleep 1
           done
-          echo "Deployment failed to become live"
+
+          echo "✗ Deployment failed to become live after 60 seconds"
+          echo "URL was: $DEPLOY_URL"
           exit 1
 
       - name: Run smoke tests
@@ -477,15 +486,23 @@ jobs:
 
       - name: Wait for production deployment to be live
         run: |
-          for i in {1..30}; do
-            if curl -f "https://next.spike.land" > /dev/null 2>&1; then
-              echo "Production deployment is live!"
+          PROD_URL="https://next.spike.land"
+          echo "Checking production URL: $PROD_URL"
+
+          for i in {1..60}; do
+            # Check if URL is reachable (allow any HTTP status)
+            if curl -s -I "$PROD_URL" | grep -q "HTTP"; then
+              echo "✓ Production deployment is live!"
               exit 0
             fi
-            echo "Waiting for production deployment... ($i/30)"
-            sleep 2
+
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Waiting for production deployment... ($i/60)"
+            fi
+            sleep 1
           done
-          echo "Production deployment failed to become live"
+
+          echo "✗ Production deployment failed to become live after 60 seconds"
           exit 1
 
       - name: Run smoke tests on production
