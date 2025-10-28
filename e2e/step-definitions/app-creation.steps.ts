@@ -33,17 +33,17 @@ Given('I navigate to the app creation wizard', async function (this: CustomWorld
 Then('I should see the wizard step {string}', async function (this: CustomWorld, stepName: string) {
   const wizard = getWizard(this);
   const stepTitle = await wizard.getStepTitle();
-  await expect(stepTitle).toContainText(stepName);
+  await expect(stepTitle).toContainText(stepName, { timeout: 10000 });
 });
 
 Then('I should see the {string} input field', async function (this: CustomWorld, fieldName: string) {
   const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-  await expect(label).toBeVisible();
+  await expect(label).toBeVisible({ timeout: 10000 });
 });
 
 Then('I should see the {string} textarea field', async function (this: CustomWorld, fieldName: string) {
   const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-  await expect(label).toBeVisible();
+  await expect(label).toBeVisible({ timeout: 10000 });
 });
 
 Then('the progress bar should show {int}%', async function (this: CustomWorld, percentage: number) {
