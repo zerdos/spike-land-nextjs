@@ -15,11 +15,30 @@
  * - /apps/* - Public applications directory
  * - /api/auth/* - NextAuth authentication endpoints
  * - All other routes not explicitly protected
+ *
+ * E2E Test Bypass:
+ * - Requests with header 'x-e2e-auth-bypass' matching E2E_BYPASS_SECRET env var bypass authentication
+ * - This allows E2E tests to access protected routes securely without real authentication
  */
 
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { timingSafeEqual } from "crypto"
+
+/**
+ * Performs constant-time string comparison to prevent timing attacks
+ *
+ * @param a - First string to compare
+ * @param b - Second string to compare
+ * @returns true if strings are equal, false otherwise
+ */
+export function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  const bufA = Buffer.from(a, 'utf8')
+  const bufB = Buffer.from(b, 'utf8')
+  return timingSafeEqual(bufA, bufB)
+}
 
 /**
  * List of path patterns that require authentication
@@ -77,22 +96,27 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip authentication check in E2E test environment or Vercel preview deployments
-  // Check for:
-  // 1. E2E_BYPASS_AUTH environment variable
-  // 2. VERCEL_ENV set to "preview" (available in Vercel environment)
-  // 3. VERCEL_URL doesn't match production domain (runtime check)
-  //    Preview URLs: spike-land-nextjs-*.vercel.app
-  //    Production URL: next.spike.land
-  const hostname = request.nextUrl.hostname
-  const vercelUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL
-  const isProduction = hostname === 'next.spike.land' || vercelUrl === 'next.spike.land'
-  const isVercelDeployment = hostname.includes('.vercel.app') || (vercelUrl && vercelUrl.includes('.vercel.app'))
+  // Check for E2E test bypass header with secret validation
+  // This allows E2E tests to bypass authentication securely
+  // Uses constant-time comparison to prevent timing attacks
+  // SECURITY: Only enabled in non-production environments
+  const e2eBypassHeader = request.headers.get('x-e2e-auth-bypass')
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET
 
-  // Bypass auth for non-production Vercel deployments (preview/development)
-  if (process.env.E2E_BYPASS_AUTH === 'true' ||
-      process.env.VERCEL_ENV === 'preview' ||
-      (isVercelDeployment && !isProduction)) {
+  // Only allow E2E bypass in non-production environments
+  // This prevents accidental bypass in production even if the secret leaks
+  const isProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+
+  if (!isProduction && e2eBypassSecret && e2eBypassHeader && constantTimeCompare(e2eBypassHeader, e2eBypassSecret)) {
+    // Audit log for security monitoring and debugging
+    console.warn('[E2E Bypass]', {
+      timestamp: new Date().toISOString(),
+      path: pathname,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        VERCEL_ENV: process.env.VERCEL_ENV,
+      }
+    })
     return NextResponse.next()
   }
 

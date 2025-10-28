@@ -21,8 +21,19 @@ export class CustomWorld extends World {
     this.browser = await chromium.launch({
       headless: process.env.CI === 'true',
     });
+
+    // Prepare extra HTTP headers for E2E test authentication bypass
+    const extraHTTPHeaders: Record<string, string> = {};
+
+    // Add E2E bypass header if secret is configured
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+    if (e2eBypassSecret) {
+      extraHTTPHeaders['x-e2e-auth-bypass'] = e2eBypassSecret;
+    }
+
     this.context = await this.browser.newContext({
       baseURL: this.baseUrl,
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0 ? extraHTTPHeaders : undefined,
     });
     this.page = await this.context.newPage();
   }
