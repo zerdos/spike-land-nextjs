@@ -11,8 +11,8 @@ export function AuthHeader() {
   if (status === "loading") {
     return (
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <ModeToggle />
         <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
+        <ModeToggle />
       </div>
     );
   }
@@ -20,8 +20,8 @@ export function AuthHeader() {
   if (session) {
     return (
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <ModeToggle />
         <UserAvatar />
+        <ModeToggle />
       </div>
     );
   }
