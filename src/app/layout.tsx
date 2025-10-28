@@ -1,24 +1,22 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 
-// Temporary workaround: Use system fonts to avoid Google Fonts network issues in CI
-// TODO: Switch back to Geist fonts once network connectivity is stable or use local fonts
-// const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-// const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
-const geistSans = {
+const geistSans = Geist({
   variable: "--font-geist-sans",
-  className: "",
-};
+  subsets: ["latin"],
+  display: "swap",
+});
 
-const geistMono = {
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  className: "",
-};
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Spike Land - Vibe Coded Apps with Claude Code",

@@ -2,6 +2,18 @@ import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import RootLayout, { metadata } from './layout'
 
+// Mock next/font/google to avoid actual font loading in tests
+vi.mock('next/font/google', () => ({
+  Geist: vi.fn(() => ({
+    variable: '--font-geist-sans',
+    className: 'geist-sans-test-class',
+  })),
+  Geist_Mono: vi.fn(() => ({
+    variable: '--font-geist-mono',
+    className: 'geist-mono-test-class',
+  })),
+}))
+
 vi.mock('@/components/auth/session-provider', () => ({
   SessionProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
@@ -19,9 +31,6 @@ vi.mock('@/components/analytics/cookie-consent', () => ({
 }))
 
 describe('RootLayout', () => {
-  // Note: Font loading tests removed as we're using system fonts temporarily
-  // to avoid Google Fonts network issues in CI. Tests can be re-added when
-  // switching back to Geist fonts or using local font files.
 
   it('should be a function component', () => {
     expect(typeof RootLayout).toBe('function')

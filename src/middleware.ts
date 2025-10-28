@@ -99,10 +99,24 @@ export async function middleware(request: NextRequest) {
   // Check for E2E test bypass header with secret validation
   // This allows E2E tests to bypass authentication securely
   // Uses constant-time comparison to prevent timing attacks
+  // SECURITY: Only enabled in non-production environments
   const e2eBypassHeader = request.headers.get('x-e2e-auth-bypass')
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET
 
-  if (e2eBypassSecret && e2eBypassHeader && constantTimeCompare(e2eBypassHeader, e2eBypassSecret)) {
+  // Only allow E2E bypass in non-production environments
+  // This prevents accidental bypass in production even if the secret leaks
+  const isProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+
+  if (!isProduction && e2eBypassSecret && e2eBypassHeader && constantTimeCompare(e2eBypassHeader, e2eBypassSecret)) {
+    // Audit log for security monitoring and debugging
+    console.warn('[E2E Bypass]', {
+      timestamp: new Date().toISOString(),
+      path: pathname,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        VERCEL_ENV: process.env.VERCEL_ENV,
+      }
+    })
     return NextResponse.next()
   }
 
