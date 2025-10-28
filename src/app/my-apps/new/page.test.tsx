@@ -19,6 +19,7 @@ vi.mock("next/navigation", () => ({
 
 describe("NewAppPage", () => {
   let localStorageMock: { [key: string]: string }
+  let fetchMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     localStorageMock = {}
@@ -38,6 +39,14 @@ describe("NewAppPage", () => {
     global.Storage.prototype.clear = vi.fn(() => {
       localStorageMock = {}
     })
+
+    fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ id: 'new-app-id', name: 'New App' }),
+      } as Response)
+    )
+    global.fetch = fetchMock
 
     mockPush.mockClear()
   })
@@ -388,23 +397,31 @@ describe("NewAppPage", () => {
       })
     })
 
-    it("should save app to localStorage on submit", async () => {
+    it("should call API to save app on submit", async () => {
       const user = userEvent.setup()
 
       await user.click(screen.getByTestId("submit-button"))
 
       await waitFor(() => {
-        const savedApps = JSON.parse(localStorageMock["my-apps"] || "[]")
-        expect(savedApps).toHaveLength(1)
-        expect(savedApps[0]).toMatchObject({
+        expect(fetchMock).toHaveBeenCalledWith(
+          "/api/apps",
+          expect.objectContaining({
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+        )
+
+        const callArgs = fetchMock.mock.calls[0]
+        const body = JSON.parse(callArgs[1].body)
+        expect(body).toMatchObject({
           name: "My Test App",
           description: "This is my test app description",
           requirements:
             "The app needs user authentication and profile management features",
           monetizationModel: "subscription",
         })
-        expect(savedApps[0]).toHaveProperty("id")
-        expect(savedApps[0]).toHaveProperty("createdAt")
       })
     })
 
@@ -662,9 +679,17 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("submit-button"))
 
       await waitFor(() => {
-        const apps = JSON.parse(localStorageMock["my-apps"] || "[]")
-        expect(apps).toHaveLength(2)
-        expect(apps[1].name).toBe("New App")
+        expect(fetchMock).toHaveBeenCalledWith(
+          "/api/apps",
+          expect.objectContaining({
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: expect.stringContaining("New App"),
+          })
+        )
+        expect(mockPush).toHaveBeenCalledWith("/my-apps")
       })
     })
   })
