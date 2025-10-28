@@ -18,6 +18,10 @@ vi.mock('@/components/auth/session-provider', () => ({
   SessionProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+vi.mock('@/components/theme/theme-provider', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 vi.mock('@vercel/analytics/react', () => ({
   Analytics: () => <div data-testid="analytics">Analytics</div>,
 }))
@@ -50,6 +54,11 @@ describe('RootLayout', () => {
     expect(result.props.lang).toBe('en')
   })
 
+  it('should have suppressHydrationWarning on html element', () => {
+    const result = RootLayout({ children: <div>Test</div> })
+    expect(result.props.suppressHydrationWarning).toBe(true)
+  })
+
   it('should render body element inside html', () => {
     const result = RootLayout({ children: <div>Test</div> })
     expect(result.props.children.type).toBe('body')
@@ -63,19 +72,18 @@ describe('RootLayout', () => {
     expect(bodyClassName).toContain('antialiased')
   })
 
-  it('should wrap children in SessionProvider', () => {
+  it('should wrap children in ThemeProvider and SessionProvider', () => {
     const testChild = <div>Test Child</div>
     const result = RootLayout({ children: testChild })
     const bodyChildren = result.props.children.props.children
     expect(bodyChildren).toBeDefined()
   })
 
-  it('should render children within SessionProvider wrapper', () => {
+  it('should render ThemeProvider wrapping content', () => {
     const testChild = <div>Test Child</div>
-    const result = RootLayout({ children: testChild })
-    const bodyChildren = result.props.children.props.children
-    // SessionProvider is the first child, children are wrapped inside it
-    expect(bodyChildren[0].props.children).toBe(testChild)
+    const { getByText } = render(RootLayout({ children: testChild }))
+    // Verify the child content is rendered (it will be wrapped by providers)
+    expect(getByText('Test Child')).toBeInTheDocument()
   })
 
   it('should render CookieConsent component', () => {
