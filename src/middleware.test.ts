@@ -8,8 +8,8 @@
  * - Properly identifies protected vs public paths
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { middleware, isProtectedPath } from "./middleware"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { middleware, isProtectedPath, constantTimeCompare } from "./middleware"
 import { NextRequest } from "next/server"
 
 // Mock the auth module
@@ -22,6 +22,40 @@ import { auth } from "@/auth"
 describe("middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe("constantTimeCompare", () => {
+    it("should return true for identical strings", () => {
+      expect(constantTimeCompare("secret123", "secret123")).toBe(true)
+    })
+
+    it("should return false for different strings of same length", () => {
+      expect(constantTimeCompare("secret123", "secret456")).toBe(false)
+    })
+
+    it("should return false for different strings of different length", () => {
+      expect(constantTimeCompare("secret", "secret123")).toBe(false)
+      expect(constantTimeCompare("secret123", "secret")).toBe(false)
+    })
+
+    it("should return true for empty strings", () => {
+      expect(constantTimeCompare("", "")).toBe(true)
+    })
+
+    it("should return false when one string is empty", () => {
+      expect(constantTimeCompare("", "secret")).toBe(false)
+      expect(constantTimeCompare("secret", "")).toBe(false)
+    })
+
+    it("should handle unicode characters correctly", () => {
+      expect(constantTimeCompare("🔐secret🔑", "🔐secret🔑")).toBe(true)
+      expect(constantTimeCompare("🔐secret🔑", "🔐secret🔒")).toBe(false)
+    })
+
+    it("should be case-sensitive", () => {
+      expect(constantTimeCompare("Secret", "secret")).toBe(false)
+      expect(constantTimeCompare("SECRET", "secret")).toBe(false)
+    })
   })
 
   describe("isProtectedPath", () => {
@@ -75,7 +109,8 @@ describe("middleware", () => {
       return {
         nextUrl: new URL(baseUrl),
         url: baseUrl,
-      } as NextRequest
+        headers: new Headers(),
+      } as unknown as NextRequest
     }
 
     describe("public paths", () => {
@@ -226,6 +261,266 @@ describe("middleware", () => {
 
         expect(response.status).toBe(200)
         expect(response.headers.get("x-middleware-next")).toBe("1")
+      })
+    })
+
+    describe("E2E test bypass with secret header", () => {
+      let originalEnv: string | undefined
+
+      const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
+        const baseUrl = `http://localhost:3000${pathname}`
+        const headers = new Headers()
+        if (headerValue !== undefined) {
+          headers.set('x-e2e-auth-bypass', headerValue)
+        }
+        return {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers,
+        } as unknown as NextRequest
+      }
+
+      beforeEach(() => {
+        originalEnv = process.env.E2E_BYPASS_SECRET
+      })
+
+      afterEach(() => {
+        if (originalEnv === undefined) {
+          delete process.env.E2E_BYPASS_SECRET
+        } else {
+          process.env.E2E_BYPASS_SECRET = originalEnv
+        }
+      })
+
+      it("should bypass auth for protected path with correct secret header", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth with incorrect secret header", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "wrong-secret")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth when header is missing", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequest("/my-apps")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth when E2E_BYPASS_SECRET is not configured", async () => {
+        delete process.env.E2E_BYPASS_SECRET
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "any-secret")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should bypass auth for all protected paths with correct secret", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        const protectedPaths = ["/my-apps", "/my-apps/app-123", "/settings", "/profile"]
+
+        for (const path of protectedPaths) {
+          vi.mocked(auth).mockResolvedValue(null)
+          const request = createMockRequestWithHeader(path, "test-secret-123")
+          const response = await middleware(request)
+
+          expect(response.status).toBe(200)
+          expect(response.headers.get("x-middleware-next")).toBe("1")
+        }
+      })
+
+      it("should still allow public paths without bypass header", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequest("/")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+      })
+
+      it("should NOT bypass auth with empty string secret", async () => {
+        process.env.E2E_BYPASS_SECRET = ''
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "")
+        const response = await middleware(request)
+
+        // Empty string secret should NOT bypass (falsy check in middleware)
+        expect(response.status).toBe(307)
+        expect(auth).toHaveBeenCalled()
+      })
+    })
+
+    describe("E2E test bypass - production environment protection", () => {
+      let originalEnv: string | undefined
+      let originalNodeEnv: string | undefined
+      let originalVercelEnv: string | undefined
+      let consoleWarnSpy: ReturnType<typeof vi.spyOn>
+
+      const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
+        const baseUrl = `http://localhost:3000${pathname}`
+        const headers = new Headers()
+        if (headerValue !== undefined) {
+          headers.set('x-e2e-auth-bypass', headerValue)
+        }
+        return {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers,
+        } as unknown as NextRequest
+      }
+
+      beforeEach(() => {
+        originalEnv = process.env.E2E_BYPASS_SECRET
+        originalNodeEnv = process.env.NODE_ENV
+        originalVercelEnv = process.env.VERCEL_ENV
+        consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      })
+
+      afterEach(() => {
+        if (originalEnv === undefined) {
+          delete process.env.E2E_BYPASS_SECRET
+        } else {
+          process.env.E2E_BYPASS_SECRET = originalEnv
+        }
+        if (originalNodeEnv === undefined) {
+          delete process.env.NODE_ENV
+        } else {
+          process.env.NODE_ENV = originalNodeEnv
+        }
+        if (originalVercelEnv === undefined) {
+          delete process.env.VERCEL_ENV
+        } else {
+          process.env.VERCEL_ENV = originalVercelEnv
+        }
+        consoleWarnSpy.mockRestore()
+      })
+
+      it("should BLOCK E2E bypass in production environment (both NODE_ENV and VERCEL_ENV)", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'production'
+        process.env.VERCEL_ENV = 'production'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        // Should redirect (bypass blocked)
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+        expect(consoleWarnSpy).not.toHaveBeenCalled()
+      })
+
+      it("should ALLOW E2E bypass in development environment", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'development'
+        delete process.env.VERCEL_ENV
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        // Should allow bypass
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+        expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Bypass]', expect.objectContaining({
+          path: '/my-apps',
+          environment: expect.objectContaining({
+            NODE_ENV: 'development',
+          })
+        }))
+      })
+
+      it("should ALLOW E2E bypass when NODE_ENV is production but VERCEL_ENV is preview", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'production'
+        process.env.VERCEL_ENV = 'preview'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        // Should allow bypass (not full production)
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+      })
+
+      it("should ALLOW E2E bypass when VERCEL_ENV is production but NODE_ENV is development", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'development'
+        process.env.VERCEL_ENV = 'production'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        const response = await middleware(request)
+
+        // Should allow bypass (not full production)
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+      })
+
+      it("should log audit information when bypass is used", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'test'
+        process.env.VERCEL_ENV = 'preview'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps/app-123", "test-secret-123")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Bypass]', {
+          timestamp: expect.any(String),
+          path: '/my-apps/app-123',
+          environment: {
+            NODE_ENV: 'test',
+            VERCEL_ENV: 'preview',
+          }
+        })
+      })
+
+      it("should NOT log when bypass is blocked in production", async () => {
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        process.env.NODE_ENV = 'production'
+        process.env.VERCEL_ENV = 'production'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithHeader("/my-apps", "test-secret-123")
+        await middleware(request)
+
+        expect(consoleWarnSpy).not.toHaveBeenCalled()
       })
     })
 

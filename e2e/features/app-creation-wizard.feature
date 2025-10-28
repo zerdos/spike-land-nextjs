@@ -1,6 +1,3 @@
-# TODO: Fix authentication bypass in CI - See GitHub issue
-# Temporarily disabled until authentication bypass is fixed for Vercel preview deployments
-@skip
 Feature: App Creation Wizard
   As an authenticated user
   I want to create a new app through a multi-step wizard

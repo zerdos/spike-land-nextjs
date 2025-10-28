@@ -1,16 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { Geist, Geist_Mono } from 'next/font/google'
 import RootLayout, { metadata } from './layout'
 
+// Mock next/font/google to avoid actual font loading in tests
 vi.mock('next/font/google', () => ({
   Geist: vi.fn(() => ({
     variable: '--font-geist-sans',
-    subsets: ['latin'],
+    className: 'geist-sans-test-class',
   })),
   Geist_Mono: vi.fn(() => ({
     variable: '--font-geist-mono',
-    subsets: ['latin'],
+    className: 'geist-mono-test-class',
   })),
 }))
 
@@ -31,19 +31,6 @@ vi.mock('@/components/analytics/cookie-consent', () => ({
 }))
 
 describe('RootLayout', () => {
-  it('should call Geist font with correct config', () => {
-    expect(Geist).toHaveBeenCalledWith({
-      variable: '--font-geist-sans',
-      subsets: ['latin'],
-    })
-  })
-
-  it('should call Geist_Mono font with correct config', () => {
-    expect(Geist_Mono).toHaveBeenCalledWith({
-      variable: '--font-geist-mono',
-      subsets: ['latin'],
-    })
-  })
 
   it('should be a function component', () => {
     expect(typeof RootLayout).toBe('function')

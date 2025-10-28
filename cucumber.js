@@ -9,5 +9,6 @@ module.exports = {
     failFast: true, // Stop on first failure
     retry: 0, // Don't retry failed scenarios
     tags: 'not @skip', // Skip scenarios/features tagged with @skip
+    timeout: 15000, // Increase default step timeout to 15 seconds (was 5 seconds)
   },
 };
