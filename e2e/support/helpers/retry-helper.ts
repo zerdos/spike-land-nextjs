@@ -47,7 +47,7 @@ export async function waitForElementWithRetry(
       }
 
       return element;
-    } catch (e) {
+    } catch (_e) {
       // Element not found or not in expected state, retry
       await page.waitForTimeout(retryInterval);
     }
@@ -101,7 +101,7 @@ export async function clickButtonWithRetry(
       await expect(button).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await button.click();
       return;
-    } catch (e) {
+    } catch (_e) {
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
@@ -160,7 +160,7 @@ export async function fillInputWithRetry(
       // Verify the value was set correctly
       await expect(input).toHaveValue(value, { timeout: TIMEOUTS.RETRY_INTERVAL });
       return;
-    } catch (e) {
+    } catch (_e) {
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
@@ -190,7 +190,7 @@ export async function waitForTextWithRetry(
       const element = page.getByText(text, { exact });
       await expect(element).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       return element;
-    } catch (e) {
+    } catch (_e) {
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
