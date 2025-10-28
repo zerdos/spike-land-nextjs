@@ -1,6 +1,10 @@
-import { Before, After, Status } from '@cucumber/cucumber';
+import { Before, After, Status, setDefaultTimeout } from '@cucumber/cucumber';
 import { VideoWallWorld } from './video-wall-world';
 import { CustomWorld } from './world';
+
+// Increase default step timeout to 30 seconds for CI font loading
+// This is needed because Google Fonts can take time to load in CI environments
+setDefaultTimeout(30 * 1000);
 
 // Only run generic setup for non-video-wall scenarios
 // Note: VideoWallWorld is the actual world constructor for all scenarios,
