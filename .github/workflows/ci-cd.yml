@@ -215,6 +215,7 @@ jobs:
       - name: Start production server
         run: npm run start &
         env:
+          BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
           NODE_OPTIONS: --max-old-space-size=3072
 
