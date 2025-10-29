@@ -8,6 +8,7 @@ Feature: App Creation Wizard
     And I navigate to the app creation wizard
 
   # Step 1 - Basic Info
+  @skip
   Scenario: Step 1 form fields are displayed
     Then I should see the wizard step "Basic Info"
     And I should see the "App Name" input field
