@@ -125,6 +125,18 @@ export async function middleware(request: NextRequest) {
   // SECURITY: Only in non-production environments (NODE_ENV !== 'production' OR VERCEL_ENV !== 'production')
   const mockSessionCookie = request.cookies.get('authjs.session-token')
 
+  // Debug logging for E2E troubleshooting
+  if (pathname.startsWith('/my-apps') && mockSessionCookie) {
+    console.log('[Middleware Debug]', {
+      path: pathname,
+      isProduction,
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      cookieValue: mockSessionCookie.value,
+      willBypass: !isProduction && mockSessionCookie.value === 'mock-session-token',
+    })
+  }
+
   if (!isProduction && mockSessionCookie?.value === 'mock-session-token') {
     // Audit log for debugging E2E tests
     console.warn('[E2E Mock Session]', {
