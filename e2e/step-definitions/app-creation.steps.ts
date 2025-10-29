@@ -37,13 +37,51 @@ Then('I should see the wizard step {string}', async function (this: CustomWorld,
 });
 
 Then('I should see the {string} input field', async function (this: CustomWorld, fieldName: string) {
-  const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-  await expect(label).toBeVisible({ timeout: 10000 });
+  // Wait for the form to be fully rendered and interactive
+  await this.page.waitForLoadState('networkidle');
+
+  // Map field names to data-testids for more reliable testing
+  const testIdMap: Record<string, string> = {
+    'app name': 'app-name-input',
+    'price': 'price-input',
+  };
+
+  const fieldKey = fieldName.toLowerCase();
+  const testId = testIdMap[fieldKey];
+
+  if (testId) {
+    // Use data-testid for more reliable testing
+    const input = this.page.locator(`[data-testid="${testId}"]`);
+    await expect(input).toBeVisible({ timeout: 10000 });
+  } else {
+    // Fall back to label-based lookup
+    const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
+    await expect(label).toBeVisible({ timeout: 10000 });
+  }
 });
 
 Then('I should see the {string} textarea field', async function (this: CustomWorld, fieldName: string) {
-  const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-  await expect(label).toBeVisible({ timeout: 10000 });
+  // Wait for the form to be fully rendered and interactive
+  await this.page.waitForLoadState('networkidle');
+
+  // Map field names to data-testids for more reliable testing
+  const testIdMap: Record<string, string> = {
+    'description': 'app-description-input',
+    'requirements': 'requirements-textarea',
+  };
+
+  const fieldKey = fieldName.toLowerCase();
+  const testId = testIdMap[fieldKey];
+
+  if (testId) {
+    // Use data-testid for more reliable testing
+    const textarea = this.page.locator(`[data-testid="${testId}"]`);
+    await expect(textarea).toBeVisible({ timeout: 10000 });
+  } else {
+    // Fall back to label-based lookup
+    const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
+    await expect(label).toBeVisible({ timeout: 10000 });
+  }
 });
 
 Then('the progress bar should show {int}%', async function (this: CustomWorld, percentage: number) {
