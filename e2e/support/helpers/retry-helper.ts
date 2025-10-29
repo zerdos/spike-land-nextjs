@@ -33,6 +33,7 @@ export async function waitForElementWithRetry(
   const retryInterval = options.retryInterval || TIMEOUTS.RETRY_INTERVAL;
   const state = options.state || 'visible';
   const startTime = Date.now();
+  let lastError: Error | undefined;
 
   while (Date.now() - startTime < timeout) {
     try {
@@ -47,14 +48,19 @@ export async function waitForElementWithRetry(
       }
 
       return element;
-    } catch (_e) {
-      // Element not found or not in expected state, retry
+    } catch (error) {
+      lastError = error as Error;
+      // Log retry attempts for debugging
+      if (Date.now() - startTime >= timeout - retryInterval) {
+        console.error(`Final retry failed for selector "${selector}": ${lastError.message}`);
+      }
+      // Wait for a frame to be painted before retrying
       await page.waitForTimeout(retryInterval);
     }
   }
 
   throw new Error(
-    `Element with selector "${selector}" not found in state "${state}" after ${timeout}ms`
+    `Element with selector "${selector}" not found in state "${state}" after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
   );
 }
 
@@ -93,6 +99,7 @@ export async function clickButtonWithRetry(
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const startTime = Date.now();
+  let lastError: Error | undefined;
 
   while (Date.now() - startTime < timeout) {
     try {
@@ -101,17 +108,24 @@ export async function clickButtonWithRetry(
       await expect(button).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await button.click();
       return;
-    } catch (_e) {
+    } catch (error) {
+      lastError = error as Error;
+      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
+        console.error(`Failed to click button "${testId}": ${lastError.message}`);
+      }
+      // Wait for a frame before retrying
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
 
-  throw new Error(`Button with testId "${testId}" not clickable after ${timeout}ms`);
+  throw new Error(
+    `Button with testId "${testId}" not clickable after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+  );
 }
 
 /**
  * Waits for navigation and ensures page is fully loaded
- * More reliable than waitForLoadState alone
+ * Waits for network to be idle, which indicates page has finished loading
  *
  * @param page - Playwright Page instance
  * @param options - Configuration options
@@ -128,8 +142,8 @@ export async function waitForPageLoad(
 
   await page.waitForLoadState(waitUntil, { timeout });
 
-  // Additional wait for any client-side rendering
-  await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+  // NetworkIdle already ensures rendering is complete
+  // No additional fixed timeout needed - let components drive their own loading states
 }
 
 /**
@@ -149,6 +163,7 @@ export async function fillInputWithRetry(
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const startTime = Date.now();
+  let lastError: Error | undefined;
 
   while (Date.now() - startTime < timeout) {
     try {
@@ -157,15 +172,22 @@ export async function fillInputWithRetry(
       await expect(input).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await input.fill(value);
 
-      // Verify the value was set correctly
-      await expect(input).toHaveValue(value, { timeout: TIMEOUTS.RETRY_INTERVAL });
+      // Verify the value was set correctly - use SHORT timeout for inputs with debouncing/validation
+      await expect(input).toHaveValue(value, { timeout: TIMEOUTS.SHORT });
       return;
-    } catch (_e) {
+    } catch (error) {
+      lastError = error as Error;
+      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
+        console.error(`Failed to fill input "${testId}": ${lastError.message}`);
+      }
+      // Wait for a frame before retrying
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
 
-  throw new Error(`Input with testId "${testId}" not fillable after ${timeout}ms`);
+  throw new Error(
+    `Input with testId "${testId}" not fillable after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+  );
 }
 
 /**
@@ -184,16 +206,24 @@ export async function waitForTextWithRetry(
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const exact = options.exact ?? false;
   const startTime = Date.now();
+  let lastError: Error | undefined;
 
   while (Date.now() - startTime < timeout) {
     try {
       const element = page.getByText(text, { exact });
       await expect(element).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       return element;
-    } catch (_e) {
+    } catch (error) {
+      lastError = error as Error;
+      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
+        console.error(`Failed to find text "${text}": ${lastError.message}`);
+      }
+      // Wait for a frame before retrying
       await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
   }
 
-  throw new Error(`Text "${text}" not found after ${timeout}ms`);
+  throw new Error(
+    `Text "${text}" not found after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+  );
 }
