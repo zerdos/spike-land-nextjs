@@ -128,16 +128,24 @@ export async function middleware(request: NextRequest) {
   // ("mock-session-token") is not a valid NextAuth JWT and will fail verification.
   const mockSessionCookie = request.cookies.get('authjs.session-token')
 
+  // Debug: log cookie info for protected paths (for CI troubleshooting)
+  if (pathname.startsWith('/my-apps')) {
+    console.log('[Middleware Debug]', JSON.stringify({
+      path: pathname,
+      hasCookie: !!mockSessionCookie,
+      cookieValue: mockSessionCookie?.value?.substring(0, 20) + '...',
+      isProduction,
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV || 'undefined',
+    }))
+  }
+
   if (!isProduction && mockSessionCookie?.value === 'mock-session-token') {
-    // Audit log for debugging E2E tests
-    console.warn('[E2E Mock Session]', {
+    // Audit log for debugging E2E tests (use console.log to ensure it appears in CI)
+    console.log('[E2E Mock Session Bypass]', JSON.stringify({
       timestamp: new Date().toISOString(),
       path: pathname,
-      environment: {
-        NODE_ENV: process.env.NODE_ENV,
-        VERCEL_ENV: process.env.VERCEL_ENV,
-      }
-    })
+    }))
     // Allow access without calling auth() since mock cookie is not a valid JWT
     return NextResponse.next()
   }
