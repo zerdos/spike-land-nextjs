@@ -3,6 +3,12 @@ import { Page, Locator, expect } from '@playwright/test';
 /**
  * Environment-specific timeout configuration
  * CI environments typically need longer timeouts due to varying network conditions
+ *
+ * @note Why not use Playwright's built-in retry?
+ * - Playwright's built-in retry uses exponential backoff which can be too aggressive
+ * - We need consistent, predictable retry intervals for debugging
+ * - Environment-specific timeouts (CI vs local) aren't supported by Playwright natively
+ * - Custom error messages with context (selector, testId) are more debuggable
  */
 export const TIMEOUTS = {
   DEFAULT: process.env.CI ? 10000 : 5000,
@@ -10,6 +16,55 @@ export const TIMEOUTS = {
   SHORT: process.env.CI ? 5000 : 2500,
   RETRY_INTERVAL: 500,
 };
+
+/**
+ * Generic retry wrapper with consistent error handling and logging
+ * Handles retry logic with proper error tracking and debugging output
+ *
+ * @param operation - Async operation to retry
+ * @param options - Retry configuration
+ * @param context - Description of operation for error messages
+ * @returns Result of operation
+ * @throws Error if operation fails after all retries
+ *
+ * @note About page.waitForTimeout():
+ * - Used for frame-level synchronization between retries
+ * - Ensures DOM has time to update between retry attempts
+ * - Alternative would be exponential backoff, but fixed intervals are more predictable
+ * - This is the recommended Playwright pattern for custom retry logic
+ */
+async function withRetry<T>(
+  page: Page,
+  operation: () => Promise<T>,
+  options: {
+    timeout?: number;
+    retryInterval?: number;
+  },
+  context: string
+): Promise<T> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const retryInterval = options.retryInterval || TIMEOUTS.RETRY_INTERVAL;
+  const startTime = Date.now();
+  let lastError: Error | undefined;
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      // Log on final retry attempt
+      if (Date.now() - startTime >= timeout - retryInterval) {
+        console.error(`Final retry failed for ${context}: ${lastError.message}`);
+      }
+      // Wait for frame to be painted before next retry
+      await page.waitForTimeout(retryInterval);
+    }
+  }
+
+  throw new Error(
+    `${context} after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+  );
+}
 
 /**
  * Waits for an element to be visible with retry logic
@@ -97,29 +152,16 @@ export async function clickButtonWithRetry(
   testId: string,
   options: { timeout?: number } = {}
 ): Promise<void> {
-  const timeout = options.timeout || TIMEOUTS.DEFAULT;
-  const startTime = Date.now();
-  let lastError: Error | undefined;
-
-  while (Date.now() - startTime < timeout) {
-    try {
+  return withRetry(
+    page,
+    async () => {
       const button = page.getByTestId(testId);
       await expect(button).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await expect(button).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await button.click();
-      return;
-    } catch (error) {
-      lastError = error as Error;
-      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
-        console.error(`Failed to click button "${testId}": ${lastError.message}`);
-      }
-      // Wait for a frame before retrying
-      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
-    }
-  }
-
-  throw new Error(
-    `Button with testId "${testId}" not clickable after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+    },
+    { timeout: options.timeout },
+    `Button with testId "${testId}" not clickable`
   );
 }
 
@@ -161,12 +203,9 @@ export async function fillInputWithRetry(
   value: string,
   options: { timeout?: number } = {}
 ): Promise<void> {
-  const timeout = options.timeout || TIMEOUTS.DEFAULT;
-  const startTime = Date.now();
-  let lastError: Error | undefined;
-
-  while (Date.now() - startTime < timeout) {
-    try {
+  return withRetry(
+    page,
+    async () => {
       const input = page.getByTestId(testId);
       await expect(input).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await expect(input).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
@@ -174,19 +213,9 @@ export async function fillInputWithRetry(
 
       // Verify the value was set correctly - use SHORT timeout for inputs with debouncing/validation
       await expect(input).toHaveValue(value, { timeout: TIMEOUTS.SHORT });
-      return;
-    } catch (error) {
-      lastError = error as Error;
-      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
-        console.error(`Failed to fill input "${testId}": ${lastError.message}`);
-      }
-      // Wait for a frame before retrying
-      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
-    }
-  }
-
-  throw new Error(
-    `Input with testId "${testId}" not fillable after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+    },
+    { timeout: options.timeout },
+    `Input with testId "${testId}" not fillable`
   );
 }
 
@@ -203,27 +232,15 @@ export async function waitForTextWithRetry(
   text: string | RegExp,
   options: { timeout?: number; exact?: boolean } = {}
 ): Promise<Locator> {
-  const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const exact = options.exact ?? false;
-  const startTime = Date.now();
-  let lastError: Error | undefined;
-
-  while (Date.now() - startTime < timeout) {
-    try {
+  return withRetry(
+    page,
+    async () => {
       const element = page.getByText(text, { exact });
       await expect(element).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       return element;
-    } catch (error) {
-      lastError = error as Error;
-      if (Date.now() - startTime >= timeout - TIMEOUTS.RETRY_INTERVAL) {
-        console.error(`Failed to find text "${text}": ${lastError.message}`);
-      }
-      // Wait for a frame before retrying
-      await page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
-    }
-  }
-
-  throw new Error(
-    `Text "${text}" not found after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+    },
+    { timeout: options.timeout },
+    `Text "${text}" not found`
   );
 }

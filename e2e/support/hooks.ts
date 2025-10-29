@@ -6,6 +6,17 @@ import { CustomWorld } from './world';
 // This is needed because Google Fonts can take time to load in CI environments
 setDefaultTimeout(30 * 1000);
 
+// Clean localStorage before each scenario to prevent test pollution
+// This ensures each test starts with a clean slate
+Before(async function (this: CustomWorld) {
+  if (this.page) {
+    await this.page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+  }
+});
+
 // Only run generic setup for non-video-wall scenarios
 // Note: VideoWallWorld is the actual world constructor for all scenarios,
 // but we call the parent CustomWorld.init() for non-video-wall scenarios

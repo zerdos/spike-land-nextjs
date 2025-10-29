@@ -1,5 +1,23 @@
 # E2E Testing Documentation
 
+## ⚠️ IMPORTANT: Current Status
+
+**All wizard E2E tests are currently skipped** due to authentication issues in CI/CD environments.
+
+**Issue:** GitHub Issue #23 - E2E authentication bypass not working in Vercel preview deployments
+
+**Impact:**
+- ✅ Unit tests: Running (100% coverage)
+- ❌ E2E tests: Skipped (0% coverage for wizard scenarios)
+- ❌ Integration coverage: Limited
+
+**Action Required:**
+The authentication bypass mechanism needs to be fixed before these tests can run in CI. All wizard feature files are tagged with `@skip` until this is resolved.
+
+**Tracking:** See GitHub Issue #23 for progress on fixing authentication
+
+---
+
 ## Overview
 
 This directory contains end-to-end (E2E) tests built with Playwright and Cucumber. The tests use Behavior-Driven Development (BDD) approach with Gherkin syntax for test scenarios.
