@@ -19,6 +19,10 @@ vi.mock('./user-avatar', () => ({
   UserAvatar: () => <div data-testid="user-avatar">User Avatar Component</div>,
 }))
 
+vi.mock('@/components/theme/mode-toggle', () => ({
+  ModeToggle: () => <button data-testid="mode-toggle">Mode Toggle</button>,
+}))
+
 describe('AuthHeader Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -35,6 +39,7 @@ describe('AuthHeader Component', () => {
     const loadingElement = container.querySelector('.animate-pulse')
     expect(loadingElement).toBeInTheDocument()
     expect(loadingElement).toHaveClass('animate-pulse', 'rounded-full', 'bg-gray-200')
+    expect(screen.getByTestId('mode-toggle')).toBeInTheDocument()
   })
 
   it('should render loading state with correct dimensions', () => {
@@ -77,6 +82,7 @@ describe('AuthHeader Component', () => {
 
     render(<AuthHeader />)
     expect(screen.getByTestId('user-avatar')).toBeInTheDocument()
+    expect(screen.getByTestId('mode-toggle')).toBeInTheDocument()
   })
 
   it('should render UserAvatar in fixed position when authenticated', () => {
@@ -97,26 +103,27 @@ describe('AuthHeader Component', () => {
     expect(wrapper).toHaveClass('fixed', 'top-4', 'right-4', 'z-50')
   })
 
-  it('should return null when not authenticated and not loading', () => {
+  it('should render ModeToggle when not authenticated and not loading', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
       update: vi.fn(),
     })
 
-    const { container } = render(<AuthHeader />)
-    expect(container.firstChild).toBeNull()
+    render(<AuthHeader />)
+    expect(screen.getByTestId('mode-toggle')).toBeInTheDocument()
   })
 
-  it('should return null when session data is null', () => {
+  it('should render only ModeToggle when session data is null', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
       update: vi.fn(),
     })
 
-    const { container } = render(<AuthHeader />)
-    expect(container.firstChild).toBeNull()
+    render(<AuthHeader />)
+    expect(screen.getByTestId('mode-toggle')).toBeInTheDocument()
+    expect(screen.queryByTestId('user-avatar')).not.toBeInTheDocument()
   })
 })
 
