@@ -110,6 +110,9 @@ describe("middleware", () => {
         nextUrl: new URL(baseUrl),
         url: baseUrl,
         headers: new Headers(),
+        cookies: {
+          get: () => undefined,
+        },
       } as unknown as NextRequest
     }
 
@@ -277,6 +280,9 @@ describe("middleware", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest
       }
 
@@ -395,6 +401,9 @@ describe("middleware", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest
       }
 
@@ -521,6 +530,178 @@ describe("middleware", () => {
         await middleware(request)
 
         expect(consoleWarnSpy).not.toHaveBeenCalled()
+      })
+    })
+
+    describe("E2E test bypass with mock session cookie", () => {
+      let originalNodeEnv: string | undefined
+      let originalVercelEnv: string | undefined
+      let originalBaseUrl: string | undefined
+      let consoleWarnSpy: ReturnType<typeof vi.spyOn>
+
+      const createMockRequestWithCookie = (pathname: string, cookieValue?: string): NextRequest => {
+        const baseUrl = `http://localhost:3000${pathname}`
+        const headers = new Headers()
+        if (cookieValue !== undefined) {
+          headers.set('cookie', `authjs.session-token=${cookieValue}`)
+        }
+        const cookies = new Map()
+        if (cookieValue !== undefined) {
+          cookies.set('authjs.session-token', { value: cookieValue })
+        }
+        return {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers,
+          cookies: {
+            get: (name: string) => cookies.get(name),
+          },
+        } as unknown as NextRequest
+      }
+
+      beforeEach(() => {
+        originalNodeEnv = process.env.NODE_ENV
+        originalVercelEnv = process.env.VERCEL_ENV
+        originalBaseUrl = process.env.BASE_URL
+        consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        // Ensure E2E_BYPASS_SECRET is not set for these tests
+        delete process.env.E2E_BYPASS_SECRET
+      })
+
+      afterEach(() => {
+        if (originalNodeEnv === undefined) {
+          delete process.env.NODE_ENV
+        } else {
+          process.env.NODE_ENV = originalNodeEnv
+        }
+        if (originalVercelEnv === undefined) {
+          delete process.env.VERCEL_ENV
+        } else {
+          process.env.VERCEL_ENV = originalVercelEnv
+        }
+        if (originalBaseUrl === undefined) {
+          delete process.env.BASE_URL
+        } else {
+          process.env.BASE_URL = originalBaseUrl
+        }
+        consoleWarnSpy.mockRestore()
+      })
+
+      it("should bypass auth with mock session cookie when BASE_URL is localhost", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'http://localhost:3000'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithCookie("/my-apps", "mock-session-token")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+        expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Mock Session]', expect.objectContaining({
+          path: '/my-apps',
+          environment: expect.objectContaining({
+            NODE_ENV: 'production',
+            BASE_URL: 'http://localhost:3000',
+          })
+        }))
+      })
+
+      it("should bypass auth with mock session cookie when BASE_URL is 127.0.0.1", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'http://127.0.0.1:3000'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithCookie("/my-apps", "mock-session-token")
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get("x-middleware-next")).toBe("1")
+        expect(auth).not.toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth with mock cookie in production environment", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.VERCEL_ENV = 'production'
+        process.env.BASE_URL = 'http://localhost:3000'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithCookie("/my-apps", "mock-session-token")
+        const response = await middleware(request)
+
+        // Should redirect (bypass blocked in production)
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth with mock cookie when BASE_URL is not localhost", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'https://next.spike.land'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithCookie("/my-apps", "mock-session-token")
+        const response = await middleware(request)
+
+        // Should redirect (not local E2E)
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth with wrong cookie value", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'http://localhost:3000'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequestWithCookie("/my-apps", "wrong-token")
+        const response = await middleware(request)
+
+        // Should redirect (wrong cookie value)
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should NOT bypass auth when mock cookie is missing", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'http://localhost:3000'
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const request = createMockRequest("/my-apps")
+        const response = await middleware(request)
+
+        // Should redirect (no cookie)
+        expect(response.status).toBe(307)
+        expect(response.headers.get("location")).toContain("callbackUrl")
+        expect(auth).toHaveBeenCalled()
+      })
+
+      it("should prefer E2E_BYPASS_SECRET header over mock cookie when both are present", async () => {
+        process.env.NODE_ENV = 'production'
+        process.env.BASE_URL = 'http://localhost:3000'
+        process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+
+        const baseUrl = 'http://localhost:3000/my-apps'
+        const headers = new Headers()
+        headers.set('x-e2e-auth-bypass', 'test-secret-123')
+        headers.set('cookie', 'authjs.session-token=mock-session-token')
+        const cookies = new Map([['authjs.session-token', { value: 'mock-session-token' }]])
+        const request = {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers,
+          cookies: {
+            get: (name: string) => cookies.get(name),
+          },
+        } as unknown as NextRequest
+
+        vi.mocked(auth).mockResolvedValue(null)
+        const response = await middleware(request)
+
+        expect(response.status).toBe(200)
+        expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Bypass]', expect.any(Object))
+        expect(consoleWarnSpy).not.toHaveBeenCalledWith('[E2E Mock Session]', expect.any(Object))
       })
     })
 

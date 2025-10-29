@@ -120,6 +120,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Alternative E2E bypass: Check for mock session cookie when E2E_BYPASS_SECRET is not set
+  // This allows E2E tests to work in CI environments without requiring GitHub secrets
+  // SECURITY: Only in non-production AND when BASE_URL is localhost (local E2E tests)
+  const mockSessionCookie = request.cookies.get('authjs.session-token')
+  const baseUrl = process.env.BASE_URL || ''
+  const isLocalE2E = !isProduction && (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1'))
+
+  if (isLocalE2E && mockSessionCookie?.value === 'mock-session-token') {
+    // Audit log for debugging E2E tests
+    console.warn('[E2E Mock Session]', {
+      timestamp: new Date().toISOString(),
+      path: pathname,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        BASE_URL: baseUrl,
+      }
+    })
+    return NextResponse.next()
+  }
+
   // Check authentication status
   const session = await auth()
 
