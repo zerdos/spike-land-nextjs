@@ -123,19 +123,10 @@ export async function middleware(request: NextRequest) {
   // Alternative E2E bypass: Check for mock session cookie when E2E_BYPASS_SECRET is not set
   // This allows E2E tests to work in CI environments without requiring GitHub secrets
   // SECURITY: Only in non-production environments (NODE_ENV !== 'production' OR VERCEL_ENV !== 'production')
+  //
+  // IMPORTANT: This check must happen BEFORE calling auth() because the mock cookie value
+  // ("mock-session-token") is not a valid NextAuth JWT and will fail verification.
   const mockSessionCookie = request.cookies.get('authjs.session-token')
-
-  // Debug logging for E2E troubleshooting
-  if (pathname.startsWith('/my-apps') && mockSessionCookie) {
-    console.log('[Middleware Debug]', {
-      path: pathname,
-      isProduction,
-      NODE_ENV: process.env.NODE_ENV,
-      VERCEL_ENV: process.env.VERCEL_ENV,
-      cookieValue: mockSessionCookie.value,
-      willBypass: !isProduction && mockSessionCookie.value === 'mock-session-token',
-    })
-  }
 
   if (!isProduction && mockSessionCookie?.value === 'mock-session-token') {
     // Audit log for debugging E2E tests
@@ -147,10 +138,11 @@ export async function middleware(request: NextRequest) {
         VERCEL_ENV: process.env.VERCEL_ENV,
       }
     })
+    // Allow access without calling auth() since mock cookie is not a valid JWT
     return NextResponse.next()
   }
 
-  // Check authentication status
+  // Check authentication status using NextAuth
   const session = await auth()
 
   // If user is not authenticated, redirect to home with callback URL
