@@ -583,6 +583,7 @@ describe("middleware", () => {
       it("should bypass auth with mock session cookie in non-production NODE_ENV", async () => {
         process.env.NODE_ENV = 'test'
         delete process.env.VERCEL_ENV
+        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
         vi.mocked(auth).mockResolvedValue(null)
         const request = createMockRequestWithCookie("/my-apps", "mock-session-token")
@@ -591,12 +592,9 @@ describe("middleware", () => {
         expect(response.status).toBe(200)
         expect(response.headers.get("x-middleware-next")).toBe("1")
         expect(auth).not.toHaveBeenCalled()
-        expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Mock Session]', expect.objectContaining({
-          path: '/my-apps',
-          environment: expect.objectContaining({
-            NODE_ENV: 'test',
-          })
-        }))
+        // Check for bypass log (now using console.log)
+        expect(consoleLogSpy).toHaveBeenCalledWith('[E2E Mock Session Bypass]', expect.any(String))
+        consoleLogSpy.mockRestore()
       })
 
       it("should bypass auth with mock session cookie when VERCEL_ENV is preview", async () => {
@@ -655,6 +653,7 @@ describe("middleware", () => {
       it("should prefer E2E_BYPASS_SECRET header over mock cookie when both are present", async () => {
         process.env.NODE_ENV = 'test'
         process.env.E2E_BYPASS_SECRET = 'test-secret-123'
+        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
         const baseUrl = 'http://localhost:3000/my-apps'
         const headers = new Headers()
@@ -675,7 +674,9 @@ describe("middleware", () => {
 
         expect(response.status).toBe(200)
         expect(consoleWarnSpy).toHaveBeenCalledWith('[E2E Bypass]', expect.any(Object))
-        expect(consoleWarnSpy).not.toHaveBeenCalledWith('[E2E Mock Session]', expect.any(Object))
+        // Should not see Mock Session log since header bypass takes precedence
+        expect(consoleLogSpy).not.toHaveBeenCalledWith('[E2E Mock Session Bypass]', expect.any(String))
+        consoleLogSpy.mockRestore()
       })
     })
 
