@@ -43,6 +43,9 @@ Then('I should see the wizard step {string}', async function (this: CustomWorld,
 });
 
 Then('I should see the {string} input field', async function (this: CustomWorld, fieldName: string) {
+  // Wait for the form to be fully rendered and interactive
+  await this.page.waitForLoadState('networkidle');
+
   // Try to find by testid first, fall back to label for backward compatibility
   try {
     const testId = fieldName.toLowerCase().replace(/\s+/g, '-') + '-input';
@@ -55,6 +58,9 @@ Then('I should see the {string} input field', async function (this: CustomWorld,
 });
 
 Then('I should see the {string} textarea field', async function (this: CustomWorld, fieldName: string) {
+  // Wait for the form to be fully rendered and interactive
+  await this.page.waitForLoadState('networkidle');
+
   // Try to find by testid first, fall back to label for backward compatibility
   try {
     const testId = fieldName.toLowerCase().replace(/\s+/g, '-') + '-textarea';
