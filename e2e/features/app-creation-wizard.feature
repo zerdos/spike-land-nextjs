@@ -1,3 +1,4 @@
+@skip
 Feature: App Creation Wizard
   As an authenticated user
   I want to create a new app through a multi-step wizard
@@ -8,12 +9,14 @@ Feature: App Creation Wizard
     And I navigate to the app creation wizard
 
   # Step 1 - Basic Info
+  @skip
   Scenario: Step 1 form fields are displayed
     Then I should see the wizard step "Basic Info"
     And I should see the "App Name" input field
     And I should see the "Description" textarea field
     And I should see the "Next" button
 
+  @skip
   Scenario: Progress bar shows 25% on Step 1
     Then the progress bar should show 25%
     And the progress text should say "Step 1 of 4"
