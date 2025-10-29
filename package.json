@@ -48,7 +48,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.548.0",
     "next": "15.5.4",
-    "next-auth": "^5.0.0-beta.29",
+    "next-auth": "^5.0.0-beta.30",
     "peerjs": "^1.5.5",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
