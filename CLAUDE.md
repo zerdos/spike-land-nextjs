@@ -405,8 +405,8 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
 ### Deployment Strategy
 - **Production**: `main` branch automatically deploys to https://next.spike.land
 - **Preview**: All other branches get temporary preview URLs for testing
-- **Domain**: Custom domain `next.spike.land` managed via Cloudflare DNS (see `CLOUDFLARE_DNS_SETUP.md`)
-- **Configuration**: See `VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
+- **Domain**: Custom domain `next.spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
+- **Configuration**: See `docs/archive/VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
 
 ### Required GitHub Secrets
 - `VERCEL_TOKEN` - Vercel deployment token (required)
