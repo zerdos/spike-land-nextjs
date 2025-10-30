@@ -53,7 +53,7 @@ open e2e/reports/cucumber-report.html
 - **Steps:** `e2e/step-definitions/video-wall-*.steps.ts`
 - **Infrastructure:** `e2e/support/video-wall-world.ts`
 - **Docs:** `e2e/VIDEO_WALL_TESTING.md` (comprehensive)
-- **Summary:** `E2E_TESTS_DELIVERY_SUMMARY.md` (full details)
+- **Summary:** `docs/archive/E2E_TESTS_DELIVERY_SUMMARY.md` (full details)
 
 ## Test Coverage
 
