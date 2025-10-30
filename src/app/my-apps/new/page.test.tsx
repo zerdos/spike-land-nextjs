@@ -61,7 +61,7 @@ describe("NewAppPage", () => {
     expect(screen.getByText("Create New App")).toBeInTheDocument()
     expect(screen.getByText(/Step 1 of 4: Basic Info/)).toBeInTheDocument()
     expect(screen.getByTestId("app-name-input")).toBeInTheDocument()
-    expect(screen.getByTestId("app-description-input")).toBeInTheDocument()
+    expect(screen.getByTestId("app-description-textarea")).toBeInTheDocument()
   })
 
   it("should show progress bar", () => {
@@ -74,7 +74,7 @@ describe("NewAppPage", () => {
   it("should disable back button on first step", () => {
     render(<NewAppPage />)
 
-    const backButton = screen.getByTestId("back-button")
+    const backButton = screen.getByTestId("wizard-back-button")
     expect(backButton).toBeDisabled()
   })
 
@@ -84,17 +84,17 @@ describe("NewAppPage", () => {
 
     await user.type(screen.getByTestId("app-name-input"), "Test App")
     await user.type(
-      screen.getByTestId("app-description-input"),
+      screen.getByTestId("app-description-textarea"),
       "This is a test description"
     )
 
-    await user.click(screen.getByTestId("next-button"))
+    await user.click(screen.getByTestId("wizard-next-button"))
 
     await waitFor(() => {
       expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument()
     })
 
-    const backButton = screen.getByTestId("back-button")
+    const backButton = screen.getByTestId("wizard-back-button")
     expect(backButton).not.toBeDisabled()
   })
 
@@ -104,7 +104,7 @@ describe("NewAppPage", () => {
       render(<NewAppPage />)
 
       await user.type(screen.getByTestId("app-name-input"), "AB")
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const errors = screen.getAllByText("App name must be at least 3 characters")
@@ -117,8 +117,8 @@ describe("NewAppPage", () => {
       render(<NewAppPage />)
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
-      await user.type(screen.getByTestId("app-description-input"), "Short")
-      await user.click(screen.getByTestId("next-button"))
+      await user.type(screen.getByTestId("app-description-textarea"), "Short")
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const errors = screen.getAllByText("Description must be at least 10 characters")
@@ -132,17 +132,17 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a valid test description"
       )
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument()
       })
 
-      expect(screen.getByTestId("app-requirements-input")).toBeInTheDocument()
+      expect(screen.getByTestId("requirements-textarea")).toBeInTheDocument()
     })
 
     it("should accept name with hyphens and numbers", async () => {
@@ -151,11 +151,11 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test-App-123")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a valid test description"
       )
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument()
@@ -168,10 +168,10 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test@App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Valid description here"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const errors = screen.getAllByText(
@@ -189,10 +189,10 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument()
@@ -200,14 +200,14 @@ describe("NewAppPage", () => {
     })
 
     it("should render requirements textarea", () => {
-      expect(screen.getByTestId("app-requirements-input")).toBeInTheDocument()
+      expect(screen.getByTestId("requirements-textarea")).toBeInTheDocument()
     })
 
     it("should validate requirements field", async () => {
       const user = userEvent.setup()
 
-      await user.type(screen.getByTestId("app-requirements-input"), "Short")
-      await user.click(screen.getByTestId("next-button"))
+      await user.type(screen.getByTestId("requirements-textarea"), "Short")
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const errors = screen.getAllByText("Requirements must be at least 20 characters")
@@ -219,10 +219,10 @@ describe("NewAppPage", () => {
       const user = userEvent.setup()
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "This app needs authentication and user profile management features"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(
@@ -234,7 +234,7 @@ describe("NewAppPage", () => {
     it("should go back to step 1 when back button is clicked", async () => {
       const user = userEvent.setup()
 
-      await user.click(screen.getByTestId("back-button"))
+      await user.click(screen.getByTestId("wizard-back-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 1 of 4: Basic Info/)).toBeInTheDocument()
@@ -249,20 +249,20 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument()
       })
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "This app needs authentication and user profile management"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(
@@ -278,7 +278,7 @@ describe("NewAppPage", () => {
     it("should validate monetization model selection", async () => {
       const user = userEvent.setup()
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const errors = screen.getAllByText("Please select a monetization model")
@@ -299,7 +299,7 @@ describe("NewAppPage", () => {
       const options = screen.getAllByText("Free - No charge for users")
       await user.click(options[options.length - 1])
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 4 of 4: Review/)).toBeInTheDocument()
@@ -334,20 +334,20 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "My Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is my test app description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "The app needs user authentication and profile management features"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
@@ -361,7 +361,7 @@ describe("NewAppPage", () => {
       const subscriptionOptions = screen.getAllByText("Subscription - Recurring payments")
       await user.click(subscriptionOptions[subscriptionOptions.length - 1])
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getByText(/Step 4 of 4: Review/)).toBeInTheDocument()
@@ -384,13 +384,13 @@ describe("NewAppPage", () => {
     })
 
     it("should show Create App button on final step", () => {
-      expect(screen.getByTestId("submit-button")).toHaveTextContent("Create App")
+      expect(screen.getByTestId("wizard-submit-button")).toHaveTextContent("Create App")
     })
 
     it("should create app and navigate on submit", async () => {
       const user = userEvent.setup()
 
-      await user.click(screen.getByTestId("submit-button"))
+      await user.click(screen.getByTestId("wizard-submit-button"))
 
       await waitFor(() => {
         expect(mockPush).toHaveBeenCalledWith("/my-apps")
@@ -400,7 +400,7 @@ describe("NewAppPage", () => {
     it("should call API to save app on submit", async () => {
       const user = userEvent.setup()
 
-      await user.click(screen.getByTestId("submit-button"))
+      await user.click(screen.getByTestId("wizard-submit-button"))
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalledWith(
@@ -432,7 +432,7 @@ describe("NewAppPage", () => {
         name: "Draft App",
       })
 
-      await user.click(screen.getByTestId("submit-button"))
+      await user.click(screen.getByTestId("wizard-submit-button"))
 
       await waitFor(() => {
         expect(localStorage.removeItem).toHaveBeenCalledWith(
@@ -477,7 +477,7 @@ describe("NewAppPage", () => {
         expect(nameInput.value).toBe("Saved Draft")
 
         const descInput = screen.getByTestId(
-          "app-description-input"
+          "app-description-textarea"
         ) as HTMLTextAreaElement
         expect(descInput.value).toBe("Saved description from draft")
       })
@@ -510,20 +510,20 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "Requirements for the test app go here"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
@@ -536,7 +536,7 @@ describe("NewAppPage", () => {
       })
       const freeOptions = screen.getAllByText("Free - No charge for users")
       await user.click(freeOptions[freeOptions.length - 1])
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 4 of 4/)[0]).toBeInTheDocument()
@@ -549,16 +549,16 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
-      await user.click(screen.getByTestId("back-button"))
+      await user.click(screen.getByTestId("wizard-back-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 1 of 4/)[0]).toBeInTheDocument()
@@ -571,16 +571,16 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
-      await user.click(screen.getByTestId("back-button"))
+      await user.click(screen.getByTestId("wizard-back-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 1 of 4/)[0]).toBeInTheDocument()
@@ -604,10 +604,10 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Test description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
@@ -634,20 +634,20 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "New App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "New app description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 2 of 4/)[0]).toBeInTheDocument()
       })
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "New app requirements go here"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 3 of 4/)[0]).toBeInTheDocument()
@@ -670,13 +670,13 @@ describe("NewAppPage", () => {
       const freeOptions = screen.getAllByText("Free - No charge for users")
       await user.click(freeOptions[freeOptions.length - 1])
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         expect(screen.getAllByText(/Step 4 of 4/)[0]).toBeInTheDocument()
       })
 
-      await user.click(screen.getByTestId("submit-button"))
+      await user.click(screen.getByTestId("wizard-submit-button"))
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalledWith(
@@ -713,7 +713,7 @@ describe("NewAppPage", () => {
       const user = userEvent.setup()
       render(<NewAppPage />)
 
-      const descInput = screen.getByTestId("app-description-input")
+      const descInput = screen.getByTestId("app-description-textarea")
       await user.type(descInput, "Short")
       await user.tab()
 
@@ -768,7 +768,7 @@ describe("NewAppPage", () => {
       const user = userEvent.setup()
       render(<NewAppPage />)
 
-      await user.type(screen.getByTestId("app-description-input"), "Test desc")
+      await user.type(screen.getByTestId("app-description-textarea"), "Test desc")
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter")
@@ -783,17 +783,17 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Valid description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 2 of 4/)
         expect(stepTexts.length).toBeGreaterThan(0)
       })
 
-      await user.type(screen.getByTestId("app-requirements-input"), "Test req")
+      await user.type(screen.getByTestId("requirements-textarea"), "Test req")
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter")
@@ -832,7 +832,7 @@ describe("NewAppPage", () => {
       const user = userEvent.setup()
       render(<NewAppPage />)
 
-      await user.type(screen.getByTestId("app-description-input"), "Short")
+      await user.type(screen.getByTestId("app-description-textarea"), "Short")
       await user.tab()
 
       await waitFor(() => {
@@ -846,7 +846,7 @@ describe("NewAppPage", () => {
       render(<NewAppPage />)
 
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a valid description with enough characters"
       )
       await user.tab()
@@ -882,7 +882,7 @@ describe("NewAppPage", () => {
       render(<NewAppPage />)
 
       await user.type(screen.getByTestId("app-name-input"), "AB")
-      await user.type(screen.getByTestId("app-description-input"), "Short")
+      await user.type(screen.getByTestId("app-description-textarea"), "Short")
       await user.tab()
       await user.tab()
 
@@ -932,17 +932,17 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Valid description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 2 of 4/)
         expect(stepTexts.length).toBeGreaterThan(0)
       })
 
-      const reqInput = screen.getByTestId("app-requirements-input")
+      const reqInput = screen.getByTestId("requirements-textarea")
       expect(reqInput).toHaveAttribute(
         "placeholder",
         expect.stringContaining("Example requirements")
@@ -955,13 +955,13 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Valid description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
-        const reqInput = screen.getByTestId("app-requirements-input")
+        const reqInput = screen.getByTestId("requirements-textarea")
         expect(reqInput).toHaveClass("font-mono")
       })
     })
@@ -972,17 +972,17 @@ describe("NewAppPage", () => {
 
       await user.type(screen.getByTestId("app-name-input"), "Test App")
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "Valid description"
       )
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 2 of 4/)
         expect(stepTexts.length).toBeGreaterThan(0)
       })
 
-      await user.type(screen.getByTestId("app-requirements-input"), "Short")
+      await user.type(screen.getByTestId("requirements-textarea"), "Short")
       await user.tab()
 
       await waitFor(() => {
@@ -1044,16 +1044,16 @@ describe("NewAppPage", () => {
 
       // Navigate to review step
       await user.type(screen.getByTestId("app-name-input"), "Test App")
-      await user.type(screen.getByTestId("app-description-input"), "Valid description")
-      await user.click(screen.getByTestId("next-button"))
+      await user.type(screen.getByTestId("app-description-textarea"), "Valid description")
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 2 of 4/)
         expect(stepTexts.length).toBeGreaterThan(0)
       })
 
-      await user.type(screen.getByTestId("app-requirements-input"), "Valid requirements for testing")
-      await user.click(screen.getByTestId("next-button"))
+      await user.type(screen.getByTestId("requirements-textarea"), "Valid requirements for testing")
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 3 of 4/)
@@ -1068,7 +1068,7 @@ describe("NewAppPage", () => {
 
       const options = screen.getAllByText("Free - No charge for users")
       await user.click(options[options.length - 1])
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       // Now on review step (step 3)
       await waitFor(() => {
@@ -1077,7 +1077,7 @@ describe("NewAppPage", () => {
       })
 
       // Click next on review step - should submit
-      const submitButton = screen.getByTestId("submit-button")
+      const submitButton = screen.getByTestId("wizard-submit-button")
       expect(submitButton).toBeInTheDocument()
     })
   })
@@ -1116,7 +1116,7 @@ describe("NewAppPage", () => {
       })
 
       await user.type(
-        screen.getByTestId("app-description-input"),
+        screen.getByTestId("app-description-textarea"),
         "This is a comprehensive description"
       )
       await user.tab()
@@ -1126,7 +1126,7 @@ describe("NewAppPage", () => {
         expect(successIcons.length).toBe(2)
       })
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 2 of 4/)
@@ -1134,7 +1134,7 @@ describe("NewAppPage", () => {
       })
 
       await user.type(
-        screen.getByTestId("app-requirements-input"),
+        screen.getByTestId("requirements-textarea"),
         "This app needs authentication and profile management"
       )
 
@@ -1143,7 +1143,7 @@ describe("NewAppPage", () => {
         expect(counters.length).toBeGreaterThan(0)
       })
 
-      await user.click(screen.getByTestId("next-button"))
+      await user.click(screen.getByTestId("wizard-next-button"))
 
       await waitFor(() => {
         const stepTexts = screen.getAllByText(/Step 3 of 4/)

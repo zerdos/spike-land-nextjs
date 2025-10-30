@@ -321,7 +321,7 @@ export default function NewAppPage() {
                           setFormState({ ...formState, description: value })
                           field.onChange(value)
                         }}
-                        data-testid="app-description-input"
+                        data-testid="app-description-textarea"
                       />
                       <div className="absolute right-3 top-3">
                         <FieldStatusIcon
@@ -365,7 +365,7 @@ export default function NewAppPage() {
                         setFormState({ ...formState, requirements: value })
                         field.onChange(value)
                       }}
-                      data-testid="app-requirements-input"
+                      data-testid="requirements-textarea"
                     />
                     <div className="absolute right-3 top-3">
                       <FieldStatusIcon
@@ -502,13 +502,13 @@ export default function NewAppPage() {
                   variant="outline"
                   onClick={handleBack}
                   disabled={currentStep === 0}
-                  data-testid="back-button"
+                  data-testid="wizard-back-button"
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
-                  data-testid={currentStep === STEPS.length - 1 ? "submit-button" : "next-button"}
+                  data-testid={currentStep === STEPS.length - 1 ? "wizard-submit-button" : "wizard-next-button"}
                 >
                   {currentStep === STEPS.length - 1 ? "Create App" : "Next"}
                 </Button>
