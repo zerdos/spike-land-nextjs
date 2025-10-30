@@ -541,6 +541,32 @@ When adding new features:
 5. **Create Pull Request** and wait for CI checks
 6. **Merge only when all checks pass**
 
+## Documentation Guidelines
+
+### Writing Documentation Files
+
+**CRITICAL**: Agents must follow these rules when creating documentation:
+
+1. **NEVER create .md files in the project root** (except README.md and CLAUDE.md which already exist)
+2. **All documentation must go in the `docs/` directory or subdirectories**:
+   - `docs/` - Main documentation (database docs, setup guides, etc.)
+   - `docs/archive/` - Historical documentation, implementation summaries, completion reports
+
+3. **Acceptable documentation locations**:
+   - ✅ `docs/FEATURE_NAME.md` - Feature documentation
+   - ✅ `docs/setup/DATABASE_SETUP.md` - Setup guides
+   - ✅ `docs/archive/IMPLEMENTATION_SUMMARY.md` - Historical records
+   - ❌ `PROJECT_ROOT/SOME_DOC.md` - Never in root!
+
+4. **When updating existing docs**:
+   - Check `docs/` directory first for existing documentation
+   - Update existing files rather than creating duplicates
+   - Maintain consistent formatting and structure
+
+5. **Exception**: Only README.md and CLAUDE.md should exist in the project root
+
+This keeps the project root clean and documentation organized for future reference (blog articles, knowledge base, etc.).
+
 ## Issue Management
 
 ### Resolving Project Issues
