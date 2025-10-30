@@ -2,6 +2,11 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import { AppCreationWizard } from '../support/page-objects/AppCreationWizard';
+import {
+  waitForTextWithRetry,
+  waitForPageLoad,
+  TIMEOUTS,
+} from '../support/helpers/retry-helper';
 
 // Helper to get or create page object
 function getWizard(world: CustomWorld): AppCreationWizard {
@@ -28,35 +33,27 @@ declare module '../support/world' {
 Given('I navigate to the app creation wizard', async function (this: CustomWorld) {
   const wizard = getWizard(this);
   await wizard.navigate();
+  await waitForPageLoad(this.page);
 });
 
 Then('I should see the wizard step {string}', async function (this: CustomWorld, stepName: string) {
   const wizard = getWizard(this);
   const stepTitle = await wizard.getStepTitle();
-  await expect(stepTitle).toContainText(stepName, { timeout: 10000 });
+  await expect(stepTitle).toContainText(stepName, { timeout: TIMEOUTS.DEFAULT });
 });
 
 Then('I should see the {string} input field', async function (this: CustomWorld, fieldName: string) {
   // Wait for the form to be fully rendered and interactive
   await this.page.waitForLoadState('networkidle');
 
-  // Map field names to data-testids for more reliable testing
-  const testIdMap: Record<string, string> = {
-    'app name': 'app-name-input',
-    'price': 'price-input',
-  };
-
-  const fieldKey = fieldName.toLowerCase();
-  const testId = testIdMap[fieldKey];
-
-  if (testId) {
-    // Use data-testid for more reliable testing
-    const input = this.page.locator(`[data-testid="${testId}"]`);
-    await expect(input).toBeVisible({ timeout: 10000 });
-  } else {
-    // Fall back to label-based lookup
+  // Try to find by testid first, fall back to label for backward compatibility
+  try {
+    const testId = fieldName.toLowerCase().replace(/\s+/g, '-') + '-input';
+    const field = this.page.getByTestId(testId);
+    await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
+  } catch {
     const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-    await expect(label).toBeVisible({ timeout: 10000 });
+    await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 });
 
@@ -64,23 +61,14 @@ Then('I should see the {string} textarea field', async function (this: CustomWor
   // Wait for the form to be fully rendered and interactive
   await this.page.waitForLoadState('networkidle');
 
-  // Map field names to data-testids for more reliable testing
-  const testIdMap: Record<string, string> = {
-    'description': 'app-description-input',
-    'requirements': 'requirements-textarea',
-  };
-
-  const fieldKey = fieldName.toLowerCase();
-  const testId = testIdMap[fieldKey];
-
-  if (testId) {
-    // Use data-testid for more reliable testing
-    const textarea = this.page.locator(`[data-testid="${testId}"]`);
-    await expect(textarea).toBeVisible({ timeout: 10000 });
-  } else {
-    // Fall back to label-based lookup
+  // Try to find by testid first, fall back to label for backward compatibility
+  try {
+    const testId = fieldName.toLowerCase().replace(/\s+/g, '-') + '-textarea';
+    const field = this.page.getByTestId(testId);
+    await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
+  } catch {
     const label = this.page.getByLabel(new RegExp(fieldName, 'i'));
-    await expect(label).toBeVisible({ timeout: 10000 });
+    await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 });
 
@@ -96,8 +84,7 @@ Then('the progress text should say {string}', async function (this: CustomWorld,
 });
 
 Then('I should see the error message {string}', async function (this: CustomWorld, errorMessage: string) {
-  const error = this.page.getByText(errorMessage, { exact: false });
-  await expect(error).toBeVisible();
+  await waitForTextWithRetry(this.page, errorMessage, { exact: false });
 });
 
 Then('I should remain on step {int}', async function (this: CustomWorld, _stepNumber: number) {
@@ -108,7 +95,28 @@ Then('I should remain on step {int}', async function (this: CustomWorld, _stepNu
 });
 
 When('I type {string} in the {string} field', async function (this: CustomWorld, value: string, fieldName: string) {
-  const field = this.page.getByLabel(new RegExp(fieldName, 'i'));
+  // Try to find by testid first, fall back to label for backward compatibility
+  let field;
+  try {
+    const testId = fieldName.toLowerCase().replace(/\s+/g, '-');
+    const suffixes = ['input', 'textarea', 'field'];
+    for (const suffix of suffixes) {
+      try {
+        field = this.page.getByTestId(`${testId}-${suffix}`);
+        await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
+        break;
+      } catch {
+        continue;
+      }
+    }
+    if (!field) {
+      field = this.page.getByTestId(testId);
+    }
+  } catch {
+    field = this.page.getByLabel(new RegExp(fieldName, 'i'));
+  }
+
+  await expect(field).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await field.fill(value);
 
   // Store in world for later verification
@@ -125,20 +133,36 @@ When('I type {string} in the {string} field', async function (this: CustomWorld,
 });
 
 Then('the {string} button should be disabled', async function (this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
-  await expect(button).toBeDisabled();
+  // Try to find by testid first to avoid strict mode violations
+  let button;
+  try {
+    const testId = `wizard-${buttonName.toLowerCase()}-button`;
+    button = this.page.getByTestId(testId);
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.SHORT });
+  } catch {
+    button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
+  }
+  await expect(button).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then('the {string} button should be enabled', async function (this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
-  await expect(button).toBeEnabled();
+  // Try to find by testid first to avoid strict mode violations
+  let button;
+  try {
+    const testId = `wizard-${buttonName.toLowerCase()}-button`;
+    button = this.page.getByTestId(testId);
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.SHORT });
+  } catch {
+    button = this.page.getByRole('button', { name: new RegExp(buttonName, 'i') });
+  }
+  await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Given('I complete step 1 with valid data', async function (this: CustomWorld) {
   const wizard = getWizard(this);
   await wizard.fillBasicInfo('Test App', 'This is a valid test app description');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Given('I complete step 1 with name {string} and description {string}', async function (this: CustomWorld, name: string, description: string) {
@@ -146,7 +170,7 @@ Given('I complete step 1 with name {string} and description {string}', async fun
   await wizard.fillBasicInfo(name, description);
   this.wizardFormData = { name, description };
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 When('I complete step {int} with name {string}', async function (this: CustomWorld, step: number, name: string) {
@@ -155,7 +179,7 @@ When('I complete step {int} with name {string}', async function (this: CustomWor
     await wizard.fillBasicInfo(name, 'Test description for step 1');
     this.wizardFormData = { name, description: 'Test description for step 1' };
     await wizard.clickNext();
-    await this.page.waitForLoadState('networkidle');
+    await waitForPageLoad(this.page);
   }
 });
 
@@ -168,10 +192,10 @@ Given('I complete step 1 and 2 with valid data', async function (this: CustomWor
   const wizard = getWizard(this);
   await wizard.fillBasicInfo('Test App', 'This is a valid test app description');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
   await wizard.fillRequirements('The app should have authentication and a dashboard');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Then('the requirements data should be preserved', async function (this: CustomWorld) {
@@ -183,8 +207,15 @@ Then('the requirements data should be preserved', async function (this: CustomWo
 });
 
 Then('I should see the {string} monetization option', async function (this: CustomWorld, option: string) {
-  const radio = this.page.getByRole('radio', { name: option });
-  await expect(radio).toBeVisible();
+  // Try testid first, fall back to role selector
+  try {
+    const testId = `monetization-option-${option.toLowerCase()}`;
+    const radio = this.page.getByTestId(testId);
+    await expect(radio).toBeVisible({ timeout: TIMEOUTS.SHORT });
+  } catch {
+    const radio = this.page.getByRole('radio', { name: option });
+    await expect(radio).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  }
 });
 
 When('I select the {string} monetization option', async function (this: CustomWorld, option: string) {
@@ -193,8 +224,15 @@ When('I select the {string} monetization option', async function (this: CustomWo
 });
 
 Then('the {string} option should be selected', async function (this: CustomWorld, option: string) {
-  const radio = this.page.getByRole('radio', { name: option });
-  await expect(radio).toBeChecked();
+  // Try testid first, fall back to role selector
+  try {
+    const testId = `monetization-option-${option.toLowerCase()}`;
+    const radio = this.page.getByTestId(testId);
+    await expect(radio).toBeChecked({ timeout: TIMEOUTS.SHORT });
+  } catch {
+    const radio = this.page.getByRole('radio', { name: option });
+    await expect(radio).toBeChecked({ timeout: TIMEOUTS.DEFAULT });
+  }
 });
 
 Then('I should see the price input field', async function (this: CustomWorld) {
@@ -209,17 +247,17 @@ Given('I complete all wizard steps with valid data', async function (this: Custo
   // Step 1
   await wizard.fillBasicInfo('Complete Test App', 'This is a complete test app description');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 
   // Step 2
   await wizard.fillRequirements('The app should have full authentication system and user dashboard');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 
   // Step 3
   await wizard.selectMonetizationOption('Free');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Given('I complete all wizard steps with name {string} and description {string}', async function (this: CustomWorld, name: string, description: string) {
@@ -229,38 +267,38 @@ Given('I complete all wizard steps with name {string} and description {string}',
   await wizard.fillBasicInfo(name, description);
   this.wizardFormData = { name, description };
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 
   // Step 2
   await wizard.fillRequirements('These are the requirements for the app');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 
   // Step 3
   await wizard.selectMonetizationOption('Free');
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Then('I should see the review section {string}', async function (this: CustomWorld, sectionName: string) {
   const section = await getWizard(this).getReviewSection(sectionName as 'Basic Info' | 'Requirements' | 'Monetization');
-  await expect(section).toBeVisible();
+  await expect(section).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then('the review should show app name {string}', async function (this: CustomWorld, name: string) {
-  const nameValue = this.page.locator('[data-testid="review-value-app-name"]');
-  await expect(nameValue).toHaveText(name);
+  const nameValue = this.page.getByTestId('review-value-app-name');
+  await expect(nameValue).toHaveText(name, { timeout: TIMEOUTS.DEFAULT });
 });
 
 Then('the review should show description {string}', async function (this: CustomWorld, description: string) {
-  const descValue = this.page.locator('[data-testid="review-value-description"]');
-  await expect(descValue).toHaveText(description);
+  const descValue = this.page.getByTestId('review-value-description');
+  await expect(descValue).toHaveText(description, { timeout: TIMEOUTS.DEFAULT });
 });
 
 When('I click the edit button for {string}', async function (this: CustomWorld, section: string) {
   const wizard = getWizard(this);
   await wizard.clickEditButton(section as 'Basic Info' | 'Requirements' | 'Monetization');
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Then('the form data should be preserved', async function (this: CustomWorld) {
@@ -273,14 +311,13 @@ Then('the form data should be preserved', async function (this: CustomWorld) {
 });
 
 Then('I should see a success message', async function (this: CustomWorld) {
-  const successMessage = this.page.getByText(/success|created/i);
-  await expect(successMessage).toBeVisible();
+  await waitForTextWithRetry(this.page, /success|created/i);
 });
 
 Then('the new app should appear in my apps list', async function (this: CustomWorld) {
   // After redirect to /my-apps, check for app card
   const appCards = this.page.locator('[data-testid="app-card"]');
-  await expect(appCards).toHaveCount(1);
+  await expect(appCards).toHaveCount(1, { timeout: TIMEOUTS.DEFAULT });
 });
 
 Then('the app should be saved in localStorage', async function (this: CustomWorld) {
@@ -308,14 +345,14 @@ Then('the draft should be saved to localStorage', async function (this: CustomWo
 });
 
 Then('the draft indicator should show {string}', async function (this: CustomWorld, text: string) {
-  const indicator = this.page.locator('[data-testid="draft-saved-indicator"]');
-  await expect(indicator).toContainText(text);
+  const indicator = this.page.getByTestId('draft-saved-indicator');
+  await expect(indicator).toContainText(text, { timeout: TIMEOUTS.DEFAULT });
 });
 
 When('I navigate to step 2', async function (this: CustomWorld) {
   const wizard = getWizard(this);
   await wizard.clickNext();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Then('the draft should contain step 1 and step 2 data', async function (this: CustomWorld) {
@@ -330,7 +367,7 @@ Then('the draft should contain step 1 and step 2 data', async function (this: Cu
 
 When('I reload the page', async function (this: CustomWorld) {
   await this.page.reload();
-  await this.page.waitForLoadState('networkidle');
+  await waitForPageLoad(this.page);
 });
 
 Then('the draft should be removed from localStorage', async function (this: CustomWorld) {
@@ -341,8 +378,8 @@ Then('the draft should be removed from localStorage', async function (this: Cust
 });
 
 Then('the draft indicator should not be visible', async function (this: CustomWorld) {
-  const indicator = this.page.locator('[data-testid="draft-saved-indicator"]');
-  await expect(indicator).not.toBeVisible();
+  const indicator = this.page.getByTestId('draft-saved-indicator');
+  await expect(indicator).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Given('I start creating an app as {string} with name {string}', async function (this: CustomWorld, _userName: string, appName: string) {

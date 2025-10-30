@@ -1,103 +1,110 @@
 import { Page, expect } from '@playwright/test';
+import {
+  waitForTestId,
+  clickButtonWithRetry,
+  fillInputWithRetry,
+  waitForPageLoad,
+  TIMEOUTS,
+} from '../helpers/retry-helper';
 
 export class AppCreationWizard {
   constructor(private page: Page) {}
 
   async navigate() {
     await this.page.goto('/my-apps/new');
-    await this.page.waitForLoadState('networkidle');
+    await waitForPageLoad(this.page);
   }
 
   async getProgressBar() {
-    return this.page.locator('[data-testid="wizard-progress"]');
+    return this.page.getByTestId('wizard-progress');
   }
 
   async getProgressText() {
-    return this.page.locator('[data-testid="wizard-progress-text"]');
+    return this.page.getByTestId('wizard-progress-text');
   }
 
   async getStepTitle() {
-    return this.page.locator('[data-testid="wizard-step-title"]');
+    return this.page.getByTestId('wizard-step-title');
   }
 
   async getNextButton() {
-    return this.page.getByRole('button', { name: /Next/i });
+    return this.page.getByTestId('wizard-next-button');
   }
 
   async getBackButton() {
-    return this.page.getByRole('button', { name: /Back/i });
+    return this.page.getByTestId('wizard-back-button');
   }
 
   async getSubmitButton() {
-    return this.page.getByRole('button', { name: /Submit|Create App/i });
+    return this.page.getByTestId('wizard-submit-button');
   }
 
   async clickNext() {
-    const button = await this.getNextButton();
-    await button.click();
+    await clickButtonWithRetry(this.page, 'wizard-next-button');
+    await waitForPageLoad(this.page);
   }
 
   async clickBack() {
-    const button = await this.getBackButton();
-    await button.click();
+    await clickButtonWithRetry(this.page, 'wizard-back-button');
+    await waitForPageLoad(this.page);
   }
 
   async clickSubmit() {
-    const button = await this.getSubmitButton();
-    await button.click();
+    await clickButtonWithRetry(this.page, 'wizard-submit-button');
+    await waitForPageLoad(this.page);
   }
 
   // Step 1: Basic Info
   async getAppNameInput() {
-    return this.page.getByLabel(/App Name/i);
+    return this.page.getByTestId('app-name-input');
   }
 
   async getAppDescriptionTextarea() {
-    return this.page.getByLabel(/Description/i);
+    return this.page.getByTestId('app-description-textarea');
   }
 
   async fillBasicInfo(name: string, description: string) {
-    await (await this.getAppNameInput()).fill(name);
-    await (await this.getAppDescriptionTextarea()).fill(description);
+    await fillInputWithRetry(this.page, 'app-name-input', name);
+    await fillInputWithRetry(this.page, 'app-description-textarea', description);
   }
 
   async getNameErrorMessage() {
-    return this.page.locator('[data-testid="app-name-error"]');
+    return this.page.getByTestId('app-name-error');
   }
 
   async getDescriptionErrorMessage() {
-    return this.page.locator('[data-testid="app-description-error"]');
+    return this.page.getByTestId('app-description-error');
   }
 
   // Step 2: Requirements
   async getRequirementsTextarea() {
-    return this.page.getByLabel(/Requirements/i);
+    return this.page.getByTestId('requirements-textarea');
   }
 
   async fillRequirements(requirements: string) {
-    await (await this.getRequirementsTextarea()).fill(requirements);
+    await fillInputWithRetry(this.page, 'requirements-textarea', requirements);
   }
 
   async getRequirementsErrorMessage() {
-    return this.page.locator('[data-testid="requirements-error"]');
+    return this.page.getByTestId('requirements-error');
   }
 
   // Step 3: Monetization
   async getMonetizationOption(option: 'Free' | 'Paid' | 'Freemium' | 'Subscription') {
-    return this.page.getByRole('radio', { name: option });
+    return this.page.getByTestId(`monetization-option-${option.toLowerCase()}`);
   }
 
   async selectMonetizationOption(option: 'Free' | 'Paid' | 'Freemium' | 'Subscription') {
-    const radio = await this.getMonetizationOption(option);
-    await radio.click();
+    const testId = `monetization-option-${option.toLowerCase()}`;
+    await clickButtonWithRetry(this.page, testId, { timeout: TIMEOUTS.DEFAULT });
   }
 
   async getPriceInput() {
-    return this.page.getByLabel(/Price/i);
+    return this.page.getByTestId('monetization-price-input');
   }
 
   async fillPrice(price: string) {
-    await (await this.getPriceInput()).fill(price);
+    await fillInputWithRetry(this.page, 'monetization-price-input', price);
   }
 
   // Step 4: Review
@@ -120,7 +127,7 @@ export class AppCreationWizard {
 
   // Draft management
   async verifyDraftSaved() {
-    const draftIndicator = this.page.locator('[data-testid="draft-saved-indicator"]');
+    const draftIndicator = await waitForTestId(this.page, 'draft-saved-indicator');
     await expect(draftIndicator).toBeVisible();
   }
 
@@ -140,12 +147,14 @@ export class AppCreationWizard {
   // Progress verification
   async verifyProgress(percentage: number) {
     const progressBar = await this.getProgressBar();
-    await expect(progressBar).toHaveAttribute('aria-valuenow', percentage.toString());
+    await expect(progressBar).toHaveAttribute('aria-valuenow', percentage.toString(), {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 
   async verifyStep(_stepNumber: number, stepName: string) {
     const title = await this.getStepTitle();
-    await expect(title).toContainText(stepName);
+    await expect(title).toContainText(stepName, { timeout: TIMEOUTS.DEFAULT });
   }
 
   async verifyOnReviewStep() {
@@ -153,6 +162,6 @@ export class AppCreationWizard {
   }
 
   async verifyRedirectToMyApps() {
-    await expect(this.page).toHaveURL(/\/my-apps$/);
+    await expect(this.page).toHaveURL(/\/my-apps$/, { timeout: TIMEOUTS.DEFAULT });
   }
 }
