@@ -264,7 +264,7 @@ When the E2E bypass is successfully used, the middleware logs:
 - **Vercel Environment Variables**: https://vercel.com/docs/environment-variables
 - **Middleware Code**: `src/middleware.ts:99-121`
 - **Middleware Tests**: `src/middleware.test.ts:382-525`
-- **Setup Documentation**: `WORKFLOW_CHANGES_NEEDED.md`
+- **Setup Documentation**: `docs/archive/WORKFLOW_CHANGES_NEEDED.md`
 - **Environment Variable Examples**: `.env.example:48-78`
 
 ---
