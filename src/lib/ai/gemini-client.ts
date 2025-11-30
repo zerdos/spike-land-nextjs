@@ -1,12 +1,18 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Initialize Gemini API client
-const apiKey = process.env.GEMINI_API_KEY
-if (!apiKey) {
-  throw new Error('GEMINI_API_KEY environment variable is not set')
-}
+// Lazy initialization of Gemini API client
+let genAI: GoogleGenerativeAI | null = null
 
-const genAI = new GoogleGenerativeAI(apiKey)
+function getGeminiClient(): GoogleGenerativeAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY environment variable is not set')
+    }
+    genAI = new GoogleGenerativeAI(apiKey)
+  }
+  return genAI
+}
 
 export interface ImageAnalysisResult {
   description: string
@@ -31,7 +37,8 @@ export async function analyzeImage(
   mimeType: string
 ): Promise<ImageAnalysisResult> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const client = getGeminiClient()
+    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const prompt = `Analyze this image and provide:
 1. A brief description of what's in the image
@@ -113,5 +120,5 @@ export async function enhanceImageWithGemini(
  * Check if Gemini API is properly configured
  */
 export function isGeminiConfigured(): boolean {
-  return !!apiKey
+  return !!process.env.GEMINI_API_KEY
 }
