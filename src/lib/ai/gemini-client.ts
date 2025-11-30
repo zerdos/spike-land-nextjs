@@ -1,5 +1,9 @@
 import { GoogleGenAI } from '@google/genai'
 
+// Configuration constants
+const GEMINI_API_TIMEOUT_MS = 120000 // 2 minutes timeout for API calls
+const DEFAULT_MODEL = 'gemini-3-pro-image-preview'
+
 let genAI: GoogleGenAI | null = null
 
 function getGeminiClient(): GoogleGenAI {
@@ -13,6 +17,25 @@ function getGeminiClient(): GoogleGenAI {
     })
   }
   return genAI
+}
+
+/**
+ * Resets the Gemini client instance. Used for testing purposes.
+ * @internal
+ */
+export function resetGeminiClient(): void {
+  genAI = null
+}
+
+/**
+ * Creates a timeout promise that rejects after the specified duration.
+ */
+function createTimeoutPromise(ms: number): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Gemini API request timed out after ${ms}ms`))
+    }, ms)
+  })
 }
 
 export interface ImageAnalysisResult {
@@ -32,14 +55,30 @@ export interface EnhanceImageParams {
 
 const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`
 
+/**
+ * Analyzes an image and returns enhancement suggestions.
+ *
+ * @param imageData - Base64 encoded image data (currently unused but reserved for future vision model integration)
+ * @param mimeType - MIME type of the image (currently unused but reserved for future vision model integration)
+ * @returns Analysis result with description, quality assessment, and enhancement prompt
+ *
+ * @remarks
+ * This is currently a placeholder implementation that returns static analysis results.
+ * In the future, this will integrate with Gemini's vision model to perform actual image
+ * analysis, including quality assessment, content detection, and intelligent enhancement suggestions.
+ * Parameters are preserved to maintain API compatibility for future implementation.
+ */
 export async function analyzeImage(
-  _imageData: string,
-  _mimeType: string
+  imageData: string,
+  mimeType: string
 ): Promise<ImageAnalysisResult> {
-  console.log('Analyzing image with Gemini API')
+  // Log analysis attempt with metadata (parameters logged to demonstrate they're available for future use)
+  console.log(`Analyzing image with Gemini API (format: ${mimeType}, data length: ${imageData.length} chars)`)
 
-  // For now, return a simple analysis
-  // In the future, we could use Gemini's vision model to actually analyze the image
+  // TODO: Implement actual vision model analysis in future iteration
+  // - Use Gemini vision to detect image content and quality
+  // - Generate dynamic enhancement suggestions based on image characteristics
+  // - Adjust enhancement prompt based on image type (portrait, landscape, etc.)
   return {
     description: 'Photo ready for enhancement',
     quality: 'medium' as const,
@@ -48,6 +87,13 @@ export async function analyzeImage(
   }
 }
 
+/**
+ * Enhances an image using Gemini's image generation API.
+ *
+ * @param params - Enhancement parameters including image data, MIME type, and tier
+ * @returns Buffer containing the enhanced image data
+ * @throws Error if API times out, no API key is configured, or no image data is received
+ */
 export async function enhanceImageWithGemini(
   params: EnhanceImageParams
 ): Promise<Buffer> {
@@ -68,8 +114,6 @@ export async function enhanceImageWithGemini(
     },
   }
 
-  const model = 'gemini-3-pro-image-preview'
-
   const contents = [
     {
       role: 'user' as const,
@@ -89,31 +133,40 @@ export async function enhanceImageWithGemini(
 
   console.log('Generating enhanced image with Gemini API...')
 
-  const response = await ai.models.generateContentStream({
-    model,
-    config,
-    contents,
-  })
+  // Process streaming response with timeout
+  const processStream = async (): Promise<Buffer> => {
+    const response = await ai.models.generateContentStream({
+      model: DEFAULT_MODEL,
+      config,
+      contents,
+    })
 
-  const imageChunks: Buffer[] = []
+    const imageChunks: Buffer[] = []
 
-  for await (const chunk of response) {
-    if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
-      continue
+    for await (const chunk of response) {
+      if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
+        continue
+      }
+
+      if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        const inlineData = chunk.candidates[0].content.parts[0].inlineData
+        const buffer = Buffer.from(inlineData.data || '', 'base64')
+        imageChunks.push(buffer)
+      }
     }
 
-    if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-      const inlineData = chunk.candidates[0].content.parts[0].inlineData
-      const buffer = Buffer.from(inlineData.data || '', 'base64')
-      imageChunks.push(buffer)
+    if (imageChunks.length === 0) {
+      throw new Error('No image data received from Gemini API')
     }
+
+    return Buffer.concat(imageChunks)
   }
 
-  if (imageChunks.length === 0) {
-    throw new Error('No image data received from Gemini API')
-  }
-
-  return Buffer.concat(imageChunks)
+  // Race between the stream processing and timeout
+  return Promise.race([
+    processStream(),
+    createTimeoutPromise(GEMINI_API_TIMEOUT_MS),
+  ])
 }
 
 export function isGeminiConfigured(): boolean {
