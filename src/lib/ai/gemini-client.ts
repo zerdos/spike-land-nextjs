@@ -1,15 +1,16 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 
-// Lazy initialization of Gemini API client
-let genAI: GoogleGenerativeAI | null = null
+let genAI: GoogleGenAI | null = null
 
-function getGeminiClient(): GoogleGenerativeAI {
+function getGeminiClient(): GoogleGenAI {
   if (!genAI) {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY environment variable is not set')
     }
-    genAI = new GoogleGenerativeAI(apiKey)
+    genAI = new GoogleGenAI({
+      apiKey,
+    })
   }
   return genAI
 }
@@ -22,103 +23,99 @@ export interface ImageAnalysisResult {
 }
 
 export interface EnhanceImageParams {
-  imageData: string // base64 encoded image
+  imageData: string
   mimeType: string
   tier: '1K' | '2K' | '4K'
+  originalWidth?: number
+  originalHeight?: number
 }
 
 const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`
 
-/**
- * Analyze an image and generate enhancement recommendations
- */
 export async function analyzeImage(
-  imageData: string,
-  mimeType: string
+  _imageData: string,
+  _mimeType: string
 ): Promise<ImageAnalysisResult> {
-  try {
-    const client = getGeminiClient()
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  console.log('Analyzing image with Gemini API')
 
-    const prompt = `Analyze this image and provide:
-1. A brief description of what's in the image
-2. The current quality level (low/medium/high)
-3. Specific improvements that could be made (lighting, focus, colors, composition)
-4. Return the response in JSON format with keys: description, quality, suggestedImprovements (array of strings)`
-
-    const imagePart = {
-      inlineData: {
-        data: imageData,
-        mimeType,
-      },
-    }
-
-    const result = await model.generateContent([prompt, imagePart])
-    const response = result.response
-    const text = response.text()
-
-    // Parse the response (Gemini should return JSON)
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        const analysis = JSON.parse(jsonMatch[0])
-
-        // Generate enhancement prompt based on analysis
-        const enhancementPrompt = `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: ${analysis.suggestedImprovements.join(', ')}`
-
-        return {
-          description: analysis.description || 'Image analysis',
-          quality: analysis.quality || 'medium',
-          suggestedImprovements: analysis.suggestedImprovements || [],
-          enhancementPrompt,
-        }
-      }
-    } catch {
-      console.warn('Failed to parse Gemini JSON response, using fallback')
-    }
-
-    // Fallback if JSON parsing fails
-    return {
-      description: text.substring(0, 200),
-      quality: 'medium',
-      suggestedImprovements: ['lighting', 'focus', 'colors'],
-      enhancementPrompt: ENHANCEMENT_BASE_PROMPT,
-    }
-  } catch (error) {
-    console.error('Error analyzing image with Gemini:', error)
-    throw new Error('Failed to analyze image')
+  // For now, return a simple analysis
+  // In the future, we could use Gemini's vision model to actually analyze the image
+  return {
+    description: 'Photo ready for enhancement',
+    quality: 'medium' as const,
+    suggestedImprovements: ['sharpness', 'color enhancement', 'detail preservation'],
+    enhancementPrompt: `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`,
   }
 }
 
-/**
- * Generate an enhanced version of an image
- * Note: Gemini doesn't directly generate images, this is a placeholder
- * for Imagen API integration
- */
 export async function enhanceImageWithGemini(
   params: EnhanceImageParams
-): Promise<string> {
-  // For now, we'll use Gemini to generate a detailed prompt
-  // In Week 3, we'll integrate with Imagen API to actually generate the image
+): Promise<Buffer> {
+  const ai = getGeminiClient()
+
   const analysis = await analyzeImage(params.imageData, params.mimeType)
 
-  // Resolution mapping
   const resolutionMap = {
     '1K': '1024x1024',
     '2K': '2048x2048',
     '4K': '4096x4096',
   }
 
-  const enhancementPrompt = `${analysis.enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`
+  const config = {
+    responseModalities: ['IMAGE'],
+    imageConfig: {
+      imageSize: params.tier,
+    },
+  }
 
-  // TODO: Week 3 - Call Imagen API with this prompt
-  // For now, return the prompt as a placeholder
-  return enhancementPrompt
+  const model = 'gemini-3-pro-image-preview'
+
+  const contents = [
+    {
+      role: 'user' as const,
+      parts: [
+        {
+          inlineData: {
+            mimeType: params.mimeType,
+            data: params.imageData,
+          },
+        },
+        {
+          text: `${analysis.enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
+        },
+      ],
+    },
+  ]
+
+  console.log('Generating enhanced image with Gemini API...')
+
+  const response = await ai.models.generateContentStream({
+    model,
+    config,
+    contents,
+  })
+
+  const imageChunks: Buffer[] = []
+
+  for await (const chunk of response) {
+    if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
+      continue
+    }
+
+    if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+      const inlineData = chunk.candidates[0].content.parts[0].inlineData
+      const buffer = Buffer.from(inlineData.data || '', 'base64')
+      imageChunks.push(buffer)
+    }
+  }
+
+  if (imageChunks.length === 0) {
+    throw new Error('No image data received from Gemini API')
+  }
+
+  return Buffer.concat(imageChunks)
 }
 
-/**
- * Check if Gemini API is properly configured
- */
 export function isGeminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY
 }

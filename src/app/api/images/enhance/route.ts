@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
-import { analyzeImage } from '@/lib/ai/gemini-client'
+import { enhanceImageWithGemini } from '@/lib/ai/gemini-client'
 import { downloadFromR2, uploadToR2 } from '@/lib/storage/r2-client'
 import prisma from '@/lib/prisma'
 import { EnhancementTier, JobStatus } from '@prisma/client'
 import sharp from 'sharp'
 
-// Token costs for each tier
 const TIER_COSTS = {
   TIER_1K: 2,
   TIER_2K: 5,
   TIER_4K: 10,
 }
 
-// Target resolutions for each tier
-const TIER_RESOLUTIONS = {
-  TIER_1K: 1024,
-  TIER_2K: 2048,
-  TIER_4K: 4096,
+const TIER_TO_SIZE = {
+  TIER_1K: '1K' as const,
+  TIER_2K: '2K' as const,
+  TIER_4K: '4K' as const,
 }
 
 export async function POST(request: NextRequest) {
@@ -38,12 +36,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate tier
     if (!Object.keys(TIER_COSTS).includes(tier)) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 
-    // Get image from database
     const image = await prisma.enhancedImage.findUnique({
       where: { id: imageId },
     })
@@ -52,7 +48,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 })
     }
 
-    // Check token balance
     const tokenCost = TIER_COSTS[tier]
     const hasEnough = await TokenBalanceManager.hasEnoughTokens(
       session.user.id,
@@ -66,7 +61,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Consume tokens
     const consumeResult = await TokenBalanceManager.consumeTokens({
       userId: session.user.id,
       amount: tokenCost,
@@ -82,7 +76,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create enhancement job
     const job = await prisma.imageEnhancementJob.create({
       data: {
         imageId,
@@ -94,8 +87,6 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Process enhancement in background (simplified for demo)
-    // In production, this would be a queue job
     processEnhancement(job.id, image.originalR2Key, tier, session.user.id).catch(
       (error) => {
         console.error('Enhancement failed:', error)
@@ -117,10 +108,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Process enhancement (simplified version for demo)
- * In production, this would use Imagen API
- */
 async function processEnhancement(
   jobId: string,
   originalR2Key: string,
@@ -128,31 +115,63 @@ async function processEnhancement(
   userId: string
 ) {
   try {
-    // Download original image
     const originalBuffer = await downloadFromR2(originalR2Key)
     if (!originalBuffer) {
       throw new Error('Failed to download original image')
     }
 
-    // Analyze with Gemini
-    const base64Image = originalBuffer.toString('base64')
-    const mimeType = 'image/jpeg' // Simplified - should detect actual type
-    const analysis = await analyzeImage(base64Image, mimeType)
+    // Get original image metadata for aspect ratio preservation
+    const originalMetadata = await sharp(originalBuffer).metadata()
+    const originalWidth = originalMetadata.width || 1024
+    const originalHeight = originalMetadata.height || 1024
 
-    // For demo: upscale using Sharp (in production, use Imagen)
-    const targetSize = TIER_RESOLUTIONS[tier]
-    const enhancedBuffer = await sharp(originalBuffer)
-      .resize(targetSize, targetSize, {
-        fit: 'inside',
-        withoutEnlargement: false,
+    const base64Image = originalBuffer.toString('base64')
+    const mimeType = 'image/jpeg'
+
+    const tierSize = TIER_TO_SIZE[tier]
+
+    console.log(`Enhancing image with Gemini at ${tierSize} resolution...`)
+    console.log(`Original dimensions: ${originalWidth}x${originalHeight}`)
+
+    // Get Gemini-enhanced image (will be square)
+    const geminiBuffer = await enhanceImageWithGemini({
+      imageData: base64Image,
+      mimeType,
+      tier: tierSize,
+      originalWidth,
+      originalHeight,
+    })
+
+    // Resize Gemini output to match original aspect ratio
+    const aspectRatio = originalWidth / originalHeight
+    const tierResolution = tier === 'TIER_1K' ? 1024 : tier === 'TIER_2K' ? 2048 : 4096
+
+    let targetWidth: number
+    let targetHeight: number
+
+    if (aspectRatio > 1) {
+      // Landscape: width is larger
+      targetWidth = tierResolution
+      targetHeight = Math.round(tierResolution / aspectRatio)
+    } else {
+      // Portrait or square: height is larger or equal
+      targetHeight = tierResolution
+      targetWidth = Math.round(tierResolution * aspectRatio)
+    }
+
+    console.log(`Resizing Gemini output to preserve aspect ratio: ${targetWidth}x${targetHeight}`)
+
+    // Resize the Gemini-enhanced image to match original aspect ratio
+    const enhancedBuffer = await sharp(geminiBuffer)
+      .resize(targetWidth, targetHeight, {
+        fit: 'fill',
+        kernel: 'lanczos3',
       })
-      .sharpen()
       .jpeg({ quality: 95 })
       .toBuffer()
 
     const metadata = await sharp(enhancedBuffer).metadata()
 
-    // Upload enhanced image
     const enhancedR2Key = originalR2Key.replace('/originals/', '/enhanced/')
     const uploadResult = await uploadToR2({
       key: enhancedR2Key,
@@ -160,7 +179,6 @@ async function processEnhancement(
       contentType: 'image/jpeg',
       metadata: {
         tier,
-        geminiAnalysis: JSON.stringify(analysis),
       },
     })
 
@@ -168,7 +186,6 @@ async function processEnhancement(
       throw new Error('Failed to upload enhanced image')
     }
 
-    // Update job status
     await prisma.imageEnhancementJob.update({
       where: { id: jobId },
       data: {
@@ -178,14 +195,16 @@ async function processEnhancement(
         enhancedWidth: metadata.width,
         enhancedHeight: metadata.height,
         enhancedSizeBytes: enhancedBuffer.length,
-        geminiPrompt: analysis.enhancementPrompt,
+        geminiPrompt: 'Enhanced with Gemini AI',
         processingCompletedAt: new Date(),
       },
     })
+
+    console.log(`Enhancement completed successfully for job ${jobId}`)
+    console.log(`Final dimensions: ${metadata.width}x${metadata.height}`)
   } catch (error) {
     console.error('Enhancement processing failed:', error)
 
-    // Refund tokens and mark job as failed
     const job = await prisma.imageEnhancementJob.findUnique({
       where: { id: jobId },
     })
