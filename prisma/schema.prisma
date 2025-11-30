@@ -16,9 +16,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  apps     App[]
+  accounts          Account[]
+  sessions          Session[]
+  apps              App[]
+  tokenBalance      UserTokenBalance?
+  tokenTransactions TokenTransaction[]
+  stripePayments    StripePayment[]
+  enhancedImages    EnhancedImage[]
+  enhancementJobs   ImageEnhancementJob[]
 
   @@map("users")
 }
@@ -153,4 +158,158 @@ model MonetizationModel {
   @@index([appId])
   @@index([type])
   @@map("monetization_models")
+}
+
+// Token System Models
+model UserTokenBalance {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  balance          Int      @default(0)
+  lastRegeneration DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_token_balances")
+}
+
+enum TokenTransactionType {
+  EARN_REGENERATION
+  EARN_PURCHASE
+  EARN_BONUS
+  SPEND_ENHANCEMENT
+  REFUND
+}
+
+model TokenTransaction {
+  id           String               @id @default(cuid())
+  userId       String
+  amount       Int
+  type         TokenTransactionType
+  source       String?
+  sourceId     String?
+  balanceAfter Int
+  metadata     Json?
+  createdAt    DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sourceId])
+  @@map("token_transactions")
+}
+
+model TokensPackage {
+  id            String   @id @default(cuid())
+  name          String
+  tokens        Int
+  priceUSD      Decimal  @db.Decimal(10, 2)
+  stripePriceId String   @unique
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stripePayments StripePayment[]
+
+  @@index([active, sortOrder])
+  @@map("tokens_packages")
+}
+
+enum StripePaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model StripePayment {
+  id                    String              @id @default(cuid())
+  userId                String
+  packageId             String
+  tokensGranted         Int
+  amountUSD             Decimal             @db.Decimal(10, 2)
+  stripePaymentIntentId String              @unique
+  status                StripePaymentStatus
+  metadata              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package TokensPackage @relation(fields: [packageId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([stripePaymentIntentId])
+  @@map("stripe_payments")
+}
+
+// Image Enhancement Models
+model EnhancedImage {
+  id                String   @id @default(cuid())
+  userId            String
+  name              String
+  description       String?
+  originalUrl       String
+  originalR2Key     String
+  originalWidth     Int
+  originalHeight    Int
+  originalSizeBytes Int
+  originalFormat    String
+  isPublic          Boolean  @default(false)
+  viewCount         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enhancementJobs ImageEnhancementJob[]
+
+  @@index([userId, createdAt])
+  @@index([isPublic, createdAt])
+  @@map("enhanced_images")
+}
+
+enum EnhancementTier {
+  TIER_1K
+  TIER_2K
+  TIER_4K
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model ImageEnhancementJob {
+  id                    String           @id @default(cuid())
+  imageId               String
+  userId                String
+  tier                  EnhancementTier
+  tokensCost            Int
+  status                JobStatus
+  enhancedUrl           String?
+  enhancedR2Key         String?
+  enhancedWidth         Int?
+  enhancedHeight        Int?
+  enhancedSizeBytes     Int?
+  errorMessage          String?
+  retryCount            Int              @default(0)
+  maxRetries            Int              @default(3)
+  geminiPrompt          String?          @db.Text
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  image EnhancedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@index([imageId])
+  @@index([status, updatedAt])
+  @@map("image_enhancement_jobs")
 }
