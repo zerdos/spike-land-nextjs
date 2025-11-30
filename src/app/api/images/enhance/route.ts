@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
 import { enhanceImageWithGemini } from '@/lib/ai/gemini-client'
 import { downloadFromR2, uploadToR2 } from '@/lib/storage/r2-client'
+import { checkRateLimit, rateLimitConfigs } from '@/lib/rate-limiter'
 import prisma from '@/lib/prisma'
 import { EnhancementTier, JobStatus } from '@prisma/client'
 import sharp from 'sharp'
@@ -19,11 +20,47 @@ const TIER_TO_SIZE = {
   TIER_4K: '4K' as const,
 }
 
+// Resolution constants for each enhancement tier
+const TIER_RESOLUTIONS = {
+  TIER_1K: 1024,
+  TIER_2K: 2048,
+  TIER_4K: 4096,
+} as const
+
+// Image processing constants
+const ENHANCED_JPEG_QUALITY = 95 // High quality for enhanced images
+const DEFAULT_IMAGE_DIMENSION = 1024 // Fallback dimension if metadata unavailable
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check rate limit before processing
+    const rateLimitResult = checkRateLimit(
+      `enhance:${session.user.id}`,
+      rateLimitConfigs.imageEnhancement
+    )
+
+    if (rateLimitResult.isLimited) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)
+            ),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(rateLimitResult.resetAt),
+          },
+        }
+      )
     }
 
     const body = await request.json()
@@ -120,18 +157,24 @@ async function processEnhancement(
       throw new Error('Failed to download original image')
     }
 
-    // Get original image metadata for aspect ratio preservation
+    // Get original image metadata for aspect ratio preservation and MIME type detection
     const originalMetadata = await sharp(originalBuffer).metadata()
-    const originalWidth = originalMetadata.width || 1024
-    const originalHeight = originalMetadata.height || 1024
+    const originalWidth = originalMetadata.width || DEFAULT_IMAGE_DIMENSION
+    const originalHeight = originalMetadata.height || DEFAULT_IMAGE_DIMENSION
+
+    // Detect actual MIME type from image buffer to prevent type confusion attacks
+    const detectedFormat = originalMetadata.format
+    const mimeType = detectedFormat
+      ? `image/${detectedFormat === 'jpeg' ? 'jpeg' : detectedFormat}`
+      : 'image/jpeg' // fallback for unknown formats
 
     const base64Image = originalBuffer.toString('base64')
-    const mimeType = 'image/jpeg'
 
     const tierSize = TIER_TO_SIZE[tier]
 
     console.log(`Enhancing image with Gemini at ${tierSize} resolution...`)
     console.log(`Original dimensions: ${originalWidth}x${originalHeight}`)
+    console.log(`Detected MIME type: ${mimeType}`)
 
     // Get Gemini-enhanced image (will be square)
     const geminiBuffer = await enhanceImageWithGemini({
@@ -144,7 +187,7 @@ async function processEnhancement(
 
     // Resize Gemini output to match original aspect ratio
     const aspectRatio = originalWidth / originalHeight
-    const tierResolution = tier === 'TIER_1K' ? 1024 : tier === 'TIER_2K' ? 2048 : 4096
+    const tierResolution = TIER_RESOLUTIONS[tier]
 
     let targetWidth: number
     let targetHeight: number
@@ -167,7 +210,7 @@ async function processEnhancement(
         fit: 'fill',
         kernel: 'lanczos3',
       })
-      .jpeg({ quality: 95 })
+      .jpeg({ quality: ENHANCED_JPEG_QUALITY })
       .toBuffer()
 
     const metadata = await sharp(enhancedBuffer).metadata()
