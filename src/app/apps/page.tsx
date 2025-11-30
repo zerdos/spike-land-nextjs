@@ -19,11 +19,19 @@ interface App {
 
 const apps: App[] = [
   {
+    id: "images",
+    title: "Image Enhancement",
+    description:
+      "AI-powered image enhancement with quality improvements and upscaling. Transform your photos with 1K, 2K, or 4K quality tiers.",
+    href: "/apps/images",
+    tags: ["AI", "Images", "Enhancement"],
+  },
+  {
     id: "display",
     title: "Smart Video Wall",
     description:
       "A real-time video conferencing wall with WebRTC support. Display multiple video streams simultaneously with automatic layout optimization.",
-    href: "/display",
+    href: "/apps/display",
     tags: ["WebRTC", "Video", "Real-time"],
   },
 ];

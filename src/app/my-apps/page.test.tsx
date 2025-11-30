@@ -18,6 +18,12 @@ vi.mock('@/lib/prisma', () => ({
     app: {
       findMany: vi.fn(),
     },
+    enhancedImage: {
+      findMany: vi.fn(),
+    },
+    imageEnhancementJob: {
+      findMany: vi.fn(),
+    },
   },
 }))
 
@@ -108,6 +114,8 @@ describe('MyAppsPage', () => {
         expires: '2025-12-31',
       })
       mockPrisma.app.findMany.mockResolvedValue([])
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([])
+      mockPrisma.imageEnhancementJob.findMany.mockResolvedValue([])
     })
 
     it('should render page title', async () => {
@@ -122,7 +130,7 @@ describe('MyAppsPage', () => {
       render(component)
 
       expect(
-        screen.getByText('Manage and deploy your vibe-coded applications')
+        screen.getByText('Manage your applications and enhanced images')
       ).toBeInTheDocument()
     })
 
@@ -157,6 +165,8 @@ describe('MyAppsPage', () => {
         },
         expires: '2025-12-31',
       })
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([])
+      mockPrisma.imageEnhancementJob.findMany.mockResolvedValue([])
     })
 
     it('should render apps when they exist', async () => {

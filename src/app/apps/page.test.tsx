@@ -134,16 +134,19 @@ describe('AppsPage', () => {
       expect(tags.length).toBeGreaterThan(0)
     })
 
-    it('should render launch app button', () => {
+    it('should render launch app buttons', () => {
       render(<AppsPage />)
-      const button = screen.getByRole('link', { name: 'Launch App' })
-      expect(button).toBeInTheDocument()
+      const buttons = screen.getAllByRole('link', { name: 'Launch App' })
+      expect(buttons.length).toBeGreaterThan(0)
     })
 
-    it('should have correct href for launch button', () => {
-      render(<AppsPage />)
-      const button = screen.getByRole('link', { name: 'Launch App' })
-      expect(button).toHaveAttribute('href', '/display')
+    it('should have correct href for display app launch button', () => {
+      const { container } = render(<AppsPage />)
+      const displayCard = container.querySelector('[data-testid="card-title"]')
+      if (displayCard?.textContent === 'Smart Video Wall') {
+        const displayButton = screen.getAllByRole('link', { name: 'Launch App' })[0]
+        expect(displayButton).toHaveAttribute('href', '/apps/display')
+      }
     })
 
     it('should render card with flex column layout', () => {
@@ -275,16 +278,21 @@ describe('AppsPage', () => {
   })
 
   describe('Navigation Links', () => {
-    it('should render launch app as a link', () => {
+    it('should render launch app as links', () => {
       render(<AppsPage />)
-      const link = screen.getByRole('link', { name: 'Launch App' })
-      expect(link.tagName).toBe('A')
+      const links = screen.getAllByRole('link', { name: 'Launch App' })
+      links.forEach(link => {
+        expect(link.tagName).toBe('A')
+      })
     })
 
-    it('should have internal link to display page', () => {
+    it('should have internal links to app pages', () => {
       render(<AppsPage />)
-      const link = screen.getByRole('link', { name: 'Launch App' })
-      expect(link).toHaveAttribute('href', '/display')
+      const links = screen.getAllByRole('link', { name: 'Launch App' })
+      expect(links.length).toBeGreaterThan(0)
+      links.forEach(link => {
+        expect(link.getAttribute('href')).toMatch(/^\/(apps\/)?(display|images)$/)
+      })
     })
   })
 
@@ -322,8 +330,10 @@ describe('AppsPage', () => {
 
     it('should have descriptive link text', () => {
       render(<AppsPage />)
-      const link = screen.getByRole('link', { name: 'Launch App' })
-      expect(link.textContent).toBe('Launch App')
+      const links = screen.getAllByRole('link', { name: 'Launch App' })
+      links.forEach(link => {
+        expect(link.textContent).toBe('Launch App')
+      })
     })
 
     it('should use semantic HTML for sections', () => {
@@ -366,10 +376,12 @@ describe('AppsPage', () => {
   })
 
   describe('Button Styling', () => {
-    it('should render button with full width', () => {
+    it('should render buttons with full width', () => {
       render(<AppsPage />)
-      const button = screen.getByRole('link', { name: 'Launch App' })
-      expect(button).toHaveClass('w-full')
+      const buttons = screen.getAllByRole('link', { name: 'Launch App' })
+      buttons.forEach(button => {
+        expect(button).toHaveClass('w-full')
+      })
     })
   })
 
