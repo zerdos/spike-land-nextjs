@@ -149,14 +149,14 @@ export default function Home() {
               {session ? (
                 <>
                   Welcome back,{" "}
-                  <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     {session.user?.name?.split(" ")[0] || "User"}
                   </span>
                 </>
               ) : (
                 <>
                   Welcome to{" "}
-                  <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     Spike Land
                   </span>
                 </>
