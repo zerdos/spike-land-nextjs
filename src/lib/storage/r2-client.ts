@@ -1,25 +1,47 @@
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 
-const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
-const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
-const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME
-const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT
+// Lazy initialization to avoid build-time errors
+let r2Client: S3Client | null = null
+let bucketName: string | null = null
 
-if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !endpoint) {
-  throw new Error('Cloudflare R2 credentials are not configured')
+function getR2Config() {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME
+  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT
+
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !endpoint) {
+    throw new Error('Cloudflare R2 credentials are not configured')
+  }
+
+  return { accountId, accessKeyId, secretAccessKey, bucket, endpoint }
 }
 
-// Create S3 client for Cloudflare R2
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint,
-  credentials: {
-    accessKeyId,
-    secretAccessKey,
-  },
-})
+function getR2Client(): S3Client {
+  if (!r2Client) {
+    const config = getR2Config()
+    r2Client = new S3Client({
+      region: 'auto',
+      endpoint: config.endpoint,
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+    })
+    bucketName = config.bucket
+  }
+  return r2Client
+}
+
+function getBucketName(): string {
+  if (!bucketName) {
+    const config = getR2Config()
+    bucketName = config.bucket
+  }
+  return bucketName
+}
 
 export interface UploadImageParams {
   key: string
@@ -44,10 +66,13 @@ export async function uploadToR2(
   const { key, buffer, contentType, metadata } = params
 
   try {
+    const client = getR2Client()
+    const bucket = getBucketName()
+
     const upload = new Upload({
-      client: r2Client,
+      client,
       params: {
-        Bucket: bucketName,
+        Bucket: bucket,
         Key: key,
         Body: buffer,
         ContentType: contentType,
@@ -58,7 +83,8 @@ export async function uploadToR2(
     await upload.done()
 
     // Construct the public URL (for demo - in production use presigned URLs)
-    const url = `${endpoint}/${bucketName}/${key}`
+    const config = getR2Config()
+    const url = `${config.endpoint}/${bucket}/${key}`
 
     return {
       success: true,
@@ -81,12 +107,15 @@ export async function uploadToR2(
  */
 export async function downloadFromR2(key: string): Promise<Buffer | null> {
   try {
+    const client = getR2Client()
+    const bucket = getBucketName()
+
     const command = new GetObjectCommand({
-      Bucket: bucketName,
+      Bucket: bucket,
       Key: key,
     })
 
-    const response = await r2Client.send(command)
+    const response = await client.send(command)
     const chunks: Uint8Array[] = []
 
     if (response.Body) {
@@ -107,5 +136,11 @@ export async function downloadFromR2(key: string): Promise<Buffer | null> {
  * Check if R2 is properly configured
  */
 export function isR2Configured(): boolean {
-  return !!(accountId && accessKeyId && secretAccessKey && bucketName && endpoint)
+  return !!(
+    process.env.CLOUDFLARE_ACCOUNT_ID &&
+    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
+    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
+    process.env.CLOUDFLARE_R2_BUCKET_NAME &&
+    process.env.CLOUDFLARE_R2_ENDPOINT
+  )
 }
