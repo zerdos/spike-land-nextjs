@@ -23,8 +23,16 @@ const apps: App[] = [
     title: "Smart Video Wall",
     description:
       "A real-time video conferencing wall with WebRTC support. Display multiple video streams simultaneously with automatic layout optimization.",
-    href: "/display",
+    href: "/apps/display",
     tags: ["WebRTC", "Video", "Real-time"],
+  },
+  {
+    id: "images",
+    title: "AI Image Enhancement",
+    description:
+      "Upload and enhance your images using AI-powered technology. Choose from 1K, 2K, or 4K enhancement tiers and compare results with an interactive slider.",
+    href: "/apps/images",
+    tags: ["AI", "Images", "Enhancement"],
   },
 ];
 

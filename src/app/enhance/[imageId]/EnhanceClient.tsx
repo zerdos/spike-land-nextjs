@@ -1,0 +1,216 @@
+"use client"
+
+import { useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider"
+import { EnhancementSettings } from "@/components/enhance/EnhancementSettings"
+import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay"
+import { VersionGrid } from "@/components/enhance/VersionGrid"
+import { useTokenBalance } from "@/hooks/useTokenBalance"
+import { useJobPolling } from "@/hooks/useJobPolling"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client"
+
+type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K"
+
+interface EnhanceClientProps {
+  image: EnhancedImage & {
+    enhancementJobs: ImageEnhancementJob[]
+  }
+}
+
+export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
+  const [image, setImage] = useState(initialImage)
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
+    initialImage.enhancementJobs.find((job) => job.status === "COMPLETED")?.id || null
+  )
+  const [activeJobId, setActiveJobId] = useState<string | null>(
+    initialImage.enhancementJobs.find(
+      (job) => job.status === "PROCESSING" || job.status === "PENDING"
+    )?.id || null
+  )
+
+  const router = useRouter()
+  const { balance, refetch: refetchBalance } = useTokenBalance()
+
+  // Poll for active job completion
+  useJobPolling({
+    jobId: activeJobId,
+    onComplete: useCallback(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (completedJob: any) => {
+        // Update the image with the completed job
+        setImage((prev) => ({
+          ...prev,
+          enhancementJobs: prev.enhancementJobs.map((job) =>
+            job.id === completedJob.id
+              ? { ...job, ...completedJob, status: "COMPLETED" as const }
+              : job
+          ),
+        }))
+        setActiveJobId(null)
+        setSelectedVersionId(completedJob.id)
+        refetchBalance()
+      },
+      [refetchBalance]
+    ),
+    onError: useCallback((errorMessage?: string) => {
+      console.error("Enhancement failed:", errorMessage)
+      setActiveJobId(null)
+      alert(`Enhancement failed: ${errorMessage || "Unknown error"}`)
+    }, []),
+  })
+
+  const handleEnhance = async (tier: EnhancementTier) => {
+    try {
+      const response = await fetch("/api/images/enhance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageId: image.id,
+          tier,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Enhancement failed")
+      }
+
+      const result = await response.json()
+
+      // Add the new job to the list
+      const newJob: ImageEnhancementJob = {
+        id: result.jobId,
+        userId: image.userId,
+        imageId: image.id,
+        tier,
+        status: "PROCESSING",
+        tokensCost: result.tokensCost || 0,
+        enhancedUrl: null,
+        enhancedR2Key: null,
+        enhancedWidth: null,
+        enhancedHeight: null,
+        enhancedSizeBytes: null,
+        errorMessage: null,
+        retryCount: 0,
+        maxRetries: 3,
+        geminiPrompt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        processingStartedAt: null,
+        processingCompletedAt: null,
+      }
+
+      setImage((prev) => ({
+        ...prev,
+        enhancementJobs: [newJob, ...prev.enhancementJobs],
+      }))
+
+      setActiveJobId(result.jobId)
+      refetchBalance()
+    } catch (error) {
+      console.error("Enhancement request failed:", error)
+      alert(error instanceof Error ? error.message : "Enhancement failed")
+    }
+  }
+
+  const selectedVersion = selectedVersionId
+    ? image.enhancementJobs.find((job) => job.id === selectedVersionId)
+    : null
+
+  const completedVersions = image.enhancementJobs.filter(
+    (job) => job.status === "COMPLETED" && job.enhancedUrl
+  )
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/enhance")}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Images
+        </Button>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Image Enhancement</h1>
+          <TokenBalanceDisplay />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column: Image comparison */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {selectedVersion ? "Before & After Comparison" : "Original Image"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedVersion && selectedVersion.enhancedUrl ? (
+                <ImageComparisonSlider
+                  originalUrl={image.originalUrl}
+                  enhancedUrl={selectedVersion.enhancedUrl}
+                />
+              ) : (
+                <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
+                  <Image
+                    src={image.originalUrl}
+                    alt="Original image"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Enhancement versions grid */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Enhancement Versions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VersionGrid
+                versions={image.enhancementJobs.map((job) => ({
+                  id: job.id,
+                  tier: job.tier,
+                  enhancedUrl: job.enhancedUrl || "",
+                  width: job.enhancedWidth || 0,
+                  height: job.enhancedHeight || 0,
+                  createdAt: job.createdAt,
+                  status: job.status,
+                }))}
+                selectedVersionId={selectedVersionId || undefined}
+                onVersionSelect={setSelectedVersionId}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column: Enhancement settings */}
+        <div>
+          <EnhancementSettings
+            onEnhance={handleEnhance}
+            currentBalance={balance}
+            isProcessing={activeJobId !== null}
+            completedVersions={completedVersions.map((job) => ({
+              tier: job.tier,
+              url: job.enhancedUrl || "",
+            }))}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}

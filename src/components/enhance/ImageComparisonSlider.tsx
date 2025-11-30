@@ -1,0 +1,81 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Slider } from "@/components/ui/slider"
+
+interface ImageComparisonSliderProps {
+  originalUrl: string
+  enhancedUrl: string
+  originalLabel?: string
+  enhancedLabel?: string
+}
+
+export function ImageComparisonSlider({
+  originalUrl,
+  enhancedUrl,
+  originalLabel = "Original",
+  enhancedLabel = "Enhanced",
+}: ImageComparisonSliderProps) {
+  const [sliderPosition, setSliderPosition] = useState([50])
+
+  return (
+    <div className="space-y-4">
+      <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+        {/* Enhanced image (background) */}
+        <Image
+          src={enhancedUrl}
+          alt={enhancedLabel}
+          fill
+          className="object-contain"
+          priority
+        />
+
+        {/* Original image (clipped overlay) */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ clipPath: `inset(0 ${100 - (sliderPosition[0] ?? 50)}% 0 0)` }}
+        >
+          <Image
+            src={originalUrl}
+            alt={originalLabel}
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+
+        {/* Divider line */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg"
+          style={{ left: `${sliderPosition[0] ?? 50}%` }}
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
+            <div className="flex gap-0.5">
+              <div className="w-0.5 h-4 bg-gray-600" />
+              <div className="w-0.5 h-4 bg-gray-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Labels */}
+        <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+          {originalLabel}
+        </div>
+        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+          {enhancedLabel}
+        </div>
+      </div>
+
+      {/* Slider control */}
+      <Slider
+        value={sliderPosition}
+        onValueChange={setSliderPosition}
+        min={0}
+        max={100}
+        step={1}
+        className="w-full"
+      />
+    </div>
+  )
+}
