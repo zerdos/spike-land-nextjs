@@ -141,7 +141,7 @@ describe('AppsPage', () => {
     })
 
     it('should have correct href for display app launch button', () => {
-      const { container } = render(<AppsPage />)
+      render(<AppsPage />)
       const buttons = screen.getAllByRole('link', { name: 'Launch App' })
       // Find the button for Display app (should be first)
       expect(buttons[0]).toHaveAttribute('href', '/apps/display')
