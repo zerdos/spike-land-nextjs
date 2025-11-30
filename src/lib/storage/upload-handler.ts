@@ -144,7 +144,7 @@ export function validateImageFile(
   file: File | Buffer,
   maxSizeBytes = 50 * 1024 * 1024 // 50MB
 ): { valid: boolean; error?: string } {
-  const size = file instanceof Buffer ? file.length : file.size
+  const size = Buffer.isBuffer(file) ? file.length : (file as File).size
 
   if (size > maxSizeBytes) {
     return {
