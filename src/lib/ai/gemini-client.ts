@@ -1,5 +1,4 @@
 import { GoogleGenAI } from '@google/genai'
-import mime from 'mime'
 
 let genAI: GoogleGenAI | null = null
 
@@ -34,8 +33,8 @@ export interface EnhanceImageParams {
 const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`
 
 export async function analyzeImage(
-  imageData: string,
-  mimeType: string
+  _imageData: string,
+  _mimeType: string
 ): Promise<ImageAnalysisResult> {
   console.log('Analyzing image with Gemini API')
 
