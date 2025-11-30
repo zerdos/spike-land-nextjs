@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { processAndUploadImage } from '@/lib/storage/upload-handler'
+import prisma from '@/lib/prisma'
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const file = formData.get('image') as File
+
+    if (!file) {
+      return NextResponse.json({ error: 'No image provided' }, { status: 400 })
+    }
+
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Process and upload image
+    const result = await processAndUploadImage({
+      buffer,
+      originalFilename: file.name,
+      userId: session.user.id,
+    })
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Failed to upload image' },
+        { status: 500 }
+      )
+    }
+
+    // Create database record
+    const enhancedImage = await prisma.enhancedImage.create({
+      data: {
+        userId: session.user.id,
+        name: file.name,
+        originalUrl: result.url,
+        originalR2Key: result.r2Key,
+        originalWidth: result.width,
+        originalHeight: result.height,
+        originalSizeBytes: result.sizeBytes,
+        originalFormat: result.format,
+        isPublic: false,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      image: {
+        id: enhancedImage.id,
+        name: enhancedImage.name,
+        url: enhancedImage.originalUrl,
+        width: enhancedImage.originalWidth,
+        height: enhancedImage.originalHeight,
+        size: enhancedImage.originalSizeBytes,
+        format: enhancedImage.originalFormat,
+      },
+    })
+  } catch (error) {
+    console.error('Error in upload API:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Upload failed' },
+      { status: 500 }
+    )
+  }
+}
