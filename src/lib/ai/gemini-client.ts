@@ -98,7 +98,7 @@ export async function enhanceImageWithGemini(
   const imageChunks: Buffer[] = []
 
   for await (const chunk of response) {
-    if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
+    if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
       continue
     }
 
