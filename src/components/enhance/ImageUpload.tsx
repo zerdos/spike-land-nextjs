@@ -47,7 +47,7 @@ export function ImageUpload() {
       const data = await response.json()
 
       // Redirect to enhancement page
-      router.push(`/enhance/${data.imageId}`)
+      router.push(`/enhance/${data.image.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed")
     } finally {
