@@ -78,18 +78,18 @@ export function ImageUpload() {
           <p className="text-sm text-destructive mb-4">{error}</p>
         )}
 
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={isUploading}
+          className="hidden"
+        />
         <Button asChild disabled={isUploading}>
           <label htmlFor="file-upload" className="cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
             Select Image
-            <input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              disabled={isUploading}
-              className="hidden"
-            />
           </label>
         </Button>
       </CardContent>
