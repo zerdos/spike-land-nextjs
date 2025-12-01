@@ -1,10 +1,31 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ExportButton } from "./ExportButton"
 import type { EnhancementTier, JobStatus } from "@prisma/client"
+
+// Log broken images to server for monitoring
+async function logBrokenImage(versionId: string, tier: string, url: string) {
+  try {
+    await fetch("/api/logs/image-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "ENHANCED_IMAGE_LOAD_ERROR",
+        versionId,
+        tier,
+        url,
+        timestamp: new Date().toISOString(),
+      }),
+    })
+  } catch (e) {
+    // Silent fail - we don't want to block the UI
+    console.error("[Image Error Logging Failed]", e)
+  }
+}
 
 interface EnhancementVersion {
   id: string
@@ -33,6 +54,17 @@ export function VersionGrid({
   onVersionSelect,
   selectedVersionId,
 }: VersionGridProps) {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+
+  const handleImageError = (version: EnhancementVersion) => {
+    console.error(
+      `[Enhanced Image Load Error] Version: ${version.id}, Tier: ${version.tier}, URL: ${version.enhancedUrl}`
+    )
+    setFailedImages((prev) => new Set(prev).add(version.id))
+    // Log to server for monitoring in Vercel logs
+    logBrokenImage(version.id, version.tier, version.enhancedUrl)
+  }
+
   if (versions.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -55,13 +87,21 @@ export function VersionGrid({
         >
           <CardContent className="p-4">
             <div className="relative aspect-video mb-3 bg-muted rounded-md overflow-hidden">
-              {version.status === "COMPLETED" && (
+              {version.status === "COMPLETED" && !failedImages.has(version.id) && (
                 <Image
                   src={version.enhancedUrl}
                   alt={`Enhanced version ${tierLabels[version.tier]}`}
                   fill
                   className="object-contain"
+                  onError={() => handleImageError(version)}
                 />
+              )}
+              {version.status === "COMPLETED" && failedImages.has(version.id) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
+                  <p className="text-sm text-destructive text-center px-2">
+                    Image failed to load
+                  </p>
+                </div>
               )}
               {version.status === "PROCESSING" && (
                 <div className="absolute inset-0 flex items-center justify-center">
