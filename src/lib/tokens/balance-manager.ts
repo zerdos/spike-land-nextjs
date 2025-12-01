@@ -40,23 +40,47 @@ const TOKENS_PER_REGENERATION = 1
 
 export class TokenBalanceManager {
   /**
+   * Validate userId is a non-empty string
+   */
+  private static validateUserId(userId: string): void {
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      throw new Error('Invalid userId: must be a non-empty string')
+    }
+  }
+
+  /**
    * Get user's token balance, creating balance record if it doesn't exist
+   * Uses a transaction to prevent race conditions during user/balance creation
    */
   static async getBalance(userId: string): Promise<TokenBalanceResult> {
-    let tokenBalance = await prisma.userTokenBalance.findUnique({
-      where: { userId },
-    })
+    this.validateUserId(userId)
 
-    if (!tokenBalance) {
-      // Create initial token balance for new user
-      tokenBalance = await prisma.userTokenBalance.create({
-        data: {
-          userId,
-          balance: 0,
-          lastRegeneration: new Date(),
-        },
+    const tokenBalance = await prisma.$transaction(async (tx) => {
+      let balance = await tx.userTokenBalance.findUnique({
+        where: { userId },
       })
-    }
+
+      if (!balance) {
+        // Ensure User record exists before creating UserTokenBalance
+        // This handles cases where NextAuth uses JWT strategy without database adapter
+        await tx.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: { id: userId },
+        })
+
+        // Create initial token balance for new user
+        balance = await tx.userTokenBalance.create({
+          data: {
+            userId,
+            balance: 0,
+            lastRegeneration: new Date(),
+          },
+        })
+      }
+
+      return balance
+    })
 
     return {
       balance: tokenBalance.balance,
@@ -85,17 +109,36 @@ export class TokenBalanceManager {
     const { userId, amount, source, sourceId, metadata } = params
 
     try {
+      this.validateUserId(userId)
       // Use transaction to ensure atomic update
       const result = await prisma.$transaction(async (tx) => {
-        // Get current balance
-        const tokenBalance = await tx.userTokenBalance.findUnique({
+        // Get or create balance
+        let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
         })
 
         if (!tokenBalance) {
-          throw new Error('Token balance not found')
+          // Ensure User record exists before creating UserTokenBalance
+          // This handles cases where NextAuth uses JWT strategy without database adapter
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          })
+
+          // Create initial balance with 0 tokens
+          tokenBalance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: 0,
+              lastRegeneration: new Date(),
+            },
+          })
         }
 
+        // Check if sufficient balance
         if (tokenBalance.balance < amount) {
           throw new Error(
             `Insufficient tokens. Required: ${amount}, Available: ${tokenBalance.balance}`
@@ -136,7 +179,9 @@ export class TokenBalanceManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error
+          ? `Token consumption failed: ${error.message}`
+          : 'Unknown error during token consumption',
       }
     }
   }
@@ -150,6 +195,7 @@ export class TokenBalanceManager {
     const { userId, amount, type, source, sourceId, metadata } = params
 
     try {
+      this.validateUserId(userId)
       const result = await prisma.$transaction(async (tx) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
@@ -157,6 +203,15 @@ export class TokenBalanceManager {
         })
 
         if (!tokenBalance) {
+          // Ensure User record exists before creating UserTokenBalance
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          })
+
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
@@ -207,7 +262,9 @@ export class TokenBalanceManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error
+          ? `Adding tokens failed: ${error.message}`
+          : 'Unknown error while adding tokens',
       }
     }
   }
@@ -287,6 +344,8 @@ export class TokenBalanceManager {
     limit = 50,
     offset = 0
   ): Promise<TokenTransaction[]> {
+    this.validateUserId(userId)
+
     return prisma.tokenTransaction.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -297,6 +356,7 @@ export class TokenBalanceManager {
 
   /**
    * Get token consumption stats for a user
+   * Uses aggregation queries for better performance with large datasets
    */
   static async getConsumptionStats(userId: string): Promise<{
     totalSpent: number
@@ -304,33 +364,39 @@ export class TokenBalanceManager {
     totalRefunded: number
     transactionCount: number
   }> {
-    const transactions = await prisma.tokenTransaction.findMany({
-      where: { userId },
-    })
+    this.validateUserId(userId)
 
-    let totalSpent = 0
-    let totalEarned = 0
-    let totalRefunded = 0
-
-    for (const tx of transactions) {
-      if (tx.type === TokenTransactionType.SPEND_ENHANCEMENT) {
-        totalSpent += Math.abs(tx.amount)
-      } else if (
-        tx.type === TokenTransactionType.EARN_PURCHASE ||
-        tx.type === TokenTransactionType.EARN_REGENERATION ||
-        tx.type === TokenTransactionType.EARN_BONUS
-      ) {
-        totalEarned += tx.amount
-      } else if (tx.type === TokenTransactionType.REFUND) {
-        totalRefunded += tx.amount
-      }
-    }
+    const [spendResult, earnResult, refundResult, countResult] =
+      await Promise.all([
+        prisma.tokenTransaction.aggregate({
+          where: { userId, type: TokenTransactionType.SPEND_ENHANCEMENT },
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.aggregate({
+          where: {
+            userId,
+            type: {
+              in: [
+                TokenTransactionType.EARN_PURCHASE,
+                TokenTransactionType.EARN_REGENERATION,
+                TokenTransactionType.EARN_BONUS,
+              ],
+            },
+          },
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.aggregate({
+          where: { userId, type: TokenTransactionType.REFUND },
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.count({ where: { userId } }),
+      ])
 
     return {
-      totalSpent,
-      totalEarned,
-      totalRefunded,
-      transactionCount: transactions.length,
+      totalSpent: Math.abs(spendResult._sum.amount ?? 0),
+      totalEarned: earnResult._sum.amount ?? 0,
+      totalRefunded: refundResult._sum.amount ?? 0,
+      transactionCount: countResult,
     }
   }
 }
