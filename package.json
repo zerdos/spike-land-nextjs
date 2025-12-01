@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
-    "build": "prisma generate && next build",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && [[ \"$VERCEL_ENV\" == \"production\" ]] && prisma migrate deploy || true && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
