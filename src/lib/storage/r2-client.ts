@@ -1,4 +1,4 @@
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 
 // Lazy initialization to avoid build-time errors
@@ -54,6 +54,12 @@ export interface UploadImageResult {
   success: boolean
   key: string
   url: string
+  error?: string
+}
+
+export interface DeleteImageResult {
+  success: boolean
+  key: string
   error?: string
 }
 
@@ -129,6 +135,35 @@ export async function downloadFromR2(key: string): Promise<Buffer | null> {
   } catch (error) {
     console.error('Error downloading from R2:', error)
     return null
+  }
+}
+
+/**
+ * Delete an image from Cloudflare R2
+ */
+export async function deleteFromR2(key: string): Promise<DeleteImageResult> {
+  try {
+    const client = getR2Client()
+    const bucket = getBucketName()
+
+    const command = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    })
+
+    await client.send(command)
+
+    return {
+      success: true,
+      key,
+    }
+  } catch (error) {
+    console.error('Error deleting from R2:', error)
+    return {
+      success: false,
+      key,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 
