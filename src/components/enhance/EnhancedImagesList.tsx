@@ -12,11 +12,13 @@ interface EnhancedImagesListProps {
     enhancementJobs: ImageEnhancementJob[]
   })[]
   onDelete?: (imageId: string) => void
+  deletingImageId?: string | null
 }
 
 export function EnhancedImagesList({
   images,
   onDelete,
+  deletingImageId,
 }: EnhancedImagesListProps) {
   if (images.length === 0) {
     return (
@@ -56,6 +58,7 @@ export function EnhancedImagesList({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {images.map((image) => {
         const statusBadge = getStatusBadge(image.enhancementJobs)
+        const isDeleting = deletingImageId === image.id
 
         return (
           <Card key={image.id} className="overflow-hidden">
@@ -82,7 +85,7 @@ export function EnhancedImagesList({
               </div>
 
               <div className="flex gap-2">
-                <Button asChild variant="outline" size="sm" className="flex-1">
+                <Button asChild variant="outline" size="sm" className="flex-1" disabled={isDeleting}>
                   <Link href={`/enhance/${image.id}`}>
                     {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
                   </Link>
@@ -96,8 +99,9 @@ export function EnhancedImagesList({
                       e.preventDefault()
                       onDelete(image.id)
                     }}
+                    disabled={isDeleting}
                   >
-                    Delete
+                    {isDeleting ? "Deleting..." : "Delete"}
                   </Button>
                 )}
               </div>

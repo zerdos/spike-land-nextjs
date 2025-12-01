@@ -25,6 +25,7 @@ function getR2Client(): S3Client {
     r2Client = new S3Client({
       region: 'auto',
       endpoint: config.endpoint,
+      forcePathStyle: true, // Required for Cloudflare R2 compatibility
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
