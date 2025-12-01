@@ -15,6 +15,7 @@ interface EnhancePageClientProps {
 
 export function EnhancePageClient({ images: initialImages }: EnhancePageClientProps) {
   const [images, setImages] = useState(initialImages)
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null)
   const { refetch: refetchBalance } = useTokenBalance()
 
   const handleDelete = async (imageId: string) => {
@@ -22,13 +23,16 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
       return
     }
 
+    setDeletingImageId(imageId)
+
     try {
       const response = await fetch(`/api/images/${imageId}`, {
         method: "DELETE",
       })
 
       if (!response.ok) {
-        throw new Error("Failed to delete image")
+        const data = await response.json()
+        throw new Error(data.error || "Failed to delete image")
       }
 
       // Remove from local state
@@ -38,7 +42,9 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
       await refetchBalance()
     } catch (error) {
       console.error("Delete failed:", error)
-      alert("Failed to delete image")
+      alert(error instanceof Error ? error.message : "Failed to delete image")
+    } finally {
+      setDeletingImageId(null)
     }
   }
 
@@ -55,7 +61,11 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
 
       <div className="mb-6">
         <h2 className="text-2xl font-semibold mb-4">Your Images</h2>
-        <EnhancedImagesList images={images} onDelete={handleDelete} />
+        <EnhancedImagesList
+          images={images}
+          onDelete={handleDelete}
+          deletingImageId={deletingImageId}
+        />
       </div>
     </div>
   )
