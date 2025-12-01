@@ -98,15 +98,33 @@ export class TokenBalanceManager {
     try {
       // Use transaction to ensure atomic update
       const result = await prisma.$transaction(async (tx) => {
-        // Get current balance
-        const tokenBalance = await tx.userTokenBalance.findUnique({
+        // Get or create balance
+        let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
         })
 
         if (!tokenBalance) {
-          throw new Error('Token balance not found')
+          // Ensure User record exists before creating UserTokenBalance
+          // This handles cases where NextAuth uses JWT strategy without database adapter
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          })
+
+          // Create initial balance with 0 tokens
+          tokenBalance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: 0,
+              lastRegeneration: new Date(),
+            },
+          })
         }
 
+        // Check if sufficient balance
         if (tokenBalance.balance < amount) {
           throw new Error(
             `Insufficient tokens. Required: ${amount}, Available: ${tokenBalance.balance}`
