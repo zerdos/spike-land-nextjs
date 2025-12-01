@@ -36,9 +36,21 @@ export async function analyzeImage(
   imageData: string,
   mimeType: string
 ): Promise<ImageAnalysisResult> {
+  // TODO: Fix Gemini API model compatibility
+  // For now, return mock analysis to allow testing the rest of the workflow
+  console.log('Using mock image analysis (Gemini API models not available)')
+
+  return {
+    description: 'Photo with subjects in natural lighting',
+    quality: 'medium' as const,
+    suggestedImprovements: ['sharpness', 'color enhancement', 'detail preservation'],
+    enhancementPrompt: `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`,
+  }
+
+  /* Original Gemini API code - disabled due to model availability issues
   try {
     const client = getGeminiClient()
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = client.getGenerativeModel({ model: 'gemini-1.5-pro' })
 
     const prompt = `Analyze this image and provide:
 1. A brief description of what's in the image
@@ -57,13 +69,10 @@ export async function analyzeImage(
     const response = result.response
     const text = response.text()
 
-    // Parse the response (Gemini should return JSON)
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const analysis = JSON.parse(jsonMatch[0])
-
-        // Generate enhancement prompt based on analysis
         const enhancementPrompt = `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: ${analysis.suggestedImprovements.join(', ')}`
 
         return {
@@ -77,7 +86,6 @@ export async function analyzeImage(
       console.warn('Failed to parse Gemini JSON response, using fallback')
     }
 
-    // Fallback if JSON parsing fails
     return {
       description: text.substring(0, 200),
       quality: 'medium',
@@ -88,6 +96,7 @@ export async function analyzeImage(
     console.error('Error analyzing image with Gemini:', error)
     throw new Error('Failed to analyze image')
   }
+  */
 }
 
 /**
