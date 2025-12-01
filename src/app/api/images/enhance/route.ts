@@ -152,7 +152,14 @@ async function processEnhancement(
   userId: string
 ) {
   try {
+    console.log(`[Enhancement] Starting processEnhancement for job: ${jobId}`)
+    console.log(`[Enhancement] Original R2 Key: ${originalR2Key}`)
+    console.log(`[Enhancement] Tier: ${tier}`)
+    console.log(`[Enhancement] User ID: ${userId}`)
+
     const originalBuffer = await downloadFromR2(originalR2Key)
+    console.log(`[Enhancement] Downloaded buffer size: ${originalBuffer?.length || 0} bytes`)
+
     if (!originalBuffer) {
       throw new Error('Failed to download original image')
     }

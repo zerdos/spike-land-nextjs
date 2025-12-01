@@ -61,7 +61,7 @@ export function ImageComparisonSlider({
             src={enhancedUrl}
             alt={enhancedLabel}
             fill
-            className="object-contain"
+            className="object-cover"
             priority
             onError={handleEnhancedError}
           />
@@ -81,7 +81,7 @@ export function ImageComparisonSlider({
               src={originalUrl}
               alt={originalLabel}
               fill
-              className="object-contain"
+              className="object-cover"
               priority
               onError={handleOriginalError}
             />
