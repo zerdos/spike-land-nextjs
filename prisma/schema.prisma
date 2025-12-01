@@ -9,13 +9,14 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime?
+  image            String?
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   accounts          Account[]
   sessions          Session[]
@@ -23,6 +24,7 @@ model User {
   tokenBalance      UserTokenBalance?
   tokenTransactions TokenTransaction[]
   stripePayments    StripePayment[]
+  subscription      Subscription?
   enhancedImages    EnhancedImage[]
   enhancementJobs   ImageEnhancementJob[]
 
@@ -313,4 +315,53 @@ model ImageEnhancementJob {
   @@index([imageId])
   @@index([status, updatedAt])
   @@map("image_enhancement_jobs")
+}
+
+// Subscription Models
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIALING
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  tokensPerMonth       Int
+  rolloverTokens       Int                @default(0)
+  maxRollover          Int                @default(0)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model SubscriptionPlan {
+  id            String   @id @default(cuid())
+  name          String
+  tokensPerMonth Int
+  priceGBP      Decimal  @db.Decimal(10, 2)
+  stripePriceId String   @unique
+  maxRollover   Int      @default(0)
+  priority      Boolean  @default(false)
+  apiAccess     Boolean  @default(false)
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, sortOrder])
+  @@map("subscription_plans")
 }
