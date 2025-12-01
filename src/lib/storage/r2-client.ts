@@ -110,9 +110,12 @@ export async function uploadToR2(
 
     await upload.done()
 
-    // Construct the public URL (for demo - in production use presigned URLs)
-    const config = getR2Config()
-    const url = `${config.endpoint}/${bucket}/${key}`
+    // Construct the public URL using the R2 public domain
+    const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim()
+    if (!publicUrl) {
+      throw new Error('CLOUDFLARE_R2_PUBLIC_URL is not configured')
+    }
+    const url = `${publicUrl}/${key}`
 
     return {
       success: true,
@@ -198,6 +201,7 @@ export function isR2Configured(): boolean {
     process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
     process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
     process.env.CLOUDFLARE_R2_BUCKET_NAME &&
-    process.env.CLOUDFLARE_R2_ENDPOINT
+    process.env.CLOUDFLARE_R2_ENDPOINT &&
+    process.env.CLOUDFLARE_R2_PUBLIC_URL
   )
 }
