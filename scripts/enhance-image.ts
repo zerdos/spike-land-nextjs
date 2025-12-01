@@ -1,0 +1,206 @@
+import { GoogleGenAI } from '@google/genai'
+import * as fs from 'fs'
+import * as path from 'path'
+import sharp from 'sharp'
+import dotenv from 'dotenv'
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') })
+
+const GEMINI_API_TIMEOUT_MS = 120000
+const DEFAULT_MODEL = 'gemini-3-pro-image-preview'
+const ENHANCED_JPEG_QUALITY = 95
+
+interface EnhanceImageParams {
+  imageData: string
+  mimeType: string
+  tier: '1K' | '2K' | '4K'
+  originalWidth?: number
+  originalHeight?: number
+}
+
+const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`
+
+async function enhanceImageWithGemini(
+  params: EnhanceImageParams
+): Promise<Buffer> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not set')
+  }
+
+  const ai = new GoogleGenAI({ apiKey })
+
+  const resolutionMap = {
+    '1K': '1024x1024',
+    '2K': '2048x2048',
+    '4K': '4096x4096',
+  }
+
+  const config = {
+    responseModalities: ['IMAGE'],
+    imageConfig: {
+      imageSize: params.tier,
+    },
+  }
+
+  const enhancementPrompt = `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`
+
+  const contents = [
+    {
+      role: 'user' as const,
+      parts: [
+        {
+          inlineData: {
+            mimeType: params.mimeType,
+            data: params.imageData,
+          },
+        },
+        {
+          text: `${enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
+        },
+      ],
+    },
+  ]
+
+  console.log('Generating enhanced image with Gemini API...')
+
+  const processStream = async (): Promise<Buffer> => {
+    const response = await ai.models.generateContentStream({
+      model: DEFAULT_MODEL,
+      config,
+      contents,
+    })
+
+    const imageChunks: Buffer[] = []
+
+    for await (const chunk of response) {
+      if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
+        continue
+      }
+
+      if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        const inlineData = chunk.candidates[0].content.parts[0].inlineData
+        const buffer = Buffer.from(inlineData.data || '', 'base64')
+        imageChunks.push(buffer)
+        process.stdout.write('.')
+      }
+    }
+
+    console.log('')
+
+    if (imageChunks.length === 0) {
+      throw new Error('No image data received from Gemini API')
+    }
+
+    return Buffer.concat(imageChunks)
+  }
+
+  const createTimeoutPromise = (ms: number): Promise<never> => {
+    return new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Gemini API request timed out after ${ms}ms`))
+      }, ms)
+    })
+  }
+
+  return Promise.race([
+    processStream(),
+    createTimeoutPromise(GEMINI_API_TIMEOUT_MS),
+  ])
+}
+
+async function main() {
+  const inputPath = process.argv[2]
+  const outputPath = process.argv[3]
+  const tier = (process.argv[4] as '1K' | '2K' | '4K') || '2K'
+
+  if (!inputPath) {
+    console.error('Usage: npx tsx scripts/enhance-image.ts <input-path> [output-path] [tier]')
+    console.error('Tiers: 1K, 2K, 4K (default: 2K)')
+    process.exit(1)
+  }
+
+  const absoluteInputPath = path.resolve(inputPath)
+  if (!fs.existsSync(absoluteInputPath)) {
+    console.error(`Input file not found: ${absoluteInputPath}`)
+    process.exit(1)
+  }
+
+  const defaultOutputPath = absoluteInputPath.replace(/(\.[^.]+)$/, `-enhanced-${tier}$1`)
+  const absoluteOutputPath = outputPath ? path.resolve(outputPath) : defaultOutputPath
+
+  console.log(`Input: ${absoluteInputPath}`)
+  console.log(`Output: ${absoluteOutputPath}`)
+  console.log(`Tier: ${tier}`)
+  console.log('')
+
+  const originalBuffer = fs.readFileSync(absoluteInputPath)
+  const metadata = await sharp(originalBuffer).metadata()
+
+  const originalWidth = metadata.width || 1024
+  const originalHeight = metadata.height || 1024
+  const mimeType = `image/${metadata.format || 'jpeg'}`
+
+  console.log(`Original dimensions: ${originalWidth}x${originalHeight}`)
+  console.log(`MIME type: ${mimeType}`)
+  console.log('')
+
+  const base64Image = originalBuffer.toString('base64')
+
+  console.log('Sending to Gemini for enhancement...')
+  const geminiBuffer = await enhanceImageWithGemini({
+    imageData: base64Image,
+    mimeType,
+    tier,
+    originalWidth,
+    originalHeight,
+  })
+
+  console.log('Received enhanced image from Gemini')
+
+  // Resize to preserve original aspect ratio
+  const TIER_RESOLUTIONS = {
+    '1K': 1024,
+    '2K': 2048,
+    '4K': 4096,
+  } as const
+
+  const aspectRatio = originalWidth / originalHeight
+  const tierResolution = TIER_RESOLUTIONS[tier]
+
+  let targetWidth: number
+  let targetHeight: number
+
+  if (aspectRatio > 1) {
+    targetWidth = tierResolution
+    targetHeight = Math.round(tierResolution / aspectRatio)
+  } else {
+    targetHeight = tierResolution
+    targetWidth = Math.round(tierResolution * aspectRatio)
+  }
+
+  console.log(`Resizing to preserve aspect ratio: ${targetWidth}x${targetHeight}`)
+
+  const enhancedBuffer = await sharp(geminiBuffer)
+    .resize(targetWidth, targetHeight, {
+      fit: 'fill',
+      kernel: 'lanczos3',
+    })
+    .jpeg({ quality: ENHANCED_JPEG_QUALITY })
+    .toBuffer()
+
+  fs.writeFileSync(absoluteOutputPath, enhancedBuffer)
+
+  const finalMetadata = await sharp(enhancedBuffer).metadata()
+  console.log('')
+  console.log('Enhancement complete!')
+  console.log(`Final dimensions: ${finalMetadata.width}x${finalMetadata.height}`)
+  console.log(`File size: ${(enhancedBuffer.length / 1024 / 1024).toFixed(2)} MB`)
+  console.log(`Saved to: ${absoluteOutputPath}`)
+}
+
+main().catch((error) => {
+  console.error('Enhancement failed:', error.message)
+  process.exit(1)
+})

@@ -8,11 +8,11 @@ declare global {
 }
 
 function getR2Config() {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
-  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
-  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME
-  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim()
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim()
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME?.trim()
+  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT?.trim()
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !endpoint) {
     throw new Error('Cloudflare R2 credentials are not configured')
