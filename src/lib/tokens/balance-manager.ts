@@ -48,6 +48,17 @@ export class TokenBalanceManager {
     })
 
     if (!tokenBalance) {
+      // Ensure User record exists before creating UserTokenBalance
+      // This handles cases where NextAuth uses JWT strategy without database adapter
+      await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+          id: userId,
+          // email and name will be populated by NextAuth callbacks if available
+        },
+      })
+
       // Create initial token balance for new user
       tokenBalance = await prisma.userTokenBalance.create({
         data: {
@@ -157,6 +168,15 @@ export class TokenBalanceManager {
         })
 
         if (!tokenBalance) {
+          // Ensure User record exists before creating UserTokenBalance
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          })
+
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
