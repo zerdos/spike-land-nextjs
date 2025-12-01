@@ -47,7 +47,7 @@ export function ImageUpload() {
       const data = await response.json()
 
       // Redirect to enhancement page
-      router.push(`/enhance/${data.imageId}`)
+      router.push(`/enhance/${data.image.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed")
     } finally {
@@ -78,18 +78,18 @@ export function ImageUpload() {
           <p className="text-sm text-destructive mb-4">{error}</p>
         )}
 
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={isUploading}
+          className="hidden"
+        />
         <Button asChild disabled={isUploading}>
           <label htmlFor="file-upload" className="cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
             Select Image
-            <input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              disabled={isUploading}
-              className="hidden"
-            />
           </label>
         </Button>
       </CardContent>
