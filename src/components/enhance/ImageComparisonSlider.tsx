@@ -4,6 +4,25 @@ import { useState } from "react"
 import Image from "next/image"
 import { Slider } from "@/components/ui/slider"
 
+// Log broken images to server for monitoring
+async function logBrokenImage(imageType: string, url: string) {
+  try {
+    await fetch("/api/logs/image-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: `COMPARISON_${imageType}_LOAD_ERROR`,
+        versionId: "comparison-slider",
+        tier: imageType,
+        url,
+        timestamp: new Date().toISOString(),
+      }),
+    })
+  } catch (e) {
+    console.error("[Image Error Logging Failed]", e)
+  }
+}
+
 interface ImageComparisonSliderProps {
   originalUrl: string
   enhancedUrl: string
@@ -18,31 +37,59 @@ export function ImageComparisonSlider({
   enhancedLabel = "Enhanced",
 }: ImageComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState([50])
+  const [enhancedError, setEnhancedError] = useState(false)
+  const [originalError, setOriginalError] = useState(false)
+
+  const handleEnhancedError = () => {
+    console.error(`[Enhanced Image Load Error] URL: ${enhancedUrl}`)
+    setEnhancedError(true)
+    logBrokenImage("ENHANCED", enhancedUrl)
+  }
+
+  const handleOriginalError = () => {
+    console.error(`[Original Image Load Error] URL: ${originalUrl}`)
+    setOriginalError(true)
+    logBrokenImage("ORIGINAL", originalUrl)
+  }
 
   return (
     <div className="space-y-4">
       <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
         {/* Enhanced image (background) */}
-        <Image
-          src={enhancedUrl}
-          alt={enhancedLabel}
-          fill
-          className="object-contain"
-          priority
-        />
+        {!enhancedError ? (
+          <Image
+            src={enhancedUrl}
+            alt={enhancedLabel}
+            fill
+            className="object-contain"
+            priority
+            onError={handleEnhancedError}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
+            <p className="text-sm text-destructive">Enhanced image failed to load</p>
+          </div>
+        )}
 
         {/* Original image (clipped overlay) */}
         <div
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - (sliderPosition[0] ?? 50)}% 0 0)` }}
         >
-          <Image
-            src={originalUrl}
-            alt={originalLabel}
-            fill
-            className="object-contain"
-            priority
-          />
+          {!originalError ? (
+            <Image
+              src={originalUrl}
+              alt={originalLabel}
+              fill
+              className="object-contain"
+              priority
+              onError={handleOriginalError}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
+              <p className="text-sm text-destructive">Original image failed to load</p>
+            </div>
+          )}
         </div>
 
         {/* Divider line */}
