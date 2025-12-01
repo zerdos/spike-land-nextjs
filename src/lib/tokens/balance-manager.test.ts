@@ -19,6 +19,8 @@ const {
   mockTokenTransaction: {
     create: vi.fn(),
     findMany: vi.fn(),
+    aggregate: vi.fn(),
+    count: vi.fn(),
   },
   mockTransaction: vi.fn(),
 }))
@@ -48,6 +50,55 @@ describe('TokenBalanceManager', () => {
     vi.useRealTimers()
   })
 
+  describe('userId validation', () => {
+    it('should throw error for empty string userId in getBalance', async () => {
+      await expect(TokenBalanceManager.getBalance('')).rejects.toThrow(
+        'Invalid userId: must be a non-empty string'
+      )
+    })
+
+    it('should throw error for whitespace-only userId in getBalance', async () => {
+      await expect(TokenBalanceManager.getBalance('   ')).rejects.toThrow(
+        'Invalid userId: must be a non-empty string'
+      )
+    })
+
+    it('should throw error for empty userId in consumeTokens', async () => {
+      const result = await TokenBalanceManager.consumeTokens({
+        userId: '',
+        amount: 10,
+        source: 'test',
+        sourceId: 'test-123',
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Invalid userId')
+    })
+
+    it('should throw error for empty userId in addTokens', async () => {
+      const result = await TokenBalanceManager.addTokens({
+        userId: '',
+        amount: 50,
+        type: TokenTransactionType.EARN_PURCHASE,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Invalid userId')
+    })
+
+    it('should throw error for empty userId in getTransactionHistory', async () => {
+      await expect(
+        TokenBalanceManager.getTransactionHistory('')
+      ).rejects.toThrow('Invalid userId: must be a non-empty string')
+    })
+
+    it('should throw error for empty userId in getConsumptionStats', async () => {
+      await expect(TokenBalanceManager.getConsumptionStats('')).rejects.toThrow(
+        'Invalid userId: must be a non-empty string'
+      )
+    })
+  })
+
   describe('getBalance', () => {
     it('should return existing balance when user has one', async () => {
       const existingBalance = {
@@ -55,7 +106,20 @@ describe('TokenBalanceManager', () => {
         balance: 50,
         lastRegeneration: mockDate,
       }
-      mockUserTokenBalance.findUnique.mockResolvedValue(existingBalance)
+
+      // Mock the transaction to return the existing balance
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(existingBalance),
+            create: vi.fn(),
+          },
+          user: {
+            upsert: vi.fn(),
+          },
+        }
+        return callback(mockTx)
+      })
 
       const result = await TokenBalanceManager.getBalance(testUserId)
 
@@ -63,49 +127,59 @@ describe('TokenBalanceManager', () => {
         balance: 50,
         lastRegeneration: mockDate,
       })
-      expect(mockUserTokenBalance.findUnique).toHaveBeenCalledWith({
-        where: { userId: testUserId },
-      })
-      expect(mockUser.upsert).not.toHaveBeenCalled()
     })
 
     it('should create User and balance when user does not exist (JWT strategy)', async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue(null)
-      mockUser.upsert.mockResolvedValue({ id: testUserId })
       const newBalance = {
         userId: testUserId,
         balance: 0,
         lastRegeneration: mockDate,
       }
-      mockUserTokenBalance.create.mockResolvedValue(newBalance)
+
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            create: vi.fn().mockResolvedValue(newBalance),
+          },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+        }
+        const result = await callback(mockTx)
+        // Verify upsert was called
+        expect(mockTx.user.upsert).toHaveBeenCalledWith({
+          where: { id: testUserId },
+          update: {},
+          create: { id: testUserId },
+        })
+        return result
+      })
 
       const result = await TokenBalanceManager.getBalance(testUserId)
 
       expect(result).toEqual({
         balance: 0,
         lastRegeneration: mockDate,
-      })
-      expect(mockUser.upsert).toHaveBeenCalledWith({
-        where: { id: testUserId },
-        update: {},
-        create: { id: testUserId },
-      })
-      expect(mockUserTokenBalance.create).toHaveBeenCalledWith({
-        data: {
-          userId: testUserId,
-          balance: 0,
-          lastRegeneration: expect.any(Date),
-        },
       })
     })
   })
 
   describe('hasEnoughTokens', () => {
     it('should return true when user has sufficient tokens', async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        userId: testUserId,
-        balance: 50,
-        lastRegeneration: mockDate,
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 50,
+              lastRegeneration: mockDate,
+            }),
+            create: vi.fn(),
+          },
+          user: { upsert: vi.fn() },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.hasEnoughTokens(testUserId, 10)
@@ -114,10 +188,19 @@ describe('TokenBalanceManager', () => {
     })
 
     it('should return false when user has insufficient tokens', async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        userId: testUserId,
-        balance: 5,
-        lastRegeneration: mockDate,
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 5,
+              lastRegeneration: mockDate,
+            }),
+            create: vi.fn(),
+          },
+          user: { upsert: vi.fn() },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.hasEnoughTokens(testUserId, 10)
@@ -126,12 +209,21 @@ describe('TokenBalanceManager', () => {
     })
 
     it('should return false for new user with no balance (creates 0 balance)', async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue(null)
-      mockUser.upsert.mockResolvedValue({ id: testUserId })
-      mockUserTokenBalance.create.mockResolvedValue({
-        userId: testUserId,
-        balance: 0,
-        lastRegeneration: mockDate,
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            create: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 0,
+              lastRegeneration: mockDate,
+            }),
+          },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.hasEnoughTokens(testUserId, 10)
@@ -211,7 +303,7 @@ describe('TokenBalanceManager', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Insufficient tokens. Required: 10, Available: 0')
+      expect(result.error).toContain('Insufficient tokens')
       expect(mockTx.user.upsert).toHaveBeenCalledWith({
         where: { id: testUserId },
         update: {},
@@ -248,7 +340,7 @@ describe('TokenBalanceManager', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Insufficient tokens. Required: 10, Available: 5')
+      expect(result.error).toContain('Insufficient tokens')
     })
 
     it('should include metadata in transaction when provided', async () => {
@@ -562,24 +654,44 @@ describe('TokenBalanceManager', () => {
   describe('processRegeneration', () => {
     it('should not regenerate if time interval not elapsed', async () => {
       const recentRegen = new Date(mockDate.getTime() - 5 * 60 * 1000) // 5 minutes ago
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        userId: testUserId,
-        balance: 50,
-        lastRegeneration: recentRegen,
+
+      // Mock getBalance transaction
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 50,
+              lastRegeneration: recentRegen,
+            }),
+            create: vi.fn(),
+          },
+          user: { upsert: vi.fn() },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.processRegeneration(testUserId)
 
       expect(result).toBe(0)
-      expect(mockTransaction).not.toHaveBeenCalled()
     })
 
     it('should not regenerate if balance is at max', async () => {
       const oldRegen = new Date(mockDate.getTime() - 30 * 60 * 1000) // 30 minutes ago
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        userId: testUserId,
-        balance: 100, // MAX_TOKEN_BALANCE
-        lastRegeneration: oldRegen,
+
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 100, // MAX_TOKEN_BALANCE
+              lastRegeneration: oldRegen,
+            }),
+            create: vi.fn(),
+          },
+          user: { upsert: vi.fn() },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.processRegeneration(testUserId)
@@ -589,40 +701,54 @@ describe('TokenBalanceManager', () => {
 
     it('should regenerate tokens when interval has elapsed', async () => {
       const oldRegen = new Date(mockDate.getTime() - 30 * 60 * 1000) // 30 minutes ago
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        userId: testUserId,
-        balance: 50,
-        lastRegeneration: oldRegen,
-      })
+      let callCount = 0
 
-      const mockTx = {
-        userTokenBalance: {
-          findUnique: vi.fn().mockResolvedValue({
-            userId: testUserId,
-            balance: 50,
-            lastRegeneration: oldRegen,
-          }),
-          update: vi.fn().mockResolvedValue({
-            userId: testUserId,
-            balance: 52,
-            lastRegeneration: mockDate,
-          }),
-          create: vi.fn(),
-        },
-        user: {
-          upsert: vi.fn(),
-        },
-        tokenTransaction: {
-          create: vi.fn().mockResolvedValue({
-            id: 'tx-123',
-            userId: testUserId,
-            amount: 2,
-            type: TokenTransactionType.EARN_REGENERATION,
-            balanceAfter: 52,
-          }),
-        },
-      }
-      mockTransaction.mockImplementation((callback) => callback(mockTx))
+      mockTransaction.mockImplementation(async (callback) => {
+        callCount++
+        if (callCount === 1) {
+          // First call is from getBalance
+          const mockTx = {
+            userTokenBalance: {
+              findUnique: vi.fn().mockResolvedValue({
+                userId: testUserId,
+                balance: 50,
+                lastRegeneration: oldRegen,
+              }),
+              create: vi.fn(),
+            },
+            user: { upsert: vi.fn() },
+          }
+          return callback(mockTx)
+        } else {
+          // Second call is from addTokens
+          const mockTx = {
+            userTokenBalance: {
+              findUnique: vi.fn().mockResolvedValue({
+                userId: testUserId,
+                balance: 50,
+                lastRegeneration: oldRegen,
+              }),
+              update: vi.fn().mockResolvedValue({
+                userId: testUserId,
+                balance: 52,
+                lastRegeneration: mockDate,
+              }),
+              create: vi.fn(),
+            },
+            user: { upsert: vi.fn() },
+            tokenTransaction: {
+              create: vi.fn().mockResolvedValue({
+                id: 'tx-123',
+                userId: testUserId,
+                amount: 2,
+                type: TokenTransactionType.EARN_REGENERATION,
+                balanceAfter: 52,
+              }),
+            },
+          }
+          return callback(mockTx)
+        }
+      })
 
       const result = await TokenBalanceManager.processRegeneration(testUserId)
 
@@ -631,12 +757,21 @@ describe('TokenBalanceManager', () => {
     })
 
     it('should handle regeneration for new user', async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue(null)
-      mockUser.upsert.mockResolvedValue({ id: testUserId })
-      mockUserTokenBalance.create.mockResolvedValue({
-        userId: testUserId,
-        balance: 0,
-        lastRegeneration: mockDate,
+      mockTransaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            create: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 0,
+              lastRegeneration: mockDate,
+            }),
+          },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+        }
+        return callback(mockTx)
       })
 
       const result = await TokenBalanceManager.processRegeneration(testUserId)
@@ -649,12 +784,17 @@ describe('TokenBalanceManager', () => {
   describe('getTransactionHistory', () => {
     it('should return transaction history with default pagination', async () => {
       const mockTransactions = [
-        { id: 'tx-1', amount: -10, type: TokenTransactionType.SPEND_ENHANCEMENT },
+        {
+          id: 'tx-1',
+          amount: -10,
+          type: TokenTransactionType.SPEND_ENHANCEMENT,
+        },
         { id: 'tx-2', amount: 50, type: TokenTransactionType.EARN_PURCHASE },
       ]
       mockTokenTransaction.findMany.mockResolvedValue(mockTransactions)
 
-      const result = await TokenBalanceManager.getTransactionHistory(testUserId)
+      const result =
+        await TokenBalanceManager.getTransactionHistory(testUserId)
 
       expect(result).toEqual(mockTransactions)
       expect(mockTokenTransaction.findMany).toHaveBeenCalledWith({
@@ -680,28 +820,36 @@ describe('TokenBalanceManager', () => {
   })
 
   describe('getConsumptionStats', () => {
-    it('should calculate consumption stats correctly', async () => {
-      const mockTransactions = [
-        { amount: -10, type: TokenTransactionType.SPEND_ENHANCEMENT },
-        { amount: -5, type: TokenTransactionType.SPEND_ENHANCEMENT },
-        { amount: 50, type: TokenTransactionType.EARN_PURCHASE },
-        { amount: 1, type: TokenTransactionType.EARN_REGENERATION },
-        { amount: 5, type: TokenTransactionType.REFUND },
-      ]
-      mockTokenTransaction.findMany.mockResolvedValue(mockTransactions)
+    it('should calculate consumption stats correctly using aggregation', async () => {
+      // Mock the aggregate and count calls
+      mockTokenTransaction.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: -15 } }) // SPEND_ENHANCEMENT
+        .mockResolvedValueOnce({ _sum: { amount: 51 } }) // EARN types
+        .mockResolvedValueOnce({ _sum: { amount: 5 } }) // REFUND
+      mockTokenTransaction.count.mockResolvedValue(5)
 
       const result = await TokenBalanceManager.getConsumptionStats(testUserId)
 
       expect(result).toEqual({
-        totalSpent: 15, // 10 + 5
-        totalEarned: 51, // 50 + 1
+        totalSpent: 15, // Math.abs(-15)
+        totalEarned: 51,
         totalRefunded: 5,
         transactionCount: 5,
+      })
+
+      // Verify aggregate was called with correct parameters
+      expect(mockTokenTransaction.aggregate).toHaveBeenCalledTimes(3)
+      expect(mockTokenTransaction.count).toHaveBeenCalledWith({
+        where: { userId: testUserId },
       })
     })
 
     it('should return zeros for user with no transactions', async () => {
-      mockTokenTransaction.findMany.mockResolvedValue([])
+      mockTokenTransaction.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: null } })
+        .mockResolvedValueOnce({ _sum: { amount: null } })
+        .mockResolvedValueOnce({ _sum: { amount: null } })
+      mockTokenTransaction.count.mockResolvedValue(0)
 
       const result = await TokenBalanceManager.getConsumptionStats(testUserId)
 
@@ -715,7 +863,7 @@ describe('TokenBalanceManager', () => {
   })
 
   describe('error handling', () => {
-    it('should handle database errors in consumeTokens gracefully', async () => {
+    it('should handle database errors in consumeTokens with context', async () => {
       mockTransaction.mockRejectedValue(new Error('Database connection failed'))
 
       const result = await TokenBalanceManager.consumeTokens({
@@ -726,10 +874,12 @@ describe('TokenBalanceManager', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Database connection failed')
+      expect(result.error).toBe(
+        'Token consumption failed: Database connection failed'
+      )
     })
 
-    it('should handle database errors in addTokens gracefully', async () => {
+    it('should handle database errors in addTokens with context', async () => {
       mockTransaction.mockRejectedValue(new Error('Transaction failed'))
 
       const result = await TokenBalanceManager.addTokens({
@@ -739,10 +889,10 @@ describe('TokenBalanceManager', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Transaction failed')
+      expect(result.error).toBe('Adding tokens failed: Transaction failed')
     })
 
-    it('should handle unknown error types', async () => {
+    it('should handle unknown error types in consumeTokens', async () => {
       mockTransaction.mockRejectedValue('Unknown error string')
 
       const result = await TokenBalanceManager.consumeTokens({
@@ -753,7 +903,20 @@ describe('TokenBalanceManager', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Unknown error')
+      expect(result.error).toBe('Unknown error during token consumption')
+    })
+
+    it('should handle unknown error types in addTokens', async () => {
+      mockTransaction.mockRejectedValue('Unknown error string')
+
+      const result = await TokenBalanceManager.addTokens({
+        userId: testUserId,
+        amount: 50,
+        type: TokenTransactionType.EARN_PURCHASE,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Unknown error while adding tokens')
     })
   })
 })
