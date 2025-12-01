@@ -1,9 +1,11 @@
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 
-// Lazy initialization to avoid build-time errors
-let r2Client: S3Client | null = null
-let bucketName: string | null = null
+// Global type declaration for development caching
+declare global {
+  var __r2Client: S3Client | undefined
+  var __r2BucketName: string | undefined
+}
 
 function getR2Config() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
@@ -20,9 +22,11 @@ function getR2Config() {
 }
 
 function getR2Client(): S3Client {
-  if (!r2Client) {
+  // In development, always create fresh client to pick up env changes
+  // In production, use cached client for performance
+  if (process.env.NODE_ENV === 'development') {
     const config = getR2Config()
-    r2Client = new S3Client({
+    return new S3Client({
       region: 'auto',
       endpoint: config.endpoint,
       forcePathStyle: true, // Required for Cloudflare R2 compatibility
@@ -31,17 +35,34 @@ function getR2Client(): S3Client {
         secretAccessKey: config.secretAccessKey,
       },
     })
-    bucketName = config.bucket
   }
-  return r2Client
+
+  // Production: use global cache to survive hot reloads
+  if (!global.__r2Client) {
+    const config = getR2Config()
+    global.__r2Client = new S3Client({
+      region: 'auto',
+      endpoint: config.endpoint,
+      forcePathStyle: true, // Required for Cloudflare R2 compatibility
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+    })
+    global.__r2BucketName = config.bucket
+  }
+  return global.__r2Client
 }
 
 function getBucketName(): string {
-  if (!bucketName) {
-    const config = getR2Config()
-    bucketName = config.bucket
+  if (process.env.NODE_ENV === 'development') {
+    return getR2Config().bucket
   }
-  return bucketName
+
+  if (!global.__r2BucketName) {
+    global.__r2BucketName = getR2Config().bucket
+  }
+  return global.__r2BucketName
 }
 
 export interface UploadImageParams {
