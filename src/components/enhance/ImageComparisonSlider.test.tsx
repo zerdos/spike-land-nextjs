@@ -4,7 +4,8 @@ import { vi, describe, it, expect } from 'vitest'
 
 // Mock next/image
 vi.mock('next/image', () => ({
-    default: ({ src, alt, className, onError, style, ...props }: any) => (
+    default: ({ src, alt, className, onError, style, ...props }: { src: string; alt: string; className?: string; onError?: () => void; style?: React.CSSProperties;[key: string]: unknown }) => (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
             src={src}
             alt={alt}
