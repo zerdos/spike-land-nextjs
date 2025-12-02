@@ -30,6 +30,7 @@ const TIER_RESOLUTIONS = {
 // Image processing constants
 const ENHANCED_JPEG_QUALITY = 95 // High quality for enhanced images
 const DEFAULT_IMAGE_DIMENSION = 1024 // Fallback dimension if metadata unavailable
+const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 } // Black background for letterboxing
 
 export async function POST(request: NextRequest) {
   try {
@@ -145,6 +146,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * Process image enhancement with aspect ratio preservation
+ * 
+ * Algorithm:
+ * 1. Pad input image to square (Gemini requires square inputs)
+ * 2. Send to Gemini for enhancement
+ * 3. Crop Gemini output back to original aspect ratio
+ * 4. Resize to target tier resolution
+ * 
+ * @param jobId - Enhancement job ID
+ * @param originalR2Key - R2 storage key for original image
+ * @param tier - Enhancement tier (1K/2K/4K)
+ * @param userId - User ID for token refunds on failure
+ */
 async function processEnhancement(
   jobId: string,
   originalR2Key: string,
@@ -152,7 +167,13 @@ async function processEnhancement(
   userId: string
 ) {
   try {
+    // Only log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Enhancement] Starting processEnhancement for job: ${jobId}`)
+    }
+
     const originalBuffer = await downloadFromR2(originalR2Key)
+
     if (!originalBuffer) {
       throw new Error('Failed to download original image')
     }
@@ -168,13 +189,22 @@ async function processEnhancement(
       ? `image/${detectedFormat === 'jpeg' ? 'jpeg' : detectedFormat}`
       : 'image/jpeg' // fallback for unknown formats
 
-    const base64Image = originalBuffer.toString('base64')
+    // Pad image to square to preserve aspect ratio during Gemini generation
+    const maxDimension = Math.max(originalWidth, originalHeight)
+    const paddedBuffer = await sharp(originalBuffer)
+      .resize(maxDimension, maxDimension, {
+        fit: 'contain',
+        background: PADDING_BACKGROUND
+      })
+      .toBuffer()
+
+    const base64Image = paddedBuffer.toString('base64')
 
     const tierSize = TIER_TO_SIZE[tier]
 
-    console.log(`Enhancing image with Gemini at ${tierSize} resolution...`)
-    console.log(`Original dimensions: ${originalWidth}x${originalHeight}`)
-    console.log(`Detected MIME type: ${mimeType}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Enhancement] Enhancing image with Gemini at ${tierSize} resolution...`)
+    }
 
     // Get Gemini-enhanced image (will be square)
     const geminiBuffer = await enhanceImageWithGemini({
@@ -185,27 +215,53 @@ async function processEnhancement(
       originalHeight,
     })
 
-    // Resize Gemini output to match original aspect ratio
+    // Calculate dimensions to crop back to original aspect ratio
+    const geminiMetadata = await sharp(geminiBuffer).metadata()
+    const geminiSize = geminiMetadata.width
+
+    if (!geminiSize) {
+      throw new Error('Failed to get Gemini output dimensions')
+    }
+
+    // Use original aspect ratio for precise calculations
     const aspectRatio = originalWidth / originalHeight
+
+    let extractLeft = 0
+    let extractTop = 0
+    let extractWidth = geminiSize
+    let extractHeight = geminiSize
+
+    if (aspectRatio > 1) {
+      // Landscape: content is full width, centered vertically
+      extractHeight = Math.round(geminiSize / aspectRatio)
+      extractTop = Math.round((geminiSize - extractHeight) / 2)
+    } else {
+      // Portrait/Square: content is full height, centered horizontally
+      extractWidth = Math.round(geminiSize * aspectRatio)
+      extractLeft = Math.round((geminiSize - extractWidth) / 2)
+    }
+
+    // Crop to remove padding and resize to target resolution
     const tierResolution = TIER_RESOLUTIONS[tier]
 
     let targetWidth: number
     let targetHeight: number
 
     if (aspectRatio > 1) {
-      // Landscape: width is larger
       targetWidth = tierResolution
       targetHeight = Math.round(tierResolution / aspectRatio)
     } else {
-      // Portrait or square: height is larger or equal
       targetHeight = tierResolution
       targetWidth = Math.round(tierResolution * aspectRatio)
     }
 
-    console.log(`Resizing Gemini output to preserve aspect ratio: ${targetWidth}x${targetHeight}`)
-
-    // Resize the Gemini-enhanced image to match original aspect ratio
     const enhancedBuffer = await sharp(geminiBuffer)
+      .extract({
+        left: extractLeft,
+        top: extractTop,
+        width: extractWidth,
+        height: extractHeight
+      })
       .resize(targetWidth, targetHeight, {
         fit: 'fill',
         kernel: 'lanczos3',
@@ -243,8 +299,9 @@ async function processEnhancement(
       },
     })
 
-    console.log(`Enhancement completed successfully for job ${jobId}`)
-    console.log(`Final dimensions: ${metadata.width}x${metadata.height}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Enhancement] Completed successfully for job ${jobId}`)
+    }
   } catch (error) {
     console.error('Enhancement processing failed:', error)
 
