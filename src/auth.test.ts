@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createStableUserId } from './auth'
 
 vi.mock('next-auth', () => ({
@@ -17,6 +17,15 @@ vi.mock('next-auth/providers/github', () => ({
 
 vi.mock('next-auth/providers/google', () => ({
   default: vi.fn(() => ({ id: 'google' })),
+}))
+
+vi.mock('@/lib/prisma', () => ({
+  default: {
+    user: {
+      upsert: vi.fn().mockResolvedValue({}),
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
+  },
 }))
 
 describe('NextAuth Configuration', () => {
@@ -161,8 +170,27 @@ describe('NextAuth Callbacks', () => {
 })
 
 describe('createStableUserId', () => {
+  const originalUserIdSalt = process.env.USER_ID_SALT
+  const originalAuthSecret = process.env.AUTH_SECRET
+
   beforeEach(() => {
+    // Reset environment variables before each test
+    delete process.env.USER_ID_SALT
     process.env.AUTH_SECRET = 'test-auth-secret'
+  })
+
+  afterEach(() => {
+    // Restore original environment variables
+    if (originalUserIdSalt) {
+      process.env.USER_ID_SALT = originalUserIdSalt
+    } else {
+      delete process.env.USER_ID_SALT
+    }
+    if (originalAuthSecret) {
+      process.env.AUTH_SECRET = originalAuthSecret
+    } else {
+      delete process.env.AUTH_SECRET
+    }
   })
 
   it('should generate a stable ID from email', () => {
@@ -174,19 +202,54 @@ describe('createStableUserId', () => {
     expect(id.startsWith('user_')).toBe(true)
   })
 
-  it('should use AUTH_SECRET salt to prevent ID prediction', () => {
+  it('should throw error when no salt is set', () => {
+    delete process.env.USER_ID_SALT
+    delete process.env.AUTH_SECRET
+
+    expect(() => createStableUserId('test@example.com')).toThrow(
+      'USER_ID_SALT or AUTH_SECRET environment variable must be set'
+    )
+  })
+
+  it('should prefer USER_ID_SALT over AUTH_SECRET', () => {
+    const email = 'test@example.com'
+
+    // Set both env vars
+    process.env.AUTH_SECRET = 'auth-secret-value'
+    process.env.USER_ID_SALT = 'user-id-salt-value'
+
+    const idWithUserIdSalt = createStableUserId(email)
+
+    // Remove USER_ID_SALT, keeping AUTH_SECRET
+    delete process.env.USER_ID_SALT
+
+    const idWithAuthSecret = createStableUserId(email)
+
+    // IDs should be different because different salts are used
+    expect(idWithUserIdSalt).not.toBe(idWithAuthSecret)
+  })
+
+  it('should fall back to AUTH_SECRET when USER_ID_SALT is not set', () => {
+    const email = 'test@example.com'
+
+    delete process.env.USER_ID_SALT
+    process.env.AUTH_SECRET = 'test-auth-secret'
+
+    const id = createStableUserId(email)
+
+    expect(id).toBeDefined()
+    expect(id.startsWith('user_')).toBe(true)
+  })
+
+  it('should use salt to prevent ID prediction', () => {
     const email = 'test@example.com'
 
     // ID with current salt
     const idWithSalt = createStableUserId(email)
 
     // Change the salt
-    const originalSecret = process.env.AUTH_SECRET
     process.env.AUTH_SECRET = 'different-secret'
     const idWithDifferentSalt = createStableUserId(email)
-
-    // Restore original
-    process.env.AUTH_SECRET = originalSecret
 
     // Different salts should produce different IDs
     expect(idWithSalt).not.toBe(idWithDifferentSalt)

@@ -4,7 +4,7 @@
  * This script:
  * 1. Checks for active sessions (migration lock)
  * 2. Finds all users with emails
- * 3. Calculates their new stable ID based on email + AUTH_SECRET salt
+ * 3. Calculates their new stable ID based on email + USER_ID_SALT (or AUTH_SECRET) salt
  * 4. Merges data from old IDs to new stable IDs
  * 5. Updates all related records (images, tokens, jobs, albums)
  *
@@ -34,11 +34,16 @@ import crypto from "crypto"
 const prisma = new PrismaClient()
 
 /**
- * Creates a stable user ID using AUTH_SECRET salt + email hash.
+ * Creates a stable user ID using USER_ID_SALT (or AUTH_SECRET) salt + email hash.
  * MUST match the implementation in src/auth.ts exactly.
  */
 function createStableUserId(email: string): string {
-  const salt = process.env.AUTH_SECRET || ""
+  const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET
+  if (!salt) {
+    throw new Error(
+      "USER_ID_SALT or AUTH_SECRET environment variable must be set"
+    )
+  }
   const hash = crypto
     .createHash("sha256")
     .update(salt + email.toLowerCase().trim())
@@ -200,22 +205,24 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
           })
           stats.jobsMigrated += jobResult.count
 
-          // Merge token balances (add to existing) - delete first to avoid FK issues
+          // Merge token balances using atomic increment for safety
           if (user.tokenBalance) {
             const existingBalance = await tx.userTokenBalance.findUnique({
               where: { userId: stableId },
             })
             if (existingBalance) {
-              // Store the combined balance value
-              const newBalance = existingBalance.balance + user.tokenBalance.balance
-              // Delete old record FIRST to avoid FK constraint issues
-              await tx.userTokenBalance.delete({
-                where: { userId: user.id },
-              })
-              // Then update the stable user's balance
+              // Use atomic increment to safely add balances
               await tx.userTokenBalance.update({
                 where: { userId: stableId },
-                data: { balance: newBalance },
+                data: {
+                  balance: {
+                    increment: user.tokenBalance.balance,
+                  },
+                },
+              })
+              // Delete old record after incrementing
+              await tx.userTokenBalance.delete({
+                where: { userId: user.id },
               })
             } else {
               await tx.userTokenBalance.update({
@@ -321,13 +328,17 @@ async function main() {
   }
   console.log("=".repeat(60))
 
-  // Check for AUTH_SECRET
-  if (!process.env.AUTH_SECRET) {
-    console.error("\nERROR: AUTH_SECRET environment variable is not set!")
+  // Check for salt (USER_ID_SALT or AUTH_SECRET)
+  const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET
+  if (!salt) {
+    console.error("\nERROR: Neither USER_ID_SALT nor AUTH_SECRET environment variable is set!")
     console.error("This is required to generate stable user IDs that match the application.")
-    console.error("\nSet it using: export AUTH_SECRET=<your-auth-secret>")
+    console.error("\nSet one using:")
+    console.error("  export USER_ID_SALT=<your-user-id-salt>  # Preferred (never rotate)")
+    console.error("  export AUTH_SECRET=<your-auth-secret>   # Fallback")
     process.exit(1)
   }
+  console.log(`Using salt from: ${process.env.USER_ID_SALT ? "USER_ID_SALT" : "AUTH_SECRET"}`)
 
   // Check for active sessions (migration lock)
   const canProceed = await checkNoActiveSessions(force)
