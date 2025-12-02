@@ -175,12 +175,22 @@ async function processEnhancement(
       ? `image/${detectedFormat === 'jpeg' ? 'jpeg' : detectedFormat}`
       : 'image/jpeg' // fallback for unknown formats
 
-    const base64Image = originalBuffer.toString('base64')
+    // Pad image to square to preserve aspect ratio during Gemini generation
+    const maxDimension = Math.max(originalWidth, originalHeight)
+    const paddedBuffer = await sharp(originalBuffer)
+      .resize(maxDimension, maxDimension, {
+        fit: 'contain',
+        background: { r: 0, g: 0, b: 0, alpha: 1 } // Black background
+      })
+      .toBuffer()
+
+    const base64Image = paddedBuffer.toString('base64')
 
     const tierSize = TIER_TO_SIZE[tier]
 
     console.log(`Enhancing image with Gemini at ${tierSize} resolution...`)
     console.log(`Original dimensions: ${originalWidth}x${originalHeight}`)
+    console.log(`Padded to square: ${maxDimension}x${maxDimension}`)
     console.log(`Detected MIME type: ${mimeType}`)
 
     // Get Gemini-enhanced image (will be square)
@@ -192,27 +202,51 @@ async function processEnhancement(
       originalHeight,
     })
 
-    // Resize Gemini output to match original aspect ratio
+    // Calculate dimensions to crop back to original aspect ratio
+    const geminiMetadata = await sharp(geminiBuffer).metadata()
+    const geminiSize = geminiMetadata.width || TIER_RESOLUTIONS[tier]
     const aspectRatio = originalWidth / originalHeight
+
+    let extractLeft = 0
+    let extractTop = 0
+    let extractWidth = geminiSize
+    let extractHeight = geminiSize
+
+    if (aspectRatio > 1) {
+      // Landscape: content is full width, centered vertically
+      extractHeight = Math.round(geminiSize / aspectRatio)
+      extractTop = Math.round((geminiSize - extractHeight) / 2)
+    } else {
+      // Portrait/Square: content is full height, centered horizontally
+      extractWidth = Math.round(geminiSize * aspectRatio)
+      extractLeft = Math.round((geminiSize - extractWidth) / 2)
+    }
+
+    console.log(`Cropping enhanced image: ${extractWidth}x${extractHeight} at ${extractLeft},${extractTop}`)
+
+    // Crop to remove padding and resize to target resolution
     const tierResolution = TIER_RESOLUTIONS[tier]
 
     let targetWidth: number
     let targetHeight: number
 
     if (aspectRatio > 1) {
-      // Landscape: width is larger
       targetWidth = tierResolution
       targetHeight = Math.round(tierResolution / aspectRatio)
     } else {
-      // Portrait or square: height is larger or equal
       targetHeight = tierResolution
       targetWidth = Math.round(tierResolution * aspectRatio)
     }
 
-    console.log(`Resizing Gemini output to preserve aspect ratio: ${targetWidth}x${targetHeight}`)
+    console.log(`Resizing to final target: ${targetWidth}x${targetHeight}`)
 
-    // Resize the Gemini-enhanced image to match original aspect ratio
     const enhancedBuffer = await sharp(geminiBuffer)
+      .extract({
+        left: extractLeft,
+        top: extractTop,
+        width: extractWidth,
+        height: extractHeight
+      })
       .resize(targetWidth, targetHeight, {
         fit: 'fill',
         kernel: 'lanczos3',
