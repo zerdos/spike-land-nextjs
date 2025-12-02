@@ -22,7 +22,7 @@ export interface VoucherValidationResult {
   error?: string
   voucher?: {
     code: string
-    type: VoucherType
+    type: VoucherTypeEnum
     value: number
     remainingUses: number | null
     expiresAt: Date | null
