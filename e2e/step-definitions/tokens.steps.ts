@@ -4,7 +4,7 @@ import { CustomWorld } from '../support/world';
 import { waitForTextWithRetry, TIMEOUTS } from '../support/helpers/retry-helper';
 
 // Mock token balance API
-async function mockTokenBalance(world: CustomWorld, balance: number) {
+async function mockTokenBalanceApi(world: CustomWorld, balance: number) {
   await world.page.route('**/api/tokens/balance', async (route) => {
     await route.fulfill({
       status: 200,
@@ -13,6 +13,9 @@ async function mockTokenBalance(world: CustomWorld, balance: number) {
     });
   });
 }
+
+// Re-export for use by other step files
+export { mockTokenBalanceApi as mockTokenBalance };
 
 // Mock voucher redemption API
 async function mockVoucherRedemption(
@@ -156,12 +159,7 @@ When('I close the purchase modal', async function (this: CustomWorld) {
 // Removed duplicate: "I should see my token balance" - now using "I should see the token balance display" from image-enhancement.steps.ts
 
 Then('I should see the token balance card with coins icon', async function (this: CustomWorld) {
-  // Look for the Coins icon (Lucide icon)
-  const coinsIcon = this.page.locator('svg').filter({ has: this.page.locator('[class*="lucide-coins"]') }).or(
-    this.page.locator('[class*="coins"]').first()
-  );
-
-  // Should see the balance text
+  // Should see the balance text - coins icon is rendered with SVG
   await expect(this.page.getByText(/\d+\s*Tokens/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await expect(this.page.getByText('Available balance')).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
