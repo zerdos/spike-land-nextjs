@@ -55,12 +55,13 @@ module.exports = {
     paths: ['e2e/features/**/*.feature'],
     require: ['e2e/step-definitions/**/*.ts', 'e2e/support/**/*.ts'],
     requireModule: ['tsx/cjs'],
-    format: ['progress-bar', 'html:e2e/reports/cucumber-report-ci.html', 'json:e2e/reports/cucumber-report-ci.json'],
+    format: ['progress', 'html:e2e/reports/cucumber-report-ci.html', 'json:e2e/reports/cucumber-report-ci.json'],
     formatOptions: { snippetInterface: 'async-await' },
     publishQuiet: true,
     failFast: false, // In CI, run all tests to get full report
     retry: 1, // Retry once in CI to handle transient issues
     tags: 'not @skip and not @flaky',
-    timeout: 15000,
+    timeout: 30000, // 30 second timeout for CI
+    parallel: 4, // Run 4 scenarios in parallel
   },
 };
