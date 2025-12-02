@@ -1,6 +1,21 @@
 import prisma from '@/lib/prisma'
 import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
-import { VoucherStatus, VoucherType } from '@prisma/client'
+import type { VoucherStatus as VoucherStatusType, VoucherType as VoucherTypeEnum } from '@prisma/client'
+
+// Use string literals to avoid runtime dependency on Prisma enums
+// These match the Prisma schema enum values
+const VoucherStatus = {
+  ACTIVE: 'ACTIVE' as VoucherStatusType,
+  INACTIVE: 'INACTIVE' as VoucherStatusType,
+  EXPIRED: 'EXPIRED' as VoucherStatusType,
+  DEPLETED: 'DEPLETED' as VoucherStatusType,
+} as const
+
+const VoucherType = {
+  FIXED_TOKENS: 'FIXED_TOKENS' as VoucherTypeEnum,
+  PERCENTAGE_BONUS: 'PERCENTAGE_BONUS' as VoucherTypeEnum,
+  SUBSCRIPTION_TRIAL: 'SUBSCRIPTION_TRIAL' as VoucherTypeEnum,
+} as const
 
 export interface VoucherValidationResult {
   valid: boolean

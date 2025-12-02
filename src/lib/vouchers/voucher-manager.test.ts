@@ -1,20 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Define enums locally to avoid Prisma client dependency in tests
-enum VoucherType {
-  FIXED_TOKENS = 'FIXED_TOKENS',
-  PERCENTAGE_BONUS = 'PERCENTAGE_BONUS',
-  SUBSCRIPTION_TRIAL = 'SUBSCRIPTION_TRIAL',
-}
-
-enum VoucherStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  EXPIRED = 'EXPIRED',
-  DEPLETED = 'DEPLETED',
-}
-
-// Mock setup using vi.hoisted
+// Mock setup using vi.hoisted - define string constants matching Prisma schema
 const { mockPrisma, mockTokenBalanceManager } = vi.hoisted(() => ({
   mockPrisma: {
     voucher: {
@@ -31,6 +17,20 @@ const { mockPrisma, mockTokenBalanceManager } = vi.hoisted(() => ({
     addTokens: vi.fn(),
   },
 }))
+
+// String constants matching Prisma schema enum values
+const VoucherType = {
+  FIXED_TOKENS: 'FIXED_TOKENS',
+  PERCENTAGE_BONUS: 'PERCENTAGE_BONUS',
+  SUBSCRIPTION_TRIAL: 'SUBSCRIPTION_TRIAL',
+} as const
+
+const VoucherStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  EXPIRED: 'EXPIRED',
+  DEPLETED: 'DEPLETED',
+} as const
 
 // Mock the dependencies
 vi.mock('@/lib/prisma', () => ({
