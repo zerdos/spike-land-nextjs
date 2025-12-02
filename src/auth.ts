@@ -2,7 +2,6 @@ import NextAuth, { DefaultSession } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import crypto from "crypto"
-import prisma from "@/lib/prisma"
 
 declare module "next-auth" {
   interface Session {
@@ -55,6 +54,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user.email) {
         const stableId = createStableUserId(user.email)
         try {
+          // Dynamic import to avoid bundling prisma in edge function
+          const prisma = (await import("@/lib/prisma")).default
           // Use upsert to handle both new and existing users
           await prisma.user.upsert({
             where: { email: user.email },
