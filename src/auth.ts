@@ -14,8 +14,8 @@ declare module "next-auth" {
 /**
  * Creates a stable user ID based on email address.
  * This ensures the same user gets the same ID regardless of OAuth provider.
- * Uses SHA256 hash of salt + lowercase email to create a deterministic ID.
- * The salt prevents user ID prediction from known emails.
+ * Uses HMAC-SHA256 with salt as key and email as message for security.
+ * HMAC prevents length extension attacks and collision vulnerabilities.
  *
  * Uses USER_ID_SALT (preferred) or falls back to AUTH_SECRET.
  * USER_ID_SALT should never be rotated as it would change all user IDs.
@@ -28,9 +28,10 @@ function createStableUserId(email: string): string {
       "USER_ID_SALT or AUTH_SECRET environment variable must be set for stable user IDs"
     )
   }
+  // Use HMAC for better security (prevents collision attacks)
   const hash = crypto
-    .createHash("sha256")
-    .update(salt + email.toLowerCase().trim())
+    .createHmac("sha256", salt)
+    .update(email.toLowerCase().trim())
     .digest("hex")
     .substring(0, 32)
   return `user_${hash}`
@@ -72,8 +73,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
           })
         } catch (error) {
+          // Log the error but don't block sign-in
+          // The JWT callback will still set the correct stable ID, so the user
+          // can authenticate. The database record will be created on next sign-in.
           console.error("Failed to upsert user with stable ID:", error)
-          // Still allow sign in even if upsert fails
+          // Return false only for critical errors that should block sign-in
+          // For database errors, we allow sign-in to proceed since:
+          // 1. JWT callback sets the correct stable ID regardless
+          // 2. User can still authenticate even if DB is temporarily down
+          // 3. The record will be created on next successful sign-in
         }
       }
       return true

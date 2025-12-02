@@ -34,8 +34,9 @@ import crypto from "crypto"
 const prisma = new PrismaClient()
 
 /**
- * Creates a stable user ID using USER_ID_SALT (or AUTH_SECRET) salt + email hash.
+ * Creates a stable user ID using HMAC-SHA256.
  * MUST match the implementation in src/auth.ts exactly.
+ * Uses HMAC for better security (prevents collision attacks).
  */
 function createStableUserId(email: string): string {
   const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET
@@ -44,9 +45,10 @@ function createStableUserId(email: string): string {
       "USER_ID_SALT or AUTH_SECRET environment variable must be set"
     )
   }
+  // Use HMAC for better security (prevents collision attacks)
   const hash = crypto
-    .createHash("sha256")
-    .update(salt + email.toLowerCase().trim())
+    .createHmac("sha256", salt)
+    .update(email.toLowerCase().trim())
     .digest("hex")
     .substring(0, 32)
   return `user_${hash}`
