@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
+import { ENHANCEMENT_COSTS } from '@/lib/tokens/costs'
 import { enhanceImageWithGemini } from '@/lib/ai/gemini-client'
 import { downloadFromR2, uploadToR2 } from '@/lib/storage/r2-client'
 import { checkRateLimit, rateLimitConfigs } from '@/lib/rate-limiter'
 import prisma from '@/lib/prisma'
 import { EnhancementTier, JobStatus } from '@prisma/client'
 import sharp from 'sharp'
-
-const TIER_COSTS = {
-  TIER_1K: 2,
-  TIER_2K: 5,
-  TIER_4K: 10,
-}
 
 const TIER_TO_SIZE = {
   TIER_1K: '1K' as const,
@@ -74,7 +69,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!Object.keys(TIER_COSTS).includes(tier)) {
+    if (!Object.keys(ENHANCEMENT_COSTS).includes(tier)) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 
@@ -86,7 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 })
     }
 
-    const tokenCost = TIER_COSTS[tier]
+    const tokenCost = ENHANCEMENT_COSTS[tier]
     const hasEnough = await TokenBalanceManager.hasEnoughTokens(
       session.user.id,
       tokenCost
