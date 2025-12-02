@@ -2,10 +2,11 @@
  * Data Migration Script: Migrate users to stable email-based IDs
  *
  * This script:
- * 1. Finds all users with emails
- * 2. Calculates their new stable ID based on email
- * 3. Merges data from old IDs to new stable IDs
- * 4. Updates all related records (images, tokens, jobs, albums)
+ * 1. Checks for active sessions (migration lock)
+ * 2. Finds all users with emails
+ * 3. Calculates their new stable ID based on email + AUTH_SECRET salt
+ * 4. Merges data from old IDs to new stable IDs
+ * 5. Updates all related records (images, tokens, jobs, albums)
  *
  * DEPLOYMENT ORDER:
  * 1. Backup database: pg_dump -Fc $DATABASE_URL > backup_before_migration.dump
@@ -22,8 +23,9 @@
  * 4. Start application
  *
  * Usage:
- *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts          # Run migration
- *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts --dry-run # Preview only
+ *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts               # Run migration
+ *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts --dry-run     # Preview only
+ *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts --force       # Skip session check
  */
 
 import { PrismaClient } from "@prisma/client"
@@ -31,13 +33,49 @@ import crypto from "crypto"
 
 const prisma = new PrismaClient()
 
+/**
+ * Creates a stable user ID using AUTH_SECRET salt + email hash.
+ * MUST match the implementation in src/auth.ts exactly.
+ */
 function createStableUserId(email: string): string {
+  const salt = process.env.AUTH_SECRET || ""
   const hash = crypto
     .createHash("sha256")
-    .update(email.toLowerCase().trim())
+    .update(salt + email.toLowerCase().trim())
     .digest("hex")
     .substring(0, 32)
   return `user_${hash}`
+}
+
+/**
+ * Checks for active sessions to prevent race conditions during migration.
+ * Returns true if it's safe to proceed, false if active sessions exist.
+ */
+async function checkNoActiveSessions(force: boolean): Promise<boolean> {
+  if (force) {
+    console.log("WARNING: Skipping session check (--force flag used)")
+    return true
+  }
+
+  const activeSessions = await prisma.session.count({
+    where: {
+      expires: { gt: new Date() },
+    },
+  })
+
+  if (activeSessions > 0) {
+    console.error(`\nERROR: ${activeSessions} active session(s) found!`)
+    console.error("This indicates the application may still be running.")
+    console.error("\nTo prevent race conditions, please:")
+    console.error("1. Stop the application")
+    console.error("2. Wait for sessions to expire, or clear the sessions table")
+    console.error("3. Run this script again")
+    console.error("\nOr use --force to skip this check (not recommended)")
+    return false
+  }
+
+  console.log("No active sessions found - safe to proceed")
+  return true
 }
 
 interface MigrationStats {
@@ -48,7 +86,9 @@ interface MigrationStats {
   tokenBalancesMigrated: number
   tokenTransactionsMigrated: number
   albumsMigrated: number
+  stripeIdsMigrated: number
   errors: string[]
+  warnings: string[]
 }
 
 async function migrateUsers(dryRun = false): Promise<MigrationStats> {
@@ -60,7 +100,9 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
     tokenBalancesMigrated: 0,
     tokenTransactionsMigrated: 0,
     albumsMigrated: 0,
+    stripeIdsMigrated: 0,
     errors: [],
+    warnings: [],
   }
 
   console.log("Starting user migration to stable email-based IDs...")
@@ -124,6 +166,26 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
           // Merge data into existing stable user
           console.log(`  Merging into existing stable user ${stableId}`)
 
+          // Check for Stripe customer ID conflicts
+          if (user.stripeCustomerId && existingStableUser.stripeCustomerId) {
+            if (user.stripeCustomerId !== existingStableUser.stripeCustomerId) {
+              const warning =
+                `Stripe customer ID conflict for ${user.email}: ` +
+                `old=${user.stripeCustomerId}, stable=${existingStableUser.stripeCustomerId}. ` +
+                `Keeping stable user's Stripe ID.`
+              console.warn(`  WARNING: ${warning}`)
+              stats.warnings.push(warning)
+            }
+          } else if (user.stripeCustomerId && !existingStableUser.stripeCustomerId) {
+            // Migrate Stripe customer ID to stable user
+            await tx.user.update({
+              where: { id: stableId },
+              data: { stripeCustomerId: user.stripeCustomerId },
+            })
+            stats.stripeIdsMigrated++
+            console.log(`  Migrated Stripe customer ID to stable user`)
+          }
+
           // Update enhanced images to use stable ID
           const imageResult = await tx.enhancedImage.updateMany({
             where: { userId: user.id },
@@ -138,20 +200,22 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
           })
           stats.jobsMigrated += jobResult.count
 
-          // Merge token balances (add to existing)
+          // Merge token balances (add to existing) - delete first to avoid FK issues
           if (user.tokenBalance) {
             const existingBalance = await tx.userTokenBalance.findUnique({
               where: { userId: stableId },
             })
             if (existingBalance) {
-              await tx.userTokenBalance.update({
-                where: { userId: stableId },
-                data: {
-                  balance: existingBalance.balance + user.tokenBalance.balance,
-                },
-              })
+              // Store the combined balance value
+              const newBalance = existingBalance.balance + user.tokenBalance.balance
+              // Delete old record FIRST to avoid FK constraint issues
               await tx.userTokenBalance.delete({
                 where: { userId: user.id },
+              })
+              // Then update the stable user's balance
+              await tx.userTokenBalance.update({
+                where: { userId: stableId },
+                data: { balance: newBalance },
               })
             } else {
               await tx.userTokenBalance.update({
@@ -248,6 +312,7 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run")
+  const force = process.argv.includes("--force")
 
   console.log("=".repeat(60))
   console.log("User Migration to Stable Email-Based IDs")
@@ -255,6 +320,20 @@ async function main() {
     console.log("MODE: DRY RUN (preview only)")
   }
   console.log("=".repeat(60))
+
+  // Check for AUTH_SECRET
+  if (!process.env.AUTH_SECRET) {
+    console.error("\nERROR: AUTH_SECRET environment variable is not set!")
+    console.error("This is required to generate stable user IDs that match the application.")
+    console.error("\nSet it using: export AUTH_SECRET=<your-auth-secret>")
+    process.exit(1)
+  }
+
+  // Check for active sessions (migration lock)
+  const canProceed = await checkNoActiveSessions(force)
+  if (!canProceed) {
+    process.exit(1)
+  }
 
   const stats = await migrateUsers(dryRun)
 
@@ -268,6 +347,12 @@ async function main() {
   console.log(`Token balances migrated: ${stats.tokenBalancesMigrated}`)
   console.log(`Token transactions migrated: ${stats.tokenTransactionsMigrated}`)
   console.log(`Albums migrated: ${stats.albumsMigrated}`)
+  console.log(`Stripe customer IDs migrated: ${stats.stripeIdsMigrated}`)
+
+  if (stats.warnings.length > 0) {
+    console.log(`\nWarnings (${stats.warnings.length}):`)
+    stats.warnings.forEach((warn) => console.log(`  - ${warn}`))
+  }
 
   if (stats.errors.length > 0) {
     console.log(`\nErrors (${stats.errors.length}):`)

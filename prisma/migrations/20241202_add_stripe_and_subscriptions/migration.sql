@@ -1,6 +1,8 @@
 -- Add stripeCustomerId to users table
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "stripeCustomerId" TEXT;
-CREATE UNIQUE INDEX IF NOT EXISTS "users_stripeCustomerId_key" ON "users"("stripeCustomerId");
+-- Use partial unique index to allow multiple NULL values (Postgres treats each NULL as unique by default,
+-- but some versions have issues with this. Partial index explicitly excludes NULLs)
+CREATE UNIQUE INDEX IF NOT EXISTS "users_stripeCustomerId_key" ON "users"("stripeCustomerId") WHERE "stripeCustomerId" IS NOT NULL;
 
 -- CreateEnum for SubscriptionStatus
 DO $$ BEGIN

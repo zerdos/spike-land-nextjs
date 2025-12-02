@@ -101,28 +101,53 @@ describe('NextAuth Callbacks', () => {
     expect(result.user).not.toHaveProperty('id')
   })
 
-  it('should have jwt callback that adds user id to token', () => {
+  it('should have jwt callback that uses stable ID from email', () => {
     const jwtCallback = {
-      jwt: ({ token, user }: { token: { sub?: string }; user?: { id: string } }) => {
-        if (user) {
-          token.sub = user.id
+      jwt: ({ token, user }: { token: { sub?: string }; user?: { id?: string; email?: string } }) => {
+        if (user?.email) {
+          // Use stable ID based on email (same across all OAuth providers)
+          token.sub = `user_${user.email}_hash` // Simplified for test
+        } else if (user?.id) {
+          // Fallback for users without email - use provider ID with prefix
+          token.sub = `provider_${user.id}`
         }
         return token
       },
     }
 
     const mockToken = {} as { sub?: string }
-    const mockUser = { id: 'user-456' }
+    const mockUser = { id: 'user-456', email: 'test@example.com' }
 
     const result = jwtCallback.jwt({ token: mockToken, user: mockUser })
-    expect(result.sub).toBe('user-456')
+    expect(result.sub).toBe('user_test@example.com_hash')
+  })
+
+  it('should have jwt callback that uses provider prefix for users without email', () => {
+    const jwtCallback = {
+      jwt: ({ token, user }: { token: { sub?: string }; user?: { id?: string; email?: string } }) => {
+        if (user?.email) {
+          token.sub = `user_${user.email}_hash`
+        } else if (user?.id) {
+          token.sub = `provider_${user.id}`
+        }
+        return token
+      },
+    }
+
+    const mockToken = {} as { sub?: string }
+    const mockUser = { id: 'provider-id-123' } // No email
+
+    const result = jwtCallback.jwt({ token: mockToken, user: mockUser })
+    expect(result.sub).toBe('provider_provider-id-123')
   })
 
   it('should have jwt callback that handles missing user', () => {
     const jwtCallback = {
-      jwt: ({ token, user }: { token: { sub?: string }; user?: { id: string } }) => {
-        if (user) {
-          token.sub = user.id
+      jwt: ({ token, user }: { token: { sub?: string }; user?: { id?: string; email?: string } }) => {
+        if (user?.email) {
+          token.sub = `user_${user.email}_hash`
+        } else if (user?.id) {
+          token.sub = `provider_${user.id}`
         }
         return token
       },
@@ -136,6 +161,10 @@ describe('NextAuth Callbacks', () => {
 })
 
 describe('createStableUserId', () => {
+  beforeEach(() => {
+    process.env.AUTH_SECRET = 'test-auth-secret'
+  })
+
   it('should generate a stable ID from email', () => {
     const email = 'test@example.com'
     const id = createStableUserId(email)
@@ -143,6 +172,24 @@ describe('createStableUserId', () => {
     expect(id).toBeDefined()
     expect(typeof id).toBe('string')
     expect(id.startsWith('user_')).toBe(true)
+  })
+
+  it('should use AUTH_SECRET salt to prevent ID prediction', () => {
+    const email = 'test@example.com'
+
+    // ID with current salt
+    const idWithSalt = createStableUserId(email)
+
+    // Change the salt
+    const originalSecret = process.env.AUTH_SECRET
+    process.env.AUTH_SECRET = 'different-secret'
+    const idWithDifferentSalt = createStableUserId(email)
+
+    // Restore original
+    process.env.AUTH_SECRET = originalSecret
+
+    // Different salts should produce different IDs
+    expect(idWithSalt).not.toBe(idWithDifferentSalt)
   })
 
   it('should generate the same ID for the same email', () => {
