@@ -7,7 +7,23 @@
  * 3. Merges data from old IDs to new stable IDs
  * 4. Updates all related records (images, tokens, jobs, albums)
  *
- * Run with: npx ts-node --esm scripts/migrate-users-to-stable-ids.ts
+ * DEPLOYMENT ORDER:
+ * 1. Backup database: pg_dump -Fc $DATABASE_URL > backup_before_migration.dump
+ * 2. Stop application (to prevent race conditions during migration)
+ * 3. Run database migration: npx prisma migrate deploy
+ * 4. Run this script: npx ts-node --esm scripts/migrate-users-to-stable-ids.ts
+ * 5. Deploy new code with stable user IDs
+ * 6. Start application
+ *
+ * ROLLBACK (if needed):
+ * 1. Stop application
+ * 2. Restore database: pg_restore -c -d $DATABASE_URL backup_before_migration.dump
+ * 3. Deploy previous code version
+ * 4. Start application
+ *
+ * Usage:
+ *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts          # Run migration
+ *   npx ts-node --esm scripts/migrate-users-to-stable-ids.ts --dry-run # Preview only
  */
 
 import { PrismaClient } from "@prisma/client"
@@ -35,7 +51,7 @@ interface MigrationStats {
   errors: string[]
 }
 
-async function migrateUsers(): Promise<MigrationStats> {
+async function migrateUsers(dryRun = false): Promise<MigrationStats> {
   const stats: MigrationStats = {
     usersProcessed: 0,
     usersMigrated: 0,
@@ -48,6 +64,9 @@ async function migrateUsers(): Promise<MigrationStats> {
   }
 
   console.log("Starting user migration to stable email-based IDs...")
+  if (dryRun) {
+    console.log("*** DRY RUN MODE - No changes will be made ***\n")
+  }
 
   // Get all users with emails
   const users = await prisma.user.findMany({
@@ -82,6 +101,17 @@ async function migrateUsers(): Promise<MigrationStats> {
     }
 
     console.log(`Migrating user ${user.email}: ${user.id} -> ${stableId}`)
+    console.log(`  Images: ${user.enhancedImages.length}, Jobs: ${user.enhancementJobs.length}, Albums: ${user.albums.length}`)
+
+    if (dryRun) {
+      stats.usersMigrated++
+      stats.imagesMigrated += user.enhancedImages.length
+      stats.jobsMigrated += user.enhancementJobs.length
+      stats.albumsMigrated += user.albums.length
+      if (user.tokenBalance) stats.tokenBalancesMigrated++
+      stats.tokenTransactionsMigrated += user.tokenTransactions.length
+      continue
+    }
 
     try {
       await prisma.$transaction(async (tx) => {
@@ -217,11 +247,16 @@ async function migrateUsers(): Promise<MigrationStats> {
 }
 
 async function main() {
+  const dryRun = process.argv.includes("--dry-run")
+
   console.log("=".repeat(60))
   console.log("User Migration to Stable Email-Based IDs")
+  if (dryRun) {
+    console.log("MODE: DRY RUN (preview only)")
+  }
   console.log("=".repeat(60))
 
-  const stats = await migrateUsers()
+  const stats = await migrateUsers(dryRun)
 
   console.log("\n" + "=".repeat(60))
   console.log("Migration Complete")
