@@ -26,7 +26,10 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
-        'src/**/*.config.ts',
+        'src/**/vitest.config.ts',
+        'src/**/next.config.ts',
+        'src/**/postcss.config.ts',
+        'src/**/tailwind.config.ts',
         'src/**/*.stories.tsx',
         'src/**/index.ts', // Barrel export files
         'src/types/**/*.ts', // Type definition files

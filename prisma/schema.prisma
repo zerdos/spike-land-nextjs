@@ -8,6 +8,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User ID is overridden by auth.ts signIn callback with stable email-based ID (user_<hash>).
+// The @default(cuid()) is kept as a fallback for direct Prisma operations (non-auth flows).
+// See: src/auth.ts handleSignIn() and src/auth.config.ts createStableUserId()
 model User {
   id               String    @id @default(cuid())
   name             String?

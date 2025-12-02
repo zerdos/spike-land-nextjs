@@ -21,10 +21,14 @@
  * - This allows E2E tests to access protected routes securely without real authentication
  */
 
-import { auth } from "@/auth"
+import NextAuth from "next-auth"
+import { authConfig } from "@/auth.config"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { timingSafeEqual } from "crypto"
+
+// Create Edge-compatible auth (no database operations)
+const { auth } = NextAuth(authConfig)
 
 /**
  * Performs constant-time string comparison to prevent timing attacks

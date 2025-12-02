@@ -9,15 +9,34 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { middleware, isProtectedPath, constantTimeCompare } from "./middleware"
 import { NextRequest } from "next/server"
 
-// Mock the auth module
-vi.mock("@/auth", () => ({
-  auth: vi.fn(),
+// Use vi.hoisted to create the mock function before vi.mock runs
+const { mockAuth } = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
 }))
 
-import { auth } from "@/auth"
+// Mock auth.config first (before next-auth)
+vi.mock("@/auth.config", () => ({
+  authConfig: {
+    providers: [],
+    callbacks: {},
+    pages: {},
+    session: { strategy: "jwt" },
+  },
+}))
+
+// Mock next-auth - use mockAuth from hoisted variable
+vi.mock("next-auth", () => ({
+  default: () => ({
+    auth: mockAuth,
+  }),
+}))
+
+import { middleware, isProtectedPath, constantTimeCompare } from "./middleware"
+
+// Use mockAuth as auth
+const auth = mockAuth
 
 describe("middleware", () => {
   beforeEach(() => {

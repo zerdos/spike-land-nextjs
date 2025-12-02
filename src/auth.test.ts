@@ -1,11 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+// Mock prisma before importing auth
+const mockUpsert = vi.fn().mockResolvedValue({})
+vi.mock('@/lib/prisma', () => ({
+  default: {
+    user: {
+      upsert: mockUpsert,
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
+  },
+}))
+
 vi.mock('next-auth', () => ({
-  default: vi.fn(() => ({
+  default: vi.fn((config) => ({
     handlers: { GET: vi.fn(), POST: vi.fn() },
     signIn: vi.fn(),
     signOut: vi.fn(),
     auth: vi.fn(),
+    _config: config, // Expose config for testing
   })),
   DefaultSession: {},
 }))
@@ -18,7 +30,7 @@ vi.mock('next-auth/providers/google', () => ({
   default: vi.fn(() => ({ id: 'google' })),
 }))
 
-describe('NextAuth Configuration', () => {
+describe('NextAuth Full Configuration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.GITHUB_ID = 'test-github-id'
@@ -53,83 +65,145 @@ describe('NextAuth Configuration', () => {
     expect(typeof auth).toBe('function')
   })
 
-  it('should configure providers with environment variables', async () => {
-    // Just verify that auth exports are functions - the actual provider
-    // configuration is tested through integration tests
-    const { signIn, signOut, auth, handlers } = await import('./auth')
-    expect(typeof signIn).toBe('function')
-    expect(typeof signOut).toBe('function')
-    expect(typeof auth).toBe('function')
-    expect(handlers).toHaveProperty('GET')
-    expect(handlers).toHaveProperty('POST')
+  it('should re-export createStableUserId', async () => {
+    const { createStableUserId } = await import('./auth')
+    expect(createStableUserId).toBeDefined()
+    expect(typeof createStableUserId).toBe('function')
+  })
+
+  it('should export handleSignIn function', async () => {
+    const { handleSignIn } = await import('./auth')
+    expect(handleSignIn).toBeDefined()
+    expect(typeof handleSignIn).toBe('function')
   })
 })
 
-describe('NextAuth Callbacks', () => {
-  it('should have session callback that adds user id', () => {
-    const sessionCallback = {
-      session: ({ session, token }: { session: { user: { name: string; id?: string } }; token: { sub?: string } }) => {
-        if (token.sub && session.user) {
-          session.user.id = token.sub
-        }
-        return session
-      },
-    }
-
-    const mockSession = { user: { name: 'Test User' } }
-    const mockToken = { sub: 'user-123' }
-
-    const result = sessionCallback.session({ session: mockSession, token: mockToken })
-    expect(result.user.id).toBe('user-123')
+describe('handleSignIn', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockUpsert.mockResolvedValue({})
+    process.env.AUTH_SECRET = 'test-auth-secret'
   })
 
-  it('should have session callback that handles missing token.sub', () => {
-    const sessionCallback = {
-      session: ({ session, token }: { session: { user: { name: string; id?: string } }; token: { sub?: string } }) => {
-        if (token.sub && session.user) {
-          session.user.id = token.sub
-        }
-        return session
+  it('should upsert user with stable ID when email is provided', async () => {
+    const { handleSignIn, createStableUserId } = await import('./auth')
+    const user = { email: 'test@example.com', name: 'Test User', image: 'https://example.com/avatar.jpg' }
+
+    const result = await handleSignIn(user)
+
+    expect(result).toBe(true)
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { email: 'test@example.com' },
+      update: {
+        name: 'Test User',
+        image: 'https://example.com/avatar.jpg',
       },
-    }
-
-    const mockSession = { user: { name: 'Test User' } }
-    const mockToken = {}
-
-    const result = sessionCallback.session({ session: mockSession, token: mockToken })
-    expect(result.user).not.toHaveProperty('id')
+      create: {
+        id: createStableUserId('test@example.com'),
+        email: 'test@example.com',
+        name: 'Test User',
+        image: 'https://example.com/avatar.jpg',
+      },
+    })
   })
 
-  it('should have jwt callback that adds user id to token', () => {
-    const jwtCallback = {
-      jwt: ({ token, user }: { token: { sub?: string }; user?: { id: string } }) => {
-        if (user) {
-          token.sub = user.id
-        }
-        return token
-      },
-    }
+  it('should return true when user has no email', async () => {
+    const { handleSignIn } = await import('./auth')
+    const user = { name: 'Test User', image: 'https://example.com/avatar.jpg' }
 
-    const mockToken = {} as { sub?: string }
-    const mockUser = { id: 'user-456' }
+    const result = await handleSignIn(user)
 
-    const result = jwtCallback.jwt({ token: mockToken, user: mockUser })
-    expect(result.sub).toBe('user-456')
+    expect(result).toBe(true)
+    expect(mockUpsert).not.toHaveBeenCalled()
   })
 
-  it('should have jwt callback that handles missing user', () => {
-    const jwtCallback = {
-      jwt: ({ token, user }: { token: { sub?: string }; user?: { id: string } }) => {
-        if (user) {
-          token.sub = user.id
-        }
-        return token
+  it('should return true when email is null', async () => {
+    const { handleSignIn } = await import('./auth')
+    const user = { email: null, name: 'Test User' }
+
+    const result = await handleSignIn(user)
+
+    expect(result).toBe(true)
+    expect(mockUpsert).not.toHaveBeenCalled()
+  })
+
+  it('should handle undefined name and image', async () => {
+    const { handleSignIn, createStableUserId } = await import('./auth')
+    const user = { email: 'test@example.com' }
+
+    const result = await handleSignIn(user)
+
+    expect(result).toBe(true)
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { email: 'test@example.com' },
+      update: {
+        name: undefined,
+        image: undefined,
       },
+      create: {
+        id: createStableUserId('test@example.com'),
+        email: 'test@example.com',
+        name: undefined,
+        image: undefined,
+      },
+    })
+  })
+
+  it('should handle null name and image', async () => {
+    const { handleSignIn, createStableUserId } = await import('./auth')
+    const user = { email: 'test@example.com', name: null, image: null }
+
+    const result = await handleSignIn(user)
+
+    expect(result).toBe(true)
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { email: 'test@example.com' },
+      update: {
+        name: undefined,
+        image: undefined,
+      },
+      create: {
+        id: createStableUserId('test@example.com'),
+        email: 'test@example.com',
+        name: null,
+        image: null,
+      },
+    })
+  })
+
+  it('should return true and log error on database failure', async () => {
+    const { handleSignIn } = await import('./auth')
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const dbError = new Error('Database connection failed')
+    mockUpsert.mockRejectedValueOnce(dbError)
+
+    const user = { email: 'test@example.com', name: 'Test User' }
+    const result = await handleSignIn(user)
+
+    // Should still return true to allow sign-in
+    expect(result).toBe(true)
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to upsert user with stable ID:', dbError)
+
+    consoleSpy.mockRestore()
+  })
+
+  it('should not block sign-in on any database error type', async () => {
+    const { handleSignIn } = await import('./auth')
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Test various error types
+    const errorTypes = [
+      new Error('Connection timeout'),
+      new Error('Unique constraint violation'),
+      new Error('Database unavailable'),
+    ]
+
+    for (const error of errorTypes) {
+      mockUpsert.mockRejectedValueOnce(error)
+      const result = await handleSignIn({ email: 'test@example.com' })
+      expect(result).toBe(true)
     }
 
-    const mockToken = { sub: 'existing-id' }
-
-    const result = jwtCallback.jwt({ token: mockToken, user: undefined })
-    expect(result.sub).toBe('existing-id')
+    consoleSpy.mockRestore()
   })
 })
