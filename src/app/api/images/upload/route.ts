@@ -17,6 +17,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    // Ensure user exists in database (upsert for JWT-based auth)
+    await prisma.user.upsert({
+      where: { id: session.user.id },
+      update: {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+      },
+      create: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+      },
+    })
+
     // Convert File to Buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
