@@ -47,6 +47,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.email) {
         // Use stable ID based on email (same across all OAuth providers)
         token.sub = createStableUserId(user.email)
+      } else if (user?.id && !token.sub) {
+        // Fallback for users without email (edge case)
+        token.sub = user.id
       }
       return token
     },

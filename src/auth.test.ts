@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createStableUserId } from './auth'
 
 vi.mock('next-auth', () => ({
   default: vi.fn(() => ({
@@ -131,5 +132,68 @@ describe('NextAuth Callbacks', () => {
 
     const result = jwtCallback.jwt({ token: mockToken, user: undefined })
     expect(result.sub).toBe('existing-id')
+  })
+})
+
+describe('createStableUserId', () => {
+  it('should generate a stable ID from email', () => {
+    const email = 'test@example.com'
+    const id = createStableUserId(email)
+
+    expect(id).toBeDefined()
+    expect(typeof id).toBe('string')
+    expect(id.startsWith('user_')).toBe(true)
+  })
+
+  it('should generate the same ID for the same email', () => {
+    const email = 'test@example.com'
+    const id1 = createStableUserId(email)
+    const id2 = createStableUserId(email)
+
+    expect(id1).toBe(id2)
+  })
+
+  it('should be case-insensitive', () => {
+    const lowerCase = createStableUserId('test@example.com')
+    const upperCase = createStableUserId('TEST@EXAMPLE.COM')
+    const mixedCase = createStableUserId('TeSt@ExAmPlE.cOm')
+
+    expect(lowerCase).toBe(upperCase)
+    expect(lowerCase).toBe(mixedCase)
+  })
+
+  it('should trim whitespace', () => {
+    const normal = createStableUserId('test@example.com')
+    const leadingSpace = createStableUserId('  test@example.com')
+    const trailingSpace = createStableUserId('test@example.com  ')
+    const bothSpaces = createStableUserId('  test@example.com  ')
+
+    expect(normal).toBe(leadingSpace)
+    expect(normal).toBe(trailingSpace)
+    expect(normal).toBe(bothSpaces)
+  })
+
+  it('should generate different IDs for different emails', () => {
+    const id1 = createStableUserId('user1@example.com')
+    const id2 = createStableUserId('user2@example.com')
+
+    expect(id1).not.toBe(id2)
+  })
+
+  it('should generate ID with correct format (user_ prefix + 32 hex chars)', () => {
+    const id = createStableUserId('test@example.com')
+
+    // Format: user_ + 32 hex characters = 37 characters total
+    expect(id.length).toBe(37)
+    expect(id).toMatch(/^user_[a-f0-9]{32}$/)
+  })
+
+  it('should handle special characters in email', () => {
+    const id1 = createStableUserId('user+tag@example.com')
+    const id2 = createStableUserId('user.name@example.com')
+
+    expect(id1).toBeDefined()
+    expect(id2).toBeDefined()
+    expect(id1).not.toBe(id2)
   })
 })
