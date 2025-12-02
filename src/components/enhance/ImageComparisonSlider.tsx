@@ -28,21 +28,32 @@ interface ImageComparisonSliderProps {
   enhancedUrl: string
   originalLabel?: string
   enhancedLabel?: string
-  width: number
-  height: number
+  /** Width of the original image. Used to calculate aspect ratio. Defaults to 16. */
+  width?: number
+  /** Height of the original image. Used to calculate aspect ratio. Defaults to 9. */
+  height?: number
 }
 
+/**
+ * A slider component to compare original and enhanced images.
+ * Uses object-cover to ensure images fill the container, and dynamic aspect ratio
+ * to match the original image dimensions.
+ */
 export function ImageComparisonSlider({
   originalUrl,
   enhancedUrl,
   originalLabel = "Original",
   enhancedLabel = "Enhanced",
-  width,
-  height,
+  width = 16,
+  height = 9,
 }: ImageComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState([50])
   const [enhancedError, setEnhancedError] = useState(false)
   const [originalError, setOriginalError] = useState(false)
+
+  // Ensure valid dimensions to prevent CSS errors
+  const safeWidth = Math.max(1, Number(width) || 16)
+  const safeHeight = Math.max(1, Number(height) || 9)
 
   const handleEnhancedError = () => {
     console.error(`[Enhanced Image Load Error] URL: ${enhancedUrl}`)
@@ -60,7 +71,7 @@ export function ImageComparisonSlider({
     <div className="space-y-4">
       <div
         className="relative bg-muted rounded-lg overflow-hidden w-full"
-        style={{ aspectRatio: `${width} / ${height}` }}
+        style={{ aspectRatio: `${safeWidth} / ${safeHeight}` }}
       >
         {/* Enhanced image (background) */}
         {!enhancedError ? (

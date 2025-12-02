@@ -1,8 +1,14 @@
 
 import { PrismaClient, EnhancementTier, JobStatus } from '@prisma/client'
-import * as dotenv from 'dotenv'
-
-dotenv.config({ path: '.env.local' })
+/**
+ * Seed script for testing image enhancement UI
+ * 
+ * Usage:
+ *   npm run prisma:seed -- seed-enhanced.ts
+ * 
+ * Creates mock data for testing the enhancement comparison slider
+ * with a test image from /public/test-image.png
+ */
 
 const prisma = new PrismaClient()
 
