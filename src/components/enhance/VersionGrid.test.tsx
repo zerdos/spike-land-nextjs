@@ -125,10 +125,14 @@ describe('VersionGrid Component', () => {
 
     render(<VersionGrid versions={versions} />)
 
-    // Date formatted as "15 Jan, 10:30" or similar depending on locale
-    // Look for any date pattern that includes "15" or "Jan" or the year
-    const datePattern = /Jan.*15|15.*Jan|2024|10:30/
-    expect(screen.getByText(datePattern)).toBeInTheDocument()
+    // Date formatted depends on locale - look for the expected formatted date
+    const expectedDate = new Date('2024-01-15T10:30:00Z').toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    expect(screen.getByText(expectedDate)).toBeInTheDocument()
   })
 
   it('calls onVersionSelect when version is clicked', () => {

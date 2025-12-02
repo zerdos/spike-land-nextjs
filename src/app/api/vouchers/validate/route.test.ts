@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { POST } from './route'
 import { NextRequest } from 'next/server'
-import { VoucherType } from '@prisma/client'
+
+// String constants matching Prisma schema enum values
+const VoucherType = {
+  FIXED_TOKENS: 'FIXED_TOKENS',
+  PERCENTAGE_BONUS: 'PERCENTAGE_BONUS',
+  SUBSCRIPTION_TRIAL: 'SUBSCRIPTION_TRIAL',
+} as const
 
 // Use vi.hoisted to define mocks before they are used
 const { mockSession, mockAuth, mockVoucherManager } = vi.hoisted(() => ({
