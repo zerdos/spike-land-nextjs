@@ -22,6 +22,11 @@ import crypto from "crypto"
  * Uses USER_ID_SALT (preferred) or falls back to AUTH_SECRET.
  * USER_ID_SALT should never be rotated as it would change all user IDs.
  * Using a dedicated salt allows AUTH_SECRET to be rotated for security.
+ *
+ * IMPORTANT: User IDs are tied to email addresses. If a user changes their
+ * email address (at the OAuth provider level), they will get a new user ID
+ * and lose access to their previous data. This is by design to maintain
+ * the 1:1 relationship between email and user identity.
  */
 export function createStableUserId(email: string): string {
   const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET
