@@ -12,6 +12,7 @@ vi.mock('next/image', () => ({
     sizes?: string
     className?: string
   }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}
@@ -276,7 +277,7 @@ describe('AppScreenshotGallery', () => {
       const nextButton = buttons.find(btn => {
         const svg = btn.querySelector('svg')
         return svg?.parentElement?.className.includes('right-2') &&
-               svg?.parentElement?.className.includes('top-1/2')
+          svg?.parentElement?.className.includes('top-1/2')
       })
 
       if (nextButton) {
@@ -306,7 +307,7 @@ describe('AppScreenshotGallery', () => {
       const prevButton = buttons.find(btn => {
         const svg = btn.querySelector('svg')
         return svg?.parentElement?.className.includes('left-2') &&
-               svg?.parentElement?.className.includes('top-1/2')
+          svg?.parentElement?.className.includes('top-1/2')
       })
 
       if (prevButton) {
@@ -336,7 +337,7 @@ describe('AppScreenshotGallery', () => {
       const prevButton = buttons.find(btn => {
         const svg = btn.querySelector('svg')
         return svg?.parentElement?.className.includes('left-2') &&
-               svg?.parentElement?.className.includes('top-1/2')
+          svg?.parentElement?.className.includes('top-1/2')
       })
 
       if (prevButton) {
@@ -366,7 +367,7 @@ describe('AppScreenshotGallery', () => {
       const nextButton = buttons.find(btn => {
         const svg = btn.querySelector('svg')
         return svg?.parentElement?.className.includes('right-2') &&
-               svg?.parentElement?.className.includes('top-1/2')
+          svg?.parentElement?.className.includes('top-1/2')
       })
 
       if (nextButton) {
@@ -497,7 +498,7 @@ describe('AppScreenshotGallery', () => {
       const nextButton = buttons.find(btn => {
         const svg = btn.querySelector('svg')
         return svg?.parentElement?.className.includes('right-2') &&
-               svg?.parentElement?.className.includes('top-1/2')
+          svg?.parentElement?.className.includes('top-1/2')
       })
 
       if (nextButton) {
