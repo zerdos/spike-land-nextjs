@@ -186,8 +186,12 @@ describe('EnhancedImagesList Component', () => {
   it('shows formatted date for each image', () => {
     render(<EnhancedImagesList images={[mockImage]} />)
 
-    // Date is formatted as "15 Jan" in the component
-    expect(screen.getByText('15 Jan')).toBeInTheDocument()
+    // Date formatting depends on locale - use same format as component
+    const expectedDate = new Date('2024-01-15T10:00:00Z').toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })
+    expect(screen.getByText(expectedDate)).toBeInTheDocument()
   })
 
   it('shows "Enhance" button for images without jobs', () => {
