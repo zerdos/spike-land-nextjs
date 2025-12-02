@@ -28,6 +28,8 @@ interface ImageComparisonSliderProps {
   enhancedUrl: string
   originalLabel?: string
   enhancedLabel?: string
+  width: number
+  height: number
 }
 
 export function ImageComparisonSlider({
@@ -35,6 +37,8 @@ export function ImageComparisonSlider({
   enhancedUrl,
   originalLabel = "Original",
   enhancedLabel = "Enhanced",
+  width,
+  height,
 }: ImageComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState([50])
   const [enhancedError, setEnhancedError] = useState(false)
@@ -54,7 +58,10 @@ export function ImageComparisonSlider({
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+      <div
+        className="relative bg-muted rounded-lg overflow-hidden w-full"
+        style={{ aspectRatio: `${width} / ${height}` }}
+      >
         {/* Enhanced image (background) */}
         {!enhancedError ? (
           <Image

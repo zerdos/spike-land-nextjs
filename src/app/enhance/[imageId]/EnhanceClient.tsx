@@ -161,6 +161,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                 <ImageComparisonSlider
                   originalUrl={image.originalUrl}
                   enhancedUrl={selectedVersion.enhancedUrl}
+                  width={image.originalWidth || 1024}
+                  height={image.originalHeight || 1024}
                 />
               ) : (
                 <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
