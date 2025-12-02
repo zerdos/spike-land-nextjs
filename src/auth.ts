@@ -1,6 +1,7 @@
 import NextAuth, { DefaultSession } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
+import crypto from "crypto"
 
 declare module "next-auth" {
   interface Session {
@@ -8,6 +9,20 @@ declare module "next-auth" {
       id: string
     } & DefaultSession["user"]
   }
+}
+
+/**
+ * Creates a stable user ID based on email address.
+ * This ensures the same user gets the same ID regardless of OAuth provider.
+ * Uses SHA256 hash of lowercase email to create a deterministic ID.
+ */
+function createStableUserId(email: string): string {
+  const hash = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase().trim())
+    .digest("hex")
+    .substring(0, 32)
+  return `user_${hash}`
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -29,8 +44,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
     jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id
+      if (user?.email) {
+        // Use stable ID based on email (same across all OAuth providers)
+        token.sub = createStableUserId(user.email)
       }
       return token
     },
@@ -44,3 +60,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   secret: process.env.AUTH_SECRET,
 })
+
+// Export for use in data migration
+export { createStableUserId }
