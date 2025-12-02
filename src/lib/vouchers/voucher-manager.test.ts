@@ -1,5 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { VoucherStatus, VoucherType } from '@prisma/client'
+
+// Define enums locally to avoid Prisma client dependency in tests
+enum VoucherType {
+  FIXED_TOKENS = 'FIXED_TOKENS',
+  PERCENTAGE_BONUS = 'PERCENTAGE_BONUS',
+  SUBSCRIPTION_TRIAL = 'SUBSCRIPTION_TRIAL',
+}
+
+enum VoucherStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  EXPIRED = 'EXPIRED',
+  DEPLETED = 'DEPLETED',
+}
 
 // Mock setup using vi.hoisted
 const { mockPrisma, mockTokenBalanceManager } = vi.hoisted(() => ({
