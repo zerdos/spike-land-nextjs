@@ -144,4 +144,82 @@ describe('POST /api/images/enhance', () => {
         // 200x100 -> max dimension 200 -> resize(200, 200)
         expect(mockSharpInstance.resize).toHaveBeenCalledWith(200, 200, expect.objectContaining({ fit: 'contain' }))
     })
+
+    it('should generate unique R2 keys for different enhancement jobs', async () => {
+        const { uploadToR2 } = await import('@/lib/storage/r2-client')
+
+        // First enhancement job
+        mockPrisma.enhancedImage.findUnique.mockResolvedValue({
+            id: 'img-1',
+            userId: 'user-123',
+            originalR2Key: 'users/user-123/originals/img-1.jpg',
+        })
+        mockPrisma.imageEnhancementJob.create.mockResolvedValue({ id: 'job-1' })
+
+        const req1 = new NextRequest('http://localhost/api/images/enhance', {
+            method: 'POST',
+            body: JSON.stringify({ imageId: 'img-1', tier: 'TIER_1K' }),
+        })
+
+        await POST(req1)
+        await new Promise(resolve => setTimeout(resolve, 10))
+
+        // Capture first upload call
+        const firstUploadCall = vi.mocked(uploadToR2).mock.calls[0][0]
+
+        // Second enhancement job (same image, different job)
+        mockPrisma.imageEnhancementJob.create.mockResolvedValue({ id: 'job-2' })
+
+        const req2 = new NextRequest('http://localhost/api/images/enhance', {
+            method: 'POST',
+            body: JSON.stringify({ imageId: 'img-1', tier: 'TIER_2K' }),
+        })
+
+        await POST(req2)
+        await new Promise(resolve => setTimeout(resolve, 10))
+
+        // Capture second upload call
+        const secondUploadCall = vi.mocked(uploadToR2).mock.calls[1][0]
+
+        // Verify both uploads have different R2 keys
+        expect(firstUploadCall.key).toBe('users/user-123/enhanced/img-1/job-1.jpg')
+        expect(secondUploadCall.key).toBe('users/user-123/enhanced/img-1/job-2.jpg')
+
+        // Verify keys are different (no overwriting)
+        expect(firstUploadCall.key).not.toBe(secondUploadCall.key)
+
+        // Verify metadata includes jobId
+        expect(firstUploadCall.metadata?.jobId).toBe('job-1')
+        expect(secondUploadCall.metadata?.jobId).toBe('job-2')
+    })
+
+    it('should include jobId in R2 key for enhancement at different tiers', async () => {
+        const { uploadToR2 } = await import('@/lib/storage/r2-client')
+
+        mockPrisma.enhancedImage.findUnique.mockResolvedValue({
+            id: 'img-1',
+            userId: 'user-123',
+            originalR2Key: 'users/user-123/originals/img-1.png',
+        })
+        mockPrisma.imageEnhancementJob.create.mockResolvedValue({ id: 'job-abc-123' })
+
+        const req = new NextRequest('http://localhost/api/images/enhance', {
+            method: 'POST',
+            body: JSON.stringify({ imageId: 'img-1', tier: 'TIER_4K' }),
+        })
+
+        await POST(req)
+        await new Promise(resolve => setTimeout(resolve, 10))
+
+        // Verify R2 key includes jobId and replaces original extension with .jpg
+        expect(vi.mocked(uploadToR2)).toHaveBeenCalledWith(
+            expect.objectContaining({
+                key: 'users/user-123/enhanced/img-1/job-abc-123.jpg',
+                metadata: expect.objectContaining({
+                    tier: 'TIER_4K',
+                    jobId: 'job-abc-123',
+                }),
+            })
+        )
+    })
 })
