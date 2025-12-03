@@ -247,7 +247,7 @@ describe('VoucherManager', () => {
     const createMockTx = (voucher: unknown, initialBalance = 100) => ({
       voucher: {
         findUnique: vi.fn().mockResolvedValue(voucher),
-        update: vi.fn().mockImplementation((params) => {
+        update: vi.fn().mockImplementation(() => {
           if (voucher && typeof voucher === 'object' && 'currentUses' in voucher) {
             return Promise.resolve({ ...voucher, currentUses: (voucher as { currentUses: number }).currentUses + 1 })
           }
@@ -268,7 +268,7 @@ describe('VoucherManager', () => {
       userTokenBalance: {
         findUnique: vi.fn().mockResolvedValue({ userId: testUserId, balance: initialBalance, lastRegeneration: new Date() }),
         create: vi.fn().mockResolvedValue({ userId: testUserId, balance: 0, lastRegeneration: new Date() }),
-        update: vi.fn().mockImplementation((params) => {
+        update: vi.fn().mockImplementation(() => {
           const tokensToGrant = voucher && typeof voucher === 'object' && 'value' in voucher ? (voucher as { value: number }).value : 0
           return Promise.resolve({ userId: testUserId, balance: initialBalance + tokensToGrant })
         }),
