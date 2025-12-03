@@ -215,28 +215,84 @@ POST /api/v1/webhook/subscribe
 
 ## Summary: Priority Matrix
 
-| Suggestion | Impact | Effort | Priority? |
-|------------|--------|--------|-----------|
-| 1. Subscriptions | High | Medium | ? |
-| 2. AI Model Selection | Medium | High | ? |
-| 3. Batch Processing | High | Medium | ? |
-| 4. Social/Gallery | Medium | High | ? |
-| 5. API Access | High | Medium | ? |
-| 6. Smart Suggestions | Medium | Low | ? |
-| 7. Editing Tools | Low | High | ? |
-| 8. Mobile App | High | High | ? |
-| 9. Team Accounts | Medium | Medium | ? |
-| 10. Gamification | Low | Medium | ? |
+| Suggestion | Impact | Effort | Priority | Phase | Decision |
+|------------|--------|--------|----------|-------|----------|
+| 1. Subscriptions | High | Medium | **MVP** | 2 | Add alongside tokens |
+| 2. AI Model Selection | Medium | High | Phase 2 | 3 | After validating core |
+| 3. Batch Processing | High | Medium | **MVP** | 1-2 | Essential for power users |
+| 4. Social/Gallery | Medium | High | Phase 2 | 3 | Album sharing covers this initially |
+| 5. API Access | High | Medium | Phase 2 | 3 | After subscriptions |
+| 6. Smart Suggestions | Medium | Low | **MVP** | 2 | Quick win, improves UX |
+| 7. Editing Tools | Low | High | Not Now | - | Dilutes core value |
+| 8. Mobile App | High | High | Not Now | - | PWA sufficient for MVP |
+| 9. Team Accounts | Medium | Medium | Phase 2 | 4 | B2B expansion |
+| 10. Gamification | Low | Medium | Not Now | - | Complexity not justified |
+
+### Priority Legend
+
+| Label | Meaning |
+|-------|---------|
+| **MVP** | Include in first release or Phase 1-2 |
+| Phase 2 | After core functionality proven |
+| Not Now | Defer indefinitely or reconsider later |
 
 ---
 
-## Next Steps
+## Decision Rationale
 
-1. Review each suggestion
-2. Mark priority (High/Medium/Low/Not Now)
-3. Identify dependencies between features
-4. Create implementation roadmap
+### MVP Priorities (Phase 1-2)
+
+**1. Subscriptions** - Provides predictable revenue and user retention. Complements token model.
+
+**3. Batch Processing** - High user value, differentiates from competitors. Part of roadmap Phase 3.
+
+**6. Smart Suggestions** - Low effort, high UX impact. Can be done with prompt engineering.
+
+### Phase 2 Priorities (Phase 3-4)
+
+**2. AI Model Selection** - Wait until we understand user preferences from MVP usage data.
+
+**4. Social/Gallery** - Album sharing (Phase 3) provides foundation. Full social can follow.
+
+**5. API Access** - Enterprise tier requirement. Build after subscriptions validate B2B interest.
+
+**9. Team Accounts** - B2B expansion. Requires subscription infrastructure first.
+
+### Not Now
+
+**7. Editing Tools** - Risk of scope creep. Core value is AI enhancement, not editing.
+
+**8. Mobile App** - Responsive web + PWA sufficient. Native apps require dedicated team.
+
+**10. Gamification** - Added complexity without proven ROI. Simple referral program first.
+
+---
+
+## Dependencies
+
+```
+Subscriptions (1)
+    └── API Access (5)
+          └── Team Accounts (9)
+
+Batch Processing (3)
+    └── Smart Suggestions (6)
+          └── AI Model Selection (2)
+
+Album Sharing (existing)
+    └── Social/Gallery (4)
+```
+
+---
+
+## Related Documentation
+
+- [Vision Document](./IMAGE_ENHANCEMENT_VISION.md) - Core product vision
+- [Implementation Roadmap](./IMAGE_ENHANCEMENT_ROADMAP.md) - Phased development plan
+- [Database Schema](./IMAGE_ENHANCEMENT_SCHEMA.md) - Data models
+- [Privacy & Compliance](./IMAGE_ENHANCEMENT_PRIVACY.md) - Legal requirements
 
 ---
 
 *Created: December 2024*
+*Updated: December 2024 (Priority decisions added)*
