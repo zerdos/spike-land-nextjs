@@ -28,6 +28,7 @@ Feature: Image Enhancement
     And I should see "Choose an image to enhance with AI" text
     And I should see "Select Image" text
 
+  @requires-db
   Scenario: Upload an image successfully
     Given I am on the enhance page
     And I mock a successful image upload
@@ -53,7 +54,7 @@ Feature: Image Enhancement
     And I should see the loading spinner
     And the upload button should be disabled
 
-  @fast
+  @fast @requires-db
   Scenario: View uploaded image details
     Given I have an uploaded image
     When I visit the image enhancement page
@@ -127,7 +128,7 @@ Feature: Image Enhancement
     And I cancel the deletion confirmation
     Then the image should remain in the list
 
-  @fast
+  @fast @requires-db
   Scenario: Navigate back to images list
     Given I have an uploaded image
     And I am on the image enhancement page
@@ -170,7 +171,7 @@ Feature: Image Enhancement
     Then I should see an error message
     And the enhancement status should show as failed
 
-  @fast
+  @fast @requires-db
   Scenario: Image details page validates ownership
     Given I am logged in as "User A" with email "usera@example.com"
     And another user has an uploaded image

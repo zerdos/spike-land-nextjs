@@ -116,4 +116,3 @@ Feature: Token Management
     Given I have 25 tokens
     And I am on the enhance page
     Then I should see "25 tokens" in the balance display
-    And I should see "Available balance" text

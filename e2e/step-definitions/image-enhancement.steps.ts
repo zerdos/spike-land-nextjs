@@ -115,7 +115,10 @@ async function mockJobStatus(world: CustomWorld, status: string) {
 
 // Background steps
 Given('I am on the enhance page', async function (this: CustomWorld) {
-  await mockTokenBalance(this, 10);
+  // Use stored token balance if set by previous step, otherwise default to 10
+  const worldWithBalance = this as CustomWorld & { desiredTokenBalance?: number };
+  const tokenBalance = worldWithBalance.desiredTokenBalance ?? 10;
+  await mockTokenBalance(this, tokenBalance);
   await this.page.goto(`${this.baseUrl}/enhance`);
   await this.page.waitForLoadState('networkidle');
 });
@@ -206,9 +209,10 @@ Given('I have at least {int} tokens', async function (this: CustomWorld, tokenCo
 });
 
 Given('I have {int} tokens', async function (this: CustomWorld, tokenCount: number) {
+  // Store the desired token count for use by subsequent steps
+  (this as CustomWorld & { desiredTokenBalance?: number }).desiredTokenBalance = tokenCount;
+  // Also set up the mock immediately in case we're already on a page
   await mockTokenBalance(this, tokenCount);
-  await this.page.reload();
-  await this.page.waitForLoadState('networkidle');
 });
 
 Given('I have less than {int} tokens', async function (this: CustomWorld, threshold: number) {
@@ -476,10 +480,11 @@ Then('I should see the image upload section', async function (this: CustomWorld)
 });
 
 Then('I should see the token balance display', async function (this: CustomWorld) {
+  // Look for the balance display showing "X tokens" where X is a number
   const balanceDisplay = this.page.locator('[data-testid="token-balance"]').or(
-    this.page.getByText(/tokens?/i)
+    this.page.getByText(/\d+\s*tokens/i)
   );
-  await expect(balanceDisplay).toBeVisible();
+  await expect(balanceDisplay.first()).toBeVisible();
 });
 
 Then('I should see the upload icon', async function (this: CustomWorld) {
@@ -511,10 +516,9 @@ Then('the upload button should be disabled', async function (this: CustomWorld) 
 });
 
 Then('I should see the loading spinner', async function (this: CustomWorld) {
-  const spinner = this.page.locator('.animate-spin').or(
-    this.page.getByText(/uploading/i)
-  );
-  await expect(spinner).toBeVisible();
+  // Look for the spinning animation class specifically
+  const spinner = this.page.locator('.animate-spin');
+  await expect(spinner.first()).toBeVisible();
 });
 
 Then('I should see {string} or {string} text', async function (this: CustomWorld, text1: string, text2: string) {
