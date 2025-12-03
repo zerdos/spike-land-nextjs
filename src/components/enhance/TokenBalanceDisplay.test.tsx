@@ -59,7 +59,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('25 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('25 tokens')).toBeInTheDocument()
     expect(screen.getByText('Available balance')).toBeInTheDocument()
   })
 
@@ -76,7 +76,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    const balanceSection = screen.getByText('10 Tokens').parentElement?.parentElement
+    const balanceSection = screen.getByText('10 tokens').parentElement?.parentElement
     expect(balanceSection?.querySelector('svg')).toBeInTheDocument()
   })
 
@@ -93,7 +93,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('3 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('3 tokens')).toBeInTheDocument()
   })
 
   it('shows normal balance when balance is 5 or more', () => {
@@ -109,7 +109,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('5 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('5 tokens')).toBeInTheDocument()
   })
 
   it('shows correct balance when balance is zero', () => {
@@ -125,7 +125,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('0 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('0 tokens')).toBeInTheDocument()
   })
 
   it('shows correct balance when balance is large', () => {
@@ -141,7 +141,7 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('999 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('999 tokens')).toBeInTheDocument()
   })
 
   it('renders in a card component', () => {
@@ -174,6 +174,6 @@ describe('TokenBalanceDisplay Component', () => {
 
     render(<TokenBalanceDisplay />)
 
-    expect(screen.getByText('0 Tokens')).toBeInTheDocument()
+    expect(screen.getByText('0 tokens')).toBeInTheDocument()
   })
 })
