@@ -45,10 +45,14 @@ export function constantTimeCompare(a: string, b: string): boolean {
   const bufA = encoder.encode(a)
   const bufB = encoder.encode(b)
 
+  // Double-check lengths match after encoding
+  if (bufA.length !== bufB.length) return false
+
   // Perform constant-time comparison
   let result = 0
   for (let i = 0; i < bufA.length; i++) {
-    result |= bufA[i] ^ bufB[i]
+    // TypeScript assertion safe due to length check above
+    result |= (bufA[i] ?? 0) ^ (bufB[i] ?? 0)
   }
   return result === 0
 }
