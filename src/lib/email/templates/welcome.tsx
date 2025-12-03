@@ -1,5 +1,4 @@
 import { Link, Text, Section } from '@react-email/components'
-import * as React from 'react'
 import { BaseEmail, emailStyles } from './base'
 
 interface WelcomeEmailProps {
