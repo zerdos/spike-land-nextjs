@@ -21,12 +21,18 @@ export const stripe = {
   get webhooks() { return getStripe().webhooks },
 }
 
+// Currency configuration
+export const CURRENCY = {
+  code: 'GBP',
+  symbol: '£',
+} as const
+
 // Token package definitions
 export const TOKEN_PACKAGES = {
-  starter: { tokens: 10, priceGBP: 2.99, name: 'Starter Pack' },
-  basic: { tokens: 50, priceGBP: 9.99, name: 'Basic Pack' },
-  pro: { tokens: 150, priceGBP: 24.99, name: 'Pro Pack' },
-  power: { tokens: 500, priceGBP: 69.99, name: 'Power Pack' },
+  starter: { tokens: 10, price: 2.99, name: 'Starter Pack' },
+  basic: { tokens: 50, price: 9.99, name: 'Basic Pack' },
+  pro: { tokens: 150, price: 24.99, name: 'Pro Pack' },
+  power: { tokens: 500, price: 69.99, name: 'Power Pack' },
 } as const
 
 // Subscription plan definitions
