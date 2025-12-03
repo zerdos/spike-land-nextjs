@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 // User ID is overridden by auth.ts signIn callback with stable email-based ID (user_<hash>).
 // The @default(cuid()) is kept as a fallback for direct Prisma operations (non-auth flows).
 // See: src/auth.ts handleSignIn() and src/auth.config.ts createStableUserId()
@@ -17,7 +23,11 @@ model User {
   email            String?   @unique
   emailVerified    DateTime?
   image            String?
+  role             UserRole  @default(USER)
   stripeCustomerId String?   @unique
+  referralCode     String?   @unique
+  referredById     String?
+  referralCount    Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -32,6 +42,10 @@ model User {
   enhancementJobs    ImageEnhancementJob[]
   albums             Album[]
   voucherRedemptions VoucherRedemption[]
+  referredBy         User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals          User[]    @relation("Referrals")
+  referrerReferrals  Referral[] @relation("ReferrerReferrals")
+  refereeReferrals   Referral[] @relation("RefereeReferrals")
 
   @@map("users")
 }
@@ -463,4 +477,31 @@ model VoucherRedemption {
   @@index([userId, redeemedAt])
   @@index([voucherId])
   @@map("voucher_redemptions")
+}
+
+// Referral System Models
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  INVALID
+}
+
+model Referral {
+  id            String         @id @default(cuid())
+  referrerId    String
+  refereeId     String
+  status        ReferralStatus @default(PENDING)
+  tokensGranted Int            @default(0)
+  ipAddress     String?
+  createdAt     DateTime       @default(now())
+  completedAt   DateTime?
+
+  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("RefereeReferrals", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, refereeId])
+  @@index([referrerId, status])
+  @@index([refereeId])
+  @@index([status, createdAt])
+  @@map("referrals")
 }

@@ -7,6 +7,7 @@ import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlide
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings"
 import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay"
 import { VersionGrid } from "@/components/enhance/VersionGrid"
+import { ExportSelector } from "@/components/enhance/export-selector"
 import { useTokenBalance } from "@/hooks/useTokenBalance"
 import { useJobPolling } from "@/hooks/useJobPolling"
 import { PurchaseModal } from "@/components/tokens"
@@ -237,8 +238,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           </Card>
         </div>
 
-        {/* Right column: Enhancement settings */}
-        <div>
+        {/* Right column: Enhancement settings and export */}
+        <div className="space-y-6">
           <EnhancementSettings
             onEnhance={handleEnhance}
             currentBalance={balance}
@@ -249,6 +250,15 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             }))}
             onBalanceRefresh={refetchBalance}
           />
+
+          {/* Export selector - only show when a version is selected */}
+          {selectedVersion && selectedVersion.enhancedUrl && (
+            <ExportSelector
+              imageId={selectedVersion.id}
+              fileName={image.name}
+              originalSizeBytes={selectedVersion.enhancedSizeBytes || undefined}
+            />
+          )}
         </div>
       </div>
     </div>
