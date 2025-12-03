@@ -266,13 +266,19 @@ async function processEnhancement(
 
     const metadata = await sharp(enhancedBuffer).metadata()
 
-    const enhancedR2Key = originalR2Key.replace('/originals/', '/enhanced/')
+    // Generate unique R2 key for this enhancement job to prevent overwriting
+    // Format: users/{userId}/enhanced/{imageId}/{jobId}.jpg
+    const enhancedR2Key = originalR2Key
+      .replace('/originals/', `/enhanced/`)
+      .replace(/\.[^.]+$/, `/${jobId}.jpg`)
+
     const uploadResult = await uploadToR2({
       key: enhancedR2Key,
       buffer: enhancedBuffer,
       contentType: 'image/jpeg',
       metadata: {
         tier,
+        jobId,
       },
     })
 
