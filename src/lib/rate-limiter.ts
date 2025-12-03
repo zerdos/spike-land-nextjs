@@ -142,6 +142,11 @@ export const rateLimitConfigs = {
     maxRequests: 30,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Voucher redemption: 5 attempts per hour per user */
+  voucherRedemption: {
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000, // 1 hour
+  },
   /** General API: 100 requests per minute per user */
   general: {
     maxRequests: 100,

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock setup using vi.hoisted - define string constants matching Prisma schema
-const { mockPrisma, mockTokenBalanceManager } = vi.hoisted(() => ({
+const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
     voucher: {
       findUnique: vi.fn(),
@@ -10,11 +10,18 @@ const { mockPrisma, mockTokenBalanceManager } = vi.hoisted(() => ({
     voucherRedemption: {
       create: vi.fn(),
     },
+    user: {
+      upsert: vi.fn(),
+    },
+    userTokenBalance: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    tokenTransaction: {
+      create: vi.fn(),
+    },
     $transaction: vi.fn(),
-  },
-  mockTokenBalanceManager: {
-    getBalance: vi.fn(),
-    addTokens: vi.fn(),
   },
 }))
 
@@ -37,17 +44,12 @@ vi.mock('@/lib/prisma', () => ({
   default: mockPrisma,
 }))
 
-vi.mock('@/lib/tokens/balance-manager', () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
-}))
-
 // Import after mocking
 import { VoucherManager } from './voucher-manager'
 
 describe('VoucherManager', () => {
   const testUserId = 'user-123'
   const testCode = 'TEST2024'
-  const mockDate = new Date('2024-01-15T12:00:00Z')
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -241,6 +243,41 @@ describe('VoucherManager', () => {
   })
 
   describe('redeem()', () => {
+    // Helper to create a mock transaction context with all required operations
+    const createMockTx = (voucher: unknown, initialBalance = 100) => ({
+      voucher: {
+        findUnique: vi.fn().mockResolvedValue(voucher),
+        update: vi.fn().mockImplementation((params) => {
+          if (voucher && typeof voucher === 'object' && 'currentUses' in voucher) {
+            return Promise.resolve({ ...voucher, currentUses: (voucher as { currentUses: number }).currentUses + 1 })
+          }
+          return Promise.resolve(voucher)
+        }),
+      },
+      voucherRedemption: {
+        create: vi.fn().mockResolvedValue({
+          id: 'redemption-1',
+          voucherId: voucher && typeof voucher === 'object' && 'id' in voucher ? (voucher as { id: string }).id : null,
+          userId: testUserId,
+          tokensGranted: voucher && typeof voucher === 'object' && 'value' in voucher ? (voucher as { value: number }).value : 0,
+        }),
+      },
+      user: {
+        upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+      },
+      userTokenBalance: {
+        findUnique: vi.fn().mockResolvedValue({ userId: testUserId, balance: initialBalance, lastRegeneration: new Date() }),
+        create: vi.fn().mockResolvedValue({ userId: testUserId, balance: 0, lastRegeneration: new Date() }),
+        update: vi.fn().mockImplementation((params) => {
+          const tokensToGrant = voucher && typeof voucher === 'object' && 'value' in voucher ? (voucher as { value: number }).value : 0
+          return Promise.resolve({ userId: testUserId, balance: initialBalance + tokensToGrant })
+        }),
+      },
+      tokenTransaction: {
+        create: vi.fn().mockResolvedValue({ id: 'tx-1' }),
+      },
+    })
+
     it('should successfully redeem voucher and grant tokens', async () => {
       const mockVoucher = {
         id: 'voucher-1',
@@ -255,26 +292,7 @@ describe('VoucherManager', () => {
       }
 
       mockPrisma.$transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          voucher: {
-            findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
-          },
-          voucherRedemption: {
-            create: vi.fn().mockResolvedValue({
-              id: 'redemption-1',
-              voucherId: mockVoucher.id,
-              userId: testUserId,
-              tokensGranted: 100,
-            }),
-          },
-        }
-        return callback(mockTx)
-      })
-
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: true,
-        balance: 200,
+        return callback(createMockTx(mockVoucher, 100))
       })
 
       const result = await VoucherManager.redeem(testCode, testUserId)
@@ -299,30 +317,13 @@ describe('VoucherManager', () => {
 
       let updateCalled = false
       mockPrisma.$transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          voucher: {
-            findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockImplementation((params) => {
-              updateCalled = true
-              expect(params.data.currentUses).toEqual({ increment: 1 })
-              return Promise.resolve({ ...mockVoucher, currentUses: 3 })
-            }),
-          },
-          voucherRedemption: {
-            create: vi.fn().mockResolvedValue({
-              id: 'redemption-1',
-              voucherId: mockVoucher.id,
-              userId: testUserId,
-              tokensGranted: 50,
-            }),
-          },
-        }
+        const mockTx = createMockTx(mockVoucher, 100)
+        mockTx.voucher.update = vi.fn().mockImplementation((params) => {
+          updateCalled = true
+          expect(params.data.currentUses).toEqual({ increment: 1 })
+          return Promise.resolve({ ...mockVoucher, currentUses: 3 })
+        })
         return callback(mockTx)
-      })
-
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: true,
-        balance: 150,
       })
 
       await VoucherManager.redeem(testCode, testUserId)
@@ -345,31 +346,14 @@ describe('VoucherManager', () => {
 
       let depletedUpdateCalled = false
       mockPrisma.$transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          voucher: {
-            findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockImplementation((params) => {
-              if (params.data.status === VoucherStatus.DEPLETED) {
-                depletedUpdateCalled = true
-              }
-              return Promise.resolve({ ...mockVoucher })
-            }),
-          },
-          voucherRedemption: {
-            create: vi.fn().mockResolvedValue({
-              id: 'redemption-1',
-              voucherId: mockVoucher.id,
-              userId: testUserId,
-              tokensGranted: 50,
-            }),
-          },
-        }
+        const mockTx = createMockTx(mockVoucher, 100)
+        mockTx.voucher.update = vi.fn().mockImplementation((params) => {
+          if (params.data.status === VoucherStatus.DEPLETED) {
+            depletedUpdateCalled = true
+          }
+          return Promise.resolve({ ...mockVoucher })
+        })
         return callback(mockTx)
-      })
-
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: true,
-        balance: 150,
       })
 
       await VoucherManager.redeem(testCode, testUserId)
@@ -391,16 +375,7 @@ describe('VoucherManager', () => {
       }
 
       mockPrisma.$transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          voucher: {
-            findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn(),
-          },
-          voucherRedemption: {
-            create: vi.fn(),
-          },
-        }
-        return callback(mockTx)
+        return callback(createMockTx(mockVoucher, 100))
       })
 
       const result = await VoucherManager.redeem(testCode, testUserId)
@@ -422,6 +397,9 @@ describe('VoucherManager', () => {
         redemptions: [],
       }
 
+      const currentBalance = 100
+      let getBalanceCalled = false
+
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         const mockTx = {
           voucher: {
@@ -436,25 +414,29 @@ describe('VoucherManager', () => {
               tokensGranted: 50,
             }),
           },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+          userTokenBalance: {
+            findUnique: vi.fn().mockImplementation(() => {
+              getBalanceCalled = true
+              return Promise.resolve({ userId: testUserId, balance: currentBalance, lastRegeneration: new Date() })
+            }),
+            create: vi.fn().mockResolvedValue({ userId: testUserId, balance: 0, lastRegeneration: new Date() }),
+            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: currentBalance + 50 }),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockResolvedValue({ id: 'tx-1' }),
+          },
         }
         return callback(mockTx)
-      })
-
-      mockTokenBalanceManager.getBalance.mockResolvedValue({
-        balance: 100,
-        lastRegeneration: mockDate,
-      })
-
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: true,
-        balance: 150,
       })
 
       const result = await VoucherManager.redeem(testCode, testUserId)
 
       // 100 * (50 / 100) = 50 tokens
       expect(result.tokensGranted).toBe(50)
-      expect(mockTokenBalanceManager.getBalance).toHaveBeenCalledWith(testUserId)
+      expect(getBalanceCalled).toBe(true)
     })
 
     it('should return error for non-existent voucher on redemption', async () => {
@@ -586,6 +568,8 @@ describe('VoucherManager', () => {
         redemptions: [],
       }
 
+      let tokenTransactionData: Record<string, unknown> | null = null
+
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         const mockTx = {
           voucher: {
@@ -600,28 +584,38 @@ describe('VoucherManager', () => {
               tokensGranted: 100,
             }),
           },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({ userId: testUserId, balance: 100, lastRegeneration: new Date() }),
+            create: vi.fn().mockResolvedValue({ userId: testUserId, balance: 0, lastRegeneration: new Date() }),
+            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: 200 }),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockImplementation((params) => {
+              tokenTransactionData = params.data
+              return Promise.resolve({ id: 'tx-1' })
+            }),
+          },
         }
         return callback(mockTx)
       })
 
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: true,
-        balance: 200,
-      })
-
       await VoucherManager.redeem('  test2024  ', testUserId)
 
-      expect(mockTokenBalanceManager.addTokens).toHaveBeenCalledWith({
+      expect(tokenTransactionData).toEqual({
         userId: testUserId,
         amount: 100,
         type: 'EARN_BONUS',
         source: 'voucher_redemption',
         sourceId: 'voucher-1',
+        balanceAfter: 200,
         metadata: { voucherCode: 'TEST2024' },
       })
     })
 
-    it('should return error if token granting fails', async () => {
+    it('should return error if token granting fails (transaction rollback)', async () => {
       const mockVoucher = {
         id: 'voucher-1',
         code: testCode,
@@ -634,6 +628,8 @@ describe('VoucherManager', () => {
         redemptions: [],
       }
 
+      // Simulate a database error during token balance update
+      // Since it's inside the transaction, this causes full rollback
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         const mockTx = {
           voucher: {
@@ -648,19 +644,79 @@ describe('VoucherManager', () => {
               tokensGranted: 100,
             }),
           },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({ userId: testUserId, balance: 100, lastRegeneration: new Date() }),
+            create: vi.fn().mockResolvedValue({ userId: testUserId, balance: 0, lastRegeneration: new Date() }),
+            update: vi.fn().mockRejectedValue(new Error('Database error while updating token balance')),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockResolvedValue({ id: 'tx-1' }),
+          },
         }
         return callback(mockTx)
-      })
-
-      mockTokenBalanceManager.addTokens.mockResolvedValue({
-        success: false,
-        error: 'Database error while adding tokens',
       })
 
       const result = await VoucherManager.redeem(testCode, testUserId)
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Database error while adding tokens')
+      expect(result.error).toBe('Database error while updating token balance')
+    })
+
+    it('should create new token balance if user has none', async () => {
+      const mockVoucher = {
+        id: 'voucher-1',
+        code: testCode,
+        type: VoucherType.FIXED_TOKENS,
+        value: 50,
+        status: VoucherStatus.ACTIVE,
+        maxUses: 10,
+        currentUses: 3,
+        expiresAt: new Date('2025-12-31'),
+        redemptions: [],
+      }
+
+      let tokenBalanceCreated = false
+
+      mockPrisma.$transaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          voucher: {
+            findUnique: vi.fn().mockResolvedValue(mockVoucher),
+            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
+          },
+          voucherRedemption: {
+            create: vi.fn().mockResolvedValue({
+              id: 'redemption-1',
+              voucherId: mockVoucher.id,
+              userId: testUserId,
+              tokensGranted: 50,
+            }),
+          },
+          user: {
+            upsert: vi.fn().mockResolvedValue({ id: testUserId }),
+          },
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(null), // No existing balance
+            create: vi.fn().mockImplementation(() => {
+              tokenBalanceCreated = true
+              return Promise.resolve({ userId: testUserId, balance: 0, lastRegeneration: new Date() })
+            }),
+            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: 50 }),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockResolvedValue({ id: 'tx-1' }),
+          },
+        }
+        return callback(mockTx)
+      })
+
+      const result = await VoucherManager.redeem(testCode, testUserId)
+
+      expect(result.success).toBe(true)
+      expect(result.tokensGranted).toBe(50)
+      expect(tokenBalanceCreated).toBe(true)
     })
   })
 })

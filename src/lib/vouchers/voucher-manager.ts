@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
+import type { VoucherStatus as VoucherStatusType, VoucherType as VoucherTypeEnum, Prisma } from '@prisma/client'
 import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
-import type { VoucherStatus as VoucherStatusType, VoucherType as VoucherTypeEnum } from '@prisma/client'
 
 // Use string literals to avoid runtime dependency on Prisma enums
 // These match the Prisma schema enum values
@@ -91,99 +91,180 @@ export class VoucherManager {
 
   /**
    * Redeem a voucher and grant tokens to user
+   *
+   * Race Condition Mitigation:
+   * 1. Unique constraint on (voucherId, userId) in VoucherRedemption prevents duplicate redemptions
+   * 2. Transaction isolation ensures atomic read-check-update for usage counts
+   * 3. Token addition is performed INSIDE the same transaction for atomicity
+   * 4. For maxUses race conditions across different users: the increment operation
+   *    uses database-level atomicity - worst case is slightly exceeding maxUses
+   * 5. If strict enforcement needed, add SELECT FOR UPDATE when Prisma supports it
    */
   static async redeem(code: string, userId: string): Promise<VoucherRedemptionResult> {
     const normalizedCode = code.trim().toUpperCase()
 
-    // Use transaction for atomicity
-    return await prisma.$transaction(async (tx) => {
-      // Get voucher with lock
-      const voucher = await tx.voucher.findUnique({
-        where: { code: normalizedCode },
-        include: {
-          redemptions: {
-            where: { userId }
+    try {
+      // Use transaction for atomicity - includes token addition
+      return await prisma.$transaction(async (tx) => {
+        // Get voucher with lock
+        const voucher = await tx.voucher.findUnique({
+          where: { code: normalizedCode },
+          include: {
+            redemptions: {
+              where: { userId }
+            }
           }
+        })
+
+        if (!voucher) {
+          console.log('[VOUCHER] Validation failed', {
+            code: normalizedCode,
+            reason: 'Voucher code not found',
+            timestamp: new Date().toISOString()
+          })
+          return { success: false, error: 'Voucher code not found' }
         }
-      })
 
-      if (!voucher) {
-        return { success: false, error: 'Voucher code not found' }
-      }
-
-      if (voucher.status !== VoucherStatus.ACTIVE) {
-        return { success: false, error: 'This voucher is no longer active' }
-      }
-
-      if (voucher.expiresAt && voucher.expiresAt < new Date()) {
-        return { success: false, error: 'This voucher has expired' }
-      }
-
-      if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) {
-        return { success: false, error: 'This voucher has reached its usage limit' }
-      }
-
-      if (voucher.redemptions.length > 0) {
-        return { success: false, error: 'You have already redeemed this voucher' }
-      }
-
-      // Calculate tokens to grant
-      let tokensToGrant = voucher.value
-      if (voucher.type === VoucherType.PERCENTAGE_BONUS) {
-        // For percentage, get current balance and add percentage
-        const { balance: currentBalance } = await TokenBalanceManager.getBalance(userId)
-        tokensToGrant = Math.floor(currentBalance * (voucher.value / 100))
-      }
-
-      // Create redemption record
-      await tx.voucherRedemption.create({
-        data: {
-          voucherId: voucher.id,
-          userId,
-          tokensGranted: tokensToGrant
+        if (voucher.status !== VoucherStatus.ACTIVE) {
+          console.log('[VOUCHER] Validation failed', {
+            code: normalizedCode,
+            reason: 'Voucher not active',
+            status: voucher.status,
+            timestamp: new Date().toISOString()
+          })
+          return { success: false, error: 'This voucher is no longer active' }
         }
-      })
 
-      // Increment usage count
-      await tx.voucher.update({
-        where: { id: voucher.id },
-        data: { currentUses: { increment: 1 } }
-      })
+        if (voucher.expiresAt && voucher.expiresAt < new Date()) {
+          console.log('[VOUCHER] Validation failed', {
+            code: normalizedCode,
+            reason: 'Voucher expired',
+            expiresAt: voucher.expiresAt,
+            timestamp: new Date().toISOString()
+          })
+          return { success: false, error: 'This voucher has expired' }
+        }
 
-      // Check if voucher is now depleted
-      if (voucher.maxUses && voucher.currentUses + 1 >= voucher.maxUses) {
+        if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) {
+          console.log('[VOUCHER] Validation failed', {
+            code: normalizedCode,
+            reason: 'Usage limit reached',
+            maxUses: voucher.maxUses,
+            currentUses: voucher.currentUses,
+            timestamp: new Date().toISOString()
+          })
+          return { success: false, error: 'This voucher has reached its usage limit' }
+        }
+
+        if (voucher.redemptions.length > 0) {
+          console.log('[VOUCHER] Validation failed', {
+            code: normalizedCode,
+            reason: 'Already redeemed by user',
+            userId,
+            timestamp: new Date().toISOString()
+          })
+          return { success: false, error: 'You have already redeemed this voucher' }
+        }
+
+        // Calculate tokens to grant
+        let tokensToGrant = voucher.value
+        if (voucher.type === VoucherType.PERCENTAGE_BONUS) {
+          // For percentage, get current balance and add percentage
+          const { balance: currentBalance } = await TokenBalanceManager.getBalance(userId)
+          tokensToGrant = Math.floor(currentBalance * (voucher.value / 100))
+        }
+
+        // Create redemption record
+        await tx.voucherRedemption.create({
+          data: {
+            voucherId: voucher.id,
+            userId,
+            tokensGranted: tokensToGrant
+          }
+        })
+
+        // Increment usage count
         await tx.voucher.update({
           where: { id: voucher.id },
-          data: { status: VoucherStatus.DEPLETED }
+          data: { currentUses: { increment: 1 } }
         })
-      }
 
-      return { success: true, tokensToGrant, voucherId: voucher.id }
-    }).then(async (result) => {
-      if (!result.success) return result as VoucherRedemptionResult
-
-      // Add tokens outside transaction (uses its own transaction internally)
-      const tokenResult = await TokenBalanceManager.addTokens({
-        userId,
-        amount: result.tokensToGrant!,
-        type: 'EARN_BONUS',
-        source: 'voucher_redemption',
-        sourceId: result.voucherId,
-        metadata: { voucherCode: normalizedCode }
-      })
-
-      if (!tokenResult.success) {
-        return {
-          success: false,
-          error: tokenResult.error || 'Failed to grant tokens'
+        // Check if voucher is now depleted
+        if (voucher.maxUses && voucher.currentUses + 1 >= voucher.maxUses) {
+          await tx.voucher.update({
+            where: { id: voucher.id },
+            data: { status: VoucherStatus.DEPLETED }
+          })
         }
-      }
 
+        // Add tokens INSIDE the same transaction for atomicity
+        // Ensure User record exists (handles JWT-only auth)
+        await tx.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: { id: userId },
+        })
+
+        // Get or create token balance
+        let tokenBalance = await tx.userTokenBalance.findUnique({
+          where: { userId },
+        })
+
+        if (!tokenBalance) {
+          tokenBalance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: 0,
+              lastRegeneration: new Date(),
+            },
+          })
+        }
+
+        // Update balance with tokens
+        const updatedBalance = await tx.userTokenBalance.update({
+          where: { userId },
+          data: { balance: { increment: tokensToGrant } },
+        })
+
+        // Create transaction record
+        await tx.tokenTransaction.create({
+          data: {
+            userId,
+            amount: tokensToGrant,
+            type: 'EARN_BONUS',
+            source: 'voucher_redemption',
+            sourceId: voucher.id,
+            balanceAfter: updatedBalance.balance,
+            metadata: { voucherCode: normalizedCode } as Prisma.InputJsonValue,
+          },
+        })
+
+        console.log('[VOUCHER] Redeemed', {
+          userId,
+          code: normalizedCode,
+          tokensGranted: tokensToGrant,
+          voucherType: voucher.type,
+          newBalance: updatedBalance.balance,
+          timestamp: new Date().toISOString()
+        })
+
+        return {
+          success: true,
+          tokensGranted: tokensToGrant,
+          newBalance: updatedBalance.balance
+        }
+      })
+    } catch (error) {
+      console.error('[VOUCHER] Redemption error', {
+        code: normalizedCode,
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      })
       return {
-        success: true,
-        tokensGranted: result.tokensToGrant,
-        newBalance: tokenResult.balance
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to redeem voucher'
       }
-    })
+    }
   }
 }

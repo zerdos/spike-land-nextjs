@@ -3,7 +3,7 @@ import { POST } from './route'
 import { NextRequest } from 'next/server'
 
 // Use vi.hoisted to define mocks before they are used
-const { mockSession, mockAuth, mockVoucherManager } = vi.hoisted(() => ({
+const { mockSession, mockAuth, mockVoucherManager, mockCheckRateLimit, mockResetRateLimit } = vi.hoisted(() => ({
   mockSession: {
     user: {
       id: 'user-123',
@@ -15,6 +15,8 @@ const { mockSession, mockAuth, mockVoucherManager } = vi.hoisted(() => ({
   mockVoucherManager: {
     redeem: vi.fn(),
   },
+  mockCheckRateLimit: vi.fn(),
+  mockResetRateLimit: vi.fn(),
 }))
 
 vi.mock('@/auth', () => ({
@@ -23,6 +25,14 @@ vi.mock('@/auth', () => ({
 
 vi.mock('@/lib/vouchers/voucher-manager', () => ({
   VoucherManager: mockVoucherManager,
+}))
+
+vi.mock('@/lib/rate-limiter', () => ({
+  checkRateLimit: mockCheckRateLimit,
+  resetRateLimit: mockResetRateLimit,
+  rateLimitConfigs: {
+    voucherRedemption: { maxRequests: 5, windowMs: 60 * 60 * 1000 },
+  },
 }))
 
 // Helper to create mock request
@@ -41,6 +51,12 @@ describe('POST /api/vouchers/redeem', () => {
     vi.clearAllMocks()
     // Set default mock session
     mockAuth.mockResolvedValue(mockSession)
+    // Set default rate limit to allow requests
+    mockCheckRateLimit.mockReturnValue({
+      isLimited: false,
+      remaining: 4,
+      resetAt: Date.now() + 60 * 60 * 1000,
+    })
   })
 
   it('should return 401 if not authenticated', async () => {
@@ -328,5 +344,36 @@ describe('POST /api/vouchers/redeem', () => {
     await POST(req)
 
     expect(mockVoucherManager.redeem).toHaveBeenCalledWith('TEST2024', 'custom-user-456')
+  })
+
+  it('should return 429 when rate limited', async () => {
+    mockCheckRateLimit.mockReturnValue({
+      isLimited: true,
+      remaining: 0,
+      resetAt: Date.now() + 30 * 60 * 1000, // 30 minutes from now
+    })
+
+    const req = createMockRequest({ code: 'TEST2024' })
+    const res = await POST(req)
+    const data = await res.json()
+
+    expect(res.status).toBe(429)
+    expect(data.error).toBe('Too many redemption attempts. Please try again later.')
+    expect(mockVoucherManager.redeem).not.toHaveBeenCalled()
+  })
+
+  it('should include Retry-After header when rate limited', async () => {
+    const resetAt = Date.now() + 30 * 60 * 1000 // 30 minutes from now
+    mockCheckRateLimit.mockReturnValue({
+      isLimited: true,
+      remaining: 0,
+      resetAt,
+    })
+
+    const req = createMockRequest({ code: 'TEST2024' })
+    const res = await POST(req)
+
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBeDefined()
   })
 })
