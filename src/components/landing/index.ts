@@ -1,0 +1,5 @@
+export { HeroSection } from './HeroSection'
+export { BeforeAfterGallery } from './BeforeAfterGallery'
+export { FeatureShowcase } from './FeatureShowcase'
+export { ComponentDemo } from './ComponentDemo'
+export { FAQ } from './FAQ'
