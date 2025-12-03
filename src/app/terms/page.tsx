@@ -11,6 +11,7 @@ const lastUpdated = new Date().toLocaleDateString('en-US', {
 const sections = [
   { id: 'acceptance', title: 'Acceptance of Terms' },
   { id: 'account-terms', title: 'Account Terms' },
+  { id: 'user-responsibilities', title: 'User Responsibilities' },
   { id: 'token-economy', title: 'Token Economy' },
   { id: 'service-description', title: 'Service Description' },
   { id: 'acceptable-use', title: 'Acceptable Use Policy' },
@@ -163,6 +164,51 @@ export default function TermsPage() {
                       You may delete your account at any time through your account settings. Upon deletion, your account will be disabled immediately, and your data will be removed according to our Privacy Policy.
                     </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* User Responsibilities */}
+          <section id="user-responsibilities">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">User Responsibilities</CardTitle>
+                <CardDescription>Your obligations when using the Service</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">General Obligations</h3>
+                  <p>
+                    As a user of the Spike Land Image Enhancement App, you are responsible for:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
+                    <li>Ensuring all images you upload comply with our Acceptable Use Policy</li>
+                    <li>Maintaining the security of your account credentials</li>
+                    <li>Using the Service in accordance with all applicable laws and regulations</li>
+                    <li>Respecting the intellectual property rights of others</li>
+                    <li>Reporting any security vulnerabilities or bugs you discover</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Content Responsibility</h3>
+                  <p>
+                    You are solely responsible for all content you upload, enhance, or share through the Service. This includes:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
+                    <li>Ensuring you have the right to upload and modify images</li>
+                    <li>Verifying that content does not violate third-party rights</li>
+                    <li>Backing up your original images before enhancement</li>
+                    <li>Not uploading malicious files or content</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Compliance</h3>
+                  <p>
+                    You must comply with all applicable local, national, and international laws when using the Service. You are responsible for understanding and adhering to regulations that apply in your jurisdiction.
+                  </p>
                 </div>
               </CardContent>
             </Card>

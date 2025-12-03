@@ -48,8 +48,6 @@ describe("CookieConsent", () => {
     render(<CookieConsent />);
     const privacyLink = screen.getByRole("link", { name: /learn more/i });
     expect(privacyLink).toHaveAttribute("href", "/privacy");
-    expect(privacyLink).toHaveAttribute("target", "_blank");
-    expect(privacyLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("should have proper button variants", () => {

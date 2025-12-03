@@ -14,7 +14,7 @@ const sections = [
   { id: 'essential', title: 'Essential Cookies' },
   { id: 'analytics', title: 'Analytics Cookies' },
   { id: 'third-party', title: 'Third-Party Cookies' },
-  { id: 'managing', title: 'Managing Cookies' },
+  { id: 'managing-cookies', title: 'Managing Cookies' },
   { id: 'consent', title: 'Cookie Consent' },
   { id: 'updates', title: 'Policy Updates' },
   { id: 'contact', title: 'Contact Us' },
@@ -323,7 +323,10 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">How to Opt Out</h3>
+                  <h3 className="font-semibold text-lg mb-3">Opt-Out</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You can manage cookie preferences through several methods. Here are your options for opting out of non-essential cookies:
+                  </p>
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-semibold text-sm mb-2">Browser Settings</h4>
@@ -482,7 +485,7 @@ export default function CookiePage() {
           </section>
 
           {/* Managing Cookies */}
-          <section id="managing">
+          <section id="managing-cookies">
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Managing Cookies</CardTitle>
