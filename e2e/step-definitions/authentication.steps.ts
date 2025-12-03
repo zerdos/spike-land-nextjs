@@ -299,7 +299,8 @@ Then('I should see {string} heading', async function (this: CustomWorld, heading
 });
 
 Then('I should see {string} text', async function (this: CustomWorld, text: string) {
-  await expect(this.page.getByText(text)).toBeVisible();
+  // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
+  await expect(this.page.getByText(text).first()).toBeVisible();
 });
 
 Then('I should see {string} link', async function (this: CustomWorld, linkText: string) {
