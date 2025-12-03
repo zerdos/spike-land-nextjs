@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Sparkles, Loader2 } from "lucide-react"
+import { Sparkles, Loader2, AlertTriangle, Coins } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { PurchaseModal } from "@/components/tokens"
 import type { EnhancementTier } from "@prisma/client"
 
 interface EnhancementSettingsProps {
@@ -13,6 +14,7 @@ interface EnhancementSettingsProps {
   currentBalance: number
   isProcessing: boolean
   completedVersions: Array<{ tier: EnhancementTier; url: string }>
+  onBalanceRefresh?: () => void
 }
 
 const TIER_INFO = {
@@ -26,6 +28,7 @@ export function EnhancementSettings({
   currentBalance,
   isProcessing,
   completedVersions,
+  onBalanceRefresh,
 }: EnhancementSettingsProps) {
   const [selectedTier, setSelectedTier] = useState<EnhancementTier>("TIER_2K")
 
@@ -36,6 +39,10 @@ export function EnhancementSettings({
   // Check if a version already exists for the selected tier
   const versionExists = completedVersions.some((v) => v.tier === selectedTier)
 
+  // Check if user has enough tokens for the selected tier
+  const tierCost = TIER_INFO[selectedTier].cost
+  const hasEnoughTokens = currentBalance >= tierCost
+
   return (
     <Card>
       <CardHeader>
@@ -45,6 +52,39 @@ export function EnhancementSettings({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Current Balance Display */}
+        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-yellow-500" />
+            <span className="text-sm font-medium">Your Balance</span>
+          </div>
+          <span className="text-lg font-bold">{currentBalance} tokens</span>
+        </div>
+
+        {/* Insufficient Balance Warning */}
+        {!hasEnoughTokens && (
+          <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+            <div className="flex items-start gap-2 mb-2">
+              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">Insufficient Tokens</p>
+                <p className="text-sm text-muted-foreground">
+                  You need {tierCost} tokens but only have {currentBalance}
+                </p>
+              </div>
+            </div>
+            <PurchaseModal
+              trigger={
+                <Button size="sm" variant="destructive" className="w-full mt-2">
+                  <Coins className="mr-2 h-4 w-4" />
+                  Get Tokens
+                </Button>
+              }
+              onPurchaseComplete={onBalanceRefresh}
+            />
+          </div>
+        )}
+
         <RadioGroup
           value={selectedTier}
           onValueChange={(value) => setSelectedTier(value as EnhancementTier)}

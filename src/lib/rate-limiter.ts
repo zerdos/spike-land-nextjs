@@ -1,3 +1,8 @@
+// TODO: For production scaling, replace in-memory store with Redis
+// Current implementation resets on serverless cold starts
+// Consider using @upstash/ratelimit for serverless-compatible rate limiting
+// @see https://github.com/upstash/ratelimit
+
 /**
  * Simple in-memory rate limiter for API endpoints.
  * Uses a sliding window approach to limit requests per user.
@@ -136,6 +141,11 @@ export const rateLimitConfigs = {
   imageUpload: {
     maxRequests: 30,
     windowMs: 60 * 1000, // 1 minute
+  },
+  /** Voucher redemption: 5 attempts per hour per user */
+  voucherRedemption: {
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000, // 1 hour
   },
   /** General API: 100 requests per minute per user */
   general: {

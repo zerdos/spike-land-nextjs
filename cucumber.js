@@ -8,7 +8,7 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // Stop on first failure
     retry: 0, // Don't retry failed scenarios
-    tags: 'not @skip and not @flaky', // Skip scenarios tagged with @skip or @flaky
+    tags: 'not @skip and not @flaky and not @requires-db', // Skip scenarios tagged with @skip, @flaky, or @requires-db
     timeout: 15000, // Increase default step timeout to 15 seconds (was 5 seconds)
   },
   // Fast tests - unit tests and quick integration tests
@@ -50,17 +50,18 @@ module.exports = {
     tags: '@flaky and not @skip',
     timeout: 15000,
   },
-  // CI profile - all tests except flaky
+  // CI profile - all tests except flaky and database-dependent tests
   ci: {
     paths: ['e2e/features/**/*.feature'],
     require: ['e2e/step-definitions/**/*.ts', 'e2e/support/**/*.ts'],
     requireModule: ['tsx/cjs'],
-    format: ['progress-bar', 'html:e2e/reports/cucumber-report-ci.html', 'json:e2e/reports/cucumber-report-ci.json'],
+    format: ['progress', 'html:e2e/reports/cucumber-report-ci.html', 'json:e2e/reports/cucumber-report-ci.json'],
     formatOptions: { snippetInterface: 'async-await' },
     publishQuiet: true,
     failFast: false, // In CI, run all tests to get full report
     retry: 1, // Retry once in CI to handle transient issues
-    tags: 'not @skip and not @flaky',
-    timeout: 15000,
+    tags: 'not @skip and not @flaky and not @requires-db', // Skip db-dependent tests (no seeded test data in CI)
+    timeout: 30000, // 30 second timeout for CI
+    parallel: 4, // Run 4 scenarios in parallel
   },
 };

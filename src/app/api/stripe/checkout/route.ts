@@ -4,6 +4,9 @@ import { getStripe, TOKEN_PACKAGES, SUBSCRIPTION_PLANS } from '@/lib/stripe/clie
 import type { TokenPackageId, SubscriptionPlanId } from '@/lib/stripe/client'
 import prisma from '@/lib/prisma'
 
+// Maximum request body size (10KB should be plenty for checkout requests)
+const MAX_BODY_SIZE = 10 * 1024
+
 interface CheckoutRequest {
   packageId?: TokenPackageId
   planId?: SubscriptionPlanId
@@ -12,6 +15,12 @@ interface CheckoutRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check content length to prevent oversized payloads
+    const contentLength = request.headers.get('content-length')
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+      return NextResponse.json({ error: 'Request too large' }, { status: 413 })
+    }
+
     const stripe = getStripe()
 
     const session = await auth()
@@ -63,6 +72,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid package ID' }, { status: 400 })
       }
 
+      // Validate price is a positive number
+      if (typeof pkg.priceGBP !== 'number' || pkg.priceGBP <= 0 || !Number.isFinite(pkg.priceGBP)) {
+        console.error(`Invalid price configuration for package ${packageId}: ${pkg.priceGBP}`)
+        return NextResponse.json({ error: 'Invalid package configuration' }, { status: 500 })
+      }
+
       const checkoutSession = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         mode: 'payment',
@@ -101,6 +116,12 @@ export async function POST(request: NextRequest) {
       const plan = SUBSCRIPTION_PLANS[planId]
       if (!plan) {
         return NextResponse.json({ error: 'Invalid plan ID' }, { status: 400 })
+      }
+
+      // Validate price is a positive number
+      if (typeof plan.priceGBP !== 'number' || plan.priceGBP <= 0 || !Number.isFinite(plan.priceGBP)) {
+        console.error(`Invalid price configuration for plan ${planId}: ${plan.priceGBP}`)
+        return NextResponse.json({ error: 'Invalid plan configuration' }, { status: 500 })
       }
 
       // Check if user already has an active subscription
@@ -155,9 +176,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   } catch (error) {
+    // Log detailed error for debugging but don't expose internals to client
     console.error('Error creating checkout session:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create checkout session' },
+      { error: 'Failed to create checkout session' },
       { status: 500 }
     )
   }

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useCallback, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider"
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings"
@@ -9,9 +9,11 @@ import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay"
 import { VersionGrid } from "@/components/enhance/VersionGrid"
 import { useTokenBalance } from "@/hooks/useTokenBalance"
 import { useJobPolling } from "@/hooks/useJobPolling"
+import { PurchaseModal } from "@/components/tokens"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ArrowLeft, AlertTriangle, Coins } from "lucide-react"
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client"
 
 type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K"
@@ -34,7 +36,21 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   )
 
   const router = useRouter()
-  const { balance, refetch: refetchBalance } = useTokenBalance()
+  const searchParams = useSearchParams()
+  const { balance, isLowBalance, refetch: refetchBalance } = useTokenBalance({ autoRefreshOnFocus: true })
+
+  // Refresh balance when returning from successful Stripe checkout
+  useEffect(() => {
+    const success = searchParams.get("success")
+    if (success === "true") {
+      refetchBalance()
+      // Clean up URL without triggering navigation
+      const url = new URL(window.location.href)
+      url.searchParams.delete("success")
+      url.searchParams.delete("session_id")
+      window.history.replaceState({}, "", url.pathname)
+    }
+  }, [searchParams, refetchBalance])
 
   // Poll for active job completion
   useJobPolling({
@@ -130,6 +146,27 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/* Low Balance Banner */}
+      {isLowBalance && (
+        <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <span className="text-sm">
+              Your token balance is running low ({balance} tokens remaining).
+            </span>
+            <PurchaseModal
+              trigger={
+                <Button size="sm" variant="outline" className="ml-4">
+                  <Coins className="mr-2 h-4 w-4" />
+                  Get Tokens
+                </Button>
+              }
+              onPurchaseComplete={refetchBalance}
+            />
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -210,6 +247,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               tier: job.tier,
               url: job.enhancedUrl || "",
             }))}
+            onBalanceRefresh={refetchBalance}
           />
         </div>
       </div>

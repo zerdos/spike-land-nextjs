@@ -27,10 +27,11 @@ model User {
   tokenBalance      UserTokenBalance?
   tokenTransactions TokenTransaction[]
   stripePayments    StripePayment[]
-  subscription      Subscription?
-  enhancedImages    EnhancedImage[]
-  enhancementJobs   ImageEnhancementJob[]
-  albums            Album[]
+  subscription       Subscription?
+  enhancedImages     EnhancedImage[]
+  enhancementJobs    ImageEnhancementJob[]
+  albums             Album[]
+  voucherRedemptions VoucherRedemption[]
 
   @@map("users")
 }
@@ -148,6 +149,19 @@ enum SubscriptionInterval {
   MONTHLY
   QUARTERLY
   YEARLY
+}
+
+enum VoucherType {
+  FIXED_TOKENS
+  PERCENTAGE_BONUS
+  SUBSCRIPTION_TRIAL
+}
+
+enum VoucherStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  DEPLETED
 }
 
 model MonetizationModel {
@@ -413,4 +427,40 @@ model AlbumImage {
   @@index([albumId, sortOrder])
   @@index([imageId])
   @@map("album_images")
+}
+
+// Voucher System Models
+model Voucher {
+  id          String            @id @default(cuid())
+  code        String            @unique
+  type        VoucherType
+  value       Int // tokens or percentage
+  maxUses     Int?
+  currentUses Int               @default(0)
+  expiresAt   DateTime?
+  status      VoucherStatus     @default(ACTIVE)
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  redemptions VoucherRedemption[]
+
+  @@index([code])
+  @@index([status, expiresAt])
+  @@map("vouchers")
+}
+
+model VoucherRedemption {
+  id            String   @id @default(cuid())
+  voucherId     String
+  userId        String
+  tokensGranted Int
+  redeemedAt    DateTime @default(now())
+
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, userId])
+  @@index([userId, redeemedAt])
+  @@index([voucherId])
+  @@map("voucher_redemptions")
 }
