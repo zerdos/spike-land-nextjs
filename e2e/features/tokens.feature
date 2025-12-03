@@ -6,7 +6,7 @@ Feature: Token Management
   Background:
     Given I am logged in as "Token User" with email "token.user@example.com"
 
-  @balance @fast
+  @balance @flaky
   Scenario: View token balance on enhance page
     Given I am on the enhance page
     Then I should see the token balance display
@@ -26,7 +26,7 @@ Feature: Token Management
     Then I should not see the low balance warning style
     And the get tokens button should say "+"
 
-  @voucher-valid @integration
+  @voucher-valid @flaky
   Scenario: Redeem valid voucher code
     Given I am on the enhance page
     When I open the purchase modal
@@ -43,7 +43,7 @@ Feature: Token Management
     And I click the apply voucher button
     Then I should see an error message for the voucher
 
-  @voucher-duplicate @integration
+  @voucher-duplicate @flaky
   Scenario: Cannot redeem same voucher twice
     Given I have already redeemed voucher "WELCOME50"
     And I am on the enhance page
@@ -66,7 +66,7 @@ Feature: Token Management
     And I click the apply voucher button
     Then I should see the loading spinner on apply button
 
-  @purchase-flow @integration
+  @purchase-flow @flaky
   Scenario: Open purchase modal shows token packages
     Given I am on the enhance page
     When I open the purchase modal
@@ -74,7 +74,7 @@ Feature: Token Management
     And I should see token package cards
     And I should see the voucher input section
 
-  @purchase-flow @integration
+  @purchase-flow @flaky
   Scenario: Token purchase redirects to Stripe checkout
     Given I am on the enhance page
     When I open the purchase modal

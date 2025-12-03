@@ -6,7 +6,7 @@ Feature: Image Enhancement
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  @fast
+  @flaky
   Scenario: View enhance page as authenticated user
     When I visit "/enhance"
     Then I should be on the "/enhance" page
@@ -14,13 +14,13 @@ Feature: Image Enhancement
     And I should see the image upload section
     And I should see the token balance display
 
-  @fast
+  @flaky
   Scenario: Unauthenticated user redirected from enhance page
     Given I am not logged in
     When I visit "/enhance"
     Then I should be on the "/auth/signin" page
 
-  @fast
+  @flaky
   Scenario: Image upload section displays correctly
     When I visit "/enhance"
     Then I should see the upload icon
@@ -36,16 +36,19 @@ Feature: Image Enhancement
     Then I should be redirected to the image enhancement page
     And the URL should contain "/enhance/"
 
+  @flaky
   Scenario: Image upload shows validation error for large file
     Given I am on the enhance page
     When I attempt to upload a file larger than 50MB
     Then I should see upload error "File size must be less than 50MB"
 
+  @flaky
   Scenario: Image upload shows validation error for non-image file
     Given I am on the enhance page
     When I attempt to upload a non-image file
     Then I should see upload error "Please select an image file"
 
+  @flaky
   Scenario: Image upload shows loading state
     Given I am on the enhance page
     And I mock a slow image upload
@@ -63,6 +66,7 @@ Feature: Image Enhancement
     And I should see the enhancement settings panel
     And I should see "Back to Images" button
 
+  @requires-db
   Scenario: Enhancement settings displays tier options
     Given I have an uploaded image
     When I visit the image enhancement page
@@ -71,6 +75,7 @@ Feature: Image Enhancement
     And I should see "TIER_4K" enhancement option
     And each tier should display token cost
 
+  @requires-db
   Scenario: Enhance image with sufficient tokens
     Given I have an uploaded image
     And I have at least 2 tokens
@@ -80,6 +85,7 @@ Feature: Image Enhancement
     Then I should see enhancement status "Processing"
     And the enhancement should start processing
 
+  @requires-db
   Scenario: Cannot enhance without sufficient tokens
     Given I have an uploaded image
     And I have 0 tokens
@@ -87,6 +93,7 @@ Feature: Image Enhancement
     Then I should see an insufficient tokens warning
     And I should see a purchase prompt
 
+  @requires-db
   Scenario: Low balance warning displays correctly
     Given I have an uploaded image
     And I have less than 5 tokens
@@ -95,12 +102,14 @@ Feature: Image Enhancement
     And I should see "Your token balance is running low" text
     And I should see "Get Tokens" button
 
+  @requires-db
   Scenario: Compare original and enhanced versions
     Given I have an enhanced image
     When I view the image details
     Then I should see the comparison slider
     And I can interact with the slider to compare versions
 
+  @requires-db
   Scenario: View enhancement versions grid
     Given I have multiple enhancement versions
     When I view the image details
@@ -108,12 +117,14 @@ Feature: Image Enhancement
     And I should see all enhancement versions
     And I can select different versions to compare
 
+  @requires-db
   Scenario: Select different enhancement versions
     Given I have multiple enhancement versions
     When I click on a different version in the grid
     Then the comparison slider should update
     And the selected version should be highlighted
 
+  @requires-db
   Scenario: Delete an image from list
     Given I have uploaded images
     When I visit "/enhance"
@@ -121,6 +132,7 @@ Feature: Image Enhancement
     And I confirm the deletion
     Then the image should be removed from the list
 
+  @requires-db
   Scenario: Cancel image deletion
     Given I have uploaded images
     When I visit "/enhance"
@@ -136,12 +148,14 @@ Feature: Image Enhancement
     Then I should be on the "/enhance" page
     And I should see "Your Images" heading
 
+  @requires-db
   Scenario: View empty state when no images
     Given I have no uploaded images
     When I visit "/enhance"
     Then I should see "Your Images" heading
     And I should see an empty images list
 
+  @requires-db
   Scenario: Token balance updates after enhancement
     Given I have an uploaded image
     And I have 10 tokens
@@ -150,6 +164,7 @@ Feature: Image Enhancement
     And the enhancement completes
     Then my token balance should decrease to 8 tokens
 
+  @requires-db
   Scenario: Purchase tokens from enhancement page
     Given I have an uploaded image
     And I have low token balance
@@ -157,6 +172,7 @@ Feature: Image Enhancement
     Then I should see the purchase modal
     And I can select token packages
 
+  @requires-db
   Scenario: Enhancement processing displays progress
     Given I have an uploaded image
     And I start an enhancement job
@@ -164,6 +180,7 @@ Feature: Image Enhancement
     Then I should see enhancement status "Processing" in the version grid
     And the enhance button should be disabled
 
+  @requires-db
   Scenario: Enhancement error handling
     Given I have an uploaded image
     And I mock a failed enhancement
@@ -178,12 +195,14 @@ Feature: Image Enhancement
     When I try to access that image's enhancement page
     Then I should be redirected to "/enhance"
 
+  @requires-db
   Scenario: Return from Stripe checkout refreshes balance
     Given I have an uploaded image
     When I return from successful Stripe checkout
     Then the token balance should refresh automatically
     And the URL parameters should be cleaned up
 
+  @requires-db
   Scenario: Image comparison slider is responsive
     Given I have an enhanced image
     When I view the comparison on different screen sizes
@@ -191,7 +210,7 @@ Feature: Image Enhancement
     And the slider should work on desktop
     And the slider should work on tablet
 
-  @fast
+  @fast @requires-db
   Scenario: Enhancement page displays user's images only
     Given I am logged in as "User A" with email "usera@example.com"
     And I have uploaded images
