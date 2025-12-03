@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ImageUpload } from "@/components/enhance/ImageUpload"
 import { EnhancedImagesList } from "@/components/enhance/EnhancedImagesList"
-import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay"
+import { TokenDisplay } from "@/components/tokens/TokenDisplay"
 import { useTokenBalance } from "@/hooks/useTokenBalance"
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client"
 
@@ -53,7 +53,7 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">AI Image Enhancement</h1>
-          <TokenBalanceDisplay />
+          <TokenDisplay />
         </div>
 
         <ImageUpload />

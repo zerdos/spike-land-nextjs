@@ -66,10 +66,20 @@ async function mockSession(world: CustomWorld, user: { name: string; email: stri
 // Given('I am on the home page', ...)
 
 When('I am not logged in', async function (this: CustomWorld) {
-  // Mock no session
+  // Close current page and context
+  await this.page.close();
+  await this.context.close();
+
+  // Create a new context WITHOUT the E2E bypass header
+  // This simulates a truly unauthenticated user
+  this.context = await this.browser.newContext({
+    baseURL: this.baseUrl,
+    // No extraHTTPHeaders - no bypass
+  });
+  this.page = await this.context.newPage();
+
+  // Mock no session for client-side requests
   await mockSession(this, null);
-  await this.page.reload();
-  await this.page.waitForLoadState('networkidle');
 });
 
 When('I am logged in as {string} with email {string}', async function (this: CustomWorld, name: string, email: string) {

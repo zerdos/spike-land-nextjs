@@ -3,8 +3,18 @@ import { getStripe } from '@/lib/stripe/client'
 import prisma from '@/lib/prisma'
 import Stripe from 'stripe'
 
+// Maximum request body size for webhook (64KB should be plenty for Stripe events)
+const MAX_BODY_SIZE = 64 * 1024
+
 export async function POST(request: NextRequest) {
   const stripe = getStripe()
+
+  // Check content length to prevent oversized payloads
+  const contentLength = request.headers.get('content-length')
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: 'Request too large' }, { status: 413 })
+  }
+
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')
 
@@ -55,9 +65,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
+    // Log detailed error for debugging but don't expose internals to client
     console.error('Error processing webhook:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Webhook processing failed' },
+      { error: 'Webhook processing failed' },
       { status: 500 }
     )
   }
@@ -87,6 +98,9 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
         })
       }
 
+      // Note: Purchased tokens intentionally have no balance cap.
+      // Unlike regenerated tokens (capped at 100), paid tokens are unlimited
+      // because users have paid for them and should receive full value.
       const newBalance = balance.balance + tokenAmount
 
       // Update balance

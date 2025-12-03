@@ -23,7 +23,7 @@ export function TokenBalanceDisplay() {
       <CardContent className="flex items-center gap-2 p-4">
         <Coins className="h-5 w-5 text-yellow-500" />
         <div>
-          <p className="text-sm font-medium">{balance} Tokens</p>
+          <p className="text-sm font-medium">{balance} tokens</p>
           <p className="text-xs text-muted-foreground">Available balance</p>
         </div>
       </CardContent>

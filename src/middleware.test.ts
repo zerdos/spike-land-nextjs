@@ -186,7 +186,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fmy-apps")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fmy-apps")
       })
 
       it("should redirect from /my-apps/app-123 when not authenticated", async () => {
@@ -195,7 +195,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fmy-apps%2Fapp-123")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fmy-apps%2Fapp-123")
       })
 
       it("should redirect from /settings when not authenticated", async () => {
@@ -204,7 +204,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fsettings")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fsettings")
       })
 
       it("should redirect from /profile when not authenticated", async () => {
@@ -213,7 +213,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fprofile")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fprofile")
       })
 
       it("should preserve callback URL for nested protected paths", async () => {
@@ -222,7 +222,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fmy-apps%2Fapp-123%2Fsettings")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fmy-apps%2Fapp-123%2Fsettings")
       })
     })
 
@@ -551,7 +551,7 @@ describe("middleware", () => {
         const response = await middleware(request)
 
         expect(response.status).toBe(307)
-        expect(response.headers.get("location")).toBe("http://localhost:3000/?callbackUrl=%2Fmy-apps")
+        expect(response.headers.get("location")).toBe("http://localhost:3000/auth/signin?callbackUrl=%2Fmy-apps")
       })
 
       it("should handle null session", async () => {
