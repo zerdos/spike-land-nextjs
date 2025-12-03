@@ -49,7 +49,8 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
           message: data.error || 'Failed to redeem voucher'
         })
       }
-    } catch {
+    } catch (error) {
+      console.error('[VoucherInput] Redemption error:', error)
       setResult({
         success: false,
         message: 'An error occurred. Please try again.'
