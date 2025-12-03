@@ -281,15 +281,14 @@ When('I upload a valid image file', async function (this: CustomWorld) {
 
   // For testing purposes, we'll mock the file selection since we may not have actual files
   // Note: testImagePath could be used with: path.join(__dirname, '../fixtures/test-image.jpg')
-  await fileInput.evaluate((input: HTMLInputElement) => {
-    const dataTransfer = new DataTransfer();
-    const file = new File(['fake-image-content'], 'test.jpg', { type: 'image/jpeg' });
-    dataTransfer.items.add(file);
-    input.files = dataTransfer.files;
-    input.dispatchEvent(new Event('change', { bubbles: true }));
+  await fileInput.setInputFiles({
+    name: 'test.jpg',
+    mimeType: 'image/jpeg',
+    buffer: Buffer.from('fake-image-content'),
   });
 
-  await this.page.waitForTimeout(500);
+  // Wait for upload to start (loading state)
+  await this.page.waitForTimeout(1000);
 });
 
 When('I attempt to upload a file larger than 50MB', async function (this: CustomWorld) {
@@ -471,10 +470,9 @@ When('I click {string} button', async function (this: CustomWorld, buttonText: s
 
 // Then steps
 Then('I should see the image upload section', async function (this: CustomWorld) {
-  const uploadSection = this.page.locator('input[type="file"]').or(
-    this.page.getByText(/upload an image/i)
-  );
-  await expect(uploadSection).toBeVisible();
+  // Look for the upload heading which is visible (file input is hidden)
+  const uploadHeading = this.page.getByRole('heading', { name: /upload an image/i });
+  await expect(uploadHeading).toBeVisible();
 });
 
 Then('I should see the token balance display', async function (this: CustomWorld) {
@@ -485,9 +483,9 @@ Then('I should see the token balance display', async function (this: CustomWorld
 });
 
 Then('I should see the upload icon', async function (this: CustomWorld) {
-  // Look for the Upload icon or upload-related UI
-  const uploadArea = this.page.getByText(/upload/i);
-  await expect(uploadArea).toBeVisible();
+  // Look for the Upload heading which indicates the upload area is visible
+  const uploadHeading = this.page.getByRole('heading', { name: /upload an image/i });
+  await expect(uploadHeading).toBeVisible();
 });
 
 Then('I should see upload error {string}', async function (this: CustomWorld, errorText: string) {
@@ -499,9 +497,12 @@ Then('I should see upload error {string}', async function (this: CustomWorld, er
 });
 
 Then('I should be redirected to the image enhancement page', async function (this: CustomWorld) {
-  await this.page.waitForTimeout(500);
-  const url = this.page.url();
-  expect(url).toContain('/enhance/');
+  // Wait for navigation to complete
+  await this.page.waitForURL(/\/enhance\//, { timeout: 10000 }).catch(() => {
+    // If navigation didn't happen, fail with current URL
+    const url = this.page.url();
+    expect(url).toContain('/enhance/');
+  });
 });
 
 Then('the upload button should be disabled', async function (this: CustomWorld) {

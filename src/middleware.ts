@@ -25,13 +25,13 @@ import NextAuth from "next-auth"
 import { authConfig } from "@/auth.config"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { timingSafeEqual } from "crypto"
 
 // Create Edge-compatible auth (no database operations)
 const { auth } = NextAuth(authConfig)
 
 /**
  * Performs constant-time string comparison to prevent timing attacks
+ * Uses Web Crypto API compatible approach for Edge runtime
  *
  * @param a - First string to compare
  * @param b - Second string to compare
@@ -39,9 +39,18 @@ const { auth } = NextAuth(authConfig)
  */
 export function constantTimeCompare(a: string, b: string): boolean {
   if (a.length !== b.length) return false
-  const bufA = Buffer.from(a, 'utf8')
-  const bufB = Buffer.from(b, 'utf8')
-  return timingSafeEqual(bufA, bufB)
+
+  // Convert strings to Uint8Array for byte-by-byte comparison
+  const encoder = new TextEncoder()
+  const bufA = encoder.encode(a)
+  const bufB = encoder.encode(b)
+
+  // Perform constant-time comparison
+  let result = 0
+  for (let i = 0; i < bufA.length; i++) {
+    result |= bufA[i] ^ bufB[i]
+  }
+  return result === 0
 }
 
 /**
@@ -52,6 +61,7 @@ const PROTECTED_PATHS = [
   "/my-apps",
   "/settings",
   "/profile",
+  "/enhance",
 ] as const
 
 /**
@@ -127,9 +137,9 @@ export async function middleware(request: NextRequest) {
   // Check authentication status
   const session = await auth()
 
-  // If user is not authenticated, redirect to home with callback URL
+  // If user is not authenticated, redirect to sign in page with callback URL
   if (!session?.user) {
-    const url = new URL("/", request.url)
+    const url = new URL("/auth/signin", request.url)
     url.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(url)
   }

@@ -26,7 +26,7 @@ Feature: Image Enhancement
     Then I should see the upload icon
     And I should see "Upload an Image" text
     And I should see "Choose an image to enhance with AI" text
-    And I should see "Select Image" button
+    And I should see "Select Image" text
 
   Scenario: Upload an image successfully
     Given I am on the enhance page

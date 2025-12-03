@@ -6,9 +6,17 @@ import { checkRateLimit, rateLimitConfigs } from '@/lib/rate-limiter'
 // Voucher code validation: alphanumeric, max 50 chars
 const VOUCHER_CODE_REGEX = /^[A-Z0-9]+$/i
 const MAX_VOUCHER_CODE_LENGTH = 50
+// Maximum request body size (1KB is plenty for a voucher code)
+const MAX_BODY_SIZE = 1024
 
 export async function POST(request: NextRequest) {
   try {
+    // Check content length to prevent oversized payloads
+    const contentLength = request.headers.get('content-length')
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+      return NextResponse.json({ error: 'Request too large' }, { status: 413 })
+    }
+
     const session = await auth()
 
     if (!session?.user?.id) {
