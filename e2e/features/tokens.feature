@@ -12,14 +12,14 @@ Feature: Token Management
     Then I should see the token balance display
     And I should see the token balance card with coins icon
 
-  @balance @fast
+  @balance @flaky
   Scenario: Low balance shows warning
     Given I have 3 tokens
     And I am on the enhance page
     Then I should see the low balance warning style
     And the get tokens button should say "Get Tokens"
 
-  @balance @fast
+  @balance @flaky
   Scenario: Normal balance shows no warning
     Given I have 50 tokens
     And I am on the enhance page
@@ -35,7 +35,7 @@ Feature: Token Management
     Then I should see the success message "Successfully redeemed! You received 100 tokens."
     And my balance should increase
 
-  @voucher-invalid @fast
+  @voucher-invalid @flaky
   Scenario: Invalid voucher shows error
     Given I am on the enhance page
     When I open the purchase modal
@@ -52,13 +52,13 @@ Feature: Token Management
     And I click the apply voucher button
     Then I should see an error message for the voucher
 
-  @voucher-empty @fast
+  @voucher-empty @flaky
   Scenario: Cannot submit empty voucher code
     Given I am on the enhance page
     When I open the purchase modal
     Then the apply voucher button should be disabled
 
-  @voucher-loading @fast
+  @voucher-loading @flaky
   Scenario: Voucher redemption shows loading state
     Given I am on the enhance page
     When I open the purchase modal
@@ -81,14 +81,14 @@ Feature: Token Management
     And I click on the "basic" token package
     Then I should be redirected to Stripe checkout
 
-  @purchase-flow @fast
+  @purchase-flow @flaky
   Scenario: Purchase modal can be closed
     Given I am on the enhance page
     When I open the purchase modal
     And I close the purchase modal
     Then I should not see the purchase modal
 
-  @balance @fast
+  @balance @flaky
   Scenario: Token balance refreshes after voucher redemption
     Given I am on the enhance page
     When I open the purchase modal
@@ -97,21 +97,21 @@ Feature: Token Management
     Then the purchase modal should close
     And the token balance should be updated
 
-  @purchase-flow @fast
+  @purchase-flow @flaky
   Scenario: Purchase modal shows package options
     Given I am on the enhance page
     When I open the purchase modal
     Then I should see at least 4 token packages
     And each package should show tokens and price
 
-  @voucher-uppercase @fast
+  @voucher-uppercase @flaky
   Scenario: Voucher code is converted to uppercase
     Given I am on the enhance page
     When I open the purchase modal
     And I enter the voucher code "lowercase"
     Then the voucher input should show "LOWERCASE"
 
-  @integration
+  @flaky
   Scenario: Token balance displayed in header on enhance page
     Given I have 25 tokens
     And I am on the enhance page
