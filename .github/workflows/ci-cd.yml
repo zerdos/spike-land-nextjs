@@ -217,35 +217,50 @@ jobs:
           MAX_RETRIES=3
           RETRY_DELAY=60
 
-          for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "Deployment attempt $attempt of $MAX_RETRIES..."
+          # Function to sanitize output (remove tokens)
+          sanitize_output() {
+            echo "$1" | sed 's/token=[^ ]*/token=REDACTED/g'
+          }
 
-            # Capture both stdout and stderr
-            if OUTPUT=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployment attempt $attempt of $MAX_RETRIES..."
+
+            # Capture output and exit code separately to avoid subshell issues
+            set +e
+            OUTPUT=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+            EXIT_CODE=$?
+            set -e
+
+            if [ $EXIT_CODE -eq 0 ]; then
               # Success - output is the deployment URL
               echo "url=$OUTPUT" >> $GITHUB_OUTPUT
-              echo "Deployed Preview: $OUTPUT"
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed Preview: $OUTPUT"
               exit 0
             fi
 
-            # Check if it's a rate limit error
-            if echo "$OUTPUT" | grep -q "Too many requests"; then
+            # Sanitize output before logging
+            SAFE_OUTPUT=$(sanitize_output "$OUTPUT")
+
+            # Check if it's a rate limit error (case-insensitive, multiple patterns)
+            if echo "$OUTPUT" | grep -Eqi "rate limit|too many requests|error 429"; then
               if [ $attempt -lt $MAX_RETRIES ]; then
-                echo "⚠️ Rate limited. Waiting ${RETRY_DELAY}s before retry..."
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Rate limited (attempt $attempt/$MAX_RETRIES). Waiting ${RETRY_DELAY}s before retry..."
                 sleep $RETRY_DELAY
                 RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff
               else
-                echo "❌ Rate limit exceeded after $MAX_RETRIES attempts"
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Rate limit exceeded after $MAX_RETRIES attempts"
+                echo "Last error: $SAFE_OUTPUT"
                 exit 1
               fi
             else
               # Non-rate-limit error - fail immediately
-              echo "❌ Deployment failed: $OUTPUT"
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployment failed (exit code: $EXIT_CODE)"
+              echo "Error: $SAFE_OUTPUT"
               exit 1
             fi
           done
 
-          echo "❌ All retry attempts exhausted"
+          echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] All retry attempts exhausted"
           exit 1
 
       - name: Wait for deployment to be live
@@ -278,11 +293,13 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: deploy-preview  # Simplified: deploy-preview already depends on build
+    needs: [deploy-preview, build]  # Explicit build dependency for clarity
     # Run if deploy-preview succeeded OR was skipped (for main branch push)
+    # AND build must have succeeded
     # Note: always() is required to evaluate conditions when deploy-preview is skipped
     if: |
       always() &&
+      needs.build.result == 'success' &&
       (needs.deploy-preview.result == 'success' || needs.deploy-preview.result == 'skipped')
     timeout-minutes: 30
 
@@ -430,11 +447,12 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [e2e, quality-checks, unit-tests]
+    needs: [e2e, quality-checks, unit-tests, build]  # Explicit build dependency
     # Deploy to production only when ALL checks pass
     # Note: always() required to evaluate when some jobs might be skipped
     if: |
       always() &&
+      needs.build.result == 'success' &&
       needs.e2e.result == 'success' &&
       needs.quality-checks.result == 'success' &&
       needs.unit-tests.result == 'success' &&
@@ -490,35 +508,50 @@ jobs:
           MAX_RETRIES=3
           RETRY_DELAY=60
 
-          for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "Production deployment attempt $attempt of $MAX_RETRIES..."
+          # Function to sanitize output (remove tokens)
+          sanitize_output() {
+            echo "$1" | sed 's/token=[^ ]*/token=REDACTED/g'
+          }
 
-            # Capture both stdout and stderr
-            if OUTPUT=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Production deployment attempt $attempt of $MAX_RETRIES..."
+
+            # Capture output and exit code separately to avoid subshell issues
+            set +e
+            OUTPUT=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+            EXIT_CODE=$?
+            set -e
+
+            if [ $EXIT_CODE -eq 0 ]; then
               # Success - output is the deployment URL
               echo "url=$OUTPUT" >> $GITHUB_OUTPUT
-              echo "Deployed to PRODUCTION: $OUTPUT"
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed to PRODUCTION: $OUTPUT"
               exit 0
             fi
 
-            # Check if it's a rate limit error
-            if echo "$OUTPUT" | grep -q "Too many requests"; then
+            # Sanitize output before logging
+            SAFE_OUTPUT=$(sanitize_output "$OUTPUT")
+
+            # Check if it's a rate limit error (case-insensitive, multiple patterns)
+            if echo "$OUTPUT" | grep -Eqi "rate limit|too many requests|error 429"; then
               if [ $attempt -lt $MAX_RETRIES ]; then
-                echo "⚠️ Rate limited. Waiting ${RETRY_DELAY}s before retry..."
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Rate limited (attempt $attempt/$MAX_RETRIES). Waiting ${RETRY_DELAY}s before retry..."
                 sleep $RETRY_DELAY
                 RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff
               else
-                echo "❌ Rate limit exceeded after $MAX_RETRIES attempts"
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Rate limit exceeded after $MAX_RETRIES attempts"
+                echo "Last error: $SAFE_OUTPUT"
                 exit 1
               fi
             else
               # Non-rate-limit error - fail immediately
-              echo "❌ Production deployment failed: $OUTPUT"
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Production deployment failed (exit code: $EXIT_CODE)"
+              echo "Error: $SAFE_OUTPUT"
               exit 1
             fi
           done
 
-          echo "❌ All retry attempts exhausted"
+          echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] All retry attempts exhausted"
           exit 1
 
       - name: Wait for production deployment to be live
