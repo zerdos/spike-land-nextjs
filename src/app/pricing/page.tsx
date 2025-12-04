@@ -118,10 +118,10 @@ export default function PricingPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    £{pkg.priceGBP.toFixed(2)}
+                    £{pkg.price.toFixed(2)}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    £{(pkg.priceGBP / pkg.tokens).toFixed(2)} per token
+                    £{(pkg.price / pkg.tokens).toFixed(2)} per token
                   </div>
                 </CardContent>
                 <CardFooter>
