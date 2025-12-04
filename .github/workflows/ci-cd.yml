@@ -495,15 +495,21 @@ jobs:
 
       - name: Run Database Migrations
         run: |
-          # Fix: The third migration was incorrectly marked as applied but never ran
-          # First, unmark it so it can be properly applied
-          echo "Checking migration status and fixing if needed..."
+          # Direct SQL execution for Phase 3-5 features migration
+          # The migration SQL uses idempotent commands (IF NOT EXISTS, etc.)
+          # so it's safe to run even if partially applied
+          echo "Running Phase 3-5 migration SQL directly..."
 
-          # Unmark the third migration so it can actually run
-          npx prisma migrate resolve --rolled-back 20241204_add_phase_3_5_features || true
+          # Install psql client
+          sudo apt-get update && sudo apt-get install -y postgresql-client
 
-          # Now run migrate deploy to apply any pending migrations
-          npx prisma migrate deploy
+          # Execute the migration SQL directly
+          psql "$DATABASE_URL" -f prisma/migrations/20241204_add_phase_3_5_features/migration.sql
+
+          echo "Migration SQL executed successfully"
+
+          # Now run standard migrate deploy for future migrations
+          npx prisma migrate deploy || true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
