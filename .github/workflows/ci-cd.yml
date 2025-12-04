@@ -509,7 +509,8 @@ jobs:
           echo "Migration SQL executed successfully"
 
           # Set initial admin user (one-time setup, idempotent)
-          psql "$DATABASE_URL" -c "UPDATE users SET role = 'SUPER_ADMIN' WHERE email = 'zolika84@gmail.com';" || true
+          # Update by both email and stable user ID to ensure we catch the user
+          psql "$DATABASE_URL" -c "UPDATE users SET role = 'SUPER_ADMIN' WHERE email = 'zolika84@gmail.com' OR id = 'user_49d6efb916aec77949d6efb916aec779';" || true
 
           # Now run standard migrate deploy for future migrations
           npx prisma migrate deploy || true
