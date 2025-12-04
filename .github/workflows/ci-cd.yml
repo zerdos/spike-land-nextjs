@@ -238,7 +238,9 @@ jobs:
     # Only run if both build passed AND either:
     # - deploy-preview succeeded (for PRs/workflow_dispatch)
     # - deploy-preview was skipped (for main branch push)
+    # Note: always() is required to evaluate conditions when deploy-preview is skipped
     if: |
+      always() &&
       needs.build.result == 'success' &&
       (needs.deploy-preview.result == 'success' || needs.deploy-preview.result == 'skipped')
     timeout-minutes: 30
