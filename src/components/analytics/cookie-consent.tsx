@@ -44,8 +44,6 @@ export function CookieConsent() {
               <a
                 href="/privacy"
                 className="underline hover:text-foreground"
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 Learn more
               </a>

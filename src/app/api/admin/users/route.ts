@@ -1,0 +1,325 @@
+/**
+ * User Management API Route
+ *
+ * Search users, view details, grant/revoke admin role, adjust tokens.
+ */
+
+import { NextResponse, NextRequest } from "next/server"
+import { auth } from "@/auth"
+import { requireAdminByUserId, isSuperAdmin } from "@/lib/auth/admin-middleware"
+import prisma from "@/lib/prisma"
+import { UserRole } from "@prisma/client"
+import { AuditLogger } from "@/lib/audit/logger"
+
+// Validation constants
+const MAX_TOKEN_ADJUSTMENT = 10000
+const MIN_TOKEN_ADJUSTMENT = -1000
+const MAX_SEARCH_LENGTH = 100
+// CUID pattern: starts with 'c' or user_ prefix, followed by alphanumeric
+const CUID_PATTERN = /^(c[a-z0-9]{24}|user_[a-f0-9]+)$/
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    await requireAdminByUserId(session.user.id)
+
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get("search")
+    const userId = searchParams.get("userId")
+
+    // Validate search query length
+    if (search && search.length > MAX_SEARCH_LENGTH) {
+      return NextResponse.json(
+        { error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)` },
+        { status: 400 }
+      )
+    }
+
+    // Validate userId format
+    if (userId && !CUID_PATTERN.test(userId)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 }
+      )
+    }
+
+    // Get specific user details
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          tokenBalance: true,
+          tokenTransactions: {
+            take: 10,
+            orderBy: { createdAt: "desc" },
+          },
+          enhancedImages: {
+            select: { _count: true },
+          },
+          accounts: {
+            select: { provider: true },
+          },
+        },
+      })
+
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 })
+      }
+
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+          tokenBalance: user.tokenBalance?.balance || 0,
+          imageCount: user.enhancedImages.length,
+          authProviders: user.accounts.map((a) => a.provider),
+          createdAt: user.createdAt.toISOString(),
+          recentTransactions: user.tokenTransactions.map((t) => ({
+            id: t.id,
+            type: t.type,
+            amount: t.amount,
+            createdAt: t.createdAt.toISOString(),
+          })),
+        },
+      })
+    }
+
+    // Search users
+    const where = search
+      ? {
+          OR: [
+            { email: { contains: search, mode: "insensitive" as const } },
+            { name: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : {}
+
+    const users = await prisma.user.findMany({
+      where,
+      include: {
+        tokenBalance: {
+          select: { balance: true },
+        },
+        _count: {
+          select: {
+            enhancedImages: true,
+          },
+        },
+      },
+      take: 50,
+      orderBy: { createdAt: "desc" },
+    })
+
+    return NextResponse.json({
+      users: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        image: u.image,
+        role: u.role,
+        tokenBalance: u.tokenBalance?.balance || 0,
+        imageCount: u._count.enhancedImages,
+        createdAt: u.createdAt.toISOString(),
+      })),
+    })
+  } catch (error) {
+    console.error("Failed to fetch users:", error)
+    if (error instanceof Error && error.message.includes("Forbidden")) {
+      return NextResponse.json({ error: error.message }, { status: 403 })
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    await requireAdminByUserId(session.user.id)
+
+    const body = await request.json()
+    const { userId, action, value } = body
+
+    if (!userId || !action) {
+      return NextResponse.json(
+        { error: "Missing required fields: userId, action" },
+        { status: 400 }
+      )
+    }
+
+    // Validate userId format
+    if (!CUID_PATTERN.test(userId)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 }
+      )
+    }
+
+    // Verify target user exists
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true },
+    })
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      )
+    }
+
+    // Handle role change
+    if (action === "setRole") {
+      if (!Object.values(UserRole).includes(value)) {
+        return NextResponse.json({ error: "Invalid role" }, { status: 400 })
+      }
+
+      // Prevent self-demotion
+      if (userId === session.user.id && value === UserRole.USER) {
+        return NextResponse.json(
+          { error: "Cannot demote yourself to USER role" },
+          { status: 400 }
+        )
+      }
+
+      // Only super admins can create other super admins
+      if (value === UserRole.SUPER_ADMIN) {
+        const isSuperAdminUser = await isSuperAdmin(session.user.id)
+        if (!isSuperAdminUser) {
+          return NextResponse.json(
+            { error: "Only super admins can create super admins" },
+            { status: 403 }
+          )
+        }
+      }
+
+      // Prevent demoting super admins (except by other super admins)
+      if (targetUser.role === UserRole.SUPER_ADMIN && value !== UserRole.SUPER_ADMIN) {
+        const isSuperAdminUser = await isSuperAdmin(session.user.id)
+        if (!isSuperAdminUser) {
+          return NextResponse.json(
+            { error: "Only super admins can demote super admins" },
+            { status: 403 }
+          )
+        }
+      }
+
+      const oldRole = targetUser.role
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { role: value },
+      })
+
+      // Log role change
+      const forwarded = request.headers.get("x-forwarded-for")
+      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined
+      await AuditLogger.logRoleChange(
+        session.user.id,
+        userId,
+        oldRole,
+        value,
+        ipAddress
+      )
+
+      return NextResponse.json({ success: true, role: value })
+    }
+
+    // Handle token adjustment
+    if (action === "adjustTokens") {
+      const amount = parseInt(value)
+      if (isNaN(amount)) {
+        return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
+      }
+
+      // Validate token adjustment bounds
+      if (amount > MAX_TOKEN_ADJUSTMENT) {
+        return NextResponse.json(
+          { error: `Cannot add more than ${MAX_TOKEN_ADJUSTMENT} tokens at once` },
+          { status: 400 }
+        )
+      }
+      if (amount < MIN_TOKEN_ADJUSTMENT) {
+        return NextResponse.json(
+          { error: `Cannot remove more than ${Math.abs(MIN_TOKEN_ADJUSTMENT)} tokens at once` },
+          { status: 400 }
+        )
+      }
+
+      // Get or create token balance
+      const tokenBalance = await prisma.userTokenBalance.upsert({
+        where: { userId },
+        update: {
+          balance: {
+            increment: amount,
+          },
+        },
+        create: {
+          userId,
+          balance: Math.max(0, amount),
+        },
+      })
+
+      const newBalance = tokenBalance.balance + amount
+
+      // Create transaction record
+      await prisma.tokenTransaction.create({
+        data: {
+          userId,
+          amount,
+          type: amount > 0 ? "EARN_BONUS" : "SPEND_ENHANCEMENT",
+          source: "admin_adjustment",
+          sourceId: session.user.id,
+          balanceAfter: newBalance,
+          metadata: {
+            adjustedBy: session.user.id,
+            reason: "Manual admin adjustment",
+          },
+        },
+      })
+
+      // Log token adjustment
+      const forwarded = request.headers.get("x-forwarded-for")
+      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined
+      await AuditLogger.logTokenAdjustment(
+        session.user.id,
+        userId,
+        amount,
+        newBalance,
+        "Manual admin adjustment",
+        ipAddress
+      )
+
+      return NextResponse.json({
+        success: true,
+        newBalance,
+      })
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+  } catch (error) {
+    console.error("Failed to update user:", error)
+    if (error instanceof Error && error.message.includes("Forbidden")) {
+      return NextResponse.json({ error: error.message }, { status: 403 })
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}

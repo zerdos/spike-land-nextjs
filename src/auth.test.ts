@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock prisma before importing auth
-const mockUpsert = vi.fn().mockResolvedValue({})
+const mockUpsert = vi.fn().mockResolvedValue({ id: 'user_123' })
+const mockFindUnique = vi.fn().mockResolvedValue(null)
 vi.mock('@/lib/prisma', () => ({
   default: {
     user: {
       upsert: mockUpsert,
-      findUnique: vi.fn().mockResolvedValue(null),
+      findUnique: mockFindUnique,
     },
   },
 }))
@@ -28,6 +29,26 @@ vi.mock('next-auth/providers/github', () => ({
 
 vi.mock('next-auth/providers/google', () => ({
   default: vi.fn(() => ({ id: 'google' })),
+}))
+
+// Mock referral modules
+vi.mock('@/lib/referral/code-generator', () => ({
+  assignReferralCodeToUser: vi.fn().mockResolvedValue('ABC12345'),
+}))
+
+vi.mock('@/lib/referral/tracker', () => ({
+  linkReferralOnSignup: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+vi.mock('@/lib/referral/fraud-detection', () => ({
+  validateReferralAfterVerification: vi.fn().mockResolvedValue({
+    success: true,
+    shouldGrantRewards: false
+  }),
+}))
+
+vi.mock('@/lib/referral/rewards', () => ({
+  completeReferralAndGrantRewards: vi.fn().mockResolvedValue({ success: true }),
 }))
 
 describe('NextAuth Full Configuration', () => {
@@ -81,7 +102,8 @@ describe('NextAuth Full Configuration', () => {
 describe('handleSignIn', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockUpsert.mockResolvedValue({})
+    mockUpsert.mockResolvedValue({ id: 'user_123' })
+    mockFindUnique.mockResolvedValue(null)
     process.env.AUTH_SECRET = 'test-auth-secret'
   })
 
@@ -203,6 +225,100 @@ describe('handleSignIn', () => {
       const result = await handleSignIn({ email: 'test@example.com' })
       expect(result).toBe(true)
     }
+
+    consoleSpy.mockRestore()
+  })
+
+  it('should assign referral code to new users', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { assignReferralCodeToUser } = await import('@/lib/referral/code-generator')
+
+    mockFindUnique.mockResolvedValueOnce(null) // No existing user
+    const user = { email: 'newuser@example.com', name: 'New User' }
+
+    await handleSignIn(user)
+
+    expect(assignReferralCodeToUser).toHaveBeenCalledWith('user_123')
+  })
+
+  it('should link referral on new user signup', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { linkReferralOnSignup } = await import('@/lib/referral/tracker')
+
+    mockFindUnique.mockResolvedValueOnce(null) // No existing user
+    const user = { email: 'newuser@example.com' }
+
+    await handleSignIn(user)
+
+    expect(linkReferralOnSignup).toHaveBeenCalledWith('user_123')
+  })
+
+  it('should not process referrals for existing users', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { assignReferralCodeToUser } = await import('@/lib/referral/code-generator')
+    const { linkReferralOnSignup } = await import('@/lib/referral/tracker')
+
+    mockFindUnique.mockResolvedValueOnce({ id: 'user_123', email: 'existing@example.com' })
+    const user = { email: 'existing@example.com' }
+
+    await handleSignIn(user)
+
+    expect(assignReferralCodeToUser).not.toHaveBeenCalled()
+    expect(linkReferralOnSignup).not.toHaveBeenCalled()
+  })
+
+  it('should grant referral rewards for new users with valid referrals', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { validateReferralAfterVerification } = await import('@/lib/referral/fraud-detection')
+    const { completeReferralAndGrantRewards } = await import('@/lib/referral/rewards')
+
+    vi.mocked(validateReferralAfterVerification).mockResolvedValueOnce({
+      success: true,
+      shouldGrantRewards: true,
+      referralId: 'ref-123',
+    })
+
+    mockFindUnique.mockResolvedValueOnce(null) // No existing user
+    const user = { email: 'newuser@example.com' }
+
+    await handleSignIn(user)
+
+    expect(completeReferralAndGrantRewards).toHaveBeenCalledWith('ref-123')
+  })
+
+  it('should not grant rewards if fraud checks fail', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { validateReferralAfterVerification } = await import('@/lib/referral/fraud-detection')
+    const { completeReferralAndGrantRewards } = await import('@/lib/referral/rewards')
+
+    vi.mocked(validateReferralAfterVerification).mockResolvedValueOnce({
+      success: true,
+      shouldGrantRewards: false,
+      error: 'Disposable email detected',
+    })
+
+    mockFindUnique.mockResolvedValueOnce(null)
+    const user = { email: 'newuser@tempmail.com' }
+
+    await handleSignIn(user)
+
+    expect(completeReferralAndGrantRewards).not.toHaveBeenCalled()
+  })
+
+  it('should handle referral errors gracefully without blocking sign-in', async () => {
+    const { handleSignIn } = await import('./auth')
+    const { assignReferralCodeToUser } = await import('@/lib/referral/code-generator')
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    vi.mocked(assignReferralCodeToUser).mockRejectedValueOnce(new Error('Referral code error'))
+
+    mockFindUnique.mockResolvedValueOnce(null)
+    const user = { email: 'newuser@example.com' }
+
+    const result = await handleSignIn(user)
+
+    expect(result).toBe(true) // Should still allow sign-in
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to assign referral code:', expect.any(Error))
 
     consoleSpy.mockRestore()
   })

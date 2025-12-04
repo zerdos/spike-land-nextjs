@@ -20,6 +20,8 @@ const eslintConfig = [
       "next-env.d.ts",
       "src/generated/**",
       "prisma.config.ts",
+      "fix-r2-versioning-cache/**",
+      "coverage/**",
     ],
   },
   {
@@ -31,7 +33,14 @@ const eslintConfig = [
           "varsIgnorePattern": "^_",
           "caughtErrorsIgnorePattern": "^_"
         }
-      ]
+      ],
+      "react/no-unescaped-entities": "off"
+    }
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off"
     }
   }
 ];
