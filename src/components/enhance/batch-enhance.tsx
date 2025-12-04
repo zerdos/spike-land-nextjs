@@ -147,10 +147,14 @@ export function BatchEnhance({
   }, [selectedImages, selectedTier, hasEnoughTokens, images, onBalanceRefresh])
 
   const pollJobStatuses = useCallback(async (jobIds: string[]) => {
-    const pollInterval = 2000 // 2 seconds
-    const maxAttempts = 60 // 2 minutes total
+    // Exponential backoff configuration
+    const initialInterval = 2000 // Start at 2 seconds
+    const maxInterval = 10000 // Cap at 10 seconds
+    const backoffMultiplier = 1.5 // Increase by 50% each time
+    const maxAttempts = 60 // Maximum polling attempts
 
     let attempts = 0
+    let currentInterval = initialInterval
 
     const poll = async () => {
       attempts++
@@ -194,7 +198,9 @@ export function BatchEnhance({
             onEnhanceComplete()
           }
         } else {
-          setTimeout(poll, pollInterval)
+          // Apply exponential backoff with cap
+          currentInterval = Math.min(currentInterval * backoffMultiplier, maxInterval)
+          setTimeout(poll, currentInterval)
         }
       } catch (error) {
         console.error('Error polling job statuses:', error)
