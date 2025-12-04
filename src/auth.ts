@@ -135,7 +135,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Call base jwt callback for stable ID handling
       const baseCallbacks = authConfig.callbacks
       if (baseCallbacks?.jwt) {
-        token = await baseCallbacks.jwt({ token, user, trigger } as Parameters<typeof baseCallbacks.jwt>[0])
+        const result = await baseCallbacks.jwt({ token, user, trigger } as Parameters<typeof baseCallbacks.jwt>[0])
+        if (result) {
+          token = result
+        }
       }
 
       // On initial sign-in or refresh, fetch role from database

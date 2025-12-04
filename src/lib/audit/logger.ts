@@ -7,7 +7,9 @@
  */
 
 import prisma from "@/lib/prisma"
-import { AuditAction } from "@prisma/client"
+import { AuditAction, Prisma } from "@prisma/client"
+
+type JsonValue = Prisma.JsonValue
 
 /**
  * Metadata for role change actions
@@ -204,7 +206,7 @@ export class AuditLogger {
       id: string
       action: AuditAction
       targetId: string | null
-      metadata: object | null
+      metadata: JsonValue
       createdAt: Date
     }>
   > {
@@ -233,7 +235,7 @@ export class AuditLogger {
       id: string
       userId: string
       action: AuditAction
-      metadata: object | null
+      metadata: JsonValue
       createdAt: Date
       user: { email: string | null; name: string | null }
     }>
@@ -269,7 +271,7 @@ export class AuditLogger {
       userId: string
       action: AuditAction
       targetId: string | null
-      metadata: object | null
+      metadata: JsonValue
       createdAt: Date
       user: { email: string | null; name: string | null }
     }>
