@@ -232,9 +232,14 @@ jobs:
             set -e
 
             if [ $EXIT_CODE -eq 0 ]; then
-              # Success - output is the deployment URL
-              echo "url=$OUTPUT" >> $GITHUB_OUTPUT
-              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed Preview: $OUTPUT"
+              # Success - extract deployment URL from output (last https URL in output)
+              DEPLOY_URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.vercel\.app' | tail -1)
+              if [ -z "$DEPLOY_URL" ]; then
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Warning: Could not extract URL from output, using full output"
+                DEPLOY_URL=$(echo "$OUTPUT" | tail -1)
+              fi
+              echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed Preview: $DEPLOY_URL"
               exit 0
             fi
 
@@ -523,9 +528,15 @@ jobs:
             set -e
 
             if [ $EXIT_CODE -eq 0 ]; then
-              # Success - output is the deployment URL
-              echo "url=$OUTPUT" >> $GITHUB_OUTPUT
-              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed to PRODUCTION: $OUTPUT"
+              # Success - extract deployment URL from output (last https URL in output)
+              # For production, look for either vercel.app or the custom domain
+              DEPLOY_URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.(vercel\.app|spike\.land)' | tail -1)
+              if [ -z "$DEPLOY_URL" ]; then
+                echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Warning: Could not extract URL from output, using full output"
+                DEPLOY_URL=$(echo "$OUTPUT" | tail -1)
+              fi
+              echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+              echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Deployed to PRODUCTION: $DEPLOY_URL"
               exit 0
             fi
 
