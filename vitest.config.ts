@@ -8,6 +8,13 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    // Exclude git worktrees from test discovery
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/fix-r2-versioning-cache/**',
+      '**/.git/**',
+    ],
     // Optimize for parallel execution and sharding
     pool: 'threads',
     poolOptions: {

@@ -545,8 +545,7 @@ describe("middleware", () => {
 
     describe("edge cases", () => {
       it("should handle session without user object", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.mocked(auth).mockResolvedValue({ expires: new Date().toISOString() } as any)
+        vi.mocked(auth).mockResolvedValue({ expires: new Date().toISOString() } as never)
         const request = createMockRequest("/my-apps")
         const response = await middleware(request)
 
@@ -564,8 +563,7 @@ describe("middleware", () => {
       })
 
       it("should handle undefined session", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.mocked(auth).mockResolvedValue(undefined as any)
+        vi.mocked(auth).mockResolvedValue(undefined as never)
         const request = createMockRequest("/my-apps")
         const response = await middleware(request)
 

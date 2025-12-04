@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 // User ID is overridden by auth.ts signIn callback with stable email-based ID (user_<hash>).
 // The @default(cuid()) is kept as a fallback for direct Prisma operations (non-auth flows).
 // See: src/auth.ts handleSignIn() and src/auth.config.ts createStableUserId()
@@ -17,7 +23,11 @@ model User {
   email            String?   @unique
   emailVerified    DateTime?
   image            String?
+  role             UserRole  @default(USER)
   stripeCustomerId String?   @unique
+  referralCode     String?   @unique
+  referredById     String?
+  referralCount    Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -32,6 +42,11 @@ model User {
   enhancementJobs    ImageEnhancementJob[]
   albums             Album[]
   voucherRedemptions VoucherRedemption[]
+  referredBy         User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals          User[]    @relation("Referrals")
+  referrerReferrals  Referral[] @relation("ReferrerReferrals")
+  refereeReferrals   Referral[] @relation("RefereeReferrals")
+  auditLogs          AuditLog[]
 
   @@map("users")
 }
@@ -463,4 +478,60 @@ model VoucherRedemption {
   @@index([userId, redeemedAt])
   @@index([voucherId])
   @@map("voucher_redemptions")
+}
+
+// Referral System Models
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  INVALID
+}
+
+model Referral {
+  id            String         @id @default(cuid())
+  referrerId    String
+  refereeId     String
+  status        ReferralStatus @default(PENDING)
+  tokensGranted Int            @default(0)
+  ipAddress     String?
+  createdAt     DateTime       @default(now())
+  completedAt   DateTime?
+
+  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("RefereeReferrals", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, refereeId])
+  @@index([referrerId, status])
+  @@index([refereeId])
+  @@index([status, createdAt])
+  @@map("referrals")
+}
+
+// Audit Logging Models
+enum AuditAction {
+  ROLE_CHANGE
+  TOKEN_ADJUSTMENT
+  VOUCHER_CREATE
+  VOUCHER_UPDATE
+  VOUCHER_DELETE
+  USER_DELETE
+  ADMIN_LOGIN
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String      // Who performed the action
+  action    AuditAction // Type of action
+  targetId  String?     // Target user/resource ID
+  metadata  Json?       // Additional details (oldValue, newValue, reason)
+  ipAddress String?     // IP address of actor
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
