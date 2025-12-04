@@ -5,6 +5,8 @@ import { ENHANCEMENT_COSTS } from '@/lib/tokens/costs'
 import prisma from '@/lib/prisma'
 import { EnhancementTier, JobStatus } from '@prisma/client'
 
+const MAX_BATCH_SIZE = 20
+
 interface BatchEnhanceResult {
   success: boolean
   imageId: string
@@ -29,6 +31,13 @@ export async function POST(request: NextRequest) {
     if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
       return NextResponse.json(
         { error: 'Missing or invalid imageIds' },
+        { status: 400 }
+      )
+    }
+
+    if (imageIds.length > MAX_BATCH_SIZE) {
+      return NextResponse.json(
+        { error: `Maximum ${MAX_BATCH_SIZE} images allowed per batch enhancement` },
         { status: 400 }
       )
     }

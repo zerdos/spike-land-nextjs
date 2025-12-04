@@ -4,7 +4,8 @@ import { processAndUploadImage } from '@/lib/storage/upload-handler'
 import prisma from '@/lib/prisma'
 
 const MAX_BATCH_SIZE = 20
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB per file
+const MAX_TOTAL_BATCH_SIZE = 50 * 1024 * 1024 // 50MB total
 
 interface UploadResult {
   success: boolean
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate all files before processing
+    let totalSize = 0
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         return NextResponse.json(
@@ -47,6 +49,15 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+      totalSize += file.size
+    }
+
+    // Validate total batch size
+    if (totalSize > MAX_TOTAL_BATCH_SIZE) {
+      return NextResponse.json(
+        { error: `Total batch size exceeds maximum of 50MB (current: ${Math.round(totalSize / 1024 / 1024)}MB)` },
+        { status: 400 }
+      )
     }
 
     // Ensure user exists in database (upsert for JWT-based auth)

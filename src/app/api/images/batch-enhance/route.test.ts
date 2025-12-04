@@ -161,6 +161,15 @@ describe('POST /api/images/batch-enhance', () => {
     expect(data.error).toBe('Missing or invalid imageIds')
   })
 
+  it('should return 400 if more than 20 images in batch', async () => {
+    const imageIds = Array.from({ length: 21 }, (_, i) => `img-${i}`)
+    const req = createMockRequest({ imageIds, tier: 'TIER_2K' })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('Maximum 20 images allowed per batch enhancement')
+  })
+
   it('should return 400 if tier is invalid', async () => {
     const req = createMockRequest({
       imageIds: ['img-1'],

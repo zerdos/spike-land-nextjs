@@ -143,6 +143,22 @@ describe('POST /api/images/batch-upload', () => {
     expect(data.error).toBe('File test2.jpg exceeds maximum size of 10MB')
   })
 
+  it('should return 400 if total batch size exceeds 50MB', async () => {
+    const files = [
+      createMockFile('test1.jpg', 'image/jpeg', 9 * 1024 * 1024),
+      createMockFile('test2.jpg', 'image/jpeg', 9 * 1024 * 1024),
+      createMockFile('test3.jpg', 'image/jpeg', 9 * 1024 * 1024),
+      createMockFile('test4.jpg', 'image/jpeg', 9 * 1024 * 1024),
+      createMockFile('test5.jpg', 'image/jpeg', 9 * 1024 * 1024),
+      createMockFile('test6.jpg', 'image/jpeg', 9 * 1024 * 1024), // 54MB total > 50MB
+    ]
+    const req = createMockRequest(files)
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toContain('Total batch size exceeds maximum of 50MB')
+  })
+
   it('should upsert user before uploading images', async () => {
     const files = [createMockFile('test1.jpg'), createMockFile('test2.jpg')]
     const req = createMockRequest(files)
