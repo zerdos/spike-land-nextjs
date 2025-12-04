@@ -46,6 +46,7 @@ model User {
   referrals          User[]    @relation("Referrals")
   referrerReferrals  Referral[] @relation("ReferrerReferrals")
   refereeReferrals   Referral[] @relation("RefereeReferrals")
+  auditLogs          AuditLog[]
 
   @@map("users")
 }
@@ -504,4 +505,33 @@ model Referral {
   @@index([refereeId])
   @@index([status, createdAt])
   @@map("referrals")
+}
+
+// Audit Logging Models
+enum AuditAction {
+  ROLE_CHANGE
+  TOKEN_ADJUSTMENT
+  VOUCHER_CREATE
+  VOUCHER_UPDATE
+  VOUCHER_DELETE
+  USER_DELETE
+  ADMIN_LOGIN
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String      // Who performed the action
+  action    AuditAction // Type of action
+  targetId  String?     // Target user/resource ID
+  metadata  Json?       // Additional details (oldValue, newValue, reason)
+  ipAddress String?     // IP address of actor
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
