@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import Image from "next/image"
-import { Slider } from "@/components/ui/slider"
 
 // Log broken images to server for monitoring
 async function logBrokenImage(imageType: string, url: string) {
@@ -47,13 +46,83 @@ export function ImageComparisonSlider({
   width = 16,
   height = 9,
 }: ImageComparisonSliderProps) {
-  const [sliderPosition, setSliderPosition] = useState([50])
+  const [sliderPosition, setSliderPosition] = useState(50)
   const [enhancedError, setEnhancedError] = useState(false)
   const [originalError, setOriginalError] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Ensure valid dimensions to prevent CSS errors
   const safeWidth = Math.max(1, Number(width) || 16)
   const safeHeight = Math.max(1, Number(height) || 9)
+
+  const updatePosition = useCallback((clientX: number) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setSliderPosition(percentage)
+  }, [])
+
+  const handleDragStart = useCallback((clientX: number) => {
+    setIsDragging(true)
+    updatePosition(clientX)
+  }, [updatePosition])
+
+  const handleDragMove = useCallback((clientX: number) => {
+    if (!isDragging) return
+    updatePosition(clientX)
+  }, [isDragging, updatePosition])
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  // Mouse event handlers
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    handleDragStart(e.clientX)
+  }, [handleDragStart])
+
+  // Touch event handlers
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch) {
+      handleDragStart(touch.clientX)
+    }
+  }, [handleDragStart])
+
+  // Document-level listeners for drag continuation
+  useEffect(() => {
+    if (!isDragging) return
+
+    const onMouseMove = (e: MouseEvent) => {
+      handleDragMove(e.clientX)
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      if (touch) {
+        handleDragMove(touch.clientX)
+      }
+    }
+
+    const onEnd = () => {
+      handleDragEnd()
+    }
+
+    document.addEventListener("mousemove", onMouseMove)
+    document.addEventListener("mouseup", onEnd)
+    document.addEventListener("touchmove", onTouchMove)
+    document.addEventListener("touchend", onEnd)
+
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove)
+      document.removeEventListener("mouseup", onEnd)
+      document.removeEventListener("touchmove", onTouchMove)
+      document.removeEventListener("touchend", onEnd)
+    }
+  }, [isDragging, handleDragMove, handleDragEnd])
 
   const handleEnhancedError = () => {
     console.error(`[Enhanced Image Load Error] URL: ${enhancedUrl}`)
@@ -68,10 +137,13 @@ export function ImageComparisonSlider({
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       <div
-        className="relative bg-muted rounded-lg overflow-hidden w-full"
-        style={{ aspectRatio: `${safeWidth} / ${safeHeight}` }}
+        ref={containerRef}
+        className="relative bg-muted rounded-lg overflow-hidden w-full select-none cursor-ew-resize"
+        style={{ aspectRatio: `${safeWidth} / ${safeHeight}`, touchAction: "none" }}
+        onMouseDown={onMouseDown}
+        onTouchStart={onTouchStart}
       >
         {/* Enhanced image (background) */}
         {!enhancedError ? (
@@ -92,7 +164,7 @@ export function ImageComparisonSlider({
         {/* Original image (clipped overlay) */}
         <div
           className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - (sliderPosition[0] ?? 50)}% 0 0)` }}
+          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           {!originalError ? (
             <Image
@@ -112,16 +184,9 @@ export function ImageComparisonSlider({
 
         {/* Divider line */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg"
-          style={{ left: `${sliderPosition[0] ?? 50}%` }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-4 bg-gray-600" />
-              <div className="w-0.5 h-4 bg-gray-600" />
-            </div>
-          </div>
-        </div>
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none"
+          style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
+        />
 
         {/* Labels */}
         <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
@@ -131,16 +196,6 @@ export function ImageComparisonSlider({
           {enhancedLabel}
         </div>
       </div>
-
-      {/* Slider control */}
-      <Slider
-        value={sliderPosition}
-        onValueChange={setSliderPosition}
-        min={0}
-        max={100}
-        step={1}
-        className="w-full"
-      />
     </div>
   )
 }

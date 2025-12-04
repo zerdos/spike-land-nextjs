@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate price is a positive number
-      if (typeof pkg.priceGBP !== 'number' || pkg.priceGBP <= 0 || !Number.isFinite(pkg.priceGBP)) {
-        console.error(`Invalid price configuration for package ${packageId}: ${pkg.priceGBP}`)
+      if (typeof pkg.price !== 'number' || pkg.price <= 0 || !Number.isFinite(pkg.price)) {
+        console.error(`Invalid price configuration for package ${packageId}: ${pkg.price}`)
         return NextResponse.json({ error: 'Invalid package configuration' }, { status: 500 })
       }
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                 name: pkg.name,
                 description: `${pkg.tokens} tokens for AI image enhancement`,
               },
-              unit_amount: Math.round(pkg.priceGBP * 100), // Convert to pence
+              unit_amount: Math.round(pkg.price * 100), // Convert to pence
             },
             quantity: 1,
           },
