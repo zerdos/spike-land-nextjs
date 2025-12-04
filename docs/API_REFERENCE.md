@@ -11,11 +11,15 @@
 1. [Authentication](#authentication)
 2. [Image Management](#image-management)
 3. [Image Enhancement](#image-enhancement)
-4. [Token Management](#token-management)
-5. [Voucher Management](#voucher-management)
-6. [Payment Processing](#payment-processing)
-7. [Error Handling](#error-handling)
-8. [Rate Limiting](#rate-limiting)
+4. [Batch Operations](#batch-operations)
+5. [Albums](#albums)
+6. [Token Management](#token-management)
+7. [Voucher Management](#voucher-management)
+8. [Referral Program](#referral-program)
+9. [Admin Dashboard](#admin-dashboard)
+10. [Payment Processing](#payment-processing)
+11. [Error Handling](#error-handling)
+12. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -245,6 +249,107 @@ Authorization: Bearer {session_token}
 
 ---
 
+## Batch Operations
+
+### Batch Upload Images
+
+Upload multiple images in a single request.
+
+**Endpoint**: `POST /api/images/batch-upload`
+
+**Authentication**: Required
+
+**Content-Type**: `multipart/form-data`
+
+**Request**:
+```http
+POST /api/images/batch-upload HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: multipart/form-data
+
+files: [file1.jpg, file2.jpg, file3.jpg]
+albumId: album_123 (optional)
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "uploaded": 3,
+  "failed": 0,
+  "images": [
+    {
+      "id": "img_001",
+      "name": "photo1.jpg",
+      "url": "https://r2-bucket.example.com/originals/user123/img_001.jpg",
+      "width": 1920,
+      "height": 1440
+    }
+  ]
+}
+```
+
+**Error Responses**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | No files provided | Request missing files |
+| 401 | Unauthorized | Not authenticated |
+| 413 | Payload too large | Total files exceed size limit |
+| 429 | Too many requests | Rate limit exceeded (20 per hour) |
+
+---
+
+### Batch Enhance Images
+
+Enhance multiple images asynchronously.
+
+**Endpoint**: `POST /api/images/batch-enhance`
+
+**Authentication**: Required
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+POST /api/images/batch-enhance HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: application/json
+
+{
+  "imageIds": ["img_001", "img_002", "img_003"],
+  "tier": "TIER_2K"
+}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "batchId": "batch_enhance_abc123",
+  "totalCost": 15,
+  "imageCount": 3,
+  "jobs": [
+    {
+      "imageId": "img_001",
+      "jobId": "job_001",
+      "status": "PROCESSING"
+    }
+  ]
+}
+```
+
+**Error Responses**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | No images provided | imageIds array empty |
+| 401 | Unauthorized | Not authenticated |
+| 402 | Insufficient tokens | Balance too low for all enhancements |
+| 429 | Too many requests | Rate limit exceeded |
+
+---
+
 ## Image Enhancement
 
 ### Request Enhancement
@@ -381,6 +486,261 @@ Authorization: Bearer {session_token}
     "createdAt": "2025-12-02T10:30:00Z",
     "processingCompletedAt": "2025-12-02T10:35:00Z"
   }
+}
+```
+
+---
+
+### Export Enhanced Image
+
+Export an enhanced image in a specific format.
+
+**Endpoint**: `POST /api/images/export`
+
+**Authentication**: Required
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+POST /api/images/export HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: application/json
+
+{
+  "jobId": "job_enhancement_abc123",
+  "format": "PNG"
+}
+```
+
+**Request Body**:
+
+| Field | Type | Required | Options |
+|-------|------|----------|---------|
+| jobId | string | Yes | Valid job ID |
+| format | string | Yes | PNG, JPEG, WebP |
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "downloadUrl": "https://r2-bucket.example.com/export/user123/image-id-2k.png",
+  "format": "PNG",
+  "size": 3456789
+}
+```
+
+**Error Responses**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | Invalid format | Format not in [PNG, JPEG, WebP] |
+| 401 | Unauthorized | Not authenticated |
+| 404 | Job not found | Job ID doesn't exist |
+
+---
+
+### Get Image Version History
+
+Retrieve all enhancement versions for an image.
+
+**Endpoint**: `GET /api/images/{imageId}/versions`
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/images/clya1b2c3d4e5f6g7h8i9j0k1/versions HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "imageId": "clya1b2c3d4e5f6g7h8i9j0k1",
+  "versions": [
+    {
+      "jobId": "job_001",
+      "tier": "TIER_2K",
+      "status": "COMPLETED",
+      "enhancedUrl": "https://r2-bucket.example.com/enhanced/user123/image-id-2k.jpg",
+      "createdAt": "2025-12-02T10:30:00Z",
+      "processingCompletedAt": "2025-12-02T10:35:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Albums
+
+### Create Album
+
+Create a new album for organizing images.
+
+**Endpoint**: `POST /api/albums`
+
+**Authentication**: Required
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+POST /api/albums HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: application/json
+
+{
+  "name": "Family Photos 2025",
+  "description": "Summer vacation photos",
+  "isPublic": false
+}
+```
+
+**Response (Success - 201)**:
+```json
+{
+  "success": true,
+  "album": {
+    "id": "album_abc123",
+    "name": "Family Photos 2025",
+    "description": "Summer vacation photos",
+    "isPublic": false,
+    "imageCount": 0,
+    "shareLink": "https://next.spike.land/albums/album_abc123/share/token_xyz",
+    "createdAt": "2025-12-02T10:00:00Z"
+  }
+}
+```
+
+---
+
+### Get Album Details
+
+Retrieve album information and images.
+
+**Endpoint**: `GET /api/albums/{albumId}`
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/albums/album_abc123 HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "album": {
+    "id": "album_abc123",
+    "name": "Family Photos 2025",
+    "imageCount": 5,
+    "createdAt": "2025-12-02T10:00:00Z",
+    "images": [
+      {
+        "id": "img_001",
+        "name": "photo1.jpg",
+        "originalUrl": "https://r2-bucket.example.com/originals/user123/img_001.jpg",
+        "enhancedVersions": 2
+      }
+    ]
+  }
+}
+```
+
+---
+
+### Add Images to Album
+
+Add existing images to an album.
+
+**Endpoint**: `POST /api/albums/{albumId}/images`
+
+**Authentication**: Required
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+POST /api/albums/album_abc123/images HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: application/json
+
+{
+  "imageIds": ["img_001", "img_002"]
+}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "addedCount": 2,
+  "albumImageCount": 5
+}
+```
+
+---
+
+### Update Album
+
+Update album name, description, or privacy settings.
+
+**Endpoint**: `PATCH /api/albums/{albumId}`
+
+**Authentication**: Required
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+PATCH /api/albums/album_abc123 HTTP/1.1
+Authorization: Bearer {session_token}
+Content-Type: application/json
+
+{
+  "name": "Updated Album Name",
+  "isPublic": true
+}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "album": {
+    "id": "album_abc123",
+    "name": "Updated Album Name",
+    "isPublic": true
+  }
+}
+```
+
+---
+
+### Delete Album
+
+Permanently delete an album (images not deleted).
+
+**Endpoint**: `DELETE /api/albums/{albumId}`
+
+**Authentication**: Required
+
+**Request**:
+```http
+DELETE /api/albums/album_abc123 HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "message": "Album deleted"
 }
 ```
 
@@ -579,6 +939,287 @@ if (result.success) {
 | 400 | (various validation errors) | See validate endpoint for details |
 | 401 | Authentication required | Not logged in |
 | 500 | Failed to redeem | Database error |
+
+---
+
+## Referral Program
+
+### Get Referral Link
+
+Generate a unique referral link for sharing.
+
+**Endpoint**: `GET /api/referral/link`
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/referral/link HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "referralLink": "https://next.spike.land?ref=abc123xyz",
+  "referralCode": "abc123xyz",
+  "baseTokenReward": 50
+}
+```
+
+---
+
+### Get Referral Statistics
+
+View referral performance and earnings.
+
+**Endpoint**: `GET /api/referral/stats`
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/referral/stats HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "stats": {
+    "totalReferrals": 5,
+    "completedReferrals": 4,
+    "pendingReferrals": 1,
+    "totalTokensEarned": 200,
+    "referrals": [
+      {
+        "userId": "user_456",
+        "email": "friend@example.com",
+        "status": "COMPLETED",
+        "tokensReward": 50,
+        "referredAt": "2025-12-01T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+**Error Responses**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 401 | Unauthorized | Not authenticated |
+
+---
+
+## Admin Dashboard
+
+All admin endpoints require authentication with admin role.
+
+### Get User Analytics
+
+Retrieve user growth and engagement metrics.
+
+**Endpoint**: `GET /api/admin/analytics/users`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+```http
+GET /api/admin/analytics/users?period=month HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Query Parameters**:
+
+| Parameter | Type | Required | Options |
+|-----------|------|----------|---------|
+| period | string | No | day, week, month, year |
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "analytics": {
+    "totalUsers": 1250,
+    "newUsersThisPeriod": 145,
+    "activeUsers": 892,
+    "churnRate": 0.08,
+    "registrationTrend": [
+      {
+        "date": "2025-12-01",
+        "count": 25
+      }
+    ]
+  }
+}
+```
+
+---
+
+### Get Token Analytics
+
+Retrieve token economy metrics.
+
+**Endpoint**: `GET /api/admin/analytics/tokens`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+```http
+GET /api/admin/analytics/tokens?period=month HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "analytics": {
+    "tokensGenerated": 15000,
+    "tokensPurchased": 8500,
+    "tokensConsumed": 12000,
+    "averageTokensPerUser": 42,
+    "revenue": 2847.50,
+    "topPackage": "professional_500"
+  }
+}
+```
+
+---
+
+### Get System Health
+
+Check job queue and system status.
+
+**Endpoint**: `GET /api/admin/system/health`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+```http
+GET /api/admin/system/health HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "health": {
+    "status": "healthy",
+    "jobs": {
+      "pending": 12,
+      "processing": 8,
+      "completed": 1540,
+      "failed": 3
+    },
+    "failureRate": 0.19,
+    "averageProcessingTime": 15.3
+  }
+}
+```
+
+---
+
+### Get Users (Search & Manage)
+
+Search and manage user accounts.
+
+**Endpoint**: `GET /api/admin/users`
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| search | string | No | Search by email or name |
+| role | string | No | Filter by user role |
+| limit | number | No | Results per page (default: 20) |
+| offset | number | No | Pagination offset (default: 0) |
+
+**Request**:
+```http
+GET /api/admin/users?search=test@example.com&limit=10 HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Response (Success - 200)**:
+```json
+{
+  "success": true,
+  "users": [
+    {
+      "id": "user_123",
+      "email": "test@example.com",
+      "name": "Test User",
+      "role": "USER",
+      "tokenBalance": 95,
+      "createdAt": "2025-12-01T10:00:00Z",
+      "lastActive": "2025-12-02T15:30:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 1250,
+    "limit": 10,
+    "offset": 0
+  }
+}
+```
+
+---
+
+### Create Voucher
+
+Create a new promotional voucher.
+
+**Endpoint**: `POST /api/admin/vouchers`
+
+**Authentication**: Required (Admin role)
+
+**Content-Type**: `application/json`
+
+**Request**:
+```http
+POST /api/admin/vouchers HTTP/1.1
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "code": "HOLIDAY50",
+  "type": "FIXED_TOKENS",
+  "value": 50,
+  "maxUses": 1000,
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+```
+
+**Response (Success - 201)**:
+```json
+{
+  "success": true,
+  "voucher": {
+    "id": "voucher_abc123",
+    "code": "HOLIDAY50",
+    "type": "FIXED_TOKENS",
+    "value": 50,
+    "maxUses": 1000,
+    "currentUses": 0,
+    "status": "ACTIVE",
+    "expiresAt": "2025-12-31T23:59:59Z"
+  }
+}
+```
+
+**Error Responses**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | Code already exists | Voucher code not unique |
+| 401 | Unauthorized | Not admin |
 
 ---
 

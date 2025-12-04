@@ -1,0 +1,156 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { downloadFromR2 } from '@/lib/storage/r2-client'
+import { checkRateLimit, rateLimitConfigs } from '@/lib/rate-limiter'
+import {
+  convertImageFormat,
+  isValidFormat,
+  getFileExtension,
+  type ExportFormat,
+} from '@/lib/images/format-converter'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST /api/images/export
+ *
+ * Exports an enhanced image in the specified format.
+ * Supports PNG, JPEG (with quality control), and WebP formats.
+ *
+ * Request body:
+ * - imageId: string - ID of the enhanced image
+ * - format: 'png' | 'jpeg' | 'webp' - Desired output format
+ * - quality?: number - JPEG quality (70-100), optional
+ *
+ * Response:
+ * - Success: Image blob with Content-Type header
+ * - Error: JSON with error message
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // Authenticate user
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting
+    const rateLimitResult = checkRateLimit(
+      `export:${session.user.id}`,
+      rateLimitConfigs.general
+    )
+
+    if (rateLimitResult.isLimited) {
+      return NextResponse.json(
+        {
+          error: 'Too many export requests',
+          retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)
+            ),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(rateLimitResult.resetAt),
+          },
+        }
+      )
+    }
+
+    // Parse request body
+    const body = await request.json()
+    const { imageId, format, quality } = body as {
+      imageId: string
+      format: string
+      quality?: number
+    }
+
+    // Validate required parameters
+    if (!imageId || !format) {
+      return NextResponse.json(
+        { error: 'Missing imageId or format' },
+        { status: 400 }
+      )
+    }
+
+    // Validate format
+    if (!isValidFormat(format)) {
+      return NextResponse.json(
+        { error: 'Invalid format. Must be png, jpeg, or webp' },
+        { status: 400 }
+      )
+    }
+
+    // Validate quality if provided
+    if (quality !== undefined) {
+      if (typeof quality !== 'number' || quality < 70 || quality > 100) {
+        return NextResponse.json(
+          { error: 'Quality must be between 70 and 100' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Find the enhancement job
+    const job = await prisma.imageEnhancementJob.findFirst({
+      where: {
+        id: imageId,
+        userId: session.user.id,
+        status: 'COMPLETED',
+      },
+      include: {
+        image: true,
+      },
+    })
+
+    if (!job || !job.enhancedR2Key) {
+      return NextResponse.json(
+        { error: 'Enhanced image not found' },
+        { status: 404 }
+      )
+    }
+
+    // Download the enhanced image from R2
+    const imageBuffer = await downloadFromR2(job.enhancedR2Key)
+
+    if (!imageBuffer) {
+      return NextResponse.json(
+        { error: 'Failed to download image' },
+        { status: 500 }
+      )
+    }
+
+    // Convert to requested format
+    const { buffer, mimeType } = await convertImageFormat(imageBuffer, {
+      format: format as ExportFormat,
+      quality,
+    })
+
+    // Generate filename
+    const originalFilename = job.image.name.replace(/\.[^/.]+$/, '')
+    const extension = getFileExtension(format as ExportFormat)
+    const filename = `${originalFilename}_enhanced_${job.tier.toLowerCase()}.${extension}`
+
+    // Return the converted image
+    return new NextResponse(buffer as unknown as BodyInit, {
+      status: 200,
+      headers: {
+        'Content-Type': mimeType,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': String(buffer.length),
+        'Cache-Control': 'private, max-age=3600',
+        'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+      },
+    })
+  } catch (error) {
+    console.error('Error in export API:', error)
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : 'Failed to export image',
+      },
+      { status: 500 }
+    )
+  }
+}

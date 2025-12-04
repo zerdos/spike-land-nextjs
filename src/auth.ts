@@ -9,19 +9,34 @@
  */
 
 import NextAuth, { DefaultSession } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import { authConfig, createStableUserId } from "./auth.config"
 import prisma from "@/lib/prisma"
+import { linkReferralOnSignup } from "@/lib/referral/tracker"
+import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection"
+import { completeReferralAndGrantRewards } from "@/lib/referral/rewards"
+import { assignReferralCodeToUser } from "@/lib/referral/code-generator"
+import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin"
+import { UserRole } from "@prisma/client"
 
 declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      role: UserRole
     } & DefaultSession["user"]
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: UserRole
   }
 }
 
 /**
  * Handles user creation/update with stable ID during sign-in.
+ * Also processes referral tracking and rewards.
  * Exported for testing purposes.
  *
  * @param user - The user object from OAuth provider
@@ -37,8 +52,15 @@ export async function handleSignIn(user: {
   if (user.email) {
     const stableId = createStableUserId(user.email)
     try {
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      })
+
+      const isNewUser = !existingUser
+
       // Use upsert to handle both new and existing users
-      await prisma.user.upsert({
+      const upsertedUser = await prisma.user.upsert({
         where: { email: user.email },
         update: {
           // Update profile info if user already exists
@@ -52,6 +74,42 @@ export async function handleSignIn(user: {
           image: user.image,
         },
       })
+
+      // Handle referral tracking for new users
+      if (isNewUser) {
+        // Bootstrap admin role for first user
+        await bootstrapAdminIfNeeded(upsertedUser.id).catch((error) => {
+          console.error("Failed to bootstrap admin:", error)
+        })
+
+        // Assign referral code to new user
+        await assignReferralCodeToUser(upsertedUser.id).catch((error) => {
+          console.error("Failed to assign referral code:", error)
+        })
+
+        // Link referral if cookie exists
+        await linkReferralOnSignup(upsertedUser.id).catch((error) => {
+          console.error("Failed to link referral on signup:", error)
+        })
+      }
+
+      // Process referral rewards if email is verified (for OAuth, it's auto-verified)
+      if (user.email && isNewUser) {
+        const validation = await validateReferralAfterVerification(
+          upsertedUser.id
+        ).catch((error) => {
+          console.error("Failed to validate referral:", error)
+          return null
+        })
+
+        if (validation?.shouldGrantRewards && validation.referralId) {
+          await completeReferralAndGrantRewards(validation.referralId).catch(
+            (error) => {
+              console.error("Failed to grant referral rewards:", error)
+            }
+          )
+        }
+      }
     } catch (error) {
       // Log the error but don't block sign-in
       // The JWT callback will still set the correct stable ID, so the user
@@ -70,9 +128,59 @@ export async function handleSignIn(user: {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
-    ...authConfig.callbacks,
     async signIn({ user }) {
       return handleSignIn(user)
+    },
+    async jwt({ token, user, trigger }): Promise<JWT> {
+      // Call base jwt callback for stable ID handling
+      const baseCallbacks = authConfig.callbacks
+      if (baseCallbacks?.jwt) {
+        const result = await baseCallbacks.jwt({ token, user, trigger } as Parameters<typeof baseCallbacks.jwt>[0])
+        if (result) {
+          token = result
+        }
+      }
+
+      // On initial sign-in or refresh, fetch role from database
+      if (user?.email || trigger === "signIn" || trigger === "update") {
+        try {
+          const userId = token.sub
+          if (userId) {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { role: true },
+            })
+            if (dbUser) {
+              token.role = dbUser.role
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch user role for JWT:", error)
+          // Default to USER role if database lookup fails
+          if (!token.role) {
+            token.role = UserRole.USER
+          }
+        }
+      }
+
+      // Ensure role has a default value
+      if (!token.role) {
+        token.role = UserRole.USER
+      }
+
+      return token
+    },
+    session({ session, token }) {
+      // Copy ID and role from token to session
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+      }
+      if (token.role && session.user) {
+        session.user.role = token.role
+      } else if (session.user) {
+        session.user.role = UserRole.USER
+      }
+      return session
     },
   },
   secret: process.env.AUTH_SECRET,
