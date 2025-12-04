@@ -175,8 +175,9 @@ describe('ImageComparisonSlider', () => {
 
     it('has correct touch-action style', () => {
         const { container } = render(<ImageComparisonSlider {...defaultProps} />)
-        const sliderContainer = container.querySelector('[style*="touch-action"]') as HTMLElement
-        expect(sliderContainer.style.touchAction).toBe('none')
+        const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement
+        expect(sliderContainer).toBeDefined()
+        expect(sliderContainer?.style.touchAction).toBe('none')
     })
 
     it('renders divider line at slider position', () => {
