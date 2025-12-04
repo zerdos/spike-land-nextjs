@@ -1,7 +1,15 @@
 import prisma from '@/lib/prisma'
 
-// List of known disposable email providers
+/**
+ * Comprehensive list of disposable email providers
+ * This list contains 200+ known temporary/disposable email domains
+ * that are commonly used for fraudulent signups.
+ *
+ * To add custom blocked domains, set the BLOCKED_EMAIL_DOMAINS environment
+ * variable as a comma-separated list (e.g., "domain1.com,domain2.com")
+ */
 const DISPOSABLE_EMAIL_DOMAINS = [
+  // Original list
   'tempmail.com',
   'throwaway.email',
   '10minutemail.com',
@@ -22,7 +30,231 @@ const DISPOSABLE_EMAIL_DOMAINS = [
   'tempinbox.com',
   'mailnesia.com',
   'emailondeck.com',
+  // Extended list - Popular services
+  'dispostable.com',
+  'getairmail.com',
+  'mohmal.com',
+  'tempail.com',
+  'tempm.com',
+  'tempr.email',
+  'discard.email',
+  'discardmail.com',
+  'spamgourmet.com',
+  'mytrashmail.com',
+  'mailcatch.com',
+  'mailexpire.com',
+  'mailmoat.com',
+  'spamex.com',
+  'mintemail.com',
+  'jetable.org',
+  'trash-mail.com',
+  'getonemail.com',
+  'anonymbox.com',
+  'emkei.cz',
+  // Guerrilla Mail variants
+  'guerrillamail.de',
+  'guerrillamailblock.com',
+  'pokemail.net',
+  'spam.la',
+  // 10 Minute Mail variants
+  '10minutemail.net',
+  '10minutemail.org',
+  '10minutemail.de',
+  '10minemail.com',
+  // Temp mail variants
+  'tempmailo.com',
+  'tempmailaddress.com',
+  'temp-mail.io',
+  'tempmails.net',
+  // Other popular services
+  'disposableemailaddresses.com',
+  'emailsensei.com',
+  'fakemailgenerator.com',
+  'throwawaymail.com',
+  'incognitomail.org',
+  'incognitomail.com',
+  'anonymousemail.me',
+  'hidemail.de',
+  'mailtemp.info',
+  'tempemailco.com',
+  'nada.email',
+  'inboxkitten.com',
+  'tempmailbox.net',
+  'tmpmail.net',
+  'tmpmail.org',
+  'moakt.com',
+  'mohmal.im',
+  'disbox.net',
+  'disbox.org',
+  'mailsac.com',
+  'mailslite.com',
+  'eyepaste.com',
+  'emailfake.com',
+  'crazymailing.com',
+  'spamobox.com',
+  'tempomail.fr',
+  'mailforspam.com',
+  'spamfree24.org',
+  'spamfree24.de',
+  'spamfree24.info',
+  'spambox.us',
+  'spambox.xyz',
+  'mailhazard.com',
+  'mailhazard.us',
+  'emailtemporar.ro',
+  'emailtemporario.com.br',
+  // German services
+  'wegwerfemail.de',
+  'einmalmail.de',
+  'spoofmail.de',
+  'trash-mail.de',
+  // French services
+  'jetable.com',
+  'jetable.net',
+  // Russian services
+  'mailforspam.com',
+  'temp-mail.ru',
+  // Spanish services
+  'correo-temporal.com',
+  'emailtemporal.org',
+  // Other international
+  'tempemailbox.net',
+  'tempemail.net',
+  'tempemail.biz',
+  'tempemail.com',
+  // Additional common domains
+  'binkmail.com',
+  'bobmail.info',
+  'bodypiercing.com',
+  'bugmenot.com',
+  'bumpymail.com',
+  'casualdx.com',
+  'centermail.com',
+  'cheatmail.de',
+  'consumerriot.com',
+  'cool.fr.nf',
+  'correo.blogos.net',
+  'cosmorph.com',
+  'courrieltemporaire.com',
+  'curryworld.de',
+  'cust.in',
+  'dacoolest.com',
+  'dandikmail.com',
+  'dayrep.com',
+  'deadaddress.com',
+  'deadspam.com',
+  'despam.it',
+  'despammed.com',
+  'devnullmail.com',
+  'dfgh.net',
+  'digitalsanctuary.com',
+  'discardmail.de',
+  'disposableaddress.com',
+  'disposableemailaddresses.com',
+  'disposableinbox.com',
+  'dispose.it',
+  'disposeamail.com',
+  'disposemail.com',
+  'dispostable.com',
+  'dm.w3internet.co.ukexample.com',
+  'dodgeit.com',
+  'dodgit.com',
+  'dodgit.org',
+  'dontreg.com',
+  'dontsendmespam.de',
+  'drdrb.com',
+  'e4ward.com',
+  'einmalmail.de',
+  'email60.com',
+  'emaildienst.de',
+  'emailias.com',
+  'emaillime.com',
+  'emailmiser.com',
+  'emailsensei.com',
+  'emailtemporario.com.br',
+  'emailthe.net',
+  'emailtmp.com',
+  'emailto.de',
+  'emailwarden.com',
+  'emailx.at.hm',
+  'emailxfer.com',
+  'emz.net',
+  'enterto.com',
+  'ephemail.net',
+  'etranquil.com',
+  'etranquil.net',
+  'etranquil.org',
+  'evopo.com',
+  'explodemail.com',
+  'fakeinbox.cf',
+  'fakeinbox.ga',
+  'fakeinbox.ml',
+  'fakeinbox.tk',
+  'fakeinformation.com',
+  'fansworldwide.de',
+  'fastacura.com',
+  'fastchevy.com',
+  'fastchrysler.com',
+  'fastkawasaki.com',
+  'fastmazda.com',
+  'fastmitsubishi.com',
+  'fastnissan.com',
+  'fastsubaru.com',
+  'fastsuzuki.com',
+  'fasttoyota.com',
+  'fastyamaha.com',
+  'filzmail.com',
+  'fixmail.tk',
+  'fizmail.com',
+  'flyspam.com',
+  'fr33mail.info',
+  'frapmail.com',
+  'friendlymail.co.uk',
+  'front14.org',
+  'fuckingduh.com',
+  'fudgerub.com',
+  'garliclife.com',
+  'gehensiull.com',
+  'get1mail.com',
+  'get2mail.fr',
+  'getonemail.com',
+  'getonemail.net',
+  'ghosttexter.de',
+  'gishpuppy.com',
+  'goemailgo.com',
+  'gotmail.com',
+  'gotmail.net',
+  'gotmail.org',
+  'gotti.otherinbox.com',
+  'gowikibooks.com',
+  'gowikicampus.com',
+  'gowikicars.com',
+  'gowikifilms.com',
+  'gowikigames.com',
+  'gowikimusic.com',
+  'gowikinetwork.com',
+  'gowikitravel.com',
+  'gowikitv.com',
+  'grandmamail.com',
+  'grandmasmail.com',
+  'great-host.in',
+  'greensloth.com',
 ]
+
+/**
+ * Get the complete list of blocked email domains including custom domains from env
+ */
+export function getBlockedEmailDomains(): string[] {
+  const customDomains = process.env.BLOCKED_EMAIL_DOMAINS
+  if (customDomains) {
+    const additionalDomains = customDomains
+      .split(',')
+      .map((d) => d.trim().toLowerCase())
+      .filter((d) => d.length > 0)
+    return [...DISPOSABLE_EMAIL_DOMAINS, ...additionalDomains]
+  }
+  return DISPOSABLE_EMAIL_DOMAINS
+}
 
 const SAME_IP_WINDOW_HOURS = 24
 const MAX_REFERRALS_PER_DAY = 10
@@ -34,6 +266,7 @@ export interface FraudCheckResult {
 
 /**
  * Check if email is from a disposable email provider
+ * Uses both the hardcoded list and any custom domains from BLOCKED_EMAIL_DOMAINS env var
  */
 export function isDisposableEmail(email: string): boolean {
   const domain = email.split('@')[1]?.toLowerCase()
@@ -41,7 +274,8 @@ export function isDisposableEmail(email: string): boolean {
     return false
   }
 
-  return DISPOSABLE_EMAIL_DOMAINS.includes(domain)
+  const blockedDomains = getBlockedEmailDomains()
+  return blockedDomains.includes(domain)
 }
 
 /**
