@@ -493,6 +493,11 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
 
+      - name: Run Database Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
