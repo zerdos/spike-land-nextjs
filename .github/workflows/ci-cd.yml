@@ -495,22 +495,15 @@ jobs:
 
       - name: Run Database Migrations
         run: |
-          # Check if _prisma_migrations table exists
-          # If not, we need to baseline the database first
+          # Fix: The third migration was incorrectly marked as applied but never ran
+          # First, unmark it so it can be properly applied
+          echo "Checking migration status and fixing if needed..."
 
-          # Try to run migrate deploy
-          if ! npx prisma migrate deploy 2>&1; then
-            echo "Migration failed - attempting to resolve baseline..."
+          # Unmark the third migration so it can actually run
+          npx prisma migrate resolve --rolled-back 20241204_add_phase_3_5_features || true
 
-            # Mark all existing migrations as applied (baseline)
-            # This creates the _prisma_migrations table and marks migrations as applied
-            npx prisma migrate resolve --applied 0_init || true
-            npx prisma migrate resolve --applied 20241202_add_stripe_and_subscriptions || true
-            npx prisma migrate resolve --applied 20241204_add_phase_3_5_features || true
-
-            # Now run migrate deploy again to apply any pending migrations
-            npx prisma migrate deploy
-          fi
+          # Now run migrate deploy to apply any pending migrations
+          npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
