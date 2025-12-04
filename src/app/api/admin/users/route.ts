@@ -9,6 +9,14 @@ import { auth } from "@/auth"
 import { requireAdminByUserId, isSuperAdmin } from "@/lib/auth/admin-middleware"
 import prisma from "@/lib/prisma"
 import { UserRole } from "@prisma/client"
+import { AuditLogger } from "@/lib/audit/logger"
+
+// Validation constants
+const MAX_TOKEN_ADJUSTMENT = 10000
+const MIN_TOKEN_ADJUSTMENT = -1000
+const MAX_SEARCH_LENGTH = 100
+// CUID pattern: starts with 'c' or user_ prefix, followed by alphanumeric
+const CUID_PATTERN = /^(c[a-z0-9]{24}|user_[a-f0-9]+)$/
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,6 +31,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get("search")
     const userId = searchParams.get("userId")
+
+    // Validate search query length
+    if (search && search.length > MAX_SEARCH_LENGTH) {
+      return NextResponse.json(
+        { error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)` },
+        { status: 400 }
+      )
+    }
+
+    // Validate userId format
+    if (userId && !CUID_PATTERN.test(userId)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 }
+      )
+    }
 
     // Get specific user details
     if (userId) {
@@ -138,10 +162,39 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    // Validate userId format
+    if (!CUID_PATTERN.test(userId)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 }
+      )
+    }
+
+    // Verify target user exists
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true },
+    })
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      )
+    }
+
     // Handle role change
     if (action === "setRole") {
       if (!Object.values(UserRole).includes(value)) {
         return NextResponse.json({ error: "Invalid role" }, { status: 400 })
+      }
+
+      // Prevent self-demotion
+      if (userId === session.user.id && value === UserRole.USER) {
+        return NextResponse.json(
+          { error: "Cannot demote yourself to USER role" },
+          { status: 400 }
+        )
       }
 
       // Only super admins can create other super admins
@@ -155,10 +208,34 @@ export async function PATCH(request: NextRequest) {
         }
       }
 
+      // Prevent demoting super admins (except by other super admins)
+      if (targetUser.role === UserRole.SUPER_ADMIN && value !== UserRole.SUPER_ADMIN) {
+        const isSuperAdminUser = await isSuperAdmin(session.user.id)
+        if (!isSuperAdminUser) {
+          return NextResponse.json(
+            { error: "Only super admins can demote super admins" },
+            { status: 403 }
+          )
+        }
+      }
+
+      const oldRole = targetUser.role
+
       await prisma.user.update({
         where: { id: userId },
         data: { role: value },
       })
+
+      // Log role change
+      const forwarded = request.headers.get("x-forwarded-for")
+      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined
+      await AuditLogger.logRoleChange(
+        session.user.id,
+        userId,
+        oldRole,
+        value,
+        ipAddress
+      )
 
       return NextResponse.json({ success: true, role: value })
     }
@@ -168,6 +245,20 @@ export async function PATCH(request: NextRequest) {
       const amount = parseInt(value)
       if (isNaN(amount)) {
         return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
+      }
+
+      // Validate token adjustment bounds
+      if (amount > MAX_TOKEN_ADJUSTMENT) {
+        return NextResponse.json(
+          { error: `Cannot add more than ${MAX_TOKEN_ADJUSTMENT} tokens at once` },
+          { status: 400 }
+        )
+      }
+      if (amount < MIN_TOKEN_ADJUSTMENT) {
+        return NextResponse.json(
+          { error: `Cannot remove more than ${Math.abs(MIN_TOKEN_ADJUSTMENT)} tokens at once` },
+          { status: 400 }
+        )
       }
 
       // Get or create token balance
@@ -184,6 +275,8 @@ export async function PATCH(request: NextRequest) {
         },
       })
 
+      const newBalance = tokenBalance.balance + amount
+
       // Create transaction record
       await prisma.tokenTransaction.create({
         data: {
@@ -192,7 +285,7 @@ export async function PATCH(request: NextRequest) {
           type: amount > 0 ? "EARN_BONUS" : "SPEND_ENHANCEMENT",
           source: "admin_adjustment",
           sourceId: session.user.id,
-          balanceAfter: tokenBalance.balance + amount,
+          balanceAfter: newBalance,
           metadata: {
             adjustedBy: session.user.id,
             reason: "Manual admin adjustment",
@@ -200,9 +293,21 @@ export async function PATCH(request: NextRequest) {
         },
       })
 
+      // Log token adjustment
+      const forwarded = request.headers.get("x-forwarded-for")
+      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined
+      await AuditLogger.logTokenAdjustment(
+        session.user.id,
+        userId,
+        amount,
+        newBalance,
+        "Manual admin adjustment",
+        ipAddress
+      )
+
       return NextResponse.json({
         success: true,
-        newBalance: tokenBalance.balance + amount,
+        newBalance,
       })
     }
 
