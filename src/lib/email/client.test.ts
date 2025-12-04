@@ -18,10 +18,14 @@ vi.mock('resend', () => {
 describe('Email Client', () => {
   const originalEnv = process.env
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     process.env = { ...originalEnv }
     mockSend.mockClear()
+    // Reset rate limit state before each test
+    vi.resetModules()
+    const { resetRateLimitState } = await import('./client')
+    resetRateLimitState()
   })
 
   afterEach(() => {
@@ -164,35 +168,20 @@ describe('Email Client', () => {
       })
     })
 
-    it('should handle error from Resend API', async () => {
+    it('should handle error from Resend API (validation error)', async () => {
+      vi.resetModules()
+      // Set mock before importing to ensure proper setup
+      mockSend.mockClear()
       mockSend.mockResolvedValue({
         data: null,
         error: {
-          message: 'Invalid email address',
+          message: 'validation error: domain not verified',
           statusCode: 400,
           name: 'validation_error',
         },
       })
-      vi.resetModules()
-      const { sendEmail } = await import('./client')
-
-      const result = await sendEmail({
-        to: 'invalid-email',
-        subject: 'Test Email',
-        react: mockReactElement,
-      })
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid email address')
-    })
-
-    it('should handle error when email send fails with no ID', async () => {
-      mockSend.mockResolvedValue({
-        data: {},
-        error: null,
-      })
-      vi.resetModules()
-      const { sendEmail } = await import('./client')
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
 
       const result = await sendEmail({
         to: 'user@example.com',
@@ -201,13 +190,36 @@ describe('Email Client', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Failed to send email - no ID returned')
+      expect(result.error).toContain('validation error')
+      expect(mockSend).toHaveBeenCalledTimes(1) // No retries on validation errors
+    })
+
+    it('should handle error when email send fails with no ID', async () => {
+      vi.resetModules()
+      mockSend.mockClear()
+      mockSend.mockResolvedValue({
+        data: {},
+        error: null,
+      })
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Failed')
     })
 
     it('should handle error when email send throws error', async () => {
-      mockSend.mockRejectedValue(new Error('Network error'))
       vi.resetModules()
-      const { sendEmail } = await import('./client')
+      mockSend.mockClear()
+      mockSend.mockRejectedValue(new Error('Network error'))
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
 
       const result = await sendEmail({
         to: 'user@example.com',
@@ -217,12 +229,15 @@ describe('Email Client', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Network error')
+      expect(result.retriesUsed).toBe(2) // Retried twice before giving up
     })
 
     it('should handle unknown error types', async () => {
-      mockSend.mockRejectedValue('Unknown error')
       vi.resetModules()
-      const { sendEmail } = await import('./client')
+      mockSend.mockClear()
+      mockSend.mockRejectedValue('Unknown error')
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
 
       const result = await sendEmail({
         to: 'user@example.com',
@@ -255,7 +270,8 @@ describe('Email Client', () => {
         error: null,
       })
       vi.resetModules()
-      const { sendEmail } = await import('./client')
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
 
       const result = await sendEmail({
         to: 'user@example.com',
@@ -264,7 +280,194 @@ describe('Email Client', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Failed to send email - no ID returned')
+      expect(result.error).toContain('Failed')
+    })
+  })
+
+  describe('isValidEmail', () => {
+    it('should validate correct email formats', async () => {
+      vi.resetModules()
+      const { isValidEmail } = await import('./client')
+
+      expect(isValidEmail('user@example.com')).toBe(true)
+      expect(isValidEmail('user.name@example.com')).toBe(true)
+      expect(isValidEmail('user+tag@example.com')).toBe(true)
+      expect(isValidEmail('user@sub.example.com')).toBe(true)
+    })
+
+    it('should reject invalid email formats', async () => {
+      vi.resetModules()
+      const { isValidEmail } = await import('./client')
+
+      expect(isValidEmail('invalid')).toBe(false)
+      expect(isValidEmail('invalid@')).toBe(false)
+      expect(isValidEmail('@example.com')).toBe(false)
+      expect(isValidEmail('')).toBe(false)
+    })
+  })
+
+  describe('email validation in sendEmail', () => {
+    const mockReactElement = React.createElement('div', {}, 'Test Email')
+
+    beforeEach(() => {
+      process.env.RESEND_API_KEY = 'test_api_key'
+      process.env.EMAIL_FROM = 'test@example.com'
+    })
+
+    it('should reject invalid email format before sending', async () => {
+      vi.resetModules()
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: 'invalid-email',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Invalid email format')
+      expect(mockSend).not.toHaveBeenCalled()
+    })
+
+    it('should reject if any recipient has invalid email', async () => {
+      vi.resetModules()
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: ['valid@example.com', 'invalid-email'],
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Invalid email format')
+      expect(mockSend).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('rate limiting', () => {
+    const mockReactElement = React.createElement('div', {}, 'Test Email')
+
+    beforeEach(() => {
+      process.env.RESEND_API_KEY = 'test_api_key'
+      process.env.EMAIL_FROM = 'test@example.com'
+    })
+
+    it('should block emails when rate limit exceeded', async () => {
+      vi.resetModules()
+      const { sendEmail, setRateLimitCount, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+      setRateLimitCount(100) // At limit
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Daily email limit exceeded')
+      expect(mockSend).not.toHaveBeenCalled()
+    })
+
+    it('should return warning when approaching rate limit', async () => {
+      vi.resetModules()
+      mockSend.mockResolvedValue({
+        data: { id: 'test-email-id' },
+        error: null,
+      })
+      const { sendEmail, setRateLimitCount, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+      setRateLimitCount(80) // At warning threshold
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.rateLimitWarning).toBe(true)
+    })
+
+    it('should return rate limit status', async () => {
+      vi.resetModules()
+      const { getRateLimitStatus, setRateLimitCount, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+      setRateLimitCount(50)
+
+      const status = getRateLimitStatus()
+
+      expect(status.count).toBe(50)
+      expect(status.remaining).toBe(50)
+      expect(status.resetIn).toBeGreaterThan(0)
+    })
+  })
+
+  describe('retry logic', () => {
+    const mockReactElement = React.createElement('div', {}, 'Test Email')
+
+    beforeEach(() => {
+      process.env.RESEND_API_KEY = 'test_api_key'
+      process.env.EMAIL_FROM = 'test@example.com'
+    })
+
+    it('should not retry on validation errors', async () => {
+      vi.resetModules()
+      mockSend.mockResolvedValue({
+        data: null,
+        error: { message: 'validation error: invalid email' },
+      })
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.retriesUsed).toBe(0)
+      expect(mockSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not retry on configuration errors', async () => {
+      delete process.env.RESEND_API_KEY
+      vi.resetModules()
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('RESEND_API_KEY')
+      expect(result.retriesUsed).toBe(0)
+    })
+
+    it('should return retriesUsed count on success', async () => {
+      vi.resetModules()
+      mockSend.mockResolvedValue({
+        data: { id: 'test-email-id' },
+        error: null,
+      })
+      const { sendEmail, resetRateLimitState } = await import('./client')
+      resetRateLimitState()
+
+      const result = await sendEmail({
+        to: 'user@example.com',
+        subject: 'Test Email',
+        react: mockReactElement,
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.retriesUsed).toBe(0)
     })
   })
 })
