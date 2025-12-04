@@ -9,12 +9,13 @@ interface PackageCardProps {
   name: string
   tokens: number
   price: number
+  currencySymbol: string
   popular?: boolean
   onSelect: (packageId: string) => void
   isLoading?: boolean
 }
 
-export function PackageCard({ id, name, tokens, price, popular, onSelect, isLoading }: PackageCardProps) {
+export function PackageCard({ id, name, tokens, price, currencySymbol, popular, onSelect, isLoading }: PackageCardProps) {
   return (
     <Card className={cn(
       'relative',
@@ -30,9 +31,9 @@ export function PackageCard({ id, name, tokens, price, popular, onSelect, isLoad
         <CardDescription>{tokens} tokens</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold mb-4">{price.toFixed(2)}</div>
+        <div className="text-3xl font-bold mb-4">{currencySymbol}{price.toFixed(2)}</div>
         <div className="text-sm text-muted-foreground mb-4">
-          {(price / tokens).toFixed(3)} per token
+          {currencySymbol}{(price / tokens).toFixed(3)} per token
         </div>
         <Button
           className="w-full"

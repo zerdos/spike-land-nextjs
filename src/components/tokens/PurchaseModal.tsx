@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { PackageCard } from './PackageCard'
 import { VoucherInput } from './VoucherInput'
-import { TOKEN_PACKAGES } from '@/lib/stripe/client'
+import { TOKEN_PACKAGES, CURRENCY } from '@/lib/stripe/client'
 import { Coins } from 'lucide-react'
 
 interface PurchaseModalProps {
@@ -72,7 +72,7 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto !bg-zinc-900 dark:!bg-zinc-900">
         <DialogHeader>
           <DialogTitle>Get More Tokens</DialogTitle>
           <DialogDescription>
@@ -101,7 +101,8 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
                 id={pkg.id}
                 name={pkg.name}
                 tokens={pkg.tokens}
-                price={pkg.priceGBP}
+                price={pkg.price}
+                currencySymbol={CURRENCY.symbol}
                 popular={pkg.popular}
                 onSelect={handlePurchase}
                 isLoading={isLoading === pkg.id}
