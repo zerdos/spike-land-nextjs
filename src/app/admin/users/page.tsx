@@ -147,7 +147,7 @@ export default function UserManagementPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-muted-foreground">
           Search users, manage roles, and adjust tokens
         </p>
       </div>
@@ -160,7 +160,7 @@ export default function UserManagementPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by email or name..."
-            className="flex-1 rounded-lg border border-neutral-300 px-4 py-2"
+            className="flex-1 rounded-lg border px-4 py-2 bg-background text-foreground border-input"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 fetchUsers(search)
@@ -186,22 +186,22 @@ export default function UserManagementPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Users List */}
         <Card className="overflow-hidden">
-          <div className="border-b border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="border-b border-border bg-muted p-4">
             <h2 className="font-semibold">Users ({users.length})</h2>
           </div>
           <div className="max-h-[600px] overflow-y-auto">
             {loading ? (
-              <div className="p-8 text-center text-neutral-500">Loading...</div>
+              <div className="p-8 text-center text-muted-foreground">Loading...</div>
             ) : users.length === 0 ? (
-              <div className="p-8 text-center text-neutral-500">
+              <div className="p-8 text-center text-muted-foreground">
                 No users found
               </div>
             ) : (
-              <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <div className="divide-y divide-border">
                 {users.map((user) => (
                   <div
                     key={user.id}
-                    className="cursor-pointer p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                    className="cursor-pointer p-4 transition-colors hover:bg-muted"
                     onClick={() => fetchUserDetails(user.id)}
                   >
                     <div className="flex items-start justify-between">
@@ -209,7 +209,7 @@ export default function UserManagementPage() {
                         <p className="font-medium">
                           {user.name || "No name"}
                         </p>
-                        <p className="text-sm text-neutral-500">{user.email}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
                         <div className="mt-2 flex gap-2">
                           <Badge
                             variant={
@@ -235,12 +235,12 @@ export default function UserManagementPage() {
 
         {/* User Details */}
         <Card className="overflow-hidden">
-          <div className="border-b border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="border-b border-border bg-muted p-4">
             <h2 className="font-semibold">User Details</h2>
           </div>
           <div className="p-6">
             {!selectedUser ? (
-              <p className="text-center text-neutral-500">
+              <p className="text-center text-muted-foreground">
                 Select a user to view details
               </p>
             ) : (
@@ -274,7 +274,7 @@ export default function UserManagementPage() {
                   <div className="flex items-center gap-2">
                     <Badge>{selectedUser.role}</Badge>
                     <select
-                      className="rounded-lg border border-neutral-300 px-3 py-1 text-sm"
+                      className="rounded-lg border px-3 py-1 text-sm bg-background text-foreground border-input"
                       onChange={(e) =>
                         handleRoleChange(selectedUser.id, e.target.value)
                       }
@@ -321,14 +321,14 @@ export default function UserManagementPage() {
                   <h3 className="mb-3 font-semibold">Recent Transactions</h3>
                   <div className="space-y-2">
                     {selectedUser.recentTransactions.length === 0 ? (
-                      <p className="text-sm text-neutral-500">
+                      <p className="text-sm text-muted-foreground">
                         No recent transactions
                       </p>
                     ) : (
                       selectedUser.recentTransactions.map((tx) => (
                         <div
                           key={tx.id}
-                          className="flex justify-between rounded-lg border border-neutral-200 p-2 text-sm dark:border-neutral-800"
+                          className="flex justify-between rounded-lg border border-border p-2 text-sm"
                         >
                           <span>{tx.type}</span>
                           <span
