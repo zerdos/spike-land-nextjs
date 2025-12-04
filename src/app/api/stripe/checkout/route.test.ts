@@ -23,8 +23,8 @@ vi.mock('@/lib/stripe/client', () => ({
     },
   })),
   TOKEN_PACKAGES: {
-    starter: { tokens: 10, priceGBP: 2.99, name: 'Starter Pack' },
-    basic: { tokens: 50, priceGBP: 9.99, name: 'Basic Pack' },
+    starter: { tokens: 10, price: 2.99, name: 'Starter Pack' },
+    basic: { tokens: 50, price: 9.99, name: 'Basic Pack' },
   },
   SUBSCRIPTION_PLANS: {
     hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: 'Hobby' },
