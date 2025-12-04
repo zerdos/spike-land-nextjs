@@ -9,6 +9,7 @@
  */
 
 import NextAuth, { DefaultSession } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import { authConfig, createStableUserId } from "./auth.config"
 import prisma from "@/lib/prisma"
 import { linkReferralOnSignup } from "@/lib/referral/tracker"
@@ -16,12 +17,20 @@ import { validateReferralAfterVerification } from "@/lib/referral/fraud-detectio
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards"
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator"
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin"
+import { UserRole } from "@prisma/client"
 
 declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      role: UserRole
     } & DefaultSession["user"]
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: UserRole
   }
 }
 
@@ -119,9 +128,56 @@ export async function handleSignIn(user: {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
-    ...authConfig.callbacks,
     async signIn({ user }) {
       return handleSignIn(user)
+    },
+    async jwt({ token, user, trigger }): Promise<JWT> {
+      // Call base jwt callback for stable ID handling
+      const baseCallbacks = authConfig.callbacks
+      if (baseCallbacks?.jwt) {
+        token = await baseCallbacks.jwt({ token, user, trigger } as Parameters<typeof baseCallbacks.jwt>[0])
+      }
+
+      // On initial sign-in or refresh, fetch role from database
+      if (user?.email || trigger === "signIn" || trigger === "update") {
+        try {
+          const userId = token.sub
+          if (userId) {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { role: true },
+            })
+            if (dbUser) {
+              token.role = dbUser.role
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch user role for JWT:", error)
+          // Default to USER role if database lookup fails
+          if (!token.role) {
+            token.role = UserRole.USER
+          }
+        }
+      }
+
+      // Ensure role has a default value
+      if (!token.role) {
+        token.role = UserRole.USER
+      }
+
+      return token
+    },
+    session({ session, token }) {
+      // Copy ID and role from token to session
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+      }
+      if (token.role && session.user) {
+        session.user.role = token.role
+      } else if (session.user) {
+        session.user.role = UserRole.USER
+      }
+      return session
     },
   },
   secret: process.env.AUTH_SECRET,

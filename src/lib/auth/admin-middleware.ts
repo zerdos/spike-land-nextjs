@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma"
 
 /**
  * Checks if a session has admin privileges (ADMIN or SUPER_ADMIN role).
+ * Now that role is included in the session type, this check is reliable.
  *
  * @param session - NextAuth session object
  * @returns boolean - true if user is admin, false otherwise
@@ -20,13 +21,9 @@ export function isAdmin(session: Session | null): boolean {
     return false
   }
 
-  // Check if user role is in session (if extended)
-  if ("role" in session.user) {
-    const role = (session.user as { role?: UserRole }).role
-    return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN
-  }
-
-  return false
+  // Role is now properly included in session via JWT callback
+  const role = session.user.role
+  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN
 }
 
 /**
