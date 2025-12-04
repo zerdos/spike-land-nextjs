@@ -35,7 +35,10 @@ on:
           - 'false'
 
 jobs:
-  # TIER 1: Parallel quality checks (run simultaneously)
+  # ============================================================================
+  # TIER 1: All these jobs run in PARALLEL immediately (no dependencies)
+  # ============================================================================
+
   quality-checks:
     name: Quality Checks (Lint + Security)
     runs-on: ubuntu-latest
@@ -115,10 +118,11 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  # Build runs in PARALLEL with quality-checks and unit-tests (no needs)
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    needs: [quality-checks, unit-tests]
+    # NO DEPENDENCIES - runs immediately in parallel with tests and lint!
 
     steps:
       - name: Checkout code
@@ -159,11 +163,14 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=3072
 
-  # Deploy preview first so E2E tests can run against it
+  # ============================================================================
+  # TIER 2: Deploy Preview - starts immediately after build (doesn't wait for tests)
+  # ============================================================================
+
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
-    needs: build
+    needs: build  # Only waits for build, NOT for tests or lint
     if: needs.build.result == 'success' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch')
     outputs:
       deployment-url: ${{ steps.deploy.outputs.url }}
@@ -207,7 +214,7 @@ jobs:
       - name: Deploy Preview
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed Preview: $DEPLOYMENT_URL"
 
@@ -231,13 +238,15 @@ jobs:
           echo "✗ Deployment failed to become live after 60 seconds"
           exit 1
 
+  # ============================================================================
+  # TIER 3: E2E Tests - runs after deploy-preview is ready
+  # ============================================================================
+
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: [build, deploy-preview]
-    # Only run if both build passed AND either:
-    # - deploy-preview succeeded (for PRs/workflow_dispatch)
-    # - deploy-preview was skipped (for main branch push)
+    # Run if build passed AND (deploy-preview succeeded OR was skipped for main branch)
     # Note: always() is required to evaluate conditions when deploy-preview is skipped
     if: |
       always() &&
@@ -312,12 +321,21 @@ jobs:
           path: e2e/reports
           retention-days: 7
 
+  # ============================================================================
+  # TIER 4: Final gates - require ALL checks to pass before production deploy
+  # ============================================================================
+
   # Post-E2E notification (uses the preview URL from deploy-preview)
   notify-pr:
     name: Notify PR
     runs-on: ubuntu-latest
-    needs: [e2e, deploy-preview]
-    if: github.event_name == 'pull_request' && needs.e2e.result == 'success'
+    needs: [e2e, deploy-preview, quality-checks, unit-tests]
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      needs.e2e.result == 'success' &&
+      needs.quality-checks.result == 'success' &&
+      needs.unit-tests.result == 'success'
 
     steps:
       - name: Checkout code
@@ -343,6 +361,8 @@ jobs:
               `**URL:** [${deploymentUrl}](${deploymentUrl})`,
               '',
               '✅ E2E tests passed',
+              '✅ Unit tests passed',
+              '✅ Lint & security checks passed',
               '✅ Smoke tests passed',
               '',
               `**Commit:** ${sha}`,
@@ -378,10 +398,14 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: e2e
-    # Only deploy to production if E2E tests passed AND it's main branch or manual deploy
+    needs: [e2e, quality-checks, unit-tests]
+    # Deploy to production only when ALL checks pass
+    # Note: always() required to evaluate when some jobs might be skipped
     if: |
+      always() &&
       needs.e2e.result == 'success' &&
+      needs.quality-checks.result == 'success' &&
+      needs.unit-tests.result == 'success' &&
       (github.ref == 'refs/heads/main' ||
        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'))
     environment:
@@ -429,7 +453,7 @@ jobs:
       - name: Deploy to Production
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to PRODUCTION: $DEPLOYMENT_URL"
 
