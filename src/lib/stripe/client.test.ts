@@ -57,31 +57,42 @@ describe('Stripe Client', () => {
     })
   })
 
+  describe('CURRENCY', () => {
+    it('has correct currency configuration', async () => {
+      const { CURRENCY } = await import('./client')
+
+      expect(CURRENCY).toEqual({
+        code: 'GBP',
+        symbol: '£',
+      })
+    })
+  })
+
   describe('TOKEN_PACKAGES', () => {
     it('has all required packages with correct structure', async () => {
       const { TOKEN_PACKAGES } = await import('./client')
 
       expect(TOKEN_PACKAGES.starter).toEqual({
         tokens: 10,
-        priceGBP: 2.99,
+        price: 2.99,
         name: 'Starter Pack',
       })
 
       expect(TOKEN_PACKAGES.basic).toEqual({
         tokens: 50,
-        priceGBP: 9.99,
+        price: 9.99,
         name: 'Basic Pack',
       })
 
       expect(TOKEN_PACKAGES.pro).toEqual({
         tokens: 150,
-        priceGBP: 24.99,
+        price: 24.99,
         name: 'Pro Pack',
       })
 
       expect(TOKEN_PACKAGES.power).toEqual({
         tokens: 500,
-        priceGBP: 69.99,
+        price: 69.99,
         name: 'Power Pack',
       })
     })
