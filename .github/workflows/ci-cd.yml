@@ -214,9 +214,39 @@ jobs:
       - name: Deploy Preview
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
-          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "Deployed Preview: $DEPLOYMENT_URL"
+          MAX_RETRIES=3
+          RETRY_DELAY=60
+
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "Deployment attempt $attempt of $MAX_RETRIES..."
+
+            # Capture both stdout and stderr
+            if OUTPUT=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+              # Success - output is the deployment URL
+              echo "url=$OUTPUT" >> $GITHUB_OUTPUT
+              echo "Deployed Preview: $OUTPUT"
+              exit 0
+            fi
+
+            # Check if it's a rate limit error
+            if echo "$OUTPUT" | grep -q "Too many requests"; then
+              if [ $attempt -lt $MAX_RETRIES ]; then
+                echo "⚠️ Rate limited. Waiting ${RETRY_DELAY}s before retry..."
+                sleep $RETRY_DELAY
+                RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff
+              else
+                echo "❌ Rate limit exceeded after $MAX_RETRIES attempts"
+                exit 1
+              fi
+            else
+              # Non-rate-limit error - fail immediately
+              echo "❌ Deployment failed: $OUTPUT"
+              exit 1
+            fi
+          done
+
+          echo "❌ All retry attempts exhausted"
+          exit 1
 
       - name: Wait for deployment to be live
         run: |
@@ -242,15 +272,17 @@ jobs:
   # TIER 3: E2E Tests - runs after deploy-preview is ready
   # ============================================================================
 
+  # E2E tests may complete before unit tests. This is intentional - preview URLs
+  # are useful for manual testing even if automated tests later fail.
+  # Production deploy still gates on ALL checks passing.
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [build, deploy-preview]
-    # Run if build passed AND (deploy-preview succeeded OR was skipped for main branch)
+    needs: deploy-preview  # Simplified: deploy-preview already depends on build
+    # Run if deploy-preview succeeded OR was skipped (for main branch push)
     # Note: always() is required to evaluate conditions when deploy-preview is skipped
     if: |
       always() &&
-      needs.build.result == 'success' &&
       (needs.deploy-preview.result == 'success' || needs.deploy-preview.result == 'skipped')
     timeout-minutes: 30
 
@@ -450,12 +482,44 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=3072
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
 
+      # Note: We build twice intentionally - preview and production environments
+      # have different env vars (E2E_BYPASS_SECRET etc.) baked into the build.
       - name: Deploy to Production
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
-          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to PRODUCTION: $DEPLOYMENT_URL"
+          MAX_RETRIES=3
+          RETRY_DELAY=60
+
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "Production deployment attempt $attempt of $MAX_RETRIES..."
+
+            # Capture both stdout and stderr
+            if OUTPUT=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+              # Success - output is the deployment URL
+              echo "url=$OUTPUT" >> $GITHUB_OUTPUT
+              echo "Deployed to PRODUCTION: $OUTPUT"
+              exit 0
+            fi
+
+            # Check if it's a rate limit error
+            if echo "$OUTPUT" | grep -q "Too many requests"; then
+              if [ $attempt -lt $MAX_RETRIES ]; then
+                echo "⚠️ Rate limited. Waiting ${RETRY_DELAY}s before retry..."
+                sleep $RETRY_DELAY
+                RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff
+              else
+                echo "❌ Rate limit exceeded after $MAX_RETRIES attempts"
+                exit 1
+              fi
+            else
+              # Non-rate-limit error - fail immediately
+              echo "❌ Production deployment failed: $OUTPUT"
+              exit 1
+            fi
+          done
+
+          echo "❌ All retry attempts exhausted"
+          exit 1
 
       - name: Wait for production deployment to be live
         run: |
