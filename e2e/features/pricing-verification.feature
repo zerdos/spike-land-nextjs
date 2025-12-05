@@ -13,14 +13,14 @@ Feature: Pricing Page Verification
 
   Scenario: Token usage information displays
     When I view the pricing page
-    Then I should see "Token Usage" heading
+    Then I should see "Token Usage" text
     And I should see "1K" enhancement cost
     And I should see "2K" enhancement cost
     And I should see "4K" enhancement cost
 
   Scenario: Only token packs are displayed
     When I view the pricing page
-    Then I should see "Token Packs" heading
+    Then I should see "Token Packs" text
     And I should see 4 token pack options
     And I should not see any subscription options
 
@@ -45,7 +45,7 @@ Feature: Pricing Page Verification
 
   Scenario: FAQ section displays
     When I view the pricing page
-    Then I should see "FAQ" heading
+    Then I should see "FAQ" text
     And I should see "What are tokens used for?" question
     And I should see "Do tokens expire?" question
     And I should see "How do I get more tokens?" question

@@ -177,6 +177,13 @@ Then("I should see {string} enhancement cost", async function(this: CustomWorld,
   await expect(costText).toBeVisible();
 });
 
+Then("I should be redirected to the sign-in page", async function(this: CustomWorld) {
+  await this.page.waitForTimeout(1000);
+  const url = this.page.url();
+  const isSignInPage = url.includes("/auth/signin") || url.includes("/?callbackUrl");
+  expect(isSignInPage).toBe(true);
+});
+
 Then("the starter pack should display:", async function(this: CustomWorld, dataTable) {
   const rows = dataTable.hashes();
   const starterCard = this.page.locator('[class*="Card"]').filter({ hasText: /starter/i });
