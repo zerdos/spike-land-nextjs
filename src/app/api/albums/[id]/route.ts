@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { nanoid } from 'nanoid'
+import { EnhancementTier } from '@prisma/client'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -68,7 +69,19 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         shareToken: isOwner ? album.shareToken : undefined,
         imageCount: album._count.albumImages,
         isOwner,
-        images: album.albumImages.map((ai) => ({
+        images: album.albumImages.map((ai: {
+          image: {
+            id: string
+            name: string
+            description: string | null
+            originalUrl: string
+            enhancementJobs: { enhancedUrl: string | null; tier: EnhancementTier }[]
+            originalWidth: number
+            originalHeight: number
+            createdAt: Date
+          }
+          sortOrder: number
+        }) => ({
           id: ai.image.id,
           name: ai.image.name,
           description: ai.image.description,

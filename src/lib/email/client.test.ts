@@ -4,16 +4,12 @@ import * as React from 'react'
 // Create a mock send function
 const mockSend = vi.fn()
 
-// Mock Resend at the module level
-vi.mock('resend', () => {
-  return {
-    Resend: vi.fn().mockImplementation(() => ({
-      emails: {
-        send: mockSend,
-      },
-    })),
-  }
-})
+// Mock Resend at the module level - Vitest 4: Use class constructor
+vi.mock('resend', () => ({
+  Resend: class MockResend {
+    emails = { send: mockSend }
+  },
+}))
 
 describe('Email Client', () => {
   const originalEnv = process.env

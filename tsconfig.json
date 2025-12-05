@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
@@ -53,6 +53,7 @@
     "e2e/**/*",
     "cucumber.js",
     "prisma.config.ts",
-    "fix-r2-versioning-cache/**/*"
+    "fix-r2-versioning-cache/**/*",
+    "scripts/**/*"
   ]
 }

@@ -9,7 +9,16 @@ const { mockPeerInstance, MockPeer, mockToDataURL } = vi.hoisted(() => {
     destroy: vi.fn(),
     id: 'mock-peer-id',
   };
-  const MockPeer = vi.fn(() => mockPeerInstance);
+  // Vitest 4: Use a class constructor instead of vi.fn() for constructor mocks
+  class MockPeer {
+    static mock = { calls: [] as unknown[][] };
+    on = mockPeerInstance.on;
+    destroy = mockPeerInstance.destroy;
+    id = mockPeerInstance.id;
+    constructor(...args: unknown[]) {
+      MockPeer.mock.calls.push(args);
+    }
+  }
   const mockToDataURL = vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode'));
   return { mockPeerInstance, MockPeer, mockToDataURL };
 });
@@ -84,27 +93,28 @@ describe('DisplayPage', () => {
       }),
     });
 
-    // Mock ResizeObserver
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }));
+    // Mock ResizeObserver - Vitest 4 requires class constructors
+    global.ResizeObserver = class MockResizeObserver {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    } as unknown as typeof ResizeObserver;
 
-    // Setup RTCPeerConnection for PeerJS
-    global.RTCPeerConnection = vi.fn() as unknown as typeof RTCPeerConnection;
+    // Setup RTCPeerConnection for PeerJS - Vitest 4 requires class constructors
+    global.RTCPeerConnection = class MockRTCPeerConnection {
+    } as unknown as typeof RTCPeerConnection;
 
-    // Mock MediaStream
-    global.MediaStream = vi.fn().mockImplementation(() => ({
-      id: 'mock-stream-id',
-      active: true,
-      getTracks: vi.fn(() => []),
-      getAudioTracks: vi.fn(() => []),
-      getVideoTracks: vi.fn(() => []),
-      addTrack: vi.fn(),
-      removeTrack: vi.fn(),
-      clone: vi.fn(),
-    })) as unknown as typeof MediaStream;
+    // Mock MediaStream - Vitest 4 requires class constructors
+    global.MediaStream = class MockMediaStream {
+      id = 'mock-stream-id';
+      active = true;
+      getTracks = vi.fn(() => []);
+      getAudioTracks = vi.fn(() => []);
+      getVideoTracks = vi.fn(() => []);
+      addTrack = vi.fn();
+      removeTrack = vi.fn();
+      clone = vi.fn();
+    } as unknown as typeof MediaStream;
   });
 
   it('should render display page', () => {
@@ -118,13 +128,16 @@ describe('DisplayPage', () => {
   });
 
   it('should initialize PeerJS on mount', async () => {
-    const Peer = (await import('peerjs')).default;
+    // Clear previous calls
+    MockPeer.mock.calls = [];
 
     render(<DisplayPage />);
 
     // Wait for async initialization with Twilio ICE servers
     await waitFor(() => {
-      expect(Peer).toHaveBeenCalledWith({
+      // Vitest 4: MockPeer is now a class, check calls array directly
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      expect(MockPeer.mock.calls[0]?.[0]).toEqual({
         config: {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -726,25 +739,27 @@ describe('DisplayPage', () => {
     const mockObserve = vi.fn();
     const mockDisconnect = vi.fn();
 
-    global.ResizeObserver = vi.fn().mockImplementation((callback) => {
-      // Call the callback immediately with mock entry
-      setTimeout(() => {
-        callback([
-          {
-            target: {
-              clientWidth: 1920,
-              clientHeight: 1080,
-            },
-          },
-        ]);
-      }, 0);
-
-      return {
-        observe: mockObserve,
-        unobserve: vi.fn(),
-        disconnect: mockDisconnect,
-      };
-    });
+    // Vitest 4: Use class constructor for ResizeObserver mock
+    global.ResizeObserver = class MockResizeObserver {
+      private callback: ResizeObserverCallback;
+      observe = mockObserve;
+      unobserve = vi.fn();
+      disconnect = mockDisconnect;
+      constructor(callback: ResizeObserverCallback) {
+        this.callback = callback;
+        // Call the callback immediately with mock entry
+        setTimeout(() => {
+          this.callback([
+            {
+              target: {
+                clientWidth: 1920,
+                clientHeight: 1080,
+              },
+            } as unknown as ResizeObserverEntry,
+          ], this);
+        }, 0);
+      }
+    } as unknown as typeof ResizeObserver;
 
     const { unmount } = render(<DisplayPage />);
 
@@ -764,11 +779,12 @@ describe('DisplayPage', () => {
     const mockObserve = vi.fn();
     const mockDisconnect = vi.fn();
 
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: mockObserve,
-      unobserve: vi.fn(),
-      disconnect: mockDisconnect,
-    }));
+    // Vitest 4: Use class constructor for ResizeObserver mock
+    global.ResizeObserver = class MockResizeObserver {
+      observe = mockObserve;
+      unobserve = vi.fn();
+      disconnect = mockDisconnect;
+    } as unknown as typeof ResizeObserver;
 
     render(<DisplayPage />);
 

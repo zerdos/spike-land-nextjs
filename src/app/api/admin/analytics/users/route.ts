@@ -92,11 +92,11 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      dailyRegistrations: dailyRegistrations.map((row) => ({
+      dailyRegistrations: dailyRegistrations.map((row: { date: Date; count: bigint }) => ({
         date: row.date.toISOString().split("T")[0],
         count: Number(row.count),
       })),
-      authProviders: authProviders.map((provider) => ({
+      authProviders: authProviders.map((provider: { provider: string; _count: { userId: number } }) => ({
         name: provider.provider,
         count: provider._count.userId,
       })),

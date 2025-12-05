@@ -107,6 +107,9 @@ jobs:
 
       - name: Run tests (shard ${{ matrix.shard }}/8)
         run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
+        env:
+          # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -162,6 +165,9 @@ jobs:
         run: yarn build
         env:
           NODE_OPTIONS: --max-old-space-size=3072
+          # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
+          # Actual database connection only happens at runtime with real credentials
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
   # ============================================================================
   # TIER 2: Deploy Preview - starts immediately after build (doesn't wait for tests)
