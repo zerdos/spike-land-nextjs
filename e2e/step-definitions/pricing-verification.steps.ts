@@ -172,6 +172,11 @@ Then("I should not see {string} text", async function(this: CustomWorld, text: s
   await expect(element).not.toBeVisible();
 });
 
+Then("I should see {string} enhancement cost", async function(this: CustomWorld, tier: string) {
+  const costText = this.page.getByText(new RegExp(`${tier}|token.*${tier}`, "i"));
+  await expect(costText).toBeVisible();
+});
+
 Then("the starter pack should display:", async function(this: CustomWorld, dataTable) {
   const rows = dataTable.hashes();
   const starterCard = this.page.locator('[class*="Card"]').filter({ hasText: /starter/i });
