@@ -199,14 +199,11 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        run: vercel build
+        run: npx vercel build
         env:
           NODE_OPTIONS: --max-old-space-size=3072
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
@@ -227,7 +224,7 @@ jobs:
 
             # Capture output and exit code separately to avoid subshell issues
             set +e
-            OUTPUT=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+            OUTPUT=$(npx vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
             EXIT_CODE=$?
             set -e
 
@@ -334,7 +331,7 @@ jobs:
 
       - name: Get Playwright version
         id: playwright-version
-        run: echo "version=$(yarn info @playwright/test --json | jq -r '.children.Version')" >> $GITHUB_OUTPUT
+        run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' package.json | tr -d '^~')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -519,14 +516,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
       - name: Pull Vercel Environment Information (Production)
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build for Production environment
-        run: vercel build --prod
+        run: npx vercel build --prod
         env:
           NODE_OPTIONS: --max-old-space-size=3072
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
@@ -549,7 +543,7 @@ jobs:
 
             # Capture output and exit code separately to avoid subshell issues
             set +e
-            OUTPUT=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+            OUTPUT=$(npx vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
             EXIT_CODE=$?
             set -e
 
