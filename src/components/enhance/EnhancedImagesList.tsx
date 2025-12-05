@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface EnhancedImagesListProps {
   images: (EnhancedImage & {
@@ -15,11 +16,24 @@ interface EnhancedImagesListProps {
   deletingImageId?: string | null;
 }
 
+function formatDate(date: Date | string): string {
+  const d = new Date(date);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Use UTC methods to ensure consistent output across timezones
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
 export function EnhancedImagesList({
   images,
   onDelete,
   deletingImageId,
 }: EnhancedImagesListProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   if (images.length === 0) {
     return (
       <div className="text-center py-12">
@@ -79,11 +93,8 @@ export function EnhancedImagesList({
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <Badge variant={statusBadge.variant}>{statusBadge.text}</Badge>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(image.createdAt).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                <span className="text-xs text-muted-foreground" suppressHydrationWarning>
+                  {isClient ? formatDate(image.createdAt) : ""}
                 </span>
               </div>
 
