@@ -34,6 +34,10 @@ vi.mock("@/components/analytics/cookie-consent", () => ({
   CookieConsent: () => <div data-testid="cookie-consent">CookieConsent</div>,
 }));
 
+vi.mock("@/components/ui/sonner", () => ({
+  Toaster: () => <div data-testid="toaster">Toaster</div>,
+}));
+
 describe("RootLayout", () => {
   it("should be a function component", () => {
     expect(typeof RootLayout).toBe("function");
@@ -98,6 +102,11 @@ describe("RootLayout", () => {
   it("should render SpeedInsights component", () => {
     const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("speed-insights")).toBeInTheDocument();
+  });
+
+  it("should render Toaster component", () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+    expect(getByTestId("toaster")).toBeInTheDocument();
   });
 });
 

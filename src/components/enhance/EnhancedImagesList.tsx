@@ -1,9 +1,11 @@
 "use client";
 
+import { AddToAlbumModal } from "@/components/enhance/AddToAlbumModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import { FolderPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -29,6 +31,12 @@ export function EnhancedImagesList({
   deletingImageId,
 }: EnhancedImagesListProps) {
   const [isClient, setIsClient] = useState(false);
+  const [addToAlbumImageId, setAddToAlbumImageId] = useState<string | null>(
+    null,
+  );
+  const [addToAlbumImageName, setAddToAlbumImageName] = useState<
+    string | undefined
+  >(undefined);
 
   useEffect(() => {
     setIsClient(true);
@@ -46,7 +54,7 @@ export function EnhancedImagesList({
 
   const getStatusBadge = (
     jobs: ImageEnhancementJob[],
-  ): { variant: "default" | "secondary" | "destructive"; text: string; } => {
+  ): { variant: "default" | "secondary" | "destructive"; text: string } => {
     if (jobs.length === 0) {
       return { variant: "secondary", text: "Not Enhanced" };
     }
@@ -58,7 +66,7 @@ export function EnhancedImagesList({
     if (hasCompleted) {
       return {
         variant: "default",
-        text: `${jobs.filter(j => j.status === "COMPLETED").length} Enhanced`,
+        text: `${jobs.filter((j) => j.status === "COMPLETED").length} Enhanced`,
       };
     }
     if (hasProcessing) {
@@ -71,64 +79,99 @@ export function EnhancedImagesList({
     return { variant: "secondary", text: "Pending" };
   };
 
+  const handleOpenAddToAlbum = (imageId: string, imageName?: string) => {
+    setAddToAlbumImageId(imageId);
+    setAddToAlbumImageName(imageName);
+  };
+
+  const handleCloseAddToAlbum = () => {
+    setAddToAlbumImageId(null);
+    setAddToAlbumImageName(undefined);
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {images.map((image) => {
-        const statusBadge = getStatusBadge(image.enhancementJobs);
-        const isDeleting = deletingImageId === image.id;
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {images.map((image) => {
+          const statusBadge = getStatusBadge(image.enhancementJobs);
+          const isDeleting = deletingImageId === image.id;
 
-        return (
-          <Card key={image.id} className="overflow-hidden">
-            <Link href={`/enhance/${image.id}`}>
-              <div className="relative aspect-video bg-muted cursor-pointer hover:opacity-90 transition-opacity">
-                <Image
-                  src={image.originalUrl}
-                  alt="Uploaded image"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </Link>
+          return (
+            <Card key={image.id} className="overflow-hidden">
+              <Link href={`/enhance/${image.id}`}>
+                <div className="relative aspect-video bg-muted cursor-pointer hover:opacity-90 transition-opacity">
+                  <Image
+                    src={image.originalUrl}
+                    alt="Uploaded image"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </Link>
 
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <Badge variant={statusBadge.variant}>{statusBadge.text}</Badge>
-                <span className="text-xs text-muted-foreground" suppressHydrationWarning>
-                  {isClient ? formatDate(image.createdAt) : ""}
-                </span>
-              </div>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant={statusBadge.variant}>{statusBadge.text}</Badge>
+                  <span className="text-xs text-muted-foreground" suppressHydrationWarning>
+                    {isClient ? formatDate(image.createdAt) : ""}
+                  </span>
+                </div>
 
-              <div className="flex gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  disabled={isDeleting}
-                >
-                  <Link href={`/enhance/${image.id}`}>
-                    {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
-                  </Link>
-                </Button>
-
-                {onDelete && (
+                <div className="flex gap-2">
                   <Button
-                    variant="ghost"
+                    asChild
+                    variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onDelete(image.id);
-                    }}
+                    className="flex-1"
                     disabled={isDeleting}
                   >
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    <Link href={`/enhance/${image.id}`}>
+                      {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
+                    </Link>
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      handleOpenAddToAlbum(image.id, image.name ?? undefined)}
+                    disabled={isDeleting}
+                    title="Add to Album"
+                    aria-label="Add to Album"
+                  >
+                    <FolderPlus className="h-4 w-4" />
+                  </Button>
+
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onDelete(image.id);
+                      }}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <AddToAlbumModal
+        imageId={addToAlbumImageId ?? ""}
+        imageName={addToAlbumImageName}
+        open={addToAlbumImageId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseAddToAlbum();
+          }
+        }}
+      />
+    </>
   );
 }
