@@ -35,8 +35,20 @@ export async function GET() {
       },
     })
 
+    type VoucherItem = {
+      id: string
+      code: string
+      type: VoucherType
+      value: number
+      maxUses: number | null
+      currentUses: number
+      expiresAt: Date | null
+      status: VoucherStatus
+      createdAt: Date
+      redemptions: { userId: string; tokensGranted: number; redeemedAt: Date }[]
+    }
     return NextResponse.json({
-      vouchers: vouchers.map((v) => ({
+      vouchers: vouchers.map((v: VoucherItem) => ({
         id: v.id,
         code: v.code,
         type: v.type,

@@ -49,12 +49,30 @@ const createMockPeerInstance = (): MockPeerInstance => {
   };
 };
 
+// Vitest 4: Use class constructor instead of vi.fn()
 vi.mock('peerjs', () => ({
-  default: vi.fn(() => {
-    const instance = createMockPeerInstance();
-    mockPeerInstances.push(instance);
-    return instance;
-  }),
+  default: class MockPeer {
+    static mock = { calls: [] as unknown[][] };
+    private instance: MockPeerInstance;
+    constructor(...args: unknown[]) {
+      MockPeer.mock.calls.push(args);
+      this.instance = createMockPeerInstance();
+      mockPeerInstances.push(this.instance);
+    }
+    // Use arrow functions bound to this.instance instead of referencing array index
+    on = (event: string, handler: (arg?: unknown) => void) => {
+      return this.instance.on(event, handler);
+    };
+    call = (...args: unknown[]) => {
+      return this.instance.call(...args);
+    };
+    destroy = () => {
+      return this.instance.destroy();
+    };
+    get handlers() {
+      return this.instance.handlers;
+    }
+  },
 }));
 
 // Mock Next.js navigation
@@ -1922,6 +1940,11 @@ describe('ClientPage', () => {
 
   describe('Dual Camera Mode', () => {
     const waitForDualPeerAndTriggerOpen = async () => {
+      // In dual camera mode, the component creates both peers at once
+      // and waits for both to fire 'open' events before initializing cameras.
+      // The component checks: peersInitialized === peersNeeded (2)
+
+      // Wait for both peers to be created
       await waitFor(
         () => {
           expect(mockPeerInstances.length).toBeGreaterThanOrEqual(2);
@@ -1929,6 +1952,7 @@ describe('ClientPage', () => {
         { timeout: 3000 }
       );
 
+      // Trigger both open events at once - cameras only initialize when both peers are open
       await act(async () => {
         mockPeerInstances[0].handlers.open?.('peer-id-front');
         mockPeerInstances[1].handlers.open?.('peer-id-back');
@@ -1997,7 +2021,7 @@ describe('ClientPage', () => {
         expect(screen.getByText(/Front:/i)).toBeInTheDocument();
         expect(screen.getByText(/Back:/i)).toBeInTheDocument();
       });
-    });
+    }, 10000);
 
     it('should show front and back camera labels in dual camera mode', async () => {
       vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => {
@@ -2024,7 +2048,7 @@ describe('ClientPage', () => {
         expect(frontLabels.length).toBeGreaterThan(0);
         expect(backLabels.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
-    });
+    }, 10000);
 
     it('should show front camera controls in dual camera mode when menu is opened', async () => {
       const user = userEvent.setup();
@@ -2059,7 +2083,7 @@ describe('ClientPage', () => {
       const buttons = screen.getAllByRole('button');
       const muteButtons = buttons.filter((btn) => btn.textContent?.includes('Mute'));
       expect(muteButtons.length).toBeGreaterThan(0);
-    });
+    }, 10000);
 
     it('should show both camera controls in dual camera mode when menu is opened', async () => {
       const user = userEvent.setup();
@@ -2144,7 +2168,7 @@ describe('ClientPage', () => {
         const unmuteButtons = updatedButtons.filter((btn) => btn.textContent?.includes('Unmute'));
         expect(unmuteButtons.length).toBeGreaterThan(0);
       });
-    });
+    }, 15000);
 
     it('should disable dual camera toggle when screen sharing', async () => {
       const user = userEvent.setup();

@@ -105,7 +105,8 @@ export class VoucherManager {
 
     try {
       // Use transaction for atomicity - includes token addition
-      return await prisma.$transaction(async (tx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return await prisma.$transaction(async (tx: any) => {
         // Get voucher with lock
         const voucher = await tx.voucher.findUnique({
           where: { code: normalizedCode },

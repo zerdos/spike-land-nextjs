@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { checkRateLimit, rateLimitConfigs } from '@/lib/rate-limiter'
+import { EnhancementTier, JobStatus } from '@prisma/client'
+
+type EnhancementJob = {
+  id: string
+  tier: EnhancementTier
+  status: JobStatus
+  tokensCost: number
+  enhancedUrl: string | null
+  enhancedWidth: number | null
+  enhancedHeight: number | null
+  enhancedSizeBytes: number | null
+  createdAt: Date
+  processingStartedAt: Date | null
+  processingCompletedAt: Date | null
+}
 
 export async function GET(
   _request: NextRequest,
@@ -61,8 +76,8 @@ export async function GET(
 
     // Calculate processing time for each job
     const versions = image.enhancementJobs
-      .filter(job => job.status === 'COMPLETED')
-      .map(job => {
+      .filter((job: EnhancementJob) => job.status === 'COMPLETED')
+      .map((job: EnhancementJob) => {
         const processingTimeMs =
           job.processingStartedAt && job.processingCompletedAt
             ? job.processingCompletedAt.getTime() - job.processingStartedAt.getTime()

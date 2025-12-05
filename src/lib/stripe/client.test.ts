@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Mock Stripe before importing the module
-vi.mock('stripe', () => {
-  const mockStripe = vi.fn(() => ({
-    customers: {},
-    checkout: {},
-    subscriptions: {},
-    webhooks: {},
-  }))
-  return { default: mockStripe }
-})
+// Mock Stripe before importing the module - Vitest 4: Use class constructor
+vi.mock('stripe', () => ({
+  default: class MockStripe {
+    customers = {}
+    checkout = {}
+    subscriptions = {}
+    webhooks = {
+      constructEvent: vi.fn()
+    }
+  }
+}))
 
 describe('Stripe Client', () => {
   const originalEnv = process.env

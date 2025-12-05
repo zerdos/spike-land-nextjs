@@ -47,7 +47,8 @@ export async function completeReferralAndGrantRewards(
     }
 
     // Grant tokens to both users in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await prisma.$transaction(async (tx: any) => {
       // Grant tokens to referrer
       const referrerResult = await TokenBalanceManager.addTokens({
         userId: referral.referrerId,
@@ -177,7 +178,7 @@ export async function getReferralStats(userId: string): Promise<{
 
   // Calculate tokens earned (referrer gets half of total tokens granted)
   const tokensEarned = referrals.reduce(
-    (sum, ref) => sum + ref.tokensGranted / 2,
+    (sum: number, ref: { tokensGranted: number }) => sum + ref.tokensGranted / 2,
     0
   )
 
@@ -218,7 +219,13 @@ export async function getReferredUsers(
     take: limit,
   })
 
-  return referrals.map((ref) => ({
+  return referrals.map((ref: {
+    id: string
+    referee: { email: string | null }
+    status: string
+    createdAt: Date
+    tokensGranted: number
+  }) => ({
     id: ref.id,
     email: anonymizeEmail(ref.referee.email ?? 'unknown'),
     status: ref.status,

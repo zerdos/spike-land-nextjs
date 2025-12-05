@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     for (const imageId of imageIds) {
       try {
-        const image = images.find((img) => img.id === imageId)
+        const image = images.find((img: { id: string }) => img.id === imageId)
         if (!image) {
           results.push({
             success: false,

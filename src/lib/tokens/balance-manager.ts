@@ -55,7 +55,8 @@ export class TokenBalanceManager {
   static async getBalance(userId: string): Promise<TokenBalanceResult> {
     this.validateUserId(userId)
 
-    const tokenBalance = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokenBalance = await prisma.$transaction(async (tx: any) => {
       let balance = await tx.userTokenBalance.findUnique({
         where: { userId },
       })
@@ -111,7 +112,8 @@ export class TokenBalanceManager {
     try {
       this.validateUserId(userId)
       // Use transaction to ensure atomic update
-      const result = await prisma.$transaction(async (tx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await prisma.$transaction(async (tx: any) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -196,7 +198,8 @@ export class TokenBalanceManager {
 
     try {
       this.validateUserId(userId)
-      const result = await prisma.$transaction(async (tx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await prisma.$transaction(async (tx: any) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },

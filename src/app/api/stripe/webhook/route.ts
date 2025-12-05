@@ -86,7 +86,8 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
     // Credit tokens for one-time purchase
     const tokenAmount = parseInt(tokens, 10)
 
-    await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.$transaction(async (tx: any) => {
       // Get or create token balance
       let balance = await tx.userTokenBalance.findUnique({
         where: { userId },
@@ -154,27 +155,37 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
     const stripeSubscriptionId = session.subscription as string
     const subscriptionData = await stripe.subscriptions.retrieve(stripeSubscriptionId)
 
-    await prisma.$transaction(async (tx) => {
+    // Stripe v20+: billing period is on subscription item, not subscription level
+    const firstItem = subscriptionData.items.data[0]
+    const currentPeriodStart = firstItem?.current_period_start
+      ? new Date(firstItem.current_period_start * 1000)
+      : new Date()
+    const currentPeriodEnd = firstItem?.current_period_end
+      ? new Date(firstItem.current_period_end * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.$transaction(async (tx: any) => {
       // Create or update subscription
       await tx.subscription.upsert({
         where: { userId },
         create: {
           userId,
           stripeSubscriptionId,
-          stripePriceId: subscriptionData.items.data[0]?.price.id || '',
+          stripePriceId: firstItem?.price.id || '',
           status: 'ACTIVE',
-          currentPeriodStart: new Date(subscriptionData.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscriptionData.current_period_end * 1000),
+          currentPeriodStart,
+          currentPeriodEnd,
           tokensPerMonth: parseInt(tokensPerMonth, 10),
           maxRollover: parseInt(maxRollover || '0', 10),
           rolloverTokens: 0,
         },
         update: {
           stripeSubscriptionId,
-          stripePriceId: subscriptionData.items.data[0]?.price.id || '',
+          stripePriceId: firstItem?.price.id || '',
           status: 'ACTIVE',
-          currentPeriodStart: new Date(subscriptionData.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscriptionData.current_period_end * 1000),
+          currentPeriodStart,
+          currentPeriodEnd,
           tokensPerMonth: parseInt(tokensPerMonth, 10),
           maxRollover: parseInt(maxRollover || '0', 10),
         },
@@ -222,13 +233,28 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
 
 async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
   // This handles recurring subscription payments
-  if (!invoice.subscription || invoice.billing_reason === 'subscription_create') {
+  // Stripe v20+: subscription is now in parent.subscription_details.subscription
+  const subscriptionId = invoice.parent?.subscription_details?.subscription
+  const subscriptionIdString = typeof subscriptionId === 'string'
+    ? subscriptionId
+    : subscriptionId?.id
+
+  if (!subscriptionIdString || invoice.billing_reason === 'subscription_create') {
     // Skip initial subscription invoice (handled in checkout.session.completed)
     return
   }
 
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
+  const subscription = await stripe.subscriptions.retrieve(subscriptionIdString)
   const customerId = invoice.customer as string
+
+  // Stripe v20+: billing period is on subscription item, not subscription level
+  const firstItem = subscription.items.data[0]
+  const currentPeriodStart = firstItem?.current_period_start
+    ? new Date(firstItem.current_period_start * 1000)
+    : new Date()
+  const currentPeriodEnd = firstItem?.current_period_end
+    ? new Date(firstItem.current_period_end * 1000)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
   // Find user by Stripe customer ID
   const user = await prisma.user.findFirst({
@@ -241,7 +267,8 @@ async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
     return
   }
 
-  await prisma.$transaction(async (tx) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await prisma.$transaction(async (tx: any) => {
     const sub = user.subscription!
 
     // Calculate rollover tokens
@@ -267,8 +294,8 @@ async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
     await tx.subscription.update({
       where: { id: sub.id },
       data: {
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
         rolloverTokens,
       },
     })
@@ -306,6 +333,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   if (!sub) return
 
+  // Stripe v20+: billing period is on subscription item, not subscription level
+  const firstItem = subscription.items.data[0]
+  const currentPeriodEnd = firstItem?.current_period_end
+    ? new Date(firstItem.current_period_end * 1000)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
   await prisma.subscription.update({
     where: { id: sub.id },
     data: {
@@ -314,7 +347,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
               subscription.status === 'canceled' ? 'CANCELED' :
               subscription.status === 'unpaid' ? 'UNPAID' : 'ACTIVE',
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodEnd,
     },
   })
 }
