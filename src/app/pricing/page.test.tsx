@@ -64,7 +64,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Power Pack")).toBeDefined();
   });
 
-  it("renders all subscription plans", () => {
+  it("does not render subscription plans", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -72,9 +72,11 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Hobby")).toBeDefined();
-    expect(screen.getByText("Creator")).toBeDefined();
-    expect(screen.getByText("Studio")).toBeDefined();
+    expect(screen.queryByText("Monthly Plans")).toBeNull();
+    expect(screen.queryByText("Hobby")).toBeNull();
+    expect(screen.queryByText("Creator")).toBeNull();
+    expect(screen.queryByText("Studio")).toBeNull();
+    expect(screen.queryByText("Subscribe")).toBeNull();
   });
 
   it('shows "Most Popular" badge for pro package', () => {
@@ -88,17 +90,6 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeDefined();
   });
 
-  it('shows "Best Value" badge for creator plan', () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-
-    render(<PricingPage />);
-
-    expect(screen.getByText("Best Value")).toBeDefined();
-  });
-
   it("redirects to login when unauthenticated user tries to purchase", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
@@ -109,20 +100,6 @@ describe("PricingPage", () => {
 
     const buyButtons = screen.getAllByText("Buy Now");
     fireEvent.click(buyButtons[0]);
-
-    expect(window.location.href).toBe("/?callbackUrl=/pricing");
-  });
-
-  it("redirects to login when unauthenticated user tries to subscribe", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-
-    render(<PricingPage />);
-
-    const subscribeButtons = screen.getAllByText("Subscribe");
-    fireEvent.click(subscribeButtons[0]);
 
     expect(window.location.href).toBe("/?callbackUrl=/pricing");
   });
@@ -151,27 +128,23 @@ describe("PricingPage", () => {
     });
   });
 
-  it("calls checkout API when authenticated user clicks Subscribe", async () => {
+  it("redirects to checkout URL on successful purchase", async () => {
     (useSession as Mock).mockReturnValue({
       data: { user: { id: "123", email: "test@test.com" } },
       status: "authenticated",
     });
 
     mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ url: "https://checkout.stripe.com/456" }),
+      json: () => Promise.resolve({ url: "https://checkout.stripe.com/123" }),
     });
 
     render(<PricingPage />);
 
-    const subscribeButtons = screen.getAllByText("Subscribe");
-    fireEvent.click(subscribeButtons[0]);
+    const buyButtons = screen.getAllByText("Buy Now");
+    fireEvent.click(buyButtons[0]);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
-      });
+      expect(window.location.href).toBe("https://checkout.stripe.com/123");
     });
   });
 
@@ -194,6 +167,28 @@ describe("PricingPage", () => {
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith("Something went wrong");
+    });
+  });
+
+  it("shows default error when checkout fails without error message", async () => {
+    (useSession as Mock).mockReturnValue({
+      data: { user: { id: "123", email: "test@test.com" } },
+      status: "authenticated",
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      json: () => Promise.resolve({}),
+    });
+
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+    render(<PricingPage />);
+
+    const buyButtons = screen.getAllByText("Buy Now");
+    fireEvent.click(buyButtons[0]);
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith("Failed to create checkout session");
     });
   });
 
@@ -222,7 +217,7 @@ describe("PricingPage", () => {
     consoleSpy.mockRestore();
   });
 
-  it("renders FAQ section", () => {
+  it("renders FAQ section with updated questions", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -233,7 +228,18 @@ describe("PricingPage", () => {
     expect(screen.getByText("FAQ")).toBeDefined();
     expect(screen.getByText("What are tokens used for?")).toBeDefined();
     expect(screen.getByText("Do tokens expire?")).toBeDefined();
-    expect(screen.getByText("Can I cancel my subscription?")).toBeDefined();
+    expect(screen.getByText("How do I get more tokens?")).toBeDefined();
+  });
+
+  it("does not render subscription-related FAQ questions", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
+    expect(screen.queryByText("Can I cancel my subscription?")).toBeNull();
   });
 
   it("disables buttons while loading", () => {
@@ -248,5 +254,34 @@ describe("PricingPage", () => {
     buyButtons.forEach((button) => {
       expect(button).toHaveProperty("disabled", true);
     });
+  });
+
+  it("shows Processing text while purchase is loading", async () => {
+    (useSession as Mock).mockReturnValue({
+      data: { user: { id: "123", email: "test@test.com" } },
+      status: "authenticated",
+    });
+
+    // Use a promise that we control to keep the loading state active
+    let resolvePromise: (value: unknown) => void;
+    const promise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+
+    mockFetch.mockReturnValueOnce({
+      json: () => promise,
+    });
+
+    render(<PricingPage />);
+
+    const buyButtons = screen.getAllByText("Buy Now");
+    fireEvent.click(buyButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Processing...")).toBeDefined();
+    });
+
+    // Cleanup
+    resolvePromise!({ url: "https://checkout.stripe.com/123" });
   });
 });
