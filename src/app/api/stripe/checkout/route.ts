@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           tokens: pkg.tokens.toString(),
           type: 'token_purchase',
         },
-        success_url: `${origin}/settings/tokens?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,
       })
 
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
           maxRollover: plan.maxRollover.toString(),
           type: 'subscription',
         },
-        success_url: `${origin}/settings/tokens?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,
       })
 
