@@ -96,7 +96,7 @@ describe("User Analytics API", () => {
     expect(data.error).toContain("Forbidden");
   });
 
-  it("should handle database errors gracefully", async () => {
+  it("should handle database errors gracefully and return partial data", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin_123" },
     } as any);
@@ -104,12 +104,87 @@ describe("User Analytics API", () => {
     const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
-    vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error("DB error"));
+    // Simulate partial failures
+    vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error("Daily registrations DB error"));
+    vi.mocked(prisma.account.groupBy).mockResolvedValue([]);
+    vi.mocked(prisma.session.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
 
     const response = await GET();
     const data = await response.json();
 
-    expect(response.status).toBe(500);
-    expect(data.error).toBe("Internal server error");
+    // Should still return 200 with empty/default data
+    expect(response.status).toBe(200);
+    expect(data.dailyRegistrations).toEqual([]);
+    expect(data.authProviders).toEqual([]);
+    expect(data.activeUsers.last7Days).toBe(0);
+    expect(data.activeUsers.last30Days).toBe(0);
+    expect(data.totalUsers).toBe(0);
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch daily registrations:",
+      expect.any(Error),
+    );
+  });
+
+  it("should handle individual query failures gracefully", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin_123" },
+    } as any);
+
+    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+    // Success for some queries, failure for others
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([
+      { date: new Date("2025-01-01"), count: BigInt(5) },
+    ]);
+    vi.mocked(prisma.account.groupBy).mockRejectedValue(new Error("GroupBy error"));
+    vi.mocked(prisma.session.findMany).mockRejectedValue(new Error("Session error"));
+    vi.mocked(prisma.user.count)
+      .mockResolvedValueOnce(100) // totalUsers succeeds
+      .mockRejectedValueOnce(new Error("Count error")) // usersLast7Days fails
+      .mockResolvedValueOnce(20); // usersLast30Days succeeds
+
+    const response = await GET();
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.dailyRegistrations).toHaveLength(1);
+    expect(data.authProviders).toEqual([]);
+    expect(data.activeUsers.last7Days).toBe(0);
+    expect(data.activeUsers.last30Days).toBe(0);
+    expect(data.totalUsers).toBe(100);
+    expect(data.growth.last7Days).toBe(0);
+    expect(data.growth.last30Days).toBe(20);
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch auth providers:",
+      expect.any(Error),
+    );
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch active users (7 days):",
+      expect.any(Error),
+    );
+  });
+
+  it("should handle non-array responses from database", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin_123" },
+    } as any);
+
+    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+    // Return non-array values (edge case)
+    vi.mocked(prisma.$queryRaw).mockResolvedValue(null as any);
+    vi.mocked(prisma.account.groupBy).mockResolvedValue(null as any);
+    vi.mocked(prisma.session.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
+
+    const response = await GET();
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.dailyRegistrations).toEqual([]);
+    expect(data.authProviders).toEqual([]);
   });
 });

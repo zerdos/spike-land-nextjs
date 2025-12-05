@@ -25,83 +25,131 @@ export async function GET() {
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Daily registrations for last 30 days
-    const dailyRegistrations = await prisma.$queryRaw<
-      Array<{ date: Date; count: bigint; }>
-    >`
-      SELECT DATE(created_at) as date, COUNT(*)::bigint as count
-      FROM users
-      WHERE created_at >= ${last30Days}
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `;
+    let dailyRegistrations: Array<{ date: Date; count: bigint; }> = [];
+    try {
+      dailyRegistrations = await prisma.$queryRaw<
+        Array<{ date: Date; count: bigint; }>
+      >`
+        SELECT DATE(created_at) as date, COUNT(*)::bigint as count
+        FROM users
+        WHERE created_at >= ${last30Days}
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `;
+    } catch (error) {
+      console.error("Failed to fetch daily registrations:", error);
+      // Return empty array on error, don't fail entire request
+      dailyRegistrations = [];
+    }
 
     // Auth provider breakdown
-    const authProviders = await prisma.account.groupBy({
-      by: ["provider"],
-      _count: {
-        userId: true,
-      },
-    });
+    let authProviders: Array<{ provider: string; _count: { userId: number; }; }> = [];
+    try {
+      authProviders = await prisma.account.groupBy({
+        by: ["provider"],
+        _count: {
+          userId: true,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to fetch auth providers:", error);
+      // Return empty array on error
+      authProviders = [];
+    }
 
     // Active users in last 7 days (users with sessions)
-    const activeUsers7dList = await prisma.session.findMany({
-      where: {
-        expires: {
-          gte: last7Days,
+    let activeUsers7d = 0;
+    try {
+      const activeUsers7dList = await prisma.session.findMany({
+        where: {
+          expires: {
+            gte: last7Days,
+          },
         },
-      },
-      distinct: ["userId"],
-      select: {
-        userId: true,
-      },
-    });
-    const activeUsers7d = activeUsers7dList.length;
+        distinct: ["userId"],
+        select: {
+          userId: true,
+        },
+      });
+      activeUsers7d = activeUsers7dList.length;
+    } catch (error) {
+      console.error("Failed to fetch active users (7 days):", error);
+      activeUsers7d = 0;
+    }
 
     // Active users in last 30 days
-    const activeUsers30dList = await prisma.session.findMany({
-      where: {
-        expires: {
-          gte: last30Days,
+    let activeUsers30d = 0;
+    try {
+      const activeUsers30dList = await prisma.session.findMany({
+        where: {
+          expires: {
+            gte: last30Days,
+          },
         },
-      },
-      distinct: ["userId"],
-      select: {
-        userId: true,
-      },
-    });
-    const activeUsers30d = activeUsers30dList.length;
+        distinct: ["userId"],
+        select: {
+          userId: true,
+        },
+      });
+      activeUsers30d = activeUsers30dList.length;
+    } catch (error) {
+      console.error("Failed to fetch active users (30 days):", error);
+      activeUsers30d = 0;
+    }
 
     // Total users
-    const totalUsers = await prisma.user.count();
+    let totalUsers = 0;
+    try {
+      totalUsers = await prisma.user.count();
+    } catch (error) {
+      console.error("Failed to fetch total users:", error);
+      totalUsers = 0;
+    }
 
     // User growth stats
-    const usersLast7Days = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: last7Days,
+    let usersLast7Days = 0;
+    try {
+      usersLast7Days = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: last7Days,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error("Failed to fetch user growth (7 days):", error);
+      usersLast7Days = 0;
+    }
 
-    const usersLast30Days = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: last30Days,
+    let usersLast30Days = 0;
+    try {
+      usersLast30Days = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: last30Days,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error("Failed to fetch user growth (30 days):", error);
+      usersLast30Days = 0;
+    }
 
     return NextResponse.json({
-      dailyRegistrations: dailyRegistrations.map((row: { date: Date; count: bigint; }) => ({
-        date: row.date.toISOString().split("T")[0],
-        count: Number(row.count),
-      })),
-      authProviders: authProviders.map((
-        provider: { provider: string; _count: { userId: number; }; },
-      ) => ({
-        name: provider.provider,
-        count: provider._count.userId,
-      })),
+      dailyRegistrations: Array.isArray(dailyRegistrations)
+        ? dailyRegistrations.map((row: { date: Date; count: bigint; }) => ({
+          date: row.date.toISOString().split("T")[0],
+          count: Number(row.count),
+        }))
+        : [],
+      authProviders: Array.isArray(authProviders)
+        ? authProviders.map((
+          provider: { provider: string; _count: { userId: number; }; },
+        ) => ({
+          name: provider.provider,
+          count: provider._count.userId,
+        }))
+        : [],
       activeUsers: {
         last7Days: activeUsers7d,
         last30Days: activeUsers30d,
