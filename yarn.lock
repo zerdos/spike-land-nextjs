@@ -189,7 +189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:^3.940.0":
+"@aws-sdk/client-s3@npm:^3.943.0":
   version: 3.943.0
   resolution: "@aws-sdk/client-s3@npm:3.943.0"
   dependencies:
@@ -453,7 +453,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:^3.940.0":
+"@aws-sdk/lib-storage@npm:^3.943.0":
   version: 3.943.0
   resolution: "@aws-sdk/lib-storage@npm:3.943.0"
   dependencies:
@@ -1128,7 +1128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cucumber/cucumber@npm:^12.2.0":
+"@cucumber/cucumber@npm:^12.3.0":
   version: 12.3.0
   resolution: "@cucumber/cucumber@npm:12.3.0"
   dependencies:
@@ -1865,7 +1865,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^3, @eslint/eslintrc@npm:^3.3.1":
+"@eslint/eslintrc@npm:^3.3.1, @eslint/eslintrc@npm:^3.3.3":
   version: 3.3.3
   resolution: "@eslint/eslintrc@npm:3.3.3"
   dependencies:
@@ -1944,7 +1944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google/genai@npm:^1.30.0":
+"@google/genai@npm:^1.31.0":
   version: 1.31.0
   resolution: "@google/genai@npm:1.31.0"
   dependencies:
@@ -2511,7 +2511,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.56.1":
+"@playwright/test@npm:^1.57.0":
   version: 1.57.0
   resolution: "@playwright/test@npm:1.57.0"
   dependencies:
@@ -5114,7 +5114,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:^8":
+"@types/pg@npm:^8.15.6":
   version: 8.15.6
   resolution: "@types/pg@npm:8.15.6"
   dependencies:
@@ -9440,12 +9440,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.555.0":
-  version: 0.555.0
-  resolution: "lucide-react@npm:0.555.0"
+"lucide-react@npm:^0.556.0":
+  version: 0.556.0
+  resolution: "lucide-react@npm:0.556.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/18f0870307fe2a37cf62473de88845a78107295de1efcf599a8662be3af4239c0b661a57f8e29815e424773e4aad04d199ad4d94d7ae977b7ce7a61be7f64e04
+  checksum: 10c0/5c73bd317b2cd7d220082d1cc6f78c864819652be87a84c976f2b08aae0bf257b0f066f86f5d84c2cb838ba8fbd2fb1d2b9d84fbe025d9c6cb97dbf1cdbf6bbc
   languageName: node
   linkType: hard
 
@@ -12701,14 +12701,14 @@ __metadata:
   resolution: "vercel-app@workspace:."
   dependencies:
     "@auth/core": "npm:^0.41.1"
-    "@aws-sdk/client-s3": "npm:^3.940.0"
-    "@aws-sdk/lib-storage": "npm:^3.940.0"
-    "@cucumber/cucumber": "npm:^12.2.0"
+    "@aws-sdk/client-s3": "npm:^3.943.0"
+    "@aws-sdk/lib-storage": "npm:^3.943.0"
+    "@cucumber/cucumber": "npm:^12.3.0"
     "@cucumber/pretty-formatter": "npm:^2.4.1"
-    "@eslint/eslintrc": "npm:^3"
-    "@google/genai": "npm:^1.30.0"
+    "@eslint/eslintrc": "npm:^3.3.3"
+    "@google/genai": "npm:^1.31.0"
     "@hookform/resolvers": "npm:^5.2.2"
-    "@playwright/test": "npm:^1.56.1"
+    "@playwright/test": "npm:^1.57.0"
     "@prisma/adapter-pg": "npm:^7.1.0"
     "@prisma/client": "npm:^7.1.0"
     "@radix-ui/react-accordion": "npm:^1.2.12"
@@ -12731,7 +12731,7 @@ __metadata:
     "@testing-library/react": "npm:^16.3.0"
     "@testing-library/user-event": "npm:^14.6.1"
     "@types/node": "npm:^24.10.1"
-    "@types/pg": "npm:^8"
+    "@types/pg": "npm:^8.15.6"
     "@types/qrcode": "npm:^1.5.6"
     "@types/react": "npm:^19.2.7"
     "@types/react-dom": "npm:^19.2.3"
@@ -12750,7 +12750,7 @@ __metadata:
     happy-dom: "npm:^20.0.11"
     husky: "npm:^9.1.7"
     jsdom: "npm:^27.2.0"
-    lucide-react: "npm:^0.555.0"
+    lucide-react: "npm:^0.556.0"
     mime: "npm:^4.1.0"
     nanoid: "npm:^5.1.6"
     next: "npm:16.0.7"
