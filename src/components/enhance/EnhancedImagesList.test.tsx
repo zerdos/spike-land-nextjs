@@ -1,5 +1,6 @@
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { EnhancedImagesList } from "./EnhancedImagesList";
 
@@ -31,8 +32,30 @@ vi.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
-const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; } = {
+// Mock AddToAlbumModal
+vi.mock("./AddToAlbumModal", () => ({
+  AddToAlbumModal: ({
+    open,
+    onOpenChange,
+    imageId,
+  }: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    imageId: string;
+  }) =>
+    open
+      ? (
+        <div data-testid="add-to-album-modal">
+          <span data-testid="modal-image-id">{imageId}</span>
+          <button onClick={() => onOpenChange(false)}>Close Modal</button>
+        </div>
+      )
+      : null,
+}));
+
+const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[] } = {
   id: "test-image-1",
+  name: "Test Image",
   originalUrl: "https://example.com/original.jpg",
   userId: "user-123",
   createdAt: new Date("2024-01-15T10:00:00Z"),
@@ -60,7 +83,9 @@ describe("EnhancedImagesList Component", () => {
 
     render(<EnhancedImagesList images={images} />);
 
-    const uploadedImages = screen.getAllByRole("img", { name: "Uploaded image" });
+    const uploadedImages = screen.getAllByRole("img", {
+      name: "Uploaded image",
+    });
     expect(uploadedImages).toHaveLength(3);
   });
 
@@ -445,6 +470,82 @@ describe("EnhancedImagesList Component", () => {
       // Find the date span by its class
       const spans = container.querySelectorAll("span.text-xs.text-muted-foreground");
       expect(spans.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Add to Album functionality", () => {
+    it("renders Add to Album button for each image", () => {
+      render(<EnhancedImagesList images={[mockImage]} />);
+
+      const addToAlbumButton = screen.getByRole("button", {
+        name: "Add to Album",
+      });
+      expect(addToAlbumButton).toBeInTheDocument();
+    });
+
+    it("opens AddToAlbumModal when Add to Album button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<EnhancedImagesList images={[mockImage]} />);
+
+      const addToAlbumButton = screen.getByRole("button", {
+        name: "Add to Album",
+      });
+      await user.click(addToAlbumButton);
+
+      expect(screen.getByTestId("add-to-album-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-image-id")).toHaveTextContent(
+        "test-image-1",
+      );
+    });
+
+    it("closes AddToAlbumModal when close is triggered", async () => {
+      const user = userEvent.setup();
+      render(<EnhancedImagesList images={[mockImage]} />);
+
+      const addToAlbumButton = screen.getByRole("button", {
+        name: "Add to Album",
+      });
+      await user.click(addToAlbumButton);
+
+      expect(screen.getByTestId("add-to-album-modal")).toBeInTheDocument();
+
+      const closeButton = screen.getByText("Close Modal");
+      await user.click(closeButton);
+
+      expect(
+        screen.queryByTestId("add-to-album-modal"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("disables Add to Album button when image is being deleted", () => {
+      const onDelete = vi.fn();
+
+      render(
+        <EnhancedImagesList
+          images={[mockImage]}
+          onDelete={onDelete}
+          deletingImageId="test-image-1"
+        />,
+      );
+
+      const addToAlbumButton = screen.getByRole("button", {
+        name: "Add to Album",
+      });
+      expect(addToAlbumButton).toBeDisabled();
+    });
+
+    it("renders Add to Album button for multiple images", () => {
+      const images = [
+        { ...mockImage, id: "image-1" },
+        { ...mockImage, id: "image-2" },
+      ];
+
+      render(<EnhancedImagesList images={images} />);
+
+      const addToAlbumButtons = screen.getAllByRole("button", {
+        name: "Add to Album",
+      });
+      expect(addToAlbumButtons).toHaveLength(2);
     });
   });
 });
