@@ -295,8 +295,8 @@ git worktree add ../existing-branch existing-branch
 
 # Work in the new worktree
 cd ../feature-name
-npm install  # Install dependencies if needed
-npm run dev
+yarn install  # Install dependencies if needed
+yarn dev
 
 # List all active worktrees
 git worktree list
@@ -325,18 +325,18 @@ cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 ## Development Commands
 
 ### Development
-- **Start dev server**: `npm run dev` (runs on http://localhost:3000)
-- **Build**: `npm run build`
-- **Production server**: `npm start`
-- **Lint**: `npm run lint`
+- **Start dev server**: `yarn dev` (runs on http://localhost:3000)
+- **Build**: `yarn build`
+- **Production server**: `yarn start`
+- **Lint**: `yarn lint`
 
 ### Testing
-- **Unit tests**: `npm test` (watch mode)
-- **Unit tests (run once)**: `npm run test:run`
-- **Unit tests with UI**: `npm run test:ui`
-- **Code coverage**: `npm run test:coverage` (requires 100% coverage)
-- **E2E tests (local)**: `npm run test:e2e:local` (requires dev server running)
-- **E2E tests (CI)**: `npm run test:e2e:ci` (uses BASE_URL env var)
+- **Unit tests**: `yarn test` (watch mode)
+- **Unit tests (run once)**: `yarn test:run`
+- **Unit tests with UI**: `yarn test:ui`
+- **Code coverage**: `yarn test:coverage` (requires 100% coverage)
+- **E2E tests (local)**: `yarn test:e2e:local` (requires dev server running)
+- **E2E tests (CI)**: `yarn test:e2e:ci` (uses BASE_URL env var)
 
 ## Architecture
 
@@ -409,7 +409,7 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 - **100% code coverage required** - All statements, branches, functions, and lines must be covered
 - **Test files**: Place `.test.ts` or `.test.tsx` files alongside source files
 - **Configuration**: `vitest.config.ts` with coverage thresholds
-- **Run tests**: `npm run test:coverage` to verify coverage
+- **Run tests**: `yarn test:coverage` to verify coverage
 - **Exclusions**: Test files are excluded from Next.js type checking (see `tsconfig.json`)
 
 ### E2E Testing (Playwright + Cucumber)
@@ -476,14 +476,14 @@ git worktree add ../feature/my-feature -b feature/my-feature
 cd ../feature/my-feature
 
 # 2. Install dependencies (if needed)
-npm install
+yarn install
 
 # 3. Make changes, write tests (100% coverage required)
 # Add your code and corresponding tests
 
 # 4. Run tests locally
-npm run test:coverage  # Must pass with 100% coverage
-npm run build          # Must build successfully
+yarn test:coverage  # Must pass with 100% coverage
+yarn build          # Must build successfully
 
 # 5. Rebase with latest main before creating PR
 cd ../main
@@ -558,9 +558,9 @@ sleep 30 && gh pr checks <PR-NUMBER>
 
 ### Common CI Failures and Fixes
 
-1. **Tests fail** → Fix the code, ensure `npm run test:coverage` passes locally
-2. **Build fails** → Check TypeScript errors, ensure `npm run build` works locally
-3. **Lint fails** → Run `npm run lint` and fix issues
+1. **Tests fail** → Fix the code, ensure `yarn test:coverage` passes locally
+2. **Build fails** → Check TypeScript errors, ensure `yarn build` works locally
+3. **Lint fails** → Run `yarn lint` and fix issues
 4. **Coverage drops** → Add tests to maintain 100% coverage
 
 **DO NOT mark a task as complete if:**
@@ -712,14 +712,14 @@ gh run view <run-id> --log-failed
 ## Troubleshooting
 
 ### Coverage Not 100%
-- Run `npm run test:coverage` to see uncovered lines
+- Run `yarn test:coverage` to see uncovered lines
 - Add tests for all branches, functions, and statements
 - Check `coverage/` directory for detailed HTML report
 
 ### E2E Tests Failing Locally
-- Ensure dev server is running: `npm run dev`
-- Use `npm run test:e2e:local` (not `test:e2e`)
-- Check browser is installed: `npx playwright install chromium`
+- Ensure dev server is running: `yarn dev`
+- Use `yarn test:e2e:local` (not `test:e2e`)
+- Check browser is installed: `yarn dlx playwright install chromium`
 
 ### CI/CD Pipeline Failing
 - Check Actions tab for detailed logs

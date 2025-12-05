@@ -22,7 +22,7 @@ A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4, shadc
 ### Prerequisites
 
 - Node.js 20+
-- npm, yarn, pnpm, or bun
+- Yarn 4 (corepack enabled)
 
 ### Installation
 
@@ -31,18 +31,21 @@ A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4, shadc
 git clone https://github.com/zerdos/spike-land-nextjs.git
 cd spike-land-nextjs
 
+# Enable corepack (if not already enabled)
+corepack enable
+
 # Install dependencies
-npm install
+yarn install
 
 # Install Playwright browsers (for E2E tests)
-npx playwright install chromium
+yarn dlx playwright install chromium
 
 # Set up environment variables (see Authentication Setup below)
 cp .env.example .env.local
 # Edit .env.local with your actual credentials
 
 # Start development server
-npm run dev
+yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
@@ -125,25 +128,25 @@ For production deployment, set these environment variables in your hosting platf
 ### Development
 
 ```bash
-npm run dev          # Start development server (http://localhost:3000)
-npm run build        # Build for production
-npm start            # Start production server
-npm run lint         # Run ESLint
+yarn dev          # Start development server (http://localhost:3000)
+yarn build        # Build for production
+yarn start        # Start production server
+yarn lint         # Run ESLint
 ```
 
 ### Testing
 
 ```bash
 # Unit Tests (Vitest + React Testing Library)
-npm test             # Run tests in watch mode
-npm run test:run     # Run tests once
-npm run test:ui      # Run tests with UI
-npm run test:coverage # Run with coverage (100% required)
+yarn test             # Run tests in watch mode
+yarn test:run         # Run tests once
+yarn test:ui          # Run tests with UI
+yarn test:coverage    # Run with coverage (100% required)
 
 # E2E Tests (Playwright + Cucumber)
-npm run test:e2e:local # Run E2E against localhost (dev server must be running)
-npm run test:e2e       # Run E2E against any URL (set BASE_URL env var)
-npm run test:e2e:ci    # Run E2E in CI (uses deployed URL)
+yarn test:e2e:local   # Run E2E against localhost (dev server must be running)
+yarn test:e2e         # Run E2E against any URL (set BASE_URL env var)
+yarn test:e2e:ci      # Run E2E in CI (uses deployed URL)
 ```
 
 ## 🏗️ Project Structure
@@ -189,7 +192,7 @@ spike-land-nextjs/
 
 Example:
 ```bash
-npm run test:coverage
+yarn test:coverage
 ```
 
 Coverage report is available at `coverage/index.html`
@@ -211,10 +214,10 @@ Feature: Home Page
 Run locally:
 ```bash
 # Terminal 1: Start dev server
-npm run dev
+yarn dev
 
 # Terminal 2: Run E2E tests
-npm run test:e2e:local
+yarn test:e2e:local
 ```
 
 ## 🔄 CI/CD Pipeline
@@ -280,8 +283,8 @@ git checkout -b feature/my-feature
 # ... edit files ...
 
 # 3. Run tests locally
-npm run test:coverage  # Must pass with 100% coverage
-npm run build          # Must build successfully
+yarn test:coverage  # Must pass with 100% coverage
+yarn build          # Must build successfully
 
 # 4. Commit and push
 git add .
@@ -338,7 +341,7 @@ git push origin feature/my-feature
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Write code and tests (100% coverage required)
-4. Ensure all tests pass (`npm run test:coverage`)
+4. Ensure all tests pass (`yarn test:coverage`)
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request

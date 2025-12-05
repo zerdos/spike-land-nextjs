@@ -33,14 +33,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+      # Vercel CLI used via npx below - no global install needed
 
       - name: Get Vercel Project Info
         id: project
         run: |
-          VERCEL_ORG_ID=$(vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .teamId')
-          VERCEL_PROJECT_ID=$(vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .id')
+          VERCEL_ORG_ID=$(npx vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .teamId')
+          VERCEL_PROJECT_ID=$(npx vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .id')
           echo "org_id=$VERCEL_ORG_ID" >> $GITHUB_OUTPUT
           echo "project_id=$VERCEL_PROJECT_ID" >> $GITHUB_OUTPUT
         env:
@@ -50,9 +49,9 @@ jobs:
         id: deployments
         run: |
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            DEPLOYMENTS=$(vercel deploy list --json --limit=5 --prod)
+            DEPLOYMENTS=$(npx vercel deploy list --json --limit=5 --prod)
           else
-            DEPLOYMENTS=$(vercel deploy list --json --limit=5)
+            DEPLOYMENTS=$(npx vercel deploy list --json --limit=5)
           fi
           echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
           echo "Recent deployments:"
@@ -86,7 +85,7 @@ jobs:
           DEPLOYMENT_ID="${{ steps.target.outputs.deployment_id }}"
 
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            vercel promote "$DEPLOYMENT_ID" --token=${{ secrets.VERCEL_TOKEN }}
+            npx vercel promote "$DEPLOYMENT_ID" --token=${{ secrets.VERCEL_TOKEN }}
           else
             echo "Promotion to preview environment not applicable"
             exit 1

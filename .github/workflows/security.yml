@@ -27,17 +27,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
+      - name: Run yarn audit
+        run: yarn npm audit --all --severity moderate
         continue-on-error: false
 
       - name: Check for outdated packages
-        run: npm outdated || true
+        run: yarn outdated || true
         continue-on-error: true
 
       - name: Generate security report
@@ -49,12 +50,12 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Please review the audit results and update dependencies:" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          npm audit >> $GITHUB_STEP_SUMMARY || true
+          yarn npm audit --all >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "To fix vulnerabilities, run:" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "npm audit fix" >> $GITHUB_STEP_SUMMARY
+          echo "yarn up" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Success summary
