@@ -1,0 +1,63 @@
+"use client";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Columns2, SlidersHorizontal } from "lucide-react";
+import { ImageComparisonSlider } from "./ImageComparisonSlider";
+import { SideBySideComparison } from "./SideBySideComparison";
+
+export type ComparisonViewMode = "slider" | "side-by-side";
+
+interface ComparisonViewToggleProps {
+  originalUrl: string;
+  enhancedUrl: string;
+  width?: number;
+  height?: number;
+  defaultMode?: ComparisonViewMode;
+  onModeChange?: (mode: ComparisonViewMode) => void;
+}
+
+export function ComparisonViewToggle({
+  originalUrl,
+  enhancedUrl,
+  width = 16,
+  height = 9,
+  defaultMode = "slider",
+  onModeChange,
+}: ComparisonViewToggleProps) {
+  const handleModeChange = (value: string) => {
+    onModeChange?.(value as ComparisonViewMode);
+  };
+
+  return (
+    <Tabs defaultValue={defaultMode} onValueChange={handleModeChange} className="w-full">
+      <div className="flex justify-end mb-4">
+        <TabsList>
+          <TabsTrigger value="slider" className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            <span className="hidden sm:inline">Slider</span>
+          </TabsTrigger>
+          <TabsTrigger value="side-by-side" className="flex items-center gap-2">
+            <Columns2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Side by Side</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
+      <TabsContent value="slider" className="mt-0">
+        <ImageComparisonSlider
+          originalUrl={originalUrl}
+          enhancedUrl={enhancedUrl}
+          width={width}
+          height={height}
+        />
+      </TabsContent>
+      <TabsContent value="side-by-side" className="mt-0">
+        <SideBySideComparison
+          originalUrl={originalUrl}
+          enhancedUrl={enhancedUrl}
+          width={width}
+          height={height}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+}
