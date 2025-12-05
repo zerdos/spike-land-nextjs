@@ -26,81 +26,131 @@ export async function GET() {
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Jobs per hour (last 24 hours)
-    const hourlyJobs = await prisma.$queryRaw<
-      Array<{ hour: Date; count: bigint; }>
-    >`
-      SELECT DATE_TRUNC('hour', created_at) as hour, COUNT(*)::bigint as count
-      FROM image_enhancement_jobs
-      WHERE created_at >= ${last24Hours}
-      GROUP BY DATE_TRUNC('hour', created_at)
-      ORDER BY hour ASC
-    `;
+    let hourlyJobs: Array<{ hour: Date; count: bigint; }> = [];
+    try {
+      hourlyJobs = await prisma.$queryRaw<
+        Array<{ hour: Date; count: bigint; }>
+      >`
+        SELECT DATE_TRUNC('hour', created_at) as hour, COUNT(*)::bigint as count
+        FROM image_enhancement_jobs
+        WHERE created_at >= ${last24Hours}
+        GROUP BY DATE_TRUNC('hour', created_at)
+        ORDER BY hour ASC
+      `;
+    } catch (error) {
+      console.error("Failed to fetch hourly jobs:", error);
+      hourlyJobs = [];
+    }
 
     // Average processing time by tier
-    const avgProcessingTime = await prisma.$queryRaw<
-      Array<{ tier: string; avg_seconds: number; }>
-    >`
-      SELECT
-        tier,
-        AVG(EXTRACT(EPOCH FROM (processing_completed_at - processing_started_at)))::float as avg_seconds
-      FROM image_enhancement_jobs
-      WHERE status = 'COMPLETED'
-        AND processing_started_at IS NOT NULL
-        AND processing_completed_at IS NOT NULL
-        AND created_at >= ${last7Days}
-      GROUP BY tier
-    `;
+    let avgProcessingTime: Array<{ tier: string; avg_seconds: number; }> = [];
+    try {
+      avgProcessingTime = await prisma.$queryRaw<
+        Array<{ tier: string; avg_seconds: number; }>
+      >`
+        SELECT
+          tier,
+          AVG(EXTRACT(EPOCH FROM (processing_completed_at - processing_started_at)))::float as avg_seconds
+        FROM image_enhancement_jobs
+        WHERE status = 'COMPLETED'
+          AND processing_started_at IS NOT NULL
+          AND processing_completed_at IS NOT NULL
+          AND created_at >= ${last7Days}
+        GROUP BY tier
+      `;
+    } catch (error) {
+      console.error("Failed to fetch average processing time:", error);
+      avgProcessingTime = [];
+    }
 
     // Failure rate by tier (last 7 days)
-    const failuresByTier = await prisma.imageEnhancementJob.groupBy({
-      by: ["tier", "status"],
-      where: {
-        createdAt: {
-          gte: last7Days,
+    let failuresByTier: Array<{ tier: EnhancementTier; status: JobStatus; _count: number; }> =
+      [];
+    try {
+      const result = await prisma.imageEnhancementJob.groupBy({
+        by: ["tier", "status"],
+        where: {
+          createdAt: {
+            gte: last7Days,
+          },
         },
-      },
-      _count: true,
-    });
+        _count: true,
+      });
+      failuresByTier = result as Array<{
+        tier: EnhancementTier;
+        status: JobStatus;
+        _count: number;
+      }>;
+    } catch (error) {
+      console.error("Failed to fetch failures by tier:", error);
+      failuresByTier = [];
+    }
 
     // Queue depth (pending + processing)
-    const queueDepth = await prisma.imageEnhancementJob.count({
-      where: {
-        status: {
-          in: [JobStatus.PENDING, JobStatus.PROCESSING],
+    let queueDepth = 0;
+    try {
+      queueDepth = await prisma.imageEnhancementJob.count({
+        where: {
+          status: {
+            in: [JobStatus.PENDING, JobStatus.PROCESSING],
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error("Failed to fetch queue depth:", error);
+      queueDepth = 0;
+    }
 
     // Job status breakdown
-    const jobsByStatus = await prisma.imageEnhancementJob.groupBy({
-      by: ["status"],
-      _count: true,
-    });
+    let jobsByStatus: Array<{ status: JobStatus; _count: number; }> = [];
+    try {
+      const result = await prisma.imageEnhancementJob.groupBy({
+        by: ["status"],
+        _count: true,
+      });
+      jobsByStatus = result as Array<{ status: JobStatus; _count: number; }>;
+    } catch (error) {
+      console.error("Failed to fetch jobs by status:", error);
+      jobsByStatus = [];
+    }
 
     // Recent failed jobs
-    const recentFailures = await prisma.imageEnhancementJob.findMany({
-      where: {
-        status: JobStatus.FAILED,
-        createdAt: {
-          gte: last7Days,
+    let recentFailures: Array<{
+      id: string;
+      tier: EnhancementTier;
+      errorMessage: string | null;
+      createdAt: Date;
+    }> = [];
+    try {
+      recentFailures = await prisma.imageEnhancementJob.findMany({
+        where: {
+          status: JobStatus.FAILED,
+          createdAt: {
+            gte: last7Days,
+          },
         },
-      },
-      select: {
-        id: true,
-        tier: true,
-        errorMessage: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 10,
-    });
+        select: {
+          id: true,
+          tier: true,
+          errorMessage: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 10,
+      });
+    } catch (error) {
+      console.error("Failed to fetch recent failures:", error);
+      recentFailures = [];
+    }
 
     // Calculate failure rates
     type FailureByTier = { tier: EnhancementTier; status: JobStatus; _count: number; };
     const tierStats = Object.values(EnhancementTier).map((tier) => {
-      const tierJobs = failuresByTier.filter((f: FailureByTier) => f.tier === tier);
+      const tierJobs = Array.isArray(failuresByTier)
+        ? failuresByTier.filter((f: FailureByTier) => f.tier === tier)
+        : [];
       const total = tierJobs.reduce((sum: number, j: FailureByTier) => sum + j._count, 0);
       const failed = tierJobs.find((j: FailureByTier) => j.status === JobStatus.FAILED)?._count ||
         0;
@@ -113,28 +163,36 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      hourlyJobs: hourlyJobs.map((row: { hour: Date; count: bigint; }) => ({
-        hour: row.hour.toISOString(),
-        count: Number(row.count),
-      })),
-      avgProcessingTime: avgProcessingTime.map((row: { tier: string; avg_seconds: number; }) => ({
-        tier: row.tier,
-        seconds: Math.round(row.avg_seconds),
-      })),
+      hourlyJobs: Array.isArray(hourlyJobs)
+        ? hourlyJobs.map((row: { hour: Date; count: bigint; }) => ({
+          hour: row.hour.toISOString(),
+          count: Number(row.count),
+        }))
+        : [],
+      avgProcessingTime: Array.isArray(avgProcessingTime)
+        ? avgProcessingTime.map((row: { tier: string; avg_seconds: number; }) => ({
+          tier: row.tier,
+          seconds: Math.round(row.avg_seconds || 0),
+        }))
+        : [],
       tierStats,
       queueDepth,
-      jobsByStatus: jobsByStatus.map((item: { status: JobStatus; _count: number; }) => ({
-        status: item.status,
-        count: item._count,
-      })),
-      recentFailures: recentFailures.map((
-        job: { id: string; tier: EnhancementTier; errorMessage: string | null; createdAt: Date; },
-      ) => ({
-        id: job.id,
-        tier: job.tier,
-        error: job.errorMessage,
-        timestamp: job.createdAt.toISOString(),
-      })),
+      jobsByStatus: Array.isArray(jobsByStatus)
+        ? jobsByStatus.map((item: { status: JobStatus; _count: number; }) => ({
+          status: item.status,
+          count: item._count,
+        }))
+        : [],
+      recentFailures: Array.isArray(recentFailures)
+        ? recentFailures.map((
+          job: { id: string; tier: EnhancementTier; errorMessage: string | null; createdAt: Date; },
+        ) => ({
+          id: job.id,
+          tier: job.tier,
+          error: job.errorMessage,
+          timestamp: job.createdAt.toISOString(),
+        }))
+        : [],
     });
   } catch (error) {
     console.error("Failed to fetch system health:", error);
