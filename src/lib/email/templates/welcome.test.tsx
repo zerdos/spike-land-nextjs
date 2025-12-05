@@ -1,75 +1,75 @@
-import { describe, it, expect } from 'vitest'
-import { render } from '@react-email/components'
-import { WelcomeEmail } from './welcome'
+import { render } from "@react-email/components";
+import { describe, expect, it } from "vitest";
+import { WelcomeEmail } from "./welcome";
 
-describe('WelcomeEmail', () => {
-  it('should render welcome email with user name', async () => {
+describe("WelcomeEmail", () => {
+  it("should render welcome email with user name", async () => {
     const html = await render(
-      <WelcomeEmail userName="John Doe" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John Doe" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain('Welcome to Spike Land, John Doe!')
-    expect(html).toContain('Thank you for joining Spike Land')
-  })
+    expect(html).toContain("Welcome to Spike Land, John Doe!");
+    expect(html).toContain("Thank you for joining Spike Land");
+  });
 
-  it('should use email username when name is not provided', async () => {
-    const html = await render(<WelcomeEmail userEmail="john.smith@example.com" />)
+  it("should use email username when name is not provided", async () => {
+    const html = await render(<WelcomeEmail userEmail="john.smith@example.com" />);
 
-    expect(html).toContain('Welcome to Spike Land, john.smith!')
-  })
+    expect(html).toContain("Welcome to Spike Land, john.smith!");
+  });
 
-  it('should include welcome message and free tokens', async () => {
+  it("should include welcome message and free tokens", async () => {
     const html = await render(
-      <WelcomeEmail userName="John" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain("received 5 free tokens")
-    expect(html).toContain('AI-powered image enhancement platform')
-  })
+    expect(html).toContain("received 5 free tokens");
+    expect(html).toContain("AI-powered image enhancement platform");
+  });
 
-  it('should list platform features', async () => {
+  it("should list platform features", async () => {
     const html = await render(
-      <WelcomeEmail userName="John" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain('Enhance Images')
-    expect(html).toContain('AI-Powered Edits')
-    expect(html).toContain('Multiple Formats')
-    expect(html).toContain('Fast Processing')
-  })
+    expect(html).toContain("Enhance Images");
+    expect(html).toContain("AI-Powered Edits");
+    expect(html).toContain("Multiple Formats");
+    expect(html).toContain("Fast Processing");
+  });
 
-  it('should include call-to-action button', async () => {
+  it("should include call-to-action button", async () => {
     const html = await render(
-      <WelcomeEmail userName="John" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain('Start Enhancing Images')
-    expect(html).toContain('https://spike.land/dashboard')
-  })
+    expect(html).toContain("Start Enhancing Images");
+    expect(html).toContain("https://spike.land/dashboard");
+  });
 
-  it('should include help and support links', async () => {
+  it("should include help and support links", async () => {
     const html = await render(
-      <WelcomeEmail userName="John" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain('documentation')
-    expect(html).toContain('contact support')
-    expect(html).toContain('https://spike.land/docs')
-    expect(html).toContain('https://spike.land/support')
-  })
+    expect(html).toContain("documentation");
+    expect(html).toContain("contact support");
+    expect(html).toContain("https://spike.land/docs");
+    expect(html).toContain("https://spike.land/support");
+  });
 
-  it('should include team signature', async () => {
+  it("should include team signature", async () => {
     const html = await render(
-      <WelcomeEmail userName="John" userEmail="john@example.com" />
-    )
+      <WelcomeEmail userName="John" userEmail="john@example.com" />,
+    );
 
-    expect(html).toContain('Happy enhancing!')
-    expect(html).toContain('The Spike Land Team')
-  })
+    expect(html).toContain("Happy enhancing!");
+    expect(html).toContain("The Spike Land Team");
+  });
 
-  it('should handle empty user name gracefully', async () => {
-    const html = await render(<WelcomeEmail userName="" userEmail="test@example.com" />)
+  it("should handle empty user name gracefully", async () => {
+    const html = await render(<WelcomeEmail userName="" userEmail="test@example.com" />);
 
-    expect(html).toContain('Welcome to Spike Land, test!')
-  })
-})
+    expect(html).toContain("Welcome to Spike Land, test!");
+  });
+});

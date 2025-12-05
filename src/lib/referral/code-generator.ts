@@ -1,19 +1,19 @@
-import prisma from '@/lib/prisma'
+import prisma from "@/lib/prisma";
 
-const CODE_LENGTH = 8
-const CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Excludes ambiguous characters (0, O, I, 1)
-const MAX_RETRIES = 5
+const CODE_LENGTH = 8;
+const CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excludes ambiguous characters (0, O, I, 1)
+const MAX_RETRIES = 5;
 
 /**
  * Generate a random referral code
  */
 function generateRandomCode(): string {
-  let code = ''
+  let code = "";
   for (let i = 0; i < CODE_LENGTH; i++) {
-    const randomIndex = Math.floor(Math.random() * CHARSET.length)
-    code += CHARSET[randomIndex]
+    const randomIndex = Math.floor(Math.random() * CHARSET.length);
+    code += CHARSET[randomIndex];
   }
-  return code
+  return code;
 }
 
 /**
@@ -22,20 +22,20 @@ function generateRandomCode(): string {
  */
 export async function generateUniqueReferralCode(): Promise<string> {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const code = generateRandomCode()
+    const code = generateRandomCode();
 
     // Check if code already exists
     const existingUser = await prisma.user.findUnique({
       where: { referralCode: code },
       select: { id: true },
-    })
+    });
 
     if (!existingUser) {
-      return code
+      return code;
     }
   }
 
-  throw new Error('Failed to generate unique referral code after maximum retries')
+  throw new Error("Failed to generate unique referral code after maximum retries");
 }
 
 /**
@@ -46,22 +46,22 @@ export async function assignReferralCodeToUser(userId: string): Promise<string> 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { referralCode: true },
-  })
+  });
 
   if (user?.referralCode) {
-    return user.referralCode
+    return user.referralCode;
   }
 
   // Generate new code
-  const newCode = await generateUniqueReferralCode()
+  const newCode = await generateUniqueReferralCode();
 
   // Update user with new code
   await prisma.user.update({
     where: { id: userId },
     data: { referralCode: newCode },
-  })
+  });
 
-  return newCode
+  return newCode;
 }
 
 /**
@@ -71,7 +71,7 @@ export async function getUserByReferralCode(code: string): Promise<string | null
   const user = await prisma.user.findUnique({
     where: { referralCode: code },
     select: { id: true },
-  })
+  });
 
-  return user?.id ?? null
+  return user?.id ?? null;
 }

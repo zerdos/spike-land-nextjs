@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /**
  * API endpoint to fetch TURN server credentials from Twilio
@@ -11,8 +11,8 @@ export async function GET() {
 
     if (!accountSid || !authToken) {
       return NextResponse.json(
-        { error: 'Twilio credentials not configured' },
-        { status: 500 }
+        { error: "Twilio credentials not configured" },
+        { status: 500 },
       );
     }
 
@@ -20,12 +20,12 @@ export async function GET() {
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Tokens.json`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString("base64")}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -41,8 +41,8 @@ export async function GET() {
     });
   } catch {
     return NextResponse.json(
-      { error: 'Failed to fetch TURN credentials' },
-      { status: 500 }
+      { error: "Failed to fetch TURN credentials" },
+      { status: 500 },
     );
   }
 }

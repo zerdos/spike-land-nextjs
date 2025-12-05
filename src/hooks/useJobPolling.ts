@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react'
-import type { JobStatus } from '@prisma/client'
+import type { JobStatus } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 interface Job {
-  id: string
-  status: JobStatus
-  enhancedUrl: string | null
-  enhancedWidth: number | null
-  enhancedHeight: number | null
-  errorMessage: string | null
+  id: string;
+  status: JobStatus;
+  enhancedUrl: string | null;
+  enhancedWidth: number | null;
+  enhancedHeight: number | null;
+  errorMessage: string | null;
 }
 
 interface UseJobPollingOptions {
-  jobId: string | null
-  onComplete?: (job: Job) => void
-  onError?: (error: string) => void
-  interval?: number
+  jobId: string | null;
+  onComplete?: (job: Job) => void;
+  onError?: (error: string) => void;
+  interval?: number;
 }
 
 export function useJobPolling({
@@ -23,52 +23,52 @@ export function useJobPolling({
   onError,
   interval = 2000,
 }: UseJobPollingOptions) {
-  const [job, setJob] = useState<Job | null>(null)
-  const [isPolling, setIsPolling] = useState(false)
+  const [job, setJob] = useState<Job | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
-    if (!jobId) return
+    if (!jobId) return;
 
-    setIsPolling(true)
-    let timeoutId: NodeJS.Timeout
+    setIsPolling(true);
+    let timeoutId: NodeJS.Timeout;
 
     const pollJob = async () => {
       try {
-        const response = await fetch(`/api/jobs/${jobId}`)
+        const response = await fetch(`/api/jobs/${jobId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch job status')
+          throw new Error("Failed to fetch job status");
         }
 
-        const data: Job = await response.json()
-        setJob(data)
+        const data: Job = await response.json();
+        setJob(data);
 
-        if (data.status === 'COMPLETED') {
-          setIsPolling(false)
-          onComplete?.(data)
-        } else if (data.status === 'FAILED') {
-          setIsPolling(false)
-          onError?.(data.errorMessage || 'Enhancement failed')
+        if (data.status === "COMPLETED") {
+          setIsPolling(false);
+          onComplete?.(data);
+        } else if (data.status === "FAILED") {
+          setIsPolling(false);
+          onError?.(data.errorMessage || "Enhancement failed");
         } else {
           // Continue polling
-          timeoutId = setTimeout(pollJob, interval)
+          timeoutId = setTimeout(pollJob, interval);
         }
       } catch (error) {
-        setIsPolling(false)
-        onError?.(error instanceof Error ? error.message : 'Unknown error')
+        setIsPolling(false);
+        onError?.(error instanceof Error ? error.message : "Unknown error");
       }
-    }
+    };
 
-    pollJob()
+    pollJob();
 
     return () => {
       if (timeoutId) {
-        clearTimeout(timeoutId)
+        clearTimeout(timeoutId);
       }
-    }
-  }, [jobId, interval, onComplete, onError])
+    };
+  }, [jobId, interval, onComplete, onError]);
 
   return {
     job,
     isPolling,
-  }
+  };
 }

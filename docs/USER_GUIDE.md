@@ -46,13 +46,13 @@
 
 The platform accepts these image formats:
 
-| Format | Best For | Notes |
-|--------|----------|-------|
-| JPEG | Photos, general use | Most common, good compression |
-| PNG | Graphics, transparency | Lossless quality, larger files |
-| WebP | Modern formats | Excellent compression, newer browsers |
-| GIF | Single-frame images | Legacy support |
-| BMP | Legacy formats | Rare, full compatibility |
+| Format | Best For               | Notes                                 |
+| ------ | ---------------------- | ------------------------------------- |
+| JPEG   | Photos, general use    | Most common, good compression         |
+| PNG    | Graphics, transparency | Lossless quality, larger files        |
+| WebP   | Modern formats         | Excellent compression, newer browsers |
+| GIF    | Single-frame images    | Legacy support                        |
+| BMP    | Legacy formats         | Rare, full compatibility              |
 
 **Maximum File Size**: 25 MB per image
 
@@ -73,12 +73,14 @@ You can get tokens through four methods:
 Get 1 free token every 15 minutes, up to a maximum of 100 tokens.
 
 **How it works:**
+
 - Tokens generate automatically while you sleep, work, or are away
 - You never need to do anything - it's passive
 - Perfect for casual users who enhance 1-2 images per day
 - Maximum balance: 100 free tokens
 
 **Example Timeline:**
+
 - Start with 0 tokens
 - After 15 minutes: 1 token
 - After 2 hours: 8 tokens
@@ -90,13 +92,14 @@ Redeem voucher codes for bonus tokens.
 
 **Current Vouchers:**
 
-| Code | Tokens | Usage | Link |
-|------|--------|-------|------|
-| WELCOME50 | 50 | Unlimited | Share with friends |
-| LAUNCH100 | 100 | Limited (1000 uses) | New user special |
-| BETA25 | 25 | Limited (500 uses) | Beta testers only |
+| Code      | Tokens | Usage               | Link               |
+| --------- | ------ | ------------------- | ------------------ |
+| WELCOME50 | 50     | Unlimited           | Share with friends |
+| LAUNCH100 | 100    | Limited (1000 uses) | New user special   |
+| BETA25    | 25     | Limited (500 uses)  | Beta testers only  |
 
 **How to Redeem:**
+
 1. Go to Settings → Tokens → Redeem Voucher
 2. Enter voucher code
 3. Click "Redeem"
@@ -110,14 +113,15 @@ Buy tokens directly with your credit or debit card.
 
 **Token Packages:**
 
-| Package | Tokens | Price | Per Token | Best For |
-|---------|--------|-------|-----------|----------|
-| Starter Pack | 50 | £2.99 | 6p | Try it out |
-| Essential Pack | 150 | £7.99 | 5p | Monthly user |
-| Professional Pack | 500 | £19.99 | 4p | Heavy usage |
-| Enterprise Pack | 2000 | £59.99 | 3p | Teams/organizations |
+| Package           | Tokens | Price  | Per Token | Best For            |
+| ----------------- | ------ | ------ | --------- | ------------------- |
+| Starter Pack      | 50     | £2.99  | 6p        | Try it out          |
+| Essential Pack    | 150    | £7.99  | 5p        | Monthly user        |
+| Professional Pack | 500    | £19.99 | 4p        | Heavy usage         |
+| Enterprise Pack   | 2000   | £59.99 | 3p        | Teams/organizations |
 
 **How to Purchase:**
+
 1. Go to Settings → Tokens → Buy Tokens
 2. Select a package
 3. Click "Purchase"
@@ -132,11 +136,11 @@ Subscribe for automatic monthly token allocation.
 
 **Available Plans:**
 
-| Plan | Tokens/Month | Price/Month | Best For | Rollover |
-|------|-------------|------------|----------|----------|
-| Starter | 20 | £2.99 | Casual users | 20 max |
-| Professional | 100 | £9.99 | Regular users | 100 max |
-| Enterprise | 500 | £29.99 | Power users | 250 max |
+| Plan         | Tokens/Month | Price/Month | Best For      | Rollover |
+| ------------ | ------------ | ----------- | ------------- | -------- |
+| Starter      | 20           | £2.99       | Casual users  | 20 max   |
+| Professional | 100          | £9.99       | Regular users | 100 max  |
+| Enterprise   | 500          | £29.99      | Power users   | 250 max  |
 
 **How Subscriptions Work:**
 
@@ -147,6 +151,7 @@ Subscribe for automatic monthly token allocation.
 5. **Management**: Pause, upgrade, downgrade, or cancel anytime
 
 **Subscription Example** (Professional Plan, 100 tokens/month):
+
 - Month 1: Allocated 100, used 60, rollover 40
 - Month 2: Allocated 100 + rollover 40 = 140 (capped at 100)
 - Month 3: New allocation, previous unused tokens still available
@@ -158,11 +163,11 @@ Subscribe for automatic monthly token allocation.
 
 When you enhance an image, the cost depends on the quality tier you choose:
 
-| Tier | Max Resolution | Cost | Use Case |
-|------|-----------------|------|----------|
-| TIER_1K | 1024px | 2 tokens | Quick preview, social media |
-| TIER_2K | 2048px | 5 tokens | Professional use, print preview |
-| TIER_4K | 4096px | 10 tokens | High-res print, archival |
+| Tier    | Max Resolution | Cost      | Use Case                        |
+| ------- | -------------- | --------- | ------------------------------- |
+| TIER_1K | 1024px         | 2 tokens  | Quick preview, social media     |
+| TIER_2K | 2048px         | 5 tokens  | Professional use, print preview |
+| TIER_4K | 4096px         | 10 tokens | High-res print, archival        |
 
 **Token Calculation Examples:**
 
@@ -178,6 +183,7 @@ When you enhance an image, the cost depends on the quality tier you choose:
 ### Monitoring Your Token Balance
 
 Your token balance is always visible in the header (top right corner). It shows:
+
 - Current balance
 - Time until next free token regeneration
 - Purchase link for quick access
@@ -195,12 +201,14 @@ The three quality tiers let you balance quality against cost:
 **Maximum Output**: 1024px on longest side
 
 **Best For:**
+
 - Social media (Instagram, Twitter)
 - Web thumbnails
 - Quick previews
 - Budget-conscious users
 
 **Example**:
+
 - Original: 1920x1440 photo
 - Enhanced: 1024x768 (same aspect ratio)
 
@@ -209,12 +217,14 @@ The three quality tiers let you balance quality against cost:
 **Maximum Output**: 2048px on longest side
 
 **Best For:**
+
 - Professional use
 - Print preview (up to 8x10 inches)
 - High-quality web display
 - Most common choice
 
 **Example**:
+
 - Original: 1920x1440 photo
 - Enhanced: 2048x1536 (upscaled 1.07x)
 
@@ -223,12 +233,14 @@ The three quality tiers let you balance quality against cost:
 **Maximum Output**: 4096px on longest side
 
 **Best For:**
+
 - High-resolution printing
 - Professional photography
 - Archival quality
 - Full-size displays
 
 **Example**:
+
 - Original: 1920x1440 photo
 - Enhanced: 4096x3072 (upscaled 2.13x)
 
@@ -253,6 +265,7 @@ The three quality tiers let you balance quality against cost:
 ### What Gets Enhanced
 
 The AI enhancement process:
+
 - **Upscales**: Increases resolution to your chosen tier
 - **Sharpens**: Improves detail and clarity
 - **Enhances**: Reduces noise and improves overall quality
@@ -261,6 +274,7 @@ The AI enhancement process:
 ### Failed Enhancements
 
 If an enhancement fails:
+
 - Tokens are **automatically refunded**
 - You can retry immediately
 - No penalty or additional cost
@@ -275,6 +289,7 @@ If an enhancement fails:
 Albums help you organize related images for batch processing, easy sharing, and comparison.
 
 **Create an Album:**
+
 1. Go to "My Albums"
 2. Click "Create New Album"
 3. Name your album (e.g., "Vacation 2025")
@@ -282,6 +297,7 @@ Albums help you organize related images for batch processing, easy sharing, and 
 5. Click "Create"
 
 **Privacy Options:**
+
 - **Private**: Only you can view (default)
 - **Unlisted**: Anyone with the link can view
 - **Public**: Listed in the gallery (future feature)
@@ -289,18 +305,21 @@ Albums help you organize related images for batch processing, easy sharing, and 
 ### Managing Albums
 
 **Add Images to Album:**
+
 1. Go to album details
 2. Click "Add Images"
 3. Select images to add
 4. Click "Add"
 
 **Remove Images:**
+
 1. Open album
 2. Hover over image
 3. Click remove icon
 4. Confirm
 
 **Album Cover:**
+
 1. Open album
 2. Click "Set as Cover" on any image
 3. Cover appears in album list
@@ -310,17 +329,20 @@ Albums help you organize related images for batch processing, easy sharing, and 
 Share your enhanced work with friends, family, or clients.
 
 **Create Share Link:**
+
 1. Open album
 2. Click "Share"
 3. Copy link
 4. Share via email, chat, or social media
 
 **Share Settings:**
+
 - **Unlisted Link**: Anyone with link can view (default)
 - **Password Protected**: Add password for security (future)
 - **Expiring Link**: Set expiration date (future)
 
 **What Recipients See:**
+
 - Thumbnail grid of images
 - Click to view full-size
 - No access to originals or enhancements (view-only)
@@ -364,11 +386,11 @@ Export multiple enhanced images at once:
 
 ### Format Comparison
 
-| Format | Size | Quality | Web | Print | Best For |
-|--------|------|---------|-----|-------|----------|
-| JPEG | Small | Good | Excellent | Good | Photos, web |
-| PNG | Large | Lossless | Good | Excellent | Graphics, print |
-| WebP | Smallest | Excellent | Very Good | Fair | Modern web |
+| Format | Size     | Quality   | Web       | Print     | Best For        |
+| ------ | -------- | --------- | --------- | --------- | --------------- |
+| JPEG   | Small    | Good      | Excellent | Good      | Photos, web     |
+| PNG    | Large    | Lossless  | Good      | Excellent | Graphics, print |
+| WebP   | Smallest | Excellent | Very Good | Fair      | Modern web      |
 
 ---
 
@@ -384,6 +406,7 @@ Invite friends to join Spike Land and both of you earn bonus tokens.
 **Your Friend Gets**: 50 tokens when they sign up
 
 **Process:**
+
 1. Go to Settings → Referral Program
 2. Copy your unique referral link
 3. Share with friends
@@ -393,6 +416,7 @@ Invite friends to join Spike Land and both of you earn bonus tokens.
 ### Sharing Your Link
 
 Share your referral link on:
+
 - Email
 - Social media (Twitter, Instagram, LinkedIn)
 - Discord, Slack, or group chats
@@ -400,6 +424,7 @@ Share your referral link on:
 - SMS or messaging apps
 
 **Example Link:**
+
 ```
 https://next.spike.land?ref=abc123xyz
 ```
@@ -426,6 +451,7 @@ View your referral performance:
 ### Anti-Fraud
 
 To maintain system integrity:
+
 - Cannot refer yourself (same IP/email)
 - Cannot use disposable email addresses
 - Email verification required
@@ -450,6 +476,7 @@ Update your personal information:
 ### Privacy & Security
 
 **Change Password:**
+
 1. Settings → Security
 2. Enter current password
 3. Enter new password
@@ -459,6 +486,7 @@ Update your personal information:
 **Two-Factor Authentication** (Coming Soon)
 
 **Session Management:**
+
 1. View active sessions
 2. Logout from other devices
 3. Automatic logout after 30 days inactivity
@@ -478,18 +506,21 @@ Control what emails you receive:
 ### Billing & Payments
 
 **View Transactions:**
+
 1. Settings → Billing
 2. See all token purchases and Stripe charges
 3. Download invoices
 4. View subscription status
 
 **Manage Subscription:**
+
 1. Settings → Subscription
 2. Current plan details
 3. Next billing date
 4. Pause, upgrade, downgrade, or cancel
 
 **Payment Methods:**
+
 - Stripe handles all payment processing
 - Secure PCI-DSS compliant
 - View connected payment methods
@@ -581,17 +612,21 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 ### Upload Issues
 
 **"File too large" error**
+
 - Solution: Maximum 25 MB per file. Compress or resize your image.
 
 **"Unsupported format" error**
+
 - Solution: Use JPEG, PNG, WebP, GIF, or BMP format.
 
 **Upload takes forever**
+
 - Solution: Check your internet speed. Try a smaller file first.
 
 ### Enhancement Issues
 
 **"Insufficient tokens" error**
+
 - Solution: You don't have enough tokens. Options:
   1. Wait for free token regeneration (1 per 15 min)
   2. Redeem a voucher code
@@ -599,12 +634,14 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
   4. Subscribe to a plan
 
 **Enhancement fails after processing**
+
 - Solution: Tokens are refunded automatically. Causes:
   - File too large for tier (reduce TIER_4K for large images)
   - Temporary server issue (try again)
   - Rate limit exceeded (wait before retrying)
 
 **Long processing time (> 60 seconds)**
+
 - Solution: This is unusual. Reasons:
   - Server load spike (be patient, it should complete)
   - API rate limit hit (retry after waiting)
@@ -613,11 +650,13 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 ### Viewing & Sharing Issues
 
 **Share link isn't working**
+
 - Verify link is correct (check for typos)
 - Share link expires 30 days after album deletion
 - Contact support if still broken
 
 **Images won't display in shared album**
+
 - Your original images might have been deleted
 - Refresh the page
 - Try a different browser
@@ -625,17 +664,20 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 ### Account Issues
 
 **Can't log in**
+
 - Verify email is correct
 - Check for typo in password
 - Try "Forgot Password" reset
 - Try different auth method (GitHub/Google/Phone)
 
 **Token balance wrong**
+
 - Refresh page to reload balance
 - Recent purchases take a few seconds
 - Check transaction history for details
 
 **Didn't receive confirmation email**
+
 - Check spam/junk folder
 - Resend from sign-up page
 - Try different email address if persistent
@@ -643,12 +685,14 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 ### Payment Issues
 
 **Stripe checkout won't load**
+
 - Check internet connection
 - Try different browser or device
 - Clear browser cookies/cache
 - Try incognito/private mode
 
 **Payment declined**
+
 - Check card has sufficient funds
 - Verify card isn't expired
 - Contact your bank about fraud flags
@@ -699,6 +743,7 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 **Status Page**: [status.spike.land](https://status.spike.land)
 
 **Response Times:**
+
 - During business hours (9 AM - 5 PM GMT): 2-4 hours
 - Outside business hours: Next business day
 - Urgent issues: Contact hello@spike.land marked "URGENT"

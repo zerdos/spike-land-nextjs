@@ -18,6 +18,7 @@ This document summarizes the documentation updates made after completing all 5 i
 **Location**: `/docs/IMAGE_ENHANCEMENT_ROADMAP.md`
 
 **Changes Made:**
+
 - Marked Phase 3 (Albums & Export) as COMPLETE
   - All technical tasks checked [x]
   - Added completion notes about endpoints
@@ -35,6 +36,7 @@ This document summarizes the documentation updates made after completing all 5 i
   - Documented legal pages and email infrastructure
 
 **Sections Updated:**
+
 - Phase 3: Albums & Export (Complete)
 - Phase 4: Referral Program (Complete)
 - Phase 5: Admin Dashboard (Complete)
@@ -48,6 +50,7 @@ This document summarizes the documentation updates made after completing all 5 i
 **New Sections Added:**
 
 #### Table of Contents
+
 - Updated to include all 10 main categories:
   1. Authentication
   2. Image Management
@@ -63,6 +66,7 @@ This document summarizes the documentation updates made after completing all 5 i
   12. Rate Limiting
 
 #### Batch Operations Section (NEW)
+
 - **POST /api/images/batch-upload**: Upload multiple images with optional album assignment
   - Response includes uploaded count, failed count, and image details
   - Error handling for file size, format, and rate limits
@@ -73,6 +77,7 @@ This document summarizes the documentation updates made after completing all 5 i
   - Token cost calculation for entire batch
 
 #### Image Enhancement Extensions (NEW)
+
 - **POST /api/images/export**: Export enhanced images in multiple formats
   - Supports JPEG, PNG, WebP formats
   - Returns download URL and file size
@@ -82,7 +87,9 @@ This document summarizes the documentation updates made after completing all 5 i
   - Shows tier, status, and creation timestamps
 
 #### Albums Section (NEW)
+
 Complete CRUD operations for album management:
+
 - **POST /api/albums**: Create new album
 - **GET /api/albums/{albumId}**: Get album details and images
 - **POST /api/albums/{albumId}/images**: Add images to album
@@ -90,6 +97,7 @@ Complete CRUD operations for album management:
 - **DELETE /api/albums/{albumId}**: Delete album
 
 #### Referral Program Section (NEW)
+
 - **GET /api/referral/link**: Generate unique referral link
   - Returns referral code, link, and token reward amount
 
@@ -99,7 +107,9 @@ Complete CRUD operations for album management:
   - Detailed referral list
 
 #### Admin Dashboard Section (NEW)
+
 All endpoints require admin role authentication:
+
 - **GET /api/admin/analytics/users**: User growth metrics
   - Total users, new users, active users
   - Churn rate and registration trends
@@ -130,11 +140,13 @@ All endpoints require admin role authentication:
 **Contents**: Comprehensive user guide covering 9 sections:
 
 #### Section 1: Getting Started
+
 - Account creation process (3 auth methods)
 - First enhancement walkthrough
 - Supported formats and file size limits
 
 #### Section 2: Understanding Tokens
+
 - What are tokens and why they exist
 - Four token acquisition methods detailed:
   1. Free regeneration (1 per 15 min, max 100)
@@ -146,6 +158,7 @@ All endpoints require admin role authentication:
 - Token balance monitoring
 
 #### Section 3: Image Enhancement
+
 - Enhancement tier specifications
   - TIER_1K: 1024px max, 2 tokens (social media)
   - TIER_2K: 2048px max, 5 tokens (professional)
@@ -156,18 +169,21 @@ All endpoints require admin role authentication:
 - Failed enhancement recovery (auto-refund)
 
 #### Section 4: Albums & Organization
+
 - Creating and managing albums
 - Adding/removing images
 - Setting album covers
 - Sharing albums with unlisted links
 
 #### Section 5: Export Options
+
 - Single image export
 - Version history export
 - Batch export as ZIP
 - Format comparison table (JPEG, PNG, WebP)
 
 #### Section 6: Referral Program
+
 - How referral system works
 - Earning 50 tokens per referral
 - Sharing across multiple platforms
@@ -175,12 +191,14 @@ All endpoints require admin role authentication:
 - Anti-fraud measures
 
 #### Section 7: Account Settings
+
 - Profile management
 - Security and password changes
 - Notification preferences
 - Billing and payment management
 
 #### Section 8: FAQ
+
 - 25 frequently asked questions covering:
   - General questions (free tier, processing time)
   - Token questions (expiration, gifting, rollover)
@@ -190,6 +208,7 @@ All endpoints require admin role authentication:
   - Payment questions (methods, refunds)
 
 #### Section 9: Troubleshooting
+
 - Upload issues with solutions
 - Enhancement issues and fixes
 - Viewing and sharing problems
@@ -198,12 +217,14 @@ All endpoints require admin role authentication:
 - Contact information for support
 
 #### Additional Sections:
+
 - Tips & Tricks for maximizing tokens
 - Best practices for image enhancement
 - Performance optimization tips
 - Contact and support information
 
 **Key Features of User Guide:**
+
 - 9,000+ words of comprehensive coverage
 - Over 30 tables and examples
 - 40+ questions answered
@@ -218,6 +239,7 @@ All endpoints require admin role authentication:
 **Location**: `/CLAUDE.md` (project root)
 
 **Changes Made:**
+
 - Updated Platform Architecture sections to mark completed phases
 - Added new section: "Image Enhancement App - Completed Implementation"
 - Documented all 5 completed phases with detailed checkboxes:
@@ -262,21 +284,25 @@ All endpoints require admin role authentication:
 ## API Endpoint Summary
 
 ### Image Management (Existing)
+
 - `POST /api/images/upload` - Upload single image
 - `GET /api/images/{imageId}` - Get image details
 - `DELETE /api/images/{imageId}` - Delete image
 
 ### Image Enhancement (Existing + New)
+
 - `POST /api/images/enhance` - Enhance image
 - `GET /api/jobs/{jobId}` - Get job status
 - `POST /api/images/export` - Export in multiple formats (NEW)
 - `GET /api/images/{imageId}/versions` - Version history (NEW)
 
 ### Batch Operations (NEW)
+
 - `POST /api/images/batch-upload` - Upload multiple images
 - `POST /api/images/batch-enhance` - Batch enhancement
 
 ### Albums (NEW)
+
 - `POST /api/albums` - Create album
 - `GET /api/albums/{albumId}` - Get album
 - `POST /api/albums/{albumId}/images` - Add images
@@ -284,20 +310,25 @@ All endpoints require admin role authentication:
 - `DELETE /api/albums/{albumId}` - Delete album
 
 ### Token Management (Existing)
+
 - `GET /api/tokens/balance` - Get balance and stats
 
 ### Vouchers (Existing)
+
 - `POST /api/vouchers/validate` - Validate voucher
 - `POST /api/vouchers/redeem` - Redeem voucher
 
 ### Referral Program (NEW)
+
 - `GET /api/referral/link` - Get referral link
 - `GET /api/referral/stats` - Get referral stats
 
 ### Payment (Existing)
+
 - `POST /api/stripe/checkout` - Create checkout session
 
 ### Admin Dashboard (NEW)
+
 - `GET /api/admin/analytics/users` - User analytics
 - `GET /api/admin/analytics/tokens` - Token analytics
 - `GET /api/admin/system/health` - System health
@@ -310,43 +341,44 @@ All endpoints require admin role authentication:
 
 ### Token Acquisition Methods
 
-| Method | Rate | Max | Cost | Best For |
-|--------|------|-----|------|----------|
-| Free Regeneration | 1 per 15 min | 100 | Free | Casual users |
-| Vouchers | Per code | Unlimited | Free | New users, promotions |
-| One-Time Purchase | Instant | Unlimited | £2.99-£59.99 | Immediate needs |
-| Subscription | Monthly | Varies | £2.99-£29.99/mo | Regular users |
+| Method            | Rate         | Max       | Cost            | Best For              |
+| ----------------- | ------------ | --------- | --------------- | --------------------- |
+| Free Regeneration | 1 per 15 min | 100       | Free            | Casual users          |
+| Vouchers          | Per code     | Unlimited | Free            | New users, promotions |
+| One-Time Purchase | Instant      | Unlimited | £2.99-£59.99    | Immediate needs       |
+| Subscription      | Monthly      | Varies    | £2.99-£29.99/mo | Regular users         |
 
 ### Enhancement Tier Costs
 
-| Tier | Max Resolution | Cost | Use Case |
-|------|-----------------|------|----------|
-| TIER_1K | 1024px | 2 tokens | Social media, previews |
-| TIER_2K | 2048px | 5 tokens | Professional, print preview |
-| TIER_4K | 4096px | 10 tokens | High-res print, archival |
+| Tier    | Max Resolution | Cost      | Use Case                    |
+| ------- | -------------- | --------- | --------------------------- |
+| TIER_1K | 1024px         | 2 tokens  | Social media, previews      |
+| TIER_2K | 2048px         | 5 tokens  | Professional, print preview |
+| TIER_4K | 4096px         | 10 tokens | High-res print, archival    |
 
 ### Stripe Packages
 
-| Package | Tokens | Price (GBP) | Value |
-|---------|--------|------------|-------|
-| Starter | 50 | £2.99 | 0.06p per token |
-| Essential | 150 | £7.99 | 0.05p per token |
-| Professional | 500 | £19.99 | 0.04p per token |
-| Enterprise | 2000 | £59.99 | 0.03p per token |
+| Package      | Tokens | Price (GBP) | Value           |
+| ------------ | ------ | ----------- | --------------- |
+| Starter      | 50     | £2.99       | 0.06p per token |
+| Essential    | 150    | £7.99       | 0.05p per token |
+| Professional | 500    | £19.99      | 0.04p per token |
+| Enterprise   | 2000   | £59.99      | 0.03p per token |
 
 ### Subscription Plans
 
-| Plan | Tokens/Month | Price/Month | Rollover Max |
-|------|-------------|------------|--------------|
-| Starter | 20 | £2.99 | 20 |
-| Professional | 100 | £9.99 | 100 |
-| Enterprise | 500 | £29.99 | 250 |
+| Plan         | Tokens/Month | Price/Month | Rollover Max |
+| ------------ | ------------ | ----------- | ------------ |
+| Starter      | 20           | £2.99       | 20           |
+| Professional | 100          | £9.99       | 100          |
+| Enterprise   | 500          | £29.99      | 250          |
 
 ---
 
 ## Feature Completion Summary
 
 ### Phase 1: MVP (Complete)
+
 - [x] Image upload with drag-drop UI
 - [x] Single-tier enhancement (TIER_1K)
 - [x] Before/after comparison slider
@@ -354,6 +386,7 @@ All endpoints require admin role authentication:
 - [x] Authentication integration
 
 ### Phase 2: Token Economy (Complete)
+
 - [x] Multi-tier enhancement (TIER_1K, TIER_2K, TIER_4K)
 - [x] Token balance system
 - [x] Free regeneration (1 per 15 min, max 100)
@@ -364,6 +397,7 @@ All endpoints require admin role authentication:
 - [x] Auto-refund on failure
 
 ### Phase 3: Albums & Export (Complete)
+
 - [x] Album CRUD operations
 - [x] Image organization in albums
 - [x] Album sharing with unlisted links
@@ -374,6 +408,7 @@ All endpoints require admin role authentication:
 - [x] Album cover selection
 
 ### Phase 4: Referral Program (Complete)
+
 - [x] Unique referral links
 - [x] Sign-up attribution
 - [x] Token rewards (50 each)
@@ -382,6 +417,7 @@ All endpoints require admin role authentication:
 - [x] Anti-fraud measures
 
 ### Phase 5: Admin Dashboard (Complete)
+
 - [x] User analytics (registrations, MAU)
 - [x] Token economics (purchases, usage)
 - [x] System health monitoring
@@ -395,15 +431,18 @@ All endpoints require admin role authentication:
 ## Documentation Statistics
 
 ### Files Created
+
 - **USER_GUIDE.md**: 500+ lines, 9,000+ words
 - **DOCUMENTATION_COMPLETION_SUMMARY.md**: This file
 
 ### Files Updated
+
 - **IMAGE_ENHANCEMENT_ROADMAP.md**: 3 phases marked complete, completion notes added
 - **API_REFERENCE.md**: 5 new sections, 200+ lines added
 - **CLAUDE.md**: Platform phases updated, new Image Enhancement App section
 
 ### Total Documentation Coverage
+
 - **API Endpoints**: 20+ endpoints documented
 - **User Guides**: Comprehensive getting started and feature guides
 - **FAQs**: 40+ frequently asked questions answered
@@ -415,6 +454,7 @@ All endpoints require admin role authentication:
 ## Related Documentation
 
 **Image Enhancement App Documentation:**
+
 - [Vision Document](./IMAGE_ENHANCEMENT_VISION.md) - Product vision and strategy
 - [Database Schema](./IMAGE_ENHANCEMENT_SCHEMA.md) - Data model design
 - [Token System](./TOKEN_SYSTEM.md) - Token economy details
@@ -422,11 +462,13 @@ All endpoints require admin role authentication:
 - [Suggestions](./IMAGE_ENHANCEMENT_SUGGESTIONS.md) - Future enhancements
 
 **Platform Documentation:**
+
 - [Platform Roadmap](./ROADMAP.md) - Overall platform vision
 - [Features List](./FEATURES.md) - Platform capabilities
 - [Database Setup](./DATABASE_SETUP.md) - Database initialization
 
 **Historical Documentation:**
+
 - [Archive README](./archive/README.md) - Documentation history
 - [Implementation Summaries](./archive/) - Previous phase completions
 

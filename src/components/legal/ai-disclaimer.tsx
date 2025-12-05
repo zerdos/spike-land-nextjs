@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 /**
  * AI Disclaimer Component
@@ -18,29 +18,34 @@
  * <AIDisclaimer showLearnMore={false} />
  */
 
-import * as React from 'react'
-import { Info, ChevronDown, ChevronUp } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import * as React from "react";
 
 export interface AIDisclaimerProps {
-  variant?: 'compact' | 'full'
-  showLearnMore?: boolean
-  className?: string
+  variant?: "compact" | "full";
+  showLearnMore?: boolean;
+  className?: string;
 }
 
 export function AIDisclaimer({
-  variant = 'compact',
+  variant = "compact",
   showLearnMore = true,
   className,
 }: AIDisclaimerProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false)
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
-      <Alert className={cn('border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30', className)}>
+      <Alert
+        className={cn(
+          "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30",
+          className,
+        )}
+      >
         <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
         <AlertTitle className="text-blue-900 dark:text-blue-100">
           AI-Powered Enhancement
@@ -49,7 +54,7 @@ export function AIDisclaimer({
           <div className="space-y-2">
             <p>
               Images are processed by Google Gemini AI on Google&apos;s servers (US).
-              {!isExpanded && ' EXIF metadata is stripped, and images are not used for training.'}
+              {!isExpanded && " EXIF metadata is stripped, and images are not used for training."}
             </p>
 
             {isExpanded && (
@@ -117,24 +122,26 @@ export function AIDisclaimer({
               onClick={() => setIsExpanded(!isExpanded)}
               className="p-0 h-auto text-blue-700 dark:text-blue-300 hover:bg-transparent hover:underline"
             >
-              {isExpanded ? (
-                <>
-                  Show less <ChevronUp className="ml-1 h-3 w-3" />
-                </>
-              ) : (
-                <>
-                  Learn more <ChevronDown className="ml-1 h-3 w-3" />
-                </>
-              )}
+              {isExpanded
+                ? (
+                  <>
+                    Show less <ChevronUp className="ml-1 h-3 w-3" />
+                  </>
+                )
+                : (
+                  <>
+                    Learn more <ChevronDown className="ml-1 h-3 w-3" />
+                  </>
+                )}
             </Button>
           </div>
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   return (
-    <Card className={cn('border-blue-200 dark:border-blue-900', className)}>
+    <Card className={cn("border-blue-200 dark:border-blue-900", className)}>
       <CardHeader>
         <div className="flex items-start gap-3">
           <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
@@ -187,9 +194,9 @@ export function AIDisclaimer({
             Consent
           </h4>
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            By using the AI enhancement feature, you consent to the processing of your
-            images as described above. You acknowledge that image processing involves
-            sending your images to Google&apos;s AI services.
+            By using the AI enhancement feature, you consent to the processing of your images as
+            described above. You acknowledge that image processing involves sending your images to
+            Google&apos;s AI services.
           </p>
         </div>
 
@@ -220,7 +227,7 @@ export function AIDisclaimer({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
-AIDisclaimer.displayName = 'AIDisclaimer'
+AIDisclaimer.displayName = "AIDisclaimer";

@@ -4,58 +4,58 @@
  * Create, view, and manage promotional vouchers.
  */
 
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
 interface Voucher {
-  id: string
-  code: string
-  type: string
-  value: number
-  maxUses: number | null
-  currentUses: number
-  expiresAt: string | null
-  status: string
-  createdAt: string
-  redemptions: number
+  id: string;
+  code: string;
+  type: string;
+  value: number;
+  maxUses: number | null;
+  currentUses: number;
+  expiresAt: string | null;
+  status: string;
+  createdAt: string;
+  redemptions: number;
 }
 
 export default function VouchersPage() {
-  const [vouchers, setVouchers] = useState<Voucher[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     code: "",
     type: "FIXED_TOKENS",
     value: "",
     maxUses: "",
     expiresAt: "",
-  })
+  });
 
   const fetchVouchers = async () => {
     try {
-      const response = await fetch("/api/admin/vouchers")
-      if (!response.ok) throw new Error("Failed to fetch vouchers")
-      const data = await response.json()
-      setVouchers(data.vouchers)
+      const response = await fetch("/api/admin/vouchers");
+      if (!response.ok) throw new Error("Failed to fetch vouchers");
+      const data = await response.json();
+      setVouchers(data.vouchers);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error")
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchVouchers()
-  }, [])
+    fetchVouchers();
+  }, []);
 
   const handleCreateVoucher = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
       const response = await fetch("/api/admin/vouchers", {
@@ -68,11 +68,11 @@ export default function VouchersPage() {
           maxUses: formData.maxUses ? parseInt(formData.maxUses) : null,
           expiresAt: formData.expiresAt || null,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Failed to create voucher")
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create voucher");
       }
 
       // Reset form and refresh list
@@ -82,47 +82,47 @@ export default function VouchersPage() {
         value: "",
         maxUses: "",
         expiresAt: "",
-      })
-      setShowForm(false)
-      await fetchVouchers()
+      });
+      setShowForm(false);
+      await fetchVouchers();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create voucher")
+      alert(err instanceof Error ? err.message : "Failed to create voucher");
     }
-  }
+  };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE"
+    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     try {
       const response = await fetch("/api/admin/vouchers", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: newStatus }),
-      })
+      });
 
-      if (!response.ok) throw new Error("Failed to update voucher")
+      if (!response.ok) throw new Error("Failed to update voucher");
 
-      await fetchVouchers()
+      await fetchVouchers();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update voucher")
+      alert(err instanceof Error ? err.message : "Failed to update voucher");
     }
-  }
+  };
 
   const handleDeleteVoucher = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this voucher?")) return
+    if (!confirm("Are you sure you want to delete this voucher?")) return;
 
     try {
       const response = await fetch(`/api/admin/vouchers?id=${id}`, {
         method: "DELETE",
-      })
+      });
 
-      if (!response.ok) throw new Error("Failed to delete voucher")
+      if (!response.ok) throw new Error("Failed to delete voucher");
 
-      await fetchVouchers()
+      await fetchVouchers();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete voucher")
+      alert(err instanceof Error ? err.message : "Failed to delete voucher");
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -130,7 +130,7 @@ export default function VouchersPage() {
         <h1 className="text-3xl font-bold">Voucher Management</h1>
         <Card className="h-64 animate-pulse bg-neutral-100" />
       </div>
-    )
+    );
   }
 
   return (
@@ -162,9 +162,7 @@ export default function VouchersPage() {
               <input
                 type="text"
                 value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                 placeholder="PROMO2025"
                 required
@@ -175,9 +173,7 @@ export default function VouchersPage() {
               <label className="mb-1 block text-sm font-medium">Type</label>
               <select
                 value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2"
               >
                 <option value="FIXED_TOKENS">Fixed Tokens</option>
@@ -192,9 +188,7 @@ export default function VouchersPage() {
                 <input
                   type="number"
                   value={formData.value}
-                  onChange={(e) =>
-                    setFormData({ ...formData, value: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                   placeholder="100"
                   required
@@ -208,9 +202,7 @@ export default function VouchersPage() {
                 <input
                   type="number"
                   value={formData.maxUses}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxUses: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                   placeholder="Unlimited"
                 />
@@ -223,9 +215,7 @@ export default function VouchersPage() {
                 <input
                   type="datetime-local"
                   value={formData.expiresAt}
-                  onChange={(e) =>
-                    setFormData({ ...formData, expiresAt: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                 />
               </div>
@@ -264,9 +254,7 @@ export default function VouchersPage() {
                 </td>
                 <td className="px-6 py-4">
                   <Badge
-                    variant={
-                      voucher.status === "ACTIVE" ? "default" : "secondary"
-                    }
+                    variant={voucher.status === "ACTIVE" ? "default" : "secondary"}
                   >
                     {voucher.status}
                   </Badge>
@@ -281,9 +269,7 @@ export default function VouchersPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        handleToggleStatus(voucher.id, voucher.status)
-                      }
+                      onClick={() => handleToggleStatus(voucher.id, voucher.status)}
                     >
                       {voucher.status === "ACTIVE" ? "Deactivate" : "Activate"}
                     </Button>
@@ -308,5 +294,5 @@ export default function VouchersPage() {
         )}
       </Card>
     </div>
-  )
+  );
 }

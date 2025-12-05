@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { trackEvent, analytics } from "./analytics";
 import { track } from "@vercel/analytics";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { analytics, trackEvent } from "./analytics";
 
 vi.mock("@vercel/analytics", () => ({
   track: vi.fn(),

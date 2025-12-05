@@ -7,6 +7,7 @@ This directory contains deprecated feature files that are kept for reference onl
 **Deprecated:** 2025-10-29
 **Reason:** Split into focused, smaller files for better test organization and parallel execution
 **Replaced by:**
+
 - `app-wizard-step1-basic-info.feature`
 - `app-wizard-step2-requirements.feature`
 - `app-wizard-step3-monetization.feature`

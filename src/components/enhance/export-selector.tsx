@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Download, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { estimateFileSize, type ExportFormat } from "@/lib/images/format-utils"
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { estimateFileSize, type ExportFormat } from "@/lib/images/format-utils";
+import { Download, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface ExportSelectorProps {
-  imageId: string
-  fileName: string
-  originalSizeBytes?: number
+  imageId: string;
+  fileName: string;
+  originalSizeBytes?: number;
 }
 
 interface FormatOption {
-  value: ExportFormat
-  label: string
-  description: string
+  value: ExportFormat;
+  label: string;
+  description: string;
 }
 
 const FORMAT_OPTIONS: FormatOption[] = [
@@ -43,33 +43,33 @@ const FORMAT_OPTIONS: FormatOption[] = [
     label: "WebP",
     description: "Modern format, excellent compression",
   },
-]
+];
 
 export function ExportSelector({
   imageId,
   fileName,
   originalSizeBytes = 1000000,
 }: ExportSelectorProps) {
-  const [format, setFormat] = useState<ExportFormat>("jpeg")
-  const [quality, setQuality] = useState([95])
-  const [isExporting, setIsExporting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [format, setFormat] = useState<ExportFormat>("jpeg");
+  const [quality, setQuality] = useState([95]);
+  const [isExporting, setIsExporting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const estimatedSize = estimateFileSize(
     originalSizeBytes,
     format,
-    format === "jpeg" ? quality[0] : undefined
-  )
+    format === "jpeg" ? quality[0] : undefined,
+  );
 
   const formatSizeDisplay = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-  }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
 
   const handleExport = async () => {
-    setIsExporting(true)
-    setError(null)
+    setIsExporting(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/images/export", {
@@ -82,40 +82,40 @@ export function ExportSelector({
           format,
           quality: format === "jpeg" ? quality[0] : undefined,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Export failed")
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Export failed");
       }
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-      const contentDisposition = response.headers.get("Content-Disposition")
-      let downloadFileName = fileName
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let downloadFileName = fileName;
       if (contentDisposition) {
-        const matches = /filename="(.+)"/.exec(contentDisposition)
+        const matches = /filename="(.+)"/.exec(contentDisposition);
         if (matches && matches[1]) {
-          downloadFileName = matches[1]
+          downloadFileName = matches[1];
         }
       }
 
-      const link = document.createElement("a")
-      link.href = url
-      link.download = downloadFileName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = downloadFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Export failed:", err)
-      setError(err instanceof Error ? err.message : "Export failed")
+      console.error("Export failed:", err);
+      setError(err instanceof Error ? err.message : "Export failed");
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -187,19 +187,21 @@ export function ExportSelector({
           disabled={isExporting}
           className="w-full"
         >
-          {isExporting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Exporting...
-            </>
-          ) : (
-            <>
-              <Download className="mr-2 h-4 w-4" />
-              Download {format.toUpperCase()}
-            </>
-          )}
+          {isExporting
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Exporting...
+              </>
+            )
+            : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Download {format.toUpperCase()}
+              </>
+            )}
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

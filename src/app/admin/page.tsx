@@ -4,10 +4,10 @@
  * Overview page showing key metrics and quick links to admin sections.
  */
 
-import Link from "next/link"
-import { Card } from "@/components/ui/card"
-import prisma from "@/lib/prisma"
-import { UserRole, JobStatus } from "@prisma/client"
+import { Card } from "@/components/ui/card";
+import prisma from "@/lib/prisma";
+import { JobStatus, UserRole } from "@prisma/client";
+import Link from "next/link";
 
 async function getDashboardMetrics() {
   const [
@@ -56,7 +56,7 @@ async function getDashboardMetrics() {
         status: "ACTIVE",
       },
     }),
-  ])
+  ]);
 
   return {
     totalUsers,
@@ -66,11 +66,11 @@ async function getDashboardMetrics() {
     totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
     totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
     activeVouchers,
-  }
+  };
 }
 
 export default async function AdminDashboard() {
-  const metrics = await getDashboardMetrics()
+  const metrics = await getDashboardMetrics();
 
   const quickLinks = [
     {
@@ -103,7 +103,7 @@ export default async function AdminDashboard() {
       href: "/admin/users",
       icon: "👥",
     },
-  ]
+  ];
 
   return (
     <div className="space-y-8">
@@ -201,5 +201,5 @@ export default async function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

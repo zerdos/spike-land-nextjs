@@ -1,111 +1,111 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Download, GitCompare, Clock, Coins } from 'lucide-react'
-import { VersionCompareModal } from './version-compare-modal'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, Coins, Download, GitCompare } from "lucide-react";
+import { useState } from "react";
+import { VersionCompareModal } from "./version-compare-modal";
 
 export interface Version {
-  jobId: string
-  tier: 'TIER_1K' | 'TIER_2K' | 'TIER_4K'
-  status: string
-  resultUrl: string | null
-  tokensSpent: number
-  createdAt: string | Date
-  processingTimeMs: number | null
-  width: number | null
-  height: number | null
-  sizeBytes: number | null
+  jobId: string;
+  tier: "TIER_1K" | "TIER_2K" | "TIER_4K";
+  status: string;
+  resultUrl: string | null;
+  tokensSpent: number;
+  createdAt: string | Date;
+  processingTimeMs: number | null;
+  width: number | null;
+  height: number | null;
+  sizeBytes: number | null;
 }
 
 export interface VersionHistoryProps {
-  imageId: string
-  imageName: string
-  originalUrl: string
-  versions: Version[]
+  imageId: string;
+  imageName: string;
+  originalUrl: string;
+  versions: Version[];
 }
 
 const getTierLabel = (tier: string): string => {
   switch (tier) {
-    case 'TIER_1K':
-      return '1K'
-    case 'TIER_2K':
-      return '2K'
-    case 'TIER_4K':
-      return '4K'
+    case "TIER_1K":
+      return "1K";
+    case "TIER_2K":
+      return "2K";
+    case "TIER_4K":
+      return "4K";
     default:
-      return tier
+      return tier;
   }
-}
+};
 
 const getTierColor = (tier: string): string => {
   switch (tier) {
-    case 'TIER_1K':
-      return 'bg-green-500/10 text-green-700 border-green-500/20 hover:bg-green-500/20'
-    case 'TIER_2K':
-      return 'bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20'
-    case 'TIER_4K':
-      return 'bg-purple-500/10 text-purple-700 border-purple-500/20 hover:bg-purple-500/20'
+    case "TIER_1K":
+      return "bg-green-500/10 text-green-700 border-green-500/20 hover:bg-green-500/20";
+    case "TIER_2K":
+      return "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20";
+    case "TIER_4K":
+      return "bg-purple-500/10 text-purple-700 border-purple-500/20 hover:bg-purple-500/20";
     default:
-      return 'bg-gray-500/10 text-gray-700 border-gray-500/20'
+      return "bg-gray-500/10 text-gray-700 border-gray-500/20";
   }
-}
+};
 
 const formatDate = (date: string | Date): string => {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const formatProcessingTime = (ms: number | null): string => {
-  if (ms === null) return 'N/A'
-  const seconds = Math.floor(ms / 1000)
-  if (seconds < 60) return `${seconds}s`
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}m ${remainingSeconds}s`
-}
+  if (ms === null) return "N/A";
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+};
 
 const formatFileSize = (bytes: number | null): string => {
-  if (bytes === null) return 'N/A'
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
+  if (bytes === null) return "N/A";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 const handleDownload = (url: string | null, imageName: string, tier: string): void => {
-  if (!url) return
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${imageName}-${getTierLabel(tier)}.jpg`
-  link.target = '_blank'
-  link.click()
-}
+  if (!url) return;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${imageName}-${getTierLabel(tier)}.jpg`;
+  link.target = "_blank";
+  link.click();
+};
 
 export function VersionHistory({ imageId, imageName, originalUrl, versions }: VersionHistoryProps) {
-  const [compareModalOpen, setCompareModalOpen] = useState(false)
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [selectedVersions, setSelectedVersions] = useState<{
-    version1: Version | null
-    version2: Version | null
+    version1: Version | null;
+    version2: Version | null;
   }>({
     version1: versions.length > 0 ? (versions[0] ?? null) : null,
     version2: versions.length > 1 ? (versions[1] ?? null) : null,
-  })
+  });
 
   const openCompareModal = (version1?: Version, version2?: Version) => {
     setSelectedVersions({
       version1: version1 ?? versions[0] ?? null,
       version2: version2 ?? versions[1] ?? null,
-    })
-    setCompareModalOpen(true)
-  }
+    });
+    setCompareModalOpen(true);
+  };
 
   if (versions.length === 0) {
     return (
@@ -115,7 +115,7 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
           <CardDescription>No enhancement versions available yet</CardDescription>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   return (
@@ -126,7 +126,7 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
             <div>
               <CardTitle>Version History</CardTitle>
               <CardDescription>
-                {versions.length} enhancement{versions.length !== 1 ? 's' : ''} available
+                {versions.length} enhancement{versions.length !== 1 ? "s" : ""} available
               </CardDescription>
             </div>
             {versions.length >= 2 && (
@@ -227,5 +227,5 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
         initialVersion2={selectedVersions.version2}
       />
     </>
-  )
+  );
 }

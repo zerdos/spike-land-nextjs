@@ -14,38 +14,45 @@ This guide explains how to configure GitHub branch protection rules to ensure no
 ### 2. Configure the Protection Rule
 
 #### Branch Name Pattern
+
 - Enter: `main`
 
 #### Protect Matching Branches - Enable These Settings:
 
 ✅ **Require a pull request before merging**
-   - This ensures all changes go through a PR
-   - Optional: Check "Require approvals" if you want code reviews (set number of required reviewers)
-   - Optional: Check "Dismiss stale pull request approvals when new commits are pushed"
+
+- This ensures all changes go through a PR
+- Optional: Check "Require approvals" if you want code reviews (set number of required reviewers)
+- Optional: Check "Dismiss stale pull request approvals when new commits are pushed"
 
 ✅ **Require status checks to pass before merging**
-   - Check this box
-   - Check "Require branches to be up to date before merging"
-   - In the search box, add these status checks (they appear after your first CI run):
-     - `Run Tests` (unit tests)
-     - `Build Application` (build verification)
-     - `E2E Tests` (end-to-end tests against preview deployment)
+
+- Check this box
+- Check "Require branches to be up to date before merging"
+- In the search box, add these status checks (they appear after your first CI run):
+  - `Run Tests` (unit tests)
+  - `Build Application` (build verification)
+  - `E2E Tests` (end-to-end tests against preview deployment)
 
 ✅ **Require conversation resolution before merging** (recommended)
-   - Ensures all PR comments are addressed
+
+- Ensures all PR comments are addressed
 
 ✅ **Do not allow bypassing the above settings** (recommended)
-   - Prevents admins from bypassing these rules
-   - Uncheck if you need emergency override capability
+
+- Prevents admins from bypassing these rules
+- Uncheck if you need emergency override capability
 
 #### Optional but Recommended Settings:
 
 ✅ **Require linear history**
-   - Prevents merge commits, keeps history clean
-   - Requires rebase or squash merge
+
+- Prevents merge commits, keeps history clean
+- Requires rebase or squash merge
 
 ✅ **Require deployments to succeed before merging**
-   - Optional: only if you want to require preview deployments
+
+- Optional: only if you want to require preview deployments
 
 ### 3. Save the Rule
 
@@ -95,6 +102,7 @@ All checks run on every branch and pull request.
 ## Testing the Protection
 
 Try to push directly to main:
+
 ```bash
 git checkout main
 echo "test" >> test.txt
@@ -104,6 +112,7 @@ git push origin main
 ```
 
 You should see an error like:
+
 ```
 remote: error: GH006: Protected branch update failed for refs/heads/main.
 ```
@@ -111,16 +120,19 @@ remote: error: GH006: Protected branch update failed for refs/heads/main.
 ## Troubleshooting
 
 ### Status Checks Don't Appear
+
 - Push a commit to trigger the CI pipeline first
 - Status checks only appear after running at least once
 - Check the workflow runs in the Actions tab
 
 ### Can't Find Status Checks
+
 - Make sure you've run the workflow at least once
 - The job names must match exactly: "Run Tests", "Build Application", and "E2E Tests"
 - Check for spaces and capitalization
 
 ### Need to Override Protection
+
 - Temporarily disable "Do not allow bypassing"
 - Or give specific users/teams bypass permissions
 - Re-enable after emergency fix

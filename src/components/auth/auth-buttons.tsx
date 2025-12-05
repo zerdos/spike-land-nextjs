@@ -1,9 +1,9 @@
 "use client";
 
-import { SignInButton } from "./sign-in-button";
-import { Github, Chrome } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Chrome, Github } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { SignInButton } from "./sign-in-button";
 
 interface AuthButtonsProps {
   className?: string;

@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import * as fraudDetection from './fraud-detection'
-import prisma from '@/lib/prisma'
+import prisma from "@/lib/prisma";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as fraudDetection from "./fraud-detection";
 
 // Mock prisma
-vi.mock('@/lib/prisma', () => ({
+vi.mock("@/lib/prisma", () => ({
   default: {
     user: {
       findUnique: vi.fn(),
@@ -14,373 +14,367 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
     },
   },
-}))
+}));
 
-describe('Fraud Detection', () => {
+describe("Fraud Detection", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  describe('isDisposableEmail', () => {
-    it('should detect disposable email addresses', () => {
-      expect(fraudDetection.isDisposableEmail('test@tempmail.com')).toBe(true)
-      expect(fraudDetection.isDisposableEmail('user@mailinator.com')).toBe(
-        true
-      )
-      expect(fraudDetection.isDisposableEmail('fake@10minutemail.com')).toBe(
-        true
-      )
-    })
+  describe("isDisposableEmail", () => {
+    it("should detect disposable email addresses", () => {
+      expect(fraudDetection.isDisposableEmail("test@tempmail.com")).toBe(true);
+      expect(fraudDetection.isDisposableEmail("user@mailinator.com")).toBe(
+        true,
+      );
+      expect(fraudDetection.isDisposableEmail("fake@10minutemail.com")).toBe(
+        true,
+      );
+    });
 
-    it('should allow legitimate email addresses', () => {
-      expect(fraudDetection.isDisposableEmail('user@gmail.com')).toBe(false)
-      expect(fraudDetection.isDisposableEmail('john@company.com')).toBe(false)
-      expect(fraudDetection.isDisposableEmail('test@outlook.com')).toBe(false)
-    })
+    it("should allow legitimate email addresses", () => {
+      expect(fraudDetection.isDisposableEmail("user@gmail.com")).toBe(false);
+      expect(fraudDetection.isDisposableEmail("john@company.com")).toBe(false);
+      expect(fraudDetection.isDisposableEmail("test@outlook.com")).toBe(false);
+    });
 
-    it('should handle invalid email formats', () => {
-      expect(fraudDetection.isDisposableEmail('notanemail')).toBe(false)
-      expect(fraudDetection.isDisposableEmail('')).toBe(false)
-    })
+    it("should handle invalid email formats", () => {
+      expect(fraudDetection.isDisposableEmail("notanemail")).toBe(false);
+      expect(fraudDetection.isDisposableEmail("")).toBe(false);
+    });
 
-    it('should be case insensitive', () => {
-      expect(fraudDetection.isDisposableEmail('test@TempMail.COM')).toBe(true)
-      expect(fraudDetection.isDisposableEmail('user@MAILINATOR.COM')).toBe(
-        true
-      )
-    })
-  })
+    it("should be case insensitive", () => {
+      expect(fraudDetection.isDisposableEmail("test@TempMail.COM")).toBe(true);
+      expect(fraudDetection.isDisposableEmail("user@MAILINATOR.COM")).toBe(
+        true,
+      );
+    });
+  });
 
-  describe('checkSameIpReferral', () => {
-    it('should detect recent referrals from same IP', async () => {
-      const recentDate = new Date()
-      recentDate.setHours(recentDate.getHours() - 2) // 2 hours ago
+  describe("checkSameIpReferral", () => {
+    it("should detect recent referrals from same IP", async () => {
+      const recentDate = new Date();
+      recentDate.setHours(recentDate.getHours() - 2); // 2 hours ago
 
       vi.mocked(prisma.referral.findFirst).mockResolvedValue({
-        id: 'ref-123',
-        ipAddress: '192.168.1.1',
+        id: "ref-123",
+        ipAddress: "192.168.1.1",
         createdAt: recentDate,
-      } as any)
+      } as any);
 
       const result = await fraudDetection.checkSameIpReferral(
-        '192.168.1.1',
-        'referrer-123'
-      )
+        "192.168.1.1",
+        "referrer-123",
+      );
 
-      expect(result).toBe(true)
-    })
+      expect(result).toBe(true);
+    });
 
-    it('should allow referrals from same IP after 24 hours', async () => {
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
+    it("should allow referrals from same IP after 24 hours", async () => {
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
 
       const result = await fraudDetection.checkSameIpReferral(
-        '192.168.1.1',
-        'referrer-123'
-      )
+        "192.168.1.1",
+        "referrer-123",
+      );
 
-      expect(result).toBe(false)
-    })
+      expect(result).toBe(false);
+    });
 
-    it('should return false if no IP address provided', async () => {
+    it("should return false if no IP address provided", async () => {
       const result = await fraudDetection.checkSameIpReferral(
-        '',
-        'referrer-123'
-      )
+        "",
+        "referrer-123",
+      );
 
-      expect(result).toBe(false)
-      expect(prisma.referral.findFirst).not.toHaveBeenCalled()
-    })
-  })
+      expect(result).toBe(false);
+      expect(prisma.referral.findFirst).not.toHaveBeenCalled();
+    });
+  });
 
-  describe('checkReferralRateLimit', () => {
-    it('should detect when referrer exceeds daily limit', async () => {
-      vi.mocked(prisma.referral.count).mockResolvedValue(10)
+  describe("checkReferralRateLimit", () => {
+    it("should detect when referrer exceeds daily limit", async () => {
+      vi.mocked(prisma.referral.count).mockResolvedValue(10);
 
-      const result =
-        await fraudDetection.checkReferralRateLimit('referrer-123')
+      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
 
-      expect(result).toBe(true)
-    })
+      expect(result).toBe(true);
+    });
 
-    it('should allow referrals within daily limit', async () => {
-      vi.mocked(prisma.referral.count).mockResolvedValue(5)
+    it("should allow referrals within daily limit", async () => {
+      vi.mocked(prisma.referral.count).mockResolvedValue(5);
 
-      const result =
-        await fraudDetection.checkReferralRateLimit('referrer-123')
+      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
 
-      expect(result).toBe(false)
-    })
+      expect(result).toBe(false);
+    });
 
-    it('should allow exactly 10 referrals', async () => {
-      vi.mocked(prisma.referral.count).mockResolvedValue(9)
+    it("should allow exactly 10 referrals", async () => {
+      vi.mocked(prisma.referral.count).mockResolvedValue(9);
 
-      const result =
-        await fraudDetection.checkReferralRateLimit('referrer-123')
+      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
 
-      expect(result).toBe(false)
-    })
-  })
+      expect(result).toBe(false);
+    });
+  });
 
-  describe('checkEmailVerified', () => {
-    it('should return true for verified email', async () => {
+  describe("checkEmailVerified", () => {
+    it("should return true for verified email", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      const result = await fraudDetection.checkEmailVerified('user-123')
+      const result = await fraudDetection.checkEmailVerified("user-123");
 
-      expect(result).toBe(true)
-    })
+      expect(result).toBe(true);
+    });
 
-    it('should return false for unverified email', async () => {
+    it("should return false for unverified email", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         emailVerified: null,
-      } as any)
+      } as any);
 
-      const result = await fraudDetection.checkEmailVerified('user-123')
+      const result = await fraudDetection.checkEmailVerified("user-123");
 
-      expect(result).toBe(false)
-    })
+      expect(result).toBe(false);
+    });
 
-    it('should return false if user not found', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    it("should return false if user not found", async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
-      const result = await fraudDetection.checkEmailVerified('user-123')
+      const result = await fraudDetection.checkEmailVerified("user-123");
 
-      expect(result).toBe(false)
-    })
-  })
+      expect(result).toBe(false);
+    });
+  });
 
-  describe('performFraudChecks', () => {
-    it('should pass all checks for legitimate referral', async () => {
+  describe("performFraudChecks", () => {
+    it("should pass all checks for legitimate referral", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123',
-        '192.168.1.1'
-      )
+        "referee-456",
+        "referrer-123",
+        "192.168.1.1",
+      );
 
-      expect(result.passed).toBe(true)
-      expect(result.reasons).toHaveLength(0)
-    })
+      expect(result.passed).toBe(true);
+      expect(result.reasons).toHaveLength(0);
+    });
 
-    it('should fail on disposable email', async () => {
+    it("should fail on disposable email", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@tempmail.com',
+        email: "user@tempmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123'
-      )
+        "referee-456",
+        "referrer-123",
+      );
 
-      expect(result.passed).toBe(false)
-      expect(result.reasons).toContain('Disposable email address detected')
-    })
+      expect(result.passed).toBe(false);
+      expect(result.reasons).toContain("Disposable email address detected");
+    });
 
-    it('should fail on unverified email', async () => {
+    it("should fail on unverified email", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: null,
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123'
-      )
+        "referee-456",
+        "referrer-123",
+      );
 
-      expect(result.passed).toBe(false)
-      expect(result.reasons).toContain('Email not verified')
-    })
+      expect(result.passed).toBe(false);
+      expect(result.reasons).toContain("Email not verified");
+    });
 
-    it('should fail on same IP within 24 hours', async () => {
+    it("should fail on same IP within 24 hours", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
       vi.mocked(prisma.referral.findFirst).mockResolvedValue({
-        id: 'ref-123',
-      } as any)
+        id: "ref-123",
+      } as any);
 
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123',
-        '192.168.1.1'
-      )
+        "referee-456",
+        "referrer-123",
+        "192.168.1.1",
+      );
 
-      expect(result.passed).toBe(false)
-      expect(result.reasons).toContain('Same IP address used within 24 hours')
-    })
+      expect(result.passed).toBe(false);
+      expect(result.reasons).toContain("Same IP address used within 24 hours");
+    });
 
-    it('should fail on rate limit exceeded', async () => {
+    it("should fail on rate limit exceeded", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.referral.count).mockResolvedValue(10)
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.referral.count).mockResolvedValue(10);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123'
-      )
+        "referee-456",
+        "referrer-123",
+      );
 
-      expect(result.passed).toBe(false)
+      expect(result.passed).toBe(false);
       expect(result.reasons).toContain(
-        'Referrer exceeded daily referral limit'
-      )
-    })
+        "Referrer exceeded daily referral limit",
+      );
+    });
 
-    it('should fail on self-referral', async () => {
+    it("should fail on self-referral", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
       const result = await fraudDetection.performFraudChecks(
-        'user-123',
-        'user-123'
-      )
+        "user-123",
+        "user-123",
+      );
 
-      expect(result.passed).toBe(false)
-      expect(result.reasons).toContain('Self-referral not allowed')
-    })
+      expect(result.passed).toBe(false);
+      expect(result.reasons).toContain("Self-referral not allowed");
+    });
 
-    it('should accumulate multiple fraud reasons', async () => {
+    it("should accumulate multiple fraud reasons", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@tempmail.com',
+        email: "user@tempmail.com",
         emailVerified: null,
-      } as any)
+      } as any);
 
       vi.mocked(prisma.referral.findFirst).mockResolvedValue({
-        id: 'ref-123',
-      } as any)
+        id: "ref-123",
+      } as any);
 
-      vi.mocked(prisma.referral.count).mockResolvedValue(15)
+      vi.mocked(prisma.referral.count).mockResolvedValue(15);
 
       const result = await fraudDetection.performFraudChecks(
-        'referee-456',
-        'referrer-123',
-        '192.168.1.1'
-      )
+        "referee-456",
+        "referrer-123",
+        "192.168.1.1",
+      );
 
-      expect(result.passed).toBe(false)
-      expect(result.reasons.length).toBeGreaterThan(1)
-    })
-  })
+      expect(result.passed).toBe(false);
+      expect(result.reasons.length).toBeGreaterThan(1);
+    });
+  });
 
-  describe('validateReferralAfterVerification', () => {
-    it('should approve valid referral after verification', async () => {
+  describe("validateReferralAfterVerification", () => {
+    it("should approve valid referral after verification", async () => {
       vi.mocked(prisma.referral.findFirst).mockResolvedValue({
-        id: 'ref-123',
-        referrerId: 'referrer-123',
-        refereeId: 'referee-456',
-        status: 'PENDING',
-        ipAddress: '192.168.1.1',
-        referrer: { id: 'referrer-123' },
-      } as any)
+        id: "ref-123",
+        referrerId: "referrer-123",
+        refereeId: "referee-456",
+        status: "PENDING",
+        ipAddress: "192.168.1.1",
+        referrer: { id: "referrer-123" },
+      } as any);
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@gmail.com',
+        email: "user@gmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
       vi.mocked(prisma.referral.findFirst)
         .mockResolvedValueOnce({
-          id: 'ref-123',
-          referrerId: 'referrer-123',
-          refereeId: 'referee-456',
-          status: 'PENDING',
-          ipAddress: '192.168.1.1',
-          referrer: { id: 'referrer-123' },
+          id: "ref-123",
+          referrerId: "referrer-123",
+          refereeId: "referee-456",
+          status: "PENDING",
+          ipAddress: "192.168.1.1",
+          referrer: { id: "referrer-123" },
         } as any)
-        .mockResolvedValueOnce(null) // For same IP check
+        .mockResolvedValueOnce(null); // For same IP check
 
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
-      const result =
-        await fraudDetection.validateReferralAfterVerification('referee-456')
+      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
 
-      expect(result.success).toBe(true)
-      expect(result.shouldGrantRewards).toBe(true)
-      expect(result.referralId).toBe('ref-123')
-    })
+      expect(result.success).toBe(true);
+      expect(result.shouldGrantRewards).toBe(true);
+      expect(result.referralId).toBe("ref-123");
+    });
 
-    it('should reject referral that fails fraud checks', async () => {
+    it("should reject referral that fails fraud checks", async () => {
       vi.mocked(prisma.referral.findFirst).mockResolvedValue({
-        id: 'ref-123',
-        referrerId: 'referrer-123',
-        refereeId: 'referee-456',
-        status: 'PENDING',
+        id: "ref-123",
+        referrerId: "referrer-123",
+        refereeId: "referee-456",
+        status: "PENDING",
         ipAddress: null,
-        referrer: { id: 'referrer-123' },
-      } as any)
+        referrer: { id: "referrer-123" },
+      } as any);
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        email: 'user@tempmail.com',
+        email: "user@tempmail.com",
         emailVerified: new Date(),
-      } as any)
+      } as any);
 
-      vi.mocked(prisma.referral.count).mockResolvedValue(0)
+      vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
-      const result =
-        await fraudDetection.validateReferralAfterVerification('referee-456')
+      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
 
-      expect(result.success).toBe(true)
-      expect(result.shouldGrantRewards).toBe(false)
-      expect(result.error).toContain('Fraud checks failed')
+      expect(result.success).toBe(true);
+      expect(result.shouldGrantRewards).toBe(false);
+      expect(result.error).toContain("Fraud checks failed");
       expect(prisma.referral.update).toHaveBeenCalledWith({
-        where: { id: 'ref-123' },
-        data: { status: 'INVALID' },
-      })
-    })
+        where: { id: "ref-123" },
+        data: { status: "INVALID" },
+      });
+    });
 
-    it('should handle no pending referral', async () => {
-      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null)
+    it("should handle no pending referral", async () => {
+      vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
 
-      const result =
-        await fraudDetection.validateReferralAfterVerification('referee-456')
+      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
 
-      expect(result.success).toBe(false)
-      expect(result.shouldGrantRewards).toBe(false)
-      expect(result.error).toBe('No pending referral found')
-    })
-  })
+      expect(result.success).toBe(false);
+      expect(result.shouldGrantRewards).toBe(false);
+      expect(result.error).toBe("No pending referral found");
+    });
+  });
 
-  describe('getFraudStats', () => {
-    it('should return fraud statistics', async () => {
+  describe("getFraudStats", () => {
+    it("should return fraud statistics", async () => {
       vi.mocked(prisma.referral.count)
         .mockResolvedValueOnce(100) // total
         .mockResolvedValueOnce(80) // valid
         .mockResolvedValueOnce(15) // invalid
-        .mockResolvedValueOnce(5) // pending
+        .mockResolvedValueOnce(5); // pending
 
-      const stats = await fraudDetection.getFraudStats()
+      const stats = await fraudDetection.getFraudStats();
 
       expect(stats).toEqual({
         totalReferrals: 100,
@@ -388,7 +382,7 @@ describe('Fraud Detection', () => {
         invalidReferrals: 15,
         pendingReferrals: 5,
         invalidReasons: {},
-      })
-    })
-  })
-})
+      });
+    });
+  });
+});

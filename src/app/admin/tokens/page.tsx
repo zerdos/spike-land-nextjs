@@ -4,72 +4,70 @@
  * Displays token purchases, spending, revenue, and circulation metrics.
  */
 
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
+} from "recharts";
 
 interface TokenData {
-  tokensByType: Array<{ type: string; total: number }>
-  dailyTokens: Array<{ date: string; purchased: number; spent: number }>
+  tokensByType: Array<{ type: string; total: number; }>;
+  dailyTokens: Array<{ date: string; purchased: number; spent: number; }>;
   revenue: {
-    total: number
-  }
+    total: number;
+  };
   circulation: {
-    total: number
-    average: number
-  }
-  regenerationCount: number
-  packageSales: Array<{ name: string; tokens: number; sales: number }>
+    total: number;
+    average: number;
+  };
+  regenerationCount: number;
+  packageSales: Array<{ name: string; tokens: number; sales: number; }>;
 }
 
 export default function TokenEconomicsPage() {
-  const [data, setData] = useState<TokenData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<TokenData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const response = await fetch("/api/admin/analytics/tokens")
+        const response = await fetch("/api/admin/analytics/tokens");
         if (!response.ok) {
-          throw new Error("Failed to fetch token analytics")
+          throw new Error("Failed to fetch token analytics");
         }
-        const result = await response.json()
-        setData(result)
+        const result = await response.json();
+        setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error")
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchAnalytics()
-  }, [])
+    fetchAnalytics();
+  }, []);
 
   if (loading) {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Token Economics</h1>
         <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="h-32 animate-pulse bg-neutral-100" />
-          ))}
+          {[1, 2, 3, 4].map((i) => <Card key={i} className="h-32 animate-pulse bg-neutral-100" />)}
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !data) {
@@ -80,18 +78,18 @@ export default function TokenEconomicsPage() {
           <p className="text-red-500">Error: {error || "No data available"}</p>
         </Card>
       </div>
-    )
+    );
   }
 
   const totalPurchased = data.tokensByType
     .filter((t) => t.type.startsWith("EARN_"))
-    .reduce((sum, t) => sum + t.total, 0)
+    .reduce((sum, t) => sum + t.total, 0);
 
   const totalSpent = Math.abs(
     data.tokensByType
       .filter((t) => t.type === "SPEND_ENHANCEMENT")
-      .reduce((sum, t) => sum + t.total, 0)
-  )
+      .reduce((sum, t) => sum + t.total, 0),
+  );
 
   return (
     <div className="space-y-8">
@@ -160,15 +158,15 @@ export default function TokenEconomicsPage() {
             <XAxis
               dataKey="date"
               tickFormatter={(value) => {
-                const date = new Date(value)
-                return `${date.getMonth() + 1}/${date.getDate()}`
+                const date = new Date(value);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
               }}
             />
             <YAxis />
             <Tooltip
               labelFormatter={(value) => {
-                const date = new Date(value as string)
-                return date.toLocaleDateString()
+                const date = new Date(value as string);
+                return date.toLocaleDateString();
               }}
             />
             <Legend />
@@ -198,7 +196,7 @@ export default function TokenEconomicsPage() {
             {data.tokensByType
               .filter((t) => t.type.startsWith("EARN_"))
               .map((item) => {
-                const percentage = (item.total / totalPurchased) * 100
+                const percentage = (item.total / totalPurchased) * 100;
                 return (
                   <div key={item.type}>
                     <div className="mb-1 flex justify-between text-sm">
@@ -216,7 +214,7 @@ export default function TokenEconomicsPage() {
                       />
                     </div>
                   </div>
-                )
+                );
               })}
           </div>
         </Card>
@@ -253,7 +251,8 @@ export default function TokenEconomicsPage() {
               Average Purchase Value
             </p>
             <p className="mt-1 text-2xl font-semibold">
-              ${(data.revenue.total / (data.packageSales.reduce((sum, p) => sum + p.sales, 0) || 1)).toFixed(2)}
+              ${(data.revenue.total / (data.packageSales.reduce((sum, p) => sum + p.sales, 0) || 1))
+                .toFixed(2)}
             </p>
           </div>
           <div>
@@ -267,5 +266,5 @@ export default function TokenEconomicsPage() {
         </div>
       </Card>
     </div>
-  )
+  );
 }

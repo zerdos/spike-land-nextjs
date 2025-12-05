@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const lastUpdated = new Date().toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})
+const lastUpdated = new Date().toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 
 const sections = [
-  { id: 'introduction', title: 'Introduction' },
-  { id: 'data-collection', title: 'Data Collection' },
-  { id: 'data-storage', title: 'Data Storage & Retention' },
-  { id: 'user-rights', title: 'Your Privacy Rights' },
-  { id: 'third-party', title: 'Third-Party Services' },
-  { id: 'security', title: 'Security Measures' },
-  { id: 'children', title: 'Children\'s Privacy' },
-  { id: 'contact', title: 'Contact Us' },
-]
+  { id: "introduction", title: "Introduction" },
+  { id: "data-collection", title: "Data Collection" },
+  { id: "data-storage", title: "Data Storage & Retention" },
+  { id: "user-rights", title: "Your Privacy Rights" },
+  { id: "third-party", title: "Third-Party Services" },
+  { id: "security", title: "Security Measures" },
+  { id: "children", title: "Children's Privacy" },
+  { id: "contact", title: "Contact Us" },
+];
 
 export default function PrivacyPage() {
   return (
@@ -30,7 +30,8 @@ export default function PrivacyPage() {
             Last updated: {lastUpdated}
           </p>
           <p className="text-muted-foreground mt-4">
-            This is a template for informational purposes. Consult with a qualified attorney for legal advice specific to your situation.
+            This is a template for informational purposes. Consult with a qualified attorney for
+            legal advice specific to your situation.
           </p>
         </div>
 
@@ -66,7 +67,9 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  Welcome to Spike Land Image Enhancement App. We are committed to protecting your privacy and ensuring you have a positive experience on our platform. This Privacy Policy explains:
+                  Welcome to Spike Land Image Enhancement App. We are committed to protecting your
+                  privacy and ensuring you have a positive experience on our platform. This Privacy
+                  Policy explains:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-2">
                   <li>What information we collect</li>
@@ -79,7 +82,8 @@ export default function PrivacyPage() {
                   <strong>Operator:</strong> [Your Name]
                 </p>
                 <p>
-                  <strong>Jurisdiction:</strong> This policy complies with GDPR (EU), UK GDPR, and CCPA (California) requirements.
+                  <strong>Jurisdiction:</strong>{" "}
+                  This policy complies with GDPR (EU), UK GDPR, and CCPA (California) requirements.
                 </p>
               </CardContent>
             </Card>
@@ -111,14 +115,17 @@ export default function PrivacyPage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Payment Information</h4>
                       <p className="text-muted-foreground">
-                        Token transactions are processed via Stripe (we do not store credit card data)
+                        Token transactions are processed via Stripe (we do not store credit card
+                        data)
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Information Collected Automatically</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Information Collected Automatically
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Usage Analytics</h4>
@@ -146,7 +153,9 @@ export default function PrivacyPage() {
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
                     <li>Images are NOT used for AI model training</li>
                     <li>No biometric or facial recognition data extracted</li>
-                    <li>No EXIF metadata retained from images (automatically stripped on upload)</li>
+                    <li>
+                      No EXIF metadata retained from images (automatically stripped on upload)
+                    </li>
                     <li>No precise geolocation data</li>
                     <li>No credit card data (Stripe handles all payment processing)</li>
                   </ul>
@@ -304,7 +313,8 @@ export default function PrivacyPage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Right to Erasure (GDPR Art. 17)</h4>
                       <p className="text-muted-foreground text-sm">
-                        You can request deletion of your personal data (subject to legal obligations).
+                        You can request deletion of your personal data (subject to legal
+                        obligations).
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
@@ -316,7 +326,8 @@ export default function PrivacyPage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Right to Data Portability (GDPR Art. 20)</h4>
                       <p className="text-muted-foreground text-sm">
-                        You can request your data in a portable format for transfer to another service.
+                        You can request your data in a portable format for transfer to another
+                        service.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
@@ -332,8 +343,11 @@ export default function PrivacyPage() {
                   <h3 className="font-semibold text-lg mb-3">How to Exercise Your Rights</h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-muted-foreground text-sm">
-                      To exercise any of these rights, contact us at{' '}
-                      <a href="mailto:privacy@[your-domain.com]" className="text-primary hover:underline">
+                      To exercise any of these rights, contact us at{" "}
+                      <a
+                        href="mailto:privacy@[your-domain.com]"
+                        className="text-primary hover:underline"
+                      >
                         privacy@[your-domain.com]
                       </a>
                       . We will respond to your request within 30 days.
@@ -345,7 +359,10 @@ export default function PrivacyPage() {
                   <h3 className="font-semibold text-lg mb-3">California Privacy Rights (CCPA)</h3>
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
-                      California residents have the right to know what personal information is collected, the right to delete, and the right to opt-out of the selling of their personal data. We do not sell personal data. For requests, contact privacy@[your-domain.com].
+                      California residents have the right to know what personal information is
+                      collected, the right to delete, and the right to opt-out of the selling of
+                      their personal data. We do not sell personal data. For requests, contact
+                      privacy@[your-domain.com].
                     </p>
                   </div>
                 </div>
@@ -396,12 +413,21 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Google Gemini API</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><strong>Purpose:</strong> AI image enhancement processing</p>
-                    <p><strong>Data sent:</strong> Image bytes only (not metadata)</p>
-                    <p><strong>Location:</strong> US (Google Cloud)</p>
-                    <p><strong>Data retention:</strong> Per Google AI Principles</p>
+                    <p>
+                      <strong>Purpose:</strong> AI image enhancement processing
+                    </p>
+                    <p>
+                      <strong>Data sent:</strong> Image bytes only (not metadata)
+                    </p>
+                    <p>
+                      <strong>Location:</strong> US (Google Cloud)
+                    </p>
+                    <p>
+                      <strong>Data retention:</strong> Per Google AI Principles
+                    </p>
                     <p className="text-muted-foreground">
-                      When you use image enhancement, your image is processed by Google&apos;s AI. By using this feature, you consent to this processing.
+                      When you use image enhancement, your image is processed by Google&apos;s AI.
+                      By using this feature, you consent to this processing.
                     </p>
                   </div>
                 </div>
@@ -409,44 +435,73 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Stripe (Payment Processing)</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><strong>Purpose:</strong> Secure payment processing</p>
-                    <p><strong>Data sent:</strong> Email and payment method</p>
-                    <p><strong>Compliance:</strong> PCI DSS Level 1 certified</p>
-                    <p><strong>Credit cards:</strong> Not stored by us (Stripe manages all payment data)</p>
+                    <p>
+                      <strong>Purpose:</strong> Secure payment processing
+                    </p>
+                    <p>
+                      <strong>Data sent:</strong> Email and payment method
+                    </p>
+                    <p>
+                      <strong>Compliance:</strong> PCI DSS Level 1 certified
+                    </p>
+                    <p>
+                      <strong>Credit cards:</strong>{" "}
+                      Not stored by us (Stripe manages all payment data)
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Cloudflare R2</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><strong>Purpose:</strong> Secure image storage</p>
-                    <p><strong>Location:</strong> Edge network (nearest region)</p>
-                    <p><strong>Encryption:</strong> AES-256 at rest</p>
-                    <p><strong>Access:</strong> Signed URLs only (temporary access)</p>
+                    <p>
+                      <strong>Purpose:</strong> Secure image storage
+                    </p>
+                    <p>
+                      <strong>Location:</strong> Edge network (nearest region)
+                    </p>
+                    <p>
+                      <strong>Encryption:</strong> AES-256 at rest
+                    </p>
+                    <p>
+                      <strong>Access:</strong> Signed URLs only (temporary access)
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Neon PostgreSQL</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><strong>Purpose:</strong> User account and transaction database</p>
-                    <p><strong>Encryption:</strong> At-rest encryption enabled</p>
-                    <p><strong>Backup:</strong> Automated daily backups</p>
+                    <p>
+                      <strong>Purpose:</strong> User account and transaction database
+                    </p>
+                    <p>
+                      <strong>Encryption:</strong> At-rest encryption enabled
+                    </p>
+                    <p>
+                      <strong>Backup:</strong> Automated daily backups
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Vercel</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><strong>Purpose:</strong> Application hosting and deployment</p>
-                    <p><strong>Features:</strong> Analytics, performance monitoring</p>
+                    <p>
+                      <strong>Purpose:</strong> Application hosting and deployment
+                    </p>
+                    <p>
+                      <strong>Features:</strong> Analytics, performance monitoring
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Data Processing Agreements</h3>
                   <p className="text-muted-foreground text-sm">
-                    We have Data Processing Agreements (DPAs) in place with all sub-processors. For cross-border transfers outside the EEA, we use Standard Contractual Clauses (SCCs) or the EU-US Data Privacy Framework.
+                    We have Data Processing Agreements (DPAs) in place with all sub-processors. For
+                    cross-border transfers outside the EEA, we use Standard Contractual Clauses
+                    (SCCs) or the EU-US Data Privacy Framework.
                   </p>
                 </div>
               </CardContent>
@@ -474,19 +529,27 @@ export default function PrivacyPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">OAuth 2.0:</span>
-                      <span className="text-muted-foreground">Secure authentication with providers</span>
+                      <span className="text-muted-foreground">
+                        Secure authentication with providers
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">JWT Tokens:</span>
-                      <span className="text-muted-foreground">Signed and encrypted session tokens</span>
+                      <span className="text-muted-foreground">
+                        Signed and encrypted session tokens
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">Rate Limiting:</span>
-                      <span className="text-muted-foreground">Protection against brute force and DoS attacks</span>
+                      <span className="text-muted-foreground">
+                        Protection against brute force and DoS attacks
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">File Validation:</span>
-                      <span className="text-muted-foreground">Type checking and size limits on uploads</span>
+                      <span className="text-muted-foreground">
+                        Type checking and size limits on uploads
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -551,20 +614,27 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  The Image Enhancement App is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
+                  The Image Enhancement App is not intended for children under 13 years of age. We
+                  do not knowingly collect personal information from children under 13.
                 </p>
                 <div className="bg-muted p-4 rounded-lg space-y-2">
-                  <p className="font-semibold">If you believe a child under 13 has created an account:</p>
+                  <p className="font-semibold">
+                    If you believe a child under 13 has created an account:
+                  </p>
                   <p className="text-muted-foreground text-sm">
-                    Please contact us at{' '}
-                    <a href="mailto:privacy@[your-domain.com]" className="text-primary hover:underline">
+                    Please contact us at{" "}
+                    <a
+                      href="mailto:privacy@[your-domain.com]"
+                      className="text-primary hover:underline"
+                    >
                       privacy@[your-domain.com]
-                    </a>
-                    {' '}and we will delete the account within 30 days.
+                    </a>{" "}
+                    and we will delete the account within 30 days.
                   </p>
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  By using this service, you confirm that you are at least 13 years old or have parental consent.
+                  By using this service, you confirm that you are at least 13 years old or have
+                  parental consent.
                 </p>
               </CardContent>
             </Card>
@@ -581,7 +651,15 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Privacy Inquiries</h3>
                   <div className="bg-muted p-4 rounded-lg">
-                    <p>Email: <a href="mailto:privacy@[your-domain.com]" className="text-primary hover:underline">privacy@[your-domain.com]</a></p>
+                    <p>
+                      Email:{" "}
+                      <a
+                        href="mailto:privacy@[your-domain.com]"
+                        className="text-primary hover:underline"
+                      >
+                        privacy@[your-domain.com]
+                      </a>
+                    </p>
                     <p className="text-muted-foreground text-sm mt-2">Response time: 72 hours</p>
                   </div>
                 </div>
@@ -596,25 +674,38 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Regulatory Authorities</h3>
                   <p className="text-muted-foreground text-sm mb-3">
-                    If you believe your privacy rights have been violated, you can lodge a complaint with:
+                    If you believe your privacy rights have been violated, you can lodge a complaint
+                    with:
                   </p>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">UK:</span>
                       <span className="text-muted-foreground">
-                        <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a
+                          href="https://ico.org.uk"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
                           Information Commissioner&apos;s Office (ICO)
                         </a>
                       </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">EU:</span>
-                      <span className="text-muted-foreground">Your local Data Protection Authority</span>
+                      <span className="text-muted-foreground">
+                        Your local Data Protection Authority
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">US:</span>
                       <span className="text-muted-foreground">
-                        <a href="https://www.ftc.gov" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a
+                          href="https://www.ftc.gov"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
                           Federal Trade Commission (FTC)
                         </a>
                       </span>
@@ -625,7 +716,9 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Policy Updates</h3>
                   <p className="text-muted-foreground text-sm">
-                    We may update this privacy policy to reflect changes in our practices or applicable law. We will notify you of material changes via email or by posting the updated policy here.
+                    We may update this privacy policy to reflect changes in our practices or
+                    applicable law. We will notify you of material changes via email or by posting
+                    the updated policy here.
                   </p>
                 </div>
               </CardContent>
@@ -635,16 +728,23 @@ export default function PrivacyPage() {
           {/* Disclaimer */}
           <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">Legal Disclaimer</CardTitle>
+              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+                Legal Disclaimer
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                This Privacy Policy is a template for informational purposes only. It provides general guidance on privacy compliance with GDPR, UK GDPR, and CCPA regulations. However, privacy laws are complex and evolve frequently. You should consult with a qualified attorney who specializes in privacy and data protection law to ensure this policy is fully compliant with all applicable laws in your jurisdiction and to customize it for your specific business model and operations.
+                This Privacy Policy is a template for informational purposes only. It provides
+                general guidance on privacy compliance with GDPR, UK GDPR, and CCPA regulations.
+                However, privacy laws are complex and evolve frequently. You should consult with a
+                qualified attorney who specializes in privacy and data protection law to ensure this
+                policy is fully compliant with all applicable laws in your jurisdiction and to
+                customize it for your specific business model and operations.
               </p>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

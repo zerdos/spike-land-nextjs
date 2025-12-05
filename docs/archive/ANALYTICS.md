@@ -50,6 +50,7 @@ Analytics components are automatically loaded in the root layout (`src/app/layou
 Located at `src/components/analytics/cookie-consent.tsx`
 
 **Features:**
+
 - Displays on first visit
 - Stores user preference in localStorage
 - Shows accept/decline options
@@ -57,6 +58,7 @@ Located at `src/components/analytics/cookie-consent.tsx`
 - GDPR compliant
 
 **User Preferences:**
+
 - `accepted` - Analytics enabled
 - `declined` - Analytics disabled
 - `null` - No preference (banner shown)
@@ -66,6 +68,7 @@ Located at `src/components/analytics/cookie-consent.tsx`
 Located at `src/lib/analytics.ts`
 
 **Core Function:**
+
 ```typescript
 trackEvent(event: AnalyticsEvent, properties?: AnalyticsEventProperties): void
 ```
@@ -74,26 +77,26 @@ trackEvent(event: AnalyticsEvent, properties?: AnalyticsEventProperties): void
 
 ```typescript
 // Wizard events
-analytics.wizard.started({ source: 'homepage' })
-analytics.wizard.stepCompleted(2, { stepName: 'configuration' })
-analytics.wizard.abandoned(3, { reason: 'timeout' })
-analytics.wizard.completed({ duration: 120 })
+analytics.wizard.started({ source: "homepage" });
+analytics.wizard.stepCompleted(2, { stepName: "configuration" });
+analytics.wizard.abandoned(3, { reason: "timeout" });
+analytics.wizard.completed({ duration: 120 });
 
 // Authentication events
-analytics.auth.loginStarted('github')
-analytics.auth.loginCompleted('google')
-analytics.auth.logout()
+analytics.auth.loginStarted("github");
+analytics.auth.loginCompleted("google");
+analytics.auth.logout();
 
 // App management events
-analytics.app.viewed('app-123')
-analytics.app.created('app-456')
-analytics.app.edited('app-789')
-analytics.app.deleted('app-000')
-analytics.app.forked('app-original', 'app-fork')
+analytics.app.viewed("app-123");
+analytics.app.created("app-456");
+analytics.app.edited("app-789");
+analytics.app.deleted("app-000");
+analytics.app.forked("app-original", "app-fork");
 
 // Error events
-analytics.error.occurred('Network error', 'api-call')
-analytics.error.validationFailed('email', 'Invalid format')
+analytics.error.occurred("Network error", "api-call");
+analytics.error.validationFailed("email", "Invalid format");
 ```
 
 ## Usage
@@ -101,19 +104,19 @@ analytics.error.validationFailed('email', 'Invalid format')
 ### Tracking Custom Events
 
 ```typescript
-import { analytics } from '@/lib/analytics'
+import { analytics } from "@/lib/analytics";
 
 // Track wizard start
-analytics.wizard.started({ source: 'landing-page' })
+analytics.wizard.started({ source: "landing-page" });
 
 // Track authentication
-analytics.auth.loginStarted('github')
+analytics.auth.loginStarted("github");
 
 // Track app creation
-analytics.app.created('new-app-id')
+analytics.app.created("new-app-id");
 
 // Track errors
-analytics.error.occurred('API Error', 'fetchUserData')
+analytics.error.occurred("API Error", "fetchUserData");
 ```
 
 ### Privacy-First Design
@@ -127,17 +130,20 @@ analytics.error.occurred('API Error', 'fetchUserData')
 ## Event Types
 
 ### Wizard Events
+
 - `wizard_started` - User starts app creation wizard
 - `wizard_step_completed` - User completes a wizard step
 - `wizard_abandoned` - User leaves wizard before completion
 - `wizard_completed` - User successfully completes wizard
 
 ### Authentication Events
+
 - `login_started` - User initiates login
 - `login_completed` - User successfully logs in
 - `logout` - User logs out
 
 ### App Management Events
+
 - `app_viewed` - User views an app
 - `app_created` - User creates new app
 - `app_edited` - User edits an app
@@ -145,6 +151,7 @@ analytics.error.occurred('API Error', 'fetchUserData')
 - `app_forked` - User forks an existing app
 
 ### Error Events
+
 - `error_occurred` - Application error
 - `validation_failed` - Form validation failure
 
@@ -169,6 +176,7 @@ Users must explicitly consent before analytics tracking begins:
 ### Privacy Policy
 
 A privacy policy page should be created at `/privacy` that explains:
+
 - What data is collected
 - How data is used
 - User rights under GDPR
@@ -198,6 +206,7 @@ All analytics components and utilities have 100% test coverage:
 - `src/lib/analytics.test.ts`
 
 Run tests:
+
 ```bash
 npm run test:coverage
 ```
@@ -260,5 +269,6 @@ npm run test:coverage
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: [spike-land-nextjs/issues](https://github.com/zerdos/spike-land-nextjs/issues)
 - Related Issue: #29

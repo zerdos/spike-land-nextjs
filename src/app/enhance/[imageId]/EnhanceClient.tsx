@@ -1,60 +1,63 @@
-"use client"
+"use client";
 
-import { useState, useCallback, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Image from "next/image"
-import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider"
-import { EnhancementSettings } from "@/components/enhance/EnhancementSettings"
-import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay"
-import { VersionGrid } from "@/components/enhance/VersionGrid"
-import { ExportSelector } from "@/components/enhance/export-selector"
-import { useTokenBalance } from "@/hooks/useTokenBalance"
-import { useJobPolling } from "@/hooks/useJobPolling"
-import { PurchaseModal } from "@/components/tokens"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, AlertTriangle, Coins } from "lucide-react"
-import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client"
+import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
+import { ExportSelector } from "@/components/enhance/export-selector";
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
+import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
+import { VersionGrid } from "@/components/enhance/VersionGrid";
+import { PurchaseModal } from "@/components/tokens";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useJobPolling } from "@/hooks/useJobPolling";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import { AlertTriangle, ArrowLeft, Coins } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
-type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K"
+type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K";
 
 interface EnhanceClientProps {
   image: EnhancedImage & {
-    enhancementJobs: ImageEnhancementJob[]
-  }
+    enhancementJobs: ImageEnhancementJob[];
+  };
 }
 
 export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
-  const [image, setImage] = useState(initialImage)
+  const [image, setImage] = useState(initialImage);
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
-    initialImage.enhancementJobs.find((job: ImageEnhancementJob) => job.status === "COMPLETED")?.id || null
-  )
+    initialImage.enhancementJobs.find((job: ImageEnhancementJob) => job.status === "COMPLETED")
+      ?.id || null,
+  );
   const [activeJobId, setActiveJobId] = useState<string | null>(
     initialImage.enhancementJobs.find(
-      (job: ImageEnhancementJob) => job.status === "PROCESSING" || job.status === "PENDING"
-    )?.id || null
-  )
+      (job: ImageEnhancementJob) => job.status === "PROCESSING" || job.status === "PENDING",
+    )?.id || null,
+  );
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { balance, isLowBalance, refetch: refetchBalance } = useTokenBalance({ autoRefreshOnFocus: true })
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { balance, isLowBalance, refetch: refetchBalance } = useTokenBalance({
+    autoRefreshOnFocus: true,
+  });
 
   // Refresh balance when returning from successful Stripe checkout
   useEffect(() => {
-    const success = searchParams.get("success")
+    const success = searchParams.get("success");
     if (success === "true") {
-      refetchBalance()
+      refetchBalance();
       // Clean up URL without triggering navigation
-      const url = new URL(window.location.href)
-      url.searchParams.delete("success")
-      url.searchParams.delete("session_id")
-      window.history.replaceState({}, "", url.pathname)
+      const url = new URL(window.location.href);
+      url.searchParams.delete("success");
+      url.searchParams.delete("session_id");
+      window.history.replaceState({}, "", url.pathname);
     }
-  }, [searchParams, refetchBalance])
+  }, [searchParams, refetchBalance]);
 
   // Poll for active job completion
-  type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[] }
+  type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
   useJobPolling({
     jobId: activeJobId,
     onComplete: useCallback(
@@ -68,19 +71,19 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               ? { ...job, ...completedJob, status: "COMPLETED" as const }
               : job
           ),
-        }))
-        setActiveJobId(null)
-        setSelectedVersionId(completedJob.id)
-        refetchBalance()
+        }));
+        setActiveJobId(null);
+        setSelectedVersionId(completedJob.id);
+        refetchBalance();
       },
-      [refetchBalance]
+      [refetchBalance],
     ),
     onError: useCallback((errorMessage?: string) => {
-      console.error("Enhancement failed:", errorMessage)
-      setActiveJobId(null)
-      alert(`Enhancement failed: ${errorMessage || "Unknown error"}`)
+      console.error("Enhancement failed:", errorMessage);
+      setActiveJobId(null);
+      alert(`Enhancement failed: ${errorMessage || "Unknown error"}`);
     }, []),
-  })
+  });
 
   const handleEnhance = async (tier: EnhancementTier) => {
     try {
@@ -93,14 +96,14 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           imageId: image.id,
           tier,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Enhancement failed")
+        const error = await response.json();
+        throw new Error(error.error || "Enhancement failed");
       }
 
-      const result = await response.json()
+      const result = await response.json();
 
       // Add the new job to the list
       const newJob: ImageEnhancementJob = {
@@ -123,28 +126,28 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         updatedAt: new Date(),
         processingStartedAt: null,
         processingCompletedAt: null,
-      }
+      };
 
       setImage((prev: ImageWithJobs) => ({
         ...prev,
         enhancementJobs: [newJob, ...prev.enhancementJobs],
-      }))
+      }));
 
-      setActiveJobId(result.jobId)
-      refetchBalance()
+      setActiveJobId(result.jobId);
+      refetchBalance();
     } catch (error) {
-      console.error("Enhancement request failed:", error)
-      alert(error instanceof Error ? error.message : "Enhancement failed")
+      console.error("Enhancement request failed:", error);
+      alert(error instanceof Error ? error.message : "Enhancement failed");
     }
-  }
+  };
 
   const selectedVersion = selectedVersionId
     ? image.enhancementJobs.find((job: ImageEnhancementJob) => job.id === selectedVersionId)
-    : null
+    : null;
 
   const completedVersions = image.enhancementJobs.filter(
-    (job: ImageEnhancementJob) => job.status === "COMPLETED" && job.enhancedUrl
-  )
+    (job: ImageEnhancementJob) => job.status === "COMPLETED" && job.enhancedUrl,
+  );
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -196,23 +199,25 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {selectedVersion && selectedVersion.enhancedUrl ? (
-                <ImageComparisonSlider
-                  originalUrl={image.originalUrl}
-                  enhancedUrl={selectedVersion.enhancedUrl}
-                  width={image.originalWidth || 1024}
-                  height={image.originalHeight || 1024}
-                />
-              ) : (
-                <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
-                  <Image
-                    src={image.originalUrl}
-                    alt="Original image"
-                    fill
-                    className="object-contain"
+              {selectedVersion && selectedVersion.enhancedUrl
+                ? (
+                  <ImageComparisonSlider
+                    originalUrl={image.originalUrl}
+                    enhancedUrl={selectedVersion.enhancedUrl}
+                    width={image.originalWidth || 1024}
+                    height={image.originalHeight || 1024}
                   />
-                </div>
-              )}
+                )
+                : (
+                  <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
+                    <Image
+                      src={image.originalUrl}
+                      alt="Original image"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                )}
             </CardContent>
           </Card>
 
@@ -263,5 +268,5 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

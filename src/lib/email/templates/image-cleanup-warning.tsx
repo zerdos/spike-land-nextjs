@@ -1,12 +1,12 @@
-import { Link, Text, Section } from '@react-email/components'
-import { BaseEmail, emailStyles } from './base'
+import { Link, Section, Text } from "@react-email/components";
+import { BaseEmail, emailStyles } from "./base";
 
 interface ImageCleanupWarningEmailProps {
-  userName?: string
-  userEmail: string
-  imageCount: number
-  deletionDate: string
-  unsubscribeUrl?: string
+  userName?: string;
+  userEmail: string;
+  imageCount: number;
+  deletionDate: string;
+  unsubscribeUrl?: string;
 }
 
 export function ImageCleanupWarningEmail({
@@ -16,11 +16,13 @@ export function ImageCleanupWarningEmail({
   deletionDate,
   unsubscribeUrl,
 }: ImageCleanupWarningEmailProps) {
-  const displayName = userName || userEmail.split('@')[0]
+  const displayName = userName || userEmail.split("@")[0];
 
   return (
     <BaseEmail
-      preview={`Important: ${imageCount} image${imageCount !== 1 ? 's' : ''} will be deleted on ${deletionDate}`}
+      preview={`Important: ${imageCount} image${
+        imageCount !== 1 ? "s" : ""
+      } will be deleted on ${deletionDate}`}
       heading="Image Retention Reminder"
       unsubscribeUrl={unsubscribeUrl}
     >
@@ -32,8 +34,8 @@ export function ImageCleanupWarningEmail({
 
       <Section style={emailStyles.alert}>
         <Text style={emailStyles.alertText}>
-          <strong>{imageCount} image{imageCount !== 1 ? 's' : ''}</strong> in your account{' '}
-          {imageCount !== 1 ? 'are' : 'is'} scheduled for automatic deletion on{' '}
+          <strong>{imageCount} image{imageCount !== 1 ? "s" : ""}</strong> in your account{" "}
+          {imageCount !== 1 ? "are" : "is"} scheduled for automatic deletion on{" "}
           <strong>{deletionDate}</strong>.
         </Text>
       </Section>
@@ -43,9 +45,9 @@ export function ImageCleanupWarningEmail({
       </Text>
 
       <Text style={emailStyles.text}>
-        To manage storage costs and maintain platform performance, we
-        automatically remove images that are older than 90 days. This helps us
-        keep the service affordable and fast for all users.
+        To manage storage costs and maintain platform performance, we automatically remove images
+        that are older than 90 days. This helps us keep the service affordable and fast for all
+        users.
       </Text>
 
       <Text style={emailStyles.text}>
@@ -54,27 +56,25 @@ export function ImageCleanupWarningEmail({
 
       <Section
         style={{
-          backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          padding: '24px',
-          margin: '24px 0',
+          backgroundColor: "#f9fafb",
+          borderRadius: "8px",
+          padding: "24px",
+          margin: "24px 0",
         }}
       >
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
-          📥 <strong>Download your images</strong> - Save them to your device
-          before {deletionDate}
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
+          📥 <strong>Download your images</strong> - Save them to your device before {deletionDate}
         </Text>
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
-          ♻️ <strong>Re-enhance if needed</strong> - You can always upload and
-          enhance images again
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
+          ♻️ <strong>Re-enhance if needed</strong> - You can always upload and enhance images again
         </Text>
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
-          💾 <strong>Use your own storage</strong> - Consider backing up
-          enhanced images to your preferred cloud storage
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
+          💾 <strong>Use your own storage</strong>{" "}
+          - Consider backing up enhanced images to your preferred cloud storage
         </Text>
       </Section>
 
-      <Section style={{ textAlign: 'center' as const, margin: '32px 0' }}>
+      <Section style={{ textAlign: "center" as const, margin: "32px 0" }}>
         <Link href="https://spike.land/images" style={emailStyles.button}>
           View My Images
         </Link>
@@ -85,12 +85,12 @@ export function ImageCleanupWarningEmail({
       </Text>
 
       <Text style={emailStyles.text}>
-        Once images are deleted, they cannot be recovered. However, you can
-        always upload and enhance them again if you have the original files.
+        Once images are deleted, they cannot be recovered. However, you can always upload and
+        enhance them again if you have the original files.
       </Text>
 
       <Text style={emailStyles.text}>
-        Need help downloading your images?{' '}
+        Need help downloading your images?{" "}
         <Link href="https://spike.land/support" style={emailStyles.link}>
           Contact our support team
         </Link>
@@ -103,5 +103,5 @@ export function ImageCleanupWarningEmail({
         The Spike Land Team
       </Text>
     </BaseEmail>
-  )
+  );
 }

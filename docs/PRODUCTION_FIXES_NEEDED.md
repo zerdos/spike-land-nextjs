@@ -3,22 +3,26 @@
 ## Issues Identified
 
 ### 1. Database Migrations Not Applied ✅ FIXED IN CODE
+
 **Status**: Fixed in codebase, will be applied on next deployment
 **Issue**: The EnhancedImage and ImageEnhancementJob tables don't exist in production database
 **Error**: Server Component 500 error on `/apps/images`
 
 **Solution Applied**:
+
 - Created initial migration in `prisma/migrations/0_init/migration.sql`
 - Updated `package.json` build script to run `prisma migrate deploy` before build
 - Next deployment will automatically apply migrations
 
 ### 2. GitHub OAuth Redirect URI Not Configured ⚠️ REQUIRES MANUAL FIX
+
 **Status**: Requires manual configuration in GitHub OAuth App settings
 **Issue**: GitHub OAuth shows "Invalid Redirect URI" error
 **Current Redirect URI**: `https://next.spike.land/api/auth/callback/github`
 **Error**: "The redirect_uri is not associated with this application"
 
 **Solution Required**:
+
 1. Go to GitHub OAuth App settings: https://github.com/settings/applications
 2. Find the OAuth app with Client ID: `Ov23liMoRsb1WZ7wlFou`
 3. Add the following to **Authorization callback URLs**:
@@ -40,6 +44,7 @@
 ## Testing Checklist
 
 After deployment:
+
 - [ ] Visit https://next.spike.land/apps - should see Images app
 - [ ] Click "Launch App" on Images - should redirect to sign-in
 - [ ] Try GitHub OAuth - should work after redirect URI is configured

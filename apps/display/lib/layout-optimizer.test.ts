@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { calculateOptimalLayout, getCommonGridConfig } from './layout-optimizer';
+import { describe, expect, it } from "vitest";
+import { calculateOptimalLayout, getCommonGridConfig } from "./layout-optimizer";
 
-describe('calculateOptimalLayout', () => {
-  it('should calculate optimal layout for single client', () => {
+describe("calculateOptimalLayout", () => {
+  it("should calculate optimal layout for single client", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -20,7 +20,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBeGreaterThan(0);
   });
 
-  it('should calculate optimal layout for multiple clients', () => {
+  it("should calculate optimal layout for multiple clients", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -35,7 +35,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBeGreaterThan(0);
   });
 
-  it('should return zero layout for zero clients', () => {
+  it("should return zero layout for zero clients", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -53,7 +53,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBe(0);
   });
 
-  it('should return zero layout for negative clients', () => {
+  it("should return zero layout for negative clients", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -67,7 +67,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBe(0);
   });
 
-  it('should use default aspect ratio when not provided', () => {
+  it("should use default aspect ratio when not provided", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -79,7 +79,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.cols).toBe(1);
   });
 
-  it('should use default padding when not provided', () => {
+  it("should use default padding when not provided", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -92,7 +92,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.videoWidth).toBeLessThan(layout.cellWidth);
   });
 
-  it('should handle wide aspect ratio (cell wider than video)', () => {
+  it("should handle wide aspect ratio (cell wider than video)", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 3840, // Very wide
       displayHeight: 1080,
@@ -105,7 +105,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.videoWidth).toBe(layout.videoHeight * (16 / 9));
   });
 
-  it('should handle tall aspect ratio (cell taller than video)', () => {
+  it("should handle tall aspect ratio (cell taller than video)", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1080,
       displayHeight: 1920, // Very tall
@@ -118,7 +118,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.videoHeight).toBe(layout.videoWidth / (16 / 9));
   });
 
-  it('should handle large number of clients', () => {
+  it("should handle large number of clients", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -131,7 +131,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBeGreaterThan(0);
   });
 
-  it('should handle different aspect ratios', () => {
+  it("should handle different aspect ratios", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -145,7 +145,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.totalArea).toBeGreaterThan(0);
   });
 
-  it('should skip configurations with negative usable dimensions', () => {
+  it("should skip configurations with negative usable dimensions", () => {
     const layout = calculateOptimalLayout({
       displayWidth: 100,
       displayHeight: 100,
@@ -159,7 +159,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout.cols).toBeGreaterThan(0);
   });
 
-  it('should maximize total video area', () => {
+  it("should maximize total video area", () => {
     const layout1 = calculateOptimalLayout({
       displayWidth: 1920,
       displayHeight: 1080,
@@ -172,7 +172,7 @@ describe('calculateOptimalLayout', () => {
     expect(layout1.totalArea).toBeGreaterThan(0);
   });
 
-  it('should return fallback layout when bestLayout is null', () => {
+  it("should return fallback layout when bestLayout is null", () => {
     // This is a edge case - extremely constrained scenario
     const layout = calculateOptimalLayout({
       displayWidth: 10,
@@ -190,62 +190,62 @@ describe('calculateOptimalLayout', () => {
   });
 });
 
-describe('getCommonGridConfig', () => {
-  it('should return 1x1 for 1 client', () => {
+describe("getCommonGridConfig", () => {
+  it("should return 1x1 for 1 client", () => {
     const config = getCommonGridConfig(1);
     expect(config.rows).toBe(1);
     expect(config.cols).toBe(1);
   });
 
-  it('should return 1x2 for 2 clients', () => {
+  it("should return 1x2 for 2 clients", () => {
     const config = getCommonGridConfig(2);
     expect(config.rows).toBe(1);
     expect(config.cols).toBe(2);
   });
 
-  it('should return 1x3 for 3 clients', () => {
+  it("should return 1x3 for 3 clients", () => {
     const config = getCommonGridConfig(3);
     expect(config.rows).toBe(1);
     expect(config.cols).toBe(3);
   });
 
-  it('should return 2x2 for 4 clients', () => {
+  it("should return 2x2 for 4 clients", () => {
     const config = getCommonGridConfig(4);
     expect(config.rows).toBe(2);
     expect(config.cols).toBe(2);
   });
 
-  it('should return 2x3 for 5 clients', () => {
+  it("should return 2x3 for 5 clients", () => {
     const config = getCommonGridConfig(5);
     expect(config.rows).toBe(2);
     expect(config.cols).toBe(3);
   });
 
-  it('should return 2x3 for 6 clients', () => {
+  it("should return 2x3 for 6 clients", () => {
     const config = getCommonGridConfig(6);
     expect(config.rows).toBe(2);
     expect(config.cols).toBe(3);
   });
 
-  it('should return 3x3 for 9 clients', () => {
+  it("should return 3x3 for 9 clients", () => {
     const config = getCommonGridConfig(9);
     expect(config.rows).toBe(3);
     expect(config.cols).toBe(3);
   });
 
-  it('should return 4x4 for 16 clients', () => {
+  it("should return 4x4 for 16 clients", () => {
     const config = getCommonGridConfig(16);
     expect(config.rows).toBe(4);
     expect(config.cols).toBe(4);
   });
 
-  it('should return 4x5 for 20 clients', () => {
+  it("should return 4x5 for 20 clients", () => {
     const config = getCommonGridConfig(20);
     expect(config.rows).toBe(4);
     expect(config.cols).toBe(5);
   });
 
-  it('should calculate config for non-standard client count', () => {
+  it("should calculate config for non-standard client count", () => {
     const config = getCommonGridConfig(11);
     // Should calculate based on square root
     expect(config.rows).toBeGreaterThan(0);
@@ -253,13 +253,13 @@ describe('getCommonGridConfig', () => {
     expect(config.rows * config.cols).toBeGreaterThanOrEqual(11);
   });
 
-  it('should handle edge cases', () => {
+  it("should handle edge cases", () => {
     const config = getCommonGridConfig(100);
     expect(config.rows).toBe(Math.ceil(Math.sqrt(100)));
     expect(config.cols).toBe(Math.ceil(100 / Math.ceil(Math.sqrt(100))));
   });
 
-  it('should ensure grid can fit all clients', () => {
+  it("should ensure grid can fit all clients", () => {
     for (let i = 1; i <= 25; i++) {
       const config = getCommonGridConfig(i);
       expect(config.rows * config.cols).toBeGreaterThanOrEqual(i);

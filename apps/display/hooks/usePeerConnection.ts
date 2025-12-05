@@ -1,13 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { DataConnection, MediaConnection, Peer } from "peerjs";
-import type {
-  ClientConnectionState,
-  ClientMetadata,
-  PeerMessage,
-} from "@/types/webrtc";
+import type { ClientConnectionState, ClientMetadata, PeerMessage } from "@/types/webrtc";
 import { getStreamMetadata } from "@apps/display/lib/webrtc/utils";
+import type { DataConnection, MediaConnection, Peer } from "peerjs";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Hook for managing peer-to-peer connections (calls and data channels)
@@ -43,7 +39,7 @@ export function usePeerConnection(peer: Peer | null) {
         return newMap;
       });
     },
-    []
+    [],
   );
 
   /**
@@ -56,7 +52,7 @@ export function usePeerConnection(peer: Peer | null) {
         connection.dataConnection.send(message);
       }
     },
-    []
+    [],
   );
 
   /**
@@ -147,7 +143,7 @@ export function usePeerConnection(peer: Peer | null) {
         // Error occurred
       });
     },
-    [peer, updateConnection]
+    [peer, updateConnection],
   );
 
   /**
@@ -195,7 +191,7 @@ export function usePeerConnection(peer: Peer | null) {
         });
       });
     },
-    [updateConnection]
+    [updateConnection],
   );
 
   /**
@@ -245,7 +241,6 @@ export function usePeerConnection(peer: Peer | null) {
 
     const handleConnection = (dataConn: DataConnection) => {
       dataConn.on("open", () => {
-
         const existing = connectionsRef.current.get(dataConn.peer);
         if (existing) {
           updateConnection(dataConn.peer, { dataConnection: dataConn });

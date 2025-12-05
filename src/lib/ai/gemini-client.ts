@@ -1,22 +1,22 @@
-import { GoogleGenAI } from '@google/genai'
+import { GoogleGenAI } from "@google/genai";
 
 // Configuration constants
-const GEMINI_API_TIMEOUT_MS = 120000 // 2 minutes timeout for API calls
-const DEFAULT_MODEL = 'gemini-3-pro-image-preview'
+const GEMINI_API_TIMEOUT_MS = 120000; // 2 minutes timeout for API calls
+const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 
-let genAI: GoogleGenAI | null = null
+let genAI: GoogleGenAI | null = null;
 
 function getGeminiClient(): GoogleGenAI {
   if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is not set')
+      throw new Error("GEMINI_API_KEY environment variable is not set");
     }
     genAI = new GoogleGenAI({
       apiKey,
-    })
+    });
   }
-  return genAI
+  return genAI;
 }
 
 /**
@@ -24,7 +24,7 @@ function getGeminiClient(): GoogleGenAI {
  * @internal
  */
 export function resetGeminiClient(): void {
-  genAI = null
+  genAI = null;
 }
 
 /**
@@ -33,27 +33,28 @@ export function resetGeminiClient(): void {
 function createTimeoutPromise(ms: number): Promise<never> {
   return new Promise((_, reject) => {
     setTimeout(() => {
-      reject(new Error(`Gemini API request timed out after ${ms}ms`))
-    }, ms)
-  })
+      reject(new Error(`Gemini API request timed out after ${ms}ms`));
+    }, ms);
+  });
 }
 
 export interface ImageAnalysisResult {
-  description: string
-  quality: 'low' | 'medium' | 'high'
-  suggestedImprovements: string[]
-  enhancementPrompt: string
+  description: string;
+  quality: "low" | "medium" | "high";
+  suggestedImprovements: string[];
+  enhancementPrompt: string;
 }
 
 export interface EnhanceImageParams {
-  imageData: string
-  mimeType: string
-  tier: '1K' | '2K' | '4K'
-  originalWidth?: number
-  originalHeight?: number
+  imageData: string;
+  mimeType: string;
+  tier: "1K" | "2K" | "4K";
+  originalWidth?: number;
+  originalHeight?: number;
 }
 
-const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`
+const ENHANCEMENT_BASE_PROMPT =
+  `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`;
 
 /**
  * Analyzes an image and returns enhancement suggestions.
@@ -70,21 +71,24 @@ const ENHANCEMENT_BASE_PROMPT = `Create a high resolution version of this photo.
  */
 export async function analyzeImage(
   imageData: string,
-  mimeType: string
+  mimeType: string,
 ): Promise<ImageAnalysisResult> {
   // Log analysis attempt with metadata (parameters logged to demonstrate they're available for future use)
-  console.log(`Analyzing image with Gemini API (format: ${mimeType}, data length: ${imageData.length} chars)`)
+  console.log(
+    `Analyzing image with Gemini API (format: ${mimeType}, data length: ${imageData.length} chars)`,
+  );
 
   // TODO: Implement actual vision model analysis in future iteration
   // - Use Gemini vision to detect image content and quality
   // - Generate dynamic enhancement suggestions based on image characteristics
   // - Adjust enhancement prompt based on image type (portrait, landscape, etc.)
   return {
-    description: 'Photo ready for enhancement',
-    quality: 'medium' as const,
-    suggestedImprovements: ['sharpness', 'color enhancement', 'detail preservation'],
-    enhancementPrompt: `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`,
-  }
+    description: "Photo ready for enhancement",
+    quality: "medium" as const,
+    suggestedImprovements: ["sharpness", "color enhancement", "detail preservation"],
+    enhancementPrompt:
+      `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`,
+  };
 }
 
 /**
@@ -95,28 +99,28 @@ export async function analyzeImage(
  * @throws Error if API times out, no API key is configured, or no image data is received
  */
 export async function enhanceImageWithGemini(
-  params: EnhanceImageParams
+  params: EnhanceImageParams,
 ): Promise<Buffer> {
-  const ai = getGeminiClient()
+  const ai = getGeminiClient();
 
-  const analysis = await analyzeImage(params.imageData, params.mimeType)
+  const analysis = await analyzeImage(params.imageData, params.mimeType);
 
   const resolutionMap = {
-    '1K': '1024x1024',
-    '2K': '2048x2048',
-    '4K': '4096x4096',
-  }
+    "1K": "1024x1024",
+    "2K": "2048x2048",
+    "4K": "4096x4096",
+  };
 
   const config = {
-    responseModalities: ['IMAGE'],
+    responseModalities: ["IMAGE"],
     imageConfig: {
       imageSize: params.tier,
     },
-  }
+  };
 
   const contents = [
     {
-      role: 'user' as const,
+      role: "user" as const,
       parts: [
         {
           inlineData: {
@@ -125,13 +129,15 @@ export async function enhanceImageWithGemini(
           },
         },
         {
-          text: `${analysis.enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
+          text: `${analysis.enhancementPrompt}\n\nGenerate at ${
+            resolutionMap[params.tier]
+          } resolution.`,
         },
       ],
     },
-  ]
+  ];
 
-  console.log('Generating enhanced image with Gemini API...')
+  console.log("Generating enhanced image with Gemini API...");
 
   // Process streaming response with timeout
   const processStream = async (): Promise<Buffer> => {
@@ -139,36 +145,38 @@ export async function enhanceImageWithGemini(
       model: DEFAULT_MODEL,
       config,
       contents,
-    })
+    });
 
-    const imageChunks: Buffer[] = []
+    const imageChunks: Buffer[] = [];
 
     for await (const chunk of response) {
-      if (!chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts) {
-        continue
+      if (
+        !chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts
+      ) {
+        continue;
       }
 
       if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-        const inlineData = chunk.candidates[0].content.parts[0].inlineData
-        const buffer = Buffer.from(inlineData.data || '', 'base64')
-        imageChunks.push(buffer)
+        const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+        const buffer = Buffer.from(inlineData.data || "", "base64");
+        imageChunks.push(buffer);
       }
     }
 
     if (imageChunks.length === 0) {
-      throw new Error('No image data received from Gemini API')
+      throw new Error("No image data received from Gemini API");
     }
 
-    return Buffer.concat(imageChunks)
-  }
+    return Buffer.concat(imageChunks);
+  };
 
   // Race between the stream processing and timeout
   return Promise.race([
     processStream(),
     createTimeoutPromise(GEMINI_API_TIMEOUT_MS),
-  ])
+  ]);
 }
 
 export function isGeminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY
+  return !!process.env.GEMINI_API_KEY;
 }

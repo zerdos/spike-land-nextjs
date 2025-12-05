@@ -16,12 +16,14 @@ The image enhancement E2E tests validate the complete user journey for uploading
 ## Test Coverage
 
 ### Authentication & Authorization
+
 - ✅ Authenticated users can access the enhance page
 - ✅ Unauthenticated users are redirected to sign-in
 - ✅ Users can only view/edit their own images
 - ✅ Attempting to access another user's image redirects to the enhance page
 
 ### Image Upload
+
 - ✅ Upload section displays correctly with icon, text, and button
 - ✅ Successfully upload valid image files
 - ✅ Validation error for files larger than 50MB
@@ -30,6 +32,7 @@ The image enhancement E2E tests validate the complete user journey for uploading
 - ✅ Redirect to image enhancement page after successful upload
 
 ### Image Enhancement
+
 - ✅ Display all enhancement tier options (TIER_1K, TIER_2K, TIER_4K)
 - ✅ Show token cost for each tier
 - ✅ Start enhancement with sufficient tokens
@@ -40,6 +43,7 @@ The image enhancement E2E tests validate the complete user journey for uploading
 - ✅ Handle enhancement errors gracefully
 
 ### Token Management
+
 - ✅ Display current token balance
 - ✅ Show low balance warning banner when tokens < 5
 - ✅ Update token balance after enhancement
@@ -48,23 +52,27 @@ The image enhancement E2E tests validate the complete user journey for uploading
 - ✅ Open purchase modal to buy more tokens
 
 ### Image Comparison
+
 - ✅ Display original image when no enhancements exist
 - ✅ Display comparison slider with original and enhanced versions
 - ✅ Interact with slider to compare before/after
 - ✅ Slider is responsive (works on mobile, tablet, desktop)
 
 ### Version Management
+
 - ✅ Display all enhancement versions in grid
 - ✅ Select different versions to compare
 - ✅ Highlight selected version
 - ✅ Update comparison slider when version changes
 
 ### Image Deletion
+
 - ✅ Delete image from list with confirmation
 - ✅ Cancel deletion keeps image in list
 - ✅ Image removed from list after successful deletion
 
 ### UI/UX
+
 - ✅ Navigate back to images list from detail page
 - ✅ Display empty state when no images uploaded
 - ✅ Show only user's own images in list
@@ -73,6 +81,7 @@ The image enhancement E2E tests validate the complete user journey for uploading
 ## Running the Tests
 
 ### Prerequisites
+
 1. Development server must be running: `npm run dev`
 2. Database should be seeded with test data (optional)
 3. Environment variables configured (see `.env.local.example`)
@@ -137,6 +146,7 @@ Test data is defined in the step definitions:
 The `image-enhancement-helper.ts` provides reusable functions:
 
 ### API Mocking
+
 - `mockTokenBalanceAPI(page, balance)` - Mock token balance endpoint
 - `mockImageUploadAPI(page, options)` - Mock image upload with delays/errors
 - `mockEnhancementAPI(page, options)` - Mock enhancement endpoint
@@ -145,10 +155,12 @@ The `image-enhancement-helper.ts` provides reusable functions:
 - `mockImageDeletionAPI(page, success)` - Mock image deletion
 
 ### Data Factories
+
 - `createMockEnhancedImage(overrides)` - Create mock image object
 - `createMockEnhancementJob(overrides)` - Create mock job object
 
 ### Utilities
+
 - `simulateFileUpload(page, options)` - Simulate browser file upload
 - `waitForEnhancementComplete(page, timeout)` - Wait for job completion
 - `autoAcceptDialogs(page)` - Auto-accept confirmation dialogs
@@ -178,26 +190,32 @@ BASE_URL=http://localhost:3000 SLOWMO=1000 npx cucumber-js e2e/features/image-en
 ### Screenshots
 
 Failed tests automatically capture screenshots saved to:
+
 - `e2e/reports/screenshots/`
 
 ### Logs
 
 Test logs and reports are saved to:
+
 - `e2e/reports/cucumber-report.html` - HTML report
 - `e2e/reports/cucumber-report-ci.json` - JSON report (CI only)
 
 ## Common Issues
 
 ### Test Fails: "Cannot find file input"
+
 **Solution**: Ensure the ImageUpload component renders properly. Check that the file input element exists in the DOM.
 
 ### Test Fails: "Timeout waiting for navigation"
+
 **Solution**: Check that mock routes are set up before navigation. Increase timeout if needed.
 
 ### Test Fails: "Token balance not updating"
+
 **Solution**: Ensure the `useTokenBalance` hook is properly mocked. Check API route handlers.
 
 ### Test Fails: "Image not found in list"
+
 **Solution**: Verify the images list API is mocked correctly with expected data.
 
 ## Best Practices

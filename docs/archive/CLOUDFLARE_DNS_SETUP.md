@@ -29,6 +29,7 @@ This guide explains how to configure DNS records in Cloudflare for your custom d
 **CRITICAL**: The CNAME record MUST be set to "DNS only" (gray cloud icon), NOT "Proxied" (orange cloud).
 
 Why?
+
 - Vercel needs to provision SSL certificates directly
 - Proxied records can interfere with Vercel's SSL certificate generation
 - "DNS only" mode allows Vercel to handle SSL/TLS directly
@@ -68,27 +69,31 @@ After adding the DNS record:
 
 After setup, your DNS record should look like:
 
-| Type  | Name | Target                | Proxy Status | TTL  |
-|-------|------|-----------------------|--------------|------|
-| CNAME | next | cname.vercel-dns.com  | DNS only     | Auto |
+| Type  | Name | Target               | Proxy Status | TTL  |
+| ----- | ---- | -------------------- | ------------ | ---- |
+| CNAME | next | cname.vercel-dns.com | DNS only     | Auto |
 
 ## Troubleshooting
 
 ### Domain not verifying in Vercel
+
 - Ensure CNAME is set to "DNS only" (gray cloud)
 - Wait 5-10 minutes for DNS propagation
 - Try using `dig` or `nslookup` to verify DNS record is live
 
 ### SSL certificate errors
+
 - Check SSL/TLS mode is set to "Full" or "Full (strict)" in Cloudflare
 - Ensure CNAME proxy status is "DNS only"
 - Wait for Vercel to provision SSL (can take a few minutes)
 
 ### "Too many redirects" error
+
 - Change Cloudflare SSL mode from "Flexible" to "Full"
 - Ensure CNAME is not proxied (must be DNS only)
 
 ### DNS not propagating
+
 - DNS changes can take up to 48 hours globally (usually 5-30 minutes)
 - Use online DNS checkers: https://dnschecker.org
 - Clear your local DNS cache:

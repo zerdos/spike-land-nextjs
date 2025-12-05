@@ -1,13 +1,13 @@
-import { Link, Text, Section } from '@react-email/components'
-import { BaseEmail, emailStyles } from './base'
+import { Link, Section, Text } from "@react-email/components";
+import { BaseEmail, emailStyles } from "./base";
 
 interface WelcomeEmailProps {
-  userName?: string
-  userEmail: string
+  userName?: string;
+  userEmail: string;
 }
 
 export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
-  const displayName = userName || userEmail.split('@')[0]
+  const displayName = userName || userEmail.split("@")[0];
 
   return (
     <BaseEmail
@@ -15,9 +15,8 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
       heading={`Welcome to Spike Land, ${displayName}!`}
     >
       <Text style={emailStyles.text}>
-        Thank you for joining Spike Land, the AI-powered image enhancement
-        platform. We're excited to help you transform your images with
-        cutting-edge AI technology.
+        Thank you for joining Spike Land, the AI-powered image enhancement platform. We're excited
+        to help you transform your images with cutting-edge AI technology.
       </Text>
 
       <Section style={emailStyles.success}>
@@ -38,18 +37,18 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
         ⚡ <strong>Fast Processing</strong> - Get results in seconds
       </Text>
 
-      <Section style={{ textAlign: 'center' as const, margin: '32px 0' }}>
+      <Section style={{ textAlign: "center" as const, margin: "32px 0" }}>
         <Link href="https://spike.land/dashboard" style={emailStyles.button}>
           Start Enhancing Images
         </Link>
       </Section>
 
       <Text style={emailStyles.text}>
-        Need help getting started? Check out our{' '}
+        Need help getting started? Check out our{" "}
         <Link href="https://spike.land/docs" style={emailStyles.link}>
           documentation
-        </Link>{' '}
-        or{' '}
+        </Link>{" "}
+        or{" "}
         <Link href="https://spike.land/support" style={emailStyles.link}>
           contact support
         </Link>
@@ -62,5 +61,5 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
         The Spike Land Team
       </Text>
     </BaseEmail>
-  )
+  );
 }

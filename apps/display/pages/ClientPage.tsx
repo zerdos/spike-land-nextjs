@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { getTwilioIceServers } from "@apps/display/lib/webrtc/config";
 import {
+  AlertCircle,
+  Camera,
   Menu,
-  X,
-  ZoomIn,
-  SwitchCamera,
   Mic,
   MicOff,
   MonitorUp,
+  SwitchCamera,
   Video,
   VideoOff,
-  AlertCircle,
-  Camera
-} from 'lucide-react';
-import Peer, { MediaConnection } from 'peerjs';
-import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
+  X,
+  ZoomIn,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Peer, { MediaConnection } from "peerjs";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
-type CameraFacingMode = 'user' | 'environment';
+type CameraFacingMode = "user" | "environment";
 
 interface MediaTrackCapabilities {
   zoom?: {
@@ -32,7 +32,7 @@ interface MediaTrackCapabilities {
 
 interface ErrorState {
   message: string;
-  type: 'permission' | 'camera' | 'connection' | 'general';
+  type: "permission" | "camera" | "connection" | "general";
 }
 
 interface CameraStream {
@@ -44,7 +44,7 @@ interface CameraStream {
   isVideoEnabled: boolean;
   zoom: number;
   zoomSupported: boolean;
-  zoomRange: { min: number; max: number };
+  zoomRange: { min: number; max: number; };
 }
 
 function ClientPageContent() {
@@ -65,36 +65,36 @@ function ClientPageContent() {
   const [frontCamera, setFrontCamera] = useState<CameraStream>({
     stream: null as unknown as MediaStream,
     call: null,
-    facingMode: 'user',
+    facingMode: "user",
     isConnected: false,
     isMuted: false,
     isVideoEnabled: true,
     zoom: 1,
     zoomSupported: false,
-    zoomRange: { min: 1, max: 4 }
+    zoomRange: { min: 1, max: 4 },
   });
 
   const [backCamera, setBackCamera] = useState<CameraStream>({
     stream: null as unknown as MediaStream,
     call: null,
-    facingMode: 'environment',
+    facingMode: "environment",
     isConnected: false,
     isMuted: false,
     isVideoEnabled: true,
     zoom: 1,
     zoomSupported: false,
-    zoomRange: { min: 1, max: 4 }
+    zoomRange: { min: 1, max: 4 },
   });
 
   // Get displayId from URL
   useEffect(() => {
-    const id = searchParams.get('displayId');
+    const id = searchParams.get("displayId");
     if (id) {
       setDisplayId(id);
     } else {
       setError({
-        message: 'No display ID provided. Please scan a QR code from a display.',
-        type: 'general'
+        message: "No display ID provided. Please scan a QR code from a display.",
+        type: "general",
       });
       setIsLoading(false);
     }
@@ -102,8 +102,8 @@ function ClientPageContent() {
 
   // Load dual camera preference
   useEffect(() => {
-    const savedMode = localStorage.getItem('dualCameraMode');
-    if (savedMode === 'true') {
+    const savedMode = localStorage.getItem("dualCameraMode");
+    if (savedMode === "true") {
       setIsDualCameraMode(true);
     }
   }, []);
@@ -115,9 +115,9 @@ function ClientPageContent() {
         video: {
           facingMode,
           width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          height: { ideal: 1080 },
         },
-        audio: true
+        audio: true,
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -134,7 +134,7 @@ function ClientPageContent() {
           zoomSupported = true;
           zoomRange = {
             min: capabilities.zoom.min,
-            max: capabilities.zoom.max
+            max: capabilities.zoom.max,
           };
           zoom = capabilities.zoom.min;
         }
@@ -143,20 +143,20 @@ function ClientPageContent() {
       return { stream, zoomSupported, zoomRange, zoom };
     } catch (err) {
       if (err instanceof Error) {
-        if (err.name === 'NotAllowedError') {
+        if (err.name === "NotAllowedError") {
           setError({
-            message: 'Camera permission denied. Please allow camera access and reload.',
-            type: 'permission'
+            message: "Camera permission denied. Please allow camera access and reload.",
+            type: "permission",
           });
-        } else if (err.name === 'NotFoundError') {
+        } else if (err.name === "NotFoundError") {
           setError({
-            message: 'No camera found on this device.',
-            type: 'camera'
+            message: "No camera found on this device.",
+            type: "camera",
           });
         } else {
           setError({
             message: `Camera error: ${err.message}`,
-            type: 'camera'
+            type: "camera",
           });
         }
       }
@@ -165,27 +165,27 @@ function ClientPageContent() {
   }, []);
 
   // Create PeerJS call for a camera
-  const createCameraCall = useCallback((stream: MediaStream, cameraType: 'front' | 'back') => {
-    const peerRef = cameraType === 'front' ? frontPeerRef : backPeerRef;
+  const createCameraCall = useCallback((stream: MediaStream, cameraType: "front" | "back") => {
+    const peerRef = cameraType === "front" ? frontPeerRef : backPeerRef;
 
     if (!peerRef.current || !displayId) return null;
 
     const call = peerRef.current.call(displayId, stream);
 
-    call.on('close', () => {
-      if (cameraType === 'front') {
+    call.on("close", () => {
+      if (cameraType === "front") {
         setFrontCamera(prev => ({ ...prev, isConnected: false }));
       } else {
         setBackCamera(prev => ({ ...prev, isConnected: false }));
       }
     });
 
-    call.on('error', () => {
+    call.on("error", () => {
       setError({
-        message: `${cameraType === 'front' ? 'Front' : 'Back'} camera connection failed.`,
-        type: 'connection'
+        message: `${cameraType === "front" ? "Front" : "Back"} camera connection failed.`,
+        type: "connection",
       });
-      if (cameraType === 'front') {
+      if (cameraType === "front") {
         setFrontCamera(prev => ({ ...prev, isConnected: false }));
       } else {
         setBackCamera(prev => ({ ...prev, isConnected: false }));
@@ -193,7 +193,7 @@ function ClientPageContent() {
     });
 
     // Set connected immediately - display doesn't send stream back
-    if (cameraType === 'front') {
+    if (cameraType === "front") {
       setFrontCamera(prev => ({ ...prev, isConnected: true }));
     } else {
       setBackCamera(prev => ({ ...prev, isConnected: true }));
@@ -219,75 +219,77 @@ function ClientPageContent() {
         if (isDualCameraMode) {
           // Create two separate Peer instances with unique IDs
           const frontPeer = new Peer({
-            config: { iceServers }
+            config: { iceServers },
           });
 
           const backPeer = new Peer({
-            config: { iceServers }
+            config: { iceServers },
           });
 
           frontPeerRef.current = frontPeer;
           backPeerRef.current = backPeer;
 
           // Wait for both peers to be ready
-          frontPeer.on('open', async (id) => {
-            console.log('Front peer opened with ID:', id);
+          frontPeer.on("open", async (id) => {
+            console.log("Front peer opened with ID:", id);
             peersInitialized++;
             if (peersInitialized === peersNeeded && mounted) {
               await initializeCameras();
             }
           });
 
-          backPeer.on('open', async (id) => {
-            console.log('Back peer opened with ID:', id);
+          backPeer.on("open", async (id) => {
+            console.log("Back peer opened with ID:", id);
             peersInitialized++;
             if (peersInitialized === peersNeeded && mounted) {
               await initializeCameras();
             }
           });
 
-          frontPeer.on('error', () => {
+          frontPeer.on("error", () => {
             setError({
-              message: 'Failed to establish front camera peer connection.',
-              type: 'connection'
+              message: "Failed to establish front camera peer connection.",
+              type: "connection",
             });
           });
 
-          backPeer.on('error', () => {
+          backPeer.on("error", () => {
             setError({
-              message: 'Failed to establish back camera peer connection.',
-              type: 'connection'
+              message: "Failed to establish back camera peer connection.",
+              type: "connection",
             });
           });
         } else {
           // Single camera mode - create one peer
           const peer = new Peer({
-            config: { iceServers }
+            config: { iceServers },
           });
 
           // Determine which peer ref to use based on camera preference
           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
+            navigator.userAgent,
           );
-          const defaultMode = isMobile ? 'environment' : 'user';
-          const savedMode = localStorage.getItem('preferredCamera');
-          const facingMode = (savedMode === 'user' || savedMode === 'environment') ? savedMode : defaultMode;
+          const defaultMode = isMobile ? "environment" : "user";
+          const savedMode = localStorage.getItem("preferredCamera");
+          const facingMode = (savedMode === "user" || savedMode === "environment")
+            ? savedMode
+            : defaultMode;
 
-          if (facingMode === 'user') {
+          if (facingMode === "user") {
             frontPeerRef.current = peer;
           } else {
             backPeerRef.current = peer;
           }
 
-          peer.on('open', async () => {
+          peer.on("open", async () => {
             if (!mounted) return;
             await initializeCameras();
           });
 
-          peer.on('error', () => {
+          peer.on("error", () => {
             setError({
-              message: 'Failed to establish peer connection. Please check your internet.',
-              type: 'connection'
+              message: "Failed to establish peer connection. Please check your internet.",
+              type: "connection",
             });
           });
         }
@@ -299,8 +301,8 @@ function ClientPageContent() {
             if (isDualCameraMode) {
               // Start both cameras
               const [frontResult, backResult] = await Promise.all([
-                startCamera('user'),
-                startCamera('environment')
+                startCamera("user"),
+                startCamera("environment"),
               ]);
 
               if (!mounted) return;
@@ -311,14 +313,14 @@ function ClientPageContent() {
                 stream: frontResult.stream,
                 zoom: frontResult.zoom,
                 zoomSupported: frontResult.zoomSupported,
-                zoomRange: frontResult.zoomRange
+                zoomRange: frontResult.zoomRange,
               }));
 
               if (frontVideoRef.current) {
                 frontVideoRef.current.srcObject = frontResult.stream;
               }
 
-              const frontCall = createCameraCall(frontResult.stream, 'front');
+              const frontCall = createCameraCall(frontResult.stream, "front");
               setFrontCamera(prev => ({ ...prev, call: frontCall }));
 
               // Setup back camera
@@ -327,43 +329,45 @@ function ClientPageContent() {
                 stream: backResult.stream,
                 zoom: backResult.zoom,
                 zoomSupported: backResult.zoomSupported,
-                zoomRange: backResult.zoomRange
+                zoomRange: backResult.zoomRange,
               }));
 
               if (backVideoRef.current) {
                 backVideoRef.current.srcObject = backResult.stream;
               }
 
-              const backCall = createCameraCall(backResult.stream, 'back');
+              const backCall = createCameraCall(backResult.stream, "back");
               setBackCamera(prev => ({ ...prev, call: backCall }));
-
             } else {
               // Start single camera (detect device type)
-              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
-              );
-              const defaultMode = isMobile ? 'environment' : 'user';
-              const savedMode = localStorage.getItem('preferredCamera');
-              const facingMode = (savedMode === 'user' || savedMode === 'environment') ? savedMode : defaultMode;
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                .test(
+                  navigator.userAgent,
+                );
+              const defaultMode = isMobile ? "environment" : "user";
+              const savedMode = localStorage.getItem("preferredCamera");
+              const facingMode = (savedMode === "user" || savedMode === "environment")
+                ? savedMode
+                : defaultMode;
 
               const result = await startCamera(facingMode as CameraFacingMode);
 
               if (!mounted) return;
 
-              if (facingMode === 'user') {
+              if (facingMode === "user") {
                 setFrontCamera(prev => ({
                   ...prev,
                   stream: result.stream,
                   zoom: result.zoom,
                   zoomSupported: result.zoomSupported,
-                  zoomRange: result.zoomRange
+                  zoomRange: result.zoomRange,
                 }));
 
                 if (frontVideoRef.current) {
                   frontVideoRef.current.srcObject = result.stream;
                 }
 
-                const call = createCameraCall(result.stream, 'front');
+                const call = createCameraCall(result.stream, "front");
                 setFrontCamera(prev => ({ ...prev, call }));
               } else {
                 setBackCamera(prev => ({
@@ -371,14 +375,14 @@ function ClientPageContent() {
                   stream: result.stream,
                   zoom: result.zoom,
                   zoomSupported: result.zoomSupported,
-                  zoomRange: result.zoomRange
+                  zoomRange: result.zoomRange,
                 }));
 
                 if (backVideoRef.current) {
                   backVideoRef.current.srcObject = result.stream;
                 }
 
-                const call = createCameraCall(result.stream, 'back');
+                const call = createCameraCall(result.stream, "back");
                 setBackCamera(prev => ({ ...prev, call }));
               }
             }
@@ -388,7 +392,6 @@ function ClientPageContent() {
             setIsLoading(false);
           }
         }
-
       } catch {
         setIsLoading(false);
       }
@@ -415,7 +418,7 @@ function ClientPageContent() {
   const handleToggleDualCamera = useCallback(async () => {
     const newMode = !isDualCameraMode;
     setIsDualCameraMode(newMode);
-    localStorage.setItem('dualCameraMode', String(newMode));
+    localStorage.setItem("dualCameraMode", String(newMode));
 
     // Cleanup existing streams
     if (frontCamera.stream) {
@@ -437,124 +440,125 @@ function ClientPageContent() {
       if (newMode) {
         // Enable both cameras
         const [frontResult, backResult] = await Promise.all([
-          startCamera('user'),
-          startCamera('environment')
+          startCamera("user"),
+          startCamera("environment"),
         ]);
 
         // Setup front camera
         setFrontCamera({
           stream: frontResult.stream,
           call: null,
-          facingMode: 'user',
+          facingMode: "user",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: frontResult.zoom,
           zoomSupported: frontResult.zoomSupported,
-          zoomRange: frontResult.zoomRange
+          zoomRange: frontResult.zoomRange,
         });
 
         if (frontVideoRef.current) {
           frontVideoRef.current.srcObject = frontResult.stream;
         }
 
-        const frontCall = createCameraCall(frontResult.stream, 'front');
+        const frontCall = createCameraCall(frontResult.stream, "front");
         setFrontCamera(prev => ({ ...prev, call: frontCall }));
 
         // Setup back camera
         setBackCamera({
           stream: backResult.stream,
           call: null,
-          facingMode: 'environment',
+          facingMode: "environment",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: backResult.zoom,
           zoomSupported: backResult.zoomSupported,
-          zoomRange: backResult.zoomRange
+          zoomRange: backResult.zoomRange,
         });
 
         if (backVideoRef.current) {
           backVideoRef.current.srcObject = backResult.stream;
         }
 
-        const backCall = createCameraCall(backResult.stream, 'back');
+        const backCall = createCameraCall(backResult.stream, "back");
         setBackCamera(prev => ({ ...prev, call: backCall }));
-
       } else {
         // Disable dual mode - keep only one camera (back camera by default)
         if (backCamera.stream) {
           backCamera.stream.getTracks().forEach(track => track.stop());
         }
 
-        const savedMode = localStorage.getItem('preferredCamera') || 'user';
-        const facingMode = (savedMode === 'user' || savedMode === 'environment') ? savedMode : 'user';
+        const savedMode = localStorage.getItem("preferredCamera") || "user";
+        const facingMode = (savedMode === "user" || savedMode === "environment")
+          ? savedMode
+          : "user";
 
         const result = await startCamera(facingMode as CameraFacingMode);
 
-        if (facingMode === 'user') {
+        if (facingMode === "user") {
           setFrontCamera({
             stream: result.stream,
             call: null,
-            facingMode: 'user',
+            facingMode: "user",
             isConnected: false,
             isMuted: false,
             isVideoEnabled: true,
             zoom: result.zoom,
             zoomSupported: result.zoomSupported,
-            zoomRange: result.zoomRange
+            zoomRange: result.zoomRange,
           });
 
           if (frontVideoRef.current) {
             frontVideoRef.current.srcObject = result.stream;
           }
 
-          const call = createCameraCall(result.stream, 'front');
+          const call = createCameraCall(result.stream, "front");
           setFrontCamera(prev => ({ ...prev, call }));
 
           // Clear back camera
           setBackCamera({
             stream: null as unknown as MediaStream,
             call: null,
-            facingMode: 'environment',
+            facingMode: "environment",
             isConnected: false,
             isMuted: false,
             isVideoEnabled: true,
             zoom: 1,
             zoomSupported: false,
-            zoomRange: { min: 1, max: 4 }
+            zoomRange: { min: 1, max: 4 },
           });
         } else {
           setBackCamera({
             stream: result.stream,
             call: null,
-            facingMode: 'environment',
+            facingMode: "environment",
             isConnected: false,
             isMuted: false,
             isVideoEnabled: true,
             zoom: result.zoom,
             zoomSupported: result.zoomSupported,
-            zoomRange: result.zoomRange
+            zoomRange: result.zoomRange,
           });
 
           if (backVideoRef.current) {
             backVideoRef.current.srcObject = result.stream;
           }
 
-          const call = createCameraCall(result.stream, 'back');
+          const call = createCameraCall(result.stream, "back");
           setBackCamera(prev => ({ ...prev, call }));
 
           // Clear front camera
           setFrontCamera({
             stream: null as unknown as MediaStream,
             call: null,
-            facingMode: 'user',
+            facingMode: "user",
             isConnected: false,
             isMuted: false,
             isVideoEnabled: true,
             zoom: 1,
             zoomSupported: false,
-            zoomRange: { min: 1, max: 4 }
+            zoomRange: { min: 1, max: 4 },
           });
         }
       }
@@ -566,9 +570,9 @@ function ClientPageContent() {
   }, [isDualCameraMode, frontCamera, backCamera, startCamera, createCameraCall]);
 
   // Toggle mute for specific camera
-  const handleToggleMute = useCallback((cameraType: 'front' | 'back') => {
-    const camera = cameraType === 'front' ? frontCamera : backCamera;
-    const setCamera = cameraType === 'front' ? setFrontCamera : setBackCamera;
+  const handleToggleMute = useCallback((cameraType: "front" | "back") => {
+    const camera = cameraType === "front" ? frontCamera : backCamera;
+    const setCamera = cameraType === "front" ? setFrontCamera : setBackCamera;
 
     if (camera.stream) {
       const audioTracks = camera.stream.getAudioTracks();
@@ -580,9 +584,9 @@ function ClientPageContent() {
   }, [frontCamera, backCamera]);
 
   // Toggle video for specific camera
-  const handleToggleVideo = useCallback((cameraType: 'front' | 'back') => {
-    const camera = cameraType === 'front' ? frontCamera : backCamera;
-    const setCamera = cameraType === 'front' ? setFrontCamera : setBackCamera;
+  const handleToggleVideo = useCallback((cameraType: "front" | "back") => {
+    const camera = cameraType === "front" ? frontCamera : backCamera;
+    const setCamera = cameraType === "front" ? setFrontCamera : setBackCamera;
 
     if (camera.stream) {
       const videoTracks = camera.stream.getVideoTracks();
@@ -594,9 +598,9 @@ function ClientPageContent() {
   }, [frontCamera, backCamera]);
 
   // Handle zoom for specific camera
-  const handleZoomChange = useCallback(async (cameraType: 'front' | 'back', value: number[]) => {
-    const camera = cameraType === 'front' ? frontCamera : backCamera;
-    const setCamera = cameraType === 'front' ? setFrontCamera : setBackCamera;
+  const handleZoomChange = useCallback(async (cameraType: "front" | "back", value: number[]) => {
+    const camera = cameraType === "front" ? frontCamera : backCamera;
+    const setCamera = cameraType === "front" ? setFrontCamera : setBackCamera;
 
     const newZoom = value[0];
     if (newZoom === undefined) return;
@@ -609,7 +613,7 @@ function ClientPageContent() {
         try {
           await videoTrack.applyConstraints({
             // @ts-expect-error - zoom is not in standard MediaTrackConstraints types yet
-            advanced: [{ zoom: newZoom }]
+            advanced: [{ zoom: newZoom }],
           });
         } catch {
           // Zoom constraint failed
@@ -622,9 +626,9 @@ function ClientPageContent() {
   const handleSwitchCamera = useCallback(async () => {
     if (isDualCameraMode) return;
 
-    const currentCamera = frontCamera.stream ? 'front' : 'back';
-    const newMode = currentCamera === 'front' ? 'environment' : 'user';
-    localStorage.setItem('preferredCamera', newMode);
+    const currentCamera = frontCamera.stream ? "front" : "back";
+    const newMode = currentCamera === "front" ? "environment" : "user";
+    localStorage.setItem("preferredCamera", newMode);
 
     try {
       // Stop current camera
@@ -643,67 +647,67 @@ function ClientPageContent() {
 
       const result = await startCamera(newMode);
 
-      if (newMode === 'user') {
+      if (newMode === "user") {
         setFrontCamera({
           stream: result.stream,
           call: null,
-          facingMode: 'user',
+          facingMode: "user",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: result.zoom,
           zoomSupported: result.zoomSupported,
-          zoomRange: result.zoomRange
+          zoomRange: result.zoomRange,
         });
 
         if (frontVideoRef.current) {
           frontVideoRef.current.srcObject = result.stream;
         }
 
-        const call = createCameraCall(result.stream, 'front');
+        const call = createCameraCall(result.stream, "front");
         setFrontCamera(prev => ({ ...prev, call }));
 
         setBackCamera({
           stream: null as unknown as MediaStream,
           call: null,
-          facingMode: 'environment',
+          facingMode: "environment",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: 1,
           zoomSupported: false,
-          zoomRange: { min: 1, max: 4 }
+          zoomRange: { min: 1, max: 4 },
         });
       } else {
         setBackCamera({
           stream: result.stream,
           call: null,
-          facingMode: 'environment',
+          facingMode: "environment",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: result.zoom,
           zoomSupported: result.zoomSupported,
-          zoomRange: result.zoomRange
+          zoomRange: result.zoomRange,
         });
 
         if (backVideoRef.current) {
           backVideoRef.current.srcObject = result.stream;
         }
 
-        const call = createCameraCall(result.stream, 'back');
+        const call = createCameraCall(result.stream, "back");
         setBackCamera(prev => ({ ...prev, call }));
 
         setFrontCamera({
           stream: null as unknown as MediaStream,
           call: null,
-          facingMode: 'user',
+          facingMode: "user",
           isConnected: false,
           isMuted: false,
           isVideoEnabled: true,
           zoom: 1,
           zoomSupported: false,
-          zoomRange: { min: 1, max: 4 }
+          zoomRange: { min: 1, max: 4 },
         });
       }
     } catch {
@@ -721,7 +725,7 @@ function ClientPageContent() {
         // Start screen sharing - not implemented in dual camera mode
         const displayStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
-          audio: false
+          audio: false,
         });
 
         // Stop cameras
@@ -744,7 +748,7 @@ function ClientPageContent() {
 
         setIsSharingScreen(true);
 
-        const call = createCameraCall(displayStream, 'front');
+        const call = createCameraCall(displayStream, "front");
         setFrontCamera(prev => ({ ...prev, stream: displayStream, call }));
 
         // Listen for user stopping screen share
@@ -757,8 +761,8 @@ function ClientPageContent() {
       }
     } catch {
       setError({
-        message: 'Failed to share screen. Please try again.',
-        type: 'general'
+        message: "Failed to share screen. Please try again.",
+        type: "general",
       });
     }
   }, [isSharingScreen, frontCamera, backCamera, createCameraCall]);
@@ -796,88 +800,100 @@ function ClientPageContent() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black">
       {/* Video preview */}
-      {isDualCameraMode ? (
-        /* Dual camera mode - split screen */
-        <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
-          <div className="relative">
+      {isDualCameraMode
+        ? (
+          /* Dual camera mode - split screen */
+          <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
+            <div className="relative">
+              <video
+                ref={frontVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover rounded-lg"
+              />
+              <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                Front Camera
+              </div>
+              {!frontCamera.isVideoEnabled && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
+                  <VideoOff className="w-12 h-12 text-white/50" />
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <video
+                ref={backVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover rounded-lg"
+              />
+              <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                Back Camera
+              </div>
+              {!backCamera.isVideoEnabled && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
+                  <VideoOff className="w-12 h-12 text-white/50" />
+                </div>
+              )}
+            </div>
+          </div>
+        )
+        : (
+          /* Single camera mode - full screen */
+          <>
             <video
-              ref={frontVideoRef}
+              ref={frontCamera.stream ? frontVideoRef : backVideoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover rounded-lg"
+              className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              Front Camera
-            </div>
-            {!frontCamera.isVideoEnabled && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
-                <VideoOff className="w-12 h-12 text-white/50" />
+            {!activeCamera.isVideoEnabled && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                <div className="text-center">
+                  <VideoOff className="w-16 h-16 text-white/50 mx-auto mb-4" />
+                  <p className="text-white/70 text-lg">Video is disabled</p>
+                </div>
               </div>
             )}
-          </div>
-          <div className="relative">
-            <video
-              ref={backVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover rounded-lg"
-            />
-            <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              Back Camera
-            </div>
-            {!backCamera.isVideoEnabled && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
-                <VideoOff className="w-12 h-12 text-white/50" />
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        /* Single camera mode - full screen */
-        <>
-          <video
-            ref={frontCamera.stream ? frontVideoRef : backVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {!activeCamera.isVideoEnabled && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-              <div className="text-center">
-                <VideoOff className="w-16 h-16 text-white/50 mx-auto mb-4" />
-                <p className="text-white/70 text-lg">Video is disabled</p>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+          </>
+        )}
 
       {/* Connection status */}
       <div className="absolute top-4 left-4 z-20 space-y-2">
-        <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-          isConnected
-            ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
-        }`}>
-          {isConnected ? 'Connected' : 'Connecting...'}
+        <div
+          className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+            isConnected
+              ? "bg-green-500/20 text-green-400 border border-green-500/50"
+              : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
+          }`}
+        >
+          {isConnected ? "Connected" : "Connecting..."}
         </div>
         {isDualCameraMode && (
           <div className="space-y-1">
             {frontCamera.stream && (
-              <div className={`px-2 py-1 rounded text-xs ${
-                frontCamera.isConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-              }`}>
-                Front: {frontCamera.isConnected ? '✓' : '○'}
+              <div
+                className={`px-2 py-1 rounded text-xs ${
+                  frontCamera.isConnected
+                    ? "bg-green-500/20 text-green-400"
+                    : "bg-gray-500/20 text-gray-400"
+                }`}
+              >
+                Front: {frontCamera.isConnected ? "✓" : "○"}
               </div>
             )}
             {backCamera.stream && (
-              <div className={`px-2 py-1 rounded text-xs ${
-                backCamera.isConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-              }`}>
-                Back: {backCamera.isConnected ? '✓' : '○'}
+              <div
+                className={`px-2 py-1 rounded text-xs ${
+                  backCamera.isConnected
+                    ? "bg-green-500/20 text-green-400"
+                    : "bg-gray-500/20 text-gray-400"
+                }`}
+              >
+                Back: {backCamera.isConnected ? "✓" : "○"}
               </div>
             )}
           </div>
@@ -914,7 +930,7 @@ function ClientPageContent() {
       {/* Controls panel */}
       <div
         className={`absolute right-0 top-0 h-full w-80 bg-black/90 backdrop-blur-lg border-l border-white/10 p-6 z-20 transition-transform duration-300 overflow-y-auto ${
-          menuOpen ? 'translate-x-0' : 'translate-x-full'
+          menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
@@ -925,218 +941,239 @@ function ClientPageContent() {
             <Button
               onClick={handleToggleDualCamera}
               variant={isDualCameraMode ? "default" : "outline"}
-              className={`w-full justify-start gap-3 ${!isDualCameraMode ? 'bg-white/10 text-white hover:bg-white/20 border-white/30' : ''}`}
+              className={`w-full justify-start gap-3 ${
+                !isDualCameraMode ? "bg-white/10 text-white hover:bg-white/20 border-white/30" : ""
+              }`}
               disabled={isSharingScreen}
             >
               <Camera className="w-5 h-5" />
-              {isDualCameraMode ? 'Dual Camera Mode: ON' : 'Dual Camera Mode: OFF'}
+              {isDualCameraMode ? "Dual Camera Mode: ON" : "Dual Camera Mode: OFF"}
             </Button>
 
-            {isDualCameraMode ? (
-              /* Dual camera controls */
-              <>
-                {/* Front Camera Controls */}
-                {frontCamera.stream && (
-                  <div className="space-y-4 border-t border-white/10 pt-4">
-                    <h3 className="text-white text-sm font-semibold">Front Camera</h3>
+            {isDualCameraMode
+              ? (
+                /* Dual camera controls */
+                <>
+                  {/* Front Camera Controls */}
+                  {frontCamera.stream && (
+                    <div className="space-y-4 border-t border-white/10 pt-4">
+                      <h3 className="text-white text-sm font-semibold">Front Camera</h3>
 
-                    {frontCamera.zoomSupported && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <ZoomIn className="w-5 h-5 text-white" />
-                          <label className="text-white text-sm font-medium">
-                            Zoom: {frontCamera.zoom.toFixed(1)}x
-                          </label>
+                      {frontCamera.zoomSupported && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <ZoomIn className="w-5 h-5 text-white" />
+                            <label className="text-white text-sm font-medium">
+                              Zoom: {frontCamera.zoom.toFixed(1)}x
+                            </label>
+                          </div>
+                          <Slider
+                            value={[frontCamera.zoom]}
+                            onValueChange={(value) => handleZoomChange("front", value)}
+                            min={frontCamera.zoomRange.min}
+                            max={frontCamera.zoomRange.max}
+                            step={0.1}
+                            className="w-full"
+                          />
                         </div>
-                        <Slider
-                          value={[frontCamera.zoom]}
-                          onValueChange={(value) => handleZoomChange('front', value)}
-                          min={frontCamera.zoomRange.min}
-                          max={frontCamera.zoomRange.max}
-                          step={0.1}
-                          className="w-full"
-                        />
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={() => handleToggleVideo('front')}
-                      variant="outline"
-                      className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                    >
-                      {frontCamera.isVideoEnabled ? (
-                        <>
-                          <Video className="w-5 h-5" />
-                          Disable Video
-                        </>
-                      ) : (
-                        <>
-                          <VideoOff className="w-5 h-5" />
-                          Enable Video
-                        </>
                       )}
-                    </Button>
 
-                    <Button
-                      onClick={() => handleToggleMute('front')}
-                      variant="outline"
-                      className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                    >
-                      {frontCamera.isMuted ? (
-                        <>
-                          <MicOff className="w-5 h-5" />
-                          Unmute
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="w-5 h-5" />
-                          Mute
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
+                      <Button
+                        onClick={() => handleToggleVideo("front")}
+                        variant="outline"
+                        className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                      >
+                        {frontCamera.isVideoEnabled
+                          ? (
+                            <>
+                              <Video className="w-5 h-5" />
+                              Disable Video
+                            </>
+                          )
+                          : (
+                            <>
+                              <VideoOff className="w-5 h-5" />
+                              Enable Video
+                            </>
+                          )}
+                      </Button>
 
-                {/* Back Camera Controls */}
-                {backCamera.stream && (
-                  <div className="space-y-4 border-t border-white/10 pt-4">
-                    <h3 className="text-white text-sm font-semibold">Back Camera</h3>
-
-                    {backCamera.zoomSupported && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <ZoomIn className="w-5 h-5 text-white" />
-                          <label className="text-white text-sm font-medium">
-                            Zoom: {backCamera.zoom.toFixed(1)}x
-                          </label>
-                        </div>
-                        <Slider
-                          value={[backCamera.zoom]}
-                          onValueChange={(value) => handleZoomChange('back', value)}
-                          min={backCamera.zoomRange.min}
-                          max={backCamera.zoomRange.max}
-                          step={0.1}
-                          className="w-full"
-                        />
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={() => handleToggleVideo('back')}
-                      variant="outline"
-                      className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                    >
-                      {backCamera.isVideoEnabled ? (
-                        <>
-                          <Video className="w-5 h-5" />
-                          Disable Video
-                        </>
-                      ) : (
-                        <>
-                          <VideoOff className="w-5 h-5" />
-                          Enable Video
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={() => handleToggleMute('back')}
-                      variant="outline"
-                      className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                    >
-                      {backCamera.isMuted ? (
-                        <>
-                          <MicOff className="w-5 h-5" />
-                          Unmute
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="w-5 h-5" />
-                          Mute
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </>
-            ) : (
-              /* Single camera controls */
-              <>
-                {activeCamera.zoomSupported && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <ZoomIn className="w-5 h-5 text-white" />
-                      <label className="text-white text-sm font-medium">
-                        Zoom: {activeCamera.zoom.toFixed(1)}x
-                      </label>
+                      <Button
+                        onClick={() => handleToggleMute("front")}
+                        variant="outline"
+                        className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                      >
+                        {frontCamera.isMuted
+                          ? (
+                            <>
+                              <MicOff className="w-5 h-5" />
+                              Unmute
+                            </>
+                          )
+                          : (
+                            <>
+                              <Mic className="w-5 h-5" />
+                              Mute
+                            </>
+                          )}
+                      </Button>
                     </div>
-                    <Slider
-                      value={[activeCamera.zoom]}
-                      onValueChange={(value) => handleZoomChange(frontCamera.stream ? 'front' : 'back', value)}
-                      min={activeCamera.zoomRange.min}
-                      max={activeCamera.zoomRange.max}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleSwitchCamera}
-                  variant="outline"
-                  className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                  disabled={isSharingScreen}
-                >
-                  <SwitchCamera className="w-5 h-5" />
-                  Switch Camera ({frontCamera.stream ? 'Front' : 'Back'})
-                </Button>
-
-                <Button
-                  onClick={() => handleToggleVideo(frontCamera.stream ? 'front' : 'back')}
-                  variant="outline"
-                  className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                >
-                  {activeCamera.isVideoEnabled ? (
-                    <>
-                      <Video className="w-5 h-5" />
-                      Disable Video
-                    </>
-                  ) : (
-                    <>
-                      <VideoOff className="w-5 h-5" />
-                      Enable Video
-                    </>
                   )}
-                </Button>
 
-                <Button
-                  onClick={() => handleToggleMute(frontCamera.stream ? 'front' : 'back')}
-                  variant="outline"
-                  className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
-                >
-                  {activeCamera.isMuted ? (
-                    <>
-                      <MicOff className="w-5 h-5" />
-                      Unmute
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-5 h-5" />
-                      Mute
-                    </>
+                  {/* Back Camera Controls */}
+                  {backCamera.stream && (
+                    <div className="space-y-4 border-t border-white/10 pt-4">
+                      <h3 className="text-white text-sm font-semibold">Back Camera</h3>
+
+                      {backCamera.zoomSupported && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <ZoomIn className="w-5 h-5 text-white" />
+                            <label className="text-white text-sm font-medium">
+                              Zoom: {backCamera.zoom.toFixed(1)}x
+                            </label>
+                          </div>
+                          <Slider
+                            value={[backCamera.zoom]}
+                            onValueChange={(value) => handleZoomChange("back", value)}
+                            min={backCamera.zoomRange.min}
+                            max={backCamera.zoomRange.max}
+                            step={0.1}
+                            className="w-full"
+                          />
+                        </div>
+                      )}
+
+                      <Button
+                        onClick={() => handleToggleVideo("back")}
+                        variant="outline"
+                        className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                      >
+                        {backCamera.isVideoEnabled
+                          ? (
+                            <>
+                              <Video className="w-5 h-5" />
+                              Disable Video
+                            </>
+                          )
+                          : (
+                            <>
+                              <VideoOff className="w-5 h-5" />
+                              Enable Video
+                            </>
+                          )}
+                      </Button>
+
+                      <Button
+                        onClick={() => handleToggleMute("back")}
+                        variant="outline"
+                        className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                      >
+                        {backCamera.isMuted
+                          ? (
+                            <>
+                              <MicOff className="w-5 h-5" />
+                              Unmute
+                            </>
+                          )
+                          : (
+                            <>
+                              <Mic className="w-5 h-5" />
+                              Mute
+                            </>
+                          )}
+                      </Button>
+                    </div>
                   )}
-                </Button>
+                </>
+              )
+              : (
+                /* Single camera controls */
+                <>
+                  {activeCamera.zoomSupported && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <ZoomIn className="w-5 h-5 text-white" />
+                        <label className="text-white text-sm font-medium">
+                          Zoom: {activeCamera.zoom.toFixed(1)}x
+                        </label>
+                      </div>
+                      <Slider
+                        value={[activeCamera.zoom]}
+                        onValueChange={(value) =>
+                          handleZoomChange(frontCamera.stream ? "front" : "back", value)}
+                        min={activeCamera.zoomRange.min}
+                        max={activeCamera.zoomRange.max}
+                        step={0.1}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
 
-                <Button
-                  onClick={handleShareScreen}
-                  variant={isSharingScreen ? "default" : "outline"}
-                  className={`w-full justify-start gap-3 ${!isSharingScreen ? 'bg-white/10 text-white hover:bg-white/20 border-white/30' : ''}`}
-                >
-                  <MonitorUp className="w-5 h-5" />
-                  {isSharingScreen ? 'Stop Sharing' : 'Share Screen'}
-                </Button>
-              </>
-            )}
+                  <Button
+                    onClick={handleSwitchCamera}
+                    variant="outline"
+                    className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                    disabled={isSharingScreen}
+                  >
+                    <SwitchCamera className="w-5 h-5" />
+                    Switch Camera ({frontCamera.stream ? "Front" : "Back"})
+                  </Button>
+
+                  <Button
+                    onClick={() => handleToggleVideo(frontCamera.stream ? "front" : "back")}
+                    variant="outline"
+                    className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                  >
+                    {activeCamera.isVideoEnabled
+                      ? (
+                        <>
+                          <Video className="w-5 h-5" />
+                          Disable Video
+                        </>
+                      )
+                      : (
+                        <>
+                          <VideoOff className="w-5 h-5" />
+                          Enable Video
+                        </>
+                      )}
+                  </Button>
+
+                  <Button
+                    onClick={() => handleToggleMute(frontCamera.stream ? "front" : "back")}
+                    variant="outline"
+                    className="w-full justify-start gap-3 bg-white/10 text-white hover:bg-white/20 border-white/30"
+                  >
+                    {activeCamera.isMuted
+                      ? (
+                        <>
+                          <MicOff className="w-5 h-5" />
+                          Unmute
+                        </>
+                      )
+                      : (
+                        <>
+                          <Mic className="w-5 h-5" />
+                          Mute
+                        </>
+                      )}
+                  </Button>
+
+                  <Button
+                    onClick={handleShareScreen}
+                    variant={isSharingScreen ? "default" : "outline"}
+                    className={`w-full justify-start gap-3 ${
+                      !isSharingScreen
+                        ? "bg-white/10 text-white hover:bg-white/20 border-white/30"
+                        : ""
+                    }`}
+                  >
+                    <MonitorUp className="w-5 h-5" />
+                    {isSharingScreen ? "Stop Sharing" : "Share Screen"}
+                  </Button>
+                </>
+              )}
           </div>
 
           {/* Close button */}

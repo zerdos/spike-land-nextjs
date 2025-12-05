@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Peer, { MediaConnection } from 'peerjs';
-import QRCode from 'qrcode';
-import Image from 'next/image';
-import { calculateOptimalLayout } from '@apps/display/lib/layout-optimizer';
-import { getTwilioIceServers } from '@apps/display/lib/webrtc/config';
+import { calculateOptimalLayout } from "@apps/display/lib/layout-optimizer";
+import { getTwilioIceServers } from "@apps/display/lib/webrtc/config";
+import Image from "next/image";
+import Peer, { MediaConnection } from "peerjs";
+import QRCode from "qrcode";
+import { useEffect, useRef, useState } from "react";
 
 interface VideoStream {
   id: string;
@@ -14,8 +14,8 @@ interface VideoStream {
 }
 
 export default function DisplayPage() {
-  const [displayId, setDisplayId] = useState<string>('');
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [displayId, setDisplayId] = useState<string>("");
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [videoStreams, setVideoStreams] = useState<VideoStream[]>([]);
   const [displayDimensions, setDisplayDimensions] = useState({ width: 1920, height: 1080 });
 
@@ -41,7 +41,7 @@ export default function DisplayPage() {
       peerRef.current = peer;
 
       // Handle peer open event - we now have an ID
-      peer.on('open', (id) => {
+      peer.on("open", (id) => {
         setDisplayId(id);
 
         // Generate QR code URL
@@ -50,8 +50,8 @@ export default function DisplayPage() {
           width: 200,
           margin: 2,
           color: {
-            dark: '#000000',
-            light: '#FFFFFF',
+            dark: "#000000",
+            light: "#FFFFFF",
           },
         })
           .then((url) => {
@@ -63,20 +63,20 @@ export default function DisplayPage() {
       });
 
       // Handle incoming connections from clients
-      peer.on('connection', (dataConnection) => {
+      peer.on("connection", (dataConnection) => {
         // Send a welcome message
-        dataConnection.on('open', () => {
-          dataConnection.send({ type: 'welcome', message: 'Connected to display' });
+        dataConnection.on("open", () => {
+          dataConnection.send({ type: "welcome", message: "Connected to display" });
         });
       });
 
       // Handle incoming media calls from clients
-      peer.on('call', (call) => {
+      peer.on("call", (call) => {
         // Answer the call (we don't send our own stream)
         call.answer();
 
         // Receive the remote stream
-        call.on('stream', (remoteStream) => {
+        call.on("stream", (remoteStream) => {
           setVideoStreams((prev) => {
             // Check if stream already exists
             const exists = prev.some((vs) => vs.id === call.peer);
@@ -97,7 +97,7 @@ export default function DisplayPage() {
         });
 
         // Handle call close
-        call.on('close', () => {
+        call.on("close", () => {
           setVideoStreams((prev) => {
             const streamToRemove = prev.find((vs) => vs.id === call.peer);
             if (streamToRemove) {
@@ -109,7 +109,7 @@ export default function DisplayPage() {
         });
 
         // Handle errors
-        call.on('error', () => {
+        call.on("error", () => {
           setVideoStreams((prev) => {
             const streamToRemove = prev.find((vs) => vs.id === call.peer);
             if (streamToRemove) {
@@ -122,7 +122,7 @@ export default function DisplayPage() {
       });
 
       // Handle errors
-      peer.on('error', () => {
+      peer.on("error", () => {
         // Error occurred
       });
     };
@@ -173,48 +173,57 @@ export default function DisplayPage() {
   return (
     <div ref={containerRef} className="relative h-screen w-full bg-black overflow-hidden">
       {/* Video Grid */}
-      {videoStreams.length > 0 ? (
-        <div
-          className="grid h-full w-full gap-2 p-2 transition-all duration-500 ease-in-out"
-          style={{
-            gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
-            gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
-          }}
-        >
-          {videoStreams.map((videoStream) => (
-            <VideoCell
-              key={videoStream.id}
-              stream={videoStream.stream}
-              peerId={videoStream.id}
-              layout={layout}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex h-full w-full items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Smart Video Wall Display</h1>
-            <p className="text-xl text-gray-300 mb-8">Waiting for clients to connect...</p>
-            {qrCodeUrl && displayId && (
-              <div className="bg-white p-6 rounded-lg inline-block">
-                <Image src={qrCodeUrl} alt="QR Code" width={200} height={200} className="mx-auto" />
-                <p className="mt-4 text-sm text-gray-600">
-                  Scan this QR code with your mobile phone to connect
-                </p>
-                <button
-                  onClick={() => {
-                    const clientUrl = `${window.location.origin}/apps/display/client?displayId=${displayId}`;
-                    window.open(clientUrl, '_blank');
-                  }}
-                  className="mt-4 w-full px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Open Client in New Window
-                </button>
-              </div>
-            )}
+      {videoStreams.length > 0
+        ? (
+          <div
+            className="grid h-full w-full gap-2 p-2 transition-all duration-500 ease-in-out"
+            style={{
+              gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
+              gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
+            }}
+          >
+            {videoStreams.map((videoStream) => (
+              <VideoCell
+                key={videoStream.id}
+                stream={videoStream.stream}
+                peerId={videoStream.id}
+                layout={layout}
+              />
+            ))}
           </div>
-        </div>
-      )}
+        )
+        : (
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-white mb-4">Smart Video Wall Display</h1>
+              <p className="text-xl text-gray-300 mb-8">Waiting for clients to connect...</p>
+              {qrCodeUrl && displayId && (
+                <div className="bg-white p-6 rounded-lg inline-block">
+                  <Image
+                    src={qrCodeUrl}
+                    alt="QR Code"
+                    width={200}
+                    height={200}
+                    className="mx-auto"
+                  />
+                  <p className="mt-4 text-sm text-gray-600">
+                    Scan this QR code with your mobile phone to connect
+                  </p>
+                  <button
+                    onClick={() => {
+                      const clientUrl =
+                        `${window.location.origin}/apps/display/client?displayId=${displayId}`;
+                      window.open(clientUrl, "_blank");
+                    }}
+                    className="mt-4 w-full px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Open Client in New Window
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
       {/* QR Code in corner when clients are connected */}
       {videoStreams.length > 0 && qrCodeUrl && displayId && (
@@ -223,8 +232,9 @@ export default function DisplayPage() {
           <p className="text-xs text-center mt-2 text-gray-600">Scan with mobile phone</p>
           <button
             onClick={() => {
-              const clientUrl = `${window.location.origin}/apps/display/client?displayId=${displayId}`;
-              window.open(clientUrl, '_blank');
+              const clientUrl =
+                `${window.location.origin}/apps/display/client?displayId=${displayId}`;
+              window.open(clientUrl, "_blank");
             }}
             className="mt-2 w-full px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
@@ -238,16 +248,14 @@ export default function DisplayPage() {
         <div className="flex items-center gap-2">
           <div
             className={`w-3 h-3 rounded-full ${
-              displayId ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
+              displayId ? "bg-green-500 animate-pulse" : "bg-yellow-500"
             }`}
           />
           <span className="text-sm">
-            {displayId ? `Display Ready (${videoStreams.length} clients)` : 'Initializing...'}
+            {displayId ? `Display Ready (${videoStreams.length} clients)` : "Initializing..."}
           </span>
         </div>
-        {displayId && (
-          <p className="text-xs text-gray-300 mt-1 font-mono">ID: {displayId}</p>
-        )}
+        {displayId && <p className="text-xs text-gray-300 mt-1 font-mono">ID: {displayId}</p>}
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 ```
 
 **Key Optimizations:**
+
 - ✅ Parallel execution of quality checks and test shards
 - ✅ 8-way test sharding for faster test execution
 - ✅ Content-based caching for 80%+ cache hit rates
@@ -23,12 +24,14 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 ## Stages
 
 ### 1. **Quality Checks** (Automatic, Parallel)
+
 - Runs linting checks
 - Runs security audit (npm audit)
 - Combined in single job to reduce setup overhead
 - **Time:** ~1-1.5 minutes
 
 ### 2. **Unit Tests** (Automatic, Parallel with 8 shards)
+
 - Runs unit tests with 100% coverage requirement
 - Tests split across 8 parallel runners for speed
 - Uses optimized Vitest configuration with threading
@@ -37,12 +40,14 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - **Time:** ~1.5-2 minutes (with sharding)
 
 ### 3. **Build** (Automatic)
+
 - Builds Next.js application with `npm run build`
 - Uses content-based cache keys for Next.js (high hit rate)
 - Validates build succeeds before deployment
 - **Time:** ~2-2.5 minutes (with cache hits)
 
 ### 4. **E2E Tests** (Automatic)
+
 - Restores node_modules from cache (fast)
 - Builds production app (`npm run build`)
 - Starts production server (`npm run start`)
@@ -52,6 +57,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - **Time:** ~3-3.5 minutes
 
 ### 5a. **Deploy to Test** (Manual on PRs)
+
 - Pulls Vercel preview environment configuration
 - Builds with `vercel build` using preview settings
 - Deploys to Vercel preview environment
@@ -61,6 +67,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 - **Time:** ~2-3 minutes
 
 ### 5b. **Deploy to Production** (Auto on main, manual elsewhere)
+
 - Pulls Vercel production environment configuration
 - Builds with `vercel build --prod`
 - Deploys to Vercel production (`next.spike.land`)
@@ -70,6 +77,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 ## Smoke Tests
 
 Post-deployment smoke tests verify:
+
 - ✓ Homepage returns 200 status
 - ✓ Favicon is accessible
 - ✓ HTML content loads
@@ -88,6 +96,7 @@ Tests are run against the deployed URL to ensure real-world functionality.
 5. Deployment proceeds to Vercel preview
 
 Once deployed:
+
 - A comment is posted to the PR with the deployment URL
 - The URL is clickable and ready for testing
 - Comment updates if you re-deploy
@@ -95,6 +104,7 @@ Once deployed:
 ### For Main Branch
 
 Deployments to production are **automatic**:
+
 1. Push to `main` branch
 2. All tests run automatically
 3. If all tests pass, production deployment starts automatically
@@ -120,9 +130,11 @@ You must create two environments in repository settings:
 ### Environment Variables
 
 Environment-specific secrets can be added:
+
 - Settings → Environments → Select environment → Environment secrets
 
 Current secrets used:
+
 - `VERCEL_TOKEN` - Added at account level (used by all jobs)
 - `E2E_BYPASS_SECRET` - Added at account level (for test auth bypass)
 
@@ -138,6 +150,7 @@ If a production deployment breaks something:
 4. **Click** "Run workflow"
 
 The workflow will:
+
 - List recent deployments
 - Promote the previous deployment
 - Verify rollback succeeded
@@ -148,12 +161,14 @@ The workflow will:
 The pipeline is heavily optimized for speed through multi-layer caching:
 
 ### Multi-Layer Caching
+
 1. **node_modules cache** - 95%+ hit rate, saves ~60s per job
 2. **Next.js build cache** - Content-based keys, 80%+ hit rate, saves ~90s
 3. **Playwright browsers** - Version-based cache, saves ~45s when hit
 4. **npm setup-node cache** - Built-in npm cache, saves ~10s
 
 ### Concurrency Control
+
 - Cancels outdated workflow runs for the same PR/branch
 - Main branch runs always complete (no cancellation)
 - Saves minutes by not running superseded commits
@@ -161,11 +176,13 @@ The pipeline is heavily optimized for speed through multi-layer caching:
 ## Deployment URLs
 
 ### Test Environment
+
 - Vercel preview URL (changes per deployment)
 - Posted automatically in PR comments
 - Example: `https://spike-land-nextjs-git-feature-abc123-team.vercel.app`
 
 ### Production Environment
+
 - Custom domain: `https://next.spike.land`
 - DNS managed by Cloudflare
 - Automatic deployments from `main` branch
@@ -173,11 +190,13 @@ The pipeline is heavily optimized for speed through multi-layer caching:
 ## Environment Variables
 
 ### Build-time Variables
+
 - `E2E_BYPASS_SECRET` - Secret token for test authentication
 - Configured in GitHub Actions secrets
 - Passed to Vercel via workflow
 
 ### Runtime Variables
+
 - Managed in Vercel project settings
 - Available to deployed application
 - Can differ per environment (preview vs. production)
@@ -185,21 +204,25 @@ The pipeline is heavily optimized for speed through multi-layer caching:
 ## Troubleshooting
 
 ### Deployment fails with "rate limit"
+
 - The Vercel free tier has 100 deployments/day limit
 - Automatic preview deployments were disabled to save quota
 - Feature branches must manually trigger deployment
 
 ### E2E tests pass locally but fail in CI
+
 - Check `BASE_URL` environment variable
 - Ensure dev server is running before tests
 - Check Playwright browsers are installed
 
 ### Smoke tests fail after deployment
+
 - Check deployment URL is live with `curl https://your-url`
 - Verify endpoints used in `scripts/smoke-test.sh` exist
 - Check network connectivity in GitHub Actions
 
 ### PR comment not appearing
+
 - Ensure GitHub token has correct permissions
 - Check PR is not from a fork (limited permissions)
 - Verify workflow ran without errors
@@ -232,6 +255,7 @@ vercel deploy --prebuilt --prod
 ## Performance
 
 ### Optimized CI/CD Times (After Improvements)
+
 - Quality Checks: ~1.5 min (lint + security audit combined)
 - Unit Tests: ~2 min (8-way sharding, was 5+ min with 4 shards)
 - Build: ~2.5 min (content-based cache, was 4-5 min)
@@ -244,6 +268,7 @@ vercel deploy --prebuilt --prod
 **Overall speedup: 2.5x faster (60% reduction in CI time)**
 
 ### Optimizations Applied
+
 - ✅ 8-way test sharding (parallel execution)
 - ✅ Merged lint + security audit (single setup)
 - ✅ Content-based Next.js caching (80%+ hit rate)

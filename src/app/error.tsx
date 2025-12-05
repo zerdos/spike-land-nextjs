@@ -1,22 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { errorLogger } from '@/lib/error-logger';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { errorLogger } from "@/lib/error-logger";
+import { useEffect } from "react";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error & { digest?: string; };
   reset: () => void;
 }) {
   useEffect(() => {
     // Log the error to error reporting service
     errorLogger.logError(error, {
-      route: 'root',
+      route: "root",
       digest: error.digest,
     });
   }, [error]);
@@ -34,7 +41,7 @@ export default function Error({
           <Alert variant="destructive">
             <AlertTitle>Error Details</AlertTitle>
             <AlertDescription>
-              {error.message || 'An unexpected error occurred'}
+              {error.message || "An unexpected error occurred"}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -42,7 +49,7 @@ export default function Error({
           <Button onClick={reset} variant="default">
             Try again
           </Button>
-          <Button onClick={() => window.location.href = '/'} variant="outline">
+          <Button onClick={() => window.location.href = "/"} variant="outline">
             Go home
           </Button>
         </CardFooter>

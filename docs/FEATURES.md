@@ -21,6 +21,7 @@
 **Spike Land** is an AI-powered app platform that democratizes software development by enabling anyone to create, modify, and deploy applications using natural language requirements and AI agents.
 
 ### Core Vision
+
 - Anyone can create apps without coding knowledge
 - AI agents build apps based on user requirements
 - Users can fork and modify existing apps
@@ -33,91 +34,96 @@
 
 ### 1. Authentication System
 
-| Feature | Status | Description |
-|---------|--------|-------------|
+| Feature                 | Status      | Description                             |
+| ----------------------- | ----------- | --------------------------------------- |
 | NextAuth.js Integration | ✅ Complete | Multi-provider authentication framework |
-| GitHub OAuth | ✅ Complete | Sign in with GitHub account |
-| Google OAuth | ✅ Complete | Sign in with Google account |
-| Phone Authentication | ✅ Complete | Twilio-based phone verification |
-| Session Management | ✅ Complete | Secure Prisma-based session storage |
-| Protected Routes | ✅ Complete | Route guards for authenticated pages |
+| GitHub OAuth            | ✅ Complete | Sign in with GitHub account             |
+| Google OAuth            | ✅ Complete | Sign in with Google account             |
+| Phone Authentication    | ✅ Complete | Twilio-based phone verification         |
+| Session Management      | ✅ Complete | Secure Prisma-based session storage     |
+| Protected Routes        | ✅ Complete | Route guards for authenticated pages    |
 
 **Key Files:**
+
 - `src/auth.ts` - NextAuth configuration
 - `src/app/auth/signin/page.tsx` - Sign in page
 - `src/components/auth/` - Auth UI components
 
 ### 2. My Apps Dashboard
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Protected Dashboard | ✅ Complete | Authentication-required app management |
-| App Listing | ✅ Complete | Grid view of user's apps |
-| Empty State | ✅ Complete | Onboarding UI for new users |
-| Status Badges | ✅ Complete | Visual status indicators (DRAFT, ACTIVE) |
-| App Cards | ✅ Complete | Rich app preview cards |
-| Create App Button | ✅ Complete | Navigation to app wizard |
+| Feature             | Status      | Description                              |
+| ------------------- | ----------- | ---------------------------------------- |
+| Protected Dashboard | ✅ Complete | Authentication-required app management   |
+| App Listing         | ✅ Complete | Grid view of user's apps                 |
+| Empty State         | ✅ Complete | Onboarding UI for new users              |
+| Status Badges       | ✅ Complete | Visual status indicators (DRAFT, ACTIVE) |
+| App Cards           | ✅ Complete | Rich app preview cards                   |
+| Create App Button   | ✅ Complete | Navigation to app wizard                 |
 
 **Key Files:**
+
 - `src/app/my-apps/page.tsx` - Dashboard page
 - `src/components/apps/app-card.tsx` - App card component
 
 ### 3. App Creation Wizard
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Multi-Step Form | ✅ Complete | Guided app creation flow |
-| App Details Step | ✅ Complete | Name, description input |
-| Requirements Step | ✅ Complete | Natural language requirements input |
-| Monetization Step | ✅ Complete | Pricing model selection |
-| Review Step | ✅ Complete | Summary before creation |
-| Database Persistence | ✅ Complete | Save apps to PostgreSQL |
+| Feature              | Status      | Description                         |
+| -------------------- | ----------- | ----------------------------------- |
+| Multi-Step Form      | ✅ Complete | Guided app creation flow            |
+| App Details Step     | ✅ Complete | Name, description input             |
+| Requirements Step    | ✅ Complete | Natural language requirements input |
+| Monetization Step    | ✅ Complete | Pricing model selection             |
+| Review Step          | ✅ Complete | Summary before creation             |
+| Database Persistence | ✅ Complete | Save apps to PostgreSQL             |
 
 **Key Files:**
+
 - `src/app/my-apps/new/page.tsx` - Wizard page
 - `src/components/apps/requirements-manager.tsx` - Requirements UI
 
 ### 4. Database Layer
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Prisma ORM | ✅ Complete | Type-safe database access |
-| PostgreSQL | ✅ Complete | Production database |
-| User Model | ✅ Complete | OAuth-linked user accounts |
-| App Model | ✅ Complete | App metadata and status |
+| Feature           | Status      | Description                     |
+| ----------------- | ----------- | ------------------------------- |
+| Prisma ORM        | ✅ Complete | Type-safe database access       |
+| PostgreSQL        | ✅ Complete | Production database             |
+| User Model        | ✅ Complete | OAuth-linked user accounts      |
+| App Model         | ✅ Complete | App metadata and status         |
 | Requirement Model | ✅ Complete | Version-controlled requirements |
-| MonetizationModel | ✅ Complete | Pricing configuration |
-| Forking Support | ✅ Complete | App forking relationships |
+| MonetizationModel | ✅ Complete | Pricing configuration           |
+| Forking Support   | ✅ Complete | App forking relationships       |
 
 **Key Files:**
+
 - `prisma/schema.prisma` - Database schema
 - `src/lib/prisma.ts` - Prisma client
 
 ### 5. UI/UX Foundation
 
-| Feature | Status | Description |
-|---------|--------|-------------|
+| Feature              | Status      | Description                 |
+| -------------------- | ----------- | --------------------------- |
 | shadcn/ui Components | ✅ Complete | Production-ready UI library |
-| Dark/Light Mode | ✅ Complete | Theme toggle support |
-| Responsive Design | ✅ Complete | Mobile-first layouts |
-| Loading Skeletons | ✅ Complete | Graceful loading states |
-| Cookie Consent | ✅ Complete | GDPR-compliant consent |
+| Dark/Light Mode      | ✅ Complete | Theme toggle support        |
+| Responsive Design    | ✅ Complete | Mobile-first layouts        |
+| Loading Skeletons    | ✅ Complete | Graceful loading states     |
+| Cookie Consent       | ✅ Complete | GDPR-compliant consent      |
 
 **Key Files:**
+
 - `src/components/ui/` - shadcn/ui components
 - `src/components/theme/` - Theme components
 - `src/components/skeletons/` - Loading states
 
 ### 6. Developer Experience
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| TypeScript Strict Mode | ✅ Complete | Full type safety |
-| 100% Test Coverage | ✅ Complete | Vitest + RTL tests |
-| E2E Testing | ✅ Complete | Playwright + Cucumber BDD |
-| CI/CD Pipeline | ✅ Complete | GitHub Actions automation |
-| Vercel Deployment | ✅ Complete | Production hosting |
-| Claude Code Integration | ✅ Complete | AI-assisted development |
+| Feature                 | Status      | Description               |
+| ----------------------- | ----------- | ------------------------- |
+| TypeScript Strict Mode  | ✅ Complete | Full type safety          |
+| 100% Test Coverage      | ✅ Complete | Vitest + RTL tests        |
+| E2E Testing             | ✅ Complete | Playwright + Cucumber BDD |
+| CI/CD Pipeline          | ✅ Complete | GitHub Actions automation |
+| Vercel Deployment       | ✅ Complete | Production hosting        |
+| Claude Code Integration | ✅ Complete | AI-assisted development   |
 
 ---
 
@@ -125,13 +131,13 @@
 
 ### Currently Being Developed
 
-| Feature | Priority | Assigned | Notes |
-|---------|----------|----------|-------|
-| App Search & Filter | High | - | Search bar UI exists but disabled |
-| App Edit Page | High | - | Edit buttons exist, need implementation |
-| App View Page | High | - | View buttons exist, need implementation |
-| Fork Functionality | Medium | - | Database schema ready |
-| Public App Gallery | Medium | - | `/apps` page exists |
+| Feature             | Priority | Assigned | Notes                                   |
+| ------------------- | -------- | -------- | --------------------------------------- |
+| App Search & Filter | High     | -        | Search bar UI exists but disabled       |
+| App Edit Page       | High     | -        | Edit buttons exist, need implementation |
+| App View Page       | High     | -        | View buttons exist, need implementation |
+| Fork Functionality  | Medium   | -        | Database schema ready                   |
+| Public App Gallery  | Medium   | -        | `/apps` page exists                     |
 
 ### Placeholder Features (UI Ready, Logic Pending)
 
@@ -163,67 +169,71 @@
 
 ### Phase 3: AI Agent Integration - PLANNED
 
-| Task | Priority | Complexity | Status |
-|------|----------|------------|--------|
-| AI agent orchestration system | High | High | Planned |
-| Requirement-to-code pipeline | High | High | Planned |
-| Automated app generation | High | High | Planned |
-| Quality assurance & testing | Medium | Medium | Planned |
-| Iterative refinement based on feedback | Medium | Medium | Planned |
+| Task                                   | Priority | Complexity | Status  |
+| -------------------------------------- | -------- | ---------- | ------- |
+| AI agent orchestration system          | High     | High       | Planned |
+| Requirement-to-code pipeline           | High     | High       | Planned |
+| Automated app generation               | High     | High       | Planned |
+| Quality assurance & testing            | Medium   | Medium     | Planned |
+| Iterative refinement based on feedback | Medium   | Medium     | Planned |
 
 ### Phase 4: Deployment & Hosting - PLANNED
 
-| Task | Priority | Complexity | Status |
-|------|----------|------------|--------|
-| App deployment system | High | High | Planned |
-| Custom domain support | Medium | Medium | Planned |
-| External hosting | Medium | High | Planned |
-| Monitoring & analytics | Low | Medium | Planned |
+| Task                   | Priority | Complexity | Status  |
+| ---------------------- | -------- | ---------- | ------- |
+| App deployment system  | High     | High       | Planned |
+| Custom domain support  | Medium   | Medium     | Planned |
+| External hosting       | Medium   | High       | Planned |
+| Monitoring & analytics | Low      | Medium     | Planned |
 
 ### Phase 5: Monetization - PLANNED
 
-| Task | Priority | Complexity | Status |
-|------|----------|------------|--------|
-| Stripe payment integration | High | Medium | Planned |
-| Subscription management | High | Medium | Planned |
-| Revenue tracking | Medium | Low | Planned |
-| Payout system | Medium | Medium | Planned |
+| Task                       | Priority | Complexity | Status  |
+| -------------------------- | -------- | ---------- | ------- |
+| Stripe payment integration | High     | Medium     | Planned |
+| Subscription management    | High     | Medium     | Planned |
+| Revenue tracking           | Medium   | Low        | Planned |
+| Payout system              | Medium   | Medium     | Planned |
 
 ---
 
 ## Technical Stack
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 15.x | React framework with App Router |
-| TypeScript | 5.x | Type-safe JavaScript |
-| Tailwind CSS | 4.x | Utility-first CSS |
-| shadcn/ui | Latest | UI component library |
-| next-themes | 0.4.x | Dark mode support |
+
+| Technology   | Version | Purpose                         |
+| ------------ | ------- | ------------------------------- |
+| Next.js      | 15.x    | React framework with App Router |
+| TypeScript   | 5.x     | Type-safe JavaScript            |
+| Tailwind CSS | 4.x     | Utility-first CSS               |
+| shadcn/ui    | Latest  | UI component library            |
+| next-themes  | 0.4.x   | Dark mode support               |
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| NextAuth.js | 5.x beta | Authentication |
-| Prisma | 6.x | Database ORM |
-| PostgreSQL | 17.x | Production database |
+
+| Technology  | Version  | Purpose             |
+| ----------- | -------- | ------------------- |
+| NextAuth.js | 5.x beta | Authentication      |
+| Prisma      | 6.x      | Database ORM        |
+| PostgreSQL  | 17.x     | Production database |
 
 ### Testing
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Vitest | 3.x | Unit testing |
-| React Testing Library | Latest | Component testing |
-| Playwright | Latest | E2E testing |
-| Cucumber | Latest | BDD test scenarios |
+
+| Technology            | Version | Purpose            |
+| --------------------- | ------- | ------------------ |
+| Vitest                | 3.x     | Unit testing       |
+| React Testing Library | Latest  | Component testing  |
+| Playwright            | Latest  | E2E testing        |
+| Cucumber              | Latest  | BDD test scenarios |
 
 ### DevOps
-| Technology | Purpose |
-|------------|---------|
-| GitHub Actions | CI/CD automation |
-| Vercel | Production hosting |
-| Cloudflare | DNS management |
-| Claude Code | AI-assisted development |
+
+| Technology     | Purpose                 |
+| -------------- | ----------------------- |
+| GitHub Actions | CI/CD automation        |
+| Vercel         | Production hosting      |
+| Cloudflare     | DNS management          |
+| Claude Code    | AI-assisted development |
 
 ---
 
@@ -280,6 +290,7 @@ MonetizationModel
 ```
 
 ### Indexes
+
 - `apps.userId` - Fast user app lookup
 - `apps.forkedFrom` - Fork relationship queries
 - `apps.status` - Status filtering

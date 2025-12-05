@@ -12,11 +12,11 @@ import type { PeerConfig } from "@/types/webrtc";
 export function getIceServers(): RTCIceServer[] {
   return [
     // Google public STUN servers
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
   ];
 }
 
@@ -26,7 +26,7 @@ export function getIceServers(): RTCIceServer[] {
  */
 export async function getTwilioIceServers(): Promise<RTCIceServer[]> {
   try {
-    const response = await fetch('/api/turn-credentials');
+    const response = await fetch("/api/turn-credentials");
 
     if (!response.ok) {
       return getIceServers();
@@ -67,7 +67,7 @@ export function getPeerServerConfig() {
  */
 export function createPeerConfig(
   role: "host" | "client",
-  peerId?: string
+  peerId?: string,
 ): PeerConfig {
   return {
     peerId,

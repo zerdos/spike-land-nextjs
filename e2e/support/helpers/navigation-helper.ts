@@ -1,38 +1,38 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from "@playwright/test";
 
 export async function navigateToHome(page: Page, baseUrl: string) {
   await page.goto(baseUrl);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToPath(page: Page, baseUrl: string, path: string) {
   await page.goto(`${baseUrl}${path}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function clickLink(page: Page, linkText: string) {
-  const link = page.getByRole('link', { name: linkText });
+  const link = page.getByRole("link", { name: linkText });
   await expect(link).toBeVisible();
   await link.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function clickButton(page: Page, buttonText: string) {
-  const button = page.getByRole('button', { name: buttonText });
+  const button = page.getByRole("button", { name: buttonText });
   await expect(button).toBeVisible();
   await button.click();
 }
 
 export async function clickAvatar(page: Page) {
   const avatar = page.locator('[role="button"]').filter({
-    has: page.locator('img, .avatar-fallback')
+    has: page.locator("img, .avatar-fallback"),
   }).first();
   await expect(avatar).toBeVisible();
   await avatar.click();
 }
 
 export async function clickDropdownOption(page: Page, optionText: string) {
-  const option = page.getByRole('menuitem', { name: optionText });
+  const option = page.getByRole("menuitem", { name: optionText });
   await expect(option).toBeVisible();
   await option.click();
 }
@@ -44,7 +44,7 @@ export async function clickOutside(page: Page) {
 
 export async function goBack(page: Page) {
   await page.goBack();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function getCurrentUrl(page: Page): Promise<string> {
@@ -60,7 +60,7 @@ export async function waitForNavigation(page: Page, urlPattern?: string | RegExp
   if (urlPattern) {
     await page.waitForURL(urlPattern);
   } else {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
   }
 }
 

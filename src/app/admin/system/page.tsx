@@ -4,68 +4,66 @@
  * Displays job processing metrics, failure rates, and system health indicators.
  */
 
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
+} from "recharts";
 
 interface SystemHealthData {
-  hourlyJobs: Array<{ hour: string; count: number }>
-  avgProcessingTime: Array<{ tier: string; seconds: number }>
-  tierStats: Array<{ tier: string; total: number; failed: number; failureRate: number }>
-  queueDepth: number
-  jobsByStatus: Array<{ status: string; count: number }>
-  recentFailures: Array<{ id: string; tier: string; error: string | null; timestamp: string }>
+  hourlyJobs: Array<{ hour: string; count: number; }>;
+  avgProcessingTime: Array<{ tier: string; seconds: number; }>;
+  tierStats: Array<{ tier: string; total: number; failed: number; failureRate: number; }>;
+  queueDepth: number;
+  jobsByStatus: Array<{ status: string; count: number; }>;
+  recentFailures: Array<{ id: string; tier: string; error: string | null; timestamp: string; }>;
 }
 
 export default function SystemHealthPage() {
-  const [data, setData] = useState<SystemHealthData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<SystemHealthData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchHealth() {
       try {
-        const response = await fetch("/api/admin/system/health")
+        const response = await fetch("/api/admin/system/health");
         if (!response.ok) {
-          throw new Error("Failed to fetch system health")
+          throw new Error("Failed to fetch system health");
         }
-        const result = await response.json()
-        setData(result)
+        const result = await response.json();
+        setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error")
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchHealth()
-  }, [])
+    fetchHealth();
+  }, []);
 
   if (loading) {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">System Health</h1>
         <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="h-32 animate-pulse bg-neutral-100" />
-          ))}
+          {[1, 2, 3].map((i) => <Card key={i} className="h-32 animate-pulse bg-neutral-100" />)}
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !data) {
@@ -76,12 +74,12 @@ export default function SystemHealthPage() {
           <p className="text-red-500">Error: {error || "No data available"}</p>
         </Card>
       </div>
-    )
+    );
   }
 
-  const totalJobs = data.jobsByStatus.reduce((sum, s) => sum + s.count, 0)
-  const failedJobs = data.jobsByStatus.find((s) => s.status === "FAILED")?.count || 0
-  const overallFailureRate = totalJobs > 0 ? (failedJobs / totalJobs) * 100 : 0
+  const totalJobs = data.jobsByStatus.reduce((sum, s) => sum + s.count, 0);
+  const failedJobs = data.jobsByStatus.find((s) => s.status === "FAILED")?.count || 0;
+  const overallFailureRate = totalJobs > 0 ? (failedJobs / totalJobs) * 100 : 0;
 
   return (
     <div className="space-y-8">
@@ -129,7 +127,7 @@ export default function SystemHealthPage() {
           <p className="mt-2 text-3xl font-bold">
             {Math.round(
               data.avgProcessingTime.reduce((sum, t) => sum + t.seconds, 0) /
-                (data.avgProcessingTime.length || 1)
+                (data.avgProcessingTime.length || 1),
             )}s
           </p>
           <p className="mt-2 text-xs text-neutral-500">Across all tiers</p>
@@ -145,15 +143,15 @@ export default function SystemHealthPage() {
             <XAxis
               dataKey="hour"
               tickFormatter={(value) => {
-                const date = new Date(value)
-                return `${date.getHours()}:00`
+                const date = new Date(value);
+                return `${date.getHours()}:00`;
               }}
             />
             <YAxis />
             <Tooltip
               labelFormatter={(value) => {
-                const date = new Date(value as string)
-                return date.toLocaleTimeString()
+                const date = new Date(value as string);
+                return date.toLocaleTimeString();
               }}
             />
             <Legend />
@@ -208,13 +206,11 @@ export default function SystemHealthPage() {
           {data.jobsByStatus.map((status) => (
             <div key={status.status} className="text-center">
               <Badge
-                variant={
-                  status.status === "COMPLETED"
-                    ? "default"
-                    : status.status === "FAILED"
-                      ? "destructive"
-                      : "secondary"
-                }
+                variant={status.status === "COMPLETED"
+                  ? "default"
+                  : status.status === "FAILED"
+                  ? "destructive"
+                  : "secondary"}
                 className="mb-2"
               >
                 {status.status}
@@ -231,29 +227,29 @@ export default function SystemHealthPage() {
       {/* Recent Failures */}
       <Card className="p-6">
         <h2 className="mb-4 text-xl font-semibold">Recent Failures</h2>
-        {data.recentFailures.length === 0 ? (
-          <p className="text-center text-neutral-500">No recent failures</p>
-        ) : (
-          <div className="space-y-3">
-            {data.recentFailures.map((failure) => (
-              <div
-                key={failure.id}
-                className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="destructive">{failure.tier}</Badge>
-                  <span className="text-xs text-neutral-500">
-                    {new Date(failure.timestamp).toLocaleString()}
-                  </span>
+        {data.recentFailures.length === 0
+          ? <p className="text-center text-neutral-500">No recent failures</p>
+          : (
+            <div className="space-y-3">
+              {data.recentFailures.map((failure) => (
+                <div
+                  key={failure.id}
+                  className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <Badge variant="destructive">{failure.tier}</Badge>
+                    <span className="text-xs text-neutral-500">
+                      {new Date(failure.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    {failure.error || "No error message"}
+                  </p>
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {failure.error || "No error message"}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
       </Card>
     </div>
-  )
+  );
 }

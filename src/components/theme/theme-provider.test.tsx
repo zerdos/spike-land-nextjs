@@ -1,35 +1,35 @@
-import { describe, it, expect } from "vitest"
-import { render, screen } from "@testing-library/react"
-import { ThemeProvider } from "./theme-provider"
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { ThemeProvider } from "./theme-provider";
 
 describe("ThemeProvider", () => {
   it("renders children correctly", () => {
     render(
       <ThemeProvider>
         <div>Test Content</div>
-      </ThemeProvider>
-    )
+      </ThemeProvider>,
+    );
 
-    expect(screen.getByText("Test Content")).toBeInTheDocument()
-  })
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
+  });
 
   it("applies attribute prop", () => {
     const { container } = render(
       <ThemeProvider attribute="class">
         <div>Test Content</div>
-      </ThemeProvider>
-    )
+      </ThemeProvider>,
+    );
 
-    expect(container.querySelector("div")).toBeInTheDocument()
-  })
+    expect(container.querySelector("div")).toBeInTheDocument();
+  });
 
   it("accepts defaultTheme prop", () => {
     render(
       <ThemeProvider defaultTheme="dark">
         <div>Test Content</div>
-      </ThemeProvider>
-    )
+      </ThemeProvider>,
+    );
 
-    expect(screen.getByText("Test Content")).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
+  });
+});

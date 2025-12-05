@@ -1,22 +1,22 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ["./vitest.setup.ts"],
     // Exclude git worktrees from test discovery
     exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/fix-r2-versioning-cache/**',
-      '**/.git/**',
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/fix-r2-versioning-cache/**",
+      "**/.git/**",
     ],
     // Optimize for parallel execution and sharding
-    pool: 'threads',
+    pool: "threads",
     poolOptions: {
       threads: {
         singleThread: false,
@@ -26,23 +26,23 @@ export default defineConfig({
     // Enable file parallelism for faster execution
     fileParallelism: true,
     // Use reporter optimized for CI
-    reporters: process.env.CI ? ['github-actions'] : ['default'],
+    reporters: process.env.CI ? ["github-actions"] : ["default"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['src/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}'],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      include: ["src/**/*.{ts,tsx}", "apps/**/*.{ts,tsx}"],
       exclude: [
-        'src/**/*.d.ts',
-        'src/**/vitest.config.ts',
-        'src/**/next.config.ts',
-        'src/**/postcss.config.ts',
-        'src/**/tailwind.config.ts',
-        'src/**/*.stories.tsx',
-        'src/**/index.ts', // Barrel export files
-        'src/types/**/*.ts', // Type definition files
-        'src/app/apps/**/*.tsx', // Apps pages - presentational UI
-        'src/components/apps/**/*.tsx', // Apps components - presentational UI
-        'node_modules/**',
+        "src/**/*.d.ts",
+        "src/**/vitest.config.ts",
+        "src/**/next.config.ts",
+        "src/**/postcss.config.ts",
+        "src/**/tailwind.config.ts",
+        "src/**/*.stories.tsx",
+        "src/**/index.ts", // Barrel export files
+        "src/types/**/*.ts", // Type definition files
+        "src/app/apps/**/*.tsx", // Apps pages - presentational UI
+        "src/components/apps/**/*.tsx", // Apps components - presentational UI
+        "node_modules/**",
       ],
       all: true,
       thresholds: {
@@ -55,13 +55,13 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/ui': path.resolve(__dirname, './src/components/ui'),
-      '@/lib': path.resolve(__dirname, './src/lib'),
-      '@/utils': path.resolve(__dirname, './src/lib/utils'),
-      '@/hooks': path.resolve(__dirname, './src/hooks'),
-      '@apps': path.resolve(__dirname, './apps'),
+      "@": path.resolve(__dirname, "./src"),
+      "@/components": path.resolve(__dirname, "./src/components"),
+      "@/ui": path.resolve(__dirname, "./src/components/ui"),
+      "@/lib": path.resolve(__dirname, "./src/lib"),
+      "@/utils": path.resolve(__dirname, "./src/lib/utils"),
+      "@/hooks": path.resolve(__dirname, "./src/hooks"),
+      "@apps": path.resolve(__dirname, "./apps"),
     },
   },
-})
+});

@@ -62,10 +62,12 @@ act push
 ## Triggering the Workflow
 
 The workflow automatically runs when:
+
 - You push commits to `main` or `develop` branches
 - You create a pull request targeting `main` or `develop`
 
 All jobs run on all branches when:
+
 - Tests pass ✅
 - Build succeeds ✅
 - Preview deployment succeeds ✅
@@ -92,6 +94,7 @@ To prevent merging broken code to `main`, set up branch protection rules:
 ### Benefits of Branch Protection
 
 With branch protection enabled:
+
 - ❌ **No direct commits to main** - All changes via Pull Requests
 - ✅ **100% test coverage enforced** - Tests must pass before merge
 - ✅ **Build verification** - No broken builds reach main
@@ -129,6 +132,7 @@ git push origin feature/my-feature
 ## Pipeline Jobs
 
 ### 1. Test Job
+
 - **Triggers**: All pushes and pull requests
 - **Steps**:
   - Checkout code
@@ -139,6 +143,7 @@ git push origin feature/my-feature
 - **Artifacts**: Coverage reports
 
 ### 2. Build Job
+
 - **Triggers**: Only if Test job passes
 - **Steps**:
   - Checkout code
@@ -148,6 +153,7 @@ git push origin feature/my-feature
 - **Artifacts**: `.next` directory
 
 ### 3. Deploy Job
+
 - **Triggers**: On all branches after successful build
 - **Steps**:
   - Install Vercel CLI
@@ -158,6 +164,7 @@ git push origin feature/my-feature
 - **Outputs**: `deployment-url` - URL of the preview deployment
 
 ### 4. E2E Job
+
 - **Triggers**: On all branches after successful deployment
 - **Steps**:
   - Checkout code
@@ -170,17 +177,21 @@ git push origin feature/my-feature
 ## Monitoring CI/CD
 
 ### View Workflow Runs
+
 - Go to **Actions** tab in your repository
 - Click on a workflow run to see details
 - View logs for each job
 
 ### Download Artifacts
+
 - Build artifacts (`.next` directory)
 - E2E test reports and screenshots
 - Available for 7 days after workflow run
 
 ### Status Badges
+
 Add to your README:
+
 ```markdown
 [![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
 ```

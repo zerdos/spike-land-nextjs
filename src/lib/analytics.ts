@@ -26,7 +26,7 @@ export interface AnalyticsEventProperties {
 
 export function trackEvent(
   event: AnalyticsEvent,
-  properties?: AnalyticsEventProperties
+  properties?: AnalyticsEventProperties,
 ): void {
   if (typeof window === "undefined") {
     return;
@@ -40,8 +40,8 @@ export function trackEvent(
   // Filter out undefined values to match Vercel Analytics type requirements
   const cleanProperties = properties
     ? Object.fromEntries(
-        Object.entries(properties).filter(([, value]) => value !== undefined)
-      )
+      Object.entries(properties).filter(([, value]) => value !== undefined),
+    )
     : undefined;
 
   track(event, cleanProperties as Record<string, string | number | boolean | null> | undefined);
@@ -49,8 +49,7 @@ export function trackEvent(
 
 export const analytics = {
   wizard: {
-    started: (properties?: AnalyticsEventProperties) =>
-      trackEvent("wizard_started", properties),
+    started: (properties?: AnalyticsEventProperties) => trackEvent("wizard_started", properties),
     stepCompleted: (step: number, properties?: AnalyticsEventProperties) =>
       trackEvent("wizard_step_completed", { step, ...properties }),
     abandoned: (step: number, properties?: AnalyticsEventProperties) =>
@@ -59,10 +58,8 @@ export const analytics = {
       trackEvent("wizard_completed", properties),
   },
   auth: {
-    loginStarted: (provider?: string) =>
-      trackEvent("login_started", { provider }),
-    loginCompleted: (provider?: string) =>
-      trackEvent("login_completed", { provider }),
+    loginStarted: (provider?: string) => trackEvent("login_started", { provider }),
+    loginCompleted: (provider?: string) => trackEvent("login_completed", { provider }),
     logout: () => trackEvent("logout"),
   },
   app: {
@@ -74,8 +71,7 @@ export const analytics = {
       trackEvent("app_forked", { originalAppId, newAppId }),
   },
   error: {
-    occurred: (error: string, context?: string) =>
-      trackEvent("error_occurred", { error, context }),
+    occurred: (error: string, context?: string) => trackEvent("error_occurred", { error, context }),
     validationFailed: (field: string, reason?: string) =>
       trackEvent("validation_failed", { field, reason }),
   },

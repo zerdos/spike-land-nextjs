@@ -1,11 +1,11 @@
-import { Link, Text, Section } from '@react-email/components'
-import { BaseEmail, emailStyles } from './base'
+import { Link, Section, Text } from "@react-email/components";
+import { BaseEmail, emailStyles } from "./base";
 
 interface LowBalanceEmailProps {
-  userName?: string
-  userEmail: string
-  currentBalance: number
-  unsubscribeUrl?: string
+  userName?: string;
+  userEmail: string;
+  currentBalance: number;
+  unsubscribeUrl?: string;
 }
 
 export function LowBalanceEmail({
@@ -14,7 +14,7 @@ export function LowBalanceEmail({
   currentBalance,
   unsubscribeUrl,
 }: LowBalanceEmailProps) {
-  const displayName = userName || userEmail.split('@')[0]
+  const displayName = userName || userEmail.split("@")[0];
 
   return (
     <BaseEmail
@@ -30,51 +30,52 @@ export function LowBalanceEmail({
 
       <Section style={emailStyles.alert}>
         <Text style={emailStyles.alertText}>
-          <strong>Current Balance:</strong> {currentBalance} token{currentBalance !== 1 ? 's' : ''} remaining
+          <strong>Current Balance:</strong> {currentBalance} token{currentBalance !== 1 ? "s" : ""}
+          {" "}
+          remaining
         </Text>
       </Section>
 
       <Text style={emailStyles.text}>
-        You might want to purchase more tokens to continue enhancing your
-        images without interruption. We offer various token packages to suit
-        your needs:
+        You might want to purchase more tokens to continue enhancing your images without
+        interruption. We offer various token packages to suit your needs:
       </Text>
 
       <Section
         style={{
-          backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          padding: '24px',
-          margin: '24px 0',
+          backgroundColor: "#f9fafb",
+          borderRadius: "8px",
+          padding: "24px",
+          margin: "24px 0",
         }}
       >
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
           🎯 <strong>Starter Pack:</strong> 10 tokens - £2.99
         </Text>
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
           📦 <strong>Basic Pack:</strong> 50 tokens - £9.99
         </Text>
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
           💼 <strong>Pro Pack:</strong> 150 tokens - £24.99
         </Text>
-        <Text style={{ ...emailStyles.text, margin: '8px 0' }}>
+        <Text style={{ ...emailStyles.text, margin: "8px 0" }}>
           ⚡ <strong>Power Pack:</strong> 500 tokens - £69.99
         </Text>
       </Section>
 
       <Text style={emailStyles.text}>
-        <strong>Or consider a subscription plan</strong> for unlimited
-        enhancements and automatic token refills each month!
+        <strong>Or consider a subscription plan</strong>{" "}
+        for unlimited enhancements and automatic token refills each month!
       </Text>
 
-      <Section style={{ textAlign: 'center' as const, margin: '32px 0' }}>
+      <Section style={{ textAlign: "center" as const, margin: "32px 0" }}>
         <Link href="https://spike.land/pricing" style={emailStyles.button}>
           View Pricing
         </Link>
       </Section>
 
       <Text style={emailStyles.text}>
-        You can check your current balance and purchase tokens from your{' '}
+        You can check your current balance and purchase tokens from your{" "}
         <Link href="https://spike.land/account/tokens" style={emailStyles.link}>
           account dashboard
         </Link>
@@ -87,5 +88,5 @@ export function LowBalanceEmail({
         The Spike Land Team
       </Text>
     </BaseEmail>
-  )
+  );
 }

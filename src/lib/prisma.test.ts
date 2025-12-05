@@ -1,69 +1,69 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Vitest 4: Use class constructor for PrismaClient mock
-vi.mock('@prisma/client', () => ({
+vi.mock("@prisma/client", () => ({
   PrismaClient: class MockPrismaClient {
-    $connect = vi.fn()
-    $disconnect = vi.fn()
+    $connect = vi.fn();
+    $disconnect = vi.fn();
   },
-}))
+}));
 
 // Mock PrismaPg adapter
-vi.mock('@prisma/adapter-pg', () => ({
+vi.mock("@prisma/adapter-pg", () => ({
   PrismaPg: class MockPrismaPg {
     constructor() {}
   },
-}))
+}));
 
-describe('Prisma Client Singleton', () => {
+describe("Prisma Client Singleton", () => {
   beforeEach(() => {
-    vi.resetModules()
-    delete (globalThis as { prismaGlobal?: unknown }).prismaGlobal
-  })
+    vi.resetModules();
+    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+  });
 
-  it('should create a Prisma client instance', async () => {
-    const prisma = await import('./prisma')
-    expect(prisma.default).toBeDefined()
-  })
+  it("should create a Prisma client instance", async () => {
+    const prisma = await import("./prisma");
+    expect(prisma.default).toBeDefined();
+  });
 
-  it('should use singleton pattern in development', async () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+  it("should use singleton pattern in development", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
 
-    const prisma1 = await import('./prisma')
-    const instance1 = prisma1.default
+    const prisma1 = await import("./prisma");
+    const instance1 = prisma1.default;
 
-    vi.resetModules()
+    vi.resetModules();
 
-    const prisma2 = await import('./prisma')
-    const instance2 = prisma2.default
+    const prisma2 = await import("./prisma");
+    const instance2 = prisma2.default;
 
-    expect(instance1).toBe(instance2)
+    expect(instance1).toBe(instance2);
 
-    process.env.NODE_ENV = originalEnv
-  })
+    process.env.NODE_ENV = originalEnv;
+  });
 
-  it('should attach to globalThis in non-production', async () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+  it("should attach to globalThis in non-production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
 
-    await import('./prisma')
+    await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown }).prismaGlobal).toBeDefined()
+    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal).toBeDefined();
 
-    process.env.NODE_ENV = originalEnv
-  })
+    process.env.NODE_ENV = originalEnv;
+  });
 
-  it('should not attach to globalThis in production', async () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+  it("should not attach to globalThis in production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
 
-    delete (globalThis as { prismaGlobal?: unknown }).prismaGlobal
+    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
 
-    await import('./prisma')
+    await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown }).prismaGlobal).toBeUndefined()
+    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal).toBeUndefined();
 
-    process.env.NODE_ENV = originalEnv
-  })
-})
+    process.env.NODE_ENV = originalEnv;
+  });
+});

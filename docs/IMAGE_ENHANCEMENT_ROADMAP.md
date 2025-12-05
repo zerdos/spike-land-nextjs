@@ -25,16 +25,16 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 
 ### Deliverables
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Image Upload UI | Single image upload with drag-drop | Required |
-| Upload to R2 | Store originals in Cloudflare R2 | Required |
-| Single-Tier Enhancement | TIER_1K (1024px) only | Required |
-| Gemini Integration | AI enhancement via Google Gemini API | Required |
-| Before/After Comparison | Side-by-side slider component | Required |
-| Download Enhanced | Download enhanced image | Required |
-| Basic Error Handling | User-friendly error messages | Required |
-| Authentication | Login required for enhancement | Required |
+| Feature                 | Description                          | Status   |
+| ----------------------- | ------------------------------------ | -------- |
+| Image Upload UI         | Single image upload with drag-drop   | Required |
+| Upload to R2            | Store originals in Cloudflare R2     | Required |
+| Single-Tier Enhancement | TIER_1K (1024px) only                | Required |
+| Gemini Integration      | AI enhancement via Google Gemini API | Required |
+| Before/After Comparison | Side-by-side slider component        | Required |
+| Download Enhanced       | Download enhanced image              | Required |
+| Basic Error Handling    | User-friendly error messages         | Required |
+| Authentication          | Login required for enhancement       | Required |
 
 ### Technical Tasks
 
@@ -50,18 +50,21 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 ```
 
 ### Database Models Used
+
 - `User` (existing)
 - `EnhancedImage`
 - `ImageEnhancementJob`
 - `UserTokenBalance` (basic balance check)
 
 ### Success Criteria
+
 - User can upload image and receive enhanced version
 - Enhancement completes in < 30 seconds
 - Download works correctly
 - Error states are handled gracefully
 
 ### Dependencies
+
 - Cloudflare R2 credentials configured
 - Google Gemini API key configured
 - NextAuth working
@@ -74,15 +77,15 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 
 ### Deliverables
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| All Enhancement Tiers | TIER_1K, TIER_2K, TIER_4K | Required |
-| Token Balance Display | Show balance in header/sidebar | Required |
-| Stripe Checkout | Purchase token packages | Required |
-| Low Balance Warnings | Alert when tokens running low | Required |
-| Transaction History | View past token transactions | Required |
-| Failed Job Refunds | Auto-refund on enhancement failure | Required |
-| Token Regeneration | 1 token per 15 min (max 100) | Required |
+| Feature               | Description                        | Status   |
+| --------------------- | ---------------------------------- | -------- |
+| All Enhancement Tiers | TIER_1K, TIER_2K, TIER_4K          | Required |
+| Token Balance Display | Show balance in header/sidebar     | Required |
+| Stripe Checkout       | Purchase token packages            | Required |
+| Low Balance Warnings  | Alert when tokens running low      | Required |
+| Transaction History   | View past token transactions       | Required |
+| Failed Job Refunds    | Auto-refund on enhancement failure | Required |
+| Token Regeneration    | 1 token per 15 min (max 100)       | Required |
 
 ### Technical Tasks
 
@@ -98,6 +101,7 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 ```
 
 ### Database Models Used
+
 - `UserTokenBalance`
 - `TokenTransaction`
 - `TokensPackage`
@@ -105,22 +109,23 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 
 ### Token Costs (from `src/lib/tokens/costs.ts`)
 
-| Tier | Max Dimension | Cost |
-|------|---------------|------|
-| TIER_1K | 1024px | 2 tokens |
-| TIER_2K | 2048px | 5 tokens |
-| TIER_4K | 4096px | 10 tokens |
+| Tier    | Max Dimension | Cost      |
+| ------- | ------------- | --------- |
+| TIER_1K | 1024px        | 2 tokens  |
+| TIER_2K | 2048px        | 5 tokens  |
+| TIER_4K | 4096px        | 10 tokens |
 
 ### Token Packages (from `src/lib/stripe/client.ts`)
 
 | Package | Tokens | Price |
-|---------|--------|-------|
-| Starter | 10 | 2.99 |
-| Basic | 50 | 9.99 |
-| Pro | 150 | 24.99 |
-| Power | 500 | 69.99 |
+| ------- | ------ | ----- |
+| Starter | 10     | 2.99  |
+| Basic   | 50     | 9.99  |
+| Pro     | 150    | 24.99 |
+| Power   | 500    | 69.99 |
 
 ### Success Criteria
+
 - Users can select any tier before enhancement
 - Token balance updates after purchase
 - Stripe payments process successfully
@@ -128,6 +133,7 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 - Transaction history shows all activity
 
 ### Dependencies
+
 - Phase 1 complete
 - Stripe account configured
 - Webhook endpoint deployed
@@ -142,15 +148,15 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 
 ### Deliverables
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Album Creation | Create/edit/delete albums | [x] COMPLETE |
-| Album Organization | Add/remove images from albums | [x] COMPLETE |
-| Album Sharing | Unlisted links for sharing | [x] COMPLETE |
-| Export Formats | PNG, JPEG, WebP export options | [x] COMPLETE |
-| Version History | View all enhancement versions | [x] COMPLETE |
-| Batch Upload | Upload multiple images at once | [x] COMPLETE |
-| Batch Enhancement | Enhance multiple images | [x] COMPLETE |
+| Feature            | Description                    | Status       |
+| ------------------ | ------------------------------ | ------------ |
+| Album Creation     | Create/edit/delete albums      | [x] COMPLETE |
+| Album Organization | Add/remove images from albums  | [x] COMPLETE |
+| Album Sharing      | Unlisted links for sharing     | [x] COMPLETE |
+| Export Formats     | PNG, JPEG, WebP export options | [x] COMPLETE |
+| Version History    | View all enhancement versions  | [x] COMPLETE |
+| Batch Upload       | Upload multiple images at once | [x] COMPLETE |
+| Batch Enhancement  | Enhance multiple images        | [x] COMPLETE |
 
 ### Technical Tasks
 
@@ -174,19 +180,21 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 - Album management fully functional with CRUD operations
 
 ### Database Models Used
+
 - `Album`
 - `AlbumImage`
 - `EnhancedImage` (isPublic, viewCount)
 
 ### Privacy Levels
 
-| Level | Visibility | Use Case |
-|-------|------------|----------|
-| PRIVATE | Owner only | Personal photos |
-| UNLISTED | Via share link | Share with friends |
-| PUBLIC | Listed in gallery | Portfolio showcase |
+| Level    | Visibility        | Use Case           |
+| -------- | ----------------- | ------------------ |
+| PRIVATE  | Owner only        | Personal photos    |
+| UNLISTED | Via share link    | Share with friends |
+| PUBLIC   | Listed in gallery | Portfolio showcase |
 
 ### Success Criteria
+
 - Users can create and organize albums
 - Share links work for unlisted albums
 - Export downloads correct format
@@ -194,6 +202,7 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 - Batch operations work reliably
 
 ### Dependencies
+
 - Phase 2 complete
 - R2 storage for multiple formats
 
@@ -210,6 +219,7 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 
 **Phase 4: Simple Referral**
+
 - "Refer a friend, both get 50 free tokens"
 - One-time reward per referral
 - Simple tracking
@@ -217,13 +227,13 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 
 ### Deliverables
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Referral Link | Unique link per user | [x] COMPLETE |
-| Sign-up Attribution | Track referrer on registration | [x] COMPLETE |
-| Token Rewards | 50 tokens each (referrer + referee) | [x] COMPLETE |
-| Referral Dashboard | View referral stats | [x] COMPLETE |
-| Anti-Fraud Basic | Prevent self-referrals | [x] COMPLETE |
+| Feature             | Description                         | Status       |
+| ------------------- | ----------------------------------- | ------------ |
+| Referral Link       | Unique link per user                | [x] COMPLETE |
+| Sign-up Attribution | Track referrer on registration      | [x] COMPLETE |
+| Token Rewards       | 50 tokens each (referrer + referee) | [x] COMPLETE |
+| Referral Dashboard  | View referral stats                 | [x] COMPLETE |
+| Anti-Fraud Basic    | Prevent self-referrals              | [x] COMPLETE |
 
 ### Technical Tasks
 
@@ -245,18 +255,21 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 - Automatic token grants on referral completion (50 tokens each)
 
 ### Anti-Fraud Measures
+
 - Prevent same IP referrals
 - Block disposable email domains
 - Require email verification
 - Rate limit referral rewards
 
 ### Success Criteria
+
 - Users can share referral links
 - Both parties receive tokens on sign-up
 - Basic fraud is prevented
 - Dashboard shows referral stats
 
 ### Dependencies
+
 - Phase 2 complete (token system)
 - Email verification in place
 
@@ -270,14 +283,14 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 
 ### Deliverables
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| User Analytics | Registrations, MAU, retention | [x] COMPLETE |
-| Token Economics | Purchases, usage, burn rate | [x] COMPLETE |
-| System Health | Job queue, failure rates | [x] COMPLETE |
-| Admin Tools | User management, voucher creation | [x] COMPLETE |
-| Event Tracking | Console errors, performance | [x] COMPLETE |
-| Legal Pages | Terms, Privacy, Contact | [x] COMPLETE |
+| Feature         | Description                       | Status       |
+| --------------- | --------------------------------- | ------------ |
+| User Analytics  | Registrations, MAU, retention     | [x] COMPLETE |
+| Token Economics | Purchases, usage, burn rate       | [x] COMPLETE |
+| System Health   | Job queue, failure rates          | [x] COMPLETE |
+| Admin Tools     | User management, voucher creation | [x] COMPLETE |
+| Event Tracking  | Console errors, performance       | [x] COMPLETE |
+| Legal Pages     | Terms, Privacy, Contact           | [x] COMPLETE |
 
 ### Technical Tasks
 
@@ -307,30 +320,35 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 ### Metrics to Track
 
 **User Metrics:**
+
 - Daily/weekly/monthly registrations
 - Active users (DAU/MAU)
 - User retention curves
 - Conversion rate (free -> paid)
 
 **Token Metrics:**
+
 - Tokens purchased vs. spent
 - Average tokens per user
 - Revenue per user (ARPU)
 - Token regeneration usage
 
 **System Metrics:**
+
 - Enhancement jobs per hour
 - Average processing time
 - Failure rate by tier
 - Queue depth
 
 ### Success Criteria
+
 - Admin can view key metrics
 - Voucher creation works
 - User management functional
 - System health visible
 
 ### Dependencies
+
 - All previous phases complete
 - Role-based access control
 
@@ -338,13 +356,13 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 
 ## Timeline Overview
 
-| Phase | Focus | Effort Estimate |
-|-------|-------|-----------------|
-| Phase 1 | MVP | Foundation |
-| Phase 2 | Token Economy | Core monetization |
-| Phase 3 | Albums & Export | User value |
-| Phase 4 | Referral | Growth |
-| Phase 5 | Dashboard | Operations |
+| Phase   | Focus           | Effort Estimate   |
+| ------- | --------------- | ----------------- |
+| Phase 1 | MVP             | Foundation        |
+| Phase 2 | Token Economy   | Core monetization |
+| Phase 3 | Albums & Export | User value        |
+| Phase 4 | Referral        | Growth            |
+| Phase 5 | Dashboard       | Operations        |
 
 **Note:** Per CLAUDE.md guidelines, no specific time estimates are provided. Work is broken into actionable steps for team scheduling.
 
@@ -354,21 +372,21 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 
 ### Technical Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Gemini API rate limits | Implement queue with backoff |
-| R2 storage costs at scale | Monitor usage, set alerts |
-| Stripe webhook failures | Idempotent handlers, retry logic |
-| Large image processing | File size limits, async processing |
+| Risk                      | Mitigation                         |
+| ------------------------- | ---------------------------------- |
+| Gemini API rate limits    | Implement queue with backoff       |
+| R2 storage costs at scale | Monitor usage, set alerts          |
+| Stripe webhook failures   | Idempotent handlers, retry logic   |
+| Large image processing    | File size limits, async processing |
 
 ### Business Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Low conversion rate | A/B test pricing, free tier |
-| High churn | Email re-engagement, feature improvements |
-| Referral fraud | Start simple, add verification |
-| Support burden | Self-service tools, good error messages |
+| Risk                | Mitigation                                |
+| ------------------- | ----------------------------------------- |
+| Low conversion rate | A/B test pricing, free tier               |
+| High churn          | Email re-engagement, feature improvements |
+| Referral fraud      | Start simple, add verification            |
+| Support burden      | Self-service tools, good error messages   |
 
 ---
 

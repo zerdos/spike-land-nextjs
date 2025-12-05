@@ -43,12 +43,14 @@ The image enhancement workflow consists of four main stages:
 Users upload their original image to the platform.
 
 **Process:**
+
 - Image is validated (format, size checks)
 - Image is processed and stored in R2 cloud storage
 - Original metadata is extracted (dimensions, format, file size)
 - Image record is created in the database
 
 **Storage Structure:**
+
 ```
 R2 Bucket Structure:
 ├── originals/
@@ -66,6 +68,7 @@ R2 Bucket Structure:
 User selects an enhancement tier based on desired output quality and token budget.
 
 **Available Tiers:**
+
 - TIER_1K: 1024px maximum dimension
 - TIER_2K: 2048px maximum dimension
 - TIER_4K: 4096px maximum dimension
@@ -100,6 +103,7 @@ The backend processes the image through the enhancement pipeline.
 Users can compare original and enhanced versions side-by-side using a comparison slider tool.
 
 **Features:**
+
 - Interactive before/after slider
 - Full-screen preview option
 - One-click download of enhanced image
@@ -109,15 +113,16 @@ Users can compare original and enhanced versions side-by-side using a comparison
 
 ## Enhancement Tiers
 
-| Tier | Max Dimension | Token Cost | Use Case | Output Quality |
-|------|---------------|------------|----------|-----------------|
-| TIER_1K | 1024px | 2 tokens | Quick preview, social media | Good |
-| TIER_2K | 2048px | 5 tokens | Professional use, print preview | Excellent |
-| TIER_4K | 4096px | 10 tokens | High-resolution print, archival | Maximum |
+| Tier    | Max Dimension | Token Cost | Use Case                        | Output Quality |
+| ------- | ------------- | ---------- | ------------------------------- | -------------- |
+| TIER_1K | 1024px        | 2 tokens   | Quick preview, social media     | Good           |
+| TIER_2K | 2048px        | 5 tokens   | Professional use, print preview | Excellent      |
+| TIER_4K | 4096px        | 10 tokens  | High-resolution print, archival | Maximum        |
 
 ### Token Cost Calculation
 
 Token cost is fixed per tier and does not depend on:
+
 - Original image dimensions
 - Enhancement duration
 - Retry attempts (tokens are refunded on failure)
@@ -125,12 +130,14 @@ Token cost is fixed per tier and does not depend on:
 ### Example Scenarios
 
 **Scenario 1: Budget-Conscious User**
+
 - User has 5 tokens
 - Chooses TIER_1K (2 tokens)
 - Can enhance 2 images
 - Remaining tokens: 1 token
 
 **Scenario 2: Professional Photographer**
+
 - User subscribes to Premium Plan (100 tokens/month)
 - Enhances 10 images at TIER_4K (10 × 10 = 100 tokens)
 - Consumes all monthly allocation
@@ -144,17 +151,18 @@ Token cost is fixed per tier and does not depend on:
 
 The API accepts the following image formats for upload:
 
-| Format | MIME Type | Max File Size | Notes |
-|--------|-----------|---------------|-------|
-| JPEG | image/jpeg | 25 MB | Most common, recommended |
-| PNG | image/png | 25 MB | Supports transparency, larger files |
-| WebP | image/webp | 25 MB | Modern format, smaller files |
-| GIF | image/gif | 25 MB | Single frame only |
-| BMP | image/bmp | 25 MB | Legacy format support |
+| Format | MIME Type  | Max File Size | Notes                               |
+| ------ | ---------- | ------------- | ----------------------------------- |
+| JPEG   | image/jpeg | 25 MB         | Most common, recommended            |
+| PNG    | image/png  | 25 MB         | Supports transparency, larger files |
+| WebP   | image/webp | 25 MB         | Modern format, smaller files        |
+| GIF    | image/gif  | 25 MB         | Single frame only                   |
+| BMP    | image/bmp  | 25 MB         | Legacy format support               |
 
 ### Output Format
 
 All enhanced images are output as:
+
 - **Format**: JPEG
 - **Quality**: 95 (high quality)
 - **Color Space**: sRGB
@@ -171,6 +179,7 @@ All enhanced images are output as:
 **Authentication**: Required (Bearer token)
 
 **Request**:
+
 ```http
 POST /api/images/upload HTTP/1.1
 Authorization: Bearer {session_token}
@@ -180,6 +189,7 @@ file: <binary image data>
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -197,13 +207,13 @@ file: <binary image data>
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | No file provided | Request body missing image file |
-| 401 | Unauthorized | User session invalid or missing |
-| 413 | File too large | Exceeds 25 MB limit |
-| 415 | Unsupported format | Image format not supported |
-| 500 | Upload failed | S3/R2 upload error or processing error |
+| Status | Error              | Description                            |
+| ------ | ------------------ | -------------------------------------- |
+| 400    | No file provided   | Request body missing image file        |
+| 401    | Unauthorized       | User session invalid or missing        |
+| 413    | File too large     | Exceeds 25 MB limit                    |
+| 415    | Unsupported format | Image format not supported             |
+| 500    | Upload failed      | S3/R2 upload error or processing error |
 
 ---
 
@@ -214,12 +224,14 @@ file: <binary image data>
 **Authentication**: Required
 
 **Request**:
+
 ```http
 GET /api/images/clya1b2c3d4e5f6g7h8i9j0k1 HTTP/1.1
 Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -253,12 +265,12 @@ Authorization: Bearer {session_token}
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 401 | Unauthorized | User session invalid |
-| 403 | Forbidden | User does not own image |
-| 404 | Image not found | Image ID does not exist |
-| 500 | Failed to fetch | Database error |
+| Status | Error           | Description             |
+| ------ | --------------- | ----------------------- |
+| 401    | Unauthorized    | User session invalid    |
+| 403    | Forbidden       | User does not own image |
+| 404    | Image not found | Image ID does not exist |
+| 500    | Failed to fetch | Database error          |
 
 ---
 
@@ -271,6 +283,7 @@ Authorization: Bearer {session_token}
 **Rate Limit**: 10 requests per minute per user
 
 **Request**:
+
 ```http
 POST /api/images/enhance HTTP/1.1
 Authorization: Bearer {session_token}
@@ -283,6 +296,7 @@ Content-Type: application/json
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -294,17 +308,18 @@ Content-Type: application/json
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | Missing imageId or tier | Request missing required fields |
-| 400 | Invalid tier | Tier not in [TIER_1K, TIER_2K, TIER_4K] |
-| 401 | Unauthorized | User session invalid |
-| 402 | Insufficient tokens | User balance < token cost |
-| 404 | Image not found | Image ID doesn't exist or not owned |
-| 429 | Too many requests | Rate limit exceeded (10/min) |
-| 500 | Enhancement failed | AI processing error |
+| Status | Error                   | Description                             |
+| ------ | ----------------------- | --------------------------------------- |
+| 400    | Missing imageId or tier | Request missing required fields         |
+| 400    | Invalid tier            | Tier not in [TIER_1K, TIER_2K, TIER_4K] |
+| 401    | Unauthorized            | User session invalid                    |
+| 402    | Insufficient tokens     | User balance < token cost               |
+| 404    | Image not found         | Image ID doesn't exist or not owned     |
+| 429    | Too many requests       | Rate limit exceeded (10/min)            |
+| 500    | Enhancement failed      | AI processing error                     |
 
 **Rate Limit Headers**:
+
 ```
 X-RateLimit-Limit: 10
 X-RateLimit-Remaining: 9
@@ -321,12 +336,14 @@ Retry-After: 6
 **Authentication**: Required
 
 **Request**:
+
 ```http
 DELETE /api/images/clya1b2c3d4e5f6g7h8i9j0k1 HTTP/1.1
 Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -336,12 +353,12 @@ Authorization: Bearer {session_token}
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 401 | Unauthorized | User session invalid |
-| 403 | Forbidden | User does not own image |
-| 404 | Image not found | Image ID doesn't exist |
-| 500 | Failed to delete | R2 or database error |
+| Status | Error            | Description             |
+| ------ | ---------------- | ----------------------- |
+| 401    | Unauthorized     | User session invalid    |
+| 403    | Forbidden        | User does not own image |
+| 404    | Image not found  | Image ID doesn't exist  |
+| 500    | Failed to delete | R2 or database error    |
 
 ---
 
@@ -354,6 +371,7 @@ Authorization: Bearer {session_token}
 **Cause**: User token balance is less than enhancement cost
 
 **Response**:
+
 ```json
 {
   "error": "Insufficient tokens",
@@ -363,6 +381,7 @@ Authorization: Bearer {session_token}
 ```
 
 **Resolution**:
+
 1. User can purchase tokens through Stripe checkout
 2. User can redeem voucher codes
 3. User can wait for token regeneration (1 token per 15 minutes, max 100)
@@ -373,6 +392,7 @@ Authorization: Bearer {session_token}
 **Cause**: User exceeded rate limit (10 enhancements per minute)
 
 **Response**:
+
 ```json
 {
   "error": "Too many requests",
@@ -381,6 +401,7 @@ Authorization: Bearer {session_token}
 ```
 
 **Resolution**:
+
 1. Wait `retryAfter` seconds before retrying
 2. Check `Retry-After` header for recommended delay
 3. Implement exponential backoff on client side
@@ -390,6 +411,7 @@ Authorization: Bearer {session_token}
 **Cause**: Error during Gemini AI processing
 
 **Response**:
+
 ```json
 {
   "error": "Enhancement failed",
@@ -398,6 +420,7 @@ Authorization: Bearer {session_token}
 ```
 
 **Resolution**:
+
 1. Tokens are automatically refunded to user
 2. User can retry the enhancement
 3. Check application logs for detailed error message
@@ -425,12 +448,14 @@ All errors follow a consistent format:
 Tokens are the primary currency for image enhancement:
 
 **Token Sources**:
+
 - **Automatic Regeneration**: 1 token per 15 minutes (max 100)
 - **Vouchers**: Promotional codes (LAUNCH100, WELCOME50, BETA25)
 - **Stripe Purchases**: One-time token packages
 - **Subscriptions**: Monthly token allocation with rollover
 
 **Token Destinations**:
+
 - **Image Enhancement**: 2-10 tokens depending on tier
 - **Future features**: TBD
 
@@ -459,12 +484,12 @@ Users can view their token transaction history via token balance API:
 
 ### Rate Limit Configuration
 
-| Resource | Limit | Window | Notes |
-|----------|-------|--------|-------|
-| Image Upload | 20 files | 1 hour | Per user |
-| Image Enhancement | 10 requests | 1 minute | Per user |
-| Image Deletion | 50 deletions | 1 hour | Per user |
-| Token Balance Check | 100 requests | 1 hour | Per user |
+| Resource            | Limit        | Window   | Notes    |
+| ------------------- | ------------ | -------- | -------- |
+| Image Upload        | 20 files     | 1 hour   | Per user |
+| Image Enhancement   | 10 requests  | 1 minute | Per user |
+| Image Deletion      | 50 deletions | 1 hour   | Per user |
+| Token Balance Check | 100 requests | 1 hour   | Per user |
 
 ### Rate Limit Headers
 
@@ -486,13 +511,13 @@ Retry-After: 30
 async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch('/api/images/enhance', {
-        method: 'POST',
-        body: JSON.stringify({ imageId, tier })
+      const response = await fetch("/api/images/enhance", {
+        method: "POST",
+        body: JSON.stringify({ imageId, tier }),
       });
 
       if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get('Retry-After') || '30');
+        const retryAfter = parseInt(response.headers.get("Retry-After") || "30");
         const backoffMs = retryAfter * 1000 * Math.pow(2, attempt - 1);
 
         await new Promise(resolve => setTimeout(resolve, backoffMs));
@@ -551,6 +576,7 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 ## File Locations
 
 **Implementation**:
+
 - Upload handler: `src/lib/storage/upload-handler.ts`
 - Enhancement processor: `src/app/api/images/enhance/route.ts`
 - Token manager: `src/lib/tokens/balance-manager.ts`
@@ -558,10 +584,12 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 - Gemini client: `src/lib/ai/gemini-client.ts`
 
 **Database**:
+
 - Schema: `prisma/schema.prisma` (EnhancedImage, ImageEnhancementJob models)
 - Migrations: `prisma/migrations/`
 
 **Tests**:
+
 - E2E tests: `e2e/features/image-enhancement.feature`
 - Step definitions: `e2e/step-definitions/image-enhancement.steps.ts`
 

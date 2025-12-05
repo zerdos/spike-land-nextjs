@@ -5,27 +5,27 @@
  * Only users with ADMIN or SUPER_ADMIN role can access.
  */
 
-import { ReactNode } from "react"
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import { auth } from "@/auth"
-import { isAdminByUserId } from "@/lib/auth/admin-middleware"
+import { auth } from "@/auth";
+import { isAdminByUserId } from "@/lib/auth/admin-middleware";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { ReactNode } from "react";
 
 export default async function AdminLayout({
   children,
 }: {
-  children: ReactNode
+  children: ReactNode;
 }) {
-  const session = await auth()
+  const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/")
+    redirect("/");
   }
 
-  const userIsAdmin = await isAdminByUserId(session.user.id)
+  const userIsAdmin = await isAdminByUserId(session.user.id);
 
   if (!userIsAdmin) {
-    redirect("/")
+    redirect("/");
   }
 
   const navItems = [
@@ -35,7 +35,7 @@ export default async function AdminLayout({
     { href: "/admin/system", label: "System Health", icon: "🏥" },
     { href: "/admin/vouchers", label: "Vouchers", icon: "🎟️" },
     { href: "/admin/users", label: "User Management", icon: "👥" },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
@@ -84,5 +84,5 @@ export default async function AdminLayout({
         </main>
       </div>
     </div>
-  )
+  );
 }

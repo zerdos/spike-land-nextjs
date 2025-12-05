@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ExportButton } from "./ExportButton"
-import type { EnhancementTier, JobStatus } from "@prisma/client"
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
+import Image from "next/image";
+import { useState } from "react";
+import { ExportButton } from "./ExportButton";
 
 // Log broken images to server for monitoring
 async function logBrokenImage(versionId: string, tier: string, url: string) {
@@ -20,57 +20,57 @@ async function logBrokenImage(versionId: string, tier: string, url: string) {
         url,
         timestamp: new Date().toISOString(),
       }),
-    })
+    });
   } catch (e) {
     // Silent fail - we don't want to block the UI
-    console.error("[Image Error Logging Failed]", e)
+    console.error("[Image Error Logging Failed]", e);
   }
 }
 
 interface EnhancementVersion {
-  id: string
-  tier: EnhancementTier
-  enhancedUrl: string
-  width: number
-  height: number
-  createdAt: Date
-  status: JobStatus
+  id: string;
+  tier: EnhancementTier;
+  enhancedUrl: string;
+  width: number;
+  height: number;
+  createdAt: Date;
+  status: JobStatus;
 }
 
 interface VersionGridProps {
-  versions: EnhancementVersion[]
-  onVersionSelect?: (versionId: string) => void
-  selectedVersionId?: string
+  versions: EnhancementVersion[];
+  onVersionSelect?: (versionId: string) => void;
+  selectedVersionId?: string;
 }
 
 const tierLabels: Record<EnhancementTier, string> = {
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",
-}
+};
 
 export function VersionGrid({
   versions,
   onVersionSelect,
   selectedVersionId,
 }: VersionGridProps) {
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const handleImageError = (version: EnhancementVersion) => {
     console.error(
-      `[Enhanced Image Load Error] Version: ${version.id}, Tier: ${version.tier}, URL: ${version.enhancedUrl}`
-    )
-    setFailedImages((prev) => new Set(prev).add(version.id))
+      `[Enhanced Image Load Error] Version: ${version.id}, Tier: ${version.tier}, URL: ${version.enhancedUrl}`,
+    );
+    setFailedImages((prev) => new Set(prev).add(version.id));
     // Log to server for monitoring in Vercel logs
-    logBrokenImage(version.id, version.tier, version.enhancedUrl)
-  }
+    logBrokenImage(version.id, version.tier, version.enhancedUrl);
+  };
 
   if (versions.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         No enhancement versions yet. Create your first enhancement above.
       </div>
-    )
+    );
   }
 
   return (
@@ -144,5 +144,5 @@ export function VersionGrid({
         </Card>
       ))}
     </div>
-  )
+  );
 }

@@ -78,6 +78,7 @@ model User {
 ```
 
 **Key Notes:**
+
 - User ID is stable across OAuth providers (email-based hash via `src/auth.ts`)
 - `stripeCustomerId` links to Stripe for payments
 - One-to-one relationship with `UserTokenBalance`
@@ -119,6 +120,7 @@ model EnhancedImage {
 ```
 
 **Storage Pattern:**
+
 - Original images stored in Cloudflare R2
 - `originalR2Key` is the storage identifier
 - `originalUrl` is the public-facing URL
@@ -162,13 +164,14 @@ model ImageEnhancementJob {
 
 **Enhancement Tiers:**
 
-| Tier | Max Dimension | Token Cost |
-|------|---------------|------------|
-| TIER_1K | 1024px | 2 tokens |
-| TIER_2K | 2048px | 5 tokens |
-| TIER_4K | 4096px | 10 tokens |
+| Tier    | Max Dimension | Token Cost |
+| ------- | ------------- | ---------- |
+| TIER_1K | 1024px        | 2 tokens   |
+| TIER_2K | 2048px        | 5 tokens   |
+| TIER_4K | 4096px        | 10 tokens  |
 
 **Job Status Flow:**
+
 ```
 PENDING -> PROCESSING -> COMPLETED
                      \-> FAILED -> (retry) -> PROCESSING
@@ -197,6 +200,7 @@ model UserTokenBalance {
 ```
 
 **Regeneration:**
+
 - 1 token every 15 minutes (configurable)
 - Maximum balance cap: 100 tokens (free regeneration limit)
 
@@ -221,6 +225,7 @@ model TokenTransaction {
 ```
 
 **Transaction Types:**
+
 - `EARN_REGENERATION` - Auto-regenerated tokens
 - `EARN_PURCHASE` - Purchased via Stripe
 - `EARN_BONUS` - Promotional/voucher tokens
@@ -250,11 +255,11 @@ model TokensPackage {
 **Current Packages:**
 
 | Package | Tokens | Price (GBP) |
-|---------|--------|-------------|
-| Starter | 10 | 2.99 |
-| Basic | 50 | 9.99 |
-| Pro | 150 | 24.99 |
-| Power | 500 | 69.99 |
+| ------- | ------ | ----------- |
+| Starter | 10     | 2.99        |
+| Basic   | 50     | 9.99        |
+| Pro     | 150    | 24.99       |
+| Power   | 500    | 69.99       |
 
 ### StripePayment
 
@@ -329,11 +334,11 @@ model SubscriptionPlan {
 
 **Current Plans:**
 
-| Plan | Tokens/Month | Price (GBP) | Max Rollover |
-|------|--------------|-------------|--------------|
-| Hobby | 30 | 4.99 | 30 |
-| Creator | 100 | 12.99 | 100 |
-| Studio | 300 | 29.99 | Unlimited |
+| Plan    | Tokens/Month | Price (GBP) | Max Rollover |
+| ------- | ------------ | ----------- | ------------ |
+| Hobby   | 30           | 4.99        | 30           |
+| Creator | 100          | 12.99       | 100          |
+| Studio  | 300          | 29.99       | Unlimited    |
 
 ---
 
@@ -362,6 +367,7 @@ model Album {
 ```
 
 **Privacy Levels:**
+
 - `PRIVATE` - Only owner can view
 - `UNLISTED` - Accessible via share link
 - `PUBLIC` - Listed in public gallery
@@ -412,6 +418,7 @@ model Voucher {
 ```
 
 **Voucher Types:**
+
 - `FIXED_TOKENS` - Grants exact number of tokens
 - `PERCENTAGE_BONUS` - Bonus on next purchase
 - `SUBSCRIPTION_TRIAL` - Free trial period
@@ -502,6 +509,7 @@ model MonetizationModel {
 ```
 
 **Monetization Types:**
+
 - `FREE` - No charge
 - `ONE_TIME` - Single purchase
 - `SUBSCRIPTION` - Recurring payment
@@ -570,33 +578,36 @@ model VerificationToken {
 
 ## Indexes Summary
 
-| Model | Indexed Fields | Purpose |
-|-------|---------------|---------|
-| EnhancedImage | `[userId, createdAt]` | User's images by date |
-| EnhancedImage | `[isPublic, createdAt]` | Public gallery |
-| ImageEnhancementJob | `[userId, status, createdAt]` | User's jobs by status |
-| ImageEnhancementJob | `[status, updatedAt]` | Job queue processing |
-| TokenTransaction | `[userId, createdAt]` | Transaction history |
-| Album | `[userId, createdAt]` | User's albums |
-| Album | `[shareToken]` | Share link lookup |
-| Voucher | `[code]` | Code lookup |
-| Voucher | `[status, expiresAt]` | Active voucher queries |
+| Model               | Indexed Fields                | Purpose                |
+| ------------------- | ----------------------------- | ---------------------- |
+| EnhancedImage       | `[userId, createdAt]`         | User's images by date  |
+| EnhancedImage       | `[isPublic, createdAt]`       | Public gallery         |
+| ImageEnhancementJob | `[userId, status, createdAt]` | User's jobs by status  |
+| ImageEnhancementJob | `[status, updatedAt]`         | Job queue processing   |
+| TokenTransaction    | `[userId, createdAt]`         | Transaction history    |
+| Album               | `[userId, createdAt]`         | User's albums          |
+| Album               | `[shareToken]`                | Share link lookup      |
+| Voucher             | `[code]`                      | Code lookup            |
+| Voucher             | `[status, expiresAt]`         | Active voucher queries |
 
 ---
 
 ## Migration
 
 The initial migration is located at:
+
 ```
 prisma/migrations/0_init/migration.sql
 ```
 
 To apply migrations:
+
 ```bash
 npx prisma migrate deploy
 ```
 
 To generate Prisma client:
+
 ```bash
 npx prisma generate
 ```

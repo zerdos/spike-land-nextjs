@@ -46,19 +46,20 @@ Three promotional vouchers are active during MVP launch:
 
 #### 1. LAUNCH100
 
-| Property | Value |
-|----------|-------|
-| **Code** | `LAUNCH100` |
-| **Tokens Granted** | 100 |
-| **Max Uses** | 1,000 |
-| **Current Uses** | 0 |
-| **Status** | ACTIVE |
-| **Expiration** | None (indefinite) |
-| **Type** | FIXED_TOKENS |
+| Property           | Value             |
+| ------------------ | ----------------- |
+| **Code**           | `LAUNCH100`       |
+| **Tokens Granted** | 100               |
+| **Max Uses**       | 1,000             |
+| **Current Uses**   | 0                 |
+| **Status**         | ACTIVE            |
+| **Expiration**     | None (indefinite) |
+| **Type**           | FIXED_TOKENS      |
 
 **Use Case**: Main launch promotion for early adopters
 
 **Example**:
+
 - User redeems LAUNCH100
 - Receives 100 tokens
 - Can enhance 50 images at TIER_2K (5 tokens each)
@@ -66,38 +67,40 @@ Three promotional vouchers are active during MVP launch:
 
 #### 2. WELCOME50
 
-| Property | Value |
-|----------|-------|
-| **Code** | `WELCOME50` |
-| **Tokens Granted** | 50 |
-| **Max Uses** | Unlimited |
-| **Current Uses** | 0 |
-| **Status** | ACTIVE |
-| **Expiration** | None (indefinite) |
-| **Type** | FIXED_TOKENS |
+| Property           | Value             |
+| ------------------ | ----------------- |
+| **Code**           | `WELCOME50`       |
+| **Tokens Granted** | 50                |
+| **Max Uses**       | Unlimited         |
+| **Current Uses**   | 0                 |
+| **Status**         | ACTIVE            |
+| **Expiration**     | None (indefinite) |
+| **Type**           | FIXED_TOKENS      |
 
 **Use Case**: Welcome bonus for all new users
 
 **Example**:
+
 - Offered automatically to new sign-ups
 - Can be manually redeemed anytime
 - No limit on total redemptions (platform-wide)
 
 #### 3. BETA25
 
-| Property | Value |
-|----------|-------|
-| **Code** | `BETA25` |
-| **Tokens Granted** | 25 |
-| **Max Uses** | 500 |
-| **Current Uses** | 0 |
-| **Status** | ACTIVE |
-| **Expiration** | None (indefinite) |
-| **Type** | FIXED_TOKENS |
+| Property           | Value             |
+| ------------------ | ----------------- |
+| **Code**           | `BETA25`          |
+| **Tokens Granted** | 25                |
+| **Max Uses**       | 500               |
+| **Current Uses**   | 0                 |
+| **Status**         | ACTIVE            |
+| **Expiration**     | None (indefinite) |
+| **Type**           | FIXED_TOKENS      |
 
 **Use Case**: Beta tester appreciation
 
 **Example**:
+
 - Reserved for active beta program participants
 - Recognizes testing contributions
 - Limited to 500 users
@@ -111,19 +114,22 @@ Three promotional vouchers are active during MVP launch:
 Grants a fixed number of tokens to the user.
 
 **Properties**:
+
 - Fixed amount: tokens do not vary
 - Immediate: credited instantly upon redemption
 - Simple: no calculations or conditions
 
 **Examples**:
+
 - LAUNCH100: Always grants 100 tokens
 - WELCOME50: Always grants 50 tokens
 - BETA25: Always grants 25 tokens
 
 **Usage**:
+
 ```typescript
 // User redeems code
-result = await VoucherManager.redeem('LAUNCH100', userId)
+result = await VoucherManager.redeem("LAUNCH100", userId);
 // result.tokensGranted = 100
 // result.newBalance = previousBalance + 100
 ```
@@ -133,11 +139,13 @@ result = await VoucherManager.redeem('LAUNCH100', userId)
 Adds a percentage bonus to token purchases (future enhancement).
 
 **Properties**:
+
 - Percentage-based: amount depends on purchase
 - Applied at checkout: activates during Stripe purchase
 - Stackable: can combine with other promotions
 
 **Example**:
+
 - BONUS20: 20% off token purchases
 - User purchases 100 tokens (£9.99)
 - Receives 120 tokens instead
@@ -150,11 +158,13 @@ Adds a percentage bonus to token purchases (future enhancement).
 Provides free subscription trial period (future enhancement).
 
 **Properties**:
+
 - Time-based: trial duration specified
 - Upgrade path: converts to paid subscription after trial
 - Feature-limited: trial may have feature restrictions
 
 **Example**:
+
 - FREETRIAL30: 30-day free Professional plan trial
 - User gets 100 tokens/month for 30 days
 - After trial: must subscribe or revert to free tier
@@ -168,22 +178,26 @@ Provides free subscription trial period (future enhancement).
 ### User Flow
 
 **Step 1: Obtain Voucher Code**
+
 - Marketing email with code
 - Share from another user
 - In-app promotion banner
 - Social media promotion
 
 **Step 2: Navigate to Redemption**
+
 - Visit Settings → Tokens
 - Or click "Redeem Voucher" button in token balance widget
 - Or redeem during token purchase flow
 
 **Step 3: Enter Code**
+
 - Input field accepts uppercase codes
 - Codes are case-insensitive (LAUNCH100, launch100, Launch100 all work)
 - Optional: space trimming for user convenience
 
 **Step 4: Redeem**
+
 - Click "Redeem" button
 - System validates code:
   - Code exists
@@ -194,6 +208,7 @@ Provides free subscription trial period (future enhancement).
 - Success message displays new balance
 
 **Step 5: Confirmation**
+
 - Toast notification: "Successfully redeemed LAUNCH100! +100 tokens"
 - Balance updates in real-time
 - Transaction appears in history
@@ -234,6 +249,7 @@ Return success + new balance
 **Authentication**: Optional (checks user eligibility if authenticated)
 
 **Request**:
+
 ```http
 POST /api/vouchers/validate HTTP/1.1
 Content-Type: application/json
@@ -244,6 +260,7 @@ Content-Type: application/json
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "valid": true,
@@ -261,6 +278,7 @@ Content-Type: application/json
 ```
 
 **Response (Already Redeemed by User - 400)**:
+
 ```json
 {
   "valid": false,
@@ -270,15 +288,15 @@ Content-Type: application/json
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | Voucher code is required | Request missing code field |
-| 400 | Voucher not found | Code doesn't exist |
-| 400 | Voucher is inactive | Status is INACTIVE |
-| 400 | Voucher is expired | Status is EXPIRED or expiresAt < now |
-| 400 | Voucher is depleted | currentUses >= maxUses |
-| 400 | You have already redeemed | User already redeemed this code |
-| 500 | Failed to validate | Database error |
+| Status | Error                     | Description                          |
+| ------ | ------------------------- | ------------------------------------ |
+| 400    | Voucher code is required  | Request missing code field           |
+| 400    | Voucher not found         | Code doesn't exist                   |
+| 400    | Voucher is inactive       | Status is INACTIVE                   |
+| 400    | Voucher is expired        | Status is EXPIRED or expiresAt < now |
+| 400    | Voucher is depleted       | currentUses >= maxUses               |
+| 400    | You have already redeemed | User already redeemed this code      |
+| 500    | Failed to validate        | Database error                       |
 
 ### Redeem Voucher
 
@@ -287,6 +305,7 @@ Content-Type: application/json
 **Authentication**: Required (Bearer token)
 
 **Request**:
+
 ```http
 POST /api/vouchers/redeem HTTP/1.1
 Authorization: Bearer {session_token}
@@ -298,6 +317,7 @@ Content-Type: application/json
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -308,12 +328,12 @@ Content-Type: application/json
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | Voucher code is required | Request missing code field |
-| 400 | (various validation errors) | See validation endpoint for details |
-| 401 | Authentication required | User not logged in |
-| 500 | Failed to redeem | Database transaction error |
+| Status | Error                       | Description                         |
+| ------ | --------------------------- | ----------------------------------- |
+| 400    | Voucher code is required    | Request missing code field          |
+| 400    | (various validation errors) | See validation endpoint for details |
+| 401    | Authentication required     | User not logged in                  |
+| 500    | Failed to redeem            | Database transaction error          |
 
 ---
 
@@ -439,40 +459,44 @@ Is code valid?
 ### Creating a New Voucher
 
 **Admin Interface** (future):
+
 - Dashboard for creating vouchers
 - Field validation
 - Status management
 
 **Via Code**:
+
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 const newVoucher = await prisma.voucher.create({
   data: {
-    code: 'HOLIDAY25',
-    type: 'FIXED_TOKENS',
+    code: "HOLIDAY25",
+    type: "FIXED_TOKENS",
     value: 25,
     maxUses: 1000,
-    expiresAt: new Date('2025-12-31'),
-    status: 'ACTIVE',
+    expiresAt: new Date("2025-12-31"),
+    status: "ACTIVE",
     metadata: {
-      campaign: 'holiday-2025',
-      target: 'new-users'
-    }
-  }
-})
+      campaign: "holiday-2025",
+      target: "new-users",
+    },
+  },
+});
 
-console.log(`Created voucher: ${newVoucher.code}`)
+console.log(`Created voucher: ${newVoucher.code}`);
 ```
 
 ### Viewing Voucher Statistics
 
 **CLI Tool**:
+
 ```bash
 npx tsx prisma/verify-vouchers.ts
 ```
 
 **Output**:
+
 ```
 Voucher: LAUNCH100
   Status: ACTIVE
@@ -503,68 +527,70 @@ Voucher: BETA25
 ```
 
 **Via Code**:
+
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 const voucher = await prisma.voucher.findUnique({
-  where: { code: 'LAUNCH100' },
+  where: { code: "LAUNCH100" },
   include: {
-    _count: { select: { redemptions: true } }
-  }
-})
+    _count: { select: { redemptions: true } },
+  },
+});
 
-const usagePercent =
-  ((voucher.currentUses / voucher.maxUses) * 100).toFixed(1)
+const usagePercent = ((voucher.currentUses / voucher.maxUses) * 100).toFixed(1);
 
 console.log(
-  `${voucher.code}: ${voucher.currentUses} / ${voucher.maxUses} uses (${usagePercent}%)`
-)
+  `${voucher.code}: ${voucher.currentUses} / ${voucher.maxUses} uses (${usagePercent}%)`,
+);
 ```
 
 ### Deactivating a Voucher
 
 **Reasons to Deactivate**:
+
 - Ended campaign
 - High abuse rate
 - Reached max uses
 - Expired date passed
 
 **Method**:
+
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 await prisma.voucher.update({
-  where: { code: 'OLDPROMO' },
+  where: { code: "OLDPROMO" },
   data: {
-    status: 'INACTIVE',
+    status: "INACTIVE",
     // Optionally set expiration
-    expiresAt: new Date()
-  }
-})
+    expiresAt: new Date(),
+  },
+});
 ```
 
 ### Extending Voucher Limits
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 // Increase max uses
 await prisma.voucher.update({
-  where: { code: 'POPULAR' },
-  data: { maxUses: 5000 } // Was 1000
-})
+  where: { code: "POPULAR" },
+  data: { maxUses: 5000 }, // Was 1000
+});
 
 // Extend expiration
 await prisma.voucher.update({
-  where: { code: 'NEWYEAR2026' },
-  data: { expiresAt: new Date('2026-01-31') }
-})
+  where: { code: "NEWYEAR2026" },
+  data: { expiresAt: new Date("2026-01-31") },
+});
 
 // Re-activate if temporarily disabled
 await prisma.voucher.update({
-  where: { code: 'RELAUNCH' },
-  data: { status: 'ACTIVE' }
-})
+  where: { code: "RELAUNCH" },
+  data: { status: "ACTIVE" },
+});
 ```
 
 ---
@@ -599,19 +625,23 @@ Frontend: Show success toast + update UI
 ## Implementation Files
 
 **Database & Models**:
+
 - `prisma/schema.prisma` - Voucher, VoucherRedemption models
 - `prisma/seed-vouchers.ts` - Seed script for launch vouchers
 - `prisma/verify-vouchers.ts` - Verification utility
 
 **API Routes**:
+
 - `src/app/api/vouchers/validate/route.ts` - Validation endpoint
 - `src/app/api/vouchers/redeem/route.ts` - Redemption endpoint
 
 **Business Logic**:
+
 - `src/lib/vouchers/voucher-manager.ts` - Core voucher operations
 - `src/lib/vouchers/types.ts` - Type definitions
 
 **Frontend Components**:
+
 - `src/components/vouchers/redemption-form.tsx` - Voucher input form
 - `src/components/vouchers/redemption-history.tsx` - User's redemptions
 - `src/app/settings/vouchers/page.tsx` - Voucher settings page
@@ -650,12 +680,12 @@ Frontend: Show success toast + update UI
 
 ### Key Metrics
 
-| Metric | Calculation | Insight |
-|--------|-----------|---------|
-| Redemption Rate | currentUses / maxUses | Campaign reach |
-| Conversion Rate | (redeemed users / sent codes) | Campaign effectiveness |
-| Average Value | sum(tokensGranted) / redeemed count | User lifetime impact |
-| Peak Redemption | max daily redemptions | User engagement |
+| Metric          | Calculation                         | Insight                |
+| --------------- | ----------------------------------- | ---------------------- |
+| Redemption Rate | currentUses / maxUses               | Campaign reach         |
+| Conversion Rate | (redeemed users / sent codes)       | Campaign effectiveness |
+| Average Value   | sum(tokensGranted) / redeemed count | User lifetime impact   |
+| Peak Redemption | max daily redemptions               | User engagement        |
 
 ### Sample Report
 

@@ -1,7 +1,7 @@
-import { When, Then } from '@cucumber/cucumber';
-import { expect } from '@playwright/test';
-import { CustomWorld } from '../support/world';
-import { ProfilePage } from '../support/page-objects/ProfilePage';
+import { Then, When } from "@cucumber/cucumber";
+import { expect } from "@playwright/test";
+import { ProfilePage } from "../support/page-objects/ProfilePage";
+import { CustomWorld } from "../support/world";
 
 // Helper to get or create page object
 function getProfilePage(world: CustomWorld): ProfilePage {
@@ -12,7 +12,7 @@ function getProfilePage(world: CustomWorld): ProfilePage {
 }
 
 // Extend CustomWorld
-declare module '../support/world' {
+declare module "../support/world" {
   interface CustomWorld {
     profilePage?: ProfilePage;
     notedProfileInfo?: {
@@ -22,36 +22,36 @@ declare module '../support/world' {
   }
 }
 
-When('I navigate to the profile page', async function (this: CustomWorld) {
+When("I navigate to the profile page", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   await profilePage.navigate();
 });
 
-Then('I should see the profile page title', async function (this: CustomWorld) {
+Then("I should see the profile page title", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const title = await profilePage.getPageTitle();
   await expect(title).toBeVisible();
 });
 
-Then('I should see my name {string}', async function (this: CustomWorld, name: string) {
+Then("I should see my name {string}", async function(this: CustomWorld, name: string) {
   const profilePage = getProfilePage(this);
   const userName = await profilePage.getUserName();
   await expect(userName).toHaveText(name);
 });
 
-Then('I should see my email {string}', async function (this: CustomWorld, email: string) {
+Then("I should see my email {string}", async function(this: CustomWorld, email: string) {
   const profilePage = getProfilePage(this);
   const userEmail = await profilePage.getUserEmail();
   await expect(userEmail).toHaveText(email);
 });
 
-Then('I should see my user ID', async function (this: CustomWorld) {
+Then("I should see my user ID", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userId = await profilePage.getUserId();
   await expect(userId).toBeVisible();
 });
 
-Then('the user ID should not be empty', async function (this: CustomWorld) {
+Then("the user ID should not be empty", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userId = await profilePage.getUserId();
   const text = await userId.textContent();
@@ -59,25 +59,31 @@ Then('the user ID should not be empty', async function (this: CustomWorld) {
   expect(text?.trim().length).toBeGreaterThan(0);
 });
 
-Then('I should see the avatar with initials {string}', async function (this: CustomWorld, initials: string) {
-  const profilePage = getProfilePage(this);
-  await profilePage.verifyAvatarInitials(initials);
-});
+Then(
+  "I should see the avatar with initials {string}",
+  async function(this: CustomWorld, initials: string) {
+    const profilePage = getProfilePage(this);
+    await profilePage.verifyAvatarInitials(initials);
+  },
+);
 
-Then('I should see the custom avatar image', async function (this: CustomWorld) {
+Then("I should see the custom avatar image", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const avatarImage = await profilePage.getAvatarImage();
   await expect(avatarImage).toBeVisible();
 });
 
-Then('the avatar should display the image from {string}', async function (this: CustomWorld, imageUrl: string) {
-  const profilePage = getProfilePage(this);
-  const avatarImage = await profilePage.getAvatarImage();
-  const src = await avatarImage.getAttribute('src');
-  expect(src).toContain(imageUrl);
-});
+Then(
+  "the avatar should display the image from {string}",
+  async function(this: CustomWorld, imageUrl: string) {
+    const profilePage = getProfilePage(this);
+    const avatarImage = await profilePage.getAvatarImage();
+    const src = await avatarImage.getAttribute("src");
+    expect(src).toContain(imageUrl);
+  },
+);
 
-Then('the displayed email should be a valid email format', async function (this: CustomWorld) {
+Then("the displayed email should be a valid email format", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userEmail = await profilePage.getUserEmail();
   const emailText = await userEmail.textContent();
@@ -85,7 +91,7 @@ Then('the displayed email should be a valid email format', async function (this:
   expect(emailText).toMatch(emailRegex);
 });
 
-Then('the email should contain {string} symbol', async function (this: CustomWorld, symbol: string) {
+Then("the email should contain {string} symbol", async function(this: CustomWorld, symbol: string) {
   const profilePage = getProfilePage(this);
   const userEmail = await profilePage.getUserEmail();
   const emailText = await userEmail.textContent();
@@ -94,11 +100,11 @@ Then('the email should contain {string} symbol', async function (this: CustomWor
 
 // NOTE: "I am on the home page" step is defined in home-page.steps.ts
 
-Then('I should be on the profile page', async function (this: CustomWorld) {
+Then("I should be on the profile page", async function(this: CustomWorld) {
   await expect(this.page).toHaveURL(/\/profile$/);
 });
 
-Then('I should see my profile information', async function (this: CustomWorld) {
+Then("I should see my profile information", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userName = await profilePage.getUserName();
   const userEmail = await profilePage.getUserEmail();
@@ -106,18 +112,18 @@ Then('I should see my profile information', async function (this: CustomWorld) {
   await expect(userEmail).toBeVisible();
 });
 
-When('I note my displayed information', async function (this: CustomWorld) {
+When("I note my displayed information", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userName = await profilePage.getUserName();
   const userEmail = await profilePage.getUserEmail();
 
   this.notedProfileInfo = {
-    name: (await userName.textContent()) || '',
-    email: (await userEmail.textContent()) || '',
+    name: (await userName.textContent()) || "",
+    email: (await userEmail.textContent()) || "",
   };
 });
 
-Then('I should see the same profile information', async function (this: CustomWorld) {
+Then("I should see the same profile information", async function(this: CustomWorld) {
   const profilePage = getProfilePage(this);
   const userName = await profilePage.getUserName();
   const userEmail = await profilePage.getUserEmail();
@@ -128,13 +134,13 @@ Then('I should see the same profile information', async function (this: CustomWo
   }
 });
 
-Then('my name should still be {string}', async function (this: CustomWorld, name: string) {
+Then("my name should still be {string}", async function(this: CustomWorld, name: string) {
   const profilePage = getProfilePage(this);
   const userName = await profilePage.getUserName();
   await expect(userName).toHaveText(name);
 });
 
-Then('my email should still be {string}', async function (this: CustomWorld, email: string) {
+Then("my email should still be {string}", async function(this: CustomWorld, email: string) {
   const profilePage = getProfilePage(this);
   const userEmail = await profilePage.getUserEmail();
   await expect(userEmail).toHaveText(email);

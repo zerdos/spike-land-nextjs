@@ -4,36 +4,36 @@
  * Provides user registration, activity, and retention analytics for admin dashboard.
  */
 
-import { NextResponse } from "next/server"
-import { auth } from "@/auth"
-import { requireAdminByUserId } from "@/lib/auth/admin-middleware"
-import prisma from "@/lib/prisma"
+import { auth } from "@/auth";
+import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await requireAdminByUserId(session.user.id)
+    await requireAdminByUserId(session.user.id);
 
     // Get date ranges
-    const now = new Date()
-    const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const now = new Date();
+    const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Daily registrations for last 30 days
     const dailyRegistrations = await prisma.$queryRaw<
-      Array<{ date: Date; count: bigint }>
+      Array<{ date: Date; count: bigint; }>
     >`
       SELECT DATE(created_at) as date, COUNT(*)::bigint as count
       FROM users
       WHERE created_at >= ${last30Days}
       GROUP BY DATE(created_at)
       ORDER BY date ASC
-    `
+    `;
 
     // Auth provider breakdown
     const authProviders = await prisma.account.groupBy({
@@ -41,7 +41,7 @@ export async function GET() {
       _count: {
         userId: true,
       },
-    })
+    });
 
     // Active users in last 7 days (users with sessions)
     const activeUsers7dList = await prisma.session.findMany({
@@ -54,8 +54,8 @@ export async function GET() {
       select: {
         userId: true,
       },
-    })
-    const activeUsers7d = activeUsers7dList.length
+    });
+    const activeUsers7d = activeUsers7dList.length;
 
     // Active users in last 30 days
     const activeUsers30dList = await prisma.session.findMany({
@@ -68,11 +68,11 @@ export async function GET() {
       select: {
         userId: true,
       },
-    })
-    const activeUsers30d = activeUsers30dList.length
+    });
+    const activeUsers30d = activeUsers30dList.length;
 
     // Total users
-    const totalUsers = await prisma.user.count()
+    const totalUsers = await prisma.user.count();
 
     // User growth stats
     const usersLast7Days = await prisma.user.count({
@@ -81,7 +81,7 @@ export async function GET() {
           gte: last7Days,
         },
       },
-    })
+    });
 
     const usersLast30Days = await prisma.user.count({
       where: {
@@ -89,14 +89,16 @@ export async function GET() {
           gte: last30Days,
         },
       },
-    })
+    });
 
     return NextResponse.json({
-      dailyRegistrations: dailyRegistrations.map((row: { date: Date; count: bigint }) => ({
+      dailyRegistrations: dailyRegistrations.map((row: { date: Date; count: bigint; }) => ({
         date: row.date.toISOString().split("T")[0],
         count: Number(row.count),
       })),
-      authProviders: authProviders.map((provider: { provider: string; _count: { userId: number } }) => ({
+      authProviders: authProviders.map((
+        provider: { provider: string; _count: { userId: number; }; },
+      ) => ({
         name: provider.provider,
         count: provider._count.userId,
       })),
@@ -109,15 +111,15 @@ export async function GET() {
         last7Days: usersLast7Days,
         last30Days: usersLast30Days,
       },
-    })
+    });
   } catch (error) {
-    console.error("Failed to fetch user analytics:", error)
+    console.error("Failed to fetch user analytics:", error);
     if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 })
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }
