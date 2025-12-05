@@ -317,6 +317,7 @@ enum JobStatus {
   COMPLETED
   FAILED
   REFUNDED
+  CANCELLED
 }
 
 model ImageEnhancementJob {
