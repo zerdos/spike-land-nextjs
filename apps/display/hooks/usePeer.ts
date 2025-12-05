@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { PeerConfig, PeerConnectionState } from "@/types/webrtc";
+import {
+  createWebRTCError,
+  generatePeerId,
+  isWebRTCSupported,
+} from "@apps/display/lib/webrtc/utils";
 import Peer from "peerjs";
-import type {
-  PeerConfig,
-  PeerConnectionState,
-} from "@/types/webrtc";
-import { generatePeerId, isWebRTCSupported, createWebRTCError } from "@apps/display/lib/webrtc/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Hook for managing a PeerJS connection
@@ -86,7 +87,7 @@ export function usePeer(config: PeerConfig) {
         const errorInfo = createWebRTCError(
           "network-error",
           error.message || "Peer connection error",
-          error as Error
+          error as Error,
         );
         setState((prev) => ({
           ...prev,

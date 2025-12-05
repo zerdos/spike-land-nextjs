@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { NextRequest } from "next/server"
-import { POST, GET } from "./route"
-import type { Session } from "next-auth"
-import type { App, Requirement, MonetizationModel } from "@prisma/client"
+import type { App, MonetizationModel, Requirement } from "@prisma/client";
+import type { Session } from "next-auth";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "./route";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
-}))
+}));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -15,18 +15,18 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
     },
   },
-}))
+}));
 
-const { auth } = await import("@/auth")
-const prisma = (await import("@/lib/prisma")).default
+const { auth } = await import("@/auth");
+const prisma = (await import("@/lib/prisma")).default;
 
 describe("POST /api/apps", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it("should return 401 if user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null)
+    vi.mocked(auth).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -36,20 +36,20 @@ describe("POST /api/apps", () => {
         requirements: "Test Requirements",
         monetizationModel: "free",
       }),
-    })
+    });
 
-    const response = await POST(request)
-    const data = await response.json()
+    const response = await POST(request);
+    const data = await response.json();
 
-    expect(response.status).toBe(401)
-    expect(data.error).toBe("Unauthorized")
-  })
+    expect(response.status).toBe(401);
+    expect(data.error).toBe("Unauthorized");
+  });
 
   it("should create an app successfully", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
       expires: "2025-12-31",
-    } as Session)
+    } as Session);
 
     const mockApp = {
       id: "app-1",
@@ -72,9 +72,11 @@ describe("POST /api/apps", () => {
           features: [],
         },
       ],
-    }
+    };
 
-    vi.mocked(prisma.app.create).mockResolvedValue(mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })
+    vi.mocked(prisma.app.create).mockResolvedValue(
+      mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[]; },
+    );
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -84,13 +86,13 @@ describe("POST /api/apps", () => {
         requirements: "Test Requirements with enough length to pass validation",
         monetizationModel: "free",
       }),
-    })
+    });
 
-    const response = await POST(request)
-    const data = await response.json()
+    const response = await POST(request);
+    const data = await response.json();
 
-    expect(response.status).toBe(201)
-    expect(data.name).toBe("Test App")
+    expect(response.status).toBe(201);
+    expect(data.name).toBe("Test App");
     expect(prisma.app.create).toHaveBeenCalledWith({
       data: {
         name: "Test App",
@@ -115,13 +117,13 @@ describe("POST /api/apps", () => {
         requirements: true,
         monetizationModels: true,
       },
-    })
-  })
+    });
+  });
 
   it("should return 400 for invalid data", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as Session)
+    } as Session);
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -131,21 +133,21 @@ describe("POST /api/apps", () => {
         requirements: "Short",
         monetizationModel: "invalid",
       }),
-    })
+    });
 
-    const response = await POST(request)
-    const data = await response.json()
+    const response = await POST(request);
+    const data = await response.json();
 
-    expect(response.status).toBe(400)
-    expect(data.error).toBe("Validation error")
-  })
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Validation error");
+  });
 
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as Session)
+    } as Session);
 
-    vi.mocked(prisma.app.create).mockRejectedValue(new Error("Database error"))
+    vi.mocked(prisma.app.create).mockRejectedValue(new Error("Database error"));
 
     const request = new NextRequest("http://localhost/api/apps", {
       method: "POST",
@@ -155,35 +157,35 @@ describe("POST /api/apps", () => {
         requirements: "Test Requirements with enough length",
         monetizationModel: "free",
       }),
-    })
+    });
 
-    const response = await POST(request)
-    const data = await response.json()
+    const response = await POST(request);
+    const data = await response.json();
 
-    expect(response.status).toBe(500)
-    expect(data.error).toBe("Internal server error")
-  })
-})
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+  });
+});
 
 describe("GET /api/apps", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it("should return 401 if user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null)
+    vi.mocked(auth).mockResolvedValue(null);
 
-    const response = await GET()
-    const data = await response.json()
+    const response = await GET();
+    const data = await response.json();
 
-    expect(response.status).toBe(401)
-    expect(data.error).toBe("Unauthorized")
-  })
+    expect(response.status).toBe(401);
+    expect(data.error).toBe("Unauthorized");
+  });
 
   it("should return user's apps", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as Session)
+    } as Session);
 
     const mockApps = [
       {
@@ -204,15 +206,20 @@ describe("GET /api/apps", () => {
         requirements: [],
         monetizationModels: [],
       },
-    ]
+    ];
 
-    vi.mocked(prisma.app.findMany).mockResolvedValue(mockApps as (App & { requirements: Requirement[]; monetizationModels: MonetizationModel[] })[])
+    vi.mocked(prisma.app.findMany).mockResolvedValue(
+      mockApps as (App & {
+        requirements: Requirement[];
+        monetizationModels: MonetizationModel[];
+      })[],
+    );
 
-    const response = await GET()
-    const data = await response.json()
+    const response = await GET();
+    const data = await response.json();
 
-    expect(response.status).toBe(200)
-    expect(data).toHaveLength(2)
+    expect(response.status).toBe(200);
+    expect(data).toHaveLength(2);
     expect(prisma.app.findMany).toHaveBeenCalledWith({
       where: {
         userId: "user-1",
@@ -235,20 +242,20 @@ describe("GET /api/apps", () => {
       orderBy: {
         createdAt: "desc",
       },
-    })
-  })
+    });
+  });
 
   it("should handle server errors", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1", email: "test@example.com" },
-    } as Session)
+    } as Session);
 
-    vi.mocked(prisma.app.findMany).mockRejectedValue(new Error("Database error"))
+    vi.mocked(prisma.app.findMany).mockRejectedValue(new Error("Database error"));
 
-    const response = await GET()
-    const data = await response.json()
+    const response = await GET();
+    const data = await response.json();
 
-    expect(response.status).toBe(500)
-    expect(data.error).toBe("Internal server error")
-  })
-})
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+  });
+});

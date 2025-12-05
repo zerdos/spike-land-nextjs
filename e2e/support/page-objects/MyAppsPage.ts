@@ -1,19 +1,19 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from "@playwright/test";
 
 export class MyAppsPage {
   constructor(private page: Page) {}
 
   async navigate() {
-    await this.page.goto('/my-apps');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.goto("/my-apps");
+    await this.page.waitForLoadState("networkidle");
   }
 
   async getPageTitle() {
-    return this.page.getByRole('heading', { name: /My Apps/i });
+    return this.page.getByRole("heading", { name: /My Apps/i });
   }
 
   async getCreateNewAppButton() {
-    return this.page.getByRole('button', { name: /Create New App/i });
+    return this.page.getByRole("button", { name: /Create New App/i });
   }
 
   async clickCreateNewApp() {
@@ -34,11 +34,11 @@ export class MyAppsPage {
     await searchInput.fill(query);
   }
 
-  async getFilterButton(filter: 'All' | 'Active' | 'Draft') {
-    return this.page.getByRole('button', { name: filter });
+  async getFilterButton(filter: "All" | "Active" | "Draft") {
+    return this.page.getByRole("button", { name: filter });
   }
 
-  async clickFilter(filter: 'All' | 'Active' | 'Draft') {
+  async clickFilter(filter: "All" | "Active" | "Draft") {
     const button = await this.getFilterButton(filter);
     await button.click();
   }

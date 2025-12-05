@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { MediaConstraints, StreamMetadata } from "@/types/webrtc";
 import {
-  getUserMediaStream,
   getDisplayMediaStream,
-  stopMediaStream,
   getStreamMetadata,
+  getUserMediaStream,
   monitorStreamHealth,
+  stopMediaStream,
 } from "@apps/display/lib/webrtc/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Stream type that can be acquired
@@ -90,8 +90,9 @@ export function useMediaStream(peerId: string) {
 
         return stream;
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to start media stream";
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Failed to start media stream";
         setState((prev) => ({
           ...prev,
           error: errorMessage,
@@ -99,7 +100,7 @@ export function useMediaStream(peerId: string) {
         throw error;
       }
     },
-    [peerId]
+    [peerId],
   );
 
   /**
@@ -131,16 +132,15 @@ export function useMediaStream(peerId: string) {
     (kind: "audio" | "video", enabled?: boolean) => {
       if (!streamRef.current) return;
 
-      const tracks =
-        kind === "audio"
-          ? streamRef.current.getAudioTracks()
-          : streamRef.current.getVideoTracks();
+      const tracks = kind === "audio"
+        ? streamRef.current.getAudioTracks()
+        : streamRef.current.getVideoTracks();
 
       tracks.forEach((track) => {
         track.enabled = enabled !== undefined ? enabled : !track.enabled;
       });
     },
-    []
+    [],
   );
 
   /**
@@ -149,10 +149,9 @@ export function useMediaStream(peerId: string) {
   const isTrackEnabled = useCallback((kind: "audio" | "video"): boolean => {
     if (!streamRef.current) return false;
 
-    const tracks =
-      kind === "audio"
-        ? streamRef.current.getAudioTracks()
-        : streamRef.current.getVideoTracks();
+    const tracks = kind === "audio"
+      ? streamRef.current.getAudioTracks()
+      : streamRef.current.getVideoTracks();
 
     return tracks.some((track) => track.enabled);
   }, []);
@@ -198,8 +197,7 @@ export function useMediaStream(peerId: string) {
         stream: streamRef.current,
       }));
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to replace video track";
+      const errorMessage = error instanceof Error ? error.message : "Failed to replace video track";
       setState((prev) => ({
         ...prev,
         error: errorMessage,

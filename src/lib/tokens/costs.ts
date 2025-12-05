@@ -10,12 +10,12 @@
  * - TIER_4K: 4096px max dimension
  */
 export const ENHANCEMENT_COSTS = {
-  TIER_1K: 2,   // 1024px max dimension
-  TIER_2K: 5,   // 2048px max dimension
-  TIER_4K: 10,  // 4096px max dimension
-} as const
+  TIER_1K: 2, // 1024px max dimension
+  TIER_2K: 5, // 2048px max dimension
+  TIER_4K: 10, // 4096px max dimension
+} as const;
 
-export type EnhancementTier = keyof typeof ENHANCEMENT_COSTS
+export type EnhancementTier = keyof typeof ENHANCEMENT_COSTS;
 
 /**
  * Get the token cost for an enhancement tier
@@ -24,5 +24,5 @@ export type EnhancementTier = keyof typeof ENHANCEMENT_COSTS
  * @returns The token cost for the specified tier
  */
 export function getEnhancementCost(tier: EnhancementTier): number {
-  return ENHANCEMENT_COSTS[tier]
+  return ENHANCEMENT_COSTS[tier];
 }

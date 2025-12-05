@@ -5,9 +5,9 @@
  * It checks if a user has ADMIN or SUPER_ADMIN role.
  */
 
-import { Session } from "next-auth"
-import { UserRole } from "@prisma/client"
-import prisma from "@/lib/prisma"
+import prisma from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
+import { Session } from "next-auth";
 
 /**
  * Checks if a session has admin privileges (ADMIN or SUPER_ADMIN role).
@@ -18,12 +18,12 @@ import prisma from "@/lib/prisma"
  */
 export function isAdmin(session: Session | null): boolean {
   if (!session?.user?.id) {
-    return false
+    return false;
   }
 
   // Role is now properly included in session via JWT callback
-  const role = session.user.role
-  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN
+  const role = session.user.role;
+  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
 }
 
 /**
@@ -37,13 +37,13 @@ export async function isAdminByUserId(userId: string): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true }
-    })
+      select: { role: true },
+    });
 
-    return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN
+    return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
   } catch (error) {
-    console.error("Failed to check admin status:", error)
-    return false
+    console.error("Failed to check admin status:", error);
+    return false;
   }
 }
 
@@ -56,11 +56,11 @@ export async function isAdminByUserId(userId: string): Promise<boolean> {
  */
 export function requireAdmin(session: Session | null): void {
   if (!session?.user?.id) {
-    throw new Error("Unauthorized: Authentication required")
+    throw new Error("Unauthorized: Authentication required");
   }
 
   if (!isAdmin(session)) {
-    throw new Error("Forbidden: Admin access required")
+    throw new Error("Forbidden: Admin access required");
   }
 }
 
@@ -72,10 +72,10 @@ export function requireAdmin(session: Session | null): void {
  * @throws Error if user is not admin
  */
 export async function requireAdminByUserId(userId: string): Promise<void> {
-  const isUserAdmin = await isAdminByUserId(userId)
+  const isUserAdmin = await isAdminByUserId(userId);
 
   if (!isUserAdmin) {
-    throw new Error("Forbidden: Admin access required")
+    throw new Error("Forbidden: Admin access required");
   }
 }
 
@@ -89,12 +89,12 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true }
-    })
+      select: { role: true },
+    });
 
-    return user?.role === UserRole.SUPER_ADMIN
+    return user?.role === UserRole.SUPER_ADMIN;
   } catch (error) {
-    console.error("Failed to check super admin status:", error)
-    return false
+    console.error("Failed to check super admin status:", error);
+    return false;
   }
 }

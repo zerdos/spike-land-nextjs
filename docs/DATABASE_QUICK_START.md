@@ -9,6 +9,7 @@ This is a condensed guide to get the database up and running quickly. For compre
 Choose one option:
 
 #### Option A: Docker (Recommended)
+
 ```bash
 docker run --name spike-land-postgres \
   -e POSTGRES_USER=postgres \
@@ -19,6 +20,7 @@ docker run --name spike-land-postgres \
 ```
 
 #### Option B: Use Cloud Provider
+
 - **Supabase**: https://supabase.com (Free tier)
 - **Railway**: https://railway.app (Simple setup)
 - **Neon**: https://neon.tech (Serverless)
@@ -116,40 +118,40 @@ npx prisma validate
 
 ```typescript
 // Import Prisma client
-import prisma from '@/lib/prisma'
+import prisma from "@/lib/prisma";
 
 // Query examples
-const users = await prisma.user.findMany()
-const user = await prisma.user.findUnique({ where: { email: 'user@example.com' } })
+const users = await prisma.user.findMany();
+const user = await prisma.user.findUnique({ where: { email: "user@example.com" } });
 
 // Create with relations
 const app = await prisma.app.create({
   data: {
-    name: 'My App',
-    description: 'A great app',
+    name: "My App",
+    description: "A great app",
     userId: user.id,
-    status: 'ACTIVE',
+    status: "ACTIVE",
     requirements: {
       create: [
-        { description: 'User authentication', priority: 'HIGH' }
-      ]
-    }
+        { description: "User authentication", priority: "HIGH" },
+      ],
+    },
   },
   include: {
-    requirements: true
-  }
-})
+    requirements: true,
+  },
+});
 
 // Update
 await prisma.app.update({
   where: { id: app.id },
-  data: { status: 'ACTIVE' }
-})
+  data: { status: "ACTIVE" },
+});
 
 // Delete
 await prisma.app.delete({
-  where: { id: app.id }
-})
+  where: { id: app.id },
+});
 ```
 
 ## Troubleshooting

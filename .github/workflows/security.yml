@@ -9,7 +9,7 @@ on:
 
   # Run weekly on Monday at 9 AM UTC
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: "0 9 * * 1"
 
   # Allow manual trigger
   workflow_dispatch:
@@ -26,8 +26,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'yarn'
+          node-version: "20"
+          cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Install dependencies

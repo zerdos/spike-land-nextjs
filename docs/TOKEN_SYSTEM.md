@@ -54,6 +54,7 @@ Users can acquire tokens through four primary mechanisms:
 - **Automatic**: No user action required
 
 **Example Timeline**:
+
 - Hour 0: Balance = 0
 - Hour 0:15: Balance = 1
 - Hour 0:30: Balance = 2
@@ -67,11 +68,13 @@ Users can acquire tokens through four primary mechanisms:
 **Promotional codes providing bonus tokens**
 
 Available Vouchers:
+
 - **LAUNCH100**: 100 tokens (limited to 1000 uses)
 - **WELCOME50**: 50 tokens (unlimited)
 - **BETA25**: 25 tokens (limited to 500 uses)
 
 **Redemption Rules**:
+
 - One voucher per user (cannot redeem same code twice)
 - Vouchers can be combined (user can redeem LAUNCH100 and WELCOME50)
 - No expiration on active vouchers
@@ -85,14 +88,15 @@ Available Vouchers:
 
 **Available Packages**:
 
-| Package | Tokens | Price (GBP) | Price/Token | Best For |
-|---------|--------|------------|------------|----------|
-| Starter | 50 | 2.99 | 0.06 | Single use |
-| Essential | 150 | 7.99 | 0.05 | Monthly usage |
-| Professional | 500 | 19.99 | 0.04 | Heavy usage |
-| Enterprise | 2000 | 59.99 | 0.03 | Team/organization |
+| Package      | Tokens | Price (GBP) | Price/Token | Best For          |
+| ------------ | ------ | ----------- | ----------- | ----------------- |
+| Starter      | 50     | 2.99        | 0.06        | Single use        |
+| Essential    | 150    | 7.99        | 0.05        | Monthly usage     |
+| Professional | 500    | 19.99       | 0.04        | Heavy usage       |
+| Enterprise   | 2000   | 59.99       | 0.03        | Team/organization |
 
 **Payment Details**:
+
 - Currency: British Pounds (GBP)
 - Payment Method: Credit/Debit card via Stripe
 - Processing: Instant (tokens credited immediately)
@@ -107,13 +111,14 @@ Available Vouchers:
 
 **Available Plans**:
 
-| Plan | Tokens/Month | Price/Month (GBP) | Rollover | Best For |
-|------|-------------|------------------|----------|----------|
-| Starter | 20 | 2.99 | 20 | Casual users |
-| Professional | 100 | 9.99 | 100 | Regular users |
-| Enterprise | 500 | 29.99 | 250 | Power users |
+| Plan         | Tokens/Month | Price/Month (GBP) | Rollover | Best For      |
+| ------------ | ------------ | ----------------- | -------- | ------------- |
+| Starter      | 20           | 2.99              | 20       | Casual users  |
+| Professional | 100          | 9.99              | 100      | Regular users |
+| Enterprise   | 500          | 29.99             | 250      | Power users   |
 
 **Subscription Features**:
+
 - **Auto-Renewal**: Monthly billing until cancelled
 - **Rollover**: Unused tokens carry over to next month (up to max)
 - **Pause**: Can pause subscription for up to 3 months
@@ -122,6 +127,7 @@ Available Vouchers:
 - **Downgrade**: Effective next billing cycle
 
 **Rollover Example** (Professional Plan):
+
 - Month 1: Allocated 100, Used 30, Rollover = 70
 - Month 2: Allocated 100 + Rollover 70 = 170 (capped at 100)
 - Month 3: Allocated 100, Current = 170 total possible
@@ -178,12 +184,14 @@ Tokens purchased through Stripe do not expire and accumulate in the user's balan
 ### Token Cost Examples
 
 **TIER_1K Enhancement (2 tokens)**:
+
 - Starter Pack: Can enhance 25 times
 - Essential Pack: Can enhance 75 times
 - Professional Pack: Can enhance 250 times
 - Enterprise Pack: Can enhance 1000 times
 
 **TIER_4K Enhancement (10 tokens)**:
+
 - Starter Pack: Can enhance 5 times
 - Essential Pack: Can enhance 15 times
 - Professional Pack: Can enhance 50 times
@@ -214,30 +222,35 @@ Tokens purchased through Stripe do not expire and accumulate in the user's balan
 ### Subscription Lifecycle
 
 **1. Purchase Flow**:
+
 - User selects plan on pricing page
 - Redirected to Stripe checkout
 - Payment processed immediately
 - Plan activated, first month's tokens credited
 
 **2. Active Subscription**:
+
 - Tokens credited automatically on renewal date
 - Unused tokens carry over (respecting max rollover)
 - Email receipt sent each month
 - Plan visible in account settings
 
 **3. Pause Subscription**:
+
 - User can pause for 1-3 months
 - No charges during pause period
 - Tokens not credited during pause
 - Can unpause anytime
 
 **4. Cancel Subscription**:
+
 - Effective immediately
 - Access until end of billing cycle
 - Remaining tokens retained indefinitely
 - Can resubscribe anytime
 
 **5. Upgrade/Downgrade**:
+
 - Change plan in account settings
 - Prorated adjustment applied to next billing cycle
 - Current tokens not affected
@@ -250,16 +263,19 @@ Tokens purchased through Stripe do not expire and accumulate in the user's balan
 ### Regeneration Mechanics
 
 **Rate**: 1 token per 15 minutes
+
 - Exact interval: 15 minutes (900 seconds)
 - Checked on each API call that requires tokens
 
 **Calculation**:
+
 ```
 tokensSinceLastRegen = floor((now - lastRegenTime) / 15min)
 newTokens = min(tokensSinceLastRegen, 100 - currentBalance)
 ```
 
 **Example**:
+
 - Current balance: 95
 - Last regeneration: 1 hour ago (4 × 15 min intervals)
 - Available tokens: 4
@@ -268,12 +284,14 @@ newTokens = min(tokensSinceLastRegen, 100 - currentBalance)
 ### Storage Duration
 
 **Free Regenerated Tokens**:
+
 - Expire after 30 days of inactivity
 - Inactivity = no API calls from user
 - Expiration is automatic (checked on each request)
 - Expiration applies to balance >= 100
 
 **Purchased Tokens**:
+
 - Never expire
 - Always used first (FIFO)
 - Persist across subscription cycles
@@ -287,13 +305,14 @@ Tokens are consumed in this order:
 3. **Regenerated Tokens**: Free tokens (expire after 30 days)
 
 Example balance composition:
+
 ```json
 {
   "totalBalance": 150,
   "breakdown": {
-    "purchased": 50,      // From stripe purchases
-    "subscription": 50,   // Current month allocation
-    "regenerated": 50     // Free tokens (expire in 25 days)
+    "purchased": 50, // From stripe purchases
+    "subscription": 50, // Current month allocation
+    "regenerated": 50 // Free tokens (expire in 25 days)
   }
 }
 ```
@@ -309,6 +328,7 @@ Example balance composition:
 **Authentication**: Required
 
 **Response**:
+
 ```json
 {
   "balance": 95,
@@ -325,6 +345,7 @@ Example balance composition:
 ```
 
 **Field Explanations**:
+
 - `balance`: Current token balance
 - `lastRegeneration`: ISO timestamp of last automatic regeneration
 - `timeUntilNextRegenMs`: Milliseconds until next 1-token regeneration
@@ -353,13 +374,13 @@ Each token consumption is logged with:
 
 ### Transaction Types
 
-| Type | Description | Reversible |
-|------|-------------|-----------|
-| CONSUME | Token deducted for service | No |
-| EARN_BONUS | Tokens from voucher | No |
-| EARN_SUBSCRIPTION | Tokens from subscription | No |
-| REFUND | Tokens returned on failure | No (increases balance) |
-| PURCHASE | Tokens from Stripe | No |
+| Type              | Description                | Reversible             |
+| ----------------- | -------------------------- | ---------------------- |
+| CONSUME           | Token deducted for service | No                     |
+| EARN_BONUS        | Tokens from voucher        | No                     |
+| EARN_SUBSCRIPTION | Tokens from subscription   | No                     |
+| REFUND            | Tokens returned on failure | No (increases balance) |
+| PURCHASE          | Tokens from Stripe         | No                     |
 
 ---
 
@@ -372,12 +393,14 @@ Each token consumption is logged with:
 **Authentication**: Required (Bearer token)
 
 **Request**:
+
 ```http
 GET /api/tokens/balance HTTP/1.1
 Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
+
 ```json
 {
   "balance": 95,
@@ -395,10 +418,10 @@ Authorization: Bearer {session_token}
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 401 | Unauthorized | User session invalid or missing |
-| 500 | Failed to fetch | Database error |
+| Status | Error           | Description                     |
+| ------ | --------------- | ------------------------------- |
+| 401    | Unauthorized    | User session invalid or missing |
+| 500    | Failed to fetch | Database error                  |
 
 ### Create Checkout Session (Purchase)
 
@@ -407,6 +430,7 @@ Authorization: Bearer {session_token}
 **Authentication**: Required
 
 **Request**:
+
 ```http
 POST /api/stripe/checkout HTTP/1.1
 Authorization: Bearer {session_token}
@@ -419,12 +443,14 @@ Content-Type: application/json
 ```
 
 **Valid Package IDs**:
+
 - `starter_50`
 - `essential_150`
 - `professional_500`
 - `enterprise_2000`
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -435,12 +461,12 @@ Content-Type: application/json
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | Package ID required | packageId missing |
-| 400 | Invalid package ID | packageId not recognized |
-| 401 | Unauthorized | User session invalid |
-| 500 | Failed to create | Stripe API error |
+| Status | Error               | Description              |
+| ------ | ------------------- | ------------------------ |
+| 400    | Package ID required | packageId missing        |
+| 400    | Invalid package ID  | packageId not recognized |
+| 401    | Unauthorized        | User session invalid     |
+| 500    | Failed to create    | Stripe API error         |
 
 ### Create Subscription Session
 
@@ -449,6 +475,7 @@ Content-Type: application/json
 **Authentication**: Required
 
 **Request**:
+
 ```http
 POST /api/stripe/checkout HTTP/1.1
 Authorization: Bearer {session_token}
@@ -461,11 +488,13 @@ Content-Type: application/json
 ```
 
 **Valid Plan IDs**:
+
 - `starter_20`
 - `professional_100`
 - `enterprise_500`
 
 **Response (Success - 200)**:
+
 ```json
 {
   "success": true,
@@ -476,13 +505,13 @@ Content-Type: application/json
 
 **Error Responses**:
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | Plan ID required | planId missing |
-| 400 | Invalid plan ID | planId not recognized |
-| 400 | Active subscription exists | User already has active subscription |
-| 401 | Unauthorized | User session invalid |
-| 500 | Failed to create | Stripe API error |
+| Status | Error                      | Description                          |
+| ------ | -------------------------- | ------------------------------------ |
+| 400    | Plan ID required           | planId missing                       |
+| 400    | Invalid plan ID            | planId not recognized                |
+| 400    | Active subscription exists | User already has active subscription |
+| 401    | Unauthorized               | User session invalid                 |
+| 500    | Failed to create           | Stripe API error                     |
 
 ---
 
@@ -560,6 +589,7 @@ Users can view complete transaction history through the account dashboard:
 ### Export Transaction History
 
 Users can export transaction history as:
+
 - CSV for spreadsheet analysis
 - JSON for archival
 - PDF for records
@@ -575,34 +605,35 @@ Users can export transaction history as:
 **Image Enhancement Costs**:
 
 | Enhancement Tier | Output Resolution | Token Cost |
-|------------------|-------------------|-----------|
-| TIER_1K | 1024px max | 2 tokens |
-| TIER_2K | 2048px max | 5 tokens |
-| TIER_4K | 4096px max | 10 tokens |
+| ---------------- | ----------------- | ---------- |
+| TIER_1K          | 1024px max        | 2 tokens   |
+| TIER_2K          | 2048px max        | 5 tokens   |
+| TIER_4K          | 4096px max        | 10 tokens  |
 
 **Value Analysis**:
 
 For Professional Pack (500 tokens, £19.99):
 
-| Tier | Images | Cost Per Image |
-|------|--------|-----------------|
-| TIER_1K | 250 | 0.08p |
-| TIER_2K | 100 | 0.20p |
-| TIER_4K | 50 | 0.40p |
+| Tier    | Images | Cost Per Image |
+| ------- | ------ | -------------- |
+| TIER_1K | 250    | 0.08p          |
+| TIER_2K | 100    | 0.20p          |
+| TIER_4K | 50     | 0.40p          |
 
 **Subscription Value** (Professional Plan, £9.99/month):
 
-| Usage Pattern | Images/Month | Cost Per Image |
-|---------------|-------------|-----------------|
-| Light (10 images at TIER_1K) | 10 | 1.00p |
-| Regular (20 images at TIER_2K) | 20 | 0.50p |
-| Heavy (50 images mixed) | 50 | 0.20p |
+| Usage Pattern                  | Images/Month | Cost Per Image |
+| ------------------------------ | ------------ | -------------- |
+| Light (10 images at TIER_1K)   | 10           | 1.00p          |
+| Regular (20 images at TIER_2K) | 20           | 0.50p          |
+| Heavy (50 images mixed)        | 50           | 0.20p          |
 
 ### Discounts & Promotions
 
 **Introductory Offer**: New users receive WELCOME50 voucher (50 free tokens)
 
 **Bulk Discounts**:
+
 - Enterprise Pack offers 50% better value than Starter Pack
 - Annual subscription equivalent: £119.88 (Professional)
 
@@ -613,19 +644,23 @@ For Professional Pack (500 tokens, £19.99):
 ## Implementation Files
 
 **Database Models**:
+
 - `prisma/schema.prisma` - UserTokenBalance, TokenTransaction, Subscription
 
 **Token Management**:
+
 - `src/lib/tokens/balance-manager.ts` - Token operations
 - `src/lib/tokens/regeneration.ts` - Automatic regeneration logic
 - `src/lib/tokens/costs.ts` - Cost configuration
 
 **API Endpoints**:
+
 - `src/app/api/tokens/balance/route.ts` - Balance query
 - `src/app/api/stripe/checkout/route.ts` - Payment session creation
 - `src/app/api/stripe/webhook/route.ts` - Stripe event handling
 
 **Frontend Components**:
+
 - `src/components/tokens/balance-display.tsx` - Balance widget
 - `src/components/tokens/purchase-modal.tsx` - Token purchase UI
 - `src/app/settings/tokens/page.tsx` - Token management page

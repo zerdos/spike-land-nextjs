@@ -6,8 +6,8 @@
  * All subsequent users get USER role by default.
  */
 
-import prisma from "@/lib/prisma"
-import { UserRole } from "@prisma/client"
+import prisma from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 
 /**
  * Checks if any admin exists in the system.
@@ -19,12 +19,12 @@ export async function hasAnyAdmin(): Promise<boolean> {
     where: {
       OR: [
         { role: UserRole.ADMIN },
-        { role: UserRole.SUPER_ADMIN }
-      ]
-    }
-  })
+        { role: UserRole.SUPER_ADMIN },
+      ],
+    },
+  });
 
-  return adminCount > 0
+  return adminCount > 0;
 }
 
 /**
@@ -37,23 +37,23 @@ export async function hasAnyAdmin(): Promise<boolean> {
 export async function bootstrapAdminIfNeeded(userId: string): Promise<boolean> {
   try {
     // Check if any admin already exists
-    const adminExists = await hasAnyAdmin()
+    const adminExists = await hasAnyAdmin();
 
     // If admin already exists, don't promote this user
     if (adminExists) {
-      return false
+      return false;
     }
 
     // No admin exists - promote this user to ADMIN
     await prisma.user.update({
       where: { id: userId },
-      data: { role: UserRole.ADMIN }
-    })
+      data: { role: UserRole.ADMIN },
+    });
 
-    console.log(`First user ${userId} promoted to ADMIN role`)
-    return true
+    console.log(`First user ${userId} promoted to ADMIN role`);
+    return true;
   } catch (error) {
-    console.error("Failed to bootstrap admin:", error)
-    return false
+    console.error("Failed to bootstrap admin:", error);
+    return false;
   }
 }

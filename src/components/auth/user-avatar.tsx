@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Settings, LayoutGrid } from "lucide-react";
+import { LayoutGrid, LogOut, Settings, User } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface UserAvatarProps {

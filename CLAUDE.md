@@ -13,6 +13,7 @@ Spike Land is an innovative platform that democratizes app development by connec
 ### **Core Vision**
 
 We are building a platform where:
+
 - **Anyone can create apps** without coding knowledge
 - **AI agents build apps** based on user requirements
 - **Users can fork and modify** existing apps
@@ -24,11 +25,13 @@ We are building a platform where:
 #### **User Roles & Capabilities**
 
 **Visitors (Unauthenticated)**
+
 - Browse public apps and features
 - View platform capabilities
 - Sign up / Log in
 
 **Authenticated Users**
+
 - Access protected "My Apps" section
 - Create new apps from scratch
 - Fork existing apps
@@ -79,6 +82,7 @@ We are building a platform where:
 ### **Technical Stack**
 
 **Current:**
+
 - Next.js 15 (App Router)
 - TypeScript (Strict Mode)
 - NextAuth.js (Multi-provider)
@@ -88,6 +92,7 @@ We are building a platform where:
 - PostgreSQL (Database) - To be added
 
 **Future:**
+
 - AI Agent Orchestration
 - Payment Processing (Stripe)
 - Domain Management
@@ -96,12 +101,14 @@ We are building a platform where:
 ### **Development Phases**
 
 **Phase 1: Authentication & Foundation** ✅ (Complete)
+
 - [x] NextAuth setup (GitHub, Google, Phone)
 - [x] Protected routes
 - [x] User profiles
 - [x] Settings page
 
 **Phase 2: My Apps Platform** ✅ (Complete - Demonstrated with Image Enhancement App)
+
 - [x] "My Apps" protected section
 - [x] App creation wizard
 - [x] Fork functionality
@@ -109,18 +116,21 @@ We are building a platform where:
 - [x] Database schema for apps & requirements
 
 **Phase 3: AI Agent Integration** (Future)
+
 - [ ] AI agent orchestration system
 - [ ] Requirement-to-code pipeline
 - [ ] Automated app generation
 - [ ] Quality assurance & testing
 
 **Phase 4: Deployment & Hosting** (Future)
+
 - [ ] App deployment system
 - [ ] Custom domain support
 - [ ] External hosting
 - [ ] Monitoring & analytics
 
 **Phase 5: Monetization** (Future)
+
 - [ ] Payment integration
 - [ ] Subscription management
 - [ ] Revenue tracking
@@ -131,6 +141,7 @@ We are building a platform where:
 The Image Enhancement App serves as the showcase application for the Spike Land platform. All 5 implementation phases are complete:
 
 **Phase 1: MVP** ✅ Complete
+
 - [x] Image upload with drag-drop UI
 - [x] Single-tier AI enhancement (TIER_1K)
 - [x] Before/after comparison slider
@@ -138,6 +149,7 @@ The Image Enhancement App serves as the showcase application for the Spike Land 
 - [x] Authentication integration
 
 **Phase 2: Token Economy** ✅ Complete
+
 - [x] Multi-tier enhancement (TIER_1K, TIER_2K, TIER_4K)
 - [x] Token balance system with auto-regeneration (1 per 15 min)
 - [x] Stripe integration (one-time purchases and subscriptions)
@@ -145,6 +157,7 @@ The Image Enhancement App serves as the showcase application for the Spike Land 
 - [x] Low balance warnings and refunds on failure
 
 **Phase 3: Albums & Export** ✅ Complete
+
 - [x] Album creation, editing, deletion
 - [x] Batch image upload and organization
 - [x] Album sharing with unlisted links
@@ -153,6 +166,7 @@ The Image Enhancement App serves as the showcase application for the Spike Land 
 - [x] Batch enhancement with queue processing
 
 **Phase 4: Referral Program** ✅ Complete
+
 - [x] Unique referral links per user
 - [x] Referrer and referee token rewards (50 each)
 - [x] Referral dashboard with statistics
@@ -160,6 +174,7 @@ The Image Enhancement App serves as the showcase application for the Spike Land 
 - [x] Sign-up attribution tracking
 
 **Phase 5: Admin Dashboard** ✅ Complete
+
 - [x] User analytics (registrations, MAU, retention)
 - [x] Token economy analytics (purchases, spend, burn rate)
 - [x] System health monitoring (job queue, failure rates)
@@ -236,11 +251,13 @@ MonetizationModel {
 ## Feature Implementation System Guidelines
 
 ### Feature Implementation Priority Rules
+
 - IMMEDIATE EXECUTION: Launch parallel Tasks immediately upon feature requests
 - NO CLARIFICATION: Skip asking what type of implementation unless absolutely critical
 - PARALLEL BY DEFAULT: Always use 7-parallel-Task method for efficiency
 
 ### Parallel Feature Implementation Workflow
+
 1. **Component**: Create main component file
 2. **Styles**: Create component styles/CSS
 3. **Tests**: Create test files
@@ -251,19 +268,18 @@ MonetizationModel {
 8. **Review and Validation**: Coordinate integration, run tests, verify build, check for conflicts
 
 ### Context Optimization Rules
+
 - Strip out all comments when reading code files for analysis
 - Each task handles ONLY specified files or file types
 - Task 7 combines small config/doc updates to prevent over-splitting
 
 ### Feature Implementation Guidelines
+
 - **CRITICAL**: Use git worktrees for all feature development (see "Git Worktree Setup" section)
 - **CRITICAL**: Make MINIMAL CHANGES to existing patterns and structures
 - **CRITICAL**: Preserve existing naming conventions and file organization
 - Follow project's established architecture and component patterns
 - Use existing utility functions and avoid duplicating functionality
-
-
-
 
 ## Project Overview
 
@@ -318,6 +334,7 @@ cd ../main && git worktree remove ../feature-name
 ### Quick Navigation Alias
 
 There's a shell alias configured for quick navigation:
+
 ```bash
 cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 ```
@@ -325,12 +342,14 @@ cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 ## Development Commands
 
 ### Development
+
 - **Start dev server**: `yarn dev` (runs on http://localhost:3000)
 - **Build**: `yarn build`
 - **Production server**: `yarn start`
 - **Lint**: `yarn lint`
 
 ### Testing
+
 - **Unit tests**: `yarn test` (watch mode)
 - **Unit tests (run once)**: `yarn test:run`
 - **Unit tests with UI**: `yarn test:ui`
@@ -341,6 +360,7 @@ cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 ## Architecture
 
 ### Tech Stack
+
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS 4 with CSS variables for theming
@@ -352,6 +372,7 @@ cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 - **Code Quality**: ESLint, TypeScript strict mode, automated testing
 
 ### Directory Structure
+
 ```
 src/
 ├── app/                    # Next.js App Router pages and layouts
@@ -382,7 +403,9 @@ e2e/
 ```
 
 ### shadcn/ui Configuration
+
 The project uses shadcn/ui with the following configuration (components.json):
+
 - **Style**: new-york
 - **RSC**: Enabled (React Server Components)
 - **Base color**: neutral
@@ -395,17 +418,20 @@ The project uses shadcn/ui with the following configuration (components.json):
   - `@/utils` → src/lib/utils
 
 ### Styling System
+
 - Tailwind CSS uses HSL-based CSS variables for theming (defined in globals.css)
 - Dark mode is configured with class-based strategy
 - Custom border radius values use CSS variables (--radius)
 - Use the `cn()` utility from `@/lib/utils` to merge Tailwind classes
 
 ### Adding shadcn/ui Components
+
 When adding new shadcn/ui components, they should be placed in `src/components/ui/` and follow the established patterns using the configured path aliases.
 
 ## Testing Requirements
 
 ### Unit Testing (Vitest + React Testing Library)
+
 - **100% code coverage required** - All statements, branches, functions, and lines must be covered
 - **Test files**: Place `.test.ts` or `.test.tsx` files alongside source files
 - **Configuration**: `vitest.config.ts` with coverage thresholds
@@ -413,6 +439,7 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 - **Exclusions**: Test files are excluded from Next.js type checking (see `tsconfig.json`)
 
 ### E2E Testing (Playwright + Cucumber)
+
 - **BDD approach**: Write human-readable feature files in Gherkin syntax
 - **Feature files**: Place `.feature` files in `e2e/features/`
 - **Step definitions**: Implement steps in `e2e/step-definitions/*.steps.ts`
@@ -423,6 +450,7 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflow
+
 The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
 
 1. **Test Job** - Runs on all pushes and PRs
@@ -444,18 +472,21 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
    - Uploads test reports and screenshots as artifacts
 
 ### Deployment Strategy
+
 - **Production**: `main` branch automatically deploys to https://next.spike.land
 - **Preview**: All other branches get temporary preview URLs for testing
 - **Domain**: Custom domain `next.spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
 - **Configuration**: See `docs/archive/VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
 
 ### Required GitHub Secrets
+
 - `VERCEL_TOKEN` - Vercel deployment token (required)
 - `CODECOV_TOKEN` - Codecov upload token (optional, for coverage reports)
 
 ## Branch Protection Rules
 
 ### Main Branch Protection (REQUIRED SETUP)
+
 To enforce code quality, configure branch protection for `main`:
 
 1. Go to: Settings → Branches → Add branch protection rule
@@ -469,6 +500,7 @@ To enforce code quality, configure branch protection for `main`:
 **See `.github/BRANCH_PROTECTION_SETUP.md` for detailed instructions.**
 
 ### Development Workflow
+
 ```bash
 # 1. Create feature worktree (from main worktree)
 cd /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
@@ -512,6 +544,7 @@ git pull  # Update main with merged changes
 ```
 
 ### Rules for Contributors
+
 - ❌ **No direct commits to main** - All changes via Pull Requests
 - ✅ **Rebase before creating PR** - Always rebase your branch with latest main from origin before creating a pull request
 - ✅ **All tests must pass** - Unit tests with 100% coverage
@@ -564,6 +597,7 @@ sleep 30 && gh pr checks <PR-NUMBER>
 4. **Coverage drops** → Add tests to maintain 100% coverage
 
 **DO NOT mark a task as complete if:**
+
 - CI is still running (status: IN_PROGRESS, PENDING)
 - Any check has failed (conclusion: FAILURE)
 - You haven't verified the status after pushing
@@ -573,6 +607,7 @@ sleep 30 && gh pr checks <PR-NUMBER>
 ## Adding New Features
 
 When adding new features:
+
 1. **Write the feature code** in appropriate `src/` directory
 2. **Write unit tests** with 100% coverage in `.test.ts(x)` files
 3. **Add E2E tests** if feature involves user interactions:
@@ -712,16 +747,19 @@ gh run view <run-id> --log-failed
 ## Troubleshooting
 
 ### Coverage Not 100%
+
 - Run `yarn test:coverage` to see uncovered lines
 - Add tests for all branches, functions, and statements
 - Check `coverage/` directory for detailed HTML report
 
 ### E2E Tests Failing Locally
+
 - Ensure dev server is running: `yarn dev`
 - Use `yarn test:e2e:local` (not `test:e2e`)
 - Check browser is installed: `yarn dlx playwright install chromium`
 
 ### CI/CD Pipeline Failing
+
 - Check Actions tab for detailed logs
 - Verify all secrets are configured (VERCEL_TOKEN, CODECOV_TOKEN)
 - Ensure tests pass locally first

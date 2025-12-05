@@ -1,16 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  appCreationSchema,
-  MONETIZATION_MODELS,
-  type AppCreationFormData,
-} from "@/lib/validations/app"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -19,28 +11,36 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  type AppCreationFormData,
+  appCreationSchema,
+  MONETIZATION_MODELS,
+} from "@/lib/validations/app";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
-const STORAGE_KEY = "app-creation-draft"
+const STORAGE_KEY = "app-creation-draft";
 
 const STEPS = [
   { title: "Basic Info", description: "Name and description" },
   { title: "Requirements", description: "Initial requirements" },
   { title: "Monetization", description: "Choose your model" },
   { title: "Review", description: "Confirm details" },
-] as const
+] as const;
 
 const MONETIZATION_LABELS: Record<typeof MONETIZATION_MODELS[number], string> = {
   free: "Free - No charge for users",
@@ -48,7 +48,7 @@ const MONETIZATION_LABELS: Record<typeof MONETIZATION_MODELS[number], string> = 
   subscription: "Subscription - Recurring payments",
   "one-time": "One-time Purchase - Single payment",
   "usage-based": "Usage-based - Pay per use",
-}
+};
 
 const REQUIREMENTS_TEMPLATE = `Example requirements:
 • User authentication (login/signup)
@@ -56,20 +56,20 @@ const REQUIREMENTS_TEMPLATE = `Example requirements:
 • Mobile responsive design
 • Dark mode support
 • Export data to CSV/PDF
-• Real-time notifications`
+• Real-time notifications`;
 
 function CharacterCounter({
   current,
   max,
-  min
+  min,
 }: {
-  current: number
-  max: number
-  min?: number
+  current: number;
+  max: number;
+  min?: number;
 }) {
-  const isOverMax = current > max
-  const isUnderMin = min !== undefined && current > 0 && current < min
-  const isValid = current >= (min || 0) && current <= max && current > 0
+  const isOverMax = current > max;
+  const isUnderMin = min !== undefined && current > 0 && current < min;
+  const isValid = current >= (min || 0) && current <= max && current > 0;
 
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -91,39 +91,39 @@ function CharacterCounter({
         </span>
       )}
     </div>
-  )
+  );
 }
 
 function FieldStatusIcon({
   error,
   value,
-  isDirty
+  isDirty,
 }: {
-  error?: string
-  value: string
-  isDirty?: boolean
+  error?: string;
+  value: string;
+  isDirty?: boolean;
 }) {
   if (error) {
-    return <XCircle className="h-4 w-4 text-destructive" data-testid="error-icon" />
+    return <XCircle className="h-4 w-4 text-destructive" data-testid="error-icon" />;
   }
 
   if (value && isDirty) {
-    return <CheckCircle2 className="h-4 w-4 text-green-600" data-testid="success-icon" />
+    return <CheckCircle2 className="h-4 w-4 text-green-600" data-testid="success-icon" />;
   }
 
-  return null
+  return null;
 }
 
 export default function NewAppPage() {
-  const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(0)
-  const [isClient, setIsClient] = useState(false)
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isClient, setIsClient] = useState(false);
   const [formState, setFormState] = useState({
     name: "",
     description: "",
     requirements: "",
     monetizationModel: "" as typeof MONETIZATION_MODELS[number] | "",
-  })
+  });
 
   const form = useForm<AppCreationFormData>({
     resolver: zodResolver(appCreationSchema),
@@ -136,68 +136,68 @@ export default function NewAppPage() {
       requirements: "",
       monetizationModel: "" as typeof MONETIZATION_MODELS[number],
     },
-  })
+  });
 
   useEffect(() => {
-    setIsClient(true)
+    setIsClient(true);
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
-          const data = JSON.parse(saved)
-          setFormState(data)
-          form.reset(data)
+          const data = JSON.parse(saved);
+          setFormState(data);
+          form.reset(data);
         } catch (error) {
-          console.error("Failed to load draft:", error)
+          console.error("Failed to load draft:", error);
         }
       }
     }
-  }, [form])
+  }, [form]);
 
   useEffect(() => {
-    if (!isClient) return
+    if (!isClient) return;
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formState))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
     }
-  }, [formState, isClient])
+  }, [formState, isClient]);
 
   const validateCurrentStep = async () => {
-    let isValid = false
+    let isValid = false;
 
     switch (currentStep) {
       case 0:
-        isValid = await form.trigger(["name", "description"])
-        break
+        isValid = await form.trigger(["name", "description"]);
+        break;
       case 1:
-        isValid = await form.trigger(["requirements"])
-        break
+        isValid = await form.trigger(["requirements"]);
+        break;
       case 2:
-        isValid = await form.trigger(["monetizationModel"])
-        break
+        isValid = await form.trigger(["monetizationModel"]);
+        break;
       /* v8 ignore next 3 */
       case 3:
-        isValid = true
-        break
+        isValid = true;
+        break;
       /* v8 ignore next 2 */
       default:
-        isValid = false
+        isValid = false;
     }
 
-    return isValid
-  }
+    return isValid;
+  };
 
   const handleNext = async () => {
-    const isValid = await validateCurrentStep()
+    const isValid = await validateCurrentStep();
     if (isValid && currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const onSubmit = async () => {
     try {
@@ -207,57 +207,57 @@ export default function NewAppPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formState),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        console.error("Failed to create app:", error)
-        return
+        const error = await response.json();
+        console.error("Failed to create app:", error);
+        return;
       }
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(STORAGE_KEY);
       }
 
-      router.push("/my-apps")
+      router.push("/my-apps");
     } catch (error) {
-      console.error("Error creating app:", error)
+      console.error("Error creating app:", error);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (currentStep === STEPS.length - 1) {
-      onSubmit()
+      onSubmit();
     } else {
-      handleNext()
+      handleNext();
     }
-  }
+  };
 
-  const progressValue = ((currentStep + 1) / STEPS.length) * 100
+  const progressValue = ((currentStep + 1) / STEPS.length) * 100;
 
   const getFormErrors = () => {
-    const errors = form.formState.errors
-    const errorList: Array<{ field: string; message: string }> = []
+    const errors = form.formState.errors;
+    const errorList: Array<{ field: string; message: string; }> = [];
 
     if (errors.name?.message) {
-      errorList.push({ field: "App Name", message: errors.name.message })
+      errorList.push({ field: "App Name", message: errors.name.message });
     }
     if (errors.description?.message) {
-      errorList.push({ field: "Description", message: errors.description.message })
+      errorList.push({ field: "Description", message: errors.description.message });
     }
     if (errors.requirements?.message) {
-      errorList.push({ field: "Requirements", message: errors.requirements.message })
+      errorList.push({ field: "Requirements", message: errors.requirements.message });
     }
     if (errors.monetizationModel?.message) {
-      errorList.push({ field: "Monetization Model", message: errors.monetizationModel.message })
+      errorList.push({ field: "Monetization Model", message: errors.monetizationModel.message });
     }
 
-    return errorList
-  }
+    return errorList;
+  };
 
-  const formErrors = getFormErrors()
+  const formErrors = getFormErrors();
 
   const renderStep = () => {
     switch (currentStep) {
@@ -277,9 +277,9 @@ export default function NewAppPage() {
                         {...field}
                         value={formState.name}
                         onChange={(e) => {
-                          const value = e.target.value
-                          setFormState({ ...formState, name: value })
-                          field.onChange(value)
+                          const value = e.target.value;
+                          setFormState({ ...formState, name: value });
+                          field.onChange(value);
                         }}
                         data-testid="app-name-input"
                         className={fieldState.error ? "pr-10" : ""}
@@ -317,9 +317,9 @@ export default function NewAppPage() {
                         {...field}
                         value={formState.description}
                         onChange={(e) => {
-                          const value = e.target.value
-                          setFormState({ ...formState, description: value })
-                          field.onChange(value)
+                          const value = e.target.value;
+                          setFormState({ ...formState, description: value });
+                          field.onChange(value);
                         }}
                         data-testid="app-description-textarea"
                       />
@@ -343,7 +343,7 @@ export default function NewAppPage() {
               )}
             />
           </>
-        )
+        );
 
       case 1:
         return (
@@ -361,9 +361,9 @@ export default function NewAppPage() {
                       {...field}
                       value={formState.requirements}
                       onChange={(e) => {
-                        const value = e.target.value
-                        setFormState({ ...formState, requirements: value })
-                        field.onChange(value)
+                        const value = e.target.value;
+                        setFormState({ ...formState, requirements: value });
+                        field.onChange(value);
                       }}
                       data-testid="requirements-textarea"
                     />
@@ -378,7 +378,8 @@ export default function NewAppPage() {
                 </FormControl>
                 <div className="flex justify-between items-start gap-4">
                   <FormDescription className="flex-1">
-                    Describe the features and functionality you want in your app. Use bullet points (•) for clarity.
+                    Describe the features and functionality you want in your app. Use bullet points
+                    (•) for clarity.
                   </FormDescription>
                   <CharacterCounter current={formState.requirements.length} max={2000} min={20} />
                 </div>
@@ -386,7 +387,7 @@ export default function NewAppPage() {
               </FormItem>
             )}
           />
-        )
+        );
 
       case 2:
         return (
@@ -398,8 +399,11 @@ export default function NewAppPage() {
                 <FormLabel>Monetization Model</FormLabel>
                 <Select
                   onValueChange={(value) => {
-                    setFormState({ ...formState, monetizationModel: value as typeof MONETIZATION_MODELS[number] })
-                    field.onChange(value)
+                    setFormState({
+                      ...formState,
+                      monetizationModel: value as typeof MONETIZATION_MODELS[number],
+                    });
+                    field.onChange(value);
                   }}
                   value={formState.monetizationModel}
                 >
@@ -423,7 +427,7 @@ export default function NewAppPage() {
               </FormItem>
             )}
           />
-        )
+        );
 
       case 3:
         return (
@@ -442,24 +446,29 @@ export default function NewAppPage() {
             </div>
             <div>
               <h3 className="font-semibold mb-2">Requirements</h3>
-              <p className="text-muted-foreground whitespace-pre-wrap" data-testid="review-requirements">
+              <p
+                className="text-muted-foreground whitespace-pre-wrap"
+                data-testid="review-requirements"
+              >
                 {formState.requirements}
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Monetization Model</h3>
               <p className="text-muted-foreground" data-testid="review-monetization">
-                {formState.monetizationModel ? MONETIZATION_LABELS[formState.monetizationModel] : ""}
+                {formState.monetizationModel
+                  ? MONETIZATION_LABELS[formState.monetizationModel]
+                  : ""}
               </p>
             </div>
           </div>
-        )
+        );
 
       /* v8 ignore next 2 */
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="container max-w-2xl mx-auto py-8">
@@ -508,7 +517,9 @@ export default function NewAppPage() {
                 </Button>
                 <Button
                   type="submit"
-                  data-testid={currentStep === STEPS.length - 1 ? "wizard-submit-button" : "wizard-next-button"}
+                  data-testid={currentStep === STEPS.length - 1
+                    ? "wizard-submit-button"
+                    : "wizard-next-button"}
                 >
                   {currentStep === STEPS.length - 1 ? "Create App" : "Next"}
                 </Button>
@@ -518,5 +529,5 @@ export default function NewAppPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

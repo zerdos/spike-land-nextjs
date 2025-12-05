@@ -25,6 +25,7 @@ open e2e/reports/cucumber-report.html
 ## Required Implementation
 
 ### Display Page: `/display`
+
 ```tsx
 <div data-testid="qr-code" />
 <div data-testid="connection-id">{id}</div>
@@ -35,6 +36,7 @@ open e2e/reports/cucumber-report.html
 ```
 
 ### Client Page: `/client/[id]`
+
 ```tsx
 <video data-testid="camera-preview" />
 <button data-testid="toggle-camera">Camera</button>
@@ -78,7 +80,7 @@ open e2e/reports/cucumber-report.html
 await page.pause();
 
 // View console
-page.on('console', msg => console.log(msg.text()));
+page.on("console", msg => console.log(msg.text()));
 
 // Slow motion
 const browser = await chromium.launch({ slowMo: 1000 });

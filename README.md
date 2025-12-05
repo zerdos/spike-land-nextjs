@@ -191,6 +191,7 @@ spike-land-nextjs/
 - **Location**: `.test.ts` and `.test.tsx` files alongside source files
 
 Example:
+
 ```bash
 yarn test:coverage
 ```
@@ -204,6 +205,7 @@ Coverage report is available at `coverage/index.html`
 - **Features**: See `e2e/features/*.feature`
 
 Example feature:
+
 ```gherkin
 Feature: Home Page
   Scenario: View home page
@@ -212,6 +214,7 @@ Feature: Home Page
 ```
 
 Run locally:
+
 ```bash
 # Terminal 1: Start dev server
 yarn dev
@@ -229,19 +232,23 @@ The project uses GitHub Actions for automated testing and deployment:
 1. **Test** → 2. **Build** → 3. **Deploy Preview** → 4. **E2E**
 
 #### 1. Test Job (Runs on all PRs and pushes)
+
 - ✅ Linting
 - ✅ Unit tests with 100% coverage
 - ✅ Upload coverage to Codecov
 
 #### 2. Build Job (Only if tests pass)
+
 - ✅ Next.js build
 - ✅ Upload build artifacts
 
 #### 3. Deploy Job (Runs on all branches after build)
+
 - ✅ Deploy to Vercel Preview
 - ✅ Output preview deployment URL
 
 #### 4. E2E Job (Runs on all branches after deployment)
+
 - ✅ Run Playwright/Cucumber tests against preview deployment
 - ✅ Upload test reports and screenshots
 
@@ -313,6 +320,7 @@ git push origin feature/my-feature
 ## 🛠️ Tech Stack
 
 ### Core
+
 - **Framework**: [Next.js 15](https://nextjs.org/) with App Router
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
@@ -320,11 +328,13 @@ git push origin feature/my-feature
 - **Fonts**: [Geist](https://vercel.com/font) Sans & Mono
 
 ### Testing
+
 - **Unit**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
 - **E2E**: [Playwright](https://playwright.dev/) + [Cucumber](https://cucumber.io/)
 - **Coverage**: [Codecov](https://codecov.io/)
 
 ### DevOps
+
 - **CI/CD**: [GitHub Actions](https://github.com/features/actions)
 - **Deployment**: [Vercel](https://vercel.com/)
 - **Quality**: ESLint, TypeScript strict mode

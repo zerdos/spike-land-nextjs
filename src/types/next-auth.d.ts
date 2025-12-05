@@ -8,10 +8,10 @@
  * @see https://next-auth.js.org/getting-started/typescript
  */
 
-import 'next-auth';
-import 'next-auth/jwt';
+import "next-auth";
+import "next-auth/jwt";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   /**
    * Extended Session interface
    *
@@ -49,7 +49,7 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   /**
    * Extended JWT interface
    *

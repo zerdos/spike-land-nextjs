@@ -1,5 +1,5 @@
-import { setWorldConstructor, World, IWorldOptions } from '@cucumber/cucumber';
-import { Browser, BrowserContext, Page, chromium } from '@playwright/test';
+import { IWorldOptions, setWorldConstructor, World } from "@cucumber/cucumber";
+import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
 
 export interface ClientContext {
   context: BrowserContext;
@@ -19,16 +19,16 @@ export class VideoWallWorld extends World {
   constructor(options: IWorldOptions) {
     super(options);
     // Use deployed URL in CI, localhost for local development
-    this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    this.baseUrl = process.env.BASE_URL || "http://localhost:3000";
   }
 
   async init() {
     this.browser = await chromium.launch({
-      headless: process.env.CI === 'true',
+      headless: process.env.CI === "true",
     });
     this.displayContext = await this.browser.newContext({
       baseURL: this.baseUrl,
-      permissions: ['camera', 'microphone'],
+      permissions: ["camera", "microphone"],
     });
     this.displayPage = await this.displayContext.newPage();
 
@@ -42,7 +42,7 @@ export class VideoWallWorld extends World {
   async createClientContext(clientId: string, name?: string): Promise<ClientContext> {
     const context = await this.browser.newContext({
       baseURL: this.baseUrl,
-      permissions: ['camera', 'microphone'],
+      permissions: ["camera", "microphone"],
       // Note: 'display-capture' is not a valid Playwright permission
       // Screen sharing will be mocked via mockMediaDevices instead
     });
@@ -70,21 +70,23 @@ export class VideoWallWorld extends World {
     await page.addInitScript(() => {
       // Create a fake MediaStream with video track
       const createFakeMediaStream = (constraints?: MediaStreamConstraints) => {
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = 640;
         canvas.height = 480;
-        const ctx = canvas.getContext('2d')!;
+        const ctx = canvas.getContext("2d")!;
 
         // Draw a test pattern
-        ctx.fillStyle = '#1a1a1a';
+        ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, 640, 480);
-        ctx.fillStyle = '#00ff00';
+        ctx.fillStyle = "#00ff00";
         ctx.fillRect(100, 100, 440, 280);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '48px Arial';
-        ctx.fillText('Test Video', 200, 250);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "48px Arial";
+        ctx.fillText("Test Video", 200, 250);
 
-        const stream = (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream }).captureStream(30);
+        const stream =
+          (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream; })
+            .captureStream(30);
 
         // Add audio track if requested
         if (constraints?.audio) {
@@ -105,7 +107,7 @@ export class VideoWallWorld extends World {
       // Mock navigator.mediaDevices.getUserMedia
       if (navigator.mediaDevices) {
         navigator.mediaDevices.getUserMedia = async (constraints) => {
-          console.log('[Mock] getUserMedia called with constraints:', constraints);
+          console.log("[Mock] getUserMedia called with constraints:", constraints);
           // Return fake stream instead of real camera
           return createFakeMediaStream(constraints);
         };
@@ -114,24 +116,24 @@ export class VideoWallWorld extends World {
         navigator.mediaDevices.enumerateDevices = async () => {
           return [
             {
-              deviceId: 'fake-camera-1',
-              groupId: 'fake-group-1',
-              kind: 'videoinput' as MediaDeviceKind,
-              label: 'Fake Camera 1 (Front)',
+              deviceId: "fake-camera-1",
+              groupId: "fake-group-1",
+              kind: "videoinput" as MediaDeviceKind,
+              label: "Fake Camera 1 (Front)",
               toJSON: () => ({}),
             },
             {
-              deviceId: 'fake-camera-2',
-              groupId: 'fake-group-1',
-              kind: 'videoinput' as MediaDeviceKind,
-              label: 'Fake Camera 2 (Back)',
+              deviceId: "fake-camera-2",
+              groupId: "fake-group-1",
+              kind: "videoinput" as MediaDeviceKind,
+              label: "Fake Camera 2 (Back)",
               toJSON: () => ({}),
             },
             {
-              deviceId: 'fake-mic-1',
-              groupId: 'fake-group-1',
-              kind: 'audioinput' as MediaDeviceKind,
-              label: 'Fake Microphone',
+              deviceId: "fake-mic-1",
+              groupId: "fake-group-1",
+              kind: "audioinput" as MediaDeviceKind,
+              label: "Fake Microphone",
               toJSON: () => ({}),
             },
           ];
@@ -139,10 +141,10 @@ export class VideoWallWorld extends World {
 
         // Mock getDisplayMedia for screen sharing
         navigator.mediaDevices.getDisplayMedia = async (constraints) => {
-          console.log('[Mock] getDisplayMedia called with constraints:', constraints);
+          console.log("[Mock] getDisplayMedia called with constraints:", constraints);
           const stream = createFakeMediaStream({ video: true });
           // Label the stream as screen share
-          Object.defineProperty(stream, '__isScreenShare', { value: true });
+          Object.defineProperty(stream, "__isScreenShare", { value: true });
           return stream;
         };
       }
@@ -162,11 +164,11 @@ export class VideoWallWorld extends World {
 
         constructor(id?: string) {
           this.id = id || `mock-peer-${Math.random().toString(36).substr(2, 9)}`;
-          console.log('[MockPeer] Created with id:', this.id);
+          console.log("[MockPeer] Created with id:", this.id);
 
           // Simulate connection open
           setTimeout(() => {
-            this.emit('open', this.id);
+            this.emit("open", this.id);
           }, 100);
         }
 
@@ -186,43 +188,45 @@ export class VideoWallWorld extends World {
         }
 
         connect(peerId: string) {
-          console.log('[MockPeer] Connecting to:', peerId);
+          console.log("[MockPeer] Connecting to:", peerId);
           const connection = new MockDataConnection(peerId);
           this.connections.set(peerId, connection);
 
           // Simulate connection open
           setTimeout(() => {
-            connection.emit('open');
+            connection.emit("open");
           }, 200);
 
           return connection;
         }
 
         call(peerId: string, stream: MediaStream) {
-          console.log('[MockPeer] Calling:', peerId);
+          console.log("[MockPeer] Calling:", peerId);
           const call = new MockMediaConnection(peerId, stream);
 
           // Simulate call answered with a mock stream
           setTimeout(() => {
             // Create a fake answer stream
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             canvas.width = 640;
             canvas.height = 480;
-            const answerStream = (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream }).captureStream(30);
-            call.emit('stream', answerStream);
+            const answerStream = (canvas as HTMLCanvasElement & {
+              captureStream: (frameRate?: number) => MediaStream;
+            }).captureStream(30);
+            call.emit("stream", answerStream);
           }, 300);
 
           return call;
         }
 
         disconnect() {
-          console.log('[MockPeer] Disconnecting');
-          this.emit('disconnected');
+          console.log("[MockPeer] Disconnecting");
+          this.emit("disconnected");
         }
 
         destroy() {
-          console.log('[MockPeer] Destroying');
-          this.emit('close');
+          console.log("[MockPeer] Destroying");
+          this.emit("close");
         }
       }
 
@@ -244,7 +248,7 @@ export class VideoWallWorld extends World {
         }
 
         emit(event: string, ...args: unknown[]) {
-          if (event === 'open') {
+          if (event === "open") {
             this.open = true;
           }
           const callbacks = this.callbacks.get(event);
@@ -254,11 +258,11 @@ export class VideoWallWorld extends World {
         }
 
         send(data: unknown) {
-          console.log('[MockDataConnection] Sending data:', data);
+          console.log("[MockDataConnection] Sending data:", data);
         }
 
         close() {
-          this.emit('close');
+          this.emit("close");
         }
       }
 
@@ -288,20 +292,20 @@ export class VideoWallWorld extends World {
         }
 
         answer() {
-          console.log('[MockMediaConnection] Answering with stream');
+          console.log("[MockMediaConnection] Answering with stream");
           // Simulate receiving remote stream
           setTimeout(() => {
-            this.emit('stream', this.stream);
+            this.emit("stream", this.stream);
           }, 200);
         }
 
         close() {
-          this.emit('close');
+          this.emit("close");
         }
       }
 
       // Replace global Peer
-      (window as unknown as { Peer?: unknown }).Peer = MockPeer;
+      (window as unknown as { Peer?: unknown; }).Peer = MockPeer;
     });
   }
 

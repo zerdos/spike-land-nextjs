@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface App {
   id: string;
@@ -73,8 +73,8 @@ export default function AppsPage() {
       <section className="mt-12 rounded-lg border border-dashed p-8 text-center">
         <h3 className="text-lg font-semibold mb-2">More Apps Coming Soon</h3>
         <p className="text-sm text-muted-foreground">
-          We are continuously building new interactive experiences. Check back
-          soon for more applications.
+          We are continuously building new interactive experiences. Check back soon for more
+          applications.
         </p>
       </section>
     </div>

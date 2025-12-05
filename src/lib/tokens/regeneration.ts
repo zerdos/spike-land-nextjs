@@ -1,10 +1,10 @@
-import { TokenBalanceManager } from './balance-manager'
-import prisma from '@/lib/prisma'
+import prisma from "@/lib/prisma";
+import { TokenBalanceManager } from "./balance-manager";
 
 export interface RegenerationStats {
-  totalUsersProcessed: number
-  totalTokensRegenerated: number
-  errors: Array<{ userId: string; error: string }>
+  totalUsersProcessed: number;
+  totalTokensRegenerated: number;
+  errors: Array<{ userId: string; error: string; }>;
 }
 
 /**
@@ -16,7 +16,7 @@ export async function processAllUserRegenerations(): Promise<RegenerationStats> 
     totalUsersProcessed: 0,
     totalTokensRegenerated: 0,
     errors: [],
-  }
+  };
 
   try {
     // Get all users with token balances
@@ -24,29 +24,29 @@ export async function processAllUserRegenerations(): Promise<RegenerationStats> 
       select: {
         userId: true,
       },
-    })
+    });
 
     for (const { userId } of userBalances) {
       try {
         const tokensAdded = await TokenBalanceManager.processRegeneration(
-          userId
-        )
+          userId,
+        );
         if (tokensAdded > 0) {
-          stats.totalUsersProcessed++
-          stats.totalTokensRegenerated += tokensAdded
+          stats.totalUsersProcessed++;
+          stats.totalTokensRegenerated += tokensAdded;
         }
       } catch (error) {
         stats.errors.push({
           userId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        })
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     }
   } catch (error) {
-    console.error('Error processing user regenerations:', error)
+    console.error("Error processing user regenerations:", error);
   }
 
-  return stats
+  return stats;
 }
 
 /**
@@ -54,31 +54,31 @@ export async function processAllUserRegenerations(): Promise<RegenerationStats> 
  * Useful for manual triggers or per-request regeneration checks
  */
 export async function processUserRegeneration(
-  userId: string
+  userId: string,
 ): Promise<number> {
-  return TokenBalanceManager.processRegeneration(userId)
+  return TokenBalanceManager.processRegeneration(userId);
 }
 
 /**
  * Get next regeneration time for a user
  */
 export async function getNextRegenerationTime(
-  userId: string
+  userId: string,
 ): Promise<Date | null> {
-  const { lastRegeneration } = await TokenBalanceManager.getBalance(userId)
+  const { lastRegeneration } = await TokenBalanceManager.getBalance(userId);
   const nextRegen = new Date(
-    lastRegeneration.getTime() + 15 * 60 * 1000 // 15 minutes
-  )
-  return nextRegen
+    lastRegeneration.getTime() + 15 * 60 * 1000, // 15 minutes
+  );
+  return nextRegen;
 }
 
 /**
  * Get time remaining until next regeneration (in milliseconds)
  */
 export async function getTimeUntilNextRegeneration(
-  userId: string
+  userId: string,
 ): Promise<number> {
-  const nextRegen = await getNextRegenerationTime(userId)
-  if (!nextRegen) return 0
-  return Math.max(0, nextRegen.getTime() - Date.now())
+  const nextRegen = await getNextRegenerationTime(userId);
+  if (!nextRegen) return 0;
+  return Math.max(0, nextRegen.getTime() - Date.now());
 }

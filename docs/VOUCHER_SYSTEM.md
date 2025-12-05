@@ -9,11 +9,13 @@ The voucher system allows users to redeem promotional codes for tokens and other
 ### Enums
 
 #### VoucherType
+
 - `FIXED_TOKENS` - Grants a fixed number of tokens
 - `PERCENTAGE_BONUS` - Adds a percentage bonus to token purchases
 - `SUBSCRIPTION_TRIAL` - Provides a subscription trial period
 
 #### VoucherStatus
+
 - `ACTIVE` - Voucher can be redeemed
 - `INACTIVE` - Voucher is disabled
 - `EXPIRED` - Voucher has passed its expiration date
@@ -22,9 +24,11 @@ The voucher system allows users to redeem promotional codes for tokens and other
 ### Models
 
 #### Voucher
+
 Main voucher model that stores promotional codes and their properties.
 
 **Fields:**
+
 - `id` (String) - Unique identifier (cuid)
 - `code` (String) - Unique voucher code
 - `type` (VoucherType) - Type of voucher
@@ -39,13 +43,16 @@ Main voucher model that stores promotional codes and their properties.
 - `redemptions` (VoucherRedemption[]) - Related redemptions
 
 **Indexes:**
+
 - `code` - Fast lookup by code
 - `status, expiresAt` - Efficient filtering of active/expired vouchers
 
 #### VoucherRedemption
+
 Tracks user redemptions of vouchers.
 
 **Fields:**
+
 - `id` (String) - Unique identifier (cuid)
 - `voucherId` (String) - Reference to voucher
 - `userId` (String) - Reference to user
@@ -53,19 +60,23 @@ Tracks user redemptions of vouchers.
 - `redeemedAt` (DateTime) - Redemption timestamp
 
 **Relations:**
+
 - `voucher` (Voucher) - The redeemed voucher
 - `user` (User) - The user who redeemed
 
 **Constraints:**
+
 - Unique constraint on `[voucherId, userId]` - Users can only redeem each voucher once
 
 **Indexes:**
+
 - `userId, redeemedAt` - User redemption history
 - `voucherId` - Voucher usage tracking
 
 ### User Model Update
 
 The `User` model has been updated to include:
+
 - `voucherRedemptions` (VoucherRedemption[]) - User's voucher redemptions
 
 ## Initial Seed Data
@@ -99,6 +110,7 @@ The schema has been updated using `prisma db push` (no migration created due to 
 ### Scripts
 
 #### Seed Vouchers
+
 ```bash
 npm run db:seed-vouchers
 ```
@@ -106,6 +118,7 @@ npm run db:seed-vouchers
 This script creates/updates the initial launch vouchers using `prisma/seed-vouchers.ts`.
 
 #### Verify Vouchers
+
 ```bash
 npx tsx prisma/verify-vouchers.ts
 ```
@@ -117,40 +130,40 @@ This utility script displays all vouchers in the database with their current sta
 ### Create a New Voucher
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 await prisma.voucher.create({
   data: {
-    code: 'NEWUSER2024',
-    type: 'FIXED_TOKENS',
+    code: "NEWUSER2024",
+    type: "FIXED_TOKENS",
     value: 50,
     maxUses: 100,
-    expiresAt: new Date('2024-12-31'),
-    status: 'ACTIVE',
+    expiresAt: new Date("2024-12-31"),
+    status: "ACTIVE",
   },
-})
+});
 ```
 
 ### Redeem a Voucher
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 // Check voucher validity
 const voucher = await prisma.voucher.findUnique({
-  where: { code: 'LAUNCH100' },
+  where: { code: "LAUNCH100" },
   include: {
     redemptions: {
-      where: { userId: 'user_123' }
-    }
-  }
-})
+      where: { userId: "user_123" },
+    },
+  },
+});
 
-if (!voucher) throw new Error('Voucher not found')
-if (voucher.status !== 'ACTIVE') throw new Error('Voucher inactive')
-if (voucher.expiresAt && voucher.expiresAt < new Date()) throw new Error('Voucher expired')
-if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) throw new Error('Voucher depleted')
-if (voucher.redemptions.length > 0) throw new Error('Already redeemed')
+if (!voucher) throw new Error("Voucher not found");
+if (voucher.status !== "ACTIVE") throw new Error("Voucher inactive");
+if (voucher.expiresAt && voucher.expiresAt < new Date()) throw new Error("Voucher expired");
+if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) throw new Error("Voucher depleted");
+if (voucher.redemptions.length > 0) throw new Error("Already redeemed");
 
 // Redeem voucher
 await prisma.$transaction([
@@ -158,65 +171,65 @@ await prisma.$transaction([
   prisma.voucherRedemption.create({
     data: {
       voucherId: voucher.id,
-      userId: 'user_123',
+      userId: "user_123",
       tokensGranted: voucher.value,
-    }
+    },
   }),
   // Update voucher usage count
   prisma.voucher.update({
     where: { id: voucher.id },
-    data: { currentUses: { increment: 1 } }
+    data: { currentUses: { increment: 1 } },
   }),
   // Grant tokens to user
   prisma.userTokenBalance.upsert({
-    where: { userId: 'user_123' },
+    where: { userId: "user_123" },
     create: {
-      userId: 'user_123',
+      userId: "user_123",
       balance: voucher.value,
     },
     update: {
-      balance: { increment: voucher.value }
-    }
+      balance: { increment: voucher.value },
+    },
   }),
   // Record token transaction
   prisma.tokenTransaction.create({
     data: {
-      userId: 'user_123',
+      userId: "user_123",
       amount: voucher.value,
-      type: 'EARN_BONUS',
-      source: 'voucher',
+      type: "EARN_BONUS",
+      source: "voucher",
       sourceId: voucher.id,
       balanceAfter: 0, // Should calculate actual balance
-    }
-  })
-])
+    },
+  }),
+]);
 ```
 
 ### Query User's Redemption History
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 const redemptions = await prisma.voucherRedemption.findMany({
-  where: { userId: 'user_123' },
+  where: { userId: "user_123" },
   include: { voucher: true },
-  orderBy: { redeemedAt: 'desc' }
-})
+  orderBy: { redeemedAt: "desc" },
+});
 ```
 
 ### Get Voucher Usage Stats
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 const voucher = await prisma.voucher.findUnique({
-  where: { code: 'LAUNCH100' },
+  where: { code: "LAUNCH100" },
   include: {
-    _count: { select: { redemptions: true } }
-  }
-})
+    _count: { select: { redemptions: true } },
+  },
+});
 
-console.log(`${voucher.code}: ${voucher._count.redemptions} / ${voucher.maxUses || '∞'} uses`)
+console.log(`${voucher.code}: ${voucher._count.redemptions} / ${voucher.maxUses || "∞"} uses`);
 ```
 
 ## Next Steps

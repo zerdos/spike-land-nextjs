@@ -1,26 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import DisplayLayout from './layout';
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import DisplayLayout from "./layout";
 
-describe('DisplayLayout', () => {
-  it('should render children without wrapper', () => {
+describe("DisplayLayout", () => {
+  it("should render children without wrapper", () => {
     render(
       <DisplayLayout>
         <div>Test Content</div>
-      </DisplayLayout>
+      </DisplayLayout>,
     );
 
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  it('should not add any additional wrapper elements', () => {
+  it("should not add any additional wrapper elements", () => {
     const { container } = render(
       <DisplayLayout>
         <div data-testid="child">Test</div>
-      </DisplayLayout>
+      </DisplayLayout>,
     );
 
-    const child = screen.getByTestId('child');
+    const child = screen.getByTestId("child");
     // The child should be a direct descendant of the container
     expect(container.firstChild).toBe(child);
   });

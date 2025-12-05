@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Suspense } from "react"
-import { useSearchParams } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Home, RefreshCw } from "lucide-react"
-import Link from "next/link"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, Home, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 function AuthErrorContent() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get("error")
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
-  const errorDetails: Record<string, { title: string; description: string }> = {
+  const errorDetails: Record<string, { title: string; description: string; }> = {
     Configuration: {
       title: "Server Configuration Error",
       description:
@@ -30,8 +30,7 @@ function AuthErrorContent() {
     },
     OAuthSignin: {
       title: "OAuth Sign In Error",
-      description:
-        "Error occurred while starting the OAuth sign in process. Please try again.",
+      description: "Error occurred while starting the OAuth sign in process. Please try again.",
     },
     OAuthCallback: {
       title: "OAuth Callback Error",
@@ -45,8 +44,7 @@ function AuthErrorContent() {
     },
     EmailCreateAccount: {
       title: "Email Account Creation Error",
-      description:
-        "Could not create your account. Please check your email and try again.",
+      description: "Could not create your account. Please check your email and try again.",
     },
     Callback: {
       title: "Callback Error",
@@ -60,28 +58,24 @@ function AuthErrorContent() {
     },
     EmailSignin: {
       title: "Email Sign In Error",
-      description:
-        "Could not send sign in email. Please check your email address and try again.",
+      description: "Could not send sign in email. Please check your email address and try again.",
     },
     CredentialsSignin: {
       title: "Sign In Failed",
-      description:
-        "Sign in failed. Please check your credentials and try again.",
+      description: "Sign in failed. Please check your credentials and try again.",
     },
     SessionRequired: {
       title: "Session Required",
-      description:
-        "You must be signed in to access this page. Please sign in and try again.",
+      description: "You must be signed in to access this page. Please sign in and try again.",
     },
     default: {
       title: "Authentication Error",
-      description:
-        "An unexpected error occurred during authentication. Please try again later.",
+      description: "An unexpected error occurred during authentication. Please try again later.",
     },
-  }
+  };
 
-  const currentError = (error ? errorDetails[error] : undefined) ?? errorDetails.default
-  const { title, description } = currentError!
+  const currentError = (error ? errorDetails[error] : undefined) ?? errorDetails.default;
+  const { title, description } = currentError!;
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
@@ -134,13 +128,19 @@ function AuthErrorContent() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 export default function AuthErrorPage() {
   return (
-    <Suspense fallback={<div className="container mx-auto flex min-h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="container mx-auto flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <AuthErrorContent />
     </Suspense>
-  )
+  );
 }

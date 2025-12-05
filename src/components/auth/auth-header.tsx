@@ -1,9 +1,9 @@
 "use client";
 
+import { ModeToggle } from "@/components/theme/mode-toggle";
 import { useSession } from "next-auth/react";
 import { AuthButtons } from "./auth-buttons";
 import { UserAvatar } from "./user-avatar";
-import { ModeToggle } from "@/components/theme/mode-toggle";
 
 export function AuthHeader() {
   const { data: session, status } = useSession();

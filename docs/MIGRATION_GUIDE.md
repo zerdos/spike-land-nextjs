@@ -65,12 +65,14 @@ npx prisma studio
 Use clear, descriptive names that indicate what changed:
 
 **Good names:**
+
 - `add_user_role_field`
 - `create_payment_tables`
 - `add_app_status_index`
 - `remove_deprecated_columns`
 
 **Bad names:**
+
 - `update` (too vague)
 - `fix` (what was fixed?)
 - `migration1` (not descriptive)
@@ -157,7 +159,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: npm ci
@@ -377,11 +379,13 @@ DATABASE_URL=postgres://production npx prisma migrate deploy
 ### 3. Keep Migrations Small and Focused
 
 **Good:**
+
 - One migration per logical change
 - Each migration does one thing well
 - Easy to review and understand
 
 **Bad:**
+
 - Mixing table creation, column changes, and data updates
 - Giant migrations that are hard to review
 - Multiple unrelated changes in one migration
@@ -402,6 +406,7 @@ cat prisma/migrations/[timestamp]_migration_name/migration.sql
 ### 5. Use Transactions (Default)
 
 Prisma migrations run in transactions automatically, ensuring:
+
 - All changes apply or none do
 - No partial migrations
 - Database stays consistent
@@ -438,18 +443,21 @@ CREATE INDEX idx_users_verified ON users(verified);
 ### 8. Coordinate Schema Changes with Code
 
 **Backward Compatible Changes (Safe):**
+
 - Adding nullable columns
 - Adding new tables
 - Adding indexes
 - Making columns nullable
 
 **Breaking Changes (Requires Coordination):**
+
 - Removing columns
 - Renaming columns
 - Changing column types
 - Adding NOT NULL constraints
 
 **Deployment Order:**
+
 1. Deploy backward-compatible schema change
 2. Deploy code that uses new schema
 3. Deploy cleanup migrations (remove old columns)

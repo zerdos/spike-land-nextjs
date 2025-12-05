@@ -1,5 +1,5 @@
-export { HeroSection } from './HeroSection'
-export { BeforeAfterGallery } from './BeforeAfterGallery'
-export { FeatureShowcase } from './FeatureShowcase'
-export { ComponentDemo } from './ComponentDemo'
-export { FAQ } from './FAQ'
+export { BeforeAfterGallery } from "./BeforeAfterGallery";
+export { ComponentDemo } from "./ComponentDemo";
+export { FAQ } from "./FAQ";
+export { FeatureShowcase } from "./FeatureShowcase";
+export { HeroSection } from "./HeroSection";

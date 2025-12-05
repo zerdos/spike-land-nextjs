@@ -8,9 +8,9 @@
  * Database operations are handled in auth.ts (route handlers only).
  */
 
-import type { NextAuthConfig } from "next-auth"
-import GitHub from "next-auth/providers/github"
-import Google from "next-auth/providers/google"
+import type { NextAuthConfig } from "next-auth";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 
 /**
  * Creates a stable user ID based on email address.
@@ -27,32 +27,32 @@ import Google from "next-auth/providers/google"
  * the 1:1 relationship between email and user identity.
  */
 export function createStableUserId(email: string): string {
-  const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET
+  const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET;
   if (!salt) {
     throw new Error(
-      "USER_ID_SALT or AUTH_SECRET environment variable must be set for stable user IDs"
-    )
+      "USER_ID_SALT or AUTH_SECRET environment variable must be set for stable user IDs",
+    );
   }
   // Use simple hash for Edge runtime compatibility
   // Combines salt + email and creates a deterministic hash
-  const input = `${salt}:${email.toLowerCase().trim()}`
-  let hash = 0
+  const input = `${salt}:${email.toLowerCase().trim()}`;
+  let hash = 0;
   for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
   }
   // Convert to hex and pad to ensure consistent length
-  const hexHash = Math.abs(hash).toString(16).padStart(8, '0')
+  const hexHash = Math.abs(hash).toString(16).padStart(8, "0");
   // Add more entropy by hashing again with different positions
-  let hash2 = 0
+  let hash2 = 0;
   for (let i = input.length - 1; i >= 0; i--) {
-    const char = input.charCodeAt(i)
-    hash2 = ((hash2 << 7) - hash2) + char
-    hash2 = hash2 & hash2
+    const char = input.charCodeAt(i);
+    hash2 = ((hash2 << 7) - hash2) + char;
+    hash2 = hash2 & hash2;
   }
-  const hexHash2 = Math.abs(hash2).toString(16).padStart(8, '0')
-  return `user_${hexHash}${hexHash2}${hexHash}${hexHash2}`
+  const hexHash2 = Math.abs(hash2).toString(16).padStart(8, "0");
+  return `user_${hexHash}${hexHash2}${hexHash}${hexHash2}`;
 }
 
 /**
@@ -73,20 +73,20 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     session({ session, token }) {
       if (token.sub && session.user) {
-        session.user.id = token.sub
+        session.user.id = token.sub;
       }
-      return session
+      return session;
     },
     jwt({ token, user }) {
       if (user?.email) {
         // Use stable ID based on email (same across all OAuth providers)
-        token.sub = createStableUserId(user.email)
+        token.sub = createStableUserId(user.email);
       } else if (user?.id) {
         // Fallback for users without email - use provider ID with prefix
-        token.sub = `provider_${user.id}`
+        token.sub = `provider_${user.id}`;
       }
       // If neither email nor id exists, token.sub remains from previous JWT
-      return token
+      return token;
     },
   },
   pages: {
@@ -96,4 +96,4 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
-}
+};

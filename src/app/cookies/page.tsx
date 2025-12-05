@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const lastUpdated = new Date().toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})
+const lastUpdated = new Date().toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 
 const sections = [
-  { id: 'introduction', title: 'What Are Cookies' },
-  { id: 'cookies-used', title: 'Cookies We Use' },
-  { id: 'essential', title: 'Essential Cookies' },
-  { id: 'analytics', title: 'Analytics Cookies' },
-  { id: 'third-party', title: 'Third-Party Cookies' },
-  { id: 'managing-cookies', title: 'Managing Cookies' },
-  { id: 'consent', title: 'Cookie Consent' },
-  { id: 'updates', title: 'Policy Updates' },
-  { id: 'contact', title: 'Contact Us' },
-]
+  { id: "introduction", title: "What Are Cookies" },
+  { id: "cookies-used", title: "Cookies We Use" },
+  { id: "essential", title: "Essential Cookies" },
+  { id: "analytics", title: "Analytics Cookies" },
+  { id: "third-party", title: "Third-Party Cookies" },
+  { id: "managing-cookies", title: "Managing Cookies" },
+  { id: "consent", title: "Cookie Consent" },
+  { id: "updates", title: "Policy Updates" },
+  { id: "contact", title: "Contact Us" },
+];
 
 export default function CookiePage() {
   return (
@@ -31,7 +31,8 @@ export default function CookiePage() {
             Last updated: {lastUpdated}
           </p>
           <p className="text-muted-foreground mt-4">
-            This is a template for informational purposes. Consult with a qualified attorney for legal advice specific to your situation.
+            This is a template for informational purposes. Consult with a qualified attorney for
+            legal advice specific to your situation.
           </p>
         </div>
 
@@ -70,7 +71,10 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Definition</h3>
                   <p className="text-muted-foreground">
-                    Cookies are small text files that are stored on your device (computer, tablet, or mobile phone) when you visit a website. They contain information that the website can read when you return to it. Cookies help websites recognize you and remember your preferences.
+                    Cookies are small text files that are stored on your device (computer, tablet,
+                    or mobile phone) when you visit a website. They contain information that the
+                    website can read when you return to it. Cookies help websites recognize you and
+                    remember your preferences.
                   </p>
                 </div>
 
@@ -91,25 +95,29 @@ export default function CookiePage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Session Cookies</h4>
                       <p className="text-muted-foreground text-sm">
-                        Temporary cookies that are deleted when you close your browser. Used to keep you logged in during your session.
+                        Temporary cookies that are deleted when you close your browser. Used to keep
+                        you logged in during your session.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Persistent Cookies</h4>
                       <p className="text-muted-foreground text-sm">
-                        Cookies that remain on your device for a set period or until you delete them. Used to remember your preferences across visits.
+                        Cookies that remain on your device for a set period or until you delete
+                        them. Used to remember your preferences across visits.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">First-Party Cookies</h4>
                       <p className="text-muted-foreground text-sm">
-                        Set by the website you are visiting (Spike Land). Used for essential functionality and user preferences.
+                        Set by the website you are visiting (Spike Land). Used for essential
+                        functionality and user preferences.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Third-Party Cookies</h4>
                       <p className="text-muted-foreground text-sm">
-                        Set by other websites or services embedded in our site. Used for analytics, payments, and authentication.
+                        Set by other websites or services embedded in our site. Used for analytics,
+                        payments, and authentication.
                       </p>
                     </div>
                   </div>
@@ -194,7 +202,9 @@ export default function CookiePage() {
 
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> Cookie names and durations may vary based on configuration and updates to third-party services. This table reflects current standard implementations.
+                    <strong>Note:</strong>{" "}
+                    Cookie names and durations may vary based on configuration and updates to
+                    third-party services. This table reflects current standard implementations.
                   </p>
                 </div>
               </CardContent>
@@ -212,7 +222,8 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Why We Need Them</h3>
                   <p className="text-muted-foreground mb-4">
-                    Essential cookies are absolutely necessary for the website to function properly. They cannot be disabled without breaking core features. These cookies enable:
+                    Essential cookies are absolutely necessary for the website to function properly.
+                    They cannot be disabled without breaking core features. These cookies enable:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>Keeping you logged into your account</li>
@@ -227,7 +238,11 @@ export default function CookiePage() {
                   <h3 className="font-semibold text-lg mb-3">Cannot Be Disabled</h3>
                   <div className="bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg">
                     <p className="text-yellow-900 dark:text-yellow-100 text-sm">
-                      <strong>Important:</strong> Essential cookies cannot be disabled. If you block these cookies, you will not be able to log in, authenticate with Google or GitHub, or use key features of the application. These cookies are not used for tracking or marketing purposes.
+                      <strong>Important:</strong>{" "}
+                      Essential cookies cannot be disabled. If you block these cookies, you will not
+                      be able to log in, authenticate with Google or GitHub, or use key features of
+                      the application. These cookies are not used for tracking or marketing
+                      purposes.
                     </p>
                   </div>
                 </div>
@@ -236,16 +251,22 @@ export default function CookiePage() {
                   <h3 className="font-semibold text-lg mb-3">Essential Cookies List</h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm">authjs.session-token / __Secure-authjs.session-token</h4>
+                      <h4 className="font-semibold text-sm">
+                        authjs.session-token / __Secure-authjs.session-token
+                      </h4>
                       <p className="text-muted-foreground text-sm mt-1">
-                        Stores your authentication session. Set by NextAuth.js when you log in. The secure version is only sent over HTTPS connections.
+                        Stores your authentication session. Set by NextAuth.js when you log in. The
+                        secure version is only sent over HTTPS connections.
                       </p>
-                      <p className="text-muted-foreground text-xs mt-2">Duration: Session or 30 days (depending on "Remember me" choice)</p>
+                      <p className="text-muted-foreground text-xs mt-2">
+                        Duration: Session or 30 days (depending on "Remember me" choice)
+                      </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm">authjs.csrf-token</h4>
                       <p className="text-muted-foreground text-sm mt-1">
-                        Protects against Cross-Site Request Forgery attacks. Required for secure form submissions.
+                        Protects against Cross-Site Request Forgery attacks. Required for secure
+                        form submissions.
                       </p>
                       <p className="text-muted-foreground text-xs mt-2">Duration: Session only</p>
                     </div>
@@ -280,7 +301,8 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">What They Track</h3>
                   <p className="text-muted-foreground mb-4">
-                    Analytics cookies collect information about how you use the Spike Land Image Enhancement App. This helps us:
+                    Analytics cookies collect information about how you use the Spike Land Image
+                    Enhancement App. This helps us:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>Understand which features are most popular</li>
@@ -297,26 +319,34 @@ export default function CookiePage() {
                     <div className="bg-muted p-4 rounded-lg">
                       <h4 className="font-semibold text-sm mb-2">Vercel Analytics</h4>
                       <p className="text-muted-foreground text-sm mb-2">
-                        <strong>Purpose:</strong> Tracks page views, user interactions, and performance metrics
+                        <strong>Purpose:</strong>{" "}
+                        Tracks page views, user interactions, and performance metrics
                       </p>
                       <p className="text-muted-foreground text-sm mb-2">
-                        <strong>Data collected:</strong> Page URLs, referrer, device type, browser type, approximate location (country level)
+                        <strong>Data collected:</strong>{" "}
+                        Page URLs, referrer, device type, browser type, approximate location
+                        (country level)
                       </p>
                       <p className="text-muted-foreground text-sm">
-                        <strong>Privacy:</strong> Vercel Analytics does not use cookies for tracking and does not require cookie consent
+                        <strong>Privacy:</strong>{" "}
+                        Vercel Analytics does not use cookies for tracking and does not require
+                        cookie consent
                       </p>
                     </div>
 
                     <div className="bg-muted p-4 rounded-lg">
                       <h4 className="font-semibold text-sm mb-2">Vercel Speed Insights</h4>
                       <p className="text-muted-foreground text-sm mb-2">
-                        <strong>Purpose:</strong> Monitors application performance and loading speeds
+                        <strong>Purpose:</strong>{" "}
+                        Monitors application performance and loading speeds
                       </p>
                       <p className="text-muted-foreground text-sm mb-2">
-                        <strong>Data collected:</strong> Page load times, Core Web Vitals, performance metrics
+                        <strong>Data collected:</strong>{" "}
+                        Page load times, Core Web Vitals, performance metrics
                       </p>
                       <p className="text-muted-foreground text-sm">
-                        <strong>Privacy:</strong> No personal data collected, does not require cookie consent
+                        <strong>Privacy:</strong>{" "}
+                        No personal data collected, does not require cookie consent
                       </p>
                     </div>
                   </div>
@@ -325,13 +355,15 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Opt-Out</h3>
                   <p className="text-muted-foreground mb-4">
-                    You can manage cookie preferences through several methods. Here are your options for opting out of non-essential cookies:
+                    You can manage cookie preferences through several methods. Here are your options
+                    for opting out of non-essential cookies:
                   </p>
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-semibold text-sm mb-2">Browser Settings</h4>
                       <p className="text-muted-foreground text-sm mb-2">
-                        You can opt out of analytics tracking through your browser settings. Most browsers allow you to:
+                        You can opt out of analytics tracking through your browser settings. Most
+                        browsers allow you to:
                       </p>
                       <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm ml-2">
                         <li>Block cookies from analytics services</li>
@@ -342,7 +374,8 @@ export default function CookiePage() {
                     <div>
                       <h4 className="font-semibold text-sm mb-2">Browser Extensions</h4>
                       <p className="text-muted-foreground text-sm">
-                        You can install privacy-focused browser extensions to block analytics trackers (e.g., uBlock Origin, Privacy Badger, Ghostery)
+                        You can install privacy-focused browser extensions to block analytics
+                        trackers (e.g., uBlock Origin, Privacy Badger, Ghostery)
                       </p>
                     </div>
                   </div>
@@ -351,7 +384,7 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Vercel Privacy Policy</h3>
                   <p className="text-muted-foreground text-sm">
-                    For more information about how Vercel handles data, see their{' '}
+                    For more information about how Vercel handles data, see their{" "}
                     <a
                       href="https://vercel.com/legal/privacy-policy"
                       target="_blank"
@@ -376,19 +409,24 @@ export default function CookiePage() {
               <CardContent className="space-y-6">
                 <div>
                   <p className="text-muted-foreground mb-6">
-                    Some cookies are set by external services that are embedded in our application. These services help us provide authentication, payments, and other functionality.
+                    Some cookies are set by external services that are embedded in our application.
+                    These services help us provide authentication, payments, and other
+                    functionality.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-4">Google OAuth</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2">
-                    <p className="text-sm"><strong>Purpose:</strong> Authentication and login</p>
+                    <p className="text-sm">
+                      <strong>Purpose:</strong> Authentication and login
+                    </p>
                     <p className="text-muted-foreground text-sm">
-                      When you click "Sign in with Google," Google sets cookies to manage your authentication session and verify your identity.
+                      When you click "Sign in with Google," Google sets cookies to manage your
+                      authentication session and verify your identity.
                     </p>
                     <p className="text-sm mt-3">
-                      <strong>Privacy Policy:</strong>{' '}
+                      <strong>Privacy Policy:</strong>{" "}
                       <a
                         href="https://policies.google.com/privacy"
                         target="_blank"
@@ -399,7 +437,7 @@ export default function CookiePage() {
                       </a>
                     </p>
                     <p className="text-sm">
-                      <strong>Cookies Policy:</strong>{' '}
+                      <strong>Cookies Policy:</strong>{" "}
                       <a
                         href="https://policies.google.com/technologies/cookies"
                         target="_blank"
@@ -415,12 +453,15 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-4">GitHub OAuth</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2">
-                    <p className="text-sm"><strong>Purpose:</strong> Authentication and login</p>
+                    <p className="text-sm">
+                      <strong>Purpose:</strong> Authentication and login
+                    </p>
                     <p className="text-muted-foreground text-sm">
-                      When you click "Sign in with GitHub," GitHub sets cookies to manage your authentication session and verify your identity.
+                      When you click "Sign in with GitHub," GitHub sets cookies to manage your
+                      authentication session and verify your identity.
                     </p>
                     <p className="text-sm mt-3">
-                      <strong>Privacy Policy:</strong>{' '}
+                      <strong>Privacy Policy:</strong>{" "}
                       <a
                         href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
                         target="_blank"
@@ -436,15 +477,21 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-4">Stripe (Payment Processing)</h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2">
-                    <p className="text-sm"><strong>Purpose:</strong> Payment processing and fraud prevention</p>
+                    <p className="text-sm">
+                      <strong>Purpose:</strong> Payment processing and fraud prevention
+                    </p>
                     <p className="text-muted-foreground text-sm">
-                      When you make a payment, Stripe sets cookies to securely process your transaction and prevent fraud. Stripe does not store your credit card information on our servers.
+                      When you make a payment, Stripe sets cookies to securely process your
+                      transaction and prevent fraud. Stripe does not store your credit card
+                      information on our servers.
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">
-                      <strong>Important:</strong> Stripe is PCI DSS Level 1 certified, meaning your payment data is handled with the highest security standards.
+                      <strong>Important:</strong>{" "}
+                      Stripe is PCI DSS Level 1 certified, meaning your payment data is handled with
+                      the highest security standards.
                     </p>
                     <p className="text-sm mt-3">
-                      <strong>Privacy Policy:</strong>{' '}
+                      <strong>Privacy Policy:</strong>{" "}
                       <a
                         href="https://stripe.com/privacy"
                         target="_blank"
@@ -455,7 +502,7 @@ export default function CookiePage() {
                       </a>
                     </p>
                     <p className="text-sm">
-                      <strong>Cookies Policy:</strong>{' '}
+                      <strong>Cookies Policy:</strong>{" "}
                       <a
                         href="https://stripe.com/cookies-policy"
                         target="_blank"
@@ -469,9 +516,12 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Your Control Over Third-Party Cookies</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Your Control Over Third-Party Cookies
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
-                    While we cannot disable these cookies (they are necessary for authentication and payments), you can:
+                    While we cannot disable these cookies (they are necessary for authentication and
+                    payments), you can:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm">
                     <li>Block cookies from these services in your browser settings</li>
@@ -538,10 +588,14 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">What Happens If You Disable Cookies</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    What Happens If You Disable Cookies
+                  </h3>
                   <div className="space-y-3">
                     <div className="bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg">
-                      <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 text-sm mb-2">Impact on Functionality</h4>
+                      <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 text-sm mb-2">
+                        Impact on Functionality
+                      </h4>
                       <ul className="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-200 text-sm">
                         <li>You will not be able to log in to your account</li>
                         <li>Google and GitHub authentication will not work</li>
@@ -559,20 +613,28 @@ export default function CookiePage() {
                     You can clear cookies from your device at any time:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm">
-                    <li>Use your browser's "Clear browsing data" feature (typically Ctrl+Shift+Delete or Cmd+Shift+Delete)</li>
+                    <li>
+                      Use your browser's "Clear browsing data" feature (typically Ctrl+Shift+Delete
+                      or Cmd+Shift+Delete)
+                    </li>
                     <li>Select "Cookies and other site data" in the clear browsing data dialog</li>
                     <li>Choose the time range (all time, last hour, last day, etc.)</li>
                     <li>Click Clear or Delete</li>
                   </ul>
                   <p className="text-muted-foreground text-sm mt-4">
-                    <strong>Note:</strong> Clearing cookies will log you out of your account and may reset your preferences.
+                    <strong>Note:</strong>{" "}
+                    Clearing cookies will log you out of your account and may reset your
+                    preferences.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Do Not Track (DNT)</h3>
                   <p className="text-muted-foreground text-sm">
-                    Most browsers allow you to send a "Do Not Track" signal to websites. While we respect this preference, some features may require cookies to function properly. You can enable DNT through your browser settings under Privacy or Advanced preferences.
+                    Most browsers allow you to send a "Do Not Track" signal to websites. While we
+                    respect this preference, some features may require cookies to function properly.
+                    You can enable DNT through your browser settings under Privacy or Advanced
+                    preferences.
                   </p>
                 </div>
               </CardContent>
@@ -613,7 +675,8 @@ export default function CookiePage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm">Reject Non-Essential</h4>
                       <p className="text-muted-foreground text-sm">
-                        Accept only essential cookies. Analytics and non-essential cookies are blocked.
+                        Accept only essential cookies. Analytics and non-essential cookies are
+                        blocked.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
@@ -628,7 +691,8 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">GDPR and ePrivacy Compliance</h3>
                   <p className="text-muted-foreground text-sm">
-                    Our cookie consent implementation complies with GDPR Article 7 and the ePrivacy Directive requirements:
+                    Our cookie consent implementation complies with GDPR Article 7 and the ePrivacy
+                    Directive requirements:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm mt-3">
                     <li>Consent must be freely given (not forced)</li>
@@ -645,7 +709,10 @@ export default function CookiePage() {
                     You can change your cookie preferences at any time:
                   </p>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground text-sm">
-                    <li>Look for a "Cookie Settings" link at the bottom of the page (typically in the footer)</li>
+                    <li>
+                      Look for a "Cookie Settings" link at the bottom of the page (typically in the
+                      footer)
+                    </li>
                     <li>Click the link to open the cookie preferences modal</li>
                     <li>Adjust your cookie settings as desired</li>
                     <li>Click "Save Preferences"</li>
@@ -656,14 +723,17 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Cookie Consent Expiration</h3>
                   <p className="text-muted-foreground text-sm">
-                    Your cookie consent preferences are stored for 12 months. After 12 months, we may ask you to confirm your preferences again to ensure they remain current.
+                    Your cookie consent preferences are stored for 12 months. After 12 months, we
+                    may ask you to confirm your preferences again to ensure they remain current.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Consent for Non-EU Users</h3>
                   <p className="text-muted-foreground text-sm">
-                    While GDPR applies primarily to EU residents, we apply the same consent standards to all users regardless of location, as this is a best practice for privacy protection.
+                    While GDPR applies primarily to EU residents, we apply the same consent
+                    standards to all users regardless of location, as this is a best practice for
+                    privacy protection.
                   </p>
                 </div>
               </CardContent>
@@ -700,7 +770,9 @@ export default function CookiePage() {
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm">
                     <li>We will update the "Last updated" date at the top of this page</li>
                     <li>We will post a notice on our website for at least 30 days</li>
-                    <li>For significant changes, we may send an email notification to registered users</li>
+                    <li>
+                      For significant changes, we may send an email notification to registered users
+                    </li>
                     <li>We will ask for renewed consent if required by law</li>
                   </ul>
                 </div>
@@ -708,7 +780,8 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Version History</h3>
                   <p className="text-muted-foreground text-sm">
-                    We maintain a version history of this policy. If you need to reference a previous version, please contact our privacy team.
+                    We maintain a version history of this policy. If you need to reference a
+                    previous version, please contact our privacy team.
                   </p>
                 </div>
               </CardContent>
@@ -727,7 +800,13 @@ export default function CookiePage() {
                   <h3 className="font-semibold text-lg mb-2">Privacy Inquiries</h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-sm">
-                      Email: <a href="mailto:privacy@[your-domain.com]" className="text-primary hover:underline">privacy@[your-domain.com]</a>
+                      Email:{" "}
+                      <a
+                        href="mailto:privacy@[your-domain.com]"
+                        className="text-primary hover:underline"
+                      >
+                        privacy@[your-domain.com]
+                      </a>
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">Response time: 72 hours</p>
                   </div>
@@ -737,7 +816,8 @@ export default function CookiePage() {
                   <h3 className="font-semibold text-lg mb-2">Cookie Preferences</h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-muted-foreground text-sm">
-                      To change your cookie preferences at any time, look for the "Cookie Settings" link at the bottom of the page or contact us at the email above.
+                      To change your cookie preferences at any time, look for the "Cookie Settings"
+                      link at the bottom of the page or contact us at the email above.
                     </p>
                   </div>
                 </div>
@@ -770,19 +850,31 @@ export default function CookiePage() {
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">UK:</span>
                       <span className="text-muted-foreground">
-                        <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a
+                          href="https://ico.org.uk"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
                           Information Commissioner's Office (ICO)
                         </a>
                       </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">EU:</span>
-                      <span className="text-muted-foreground">Your local Data Protection Authority</span>
+                      <span className="text-muted-foreground">
+                        Your local Data Protection Authority
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">US:</span>
                       <span className="text-muted-foreground">
-                        <a href="https://www.ftc.gov" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a
+                          href="https://www.ftc.gov"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
                           Federal Trade Commission (FTC)
                         </a>
                       </span>
@@ -796,16 +888,24 @@ export default function CookiePage() {
           {/* Disclaimer */}
           <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">Legal Disclaimer</CardTitle>
+              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+                Legal Disclaimer
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                This Cookie Policy is a template for informational purposes only. It provides general guidance on cookie practices and compliance with GDPR and ePrivacy regulations. However, cookie laws are complex and evolve frequently. You should consult with a qualified attorney who specializes in privacy and data protection law to ensure this policy is fully compliant with all applicable laws in your jurisdiction and to customize it for your specific cookie usage and business operations.
+                This Cookie Policy is a template for informational purposes only. It provides
+                general guidance on cookie practices and compliance with GDPR and ePrivacy
+                regulations. However, cookie laws are complex and evolve frequently. You should
+                consult with a qualified attorney who specializes in privacy and data protection law
+                to ensure this policy is fully compliant with all applicable laws in your
+                jurisdiction and to customize it for your specific cookie usage and business
+                operations.
               </p>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

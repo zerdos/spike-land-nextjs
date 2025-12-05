@@ -1,82 +1,82 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Download } from 'lucide-react'
-import { ImageComparisonSlider } from './ImageComparisonSlider'
-import type { Version } from './version-history'
+} from "@/components/ui/select";
+import { Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ImageComparisonSlider } from "./ImageComparisonSlider";
+import type { Version } from "./version-history";
 
 export interface VersionCompareModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  imageId: string
-  imageName: string
-  originalUrl: string
-  versions: Version[]
-  initialVersion1?: Version | null
-  initialVersion2?: Version | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  imageId: string;
+  imageName: string;
+  originalUrl: string;
+  versions: Version[];
+  initialVersion1?: Version | null;
+  initialVersion2?: Version | null;
 }
 
 const getTierLabel = (tier: string): string => {
   switch (tier) {
-    case 'TIER_1K':
-      return '1K'
-    case 'TIER_2K':
-      return '2K'
-    case 'TIER_4K':
-      return '4K'
+    case "TIER_1K":
+      return "1K";
+    case "TIER_2K":
+      return "2K";
+    case "TIER_4K":
+      return "4K";
     default:
-      return tier
+      return tier;
   }
-}
+};
 
 const getTierColor = (tier: string): string => {
   switch (tier) {
-    case 'TIER_1K':
-      return 'bg-green-500/10 text-green-700 border-green-500/20'
-    case 'TIER_2K':
-      return 'bg-blue-500/10 text-blue-700 border-blue-500/20'
-    case 'TIER_4K':
-      return 'bg-purple-500/10 text-purple-700 border-purple-500/20'
+    case "TIER_1K":
+      return "bg-green-500/10 text-green-700 border-green-500/20";
+    case "TIER_2K":
+      return "bg-blue-500/10 text-blue-700 border-blue-500/20";
+    case "TIER_4K":
+      return "bg-purple-500/10 text-purple-700 border-purple-500/20";
     default:
-      return 'bg-gray-500/10 text-gray-700 border-gray-500/20'
+      return "bg-gray-500/10 text-gray-700 border-gray-500/20";
   }
-}
+};
 
 const formatDate = (date: string | Date): string => {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const handleDownload = (url: string | null, imageName: string, tier: string): void => {
-  if (!url) return
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${imageName}-${getTierLabel(tier)}.jpg`
-  link.target = '_blank'
-  link.click()
-}
+  if (!url) return;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${imageName}-${getTierLabel(tier)}.jpg`;
+  link.target = "_blank";
+  link.click();
+};
 
 export function VersionCompareModal({
   open,
@@ -88,39 +88,41 @@ export function VersionCompareModal({
   initialVersion1,
   initialVersion2,
 }: VersionCompareModalProps) {
-  const [version1, setVersion1] = useState<Version | null>(null)
-  const [version2, setVersion2] = useState<Version | null>(null)
+  const [version1, setVersion1] = useState<Version | null>(null);
+  const [version2, setVersion2] = useState<Version | null>(null);
 
   useEffect(() => {
     if (open) {
-      setVersion1(initialVersion1 ?? (versions.length > 0 ? versions[0] : null) ?? null)
-      setVersion2(initialVersion2 ?? (versions.length > 1 ? versions[1] : null) ?? null)
+      setVersion1(initialVersion1 ?? (versions.length > 0 ? versions[0] : null) ?? null);
+      setVersion2(initialVersion2 ?? (versions.length > 1 ? versions[1] : null) ?? null);
     }
-  }, [open, initialVersion1, initialVersion2, versions])
+  }, [open, initialVersion1, initialVersion2, versions]);
 
   if (versions.length === 0) {
-    return null
+    return null;
   }
 
   const getVersionById = (jobId: string): Version | null => {
-    return versions.find(v => v.jobId === jobId) || null
-  }
+    return versions.find(v => v.jobId === jobId) || null;
+  };
 
   const getImageUrl = (version: Version | null): string => {
-    return version?.resultUrl || originalUrl
-  }
+    return version?.resultUrl || originalUrl;
+  };
 
   const getImageLabel = (version: Version | null): string => {
-    return version ? `${getTierLabel(version.tier)} - ${formatDate(version.createdAt)}` : 'Original'
-  }
+    return version
+      ? `${getTierLabel(version.tier)} - ${formatDate(version.createdAt)}`
+      : "Original";
+  };
 
   const getImageDimensions = (version: Version | null) => {
-    if (!version) return { width: 16, height: 9 }
+    if (!version) return { width: 16, height: 9 };
     return {
       width: version.width || 16,
       height: version.height || 9,
-    }
-  }
+    };
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,10 +139,9 @@ export function VersionCompareModal({
             <div className="space-y-2">
               <label className="text-sm font-medium">Left Image</label>
               <Select
-                value={version1?.jobId || 'original'}
+                value={version1?.jobId || "original"}
                 onValueChange={jobId =>
-                  setVersion1(jobId === 'original' ? null : getVersionById(jobId))
-                }
+                  setVersion1(jobId === "original" ? null : getVersionById(jobId))}
               >
                 <SelectTrigger data-testid="version1-select">
                   <SelectValue />
@@ -184,10 +185,9 @@ export function VersionCompareModal({
             <div className="space-y-2">
               <label className="text-sm font-medium">Right Image</label>
               <Select
-                value={version2?.jobId || 'original'}
+                value={version2?.jobId || "original"}
                 onValueChange={jobId =>
-                  setVersion2(jobId === 'original' ? null : getVersionById(jobId))
-                }
+                  setVersion2(jobId === "original" ? null : getVersionById(jobId))}
               >
                 <SelectTrigger data-testid="version2-select">
                   <SelectValue />
@@ -240,5 +240,5 @@ export function VersionCompareModal({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

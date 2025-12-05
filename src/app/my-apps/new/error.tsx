@@ -1,22 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { errorLogger } from '@/lib/error-logger';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { errorLogger } from "@/lib/error-logger";
+import { useEffect } from "react";
 
 export default function NewAppError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error & { digest?: string; };
   reset: () => void;
 }) {
   useEffect(() => {
     // Log the error to error reporting service
     errorLogger.logError(error, {
-      route: '/my-apps/new',
+      route: "/my-apps/new",
       digest: error.digest,
     });
   }, [error]);
@@ -34,7 +41,7 @@ export default function NewAppError({
           <Alert variant="destructive">
             <AlertTitle>What went wrong?</AlertTitle>
             <AlertDescription>
-              {error.message || 'Failed to create app'}
+              {error.message || "Failed to create app"}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -42,7 +49,7 @@ export default function NewAppError({
           <Button onClick={reset} variant="default">
             Try again
           </Button>
-          <Button onClick={() => window.location.href = '/my-apps'} variant="outline">
+          <Button onClick={() => window.location.href = "/my-apps"} variant="outline">
             Back to My Apps
           </Button>
         </CardFooter>

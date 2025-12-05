@@ -1,15 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select';
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
-describe('Select', () => {
-  it('should render select trigger', () => {
+describe("Select", () => {
+  it("should render select trigger", () => {
     render(
       <Select>
         <SelectTrigger data-testid="select-trigger">
@@ -18,13 +12,13 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="option1">Option 1</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    expect(screen.getByTestId('select-trigger')).toBeInTheDocument();
+    expect(screen.getByTestId("select-trigger")).toBeInTheDocument();
   });
 
-  it('should display placeholder', () => {
+  it("should display placeholder", () => {
     render(
       <Select>
         <SelectTrigger>
@@ -33,33 +27,13 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="option1">Option 1</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    expect(screen.getByText('Select option')).toBeInTheDocument();
+    expect(screen.getByText("Select option")).toBeInTheDocument();
   });
 
-  it('should open dropdown on trigger click', () => {
-    render(
-      <Select>
-        <SelectTrigger>
-          <SelectValue placeholder="Select option" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="option1">Option 1</SelectItem>
-          <SelectItem value="option2">Option 2</SelectItem>
-        </SelectContent>
-      </Select>
-    );
-
-    const trigger = screen.getByRole('combobox');
-    fireEvent.click(trigger);
-
-    expect(screen.getByText('Option 1')).toBeInTheDocument();
-    expect(screen.getByText('Option 2')).toBeInTheDocument();
-  });
-
-  it('should select an option', () => {
+  it("should open dropdown on trigger click", () => {
     render(
       <Select>
         <SelectTrigger>
@@ -69,17 +43,37 @@ describe('Select', () => {
           <SelectItem value="option1">Option 1</SelectItem>
           <SelectItem value="option2">Option 2</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    const trigger = screen.getByRole('combobox');
+    const trigger = screen.getByRole("combobox");
     fireEvent.click(trigger);
 
-    const option1 = screen.getByText('Option 1');
+    expect(screen.getByText("Option 1")).toBeInTheDocument();
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
+  it("should select an option", () => {
+    render(
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Select option" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="option1">Option 1</SelectItem>
+          <SelectItem value="option2">Option 2</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox");
+    fireEvent.click(trigger);
+
+    const option1 = screen.getByText("Option 1");
     fireEvent.click(option1);
   });
 
-  it('should apply custom className to trigger', () => {
+  it("should apply custom className to trigger", () => {
     render(
       <Select>
         <SelectTrigger className="custom-class" data-testid="custom-trigger">
@@ -88,13 +82,13 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="option1">Option 1</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    expect(screen.getByTestId('custom-trigger')).toHaveClass('custom-class');
+    expect(screen.getByTestId("custom-trigger")).toHaveClass("custom-class");
   });
 
-  it('should handle disabled state', () => {
+  it("should handle disabled state", () => {
     render(
       <Select>
         <SelectTrigger disabled data-testid="disabled-trigger">
@@ -103,13 +97,13 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="option1">Option 1</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    expect(screen.getByTestId('disabled-trigger')).toBeDisabled();
+    expect(screen.getByTestId("disabled-trigger")).toBeDisabled();
   });
 
-  it('should render with controlled value', () => {
+  it("should render with controlled value", () => {
     render(
       <Select value="option2">
         <SelectTrigger>
@@ -119,13 +113,13 @@ describe('Select', () => {
           <SelectItem value="option1">Option 1</SelectItem>
           <SelectItem value="option2">Option 2</SelectItem>
         </SelectContent>
-      </Select>
+      </Select>,
     );
 
-    const trigger = screen.getByRole('combobox');
+    const trigger = screen.getByRole("combobox");
     fireEvent.click(trigger);
 
-    const option2 = screen.getAllByText('Option 2');
+    const option2 = screen.getAllByText("Option 2");
     expect(option2.length).toBeGreaterThan(0);
   });
 });

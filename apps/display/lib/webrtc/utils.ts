@@ -25,7 +25,7 @@ export const DEFAULT_VIDEO_CONSTRAINTS: MediaConstraints = {
  * Get user media stream with the specified constraints
  */
 export async function getUserMediaStream(
-  constraints: MediaConstraints = DEFAULT_VIDEO_CONSTRAINTS
+  constraints: MediaConstraints = DEFAULT_VIDEO_CONSTRAINTS,
 ): Promise<MediaStream> {
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -67,7 +67,7 @@ export function stopMediaStream(stream: MediaStream | null): void {
 export function getStreamMetadata(
   stream: MediaStream,
   peerId: string,
-  streamType: "video" | "audio" | "screen" = "video"
+  streamType: "video" | "audio" | "screen" = "video",
 ): StreamMetadata {
   const videoTrack = stream.getVideoTracks()[0];
   const settings = videoTrack?.getSettings();
@@ -78,10 +78,10 @@ export function getStreamMetadata(
     isActive: stream.active,
     videoSettings: settings
       ? {
-          width: settings.width || 0,
-          height: settings.height || 0,
-          frameRate: settings.frameRate || 0,
-        }
+        width: settings.width || 0,
+        height: settings.height || 0,
+        frameRate: settings.frameRate || 0,
+      }
       : undefined,
   };
 }
@@ -92,7 +92,7 @@ export function getStreamMetadata(
 export function isWebRTCSupported(): boolean {
   return !!(
     navigator.mediaDevices &&
-    typeof navigator.mediaDevices.getUserMedia === 'function' &&
+    typeof navigator.mediaDevices.getUserMedia === "function" &&
     window.RTCPeerConnection
   );
 }
@@ -103,7 +103,7 @@ export function isWebRTCSupported(): boolean {
 export function createWebRTCError(
   type: WebRTCError,
   message: string,
-  originalError?: Error
+  originalError?: Error,
 ): WebRTCErrorInfo {
   return {
     type,
@@ -155,8 +155,8 @@ export function calculateVideoLayout(
   containerWidth: number,
   containerHeight: number,
   videoWidth: number,
-  videoHeight: number
-): { width: number; height: number } {
+  videoHeight: number,
+): { width: number; height: number; } {
   const containerRatio = containerWidth / containerHeight;
   const videoRatio = videoWidth / videoHeight;
 
@@ -181,7 +181,7 @@ export function calculateVideoLayout(
  */
 export function monitorStreamHealth(
   stream: MediaStream,
-  onInactive: () => void
+  onInactive: () => void,
 ): () => void {
   const tracks = stream.getTracks();
 

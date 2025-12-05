@@ -1,14 +1,14 @@
-import prisma from '@/lib/prisma'
-import { TokenBalanceManager } from '@/lib/tokens/balance-manager'
-import { TokenTransactionType } from '@prisma/client'
+import prisma from "@/lib/prisma";
+import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { TokenTransactionType } from "@prisma/client";
 
-const REFERRAL_REWARD_TOKENS = 50
+const REFERRAL_REWARD_TOKENS = 50;
 
 export interface ReferralRewardResult {
-  success: boolean
-  referrerTokensGranted?: number
-  refereeTokensGranted?: number
-  error?: string
+  success: boolean;
+  referrerTokensGranted?: number;
+  refereeTokensGranted?: number;
+  error?: string;
 }
 
 /**
@@ -16,7 +16,7 @@ export interface ReferralRewardResult {
  * Only called after fraud checks pass
  */
 export async function completeReferralAndGrantRewards(
-  referralId: string
+  referralId: string,
 ): Promise<ReferralRewardResult> {
   try {
     // Get referral record
@@ -26,24 +26,24 @@ export async function completeReferralAndGrantRewards(
         referrer: { select: { id: true, email: true } },
         referee: { select: { id: true, email: true } },
       },
-    })
+    });
 
     if (!referral) {
-      return { success: false, error: 'Referral not found' }
+      return { success: false, error: "Referral not found" };
     }
 
-    if (referral.status === 'COMPLETED') {
+    if (referral.status === "COMPLETED") {
       return {
         success: false,
-        error: 'Referral already completed',
-      }
+        error: "Referral already completed",
+      };
     }
 
-    if (referral.status === 'INVALID') {
+    if (referral.status === "INVALID") {
       return {
         success: false,
-        error: 'Referral marked as invalid',
-      }
+        error: "Referral marked as invalid",
+      };
     }
 
     // Grant tokens to both users in transaction
@@ -54,18 +54,18 @@ export async function completeReferralAndGrantRewards(
         userId: referral.referrerId,
         amount: REFERRAL_REWARD_TOKENS,
         type: TokenTransactionType.EARN_BONUS,
-        source: 'referral_reward',
+        source: "referral_reward",
         sourceId: referralId,
         metadata: {
           refereeEmail: referral.referee.email,
           refereeId: referral.refereeId,
         },
-      })
+      });
 
       if (!referrerResult.success) {
         throw new Error(
-          `Failed to grant tokens to referrer: ${referrerResult.error}`
-        )
+          `Failed to grant tokens to referrer: ${referrerResult.error}`,
+        );
       }
 
       // Grant tokens to referee
@@ -73,29 +73,29 @@ export async function completeReferralAndGrantRewards(
         userId: referral.refereeId,
         amount: REFERRAL_REWARD_TOKENS,
         type: TokenTransactionType.EARN_BONUS,
-        source: 'referral_signup_bonus',
+        source: "referral_signup_bonus",
         sourceId: referralId,
         metadata: {
           referrerEmail: referral.referrer.email,
           referrerId: referral.referrerId,
         },
-      })
+      });
 
       if (!refereeResult.success) {
         throw new Error(
-          `Failed to grant tokens to referee: ${refereeResult.error}`
-        )
+          `Failed to grant tokens to referee: ${refereeResult.error}`,
+        );
       }
 
       // Update referral status
       await tx.referral.update({
         where: { id: referralId },
         data: {
-          status: 'COMPLETED',
+          status: "COMPLETED",
           tokensGranted: REFERRAL_REWARD_TOKENS * 2,
           completedAt: new Date(),
         },
-      })
+      });
 
       // Update referrer's referral count
       await tx.user.update({
@@ -103,25 +103,25 @@ export async function completeReferralAndGrantRewards(
         data: {
           referralCount: { increment: 1 },
         },
-      })
+      });
 
       return {
         referrerTokens: REFERRAL_REWARD_TOKENS,
         refereeTokens: REFERRAL_REWARD_TOKENS,
-      }
-    })
+      };
+    });
 
     return {
       success: true,
       referrerTokensGranted: result.referrerTokens,
       refereeTokensGranted: result.refereeTokens,
-    }
+    };
   } catch (error) {
-    console.error('Failed to complete referral and grant rewards:', error)
+    console.error("Failed to complete referral and grant rewards:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -130,23 +130,23 @@ export async function completeReferralAndGrantRewards(
  */
 export async function markReferralAsInvalid(
   referralId: string,
-  _reason: string
-): Promise<{ success: boolean; error?: string }> {
+  _reason: string,
+): Promise<{ success: boolean; error?: string; }> {
   try {
     await prisma.referral.update({
       where: { id: referralId },
       data: {
-        status: 'INVALID',
+        status: "INVALID",
       },
-    })
+    });
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Failed to mark referral as invalid:', error)
+    console.error("Failed to mark referral as invalid:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -154,40 +154,39 @@ export async function markReferralAsInvalid(
  * Get referral statistics for a user
  */
 export async function getReferralStats(userId: string): Promise<{
-  totalReferrals: number
-  completedReferrals: number
-  pendingReferrals: number
-  tokensEarned: number
+  totalReferrals: number;
+  completedReferrals: number;
+  pendingReferrals: number;
+  tokensEarned: number;
 }> {
-  const [totalReferrals, completedReferrals, pendingReferrals, referrals] =
-    await Promise.all([
-      prisma.referral.count({
-        where: { referrerId: userId },
-      }),
-      prisma.referral.count({
-        where: { referrerId: userId, status: 'COMPLETED' },
-      }),
-      prisma.referral.count({
-        where: { referrerId: userId, status: 'PENDING' },
-      }),
-      prisma.referral.findMany({
-        where: { referrerId: userId, status: 'COMPLETED' },
-        select: { tokensGranted: true },
-      }),
-    ])
+  const [totalReferrals, completedReferrals, pendingReferrals, referrals] = await Promise.all([
+    prisma.referral.count({
+      where: { referrerId: userId },
+    }),
+    prisma.referral.count({
+      where: { referrerId: userId, status: "COMPLETED" },
+    }),
+    prisma.referral.count({
+      where: { referrerId: userId, status: "PENDING" },
+    }),
+    prisma.referral.findMany({
+      where: { referrerId: userId, status: "COMPLETED" },
+      select: { tokensGranted: true },
+    }),
+  ]);
 
   // Calculate tokens earned (referrer gets half of total tokens granted)
   const tokensEarned = referrals.reduce(
-    (sum: number, ref: { tokensGranted: number }) => sum + ref.tokensGranted / 2,
-    0
-  )
+    (sum: number, ref: { tokensGranted: number; }) => sum + ref.tokensGranted / 2,
+    0,
+  );
 
   return {
     totalReferrals,
     completedReferrals,
     pendingReferrals,
     tokensEarned,
-  }
+  };
 }
 
 /**
@@ -195,14 +194,14 @@ export async function getReferralStats(userId: string): Promise<{
  */
 export async function getReferredUsers(
   userId: string,
-  limit = 50
+  limit = 50,
 ): Promise<
   Array<{
-    id: string
-    email: string
-    status: string
-    createdAt: Date
-    tokensGranted: number
+    id: string;
+    email: string;
+    status: string;
+    createdAt: Date;
+    tokensGranted: number;
   }>
 > {
   const referrals = await prisma.referral.findMany({
@@ -215,23 +214,23 @@ export async function getReferredUsers(
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
     take: limit,
-  })
+  });
 
   return referrals.map((ref: {
-    id: string
-    referee: { email: string | null }
-    status: string
-    createdAt: Date
-    tokensGranted: number
+    id: string;
+    referee: { email: string | null; };
+    status: string;
+    createdAt: Date;
+    tokensGranted: number;
   }) => ({
     id: ref.id,
-    email: anonymizeEmail(ref.referee.email ?? 'unknown'),
+    email: anonymizeEmail(ref.referee.email ?? "unknown"),
     status: ref.status,
     createdAt: ref.createdAt,
     tokensGranted: ref.tokensGranted / 2, // Show only referrer's portion
-  }))
+  }));
 }
 
 /**
@@ -239,11 +238,11 @@ export async function getReferredUsers(
  * Example: john.doe@example.com -> j***@example.com
  */
 function anonymizeEmail(email: string): string {
-  const [localPart, domain] = email.split('@')
+  const [localPart, domain] = email.split("@");
   if (!localPart || !domain) {
-    return 'unknown'
+    return "unknown";
   }
 
-  const firstChar = localPart[0]
-  return `${firstChar}***@${domain}`
+  const firstChar = localPart[0];
+  return `${firstChar}***@${domain}`;
 }

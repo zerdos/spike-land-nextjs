@@ -8,28 +8,28 @@ Implement a token-based payment system for AI image enhancements using Stripe.
 
 ### One-Time Token Packages
 
-| Package | Tokens | Price (GBP) | Per Token | Best For |
-|---------|--------|-------------|-----------|----------|
-| Starter | 10 | £2.99 | £0.30 | Try it out |
-| Basic | 50 | £9.99 | £0.20 | Casual users |
-| Pro | 150 | £24.99 | £0.17 | Regular users |
-| Power | 500 | £69.99 | £0.14 | Heavy users |
+| Package | Tokens | Price (GBP) | Per Token | Best For      |
+| ------- | ------ | ----------- | --------- | ------------- |
+| Starter | 10     | £2.99       | £0.30     | Try it out    |
+| Basic   | 50     | £9.99       | £0.20     | Casual users  |
+| Pro     | 150    | £24.99      | £0.17     | Regular users |
+| Power   | 500    | £69.99      | £0.14     | Heavy users   |
 
 ### Subscription Plans (Monthly)
 
-| Plan | Monthly Tokens | Price/Month | Per Token | Extras |
-|------|----------------|-------------|-----------|--------|
-| Hobby | 30 | £4.99/mo | £0.17 | Rollover up to 30 |
-| Creator | 100 | £12.99/mo | £0.13 | Rollover up to 100, Priority |
-| Studio | 300 | £29.99/mo | £0.10 | Unlimited rollover, Priority, API |
+| Plan    | Monthly Tokens | Price/Month | Per Token | Extras                            |
+| ------- | -------------- | ----------- | --------- | --------------------------------- |
+| Hobby   | 30             | £4.99/mo    | £0.17     | Rollover up to 30                 |
+| Creator | 100            | £12.99/mo   | £0.13     | Rollover up to 100, Priority      |
+| Studio  | 300            | £29.99/mo   | £0.10     | Unlimited rollover, Priority, API |
 
 ### Token Cost per Enhancement
 
 | Enhancement Tier | Tokens Required |
-|-----------------|-----------------|
-| 1K Enhancement | 1 token |
-| 2K Enhancement | 2 tokens |
-| 4K Enhancement | 5 tokens |
+| ---------------- | --------------- |
+| 1K Enhancement   | 1 token         |
+| 2K Enhancement   | 2 tokens        |
+| 4K Enhancement   | 5 tokens        |
 
 ---
 
@@ -112,11 +112,13 @@ enum TransactionType {
 ### Phase 3: Backend Routes
 
 #### `/api/stripe/checkout/route.ts`
+
 - POST: Create Checkout Session
 - Input: `{ priceId, mode: 'payment' | 'subscription' }`
 - Output: `{ sessionId, url }`
 
 #### `/api/stripe/webhook/route.ts`
+
 - POST: Handle Stripe webhooks
 - Events to handle:
   - `checkout.session.completed` - Credit tokens
@@ -125,9 +127,11 @@ enum TransactionType {
   - `customer.subscription.deleted` - Cancellation
 
 #### `/api/tokens/balance/route.ts` (exists, update if needed)
+
 - GET: Return user's current token balance
 
 #### `/api/tokens/deduct/route.ts`
+
 - POST: Deduct tokens for enhancement
 - Input: `{ tier: '1K' | '2K' | '4K' }`
 - Validates sufficient balance before deduction
@@ -135,17 +139,20 @@ enum TransactionType {
 ### Phase 4: Frontend Pages
 
 #### `/pricing/page.tsx`
+
 - Display all token packages and subscriptions
 - Checkout buttons for each option
 - FAQ section
 
 #### `/settings/tokens/page.tsx`
+
 - Token balance display
 - Transaction history
 - Buy more tokens button
 - Subscription management (cancel, upgrade)
 
 #### Components
+
 - `TokenBalance.tsx` - Shows balance in header/dashboard
 - `BuyTokensModal.tsx` - Quick purchase modal
 - `InsufficientTokensAlert.tsx` - Shown when trying to enhance with no tokens
@@ -153,6 +160,7 @@ enum TransactionType {
 ### Phase 5: Token Consumption
 
 Update `/api/images/enhance/route.ts`:
+
 1. Check user's token balance
 2. If insufficient, return 402 Payment Required
 3. If sufficient, proceed with enhancement

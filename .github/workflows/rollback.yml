@@ -7,14 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to rollback'
+        description: "Environment to rollback"
         required: true
         type: choice
         options:
           - production
           - test
       deployment_id:
-        description: 'Vercel Deployment ID to rollback to (leave empty for previous)'
+        description: "Vercel Deployment ID to rollback to (leave empty for previous)"
         required: false
         type: string
 
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       # Vercel CLI used via npx below - no global install needed
 
@@ -113,13 +113,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const comment = `🔄 **Rollback Executed**
-
-Environment: ${{ github.event.inputs.environment }}
-Deployment ID: ${{ steps.target.outputs.deployment_id }}
-Triggered by: @${context.actor}
-
-The ${{ github.event.inputs.environment }} environment has been rolled back to the previous deployment.`;
+            const env = '${{ github.event.inputs.environment }}';
+            const deploymentId = '${{ steps.target.outputs.deployment_id }}';
+            const comment = [
+              '🔄 **Rollback Executed**',
+              '',
+              `Environment - ${env}`,
+              `Deployment ID - ${deploymentId}`,
+              `Triggered by - @${context.actor}`,
+              '',
+              `The ${env} environment has been rolled back to the previous deployment.`
+            ].join('\n');
 
             // Create commit status
             try {

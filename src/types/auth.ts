@@ -55,7 +55,7 @@ export interface AuthProvider {
  *
  * Represents the current authentication state of the application.
  */
-export type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
+export type AuthStatus = "authenticated" | "unauthenticated" | "loading";
 
 /**
  * Authentication error types
@@ -63,16 +63,16 @@ export type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
  * Defines possible authentication error scenarios.
  */
 export type AuthError =
-  | 'Configuration'
-  | 'AccessDenied'
-  | 'Verification'
-  | 'Default'
-  | 'OAuthSignin'
-  | 'OAuthCallback'
-  | 'OAuthCreateAccount'
-  | 'EmailCreateAccount'
-  | 'Callback'
-  | 'OAuthAccountNotLinked'
-  | 'EmailSignin'
-  | 'CredentialsSignin'
-  | 'SessionRequired';
+  | "Configuration"
+  | "AccessDenied"
+  | "Verification"
+  | "Default"
+  | "OAuthSignin"
+  | "OAuthCallback"
+  | "OAuthCreateAccount"
+  | "EmailCreateAccount"
+  | "Callback"
+  | "OAuthAccountNotLinked"
+  | "EmailSignin"
+  | "CredentialsSignin"
+  | "SessionRequired";

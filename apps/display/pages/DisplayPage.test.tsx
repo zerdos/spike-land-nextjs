@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import DisplayPage from './DisplayPage';
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import DisplayPage from "./DisplayPage";
 
 // Mock PeerJS module with vi.hoisted
 const { mockPeerInstance, MockPeer, mockToDataURL } = vi.hoisted(() => {
   const mockPeerInstance = {
     on: vi.fn(),
     destroy: vi.fn(),
-    id: 'mock-peer-id',
+    id: "mock-peer-id",
   };
   // Vitest 4: Use a class constructor instead of vi.fn() for constructor mocks
   class MockPeer {
@@ -19,16 +19,16 @@ const { mockPeerInstance, MockPeer, mockToDataURL } = vi.hoisted(() => {
       MockPeer.mock.calls.push(args);
     }
   }
-  const mockToDataURL = vi.fn(() => Promise.resolve('data:image/png;base64,mockqrcode'));
+  const mockToDataURL = vi.fn(() => Promise.resolve("data:image/png;base64,mockqrcode"));
   return { mockPeerInstance, MockPeer, mockToDataURL };
 });
 
-vi.mock('peerjs', () => ({
+vi.mock("peerjs", () => ({
   default: MockPeer,
 }));
 
 // Mock Next.js Image component
-vi.mock('next/image', () => ({
+vi.mock("next/image", () => ({
   default: ({
     src,
     alt,
@@ -46,14 +46,14 @@ vi.mock('next/image', () => ({
 }));
 
 // Mock QRCode
-vi.mock('qrcode', () => ({
+vi.mock("qrcode", () => ({
   default: {
     toDataURL: mockToDataURL,
   },
 }));
 
 // Mock layout optimizer
-vi.mock('@apps/display/lib/layout-optimizer', () => ({
+vi.mock("@apps/display/lib/layout-optimizer", () => ({
   calculateOptimalLayout: vi.fn(() => ({
     rows: 2,
     cols: 2,
@@ -65,14 +65,14 @@ vi.mock('@apps/display/lib/layout-optimizer', () => ({
   })),
 }));
 
-describe('DisplayPage', () => {
+describe("DisplayPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     // Mock window.location
-    Object.defineProperty(window, 'location', {
+    Object.defineProperty(window, "location", {
       value: {
-        origin: 'http://localhost:3000',
+        origin: "http://localhost:3000",
       },
       writable: true,
       configurable: true,
@@ -83,11 +83,11 @@ describe('DisplayPage', () => {
       ok: true,
       json: async () => ({
         iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: "stun:stun.l.google.com:19302" },
           {
-            urls: 'turn:global.turn.twilio.com:3478?transport=udp',
-            username: 'test',
-            credential: 'test',
+            urls: "turn:global.turn.twilio.com:3478?transport=udp",
+            username: "test",
+            credential: "test",
           },
         ],
       }),
@@ -106,7 +106,7 @@ describe('DisplayPage', () => {
 
     // Mock MediaStream - Vitest 4 requires class constructors
     global.MediaStream = class MockMediaStream {
-      id = 'mock-stream-id';
+      id = "mock-stream-id";
       active = true;
       getTracks = vi.fn(() => []);
       getAudioTracks = vi.fn(() => []);
@@ -117,17 +117,17 @@ describe('DisplayPage', () => {
     } as unknown as typeof MediaStream;
   });
 
-  it('should render display page', () => {
+  it("should render display page", () => {
     render(<DisplayPage />);
     expect(screen.getByText(/Smart Video Wall Display/i)).toBeInTheDocument();
   });
 
-  it('should show initializing state', () => {
+  it("should show initializing state", () => {
     render(<DisplayPage />);
     expect(screen.getByText(/Initializing.../i)).toBeInTheDocument();
   });
 
-  it('should initialize PeerJS on mount', async () => {
+  it("should initialize PeerJS on mount", async () => {
     // Clear previous calls
     MockPeer.mock.calls = [];
 
@@ -140,11 +140,11 @@ describe('DisplayPage', () => {
       expect(MockPeer.mock.calls[0]?.[0]).toEqual({
         config: {
           iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: "stun:stun.l.google.com:19302" },
             {
-              urls: 'turn:global.turn.twilio.com:3478?transport=udp',
-              username: 'test',
-              credential: 'test',
+              urls: "turn:global.turn.twilio.com:3478?transport=udp",
+              username: "test",
+              credential: "test",
             },
           ],
         },
@@ -152,21 +152,21 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should handle peer open event and generate QR code', async () => {
+  it("should handle peer open event and generate QR code", async () => {
     render(<DisplayPage />);
 
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get and trigger the open handler
     const onCalls = mockPeerInstance.on.mock.calls;
     const openHandler = onCalls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -177,21 +177,21 @@ describe('DisplayPage', () => {
 
     await waitFor(() => {
       expect(mockToDataURL).toHaveBeenCalledWith(
-        'http://localhost:3000/apps/display/client?displayId=display-123',
+        "http://localhost:3000/apps/display/client?displayId=display-123",
         expect.objectContaining({
           width: 200,
           margin: 2,
-        })
+        }),
       );
     });
   });
 
-  it('should destroy peer on unmount', async () => {
+  it("should destroy peer on unmount", async () => {
     const { unmount } = render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     await act(async () => {
@@ -201,8 +201,8 @@ describe('DisplayPage', () => {
     expect(mockPeerInstance.destroy).toHaveBeenCalled();
   });
 
-  it('should calculate optimal layout with correct dimensions', async () => {
-    const { calculateOptimalLayout } = await import('@apps/display/lib/layout-optimizer');
+  it("should calculate optimal layout with correct dimensions", async () => {
+    const { calculateOptimalLayout } = await import("@apps/display/lib/layout-optimizer");
 
     render(<DisplayPage />);
 
@@ -210,55 +210,56 @@ describe('DisplayPage', () => {
       expect(calculateOptimalLayout).toHaveBeenCalledWith(
         expect.objectContaining({
           numClients: 0,
-        })
+        }),
       );
     });
   });
 
-  it('should display QR code when generated', async () => {
+  it("should display QR code when generated", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     await waitFor(() => {
-      const qrImage = screen.getByAltText('QR Code');
+      const qrImage = screen.getByAltText("QR Code");
       expect(qrImage).toBeInTheDocument();
-      expect(qrImage).toHaveAttribute('src', 'data:image/png;base64,mockqrcode');
+      expect(qrImage).toHaveAttribute("src", "data:image/png;base64,mockqrcode");
     });
 
-    expect(screen.getByText(/Scan this QR code with your mobile phone to connect/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scan this QR code with your mobile phone to connect/i))
+      .toBeInTheDocument();
   });
 
-  it('should handle QR code generation error', async () => {
-    mockToDataURL.mockRejectedValueOnce(new Error('QR generation failed'));
+  it("should handle QR code generation error", async () => {
+    mockToDataURL.mockRejectedValueOnce(new Error("QR generation failed"));
 
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
@@ -267,22 +268,22 @@ describe('DisplayPage', () => {
     expect(screen.getByText(/Display Ready/i)).toBeInTheDocument();
   });
 
-  it('should handle incoming data connection from client', async () => {
+  it("should handle incoming data connection from client", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get the connection handler
     const connectionHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'connection'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "connection",
     )?.[1];
 
     // Mock data connection
     const mockDataConnection = {
-      peer: 'client-456',
+      peer: "client-456",
       on: vi.fn(),
       send: vi.fn(),
     };
@@ -293,7 +294,7 @@ describe('DisplayPage', () => {
 
     // Trigger the open event on data connection
     const dataOpenHandler = mockDataConnection.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
@@ -301,27 +302,27 @@ describe('DisplayPage', () => {
     });
 
     expect(mockDataConnection.send).toHaveBeenCalledWith({
-      type: 'welcome',
-      message: 'Connected to display',
+      type: "welcome",
+      message: "Connected to display",
     });
   });
 
-  it('should handle incoming media call and receive stream', async () => {
+  it("should handle incoming media call and receive stream", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     // Mock media call
     const mockCall = {
-      peer: 'client-789',
+      peer: "client-789",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -334,7 +335,7 @@ describe('DisplayPage', () => {
 
     // Get the stream handler
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     // Mock MediaStream
@@ -350,22 +351,22 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should not add duplicate stream from same client', async () => {
+  it("should not add duplicate stream from same client", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     // First call from client
     const mockCall1 = {
-      peer: 'client-same',
+      peer: "client-same",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -375,7 +376,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler1 = mockCall1.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     const mockStream1 = new MediaStream();
@@ -386,7 +387,7 @@ describe('DisplayPage', () => {
 
     // Second call from same client
     const mockCall2 = {
-      peer: 'client-same',
+      peer: "client-same",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -396,7 +397,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler2 = mockCall2.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     const mockStream2 = new MediaStream();
@@ -413,21 +414,21 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should handle call close and remove stream', async () => {
+  it("should handle call close and remove stream", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'client-close-test',
+      peer: "client-close-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -438,7 +439,7 @@ describe('DisplayPage', () => {
 
     // Add stream
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     await act(async () => {
@@ -452,7 +453,7 @@ describe('DisplayPage', () => {
 
     // Get close handler
     const closeHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'close'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "close",
     )?.[1];
 
     await act(async () => {
@@ -465,21 +466,21 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should handle call error and remove stream', async () => {
+  it("should handle call error and remove stream", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'client-error-test',
+      peer: "client-error-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -490,7 +491,7 @@ describe('DisplayPage', () => {
 
     // Add stream
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     await act(async () => {
@@ -504,10 +505,10 @@ describe('DisplayPage', () => {
 
     // Get error handler
     const errorHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'error'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "error",
     )?.[1];
 
-    const mockError = new Error('Call error');
+    const mockError = new Error("Call error");
     await act(async () => {
       errorHandler?.(mockError);
     });
@@ -518,20 +519,20 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should handle peer error', async () => {
+  it("should handle peer error", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get error handler
     const errorHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'error'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "error",
     )?.[1];
 
-    const mockError = new Error('Peer connection error');
+    const mockError = new Error("Peer connection error");
     await act(async () => {
       errorHandler?.(mockError);
     });
@@ -540,27 +541,27 @@ describe('DisplayPage', () => {
     expect(screen.getByText(/Initializing/i)).toBeInTheDocument();
   });
 
-  it('should render video grid when clients are connected', async () => {
+  it("should render video grid when clients are connected", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // First trigger open event to set displayId
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     // Add multiple clients
@@ -576,7 +577,7 @@ describe('DisplayPage', () => {
       });
 
       const streamHandler = mockCall.on.mock.calls.find(
-        (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+        (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
       )?.[1];
 
       await act(async () => {
@@ -590,41 +591,41 @@ describe('DisplayPage', () => {
 
     // Check that video elements are rendered
     await waitFor(() => {
-      const videos = document.querySelectorAll('video');
+      const videos = document.querySelectorAll("video");
       expect(videos.length).toBe(3);
     });
   });
 
-  it('should show QR code in corner when clients are connected', async () => {
+  it("should show QR code in corner when clients are connected", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Wait for QR code to be generated
     await waitFor(() => {
-      expect(screen.getByAltText('QR Code')).toBeInTheDocument();
+      expect(screen.getByAltText("QR Code")).toBeInTheDocument();
     });
 
     // Get call handler and add a client
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'client-qr-test',
+      peer: "client-qr-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -634,7 +635,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     await act(async () => {
@@ -647,21 +648,21 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should render VideoCell component with stream', async () => {
+  it("should render VideoCell component with stream", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'video-cell-test-client',
+      peer: "video-cell-test-client",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -671,7 +672,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     const mockStream = new MediaStream();
@@ -681,36 +682,36 @@ describe('DisplayPage', () => {
 
     // Check that video element exists and has correct attributes
     await waitFor(() => {
-      const videos = document.querySelectorAll('video');
+      const videos = document.querySelectorAll("video");
       expect(videos.length).toBeGreaterThan(0);
       const video = videos[0];
-      expect(video).toHaveAttribute('autoplay');
-      expect(video).toHaveAttribute('playsinline');
-      expect(video.className).toContain('object-cover');
-      expect(video.style.maxWidth).toBe('944px');
-      expect(video.style.maxHeight).toBe('524px');
+      expect(video).toHaveAttribute("autoplay");
+      expect(video).toHaveAttribute("playsinline");
+      expect(video.className).toContain("object-cover");
+      expect(video.style.maxWidth).toBe("944px");
+      expect(video.style.maxHeight).toBe("524px");
     });
 
     // Check peer ID overlay - peer ID is truncated to first 8 chars
     await waitFor(() => {
-      expect(screen.getByText('video-ce...')).toBeInTheDocument();
+      expect(screen.getByText("video-ce...")).toBeInTheDocument();
     });
   });
 
-  it('should update video srcObject when stream changes', async () => {
+  it("should update video srcObject when stream changes", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'stream-update-test',
+      peer: "stream-update-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -720,7 +721,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     const mockStream = new MediaStream();
@@ -729,13 +730,13 @@ describe('DisplayPage', () => {
     });
 
     await waitFor(() => {
-      const videos = document.querySelectorAll('video');
+      const videos = document.querySelectorAll("video");
       expect(videos.length).toBeGreaterThan(0);
       expect(videos[0].srcObject).toBe(mockStream);
     });
   });
 
-  it('should observe container resize and update dimensions', async () => {
+  it("should observe container resize and update dimensions", async () => {
     const mockObserve = vi.fn();
     const mockDisconnect = vi.fn();
 
@@ -775,7 +776,7 @@ describe('DisplayPage', () => {
     expect(mockDisconnect).toHaveBeenCalled();
   });
 
-  it('should handle ResizeObserver without container ref', async () => {
+  it("should handle ResizeObserver without container ref", async () => {
     const mockObserve = vi.fn();
     const mockDisconnect = vi.fn();
 
@@ -793,19 +794,19 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should calculate layout with multiple clients', async () => {
-    const { calculateOptimalLayout } = await import('@apps/display/lib/layout-optimizer');
+  it("should calculate layout with multiple clients", async () => {
+    const { calculateOptimalLayout } = await import("@apps/display/lib/layout-optimizer");
 
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     // Add 4 clients
@@ -821,7 +822,7 @@ describe('DisplayPage', () => {
       });
 
       const streamHandler = mockCall.on.mock.calls.find(
-        (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+        (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
       )?.[1];
 
       await act(async () => {
@@ -835,7 +836,7 @@ describe('DisplayPage', () => {
           numClients: 4,
           videoAspectRatio: 16 / 9,
           minCellPadding: 8,
-        })
+        }),
       );
     });
   });
@@ -845,16 +846,16 @@ describe('DisplayPage', () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -864,7 +865,7 @@ describe('DisplayPage', () => {
     });
   });
 
-  it('should open client URL in new window when button is clicked', async () => {
+  it("should open client URL in new window when button is clicked", async () => {
     // Mock window.open
     const mockOpen = vi.fn();
     global.window.open = mockOpen;
@@ -873,16 +874,16 @@ describe('DisplayPage', () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -899,8 +900,8 @@ describe('DisplayPage', () => {
 
     // Verify window.open was called with correct URL
     expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:3000/apps/display/client?displayId=display-123',
-      '_blank'
+      "http://localhost:3000/apps/display/client?displayId=display-123",
+      "_blank",
     );
   });
 
@@ -913,26 +914,26 @@ describe('DisplayPage', () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Trigger open event to generate QR code and set displayId
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'open'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
     )?.[1];
 
     await act(async () => {
-      openHandler?.('display-123');
+      openHandler?.("display-123");
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Get call handler and add a client
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'client-corner-test',
+      peer: "client-corner-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -942,7 +943,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     await act(async () => {
@@ -965,26 +966,26 @@ describe('DisplayPage', () => {
 
     // Verify window.open was called with correct URL from corner button
     expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:3000/apps/display/client?displayId=display-123',
-      '_blank'
+      "http://localhost:3000/apps/display/client?displayId=display-123",
+      "_blank",
     );
   });
 
-  it('should apply grid layout styles based on calculated layout', async () => {
+  it("should apply grid layout styles based on calculated layout", async () => {
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith('open', expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
     });
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'call'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
     )?.[1];
 
     const mockCall = {
-      peer: 'grid-style-test',
+      peer: "grid-style-test",
       answer: vi.fn(),
       on: vi.fn(),
     };
@@ -994,7 +995,7 @@ describe('DisplayPage', () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === 'stream'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
     )?.[1];
 
     await act(async () => {
@@ -1002,11 +1003,11 @@ describe('DisplayPage', () => {
     });
 
     await waitFor(() => {
-      const gridContainer = document.querySelector('.grid');
+      const gridContainer = document.querySelector(".grid");
       expect(gridContainer).toBeInTheDocument();
       expect(gridContainer).toHaveStyle({
-        gridTemplateRows: 'repeat(2, 1fr)',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: "repeat(2, 1fr)",
+        gridTemplateColumns: "repeat(2, 1fr)",
       });
     });
   });

@@ -1,8 +1,8 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 interface SignInButtonProps {
   provider?: string;
@@ -13,7 +13,7 @@ interface SignInButtonProps {
 export function SignInButton({
   provider,
   children,
-  className
+  className,
 }: SignInButtonProps) {
   const handleSignIn = () => {
     if (provider) {

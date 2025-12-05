@@ -10,13 +10,14 @@
 
 **Suggestion**: Add subscription tiers alongside tokens
 
-| Tier | Monthly Price | Included Tokens | Perks |
-|------|---------------|-----------------|-------|
-| Free | $0 | 10 tokens/month | Basic features |
-| Pro | $9.99 | 100 tokens/month | Priority processing, no watermarks |
-| Enterprise | $49.99 | Unlimited | API access, white-label, dedicated support |
+| Tier       | Monthly Price | Included Tokens  | Perks                                      |
+| ---------- | ------------- | ---------------- | ------------------------------------------ |
+| Free       | $0            | 10 tokens/month  | Basic features                             |
+| Pro        | $9.99         | 100 tokens/month | Priority processing, no watermarks         |
+| Enterprise | $49.99        | Unlimited        | API access, white-label, dedicated support |
 
 **Questions to discuss**:
+
 - Should we offer subscriptions alongside token purchases?
 - What perks differentiate subscription tiers?
 - Should free users have watermarks on enhanced images?
@@ -29,14 +30,15 @@
 
 **Suggestion**: Let users choose between AI models
 
-| Model | Specialty | Token Cost Modifier |
-|-------|-----------|---------------------|
-| Gemini (default) | General enhancement | 1x |
-| Portrait Mode | Face/skin optimization | 1.5x |
-| Landscape Mode | Nature/scenery focus | 1.5x |
-| Restoration Mode | Old/damaged photo repair | 2x |
+| Model            | Specialty                | Token Cost Modifier |
+| ---------------- | ------------------------ | ------------------- |
+| Gemini (default) | General enhancement      | 1x                  |
+| Portrait Mode    | Face/skin optimization   | 1.5x                |
+| Landscape Mode   | Nature/scenery focus     | 1.5x                |
+| Restoration Mode | Old/damaged photo repair | 2x                  |
 
 **Questions to discuss**:
+
 - Should users be able to pick enhancement style?
 - Do we build custom fine-tuned models or use prompt variations?
 - How do we price specialized enhancements?
@@ -58,6 +60,7 @@
 - Email notification when batch completes
 
 **Questions to discuss**:
+
 - What's the maximum batch size?
 - Should priority queue cost extra tokens or be subscription-only?
 - Do we need email/push notifications?
@@ -78,6 +81,7 @@
 - Before/after embeds for blogs
 
 **Questions to discuss**:
+
 - Do we want community features or stay purely utility-focused?
 - How do we moderate public content?
 - Should public images earn token rewards?
@@ -103,6 +107,7 @@ POST /api/v1/webhook/subscribe
 - SDK packages (JavaScript, Python)
 
 **Questions to discuss**:
+
 - Should API access be Enterprise-only or available to all?
 - What rate limits per tier?
 - Do we charge differently for API vs. web usage?
@@ -123,6 +128,7 @@ POST /api/v1/webhook/subscribe
 - Show preview thumbnails before committing tokens
 
 **Questions to discuss**:
+
 - Should we offer free preview thumbnails?
 - How accurate can our recommendations be?
 - Does auto-enhance cost extra or the same?
@@ -142,6 +148,7 @@ POST /api/v1/webhook/subscribe
 - Filters/presets
 
 **Questions to discuss**:
+
 - Do we want to compete with Canva/Photoshop?
 - Should editing be free or token-based?
 - Does this dilute our core value proposition?
@@ -161,6 +168,7 @@ POST /api/v1/webhook/subscribe
 - Share directly to Instagram, WhatsApp, etc.
 
 **Questions to discuss**:
+
 - Should we prioritize mobile app or PWA?
 - Native (Swift/Kotlin) or cross-platform (React Native/Flutter)?
 - When in the roadmap should this be built?
@@ -181,6 +189,7 @@ POST /api/v1/webhook/subscribe
 - Usage reports per team member
 
 **Questions to discuss**:
+
 - Is B2B a target market?
 - What's the pricing model for teams?
 - Do organizations need separate branding options?
@@ -193,20 +202,21 @@ POST /api/v1/webhook/subscribe
 
 **Suggestion**: Full gamification system
 
-| Achievement | Reward |
-|-------------|--------|
-| First Enhancement | 5 free tokens |
-| 10 Enhancements | "Power User" badge |
-| 100 Enhancements | 50 free tokens |
-| First Referral | 20 tokens |
-| 10 Referrals | "Ambassador" status (35% commission) |
-| Daily Login Streak (7 days) | 10 tokens |
+| Achievement                 | Reward                               |
+| --------------------------- | ------------------------------------ |
+| First Enhancement           | 5 free tokens                        |
+| 10 Enhancements             | "Power User" badge                   |
+| 100 Enhancements            | 50 free tokens                       |
+| First Referral              | 20 tokens                            |
+| 10 Referrals                | "Ambassador" status (35% commission) |
+| Daily Login Streak (7 days) | 10 tokens                            |
 
 - Progress bars and milestones
 - Leaderboard (optional, opt-in)
 - Seasonal challenges with bonus rewards
 
 **Questions to discuss**:
+
 - Does gamification fit our user base?
 - Will badges/achievements drive engagement?
 - Should loyalty rewards stack with referral earnings?
@@ -215,25 +225,25 @@ POST /api/v1/webhook/subscribe
 
 ## Summary: Priority Matrix
 
-| Suggestion | Impact | Effort | Priority | Phase | Decision |
-|------------|--------|--------|----------|-------|----------|
-| 1. Subscriptions | High | Medium | **MVP** | 2 | Add alongside tokens |
-| 2. AI Model Selection | Medium | High | Phase 2 | 3 | After validating core |
-| 3. Batch Processing | High | Medium | **MVP** | 1-2 | Essential for power users |
-| 4. Social/Gallery | Medium | High | Phase 2 | 3 | Album sharing covers this initially |
-| 5. API Access | High | Medium | Phase 2 | 3 | After subscriptions |
-| 6. Smart Suggestions | Medium | Low | **MVP** | 2 | Quick win, improves UX |
-| 7. Editing Tools | Low | High | Not Now | - | Dilutes core value |
-| 8. Mobile App | High | High | Not Now | - | PWA sufficient for MVP |
-| 9. Team Accounts | Medium | Medium | Phase 2 | 4 | B2B expansion |
-| 10. Gamification | Low | Medium | Not Now | - | Complexity not justified |
+| Suggestion            | Impact | Effort | Priority | Phase | Decision                            |
+| --------------------- | ------ | ------ | -------- | ----- | ----------------------------------- |
+| 1. Subscriptions      | High   | Medium | **MVP**  | 2     | Add alongside tokens                |
+| 2. AI Model Selection | Medium | High   | Phase 2  | 3     | After validating core               |
+| 3. Batch Processing   | High   | Medium | **MVP**  | 1-2   | Essential for power users           |
+| 4. Social/Gallery     | Medium | High   | Phase 2  | 3     | Album sharing covers this initially |
+| 5. API Access         | High   | Medium | Phase 2  | 3     | After subscriptions                 |
+| 6. Smart Suggestions  | Medium | Low    | **MVP**  | 2     | Quick win, improves UX              |
+| 7. Editing Tools      | Low    | High   | Not Now  | -     | Dilutes core value                  |
+| 8. Mobile App         | High   | High   | Not Now  | -     | PWA sufficient for MVP              |
+| 9. Team Accounts      | Medium | Medium | Phase 2  | 4     | B2B expansion                       |
+| 10. Gamification      | Low    | Medium | Not Now  | -     | Complexity not justified            |
 
 ### Priority Legend
 
-| Label | Meaning |
-|-------|---------|
-| **MVP** | Include in first release or Phase 1-2 |
-| Phase 2 | After core functionality proven |
+| Label   | Meaning                                |
+| ------- | -------------------------------------- |
+| **MVP** | Include in first release or Phase 1-2  |
+| Phase 2 | After core functionality proven        |
 | Not Now | Defer indefinitely or reconsider later |
 
 ---
@@ -294,5 +304,5 @@ Album Sharing (existing)
 
 ---
 
-*Created: December 2024*
-*Updated: December 2024 (Priority decisions added)*
+_Created: December 2024_
+_Updated: December 2024 (Priority decisions added)_

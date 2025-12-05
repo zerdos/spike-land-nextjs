@@ -9,42 +9,42 @@
  */
 
 interface RateLimitEntry {
-  count: number
-  firstRequest: number
+  count: number;
+  firstRequest: number;
 }
 
 interface RateLimitConfig {
   /** Maximum number of requests allowed in the window */
-  maxRequests: number
+  maxRequests: number;
   /** Time window in milliseconds */
-  windowMs: number
+  windowMs: number;
 }
 
 // In-memory store for rate limit entries (keyed by identifier)
-const rateLimitStore = new Map<string, RateLimitEntry>()
+const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Cleanup interval to remove stale entries
-let cleanupInterval: ReturnType<typeof setInterval> | null = null
+let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
  * Starts the cleanup interval if not already running.
  * Removes entries older than the maximum window size.
  */
 function ensureCleanupInterval(windowMs: number): void {
-  if (cleanupInterval) return
+  if (cleanupInterval) return;
 
   cleanupInterval = setInterval(() => {
-    const now = Date.now()
+    const now = Date.now();
     for (const [key, entry] of rateLimitStore.entries()) {
       if (now - entry.firstRequest > windowMs * 2) {
-        rateLimitStore.delete(key)
+        rateLimitStore.delete(key);
       }
     }
-  }, windowMs)
+  }, windowMs);
 
   // Don't block process exit
   if (cleanupInterval.unref) {
-    cleanupInterval.unref()
+    cleanupInterval.unref();
   }
 }
 
@@ -57,25 +57,25 @@ function ensureCleanupInterval(windowMs: number): void {
  */
 export function checkRateLimit(
   identifier: string,
-  config: RateLimitConfig
+  config: RateLimitConfig,
 ): {
-  isLimited: boolean
-  remaining: number
-  resetAt: number
+  isLimited: boolean;
+  remaining: number;
+  resetAt: number;
 } {
-  ensureCleanupInterval(config.windowMs)
+  ensureCleanupInterval(config.windowMs);
 
-  const now = Date.now()
-  const entry = rateLimitStore.get(identifier)
+  const now = Date.now();
+  const entry = rateLimitStore.get(identifier);
 
   // No previous requests or window has expired
   if (!entry || now - entry.firstRequest > config.windowMs) {
-    rateLimitStore.set(identifier, { count: 1, firstRequest: now })
+    rateLimitStore.set(identifier, { count: 1, firstRequest: now });
     return {
       isLimited: false,
       remaining: config.maxRequests - 1,
       resetAt: now + config.windowMs,
-    }
+    };
   }
 
   // Within the window
@@ -84,16 +84,16 @@ export function checkRateLimit(
       isLimited: true,
       remaining: 0,
       resetAt: entry.firstRequest + config.windowMs,
-    }
+    };
   }
 
   // Increment the count
-  entry.count += 1
+  entry.count += 1;
   return {
     isLimited: false,
     remaining: config.maxRequests - entry.count,
     resetAt: entry.firstRequest + config.windowMs,
-  }
+  };
 }
 
 /**
@@ -101,7 +101,7 @@ export function checkRateLimit(
  * Useful for testing or administrative purposes.
  */
 export function resetRateLimit(identifier: string): void {
-  rateLimitStore.delete(identifier)
+  rateLimitStore.delete(identifier);
 }
 
 /**
@@ -109,7 +109,7 @@ export function resetRateLimit(identifier: string): void {
  * Useful for testing or administrative purposes.
  */
 export function clearAllRateLimits(): void {
-  rateLimitStore.clear()
+  rateLimitStore.clear();
 }
 
 /**
@@ -118,8 +118,8 @@ export function clearAllRateLimits(): void {
  */
 export function stopCleanupInterval(): void {
   if (cleanupInterval) {
-    clearInterval(cleanupInterval)
-    cleanupInterval = null
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
   }
 }
 
@@ -127,7 +127,7 @@ export function stopCleanupInterval(): void {
  * Gets the current store size (for testing/monitoring).
  */
 export function getRateLimitStoreSize(): number {
-  return rateLimitStore.size
+  return rateLimitStore.size;
 }
 
 // Pre-configured rate limiters for common use cases
@@ -152,4 +152,4 @@ export const rateLimitConfigs = {
     maxRequests: 100,
     windowMs: 60 * 1000, // 1 minute
   },
-} as const
+} as const;

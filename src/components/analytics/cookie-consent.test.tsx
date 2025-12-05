@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CookieConsent } from "./cookie-consent";
 
 describe("CookieConsent", () => {
@@ -16,7 +16,7 @@ describe("CookieConsent", () => {
     render(<CookieConsent />);
     expect(screen.getByText("Cookie Consent")).toBeInTheDocument();
     expect(
-      screen.getByText(/We use cookies and analytics to improve your experience/i)
+      screen.getByText(/We use cookies and analytics to improve your experience/i),
     ).toBeInTheDocument();
   });
 

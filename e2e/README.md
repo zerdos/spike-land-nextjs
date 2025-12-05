@@ -7,6 +7,7 @@
 **Issue:** GitHub Issue #23 - E2E authentication bypass not working in Vercel preview deployments
 
 **Impact:**
+
 - ✅ Unit tests: Running (100% coverage)
 - ❌ E2E tests: Skipped (0% coverage for wizard scenarios)
 - ❌ Integration coverage: Limited
@@ -29,19 +30,21 @@ This directory contains end-to-end (E2E) tests built with Playwright and Cucumbe
 **Problem**: Tests were flaky due to timing issues and strict mode violations when elements weren't immediately available.
 
 **Solution**: Created `retry-helper.ts` with:
+
 - Environment-specific timeouts (longer for CI)
 - Retry logic for flaky selectors
 - Consistent wait strategies across all tests
 
 **Usage**:
+
 ```typescript
-import { waitForTestId, clickButtonWithRetry, TIMEOUTS } from '../support/helpers/retry-helper';
+import { clickButtonWithRetry, TIMEOUTS, waitForTestId } from "../support/helpers/retry-helper";
 
 // Wait for element with retry
-const button = await waitForTestId(page, 'submit-button');
+const button = await waitForTestId(page, "submit-button");
 
 // Click with retry logic
-await clickButtonWithRetry(page, 'submit-button');
+await clickButtonWithRetry(page, "submit-button");
 
 // Use environment-specific timeouts
 await expect(element).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
@@ -54,6 +57,7 @@ await expect(element).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 **Solution**: Updated page objects and step definitions to prefer `data-testid` selectors:
 
 **Before**:
+
 ```typescript
 async getNextButton() {
   return this.page.getByRole('button', { name: /Next/i }); // Ambiguous!
@@ -61,6 +65,7 @@ async getNextButton() {
 ```
 
 **After**:
+
 ```typescript
 async getNextButton() {
   return this.page.getByTestId('wizard-next-button'); // Precise!
@@ -84,6 +89,7 @@ e2e/features/
 ```
 
 **Benefits**:
+
 - Faster parallel execution
 - Better test isolation
 - Easier to understand and maintain
@@ -102,6 +108,7 @@ e2e/features/
 - `@integration` - Integration tests across multiple steps
 
 **Example**:
+
 ```gherkin
 @fast @unit
 Scenario: Validation error for empty app name
@@ -121,13 +128,13 @@ Scenario: Complete app creation flow
 
 **Solution**: Added Cucumber profiles in `cucumber.js`:
 
-| Profile | Purpose | Tags | Retry | Fail Fast |
-|---------|---------|------|-------|-----------|
-| `default` | All tests except flaky | `not @skip and not @flaky` | 0 | Yes |
-| `fast` | Quick tests only | `@fast and not @skip` | 0 | Yes |
-| `slow` | Integration tests | `@slow and not @skip` | 1 | No |
-| `flaky` | Known flaky tests | `@flaky and not @skip` | 2 | No |
-| `ci` | CI/CD pipeline | `not @skip and not @flaky` | 1 | No |
+| Profile   | Purpose                | Tags                       | Retry | Fail Fast |
+| --------- | ---------------------- | -------------------------- | ----- | --------- |
+| `default` | All tests except flaky | `not @skip and not @flaky` | 0     | Yes       |
+| `fast`    | Quick tests only       | `@fast and not @skip`      | 0     | Yes       |
+| `slow`    | Integration tests      | `@slow and not @skip`      | 1     | No        |
+| `flaky`   | Known flaky tests      | `@flaky and not @skip`     | 2     | No        |
+| `ci`      | CI/CD pipeline         | `not @skip and not @flaky` | 1     | No        |
 
 ## Running Tests
 
@@ -174,11 +181,11 @@ cucumber-js --tags "@fast and not @flaky"
 
 Timeouts are automatically adjusted based on environment:
 
-| Timeout | Local | CI |
-|---------|-------|----|
-| `DEFAULT` | 5s | 10s |
-| `LONG` | 10s | 20s |
-| `SHORT` | 2.5s | 5s |
+| Timeout          | Local | CI    |
+| ---------------- | ----- | ----- |
+| `DEFAULT`        | 5s    | 10s   |
+| `LONG`           | 10s   | 20s   |
+| `SHORT`          | 2.5s  | 5s    |
 | `RETRY_INTERVAL` | 500ms | 500ms |
 
 ## Best Practices
@@ -189,10 +196,10 @@ Always prefer `data-testid` for locating elements:
 
 ```typescript
 // ❌ Bad - Ambiguous
-page.getByRole('button', { name: 'Next' })
+page.getByRole("button", { name: "Next" });
 
 // ✅ Good - Precise
-page.getByTestId('wizard-next-button')
+page.getByTestId("wizard-next-button");
 ```
 
 ### 2. Use Retry Helpers
@@ -201,10 +208,10 @@ Use retry helpers for flaky operations:
 
 ```typescript
 // ❌ Bad - No retry
-await page.getByTestId('button').click();
+await page.getByTestId("button").click();
 
 // ✅ Good - With retry
-await clickButtonWithRetry(page, 'button');
+await clickButtonWithRetry(page, "button");
 ```
 
 ### 3. Tag Scenarios Appropriately
@@ -246,10 +253,10 @@ Only use Background for setup that's truly common to ALL scenarios in the file.
 
 ```typescript
 // Instead of:
-page.getByRole('button', { name: 'Next' })
+page.getByRole("button", { name: "Next" });
 
 // Use:
-page.getByTestId('wizard-next-button')
+page.getByTestId("wizard-next-button");
 ```
 
 ### Timeout Errors
@@ -260,15 +267,16 @@ page.getByTestId('wizard-next-button')
 
 ```typescript
 // Instead of:
-await page.getByTestId('button').click();
+await page.getByTestId("button").click();
 
 // Use:
-await clickButtonWithRetry(page, 'button', { timeout: TIMEOUTS.LONG });
+await clickButtonWithRetry(page, "button", { timeout: TIMEOUTS.LONG });
 ```
 
 ### Flaky Tests
 
 **Steps**:
+
 1. Tag the scenario with `@flaky`
 2. Run with the flaky profile: `npm run test:e2e:flaky`
 3. Investigate root cause using retry helpers
@@ -319,10 +327,10 @@ Update selectors in step definitions:
 
 ```typescript
 // Before
-const button = page.getByRole('button', { name: 'Next' });
+const button = page.getByRole("button", { name: "Next" });
 
 // After
-const button = page.getByTestId('wizard-next-button');
+const button = page.getByTestId("wizard-next-button");
 ```
 
 ## Contributing

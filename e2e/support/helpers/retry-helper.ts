@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { expect, Locator, Page } from "@playwright/test";
 
 /**
  * Environment-specific timeout configuration
@@ -40,7 +40,7 @@ async function withRetry<T>(
     timeout?: number;
     retryInterval?: number;
   },
-  context: string
+  context: string,
 ): Promise<T> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const retryInterval = options.retryInterval || TIMEOUTS.RETRY_INTERVAL;
@@ -62,7 +62,7 @@ async function withRetry<T>(
   }
 
   throw new Error(
-    `${context} after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+    `${context} after ${timeout}ms. Last error: ${lastError?.message || "unknown"}`,
   );
 }
 
@@ -81,12 +81,12 @@ export async function waitForElementWithRetry(
   options: {
     timeout?: number;
     retryInterval?: number;
-    state?: 'visible' | 'attached' | 'hidden';
-  } = {}
+    state?: "visible" | "attached" | "hidden";
+  } = {},
 ): Promise<Locator> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
   const retryInterval = options.retryInterval || TIMEOUTS.RETRY_INTERVAL;
-  const state = options.state || 'visible';
+  const state = options.state || "visible";
   const startTime = Date.now();
   let lastError: Error | undefined;
 
@@ -94,11 +94,11 @@ export async function waitForElementWithRetry(
     try {
       const element = page.locator(selector);
 
-      if (state === 'visible') {
+      if (state === "visible") {
         await expect(element).toBeVisible({ timeout: retryInterval * 2 });
-      } else if (state === 'attached') {
+      } else if (state === "attached") {
         await expect(element).toBeAttached({ timeout: retryInterval * 2 });
-      } else if (state === 'hidden') {
+      } else if (state === "hidden") {
         await expect(element).toBeHidden({ timeout: retryInterval * 2 });
       }
 
@@ -115,7 +115,9 @@ export async function waitForElementWithRetry(
   }
 
   throw new Error(
-    `Element with selector "${selector}" not found in state "${state}" after ${timeout}ms. Last error: ${lastError?.message || 'unknown'}`
+    `Element with selector "${selector}" not found in state "${state}" after ${timeout}ms. Last error: ${
+      lastError?.message || "unknown"
+    }`,
   );
 }
 
@@ -133,8 +135,8 @@ export async function waitForTestId(
   testId: string,
   options: {
     timeout?: number;
-    state?: 'visible' | 'attached' | 'hidden';
-  } = {}
+    state?: "visible" | "attached" | "hidden";
+  } = {},
 ): Promise<Locator> {
   return waitForElementWithRetry(page, `[data-testid="${testId}"]`, options);
 }
@@ -150,7 +152,7 @@ export async function waitForTestId(
 export async function clickButtonWithRetry(
   page: Page,
   testId: string,
-  options: { timeout?: number } = {}
+  options: { timeout?: number; } = {},
 ): Promise<void> {
   return withRetry(
     page,
@@ -161,7 +163,7 @@ export async function clickButtonWithRetry(
       await button.click();
     },
     { timeout: options.timeout },
-    `Button with testId "${testId}" not clickable`
+    `Button with testId "${testId}" not clickable`,
   );
 }
 
@@ -176,11 +178,11 @@ export async function waitForPageLoad(
   page: Page,
   options: {
     timeout?: number;
-    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle';
-  } = {}
+    waitUntil?: "load" | "domcontentloaded" | "networkidle";
+  } = {},
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
-  const waitUntil = options.waitUntil || 'networkidle';
+  const waitUntil = options.waitUntil || "networkidle";
 
   await page.waitForLoadState(waitUntil, { timeout });
 
@@ -201,7 +203,7 @@ export async function fillInputWithRetry(
   page: Page,
   testId: string,
   value: string,
-  options: { timeout?: number } = {}
+  options: { timeout?: number; } = {},
 ): Promise<void> {
   return withRetry(
     page,
@@ -215,7 +217,7 @@ export async function fillInputWithRetry(
       await expect(input).toHaveValue(value, { timeout: TIMEOUTS.SHORT });
     },
     { timeout: options.timeout },
-    `Input with testId "${testId}" not fillable`
+    `Input with testId "${testId}" not fillable`,
   );
 }
 
@@ -230,7 +232,7 @@ export async function fillInputWithRetry(
 export async function waitForTextWithRetry(
   page: Page,
   text: string | RegExp,
-  options: { timeout?: number; exact?: boolean } = {}
+  options: { timeout?: number; exact?: boolean; } = {},
 ): Promise<Locator> {
   const exact = options.exact ?? false;
   return withRetry(
@@ -241,6 +243,6 @@ export async function waitForTextWithRetry(
       return element;
     },
     { timeout: options.timeout },
-    `Text "${text}" not found`
+    `Text "${text}" not found`,
   );
 }

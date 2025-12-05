@@ -1,19 +1,26 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ExternalLink, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { ExternalLink, Info } from "lucide-react";
 
 export interface AppCardProps {
-  icon?: React.ReactNode
-  name: string
-  description: string
-  appUrl?: string
-  detailsUrl?: string
-  onLaunch?: () => void
-  onViewDetails?: () => void
-  className?: string
+  icon?: React.ReactNode;
+  name: string;
+  description: string;
+  appUrl?: string;
+  detailsUrl?: string;
+  onLaunch?: () => void;
+  onViewDetails?: () => void;
+  className?: string;
 }
 
 export function AppCard({
@@ -24,23 +31,23 @@ export function AppCard({
   detailsUrl,
   onLaunch,
   onViewDetails,
-  className
+  className,
 }: AppCardProps) {
   const handleLaunch = () => {
     if (onLaunch) {
-      onLaunch()
+      onLaunch();
     } else if (appUrl) {
-      window.open(appUrl, '_blank', 'noopener,noreferrer')
+      window.open(appUrl, "_blank", "noopener,noreferrer");
     }
-  }
+  };
 
   const handleViewDetails = () => {
     if (onViewDetails) {
-      onViewDetails()
+      onViewDetails();
     } else if (detailsUrl) {
-      window.location.href = detailsUrl
+      window.location.href = detailsUrl;
     }
-  }
+  };
 
   return (
     <Card className={cn("flex flex-col h-full hover:shadow-lg transition-shadow", className)}>
@@ -73,5 +80,5 @@ export function AppCard({
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Sparkles, ArrowRight, Play } from "lucide-react"
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Play, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -20,15 +20,13 @@ export function HeroSection() {
 
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            Transform Your Images{" "}
-            <span className="text-gradient-primary">with AI</span>
+            Transform Your Images <span className="text-gradient-primary">with AI</span>
           </h1>
 
           {/* Subheadline */}
           <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Enhance photos instantly with our AI-powered technology.
-            Upscale resolution, improve quality, and bring your images to life
-            in seconds.
+            Enhance photos instantly with our AI-powered technology. Upscale resolution, improve
+            quality, and bring your images to life in seconds.
           </p>
 
           {/* CTA buttons */}
@@ -70,5 +68,5 @@ export function HeroSection() {
       <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
     </section>
-  )
+  );
 }

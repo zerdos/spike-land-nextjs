@@ -1,13 +1,13 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { auth } from "@/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
-  const session = await auth()
+  const session = await auth();
 
   if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/profile")
+    redirect("/auth/signin?callbackUrl=/profile");
   }
 
   const userInitials = session.user.name
@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2) || "U"
+    .slice(0, 2) || "U";
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -25,12 +25,17 @@ export default async function ProfilePage() {
         <Card>
           <CardHeader>
             <CardTitle>User Information</CardTitle>
-            <CardDescription>Your profile details from your authentication provider</CardDescription>
+            <CardDescription>
+              Your profile details from your authentication provider
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-6">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+                <AvatarImage
+                  src={session.user.image || undefined}
+                  alt={session.user.name || "User"}
+                />
                 <AvatarFallback className="text-2xl">{userInitials}</AvatarFallback>
               </Avatar>
               <div>
@@ -42,7 +47,9 @@ export default async function ProfilePage() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">User ID</label>
-                <p className="mt-1 text-sm font-mono bg-muted p-2 rounded">{session.user.id || "Not available"}</p>
+                <p className="mt-1 text-sm font-mono bg-muted p-2 rounded">
+                  {session.user.id || "Not available"}
+                </p>
               </div>
 
               <div>
@@ -60,11 +67,12 @@ export default async function ProfilePage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Additional profile features like bio, location, and social links will be available in a future update.
+              Additional profile features like bio, location, and social links will be available in
+              a future update.
             </p>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
