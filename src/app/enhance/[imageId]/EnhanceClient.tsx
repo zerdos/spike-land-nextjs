@@ -149,6 +149,52 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     (job: ImageEnhancementJob) => job.status === "COMPLETED" && job.enhancedUrl,
   );
 
+  const handleJobCancel = async (jobId: string) => {
+    const response = await fetch(`/api/jobs/${jobId}/cancel`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to cancel job");
+    }
+
+    // Update local state
+    setImage((prev: ImageWithJobs) => ({
+      ...prev,
+      enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
+        job.id === jobId ? { ...job, status: "CANCELLED" as const } : job
+      ),
+    }));
+
+    // Refetch balance to show refunded tokens
+    refetchBalance();
+  };
+
+  const handleJobDelete = async (jobId: string) => {
+    const response = await fetch(`/api/jobs/${jobId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to delete job");
+    }
+
+    // Remove job from local state
+    setImage((prev: ImageWithJobs) => ({
+      ...prev,
+      enhancementJobs: prev.enhancementJobs.filter(
+        (job: ImageEnhancementJob) => job.id !== jobId,
+      ),
+    }));
+
+    // Clear selected version if it was deleted
+    if (selectedVersionId === jobId) {
+      setSelectedVersionId(null);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Low Balance Banner */}
@@ -239,6 +285,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                 }))}
                 selectedVersionId={selectedVersionId || undefined}
                 onVersionSelect={setSelectedVersionId}
+                onJobCancel={handleJobCancel}
+                onJobDelete={handleJobDelete}
               />
             </CardContent>
           </Card>

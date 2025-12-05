@@ -1,8 +1,10 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EnhancementTier, JobStatus } from "@prisma/client";
+import { Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { ExportButton } from "./ExportButton";
@@ -41,6 +43,8 @@ interface VersionGridProps {
   versions: EnhancementVersion[];
   onVersionSelect?: (versionId: string) => void;
   selectedVersionId?: string;
+  onJobCancel?: (jobId: string) => Promise<void>;
+  onJobDelete?: (jobId: string) => Promise<void>;
 }
 
 const tierLabels: Record<EnhancementTier, string> = {
@@ -53,8 +57,11 @@ export function VersionGrid({
   versions,
   onVersionSelect,
   selectedVersionId,
+  onJobCancel,
+  onJobDelete,
 }: VersionGridProps) {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [processingJobId, setProcessingJobId] = useState<string | null>(null);
 
   const handleImageError = (version: EnhancementVersion) => {
     console.error(
@@ -63,6 +70,52 @@ export function VersionGrid({
     setFailedImages((prev) => new Set(prev).add(version.id));
     // Log to server for monitoring in Vercel logs
     logBrokenImage(version.id, version.tier, version.enhancedUrl);
+  };
+
+  const handleCancel = async (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onJobCancel) return;
+
+    if (
+      !window.confirm(
+        "Are you sure you want to cancel this job? Your tokens will be refunded.",
+      )
+    ) {
+      return;
+    }
+
+    setProcessingJobId(jobId);
+    try {
+      await onJobCancel(jobId);
+    } catch (error) {
+      console.error("Failed to cancel job:", error);
+      alert(error instanceof Error ? error.message : "Failed to cancel job");
+    } finally {
+      setProcessingJobId(null);
+    }
+  };
+
+  const handleDelete = async (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onJobDelete) return;
+
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this job? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    setProcessingJobId(jobId);
+    try {
+      await onJobDelete(jobId);
+    } catch (error) {
+      console.error("Failed to delete job:", error);
+      alert(error instanceof Error ? error.message : "Failed to delete job");
+    } finally {
+      setProcessingJobId(null);
+    }
   };
 
   if (versions.length === 0) {
@@ -103,11 +156,13 @@ export function VersionGrid({
                   </p>
                 </div>
               )}
-              {version.status === "PROCESSING" && (
+              {(version.status === "PROCESSING" || version.status === "PENDING") && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Processing...</p>
+                    <p className="text-sm text-muted-foreground">
+                      {version.status === "PENDING" ? "Queued..." : "Processing..."}
+                    </p>
                   </div>
                 </div>
               )}
@@ -116,12 +171,26 @@ export function VersionGrid({
                   <p className="text-sm text-destructive">Enhancement Failed</p>
                 </div>
               )}
+              {version.status === "CANCELLED" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                  <p className="text-sm text-muted-foreground">Cancelled</p>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <Badge variant="secondary">{tierLabels[version.tier]}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{tierLabels[version.tier]}</Badge>
+                {version.status === "CANCELLED" && (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Cancelled
+                  </Badge>
+                )}
+              </div>
               <span className="text-xs text-muted-foreground">
-                {version.width} × {version.height}
+                {version.width > 0 && version.height > 0
+                  ? `${version.width} × ${version.height}`
+                  : ""}
               </span>
             </div>
 
@@ -134,12 +203,57 @@ export function VersionGrid({
               })}
             </p>
 
-            {version.status === "COMPLETED" && (
-              <ExportButton
-                imageUrl={version.enhancedUrl}
-                fileName={`enhanced-${tierLabels[version.tier]}-${version.id}.jpg`}
-              />
-            )}
+            {/* Action buttons */}
+            <div className="flex gap-2">
+              {version.status === "COMPLETED" && (
+                <>
+                  <ExportButton
+                    imageUrl={version.enhancedUrl}
+                    fileName={`enhanced-${tierLabels[version.tier]}-${version.id}.jpg`}
+                  />
+                  {onJobDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDelete(version.id, e)}
+                      disabled={processingJobId === version.id}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </>
+              )}
+
+              {(version.status === "PENDING" || version.status === "PROCESSING") &&
+                onJobCancel && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={(e) => handleCancel(version.id, e)}
+                  disabled={processingJobId === version.id}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  {processingJobId === version.id ? "Cancelling..." : "Cancel"}
+                </Button>
+              )}
+
+              {(version.status === "FAILED" ||
+                version.status === "CANCELLED" ||
+                version.status === "REFUNDED") &&
+                onJobDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={(e) => handleDelete(version.id, e)}
+                  disabled={processingJobId === version.id}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {processingJobId === version.id ? "Deleting..." : "Delete"}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}

@@ -364,9 +364,8 @@ describe("VersionGrid Component", () => {
 
     render(<VersionGrid versions={versions} />);
 
-    // Pending status should not show image or processing indicator
-    expect(screen.queryByTestId("next-image")).not.toBeInTheDocument();
-    expect(screen.queryByText("Processing...")).not.toBeInTheDocument();
+    // Pending should show "Queued..." text
+    expect(screen.getByText("Queued...")).toBeInTheDocument();
   });
 
   it("maintains failed state after multiple errors", async () => {
@@ -386,5 +385,243 @@ describe("VersionGrid Component", () => {
 
     // Should only call logging once per version
     expect(global.fetch).toHaveBeenCalled();
+  });
+
+  it("shows cancelled status badge", () => {
+    const versions = [createMockVersion({ status: "CANCELLED" })];
+
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.getAllByText("Cancelled")).toHaveLength(2); // One in image area, one in badge
+  });
+
+  it("shows cancel button for PENDING jobs", () => {
+    const onJobCancel = vi.fn();
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    expect(screen.getByText("Cancel")).toBeInTheDocument();
+  });
+
+  it("shows cancel button for PROCESSING jobs", () => {
+    const onJobCancel = vi.fn();
+    const versions = [createMockVersion({ status: "PROCESSING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    expect(screen.getByText("Cancel")).toBeInTheDocument();
+  });
+
+  it("shows delete button for COMPLETED jobs", () => {
+    const onJobDelete = vi.fn();
+    const versions = [createMockVersion({ status: "COMPLETED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByRole("button", { name: "" });
+    expect(deleteButton).toBeInTheDocument();
+  });
+
+  it("shows delete button for FAILED jobs", () => {
+    const onJobDelete = vi.fn();
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    expect(screen.getByText("Delete")).toBeInTheDocument();
+  });
+
+  it("shows delete button for CANCELLED jobs", () => {
+    const onJobDelete = vi.fn();
+    const versions = [createMockVersion({ status: "CANCELLED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    expect(screen.getByText("Delete")).toBeInTheDocument();
+  });
+
+  it("calls onJobCancel with confirmation", async () => {
+    const onJobCancel = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ id: "job-1", status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalledWith(
+        "Are you sure you want to cancel this job? Your tokens will be refunded.",
+      );
+      expect(onJobCancel).toHaveBeenCalledWith("job-1");
+    });
+  });
+
+  it("does not call onJobCancel when confirmation is cancelled", async () => {
+    const onJobCancel = vi.fn();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalled();
+    });
+
+    expect(onJobCancel).not.toHaveBeenCalled();
+  });
+
+  it("calls onJobDelete with confirmation", async () => {
+    const onJobDelete = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ id: "job-1", status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalledWith(
+        "Are you sure you want to delete this job? This action cannot be undone.",
+      );
+      expect(onJobDelete).toHaveBeenCalledWith("job-1");
+    });
+  });
+
+  it("does not call onJobDelete when confirmation is cancelled", async () => {
+    const onJobDelete = vi.fn();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalled();
+    });
+
+    expect(onJobDelete).not.toHaveBeenCalled();
+  });
+
+  it("shows loading state when cancelling job", async () => {
+    const onJobCancel = vi.fn().mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Cancelling...")).toBeInTheDocument();
+    });
+  });
+
+  it("shows loading state when deleting job", async () => {
+    const onJobDelete = vi.fn().mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Deleting...")).toBeInTheDocument();
+    });
+  });
+
+  it("handles cancel error gracefully", async () => {
+    const onJobCancel = vi.fn().mockRejectedValue(new Error("Cancel failed"));
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Cancel failed");
+    });
+  });
+
+  it("handles delete error gracefully", async () => {
+    const onJobDelete = vi.fn().mockRejectedValue(new Error("Delete failed"));
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Delete failed");
+    });
+  });
+
+  it("does not propagate click event when clicking cancel button", async () => {
+    const onVersionSelect = vi.fn();
+    const onJobCancel = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(
+      <VersionGrid
+        versions={versions}
+        onVersionSelect={onVersionSelect}
+        onJobCancel={onJobCancel}
+      />,
+    );
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(onJobCancel).toHaveBeenCalled();
+    });
+
+    expect(onVersionSelect).not.toHaveBeenCalled();
+  });
+
+  it("does not propagate click event when clicking delete button", async () => {
+    const onVersionSelect = vi.fn();
+    const onJobDelete = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(
+      <VersionGrid
+        versions={versions}
+        onVersionSelect={onVersionSelect}
+        onJobDelete={onJobDelete}
+      />,
+    );
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(onJobDelete).toHaveBeenCalled();
+    });
+
+    expect(onVersionSelect).not.toHaveBeenCalled();
   });
 });
