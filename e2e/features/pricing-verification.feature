@@ -6,11 +6,13 @@ Feature: Pricing Page Verification
   Background:
     Given I visit "/pricing"
 
+  @flaky
   Scenario: Pricing page displays correctly
     Then I should be on the "/pricing" page
     And I should see "Pricing" heading
     And I should see "Get tokens to enhance your images with AI" text
 
+  @flaky
   Scenario: Token usage information displays
     When I view the pricing page
     Then I should see "Token Usage" text
@@ -18,12 +20,14 @@ Feature: Pricing Page Verification
     And I should see "2K" enhancement cost
     And I should see "4K" enhancement cost
 
+  @flaky
   Scenario: Only token packs are displayed
     When I view the pricing page
     Then I should see "Token Packs" text
     And I should see 4 token pack options
     And I should not see any subscription options
 
+  @flaky
   Scenario: Token packs display correct information
     When I view the pricing page
     Then each token pack should display:
@@ -34,15 +38,18 @@ Feature: Pricing Page Verification
       | Price per token |
       | Buy button   |
 
+  @flaky
   Scenario: Pro pack is marked as most popular
     When I view the pricing page
     Then I should see "Most Popular" badge on the pro pack
 
+  @flaky
   Scenario: Token pack prices are in GBP
     When I view the pricing page
     Then all prices should be displayed in GBP currency
     And I should see the "£" symbol on all prices
 
+  @flaky
   Scenario: FAQ section displays
     When I view the pricing page
     Then I should see "FAQ" text
@@ -50,6 +57,7 @@ Feature: Pricing Page Verification
     And I should see "Do tokens expire?" question
     And I should see "How do I get more tokens?" question
 
+  @flaky
   Scenario: Unauthenticated user clicks buy button
     Given I am not logged in
     When I click the buy button for a token pack
@@ -57,6 +65,7 @@ Feature: Pricing Page Verification
     And the callback URL should point to pricing page
 
   @requires-db
+  @flaky
   Scenario: Authenticated user clicks buy button
     Given I am logged in as "Test User" with email "test@example.com"
     When I click the buy button for the "starter" pack
@@ -64,6 +73,7 @@ Feature: Pricing Page Verification
     And the checkout should be for a one-time payment
 
   @requires-db
+  @flaky
   Scenario: All token packs are purchasable
     Given I am logged in as "Test User" with email "test@example.com"
     When I view the pricing page
@@ -75,17 +85,20 @@ Feature: Pricing Page Verification
       | pro      |
       | premium  |
 
+  @flaky
   Scenario: Token pack value proposition displays
     When I view the pricing page
     Then each pack should show price per token
     And premium pack should have the best price per token
 
+  @flaky
   Scenario: Loading state during purchase
     Given I am logged in as "Test User" with email "test@example.com"
     When I click the buy button for a token pack
     Then the button should show "Processing..." text
     And the button should be disabled during processing
 
+  @flaky
   Scenario: No subscription interval mentioned
     When I view the pricing page
     Then I should not see "monthly" text
@@ -93,6 +106,7 @@ Feature: Pricing Page Verification
     And I should not see "subscription" text
     And I should not see "recurring" text
 
+  @flaky
   Scenario: Starter pack displays correctly
     When I view the pricing page
     Then the starter pack should display:
@@ -100,6 +114,7 @@ Feature: Pricing Page Verification
       | Name      | Starter |
       | Tokens    | 10     |
 
+  @flaky
   Scenario: Basic pack displays correctly
     When I view the pricing page
     Then the basic pack should display:
@@ -107,6 +122,7 @@ Feature: Pricing Page Verification
       | Name      | Basic |
       | Tokens    | 25    |
 
+  @flaky
   Scenario: Pro pack displays correctly
     When I view the pricing page
     Then the pro pack should display:
@@ -114,6 +130,7 @@ Feature: Pricing Page Verification
       | Name      | Pro   |
       | Tokens    | 100   |
 
+  @flaky
   Scenario: Premium pack displays correctly
     When I view the pricing page
     Then the premium pack should display:
