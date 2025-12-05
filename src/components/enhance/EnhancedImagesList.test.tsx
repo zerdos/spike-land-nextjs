@@ -183,15 +183,17 @@ describe("EnhancedImagesList Component", () => {
     expect(screen.getByText("Pending")).toBeInTheDocument();
   });
 
-  it("shows formatted date for each image", () => {
+  it("shows formatted date for each image after client mount", async () => {
     render(<EnhancedImagesList images={[mockImage]} />);
 
-    // Date formatting depends on locale - use same format as component
-    const expectedDate = new Date("2024-01-15T10:00:00Z").toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
+    // Date should render after client-side mount with consistent format
+    // The component uses a custom formatDate function: "Jan 15" format
+    const expectedDate = "Jan 15";
+
+    // Wait for client-side effect to run
+    await vi.waitFor(() => {
+      expect(screen.getByText(expectedDate)).toBeInTheDocument();
     });
-    expect(screen.getByText(expectedDate)).toBeInTheDocument();
   });
 
   it('shows "Enhance" button for images without jobs', () => {
@@ -400,5 +402,49 @@ describe("EnhancedImagesList Component", () => {
 
     // Should show completed count, not failed
     expect(screen.getByText("1 Enhanced")).toBeInTheDocument();
+  });
+
+  describe("SSR compatibility (hydration)", () => {
+    it("renders date span that will be populated client-side", async () => {
+      render(<EnhancedImagesList images={[mockImage]} />);
+
+      // The date span exists with the text-muted-foreground class
+      const dateSpans = document.querySelectorAll(".text-xs.text-muted-foreground");
+      expect(dateSpans.length).toBeGreaterThan(0);
+
+      // After useEffect runs, it should have the formatted date
+      await vi.waitFor(() => {
+        expect(screen.getByText("Jan 15")).toBeInTheDocument();
+      });
+    });
+
+    it("date format is consistent using UTC to prevent server/client mismatch", async () => {
+      // Test that the formatDate function produces consistent UTC output
+      // regardless of the local timezone (uses getUTCMonth/getUTCDate)
+      const testDates = [
+        { input: new Date("2024-01-15T00:00:00Z"), expected: "Jan 15" },
+        { input: new Date("2024-06-30T12:00:00Z"), expected: "Jun 30" },
+        { input: new Date("2024-12-01T12:00:00Z"), expected: "Dec 1" },
+      ];
+
+      for (const { input, expected } of testDates) {
+        const imageWithDate = { ...mockImage, createdAt: input };
+        const { unmount } = render(<EnhancedImagesList images={[imageWithDate]} />);
+
+        await vi.waitFor(() => {
+          expect(screen.getByText(expected)).toBeInTheDocument();
+        });
+
+        unmount();
+      }
+    });
+
+    it("date element exists in card content", () => {
+      const { container } = render(<EnhancedImagesList images={[mockImage]} />);
+
+      // Find the date span by its class
+      const spans = container.querySelectorAll("span.text-xs.text-muted-foreground");
+      expect(spans.length).toBeGreaterThan(0);
+    });
   });
 });
