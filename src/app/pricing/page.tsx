@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ENHANCEMENT_COSTS, SUBSCRIPTION_PLANS, TOKEN_PACKAGES } from "@/lib/stripe/client";
-import type { SubscriptionPlanId, TokenPackageId } from "@/lib/stripe/client";
+import { ENHANCEMENT_COSTS, TOKEN_PACKAGES } from "@/lib/stripe/client";
+import type { TokenPackageId } from "@/lib/stripe/client";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -47,41 +47,12 @@ export default function PricingPage() {
     }
   };
 
-  const handleSubscribe = async (planId: SubscriptionPlanId) => {
-    if (!session) {
-      window.location.href = "/?callbackUrl=/pricing";
-      return;
-    }
-
-    setLoading(planId);
-    try {
-      const response = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, mode: "subscription" }),
-      });
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || "Failed to create checkout session");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Failed to start checkout");
-    } finally {
-      setLoading(null);
-    }
-  };
-
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Pricing</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Get tokens to enhance your images with AI. Choose a one-time pack or subscribe for monthly
-          savings.
+          Get tokens to enhance your images with AI. Choose a token pack that suits your needs.
         </p>
       </div>
 
@@ -149,65 +120,6 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Subscription Plans */}
-      <div>
-        <h2 className="text-2xl font-bold text-center mb-8">Monthly Plans</h2>
-        <p className="text-center text-muted-foreground mb-8">
-          Save more with a subscription. Unused tokens roll over!
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {(Object.entries(SUBSCRIPTION_PLANS) as [
-            SubscriptionPlanId,
-            typeof SUBSCRIPTION_PLANS[SubscriptionPlanId],
-          ][]).map(
-            ([id, plan]) => (
-              <Card key={id} className={id === "creator" ? "border-primary" : ""}>
-                <CardHeader>
-                  {id === "creator" && <Badge className="w-fit mb-2">Best Value</Badge>}
-                  <CardTitle>{plan.name}</CardTitle>
-                  <CardDescription>
-                    {plan.tokensPerMonth} tokens/month
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">
-                    £{plan.priceGBP.toFixed(2)}
-                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-4">
-                    £{(plan.priceGBP / plan.tokensPerMonth).toFixed(2)} per token
-                  </div>
-                  <ul className="text-sm space-y-1">
-                    <li>
-                      {plan.maxRollover === 0
-                        ? "Unlimited token rollover"
-                        : `Up to ${plan.maxRollover} token rollover`}
-                    </li>
-                    {id === "creator" && <li>Priority processing</li>}
-                    {id === "studio" && (
-                      <>
-                        <li>Priority processing</li>
-                        <li>API access</li>
-                      </>
-                    )}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    variant={id === "creator" ? "default" : "outline"}
-                    disabled={loading === id || status === "loading"}
-                    onClick={() => handleSubscribe(id)}
-                  >
-                    {loading === id ? "Processing..." : "Subscribe"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ),
-          )}
-        </div>
-      </div>
-
       {/* FAQ */}
       <div className="max-w-2xl mx-auto mt-16">
         <h2 className="text-2xl font-bold text-center mb-8">FAQ</h2>
@@ -222,15 +134,14 @@ export default function PricingPage() {
           <div>
             <h3 className="font-semibold mb-2">Do tokens expire?</h3>
             <p className="text-muted-foreground">
-              Purchased tokens never expire. Subscription tokens roll over to the next month (up to
-              your plan limit).
+              Purchased tokens never expire. Use them whenever you need to enhance your images.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold mb-2">Can I cancel my subscription?</h3>
+            <h3 className="font-semibold mb-2">How do I get more tokens?</h3>
             <p className="text-muted-foreground">
-              Yes, you can cancel anytime. You will keep access until the end of your billing
-              period.
+              You can purchase additional token packs anytime from this page. Choose the pack that
+              best fits your needs.
             </p>
           </div>
         </div>
