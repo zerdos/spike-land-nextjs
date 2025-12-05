@@ -51,27 +51,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Run linter
-        run: npm run lint
+        run: yarn lint
 
       - name: Run security audit
-        run: npm audit --audit-level=moderate
+        run: yarn npm audit --all --severity moderate
 
   unit-tests:
     name: Unit Tests [${{ matrix.shard }}/8]
@@ -89,24 +89,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Run tests (shard ${{ matrix.shard }}/8)
-        run: npm run test:run -- --shard=${{ matrix.shard }}/8 --reporter=github-actions
+        run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -132,21 +132,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Cache Next.js build
         uses: actions/cache@v4
@@ -154,12 +154,12 @@ jobs:
           path: |
             .next/cache
             .next/standalone
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('src/**/*.{ts,tsx,js,jsx}', 'public/**', 'package-lock.json', 'next.config.js', 'next.config.mjs', 'next.config.ts') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('src/**/*.{ts,tsx,js,jsx}', 'public/**', 'yarn.lock', 'next.config.js', 'next.config.mjs', 'next.config.ts') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
 
       - name: Build application
-        run: npm run build
+        run: yarn build
         env:
           NODE_OPTIONS: --max-old-space-size=3072
 
@@ -183,21 +183,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
@@ -316,25 +316,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Get Playwright version
         id: playwright-version
-        run: echo "version=$(npm list @playwright/test --depth=0 --json | jq -r '.dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+        run: echo "version=$(yarn info @playwright/test --json | jq -r '.children.Version')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -365,7 +365,7 @@ jobs:
           BASE_URL: ${{ steps.test-url.outputs.url }}
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
           NODE_OPTIONS: --max-old-space-size=3072
-        run: npm run test:e2e:ci
+        run: yarn test:e2e:ci
 
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
@@ -477,21 +477,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
         uses: actions/cache@v4
-        id: npm-cache
+        id: yarn-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Run Database Migrations
         run: |
