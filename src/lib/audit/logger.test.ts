@@ -2,8 +2,8 @@
  * Tests for Audit Logger
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { AuditAction } from "@prisma/client"
+import { AuditAction } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockPrisma } = vi.hoisted(() => {
   return {
@@ -13,24 +13,24 @@ const { mockPrisma } = vi.hoisted(() => {
         findMany: vi.fn(),
       },
     },
-  }
-})
+  };
+});
 
 vi.mock("@/lib/prisma", () => ({
   default: mockPrisma,
-}))
+}));
 
-import { AuditLogger } from "./logger"
+import { AuditLogger } from "./logger";
 
 describe("AuditLogger", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.spyOn(console, "error").mockImplementation(() => {})
-  })
+    vi.clearAllMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
 
   describe("log", () => {
     it("should create an audit log entry", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.log({
         userId: "admin-1",
@@ -38,7 +38,7 @@ describe("AuditLogger", () => {
         targetId: "user-1",
         metadata: { oldRole: "USER", newRole: "ADMIN" },
         ipAddress: "192.168.1.1",
-      })
+      });
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -48,16 +48,16 @@ describe("AuditLogger", () => {
           metadata: { oldRole: "USER", newRole: "ADMIN" },
           ipAddress: "192.168.1.1",
         },
-      })
-    })
+      });
+    });
 
     it("should handle missing optional fields", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.log({
         userId: "admin-1",
         action: AuditAction.ADMIN_LOGIN,
-      })
+      });
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -67,38 +67,38 @@ describe("AuditLogger", () => {
           metadata: undefined,
           ipAddress: undefined,
         },
-      })
-    })
+      });
+    });
 
     it("should not throw on database error", async () => {
-      mockPrisma.auditLog.create.mockRejectedValue(new Error("Database error"))
+      mockPrisma.auditLog.create.mockRejectedValue(new Error("Database error"));
 
       // Should not throw
       await expect(
         AuditLogger.log({
           userId: "admin-1",
           action: AuditAction.ROLE_CHANGE,
-        })
-      ).resolves.toBeUndefined()
+        }),
+      ).resolves.toBeUndefined();
 
       expect(console.error).toHaveBeenCalledWith(
         "Failed to create audit log:",
-        expect.any(Error)
-      )
-    })
-  })
+        expect.any(Error),
+      );
+    });
+  });
 
   describe("logRoleChange", () => {
     it("should log a role change", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.logRoleChange(
         "admin-1",
         "user-1",
         "USER",
         "ADMIN",
-        "192.168.1.1"
-      )
+        "192.168.1.1",
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -108,25 +108,25 @@ describe("AuditLogger", () => {
           metadata: { oldRole: "USER", newRole: "ADMIN" },
           ipAddress: "192.168.1.1",
         },
-      })
-    })
+      });
+    });
 
     it("should work without IP address", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
-      await AuditLogger.logRoleChange("admin-1", "user-1", "USER", "ADMIN")
+      await AuditLogger.logRoleChange("admin-1", "user-1", "USER", "ADMIN");
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           ipAddress: undefined,
         }),
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe("logTokenAdjustment", () => {
     it("should log a token adjustment", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.logTokenAdjustment(
         "admin-1",
@@ -134,8 +134,8 @@ describe("AuditLogger", () => {
         100,
         500,
         "Bonus reward",
-        "192.168.1.1"
-      )
+        "192.168.1.1",
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -149,13 +149,13 @@ describe("AuditLogger", () => {
           },
           ipAddress: "192.168.1.1",
         },
-      })
-    })
+      });
+    });
 
     it("should use default reason if not provided", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
-      await AuditLogger.logTokenAdjustment("admin-1", "user-1", 50, 150)
+      await AuditLogger.logTokenAdjustment("admin-1", "user-1", 50, 150);
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -163,13 +163,13 @@ describe("AuditLogger", () => {
             reason: "Manual admin adjustment",
           }),
         }),
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe("logVoucherCreate", () => {
     it("should log voucher creation", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.logVoucherCreate(
         "admin-1",
@@ -177,8 +177,8 @@ describe("AuditLogger", () => {
         "WELCOME100",
         "FIXED_TOKENS",
         100,
-        "192.168.1.1"
-      )
+        "192.168.1.1",
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -192,20 +192,20 @@ describe("AuditLogger", () => {
           },
           ipAddress: "192.168.1.1",
         },
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe("logVoucherUpdate", () => {
     it("should log voucher update", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.logVoucherUpdate(
         "admin-1",
         "voucher-1",
         "WELCOME100",
-        { status: "INACTIVE", reason: "Expired campaign" }
-      )
+        { status: "INACTIVE", reason: "Expired campaign" },
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -219,20 +219,20 @@ describe("AuditLogger", () => {
           },
           ipAddress: undefined,
         },
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe("logVoucherDelete", () => {
     it("should log voucher deletion", async () => {
-      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" })
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
 
       await AuditLogger.logVoucherDelete(
         "admin-1",
         "voucher-1",
         "WELCOME100",
-        "192.168.1.1"
-      )
+        "192.168.1.1",
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -242,9 +242,9 @@ describe("AuditLogger", () => {
           metadata: { voucherCode: "WELCOME100" },
           ipAddress: "192.168.1.1",
         },
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe("getLogsByUser", () => {
     it("should return logs for a specific user", async () => {
@@ -256,10 +256,10 @@ describe("AuditLogger", () => {
           metadata: {},
           createdAt: new Date(),
         },
-      ]
-      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs)
+      ];
+      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs);
 
-      const result = await AuditLogger.getLogsByUser("admin-1", 10)
+      const result = await AuditLogger.getLogsByUser("admin-1", 10);
 
       expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith({
         where: { userId: "admin-1" },
@@ -272,20 +272,20 @@ describe("AuditLogger", () => {
           metadata: true,
           createdAt: true,
         },
-      })
-      expect(result).toEqual(mockLogs)
-    })
+      });
+      expect(result).toEqual(mockLogs);
+    });
 
     it("should use default limit of 50", async () => {
-      mockPrisma.auditLog.findMany.mockResolvedValue([])
+      mockPrisma.auditLog.findMany.mockResolvedValue([]);
 
-      await AuditLogger.getLogsByUser("admin-1")
+      await AuditLogger.getLogsByUser("admin-1");
 
       expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 50 })
-      )
-    })
-  })
+        expect.objectContaining({ take: 50 }),
+      );
+    });
+  });
 
   describe("getLogsByTarget", () => {
     it("should return logs for a specific target", async () => {
@@ -298,10 +298,10 @@ describe("AuditLogger", () => {
           createdAt: new Date(),
           user: { email: "admin@example.com", name: "Admin" },
         },
-      ]
-      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs)
+      ];
+      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs);
 
-      const result = await AuditLogger.getLogsByTarget("user-1", 10)
+      const result = await AuditLogger.getLogsByTarget("user-1", 10);
 
       expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith({
         where: { targetId: "user-1" },
@@ -320,10 +320,10 @@ describe("AuditLogger", () => {
             },
           },
         },
-      })
-      expect(result).toEqual(mockLogs)
-    })
-  })
+      });
+      expect(result).toEqual(mockLogs);
+    });
+  });
 
   describe("getRecentLogs", () => {
     it("should return recent audit logs", async () => {
@@ -337,10 +337,10 @@ describe("AuditLogger", () => {
           createdAt: new Date(),
           user: { email: "admin@example.com", name: "Admin" },
         },
-      ]
-      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs)
+      ];
+      mockPrisma.auditLog.findMany.mockResolvedValue(mockLogs);
 
-      const result = await AuditLogger.getRecentLogs(50)
+      const result = await AuditLogger.getRecentLogs(50);
 
       expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith({
         orderBy: { createdAt: "desc" },
@@ -359,18 +359,18 @@ describe("AuditLogger", () => {
             },
           },
         },
-      })
-      expect(result).toEqual(mockLogs)
-    })
+      });
+      expect(result).toEqual(mockLogs);
+    });
 
     it("should use default limit of 100", async () => {
-      mockPrisma.auditLog.findMany.mockResolvedValue([])
+      mockPrisma.auditLog.findMany.mockResolvedValue([]);
 
-      await AuditLogger.getRecentLogs()
+      await AuditLogger.getRecentLogs();
 
       expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 100 })
-      )
-    })
-  })
-})
+        expect.objectContaining({ take: 100 }),
+      );
+    });
+  });
+});

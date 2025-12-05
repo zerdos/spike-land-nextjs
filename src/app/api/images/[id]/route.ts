@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import prisma from '@/lib/prisma'
-import { deleteFromR2 } from '@/lib/storage/r2-client'
-import { EnhancementTier, JobStatus } from '@prisma/client'
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { deleteFromR2 } from "@/lib/storage/r2-client";
+import { EnhancementTier, JobStatus } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params
+    const { id } = await params;
 
     // Find the image
     const image = await prisma.enhancedImage.findUnique({
@@ -22,19 +22,19 @@ export async function GET(
       include: {
         enhancementJobs: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
       },
-    })
+    });
 
     if (!image) {
-      return NextResponse.json({ error: 'Image not found' }, { status: 404 })
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
     // Check if user has access (owner or public image)
     if (image.userId !== session.user.id && !image.isPublic) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json({
@@ -53,18 +53,18 @@ export async function GET(
         createdAt: image.createdAt,
         updatedAt: image.updatedAt,
         jobs: image.enhancementJobs.map((job: {
-          id: string
-          tier: EnhancementTier
-          status: JobStatus
-          tokensCost: number
-          enhancedUrl: string | null
-          enhancedWidth: number | null
-          enhancedHeight: number | null
-          enhancedSizeBytes: number | null
-          errorMessage: string | null
-          createdAt: Date
-          processingStartedAt: Date | null
-          processingCompletedAt: Date | null
+          id: string;
+          tier: EnhancementTier;
+          status: JobStatus;
+          tokensCost: number;
+          enhancedUrl: string | null;
+          enhancedWidth: number | null;
+          enhancedHeight: number | null;
+          enhancedSizeBytes: number | null;
+          errorMessage: string | null;
+          createdAt: Date;
+          processingStartedAt: Date | null;
+          processingCompletedAt: Date | null;
         }) => ({
           id: job.id,
           tier: job.tier,
@@ -80,27 +80,27 @@ export async function GET(
           processingCompletedAt: job.processingCompletedAt,
         })),
       },
-    })
+    });
   } catch (error) {
-    console.error('Error in GET image API:', error)
+    console.error("Error in GET image API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch image' },
-      { status: 500 }
-    )
+      { error: error instanceof Error ? error.message : "Failed to fetch image" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params
+    const { id } = await params;
 
     // Find the image and verify ownership
     const image = await prisma.enhancedImage.findUnique({
@@ -108,58 +108,58 @@ export async function DELETE(
       include: {
         enhancementJobs: true,
       },
-    })
+    });
 
     if (!image) {
-      return NextResponse.json({ error: 'Image not found' }, { status: 404 })
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
     if (image.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Transactional approach: Delete R2 files first, then DB
     // This ensures no orphaned database records without R2 files
 
     // Step 1: Collect all R2 keys to delete
-    const r2KeysToDelete: string[] = [image.originalR2Key]
+    const r2KeysToDelete: string[] = [image.originalR2Key];
     for (const job of image.enhancementJobs) {
       if (job.enhancedR2Key) {
-        r2KeysToDelete.push(job.enhancedR2Key)
+        r2KeysToDelete.push(job.enhancedR2Key);
       }
     }
 
     // Step 2: Delete all R2 files first
     const deleteResults = await Promise.all(
-      r2KeysToDelete.map(key => deleteFromR2(key))
-    )
+      r2KeysToDelete.map(key => deleteFromR2(key)),
+    );
 
     // Step 3: Check if any deletions failed
-    const failedDeletions = deleteResults.filter(result => !result.success)
+    const failedDeletions = deleteResults.filter(result => !result.success);
     if (failedDeletions.length > 0) {
       const errors = failedDeletions
         .map(result => `${result.key}: ${result.error}`)
-        .join(', ')
+        .join(", ");
       return NextResponse.json(
         { error: `Failed to delete R2 files: ${errors}` },
-        { status: 500 }
-      )
+        { status: 500 },
+      );
     }
 
     // Step 4: Only delete from database if all R2 deletions succeeded
     await prisma.enhancedImage.delete({
       where: { id },
-    })
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Image deleted successfully',
-    })
+      message: "Image deleted successfully",
+    });
   } catch (error) {
-    console.error('Error in delete API:', error)
+    console.error("Error in delete API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Delete failed' },
-      { status: 500 }
-    )
+      { error: error instanceof Error ? error.message : "Delete failed" },
+      { status: 500 },
+    );
   }
 }

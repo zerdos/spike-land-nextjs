@@ -1,94 +1,98 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 interface ReferralStats {
-  totalReferrals: number
-  completedReferrals: number
-  pendingReferrals: number
-  tokensEarned: number
+  totalReferrals: number;
+  completedReferrals: number;
+  pendingReferrals: number;
+  tokensEarned: number;
 }
 
 interface ReferredUser {
-  id: string
-  email: string
-  status: string
-  createdAt: string
-  tokensGranted: number
+  id: string;
+  email: string;
+  status: string;
+  createdAt: string;
+  tokensGranted: number;
 }
 
 export default function ReferralsPage() {
-  const [referralLink, setReferralLink] = useState<string>('')
-  const [referralCode, setReferralCode] = useState<string>('')
-  const [stats, setStats] = useState<ReferralStats | null>(null)
-  const [referredUsers, setReferredUsers] = useState<ReferredUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [referralLink, setReferralLink] = useState<string>("");
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [stats, setStats] = useState<ReferralStats | null>(null);
+  const [referredUsers, setReferredUsers] = useState<ReferredUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetchReferralData()
-  }, [])
+    fetchReferralData();
+  }, []);
 
   const fetchReferralData = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       // Fetch referral link
-      const linkResponse = await fetch('/api/referral/link')
+      const linkResponse = await fetch("/api/referral/link");
       if (!linkResponse.ok) {
-        throw new Error('Failed to fetch referral link')
+        throw new Error("Failed to fetch referral link");
       }
-      const linkData = await linkResponse.json()
-      setReferralLink(linkData.url)
-      setReferralCode(linkData.code)
+      const linkData = await linkResponse.json();
+      setReferralLink(linkData.url);
+      setReferralCode(linkData.code);
 
       // Fetch stats
-      const statsResponse = await fetch('/api/referral/stats')
+      const statsResponse = await fetch("/api/referral/stats");
       if (!statsResponse.ok) {
-        throw new Error('Failed to fetch referral stats')
+        throw new Error("Failed to fetch referral stats");
       }
-      const statsData = await statsResponse.json()
-      setStats(statsData.stats)
-      setReferredUsers(statsData.referredUsers)
+      const statsData = await statsResponse.json();
+      setStats(statsData.stats);
+      setReferredUsers(statsData.referredUsers);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load referral data')
+      setError(err instanceof Error ? err.message : "Failed to load referral data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(referralLink)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err)
+      console.error("Failed to copy:", err);
     }
-  }
+  };
 
   const shareOnTwitter = () => {
-    const text = `Join me on Image Enhancement App and get 50 free tokens! Use my referral link:`
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralLink)}`
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    const text = `Join me on Image Enhancement App and get 50 free tokens! Use my referral link:`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${
+      encodeURIComponent(referralLink)
+    }`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const shareOnLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${
+      encodeURIComponent(referralLink)
+    }`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   if (loading) {
     return (
@@ -97,7 +101,7 @@ export default function ReferralsPage() {
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -107,7 +111,7 @@ export default function ReferralsPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   return (
@@ -115,7 +119,8 @@ export default function ReferralsPage() {
       <div>
         <h1 className="text-3xl font-bold">Referral Program</h1>
         <p className="text-muted-foreground mt-2">
-          Invite friends and earn 50 tokens for each successful referral. Your friends get 50 tokens too!
+          Invite friends and earn 50 tokens for each successful referral. Your friends get 50 tokens
+          too!
         </p>
       </div>
 
@@ -136,7 +141,7 @@ export default function ReferralsPage() {
               className="flex-1 px-3 py-2 border rounded-md bg-muted text-sm"
             />
             <Button onClick={copyToClipboard} variant="outline">
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? "Copied!" : "Copy"}
             </Button>
           </div>
 
@@ -214,50 +219,50 @@ export default function ReferralsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {referredUsers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No referrals yet. Share your link to get started!
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Email</th>
-                    <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-left py-3 px-4">Date</th>
-                    <th className="text-right py-3 px-4">Tokens Earned</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {referredUsers.map((user) => (
-                    <tr key={user.id} className="border-b">
-                      <td className="py-3 px-4 font-mono text-sm">{user.email}</td>
-                      <td className="py-3 px-4">
-                        <Badge
-                          variant={
-                            user.status === 'COMPLETED'
-                              ? 'default'
-                              : user.status === 'PENDING'
-                              ? 'secondary'
-                              : 'destructive'
-                          }
-                        >
-                          {user.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold">
-                        {user.tokensGranted > 0 ? `+${user.tokensGranted}` : '-'}
-                      </td>
+          {referredUsers.length === 0
+            ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No referrals yet. Share your link to get started!
+              </div>
+            )
+            : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Email</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                      <th className="text-left py-3 px-4">Date</th>
+                      <th className="text-right py-3 px-4">Tokens Earned</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {referredUsers.map((user) => (
+                      <tr key={user.id} className="border-b">
+                        <td className="py-3 px-4 font-mono text-sm">{user.email}</td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant={user.status === "COMPLETED"
+                              ? "default"
+                              : user.status === "PENDING"
+                              ? "secondary"
+                              : "destructive"}
+                          >
+                            {user.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4 text-right font-semibold">
+                          {user.tokensGranted > 0 ? `+${user.tokensGranted}` : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </CardContent>
       </Card>
 
@@ -274,7 +279,8 @@ export default function ReferralsPage() {
             <div>
               <h3 className="font-semibold">Share Your Link</h3>
               <p className="text-sm text-muted-foreground">
-                Copy your referral link and share it with friends via social media, email, or messaging apps.
+                Copy your referral link and share it with friends via social media, email, or
+                messaging apps.
               </p>
             </div>
           </div>
@@ -286,7 +292,8 @@ export default function ReferralsPage() {
             <div>
               <h3 className="font-semibold">Friend Signs Up</h3>
               <p className="text-sm text-muted-foreground">
-                When your friend creates an account using your link, they get 50 free tokens to start.
+                When your friend creates an account using your link, they get 50 free tokens to
+                start.
               </p>
             </div>
           </div>
@@ -317,5 +324,5 @@ export default function ReferralsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

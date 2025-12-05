@@ -1,5 +1,5 @@
-import { WizardStepSkeleton } from "@/components/skeletons"
+import { WizardStepSkeleton } from "@/components/skeletons";
 
 export default function NewAppLoading() {
-  return <WizardStepSkeleton />
+  return <WizardStepSkeleton />;
 }

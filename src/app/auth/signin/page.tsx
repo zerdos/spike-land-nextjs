@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { Suspense } from "react"
-import { useSearchParams } from "next/navigation"
-import { AuthButtons } from "@/components/auth/auth-buttons"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import Link from "next/link"
+import { AuthButtons } from "@/components/auth/auth-buttons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 function SignInContent() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get("error")
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
   const errorMessages: Record<string, string> = {
     OAuthSignin: "Error starting OAuth sign in",
@@ -23,7 +23,7 @@ function SignInContent() {
     CredentialsSignin: "Sign in failed. Check your credentials",
     SessionRequired: "Please sign in to access this page",
     default: "An error occurred during sign in",
-  }
+  };
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
@@ -60,13 +60,19 @@ function SignInContent() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="container mx-auto flex min-h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="container mx-auto flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <SignInContent />
     </Suspense>
-  )
+  );
 }

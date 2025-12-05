@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const lastUpdated = new Date().toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})
+const lastUpdated = new Date().toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 
 const sections = [
-  { id: 'acceptance', title: 'Acceptance of Terms' },
-  { id: 'account-terms', title: 'Account Terms' },
-  { id: 'user-responsibilities', title: 'User Responsibilities' },
-  { id: 'token-economy', title: 'Token Economy' },
-  { id: 'service-description', title: 'Service Description' },
-  { id: 'acceptable-use', title: 'Acceptable Use Policy' },
-  { id: 'intellectual-property', title: 'Intellectual Property' },
-  { id: 'payment-terms', title: 'Payment Terms' },
-  { id: 'limitation-liability', title: 'Limitation of Liability' },
-  { id: 'dispute-resolution', title: 'Dispute Resolution' },
-  { id: 'changes-terms', title: 'Changes to Terms' },
-]
+  { id: "acceptance", title: "Acceptance of Terms" },
+  { id: "account-terms", title: "Account Terms" },
+  { id: "user-responsibilities", title: "User Responsibilities" },
+  { id: "token-economy", title: "Token Economy" },
+  { id: "service-description", title: "Service Description" },
+  { id: "acceptable-use", title: "Acceptable Use Policy" },
+  { id: "intellectual-property", title: "Intellectual Property" },
+  { id: "payment-terms", title: "Payment Terms" },
+  { id: "limitation-liability", title: "Limitation of Liability" },
+  { id: "dispute-resolution", title: "Dispute Resolution" },
+  { id: "changes-terms", title: "Changes to Terms" },
+];
 
 export default function TermsPage() {
   return (
@@ -33,7 +33,8 @@ export default function TermsPage() {
             Last updated: {lastUpdated}
           </p>
           <p className="text-muted-foreground mt-4">
-            This is a template for informational purposes. Consult with a qualified attorney for legal advice specific to your situation.
+            This is a template for informational purposes. Consult with a qualified attorney for
+            legal advice specific to your situation.
           </p>
         </div>
 
@@ -71,24 +72,35 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Agreement</h3>
                   <p>
-                    By accessing and using the Spike Land Image Enhancement App (&quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, please do not use the Service.
+                    By accessing and using the Spike Land Image Enhancement App
+                    (&quot;Service&quot;), you agree to be bound by these Terms of Service
+                    (&quot;Terms&quot;). If you do not agree to these Terms, please do not use the
+                    Service.
                   </p>
                   <p className="mt-3">
-                    These Terms constitute the entire agreement between you and [Your Name] (&quot;Operator&quot;) regarding the Service and supersede all prior agreements and understandings.
+                    These Terms constitute the entire agreement between you and [Your Name]
+                    (&quot;Operator&quot;) regarding the Service and supersede all prior agreements
+                    and understandings.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Age Requirement</h3>
                   <p>
-                    You must be at least 13 years of age to use this Service. If you are under 13, you may not create an account or use the Service. By using the Service, you represent and warrant that you are at least 13 years old or have obtained parental consent.
+                    You must be at least 13 years of age to use this Service. If you are under 13,
+                    you may not create an account or use the Service. By using the Service, you
+                    represent and warrant that you are at least 13 years old or have obtained
+                    parental consent.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Capacity to Agree</h3>
                   <p>
-                    You represent and warrant that you have the legal capacity to enter into these Terms and are not prohibited by law from using the Service. If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.
+                    You represent and warrant that you have the legal capacity to enter into these
+                    Terms and are not prohibited by law from using the Service. If you are using the
+                    Service on behalf of an organization, you represent that you have the authority
+                    to bind that organization to these Terms.
                   </p>
                 </div>
 
@@ -97,7 +109,9 @@ export default function TermsPage() {
                     <strong>Operator:</strong> [Your Name]
                   </p>
                   <p className="text-muted-foreground text-sm mt-2">
-                    <strong>Jurisdiction:</strong> These Terms are governed by the laws of the United Kingdom and comply with UK consumer protection regulations.
+                    <strong>Jurisdiction:</strong>{" "}
+                    These Terms are governed by the laws of the United Kingdom and comply with UK
+                    consumer protection regulations.
                   </p>
                 </div>
               </CardContent>
@@ -115,10 +129,13 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Account Creation</h3>
                   <p>
-                    You can create an account using OAuth authentication providers, including GitHub and Google. We collect only the information necessary to operate your account: email address, name, and profile image provided by your OAuth provider.
+                    You can create an account using OAuth authentication providers, including GitHub
+                    and Google. We collect only the information necessary to operate your account:
+                    email address, name, and profile image provided by your OAuth provider.
                   </p>
                   <p className="mt-3">
-                    You agree to provide accurate, current, and complete information during registration and to update it as needed.
+                    You agree to provide accurate, current, and complete information during
+                    registration and to update it as needed.
                   </p>
                 </div>
 
@@ -135,7 +152,8 @@ export default function TermsPage() {
                       <li>All activities that occur under your account</li>
                     </ul>
                     <p className="pt-2">
-                      We are not responsible for any loss or damage resulting from your failure to maintain account security.
+                      We are not responsible for any loss or damage resulting from your failure to
+                      maintain account security.
                     </p>
                   </div>
                 </div>
@@ -143,7 +161,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">One Account Per Person</h3>
                   <p>
-                    You may maintain only one personal account on the Service. Creating multiple accounts to circumvent token limits, rate limits, or other restrictions is prohibited and may result in immediate suspension of all accounts.
+                    You may maintain only one personal account on the Service. Creating multiple
+                    accounts to circumvent token limits, rate limits, or other restrictions is
+                    prohibited and may result in immediate suspension of all accounts.
                   </p>
                 </div>
 
@@ -161,7 +181,9 @@ export default function TermsPage() {
                       <li>Non-compliance with legal requirements</li>
                     </ul>
                     <p className="pt-2">
-                      You may delete your account at any time through your account settings. Upon deletion, your account will be disabled immediately, and your data will be removed according to our Privacy Policy.
+                      You may delete your account at any time through your account settings. Upon
+                      deletion, your account will be disabled immediately, and your data will be
+                      removed according to our Privacy Policy.
                     </p>
                   </div>
                 </div>
@@ -185,7 +207,9 @@ export default function TermsPage() {
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Ensuring all images you upload comply with our Acceptable Use Policy</li>
                     <li>Maintaining the security of your account credentials</li>
-                    <li>Using the Service in accordance with all applicable laws and regulations</li>
+                    <li>
+                      Using the Service in accordance with all applicable laws and regulations
+                    </li>
                     <li>Respecting the intellectual property rights of others</li>
                     <li>Reporting any security vulnerabilities or bugs you discover</li>
                   </ul>
@@ -194,7 +218,8 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Content Responsibility</h3>
                   <p>
-                    You are solely responsible for all content you upload, enhance, or share through the Service. This includes:
+                    You are solely responsible for all content you upload, enhance, or share through
+                    the Service. This includes:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Ensuring you have the right to upload and modify images</li>
@@ -207,7 +232,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Compliance</h3>
                   <p>
-                    You must comply with all applicable local, national, and international laws when using the Service. You are responsible for understanding and adhering to regulations that apply in your jurisdiction.
+                    You must comply with all applicable local, national, and international laws when
+                    using the Service. You are responsible for understanding and adhering to
+                    regulations that apply in your jurisdiction.
                   </p>
                 </div>
               </CardContent>
@@ -225,7 +252,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">What Are Tokens</h3>
                   <p>
-                    Tokens are the currency used to purchase image enhancement services on the Spike Land platform. Tokens are non-refundable and non-transferable digital units with no monetary value outside the Service.
+                    Tokens are the currency used to purchase image enhancement services on the Spike
+                    Land platform. Tokens are non-refundable and non-transferable digital units with
+                    no monetary value outside the Service.
                   </p>
                 </div>
 
@@ -236,11 +265,19 @@ export default function TermsPage() {
                       All users receive free tokens according to the following schedule:
                     </p>
                     <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                      <p><strong>Generation Rate:</strong> 1 token per 15 minutes</p>
-                      <p><strong>Maximum Balance:</strong> 100 tokens</p>
-                      <p><strong>Regeneration:</strong> Automatic</p>
+                      <p>
+                        <strong>Generation Rate:</strong> 1 token per 15 minutes
+                      </p>
+                      <p>
+                        <strong>Maximum Balance:</strong> 100 tokens
+                      </p>
+                      <p>
+                        <strong>Regeneration:</strong> Automatic
+                      </p>
                       <p className="text-muted-foreground">
-                        Free tokens cannot be carried over beyond the 100-token maximum. Once you reach the limit, token generation pauses until you use tokens to bring your balance below 100.
+                        Free tokens cannot be carried over beyond the 100-token maximum. Once you
+                        reach the limit, token generation pauses until you use tokens to bring your
+                        balance below 100.
                       </p>
                     </div>
                   </div>
@@ -258,13 +295,17 @@ export default function TermsPage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Non-Refundable</h4>
                       <p className="text-muted-foreground text-sm">
-                        Purchased tokens cannot be refunded, except in cases of failed enhancements where we are unable to process your enhancement request due to a service error. In such cases, tokens will be automatically credited back to your account.
+                        Purchased tokens cannot be refunded, except in cases of failed enhancements
+                        where we are unable to process your enhancement request due to a service
+                        error. In such cases, tokens will be automatically credited back to your
+                        account.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Non-Transferable</h4>
                       <p className="text-muted-foreground text-sm">
-                        Tokens cannot be transferred between accounts or to other users. Your tokens are strictly for your own use.
+                        Tokens cannot be transferred between accounts or to other users. Your tokens
+                        are strictly for your own use.
                       </p>
                     </div>
                   </div>
@@ -273,7 +314,8 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Token Pricing</h3>
                   <p className="mb-4">
-                    Token prices are subject to change without notice. We will provide notice of material price increases via email or in-app notification.
+                    Token prices are subject to change without notice. We will provide notice of
+                    material price increases via email or in-app notification.
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -356,7 +398,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Overview</h3>
                   <p>
-                    The Spike Land Image Enhancement App is an AI-powered image processing service that uses Google Gemini to enhance uploaded images. The Service allows users to upload images and receive enhanced versions at three different resolution tiers.
+                    The Spike Land Image Enhancement App is an AI-powered image processing service
+                    that uses Google Gemini to enhance uploaded images. The Service allows users to
+                    upload images and receive enhanced versions at three different resolution tiers.
                   </p>
                 </div>
 
@@ -372,7 +416,8 @@ export default function TermsPage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">2K Enhancement (2048x2048)</h4>
                       <p className="text-muted-foreground text-sm">
-                        High-resolution enhancement suitable for printing and professional use. Requires 10 tokens.
+                        High-resolution enhancement suitable for printing and professional use.
+                        Requires 10 tokens.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
@@ -387,14 +432,18 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Processing Technology</h3>
                   <p>
-                    Image enhancements are processed using Google Gemini API. When you request an enhancement, your image is sent to Google&apos;s servers for processing. By using this Service, you consent to this processing.
+                    Image enhancements are processed using Google Gemini API. When you request an
+                    enhancement, your image is sent to Google&apos;s servers for processing. By
+                    using this Service, you consent to this processing.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">No Guarantee of Specific Results</h3>
                   <p>
-                    The Service is provided &quot;as is&quot; without any warranty regarding the quality, accuracy, or suitability of enhanced images. AI-powered image enhancement is not deterministic, and results may vary based on:
+                    The Service is provided &quot;as is&quot; without any warranty regarding the
+                    quality, accuracy, or suitability of enhanced images. AI-powered image
+                    enhancement is not deterministic, and results may vary based on:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Input image quality and content</li>
@@ -407,7 +456,8 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Service Availability</h3>
                   <p>
-                    We do not guarantee uninterrupted or error-free service. The Service may be unavailable due to:
+                    We do not guarantee uninterrupted or error-free service. The Service may be
+                    unavailable due to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Scheduled maintenance</li>
@@ -435,23 +485,46 @@ export default function TermsPage() {
                     You agree not to upload, enhance, or share images that contain:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
-                    <li><strong>Illegal content:</strong> Material that violates UK or international law</li>
-                    <li><strong>Child exploitation:</strong> Any form of child sexual abuse material (CSAM) or content sexualizing minors</li>
-                    <li><strong>Malware or exploits:</strong> Code, binaries, or instructions for hacking, malware, or unauthorized access</li>
-                    <li><strong>Harassment or abuse:</strong> Content threatening, harassing, or defaming individuals</li>
-                    <li><strong>Hateful content:</strong> Content promoting discrimination based on protected characteristics</li>
-                    <li><strong>Non-consensual intimate content:</strong> Sexual images shared without consent</li>
-                    <li><strong>Spam:</strong> Repetitive or unsolicited content</li>
+                    <li>
+                      <strong>Illegal content:</strong>{" "}
+                      Material that violates UK or international law
+                    </li>
+                    <li>
+                      <strong>Child exploitation:</strong>{" "}
+                      Any form of child sexual abuse material (CSAM) or content sexualizing minors
+                    </li>
+                    <li>
+                      <strong>Malware or exploits:</strong>{" "}
+                      Code, binaries, or instructions for hacking, malware, or unauthorized access
+                    </li>
+                    <li>
+                      <strong>Harassment or abuse:</strong>{" "}
+                      Content threatening, harassing, or defaming individuals
+                    </li>
+                    <li>
+                      <strong>Hateful content:</strong>{" "}
+                      Content promoting discrimination based on protected characteristics
+                    </li>
+                    <li>
+                      <strong>Non-consensual intimate content:</strong>{" "}
+                      Sexual images shared without consent
+                    </li>
+                    <li>
+                      <strong>Spam:</strong> Repetitive or unsolicited content
+                    </li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Copyright Compliance</h3>
                   <p>
-                    You represent and warrant that you own or have all necessary rights to use images you upload. You are solely responsible for ensuring your uploaded images do not infringe on the intellectual property rights of others.
+                    You represent and warrant that you own or have all necessary rights to use
+                    images you upload. You are solely responsible for ensuring your uploaded images
+                    do not infringe on the intellectual property rights of others.
                   </p>
                   <p className="mt-3">
-                    If you believe content infringes your rights, please contact us at privacy@[your-domain.com] with:
+                    If you believe content infringes your rights, please contact us at
+                    privacy@[your-domain.com] with:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Identification of the infringing content</li>
@@ -478,7 +551,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Rate Limiting Enforcement</h3>
                   <p>
-                    We enforce strict rate limits to maintain service quality for all users. Violating rate limits will result in temporary account suspension. Limits include:
+                    We enforce strict rate limits to maintain service quality for all users.
+                    Violating rate limits will result in temporary account suspension. Limits
+                    include:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>20 image uploads per hour per user</li>
@@ -515,19 +590,25 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">User Image Ownership</h3>
                   <p>
-                    You retain all intellectual property rights and ownership of images you upload to the Service. We do not claim ownership of your images.
+                    You retain all intellectual property rights and ownership of images you upload
+                    to the Service. We do not claim ownership of your images.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Platform License Grant</h3>
                   <p>
-                    By uploading images, you grant the Operator a limited, non-exclusive, revocable license to:
+                    By uploading images, you grant the Operator a limited, non-exclusive, revocable
+                    license to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Process and enhance your images using the Service</li>
-                    <li>Store your images on secure servers for the purposes of providing the Service</li>
-                    <li>Transmit images to third-party processors (Google Gemini) for enhancement</li>
+                    <li>
+                      Store your images on secure servers for the purposes of providing the Service
+                    </li>
+                    <li>
+                      Transmit images to third-party processors (Google Gemini) for enhancement
+                    </li>
                     <li>Delete images according to our retention policies</li>
                   </ul>
                 </div>
@@ -544,7 +625,9 @@ export default function TermsPage() {
                     <li>Your images are NOT analyzed for facial recognition training</li>
                   </ul>
                   <p className="pt-4">
-                    Google Gemini processes your images according to their own privacy terms. Consult Google&apos;s terms for details on their use of images during processing.
+                    Google Gemini processes your images according to their own privacy terms.
+                    Consult Google&apos;s terms for details on their use of images during
+                    processing.
                   </p>
                 </div>
 
@@ -560,7 +643,8 @@ export default function TermsPage() {
                     <li>Trade secrets and proprietary technology</li>
                   </ul>
                   <p className="pt-4">
-                    ...are owned by the Operator and protected by copyright. You may not copy, distribute, or create derivative works without permission.
+                    ...are owned by the Operator and protected by copyright. You may not copy,
+                    distribute, or create derivative works without permission.
                   </p>
                 </div>
               </CardContent>
@@ -578,55 +662,67 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Currency and Pricing</h3>
                   <p>
-                    All prices are displayed in British Pounds Sterling (GBP). Prices are subject to change without notice. Significant price changes will be communicated via email or in-app notification.
+                    All prices are displayed in British Pounds Sterling (GBP). Prices are subject to
+                    change without notice. Significant price changes will be communicated via email
+                    or in-app notification.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Payment Processing</h3>
                   <p>
-                    Token purchases are processed through Stripe, a PCI DSS Level 1 compliant payment processor. We do not store your credit card information. Stripe handles all payment data securely according to their terms and privacy policy.
+                    Token purchases are processed through Stripe, a PCI DSS Level 1 compliant
+                    payment processor. We do not store your credit card information. Stripe handles
+                    all payment data securely according to their terms and privacy policy.
                   </p>
                   <p className="mt-3">
-                    By making a purchase, you authorize the Operator and Stripe to charge your payment method for the token package you select.
+                    By making a purchase, you authorize the Operator and Stripe to charge your
+                    payment method for the token package you select.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Automatic Subscription Renewal</h3>
                   <p>
-                    If you enable automatic token renewals (if offered), your payment method will be charged automatically at the interval you select. You can cancel automatic renewals at any time through your account settings or by contacting us.
+                    If you enable automatic token renewals (if offered), your payment method will be
+                    charged automatically at the interval you select. You can cancel automatic
+                    renewals at any time through your account settings or by contacting us.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Refund Policy</h3>
                   <p className="mb-4">
-                    Token purchases are generally non-refundable. However, refunds may be issued in the following cases:
+                    Token purchases are generally non-refundable. However, refunds may be issued in
+                    the following cases:
                   </p>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Failed Enhancement</h4>
                       <p className="text-muted-foreground text-sm">
-                        If an enhancement request fails due to a service error (not user error), tokens will be automatically credited back to your account within 24 hours.
+                        If an enhancement request fails due to a service error (not user error),
+                        tokens will be automatically credited back to your account within 24 hours.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Billing Error</h4>
                       <p className="text-muted-foreground text-sm">
-                        If you are charged twice or charged incorrectly due to our error, we will issue a refund within 7 business days after investigation and verification.
+                        If you are charged twice or charged incorrectly due to our error, we will
+                        issue a refund within 7 business days after investigation and verification.
                       </p>
                     </div>
                   </div>
                   <p className="pt-4">
-                    In all other cases, token purchases are final and non-refundable. Tokens are virtual currency and have no real monetary value outside the Service.
+                    In all other cases, token purchases are final and non-refundable. Tokens are
+                    virtual currency and have no real monetary value outside the Service.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Payment Disputes</h3>
                   <p>
-                    If you dispute a charge with your card issuer (chargeback), we reserve the right to:
+                    If you dispute a charge with your card issuer (chargeback), we reserve the right
+                    to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Suspend your account pending investigation</li>
@@ -639,7 +735,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Taxes</h3>
                   <p>
-                    Prices displayed include VAT (Value Added Tax) if applicable in your jurisdiction. You are responsible for any additional taxes or duties imposed by your government.
+                    Prices displayed include VAT (Value Added Tax) if applicable in your
+                    jurisdiction. You are responsible for any additional taxes or duties imposed by
+                    your government.
                   </p>
                 </div>
               </CardContent>
@@ -657,7 +755,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Service Provided &quot;As Is&quot;</h3>
                   <p>
-                    The Service is provided &quot;AS IS&quot; without warranties of any kind, express or implied. We make no representations about the accuracy, reliability, suitability, or completeness of the Service.
+                    The Service is provided &quot;AS IS&quot; without warranties of any kind,
+                    express or implied. We make no representations about the accuracy, reliability,
+                    suitability, or completeness of the Service.
                   </p>
                 </div>
 
@@ -676,9 +776,12 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Disclaimer of Consequential Damages</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Disclaimer of Consequential Damages
+                  </h3>
                   <p>
-                    TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE OPERATOR BE LIABLE FOR:
+                    TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE OPERATOR BE LIABLE
+                    FOR:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3 uppercase text-sm">
                     <li>Lost profits or revenue</li>
@@ -692,17 +795,21 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Maximum Liability</h3>
                   <p>
-                    Our total liability under these Terms shall not exceed the total amount you have paid to us in the 12 months preceding the event giving rise to liability, or £100, whichever is greater.
+                    Our total liability under these Terms shall not exceed the total amount you have
+                    paid to us in the 12 months preceding the event giving rise to liability, or
+                    £100, whichever is greater.
                   </p>
                   <p className="mt-3">
-                    Some jurisdictions do not allow limitation of liability, in which case this limitation may not apply to you.
+                    Some jurisdictions do not allow limitation of liability, in which case this
+                    limitation may not apply to you.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Force Majeure</h3>
                   <p>
-                    We are not liable for any failure or delay in performance under these Terms caused by events beyond our reasonable control, including but not limited to:
+                    We are not liable for any failure or delay in performance under these Terms
+                    caused by events beyond our reasonable control, including but not limited to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Natural disasters, acts of God</li>
@@ -717,7 +824,8 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Indemnification</h3>
                   <p>
-                    You agree to indemnify and hold harmless the Operator from any claims, damages, or costs (including attorney fees) arising from:
+                    You agree to indemnify and hold harmless the Operator from any claims, damages,
+                    or costs (including attorney fees) arising from:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Your use of the Service</li>
@@ -742,14 +850,17 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Governing Law</h3>
                   <p>
-                    These Terms are governed by and construed in accordance with the laws of the United Kingdom, without regard to its conflict of laws provisions.
+                    These Terms are governed by and construed in accordance with the laws of the
+                    United Kingdom, without regard to its conflict of laws provisions.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Informal Resolution</h3>
                   <p>
-                    Before pursuing any legal action, both parties agree to attempt to resolve disputes through informal negotiation. Please contact us at privacy@[your-domain.com] with:
+                    Before pursuing any legal action, both parties agree to attempt to resolve
+                    disputes through informal negotiation. Please contact us at
+                    privacy@[your-domain.com] with:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>A detailed description of the dispute</li>
@@ -764,21 +875,27 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Jurisdiction and Venue</h3>
                   <p>
-                    Any legal action or proceeding arising under these Terms shall be brought exclusively in the courts of England and Wales, and both parties consent to the exclusive jurisdiction of these courts.
+                    Any legal action or proceeding arising under these Terms shall be brought
+                    exclusively in the courts of England and Wales, and both parties consent to the
+                    exclusive jurisdiction of these courts.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Legal Remedies</h3>
                   <p>
-                    You agree that your sole and exclusive remedy for any dispute is the refund of amounts paid, as set forth in our refund policy. You waive any right to injunctive relief, class action, or punitive damages.
+                    You agree that your sole and exclusive remedy for any dispute is the refund of
+                    amounts paid, as set forth in our refund policy. You waive any right to
+                    injunctive relief, class action, or punitive damages.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Severability</h3>
                   <p>
-                    If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect. The invalid provision shall be modified to the minimum extent necessary to make it valid.
+                    If any provision of these Terms is found to be invalid or unenforceable, the
+                    remaining provisions shall remain in full force and effect. The invalid
+                    provision shall be modified to the minimum extent necessary to make it valid.
                   </p>
                 </div>
               </CardContent>
@@ -796,7 +913,8 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Right to Modify</h3>
                   <p>
-                    We reserve the right to modify these Terms at any time. Changes are effective immediately upon posting to the Service.
+                    We reserve the right to modify these Terms at any time. Changes are effective
+                    immediately upon posting to the Service.
                   </p>
                 </div>
 
@@ -813,9 +931,13 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Continued Use Constitutes Acceptance</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Continued Use Constitutes Acceptance
+                  </h3>
                   <p>
-                    Your continued use of the Service after changes become effective constitutes your acceptance of the modified Terms. If you do not agree to any modifications, you must stop using the Service.
+                    Your continued use of the Service after changes become effective constitutes
+                    your acceptance of the modified Terms. If you do not agree to any modifications,
+                    you must stop using the Service.
                   </p>
                 </div>
 
@@ -842,16 +964,24 @@ export default function TermsPage() {
           {/* Legal Disclaimer */}
           <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">Legal Disclaimer</CardTitle>
+              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+                Legal Disclaimer
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                These Terms of Service are a template for informational purposes only. They provide general guidance on service terms and conditions but are not comprehensive. Laws and regulations vary by jurisdiction and change frequently. You should consult with a qualified attorney who specializes in technology law and consumer protection to ensure these Terms are fully compliant with all applicable laws in your jurisdiction and to customize them for your specific business model, pricing, and operations. This template should not be used without professional legal review.
+                These Terms of Service are a template for informational purposes only. They provide
+                general guidance on service terms and conditions but are not comprehensive. Laws and
+                regulations vary by jurisdiction and change frequently. You should consult with a
+                qualified attorney who specializes in technology law and consumer protection to
+                ensure these Terms are fully compliant with all applicable laws in your jurisdiction
+                and to customize them for your specific business model, pricing, and operations.
+                This template should not be used without professional legal review.
               </p>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

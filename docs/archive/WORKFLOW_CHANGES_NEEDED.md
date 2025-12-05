@@ -1,29 +1,32 @@
 # Required Workflow Changes for Issue #23
 
 ## Summary
+
 To complete the E2E authentication bypass fix, the following changes need to be made to `.github/workflows/ci-cd.yml`:
 
 ## Changes Required
 
 ### 1. Add E2E_BYPASS_SECRET to Build Step
+
 In the "Build Project Artifacts" step (around line 113-116), add the environment variable:
 
 ```yaml
-      - name: Build Project Artifacts
-        env:
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+- name: Build Project Artifacts
+  env:
+    E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+  run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 ```
 
 ### 2. Add E2E_BYPASS_SECRET to E2E Test Step
+
 In the "Run E2E tests" step (around line 167-171), add the environment variable:
 
 ```yaml
-      - name: Run E2E tests
-        env:
-          BASE_URL: ${{ needs.deploy.outputs.deployment-url }}
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: npm run test:e2e:ci
+- name: Run E2E tests
+  env:
+    BASE_URL: ${{ needs.deploy.outputs.deployment-url }}
+    E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+  run: npm run test:e2e:ci
 ```
 
 ## GitHub Secret Setup
@@ -80,13 +83,13 @@ The E2E bypass includes defense-in-depth security:
 
 ### Environment Behavior
 
-| NODE_ENV | VERCEL_ENV | Bypass Allowed? | Notes |
-|----------|------------|-----------------|-------|
-| production | production | ❌ **NO** | Full production - bypass blocked |
-| production | preview | ✅ Yes | Preview deployment - bypass allowed |
-| development | production | ✅ Yes | Local dev - bypass allowed |
-| development | (undefined) | ✅ Yes | Local dev - bypass allowed |
-| test | preview | ✅ Yes | CI E2E tests - bypass allowed |
+| NODE_ENV    | VERCEL_ENV  | Bypass Allowed? | Notes                               |
+| ----------- | ----------- | --------------- | ----------------------------------- |
+| production  | production  | ❌ **NO**       | Full production - bypass blocked    |
+| production  | preview     | ✅ Yes          | Preview deployment - bypass allowed |
+| development | production  | ✅ Yes          | Local dev - bypass allowed          |
+| development | (undefined) | ✅ Yes          | Local dev - bypass allowed          |
+| test        | preview     | ✅ Yes          | CI E2E tests - bypass allowed       |
 
 ### Audit Logging
 
@@ -108,6 +111,7 @@ This appears in Vercel logs and can be used for security monitoring and debuggin
 ## Why These Changes Are Needed
 
 The E2E authentication bypass implementation requires a secret value that:
+
 - Is sent as the `x-e2e-auth-bypass` header by Playwright tests
 - Is validated by the middleware to bypass authentication
 - Must be configured in both the build environment (for Next.js to include it) and the test environment (for Playwright to send it)
@@ -115,9 +119,11 @@ The E2E authentication bypass implementation requires a secret value that:
 ## After These Changes
 
 Once these changes are made and the secret is configured:
+
 1. E2E tests will be able to bypass authentication securely
 2. All 35 previously disabled test scenarios will run
 3. Tests will pass on Vercel preview deployments
 
 ## Note
+
 The workflow file couldn't be automatically updated because the GitHub App lacks `workflows` permission (a security feature). These changes must be made manually by a repository maintainer.

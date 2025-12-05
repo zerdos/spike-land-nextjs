@@ -8,14 +8,14 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as React from 'react'
+} from "@react-email/components";
+import * as React from "react";
 
 interface BaseEmailProps {
-  preview: string
-  heading: string
-  children: React.ReactNode
-  unsubscribeUrl?: string
+  preview: string;
+  heading: string;
+  children: React.ReactNode;
+  unsubscribeUrl?: string;
 }
 
 export function BaseEmail({
@@ -51,11 +51,11 @@ export function BaseEmail({
               <Link href="https://spike.land" style={link}>
                 Visit Website
               </Link>
-              {' · '}
+              {" · "}
               <Link href="https://spike.land/privacy" style={link}>
                 Privacy Policy
               </Link>
-              {' · '}
+              {" · "}
               <Link href="https://spike.land/terms" style={link}>
                 Terms of Service
               </Link>
@@ -71,76 +71,76 @@ export function BaseEmail({
         </Container>
       </Body>
     </Html>
-  )
+  );
 }
 
 // Styles
 const main = {
-  backgroundColor: '#f6f9fc',
+  backgroundColor: "#f6f9fc",
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
+};
 
 const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "20px 0 48px",
+  marginBottom: "64px",
+  maxWidth: "600px",
+};
 
 const header = {
-  padding: '32px 24px',
-  textAlign: 'center' as const,
-  borderBottom: '1px solid #e5e7eb',
-}
+  padding: "32px 24px",
+  textAlign: "center" as const,
+  borderBottom: "1px solid #e5e7eb",
+};
 
 const logo = {
-  color: '#3b82f6', // Primary blue from globals.css
-  fontSize: '32px',
-  fontWeight: 'bold',
-  margin: '0',
-  padding: '0',
-}
+  color: "#3b82f6", // Primary blue from globals.css
+  fontSize: "32px",
+  fontWeight: "bold",
+  margin: "0",
+  padding: "0",
+};
 
 const tagline = {
-  color: '#6b7280',
-  fontSize: '14px',
-  margin: '8px 0 0',
-  padding: '0',
-}
+  color: "#6b7280",
+  fontSize: "14px",
+  margin: "8px 0 0",
+  padding: "0",
+};
 
 const content = {
-  padding: '32px 24px',
-}
+  padding: "32px 24px",
+};
 
 const h1 = {
-  color: '#1f2937',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '0 0 24px',
-  padding: '0',
-}
+  color: "#1f2937",
+  fontSize: "24px",
+  fontWeight: "bold",
+  margin: "0 0 24px",
+  padding: "0",
+};
 
 const footer = {
-  padding: '0 24px',
-  textAlign: 'center' as const,
-  borderTop: '1px solid #e5e7eb',
-  marginTop: '32px',
-  paddingTop: '24px',
-}
+  padding: "0 24px",
+  textAlign: "center" as const,
+  borderTop: "1px solid #e5e7eb",
+  marginTop: "32px",
+  paddingTop: "24px",
+};
 
 const footerText = {
-  color: '#6b7280',
-  fontSize: '12px',
-  lineHeight: '24px',
-  margin: '0',
-}
+  color: "#6b7280",
+  fontSize: "12px",
+  lineHeight: "24px",
+  margin: "0",
+};
 
 const link = {
-  color: '#3b82f6', // Primary blue
-  textDecoration: 'underline',
-}
+  color: "#3b82f6", // Primary blue
+  textDecoration: "underline",
+};
 
 // Export styles for use in other templates
 export const emailStyles = {
@@ -156,56 +156,56 @@ export const emailStyles = {
   link,
   // Common reusable styles
   text: {
-    color: '#374151',
-    fontSize: '16px',
-    lineHeight: '24px',
-    margin: '16px 0',
+    color: "#374151",
+    fontSize: "16px",
+    lineHeight: "24px",
+    margin: "16px 0",
   },
   button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: '8px',
-    color: '#ffffff',
-    display: 'inline-block',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    padding: '12px 24px',
-    textDecoration: 'none',
-    textAlign: 'center' as const,
+    backgroundColor: "#3b82f6",
+    borderRadius: "8px",
+    color: "#ffffff",
+    display: "inline-block",
+    fontSize: "16px",
+    fontWeight: "bold",
+    padding: "12px 24px",
+    textDecoration: "none",
+    textAlign: "center" as const,
   },
   code: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: '4px',
-    color: '#1f2937',
-    fontFamily: 'monospace',
-    fontSize: '14px',
-    padding: '2px 6px',
+    backgroundColor: "#f3f4f6",
+    borderRadius: "4px",
+    color: "#1f2937",
+    fontFamily: "monospace",
+    fontSize: "14px",
+    padding: "2px 6px",
   },
   divider: {
-    borderBottom: '1px solid #e5e7eb',
-    margin: '24px 0',
+    borderBottom: "1px solid #e5e7eb",
+    margin: "24px 0",
   },
   alert: {
-    backgroundColor: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: '8px',
-    padding: '16px',
-    margin: '16px 0',
+    backgroundColor: "#fef2f2",
+    border: "1px solid #fecaca",
+    borderRadius: "8px",
+    padding: "16px",
+    margin: "16px 0",
   },
   alertText: {
-    color: '#991b1b',
-    fontSize: '14px',
-    margin: '0',
+    color: "#991b1b",
+    fontSize: "14px",
+    margin: "0",
   },
   success: {
-    backgroundColor: '#f0fdf4',
-    border: '1px solid #bbf7d0',
-    borderRadius: '8px',
-    padding: '16px',
-    margin: '16px 0',
+    backgroundColor: "#f0fdf4",
+    border: "1px solid #bbf7d0",
+    borderRadius: "8px",
+    padding: "16px",
+    margin: "16px 0",
   },
   successText: {
-    color: '#166534',
-    fontSize: '14px',
-    margin: '0',
+    color: "#166534",
+    fontSize: "14px",
+    margin: "0",
   },
-}
+};

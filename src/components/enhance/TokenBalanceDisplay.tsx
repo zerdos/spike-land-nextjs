@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { Coins } from "lucide-react"
-import { useTokenBalance } from "@/hooks/useTokenBalance"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { Coins } from "lucide-react";
 
 export function TokenBalanceDisplay() {
-  const { balance, isLoading } = useTokenBalance()
+  const { balance, isLoading } = useTokenBalance();
 
   if (isLoading) {
     return (
@@ -15,7 +15,7 @@ export function TokenBalanceDisplay() {
           <span className="text-sm text-muted-foreground">Loading...</span>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -28,5 +28,5 @@ export function TokenBalanceDisplay() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

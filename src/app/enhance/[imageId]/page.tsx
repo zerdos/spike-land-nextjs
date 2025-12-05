@@ -1,22 +1,22 @@
-import { redirect, notFound } from "next/navigation"
-import { auth } from "@/auth"
-import prisma from "@/lib/prisma"
-import { EnhanceClient } from "./EnhanceClient"
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { notFound, redirect } from "next/navigation";
+import { EnhanceClient } from "./EnhanceClient";
 
 interface EnhanceImagePageProps {
   params: Promise<{
-    imageId: string
-  }>
+    imageId: string;
+  }>;
 }
 
 export default async function EnhanceImagePage({ params }: EnhanceImagePageProps) {
-  const session = await auth()
+  const session = await auth();
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
-  const { imageId } = await params
+  const { imageId } = await params;
 
   // Fetch the image with all enhancement jobs
   const image = await prisma.enhancedImage.findUnique({
@@ -30,17 +30,17 @@ export default async function EnhanceImagePage({ params }: EnhanceImagePageProps
         },
       },
     },
-  })
+  });
 
   // Check if image exists
   if (!image) {
-    notFound()
+    notFound();
   }
 
   // Check if user owns this image
   if (image.userId !== session.user.id) {
-    redirect("/enhance")
+    redirect("/enhance");
   }
 
-  return <EnhanceClient image={image} />
+  return <EnhanceClient image={image} />;
 }

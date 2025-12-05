@@ -1,22 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { errorLogger } from '@/lib/error-logger';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { errorLogger } from "@/lib/error-logger";
+import { useEffect } from "react";
 
 export default function MyAppsError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error & { digest?: string; };
   reset: () => void;
 }) {
   useEffect(() => {
     // Log the error to error reporting service
     errorLogger.logError(error, {
-      route: '/my-apps',
+      route: "/my-apps",
       digest: error.digest,
     });
   }, [error]);
@@ -34,13 +41,13 @@ export default function MyAppsError({
           <Alert variant="destructive">
             <AlertTitle>What happened?</AlertTitle>
             <AlertDescription>
-              {process.env.NODE_ENV === 'development' && error.message
+              {process.env.NODE_ENV === "development" && error.message
                 ? error.message
-                : 'An error occurred while loading your apps. This might be due to a temporary database connection issue.'}
+                : "An error occurred while loading your apps. This might be due to a temporary database connection issue."}
             </AlertDescription>
           </Alert>
 
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <Alert>
               <AlertTitle>Development Mode - Troubleshooting</AlertTitle>
               <AlertDescription className="space-y-2">
@@ -64,7 +71,7 @@ export default function MyAppsError({
           <Button onClick={reset} variant="default">
             Try again
           </Button>
-          <Button onClick={() => window.location.href = '/'} variant="outline">
+          <Button onClick={() => window.location.href = "/"} variant="outline">
             Go home
           </Button>
         </CardFooter>

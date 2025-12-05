@@ -1,3 +1,3 @@
-import ClientPage from '@apps/display/pages/ClientPage';
+import ClientPage from "@apps/display/pages/ClientPage";
 
 export default ClientPage;

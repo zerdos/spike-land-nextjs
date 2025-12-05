@@ -1,52 +1,52 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 export interface Screenshot {
-  id: string
-  url: string
-  alt: string
-  title?: string
+  id: string;
+  url: string;
+  alt: string;
+  title?: string;
 }
 
 export interface AppScreenshotGalleryProps {
-  screenshots: Screenshot[]
-  columns?: 2 | 3 | 4
-  className?: string
+  screenshots: Screenshot[];
+  columns?: 2 | 3 | 4;
+  className?: string;
 }
 
 export function AppScreenshotGallery({
   screenshots,
   columns = 3,
-  className
+  className,
 }: AppScreenshotGalleryProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number>(0)
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const gridCols = {
     2: "grid-cols-1 sm:grid-cols-2",
     3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-  }
+    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+  };
 
   const handlePrevious = () => {
-    setSelectedIndex((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1))
-  }
+    setSelectedIndex((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1));
+  };
 
   const handleNext = () => {
-    setSelectedIndex((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1))
-  }
+    setSelectedIndex((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1));
+  };
 
   if (screenshots.length === 0) {
     return (
       <div className={cn("text-center py-8 text-muted-foreground", className)}>
         No screenshots available
       </div>
-    )
+    );
   }
 
   return (
@@ -82,11 +82,11 @@ export function AppScreenshotGallery({
                   size="icon"
                   className="absolute right-2 top-2 z-10"
                   onClick={() => {
-                    const dialog = document.querySelector('[role="dialog"]')
+                    const dialog = document.querySelector('[role="dialog"]');
                     if (dialog) {
-                      const closeButton = dialog.querySelector('[data-state="open"]')
+                      const closeButton = dialog.querySelector('[data-state="open"]');
                       if (closeButton instanceof HTMLElement) {
-                        closeButton.click()
+                        closeButton.click();
                       }
                     }
                   }}
@@ -146,5 +146,5 @@ export function AppScreenshotGallery({
         ))}
       </div>
     </div>
-  )
+  );
 }

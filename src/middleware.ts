@@ -21,13 +21,13 @@
  * - This allows E2E tests to access protected routes securely without real authentication
  */
 
-import NextAuth from "next-auth"
-import { authConfig } from "@/auth.config"
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { authConfig } from "@/auth.config";
+import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Create Edge-compatible auth (no database operations)
-const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth(authConfig);
 
 /**
  * Performs constant-time string comparison to prevent timing attacks
@@ -38,23 +38,23 @@ const { auth } = NextAuth(authConfig)
  * @returns true if strings are equal, false otherwise
  */
 export function constantTimeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
+  if (a.length !== b.length) return false;
 
   // Convert strings to Uint8Array for byte-by-byte comparison
-  const encoder = new TextEncoder()
-  const bufA = encoder.encode(a)
-  const bufB = encoder.encode(b)
+  const encoder = new TextEncoder();
+  const bufA = encoder.encode(a);
+  const bufB = encoder.encode(b);
 
   // Double-check lengths match after encoding
-  if (bufA.length !== bufB.length) return false
+  if (bufA.length !== bufB.length) return false;
 
   // Perform constant-time comparison
-  let result = 0
+  let result = 0;
   for (let i = 0; i < bufA.length; i++) {
     // TypeScript assertion safe due to length check above
-    result |= (bufA[i] ?? 0) ^ (bufB[i] ?? 0)
+    result |= (bufA[i] ?? 0) ^ (bufB[i] ?? 0);
   }
-  return result === 0
+  return result === 0;
 }
 
 /**
@@ -66,7 +66,7 @@ const PROTECTED_PATHS = [
   "/settings",
   "/profile",
   "/enhance",
-] as const
+] as const;
 
 /**
  * List of path patterns that are always public
@@ -78,7 +78,7 @@ const PUBLIC_PATHS = [
   "/api/auth",
   "/auth/signin",
   "/auth/error",
-] as const
+] as const;
 
 /**
  * Checks if a given pathname requires authentication
@@ -89,11 +89,11 @@ const PUBLIC_PATHS = [
 export function isProtectedPath(pathname: string): boolean {
   // First check if path is explicitly public
   if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"))) {
-    return false
+    return false;
   }
 
   // Check if path matches any protected patterns
-  return PROTECTED_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"))
+  return PROTECTED_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"));
 }
 
 /**
@@ -107,49 +107,53 @@ export function isProtectedPath(pathname: string): boolean {
  * @returns NextResponse - Either continues the request or redirects
  */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
 
   // Skip middleware for non-protected paths
   if (!isProtectedPath(pathname)) {
-    return NextResponse.next()
+    return NextResponse.next();
   }
 
   // Check for E2E test bypass header with secret validation
   // This allows E2E tests to bypass authentication securely
   // Uses constant-time comparison to prevent timing attacks
   // SECURITY: Only enabled in non-production environments
-  const e2eBypassHeader = request.headers.get('x-e2e-auth-bypass')
-  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET
+  const e2eBypassHeader = request.headers.get("x-e2e-auth-bypass");
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
 
   // Only allow E2E bypass in non-production environments
   // This prevents accidental bypass in production even if the secret leaks
-  const isProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+  const isProduction = process.env.NODE_ENV === "production" &&
+    process.env.VERCEL_ENV === "production";
 
-  if (!isProduction && e2eBypassSecret && e2eBypassHeader && constantTimeCompare(e2eBypassHeader, e2eBypassSecret)) {
+  if (
+    !isProduction && e2eBypassSecret && e2eBypassHeader &&
+    constantTimeCompare(e2eBypassHeader, e2eBypassSecret)
+  ) {
     // Audit log for security monitoring and debugging
-    console.warn('[E2E Bypass]', {
+    console.warn("[E2E Bypass]", {
       timestamp: new Date().toISOString(),
       path: pathname,
       environment: {
         NODE_ENV: process.env.NODE_ENV,
         VERCEL_ENV: process.env.VERCEL_ENV,
-      }
-    })
-    return NextResponse.next()
+      },
+    });
+    return NextResponse.next();
   }
 
   // Check authentication status
-  const session = await auth()
+  const session = await auth();
 
   // If user is not authenticated, redirect to sign in page with callback URL
   if (!session?.user) {
-    const url = new URL("/auth/signin", request.url)
-    url.searchParams.set("callbackUrl", pathname)
-    return NextResponse.redirect(url)
+    const url = new URL("/auth/signin", request.url);
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
   }
 
   // User is authenticated, allow access
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 /**
@@ -170,4 +174,4 @@ export const config = {
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-}
+};

@@ -5,6 +5,7 @@ This document describes the comprehensive E2E testing approach for the Smart Vid
 ## Overview
 
 The E2E test suite covers all critical user journeys for the Smart Video Wall system, including:
+
 - Display page functionality (QR code generation, video feed display, layout optimization)
 - Client page functionality (camera controls, connection management)
 - Multi-client scenarios (simultaneous connections, disconnections)
@@ -81,6 +82,7 @@ export class VideoWallWorld extends World {
 ```
 
 **Key features:**
+
 - One display context (presenter view)
 - Multiple client contexts (participant views)
 - Isolated browser contexts for each client
@@ -97,7 +99,7 @@ Real camera/microphone hardware is not available in CI/CD environments, so we mo
 await page.addInitScript(() => {
   navigator.mediaDevices.getUserMedia = async (constraints) => {
     // Create fake MediaStream with canvas-based video
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 640;
     canvas.height = 480;
     const stream = canvas.captureStream(30);
@@ -107,12 +109,14 @@ await page.addInitScript(() => {
 ```
 
 **What it does:**
+
 - Creates a fake video stream using Canvas API
 - Generates a test pattern (green rectangle with "Test Video" text)
 - Adds fake audio track if requested
 - Returns a real MediaStream object (not just a mock)
 
 **Benefits:**
+
 - No real camera required
 - Deterministic test behavior
 - Works in headless CI environments
@@ -128,30 +132,32 @@ class MockPeer {
 
   constructor(id?: string, options?: any) {
     this.id = id || `mock-peer-${Math.random()}`;
-    setTimeout(() => this.emit('open', this.id), 100);
+    setTimeout(() => this.emit("open", this.id), 100);
   }
 
   connect(peerId: string) {
     const connection = new MockDataConnection(peerId);
-    setTimeout(() => connection.emit('open'), 200);
+    setTimeout(() => connection.emit("open"), 200);
     return connection;
   }
 
   call(peerId: string, stream: MediaStream) {
     const call = new MockMediaConnection(peerId, stream);
-    setTimeout(() => call.emit('stream', fakeStream), 300);
+    setTimeout(() => call.emit("stream", fakeStream), 300);
     return call;
   }
 }
 ```
 
 **What it does:**
+
 - Simulates PeerJS connection lifecycle
 - Fires events in realistic timing
 - Returns mock streams for video calls
 - Handles data connections
 
 **Benefits:**
+
 - No STUN/TURN servers required
 - Predictable connection timing
 - Testable connection states
@@ -163,13 +169,14 @@ Mock `enumerateDevices` to simulate multiple cameras:
 
 ```typescript
 navigator.mediaDevices.enumerateDevices = async () => [
-  { deviceId: 'fake-camera-1', kind: 'videoinput', label: 'Front Camera' },
-  { deviceId: 'fake-camera-2', kind: 'videoinput', label: 'Back Camera' },
-  { deviceId: 'fake-mic-1', kind: 'audioinput', label: 'Microphone' },
+  { deviceId: "fake-camera-1", kind: "videoinput", label: "Front Camera" },
+  { deviceId: "fake-camera-2", kind: "videoinput", label: "Back Camera" },
+  { deviceId: "fake-mic-1", kind: "audioinput", label: "Microphone" },
 ];
 ```
 
 **Benefits:**
+
 - Test camera switching functionality
 - Consistent device list across environments
 - No permission prompts
@@ -181,12 +188,13 @@ Mock `getDisplayMedia` for screen sharing tests:
 ```typescript
 navigator.mediaDevices.getDisplayMedia = async (constraints) => {
   const stream = createFakeMediaStream({ video: true });
-  Object.defineProperty(stream, '__isScreenShare', { value: true });
+  Object.defineProperty(stream, "__isScreenShare", { value: true });
   return stream;
 };
 ```
 
 **Benefits:**
+
 - Test screen sharing without user interaction
 - No browser permission prompts
 - Consistent behavior
@@ -204,6 +212,7 @@ for (let i = 0; i < clientCount; i++) {
 ```
 
 **Key points:**
+
 - Each client gets its own browser context
 - Clients are isolated from each other
 - Each has its own mocked camera
@@ -223,6 +232,7 @@ expect(boundingBox.width).toBeGreaterThan(minWidth);
 ```
 
 **Strategies:**
+
 - Use test IDs for reliable element selection
 - Check element count for client tracking
 - Verify bounding boxes for layout validation
@@ -237,11 +247,12 @@ await expect(connectedStatus).toBeVisible({ timeout: 10000 });
 
 // Simulate network issues
 await page.evaluate(() => {
-  window.dispatchEvent(new Event('offline'));
+  window.dispatchEvent(new Event("offline"));
 });
 ```
 
 **Approaches:**
+
 - Check connection status indicators
 - Simulate network events
 - Verify reconnection logic
@@ -252,6 +263,7 @@ await page.evaluate(() => {
 For reliable E2E tests, the implementation should use these test IDs:
 
 ### Display Page
+
 - `[data-testid="qr-code"]` - QR code element
 - `[data-testid="connection-id"]` - Connection ID display
 - `[data-testid="video-grid"]` - Video grid container
@@ -263,6 +275,7 @@ For reliable E2E tests, the implementation should use these test IDs:
 - `[data-testid="unpin-button"]` - Unpin video feed button
 
 ### Client Page
+
 - `[data-testid="camera-preview"]` - Camera preview video element
 - `[data-testid="toggle-camera"]` - Camera on/off button
 - `[data-testid="toggle-mic"]` - Microphone mute button
@@ -280,6 +293,7 @@ For reliable E2E tests, the implementation should use these test IDs:
 - `[data-testid="retry-button"]` - Retry connection button
 
 ### Data Attributes
+
 - `[data-layout="full-screen|2-column|3-column|grid"]` - Layout mode
 - `[data-feed-disabled]` - Disabled feed indicator
 - `[data-camera-state="on|off"]` - Camera state
@@ -361,6 +375,7 @@ open e2e/reports/cucumber-report.html
 ### Screenshots
 
 Failed tests automatically capture screenshots:
+
 - `e2e/reports/screenshots/ScenarioName_display.png` - Display page
 - `e2e/reports/screenshots/ScenarioName_client_0.png` - First client
 - `e2e/reports/screenshots/ScenarioName_client_1.png` - Second client
@@ -373,6 +388,7 @@ Failed tests automatically capture screenshots:
 **Problem:** WebRTC requires real network connections, STUN/TURN servers, and peer discovery.
 
 **Solution:** Mock the entire PeerJS API with simulated connection lifecycle:
+
 - Emit events in realistic timing
 - Return fake MediaStreams
 - Simulate connection states
@@ -385,6 +401,7 @@ Failed tests automatically capture screenshots:
 **Problem:** Browsers require user permission for camera access. CI environments have no camera.
 
 **Solution:** Mock `getUserMedia` with canvas-based fake video:
+
 - Generate test pattern on canvas
 - Use `captureStream()` to create MediaStream
 - Real MediaStream object (not just a mock)
@@ -397,6 +414,7 @@ Failed tests automatically capture screenshots:
 **Problem:** Need to simulate multiple users connecting simultaneously.
 
 **Solution:** Create multiple browser contexts:
+
 - One context = one client
 - Isolated cookies/storage
 - Independent camera mocks
@@ -409,6 +427,7 @@ Failed tests automatically capture screenshots:
 **Problem:** WebRTC connections, layout changes, and UI updates are asynchronous.
 
 **Solution:** Strategic waiting and polling:
+
 - Use Playwright's auto-waiting for DOM elements
 - Add explicit timeouts for connection establishment
 - Poll for state changes with `waitForTimeout`
@@ -421,6 +440,7 @@ Failed tests automatically capture screenshots:
 **Problem:** Hard to verify visual layout algorithmically.
 
 **Solution:** Combination of approaches:
+
 - Count video feeds
 - Check bounding boxes
 - Verify CSS grid/flex properties
@@ -434,6 +454,7 @@ Failed tests automatically capture screenshots:
 **Problem:** Can't easily simulate poor network conditions.
 
 **Solution:** Use custom events and state manipulation:
+
 - Dispatch `offline`/`online` events
 - Fire custom `connection-quality-changed` events
 - Manipulate DOM directly for state testing
@@ -450,7 +471,7 @@ Failed tests automatically capture screenshots:
 const button = page.locator('[data-testid="toggle-camera"]');
 
 // Avoid
-const button = page.locator('button.camera-toggle');
+const button = page.locator("button.camera-toggle");
 ```
 
 **Why:** Test IDs are stable, CSS classes change.
@@ -459,7 +480,7 @@ const button = page.locator('button.camera-toggle');
 
 ```typescript
 await page.goto(url);
-await page.waitForLoadState('networkidle');
+await page.waitForLoadState("networkidle");
 ```
 
 **Why:** Ensures all initial network requests complete.
@@ -477,7 +498,7 @@ await expect(status).toBeVisible({ timeout: 10000 });
 The `After` hook automatically cleans up all contexts:
 
 ```typescript
-After(async function (this: VideoWallWorld) {
+After(async function(this: VideoWallWorld) {
   await this.destroy(); // Closes all contexts
 });
 ```
@@ -490,9 +511,9 @@ All pages (display + clients) are captured on failure:
 
 ```typescript
 if (result?.status === Status.FAILED) {
-  await this.displayPage.screenshot({ path: '...' });
+  await this.displayPage.screenshot({ path: "..." });
   for (const client of this.getAllClientContexts()) {
-    await client.page.screenshot({ path: '...' });
+    await client.page.screenshot({ path: "..." });
   }
 }
 ```
@@ -531,14 +552,14 @@ const browser = await chromium.launch({
 ### View Console Logs
 
 ```typescript
-page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+page.on("console", msg => console.log("PAGE LOG:", msg.text()));
 ```
 
 ### Check Network Requests
 
 ```typescript
-page.on('request', request => console.log('>>', request.method(), request.url()));
-page.on('response', response => console.log('<<', response.status(), response.url()));
+page.on("request", request => console.log(">>", request.method(), request.url()));
+page.on("response", response => console.log("<<", response.status(), response.url()));
 ```
 
 ## Future Enhancements
@@ -548,7 +569,7 @@ page.on('response', response => console.log('<<', response.status(), response.ur
 Add screenshot comparison:
 
 ```typescript
-await expect(page).toHaveScreenshot('display-4-clients.png', {
+await expect(page).toHaveScreenshot("display-4-clients.png", {
   maxDiffPixels: 100,
 });
 ```
@@ -563,7 +584,7 @@ Monitor FPS and layout shift:
 
 ```typescript
 const metrics = await page.evaluate(() => ({
-  fps: performance.getEntriesByType('measure'),
+  fps: performance.getEntriesByType("measure"),
   cls: layoutShift.value,
 }));
 ```
@@ -579,12 +600,14 @@ Test with mobile viewports and touch events.
 ## Conclusion
 
 This comprehensive E2E test suite provides:
+
 - Full coverage of critical user journeys
 - Reliable mocking of WebRTC and media devices
 - Multi-client scenario support
 - Detailed reporting and debugging
 
 **Next steps:**
+
 1. Implement the video wall application
 2. Add test IDs to all components
 3. Run tests and iterate on implementation
@@ -592,6 +615,7 @@ This comprehensive E2E test suite provides:
 5. Monitor test reliability and adjust timeouts as needed
 
 **Testing Philosophy:**
+
 - E2E tests validate user journeys, not implementation details
 - Mocking is acceptable when it enables testing without sacrificing coverage
 - Tests should be deterministic and fast

@@ -1,8 +1,8 @@
-import { World, IWorldOptions } from '@cucumber/cucumber';
-import { Browser, BrowserContext, Page, chromium } from '@playwright/test';
+import { IWorldOptions, World } from "@cucumber/cucumber";
+import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
 
 export interface CucumberWorldConstructorParams {
-  parameters: { [key: string]: string };
+  parameters: { [key: string]: string; };
 }
 
 export class CustomWorld extends World {
@@ -14,12 +14,12 @@ export class CustomWorld extends World {
   constructor(options: IWorldOptions) {
     super(options);
     // Use deployed URL in CI, localhost for local development
-    this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    this.baseUrl = process.env.BASE_URL || "http://localhost:3000";
   }
 
   async init() {
     this.browser = await chromium.launch({
-      headless: process.env.CI === 'true',
+      headless: process.env.CI === "true",
     });
 
     // Prepare extra HTTP headers for E2E test authentication bypass
@@ -28,7 +28,7 @@ export class CustomWorld extends World {
     // Add E2E bypass header if secret is configured
     const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
     if (e2eBypassSecret) {
-      extraHTTPHeaders['x-e2e-auth-bypass'] = e2eBypassSecret;
+      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
     }
 
     this.context = await this.browser.newContext({

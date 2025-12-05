@@ -5,12 +5,14 @@ This document outlines procedures for rolling back database migrations, particul
 ## Voucher System Tables
 
 The voucher system adds the following tables:
+
 - `Voucher` - Stores voucher codes and their configurations
 - `VoucherRedemption` - Tracks which users have redeemed which vouchers
 
 ### Rollback Procedure
 
 **Prerequisites:**
+
 - Database backup before rollback
 - Access to Prisma CLI
 - Production database connection string
@@ -50,6 +52,7 @@ DROP TYPE IF EXISTS "VoucherStatus";
 **Step 4: Update Prisma Schema**
 
 Remove the voucher-related models from `prisma/schema.prisma`:
+
 - `Voucher` model
 - `VoucherRedemption` model
 - `VoucherType` enum

@@ -1,57 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { CheckCircle2, AlertCircle, Info, Loader2 } from "lucide-react"
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertCircle, CheckCircle2, Info, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 export function ComponentDemo() {
-  const [progress, setProgress] = useState(65)
-  const [switchValue, setSwitchValue] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [progress, setProgress] = useState(65);
+  const [switchValue, setSwitchValue] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleProgressDemo = () => {
-    setProgress(0)
+    setProgress(0);
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
-          clearInterval(interval)
-          return 100
+          clearInterval(interval);
+          return 100;
         }
-        return prev + 10
-      })
-    }, 200)
-  }
+        return prev + 10;
+      });
+    }, 200);
+  };
 
   const handleLoadingDemo = () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
-  }
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 2000);
+  };
 
   return (
     <section className="py-16 sm:py-24">
@@ -224,8 +224,8 @@ export function ComponentDemo() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Click the button below to test the dialog overlay transparency.
-                    The overlay should be semi-transparent (80% black).
+                    Click the button below to test the dialog overlay transparency. The overlay
+                    should be semi-transparent (80% black).
                   </p>
 
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -236,14 +236,14 @@ export function ComponentDemo() {
                       <DialogHeader>
                         <DialogTitle>Dialog Example</DialogTitle>
                         <DialogDescription>
-                          This dialog tests the overlay transparency.
-                          The background should be darkened with 80% opacity.
+                          This dialog tests the overlay transparency. The background should be
+                          darkened with 80% opacity.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="py-4">
                         <p className="text-sm text-muted-foreground">
-                          If you can clearly see the content behind this dialog,
-                          the overlay transparency might not be working correctly.
+                          If you can clearly see the content behind this dialog, the overlay
+                          transparency might not be working correctly.
                         </p>
                       </div>
                       <DialogFooter>
@@ -264,5 +264,5 @@ export function ComponentDemo() {
         </div>
       </div>
     </section>
-  )
+  );
 }

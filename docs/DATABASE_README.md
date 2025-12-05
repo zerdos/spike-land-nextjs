@@ -160,6 +160,7 @@ Before deploying database changes to production:
 - [ ] Team notified
 
 Deploy with:
+
 ```bash
 npm run db:migrate:deploy
 ```
@@ -219,34 +220,34 @@ npm run db:migrate -- --name add_app_indexes
 ### Basic Queries
 
 ```typescript
-import prisma from '@/lib/prisma'
+import prisma from "@/lib/prisma";
 
 // Find many
-const users = await prisma.user.findMany()
+const users = await prisma.user.findMany();
 
 // Find unique
 const user = await prisma.user.findUnique({
-  where: { email: 'user@example.com' }
-})
+  where: { email: "user@example.com" },
+});
 
 // Create
 const newUser = await prisma.user.create({
   data: {
-    email: 'new@example.com',
-    name: 'New User'
-  }
-})
+    email: "new@example.com",
+    name: "New User",
+  },
+});
 
 // Update
 const updated = await prisma.user.update({
   where: { id: userId },
-  data: { name: 'Updated Name' }
-})
+  data: { name: "Updated Name" },
+});
 
 // Delete
 await prisma.user.delete({
-  where: { id: userId }
-})
+  where: { id: userId },
+});
 ```
 
 ### Relations and Includes
@@ -255,19 +256,19 @@ await prisma.user.delete({
 // Create with relations
 const app = await prisma.app.create({
   data: {
-    name: 'My App',
+    name: "My App",
     userId: user.id,
     requirements: {
       create: [
-        { description: 'Feature 1', priority: 'HIGH' }
-      ]
-    }
+        { description: "Feature 1", priority: "HIGH" },
+      ],
+    },
   },
   include: {
     requirements: true,
-    monetizationModels: true
-  }
-})
+    monetizationModels: true,
+  },
+});
 
 // Query with relations
 const appWithDetails = await prisma.app.findUnique({
@@ -275,13 +276,13 @@ const appWithDetails = await prisma.app.findUnique({
   include: {
     user: true,
     requirements: {
-      where: { status: 'PENDING' },
-      orderBy: { priority: 'desc' }
+      where: { status: "PENDING" },
+      orderBy: { priority: "desc" },
     },
     forks: true,
-    parentApp: true
-  }
-})
+    parentApp: true,
+  },
+});
 ```
 
 ### Advanced Queries
@@ -290,36 +291,36 @@ const appWithDetails = await prisma.app.findUnique({
 // Filtering and sorting
 const apps = await prisma.app.findMany({
   where: {
-    status: 'ACTIVE',
+    status: "ACTIVE",
     userId: currentUserId,
     requirements: {
       some: {
-        priority: 'HIGH',
-        status: 'PENDING'
-      }
-    }
+        priority: "HIGH",
+        status: "PENDING",
+      },
+    },
   },
   orderBy: [
-    { createdAt: 'desc' }
+    { createdAt: "desc" },
   ],
   take: 10,
-  skip: 0
-})
+  skip: 0,
+});
 
 // Aggregations
 const stats = await prisma.app.aggregate({
-  where: { status: 'ACTIVE' },
+  where: { status: "ACTIVE" },
   _count: true,
   _avg: {
     // Average of some numeric field
-  }
-})
+  },
+});
 
 // Transactions
 const result = await prisma.$transaction([
   prisma.app.create({ data: appData }),
-  prisma.requirement.create({ data: reqData })
-])
+  prisma.requirement.create({ data: reqData }),
+]);
 ```
 
 ## Monitoring and Maintenance
@@ -336,16 +337,19 @@ Monitor these metrics in production:
 ### Routine Maintenance
 
 **Weekly:**
+
 - Run `VACUUM ANALYZE` on database
 - Review slow query logs
 - Check disk space
 
 **Monthly:**
+
 - Review and test backups
 - Analyze query patterns
 - Update statistics
 
 **Quarterly:**
+
 - Review and optimize indexes
 - Clean up old data (if applicable)
 - Performance audit
@@ -445,29 +449,32 @@ npm run db:migrate -- --name sync_schema
 6. **Enable query logging** in development
 
 Example optimization:
+
 ```typescript
 // Bad: Returns all fields
-const users = await prisma.user.findMany()
+const users = await prisma.user.findMany();
 
 // Good: Only returns needed fields
 const users = await prisma.user.findMany({
   select: {
     id: true,
     name: true,
-    email: true
-  }
-})
+    email: true,
+  },
+});
 ```
 
 ## Additional Resources
 
 ### Official Documentation
+
 - **Prisma Docs**: https://www.prisma.io/docs
 - **Prisma Schema Reference**: https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference
 - **PostgreSQL Docs**: https://www.postgresql.org/docs
 - **NextAuth + Prisma**: https://next-auth.js.org/adapters/prisma
 
 ### Spike Land Specific
+
 - [DATABASE_QUICK_START.md](./DATABASE_QUICK_START.md) - Quick setup
 - [DATABASE_SETUP.md](./DATABASE_SETUP.md) - Complete setup guide
 - [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) - Migration workflows

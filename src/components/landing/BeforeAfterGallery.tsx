@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider"
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
 interface GalleryItem {
-  id: string
-  title: string
-  description: string
-  category: "portrait" | "landscape" | "product" | "architecture"
-  originalUrl: string
-  enhancedUrl: string
-  width?: number
-  height?: number
+  id: string;
+  title: string;
+  description: string;
+  category: "portrait" | "landscape" | "product" | "architecture";
+  originalUrl: string;
+  enhancedUrl: string;
+  width?: number;
+  height?: number;
 }
 
 // Sample gallery items with placeholder images
@@ -78,7 +78,7 @@ const galleryItems: GalleryItem[] = [
     width: 16,
     height: 9,
   },
-]
+];
 
 const categories = [
   { value: "all", label: "All" },
@@ -86,14 +86,14 @@ const categories = [
   { value: "landscape", label: "Landscape" },
   { value: "product", label: "Product" },
   { value: "architecture", label: "Architecture" },
-]
+];
 
 export function BeforeAfterGallery() {
-  const [activeCategory, setActiveCategory] = useState("all")
+  const [activeCategory, setActiveCategory] = useState("all");
 
   const filteredItems = activeCategory === "all"
     ? galleryItems
-    : galleryItems.filter(item => item.category === activeCategory)
+    : galleryItems.filter(item => item.category === activeCategory);
 
   return (
     <section id="gallery" className="py-16 sm:py-24">
@@ -103,12 +103,16 @@ export function BeforeAfterGallery() {
             See the Difference
           </h2>
           <p className="text-lg text-muted-foreground">
-            Drag the slider to compare original and enhanced images.
-            Our AI delivers stunning results across all image types.
+            Drag the slider to compare original and enhanced images. Our AI delivers stunning
+            results across all image types.
           </p>
         </div>
 
-        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mx-auto max-w-6xl">
+        <Tabs
+          value={activeCategory}
+          onValueChange={setActiveCategory}
+          className="mx-auto max-w-6xl"
+        >
           <TabsList className="mx-auto mb-8 flex w-fit">
             {categories.map(category => (
               <TabsTrigger key={category.value} value={category.value}>
@@ -142,5 +146,5 @@ export function BeforeAfterGallery() {
         </Tabs>
       </div>
     </section>
-  )
+  );
 }

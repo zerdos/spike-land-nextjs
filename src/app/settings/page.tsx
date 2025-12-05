@@ -1,15 +1,8 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,17 +11,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useState } from "react";
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession()
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [pushNotifications, setPushNotifications] = useState(false)
-  const [publicProfile, setPublicProfile] = useState(false)
-  const [showActivity, setShowActivity] = useState(true)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [displayName, setDisplayName] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
+  const { data: session, status } = useSession();
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(false);
+  const [publicProfile, setPublicProfile] = useState(false);
+  const [showActivity, setShowActivity] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   if (status === "loading") {
     return (
@@ -37,33 +37,33 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (status === "unauthenticated") {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
-  const user = session?.user
+  const user = session?.user;
   const userInitials = user?.name
     ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "U"
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+    : "U";
 
   const handleSaveProfile = async () => {
-    setIsSaving(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsSaving(false)
-  }
+    setIsSaving(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsSaving(false);
+  };
 
   const handleDeleteAccount = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setDeleteDialogOpen(false)
-  }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setDeleteDialogOpen(false);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl" data-testid="settings-page">
@@ -240,8 +240,8 @@ export default function SettingsPage() {
                     <DialogHeader>
                       <DialogTitle>Are you absolutely sure?</DialogTitle>
                       <DialogDescription>
-                        This action cannot be undone. This will permanently delete your
-                        account and remove all your data from our servers.
+                        This action cannot be undone. This will permanently delete your account and
+                        remove all your data from our servers.
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -268,5 +268,5 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

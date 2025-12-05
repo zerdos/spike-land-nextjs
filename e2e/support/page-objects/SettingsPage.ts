@@ -1,22 +1,22 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from "@playwright/test";
 
 export class SettingsPage {
   constructor(private page: Page) {}
 
   async navigate() {
-    await this.page.goto('/settings');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.goto("/settings");
+    await this.page.waitForLoadState("networkidle");
   }
 
   async getPageTitle() {
-    return this.page.getByRole('heading', { name: /Settings/i });
+    return this.page.getByRole("heading", { name: /Settings/i });
   }
 
-  async getTab(tabName: 'Profile' | 'Preferences' | 'Privacy') {
-    return this.page.getByRole('tab', { name: tabName });
+  async getTab(tabName: "Profile" | "Preferences" | "Privacy") {
+    return this.page.getByRole("tab", { name: tabName });
   }
 
-  async clickTab(tabName: 'Profile' | 'Preferences' | 'Privacy') {
+  async clickTab(tabName: "Profile" | "Preferences" | "Privacy") {
     const tab = await this.getTab(tabName);
     await tab.click();
   }
@@ -48,7 +48,7 @@ export class SettingsPage {
   }
 
   async getEditProfileButton() {
-    return this.page.getByRole('button', { name: /Edit Profile/i });
+    return this.page.getByRole("button", { name: /Edit Profile/i });
   }
 
   // Preferences tab
@@ -92,13 +92,13 @@ export class SettingsPage {
     return this.page.locator('[data-testid="profile-visibility-select"]');
   }
 
-  async selectProfileVisibility(visibility: 'Public' | 'Private' | 'Friends Only') {
+  async selectProfileVisibility(visibility: "Public" | "Private" | "Friends Only") {
     const select = await this.getProfileVisibilitySelect();
     await select.selectOption(visibility);
   }
 
   async getDeleteAccountButton() {
-    return this.page.getByRole('button', { name: /Delete Account/i });
+    return this.page.getByRole("button", { name: /Delete Account/i });
   }
 
   async clickDeleteAccount() {
@@ -130,7 +130,7 @@ export class SettingsPage {
 
   // Save settings
   async getSaveButton() {
-    return this.page.getByRole('button', { name: /Save Changes/i });
+    return this.page.getByRole("button", { name: /Save Changes/i });
   }
 
   async clickSave() {
@@ -149,9 +149,9 @@ export class SettingsPage {
   }
 
   async verifyTabsVisible() {
-    await expect(await this.getTab('Profile')).toBeVisible();
-    await expect(await this.getTab('Preferences')).toBeVisible();
-    await expect(await this.getTab('Privacy')).toBeVisible();
+    await expect(await this.getTab("Profile")).toBeVisible();
+    await expect(await this.getTab("Preferences")).toBeVisible();
+    await expect(await this.getTab("Privacy")).toBeVisible();
   }
 
   async verifyProfileTabContent() {

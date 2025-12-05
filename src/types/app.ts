@@ -1,5 +1,5 @@
-export type RequirementPriority = 'high' | 'medium' | 'low';
-export type RequirementStatus = 'pending' | 'in-progress' | 'completed';
+export type RequirementPriority = "high" | "medium" | "low";
+export type RequirementStatus = "pending" | "in-progress" | "completed";
 
 export interface Requirement {
   id: string;

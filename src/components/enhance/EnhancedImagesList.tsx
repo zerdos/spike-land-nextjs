@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import Image from "next/image";
+import Link from "next/link";
 
 interface EnhancedImagesListProps {
   images: (EnhancedImage & {
-    enhancementJobs: ImageEnhancementJob[]
-  })[]
-  onDelete?: (imageId: string) => void
-  deletingImageId?: string | null
+    enhancementJobs: ImageEnhancementJob[];
+  })[];
+  onDelete?: (imageId: string) => void;
+  deletingImageId?: string | null;
 }
 
 export function EnhancedImagesList({
@@ -27,38 +27,41 @@ export function EnhancedImagesList({
           No images uploaded yet. Upload your first image to get started.
         </p>
       </div>
-    )
+    );
   }
 
   const getStatusBadge = (
-    jobs: ImageEnhancementJob[]
-  ): { variant: "default" | "secondary" | "destructive"; text: string } => {
+    jobs: ImageEnhancementJob[],
+  ): { variant: "default" | "secondary" | "destructive"; text: string; } => {
     if (jobs.length === 0) {
-      return { variant: "secondary", text: "Not Enhanced" }
+      return { variant: "secondary", text: "Not Enhanced" };
     }
 
-    const hasCompleted = jobs.some((job) => job.status === "COMPLETED")
-    const hasProcessing = jobs.some((job) => job.status === "PROCESSING")
-    const hasFailed = jobs.every((job) => job.status === "FAILED")
+    const hasCompleted = jobs.some((job) => job.status === "COMPLETED");
+    const hasProcessing = jobs.some((job) => job.status === "PROCESSING");
+    const hasFailed = jobs.every((job) => job.status === "FAILED");
 
     if (hasCompleted) {
-      return { variant: "default", text: `${jobs.filter(j => j.status === "COMPLETED").length} Enhanced` }
+      return {
+        variant: "default",
+        text: `${jobs.filter(j => j.status === "COMPLETED").length} Enhanced`,
+      };
     }
     if (hasProcessing) {
-      return { variant: "secondary", text: "Processing..." }
+      return { variant: "secondary", text: "Processing..." };
     }
     if (hasFailed) {
-      return { variant: "destructive", text: "Failed" }
+      return { variant: "destructive", text: "Failed" };
     }
 
-    return { variant: "secondary", text: "Pending" }
-  }
+    return { variant: "secondary", text: "Pending" };
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {images.map((image) => {
-        const statusBadge = getStatusBadge(image.enhancementJobs)
-        const isDeleting = deletingImageId === image.id
+        const statusBadge = getStatusBadge(image.enhancementJobs);
+        const isDeleting = deletingImageId === image.id;
 
         return (
           <Card key={image.id} className="overflow-hidden">
@@ -85,7 +88,13 @@ export function EnhancedImagesList({
               </div>
 
               <div className="flex gap-2">
-                <Button asChild variant="outline" size="sm" className="flex-1" disabled={isDeleting}>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  disabled={isDeleting}
+                >
                   <Link href={`/enhance/${image.id}`}>
                     {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
                   </Link>
@@ -96,8 +105,8 @@ export function EnhancedImagesList({
                     variant="ghost"
                     size="sm"
                     onClick={(e) => {
-                      e.preventDefault()
-                      onDelete(image.id)
+                      e.preventDefault();
+                      onDelete(image.id);
                     }}
                     disabled={isDeleting}
                   >
@@ -107,8 +116,8 @@ export function EnhancedImagesList({
               </div>
             </CardContent>
           </Card>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

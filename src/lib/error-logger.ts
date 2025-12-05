@@ -13,7 +13,7 @@ export interface ErrorContext {
 
 export interface ErrorLoggerConfig {
   enabled: boolean;
-  environment: 'development' | 'production' | 'test';
+  environment: "development" | "production" | "test";
   sentryDsn?: string;
 }
 
@@ -23,7 +23,7 @@ class ErrorLogger {
   constructor(config?: Partial<ErrorLoggerConfig>) {
     this.config = {
       enabled: true,
-      environment: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+      environment: (process.env.NODE_ENV as "development" | "production" | "test") || "development",
       sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       ...config,
     };
@@ -46,10 +46,10 @@ class ErrorLogger {
       ...context,
     };
 
-    if (this.config.environment === 'development') {
+    if (this.config.environment === "development") {
       // Console logging for development
-      console.error('Error caught by ErrorBoundary:', errorInfo);
-    } else if (this.config.environment === 'production') {
+      console.error("Error caught by ErrorBoundary:", errorInfo);
+    } else if (this.config.environment === "production") {
       // In production, send to error tracking service
       this.sendToErrorTracking(error, errorInfo);
     }
@@ -65,9 +65,9 @@ class ErrorLogger {
     if (this.config.sentryDsn) {
       // Future: Initialize and use Sentry SDK
       // Sentry.captureException(_error, { contexts: { errorInfo } });
-      console.error('[ErrorLogger] Error would be sent to Sentry:', errorInfo);
+      console.error("[ErrorLogger] Error would be sent to Sentry:", errorInfo);
     } else {
-      console.error('[ErrorLogger] Production error:', errorInfo);
+      console.error("[ErrorLogger] Production error:", errorInfo);
     }
   }
 

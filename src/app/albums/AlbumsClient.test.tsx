@@ -1,89 +1,89 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { AlbumsClient } from './AlbumsClient'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AlbumsClient } from "./AlbumsClient";
 
-const mockFetch = vi.fn()
-global.fetch = mockFetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
-describe('AlbumsClient', () => {
+describe("AlbumsClient", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('shows loading state initially', () => {
+  it("shows loading state initially", () => {
     mockFetch.mockImplementation(
-      () => new Promise(() => {})
-    )
+      () => new Promise(() => {}),
+    );
 
-    render(<AlbumsClient />)
+    render(<AlbumsClient />);
 
-    expect(document.querySelector('.animate-spin')).toBeDefined()
-  })
+    expect(document.querySelector(".animate-spin")).toBeDefined();
+  });
 
-  it('shows empty state when no albums', async () => {
+  it("shows empty state when no albums", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ albums: [] }),
-    })
+    });
 
-    render(<AlbumsClient />)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByText('No albums yet')).toBeDefined()
-    })
-  })
+      expect(screen.getByText("No albums yet")).toBeDefined();
+    });
+  });
 
-  it('renders albums when data is loaded', async () => {
+  it("renders albums when data is loaded", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
           albums: [
             {
-              id: 'album_1',
-              name: 'My Album',
-              description: 'Test description',
-              privacy: 'PRIVATE',
+              id: "album_1",
+              name: "My Album",
+              description: "Test description",
+              privacy: "PRIVATE",
               coverImageId: null,
               imageCount: 5,
               previewImages: [],
-              createdAt: '2025-01-01T00:00:00Z',
-              updatedAt: '2025-01-01T00:00:00Z',
+              createdAt: "2025-01-01T00:00:00Z",
+              updatedAt: "2025-01-01T00:00:00Z",
             },
           ],
         }),
-    })
+    });
 
-    render(<AlbumsClient />)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByText('My Album')).toBeDefined()
-      expect(screen.getByText('5 images')).toBeDefined()
-    })
-  })
+      expect(screen.getByText("My Album")).toBeDefined();
+      expect(screen.getByText("5 images")).toBeDefined();
+    });
+  });
 
-  it('opens create album dialog when clicking New Album', async () => {
+  it("opens create album dialog when clicking New Album", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ albums: [] }),
-    })
+    });
 
-    render(<AlbumsClient />)
-
-    await waitFor(() => {
-      expect(screen.getByText('No albums yet')).toBeDefined()
-    })
-
-    const newAlbumButton = screen.getAllByText('New Album')[0] ||
-                           screen.getByText('Create Album')
-    fireEvent.click(newAlbumButton)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByText('Create New Album')).toBeDefined()
-    })
-  })
+      expect(screen.getByText("No albums yet")).toBeDefined();
+    });
 
-  it('creates album when form is submitted', async () => {
+    const newAlbumButton = screen.getAllByText("New Album")[0] ||
+      screen.getByText("Create Album");
+    fireEvent.click(newAlbumButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Create New Album")).toBeDefined();
+    });
+  });
+
+  it("creates album when form is submitted", async () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -93,7 +93,7 @@ describe('AlbumsClient', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            album: { id: 'new_album', name: 'New Album' },
+            album: { id: "new_album", name: "New Album" },
           }),
       })
       .mockResolvedValueOnce({
@@ -102,78 +102,79 @@ describe('AlbumsClient', () => {
           Promise.resolve({
             albums: [
               {
-                id: 'new_album',
-                name: 'New Album',
+                id: "new_album",
+                name: "New Album",
                 description: null,
-                privacy: 'PRIVATE',
+                privacy: "PRIVATE",
                 coverImageId: null,
                 imageCount: 0,
                 previewImages: [],
-                createdAt: '2025-01-01T00:00:00Z',
-                updatedAt: '2025-01-01T00:00:00Z',
+                createdAt: "2025-01-01T00:00:00Z",
+                updatedAt: "2025-01-01T00:00:00Z",
               },
             ],
           }),
-      })
+      });
 
-    render(<AlbumsClient />)
-
-    await waitFor(() => {
-      expect(screen.getByText('No albums yet')).toBeDefined()
-    })
-
-    const createButton = screen.getByText('Create Album')
-    fireEvent.click(createButton)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Album Name')).toBeDefined()
-    })
+      expect(screen.getByText("No albums yet")).toBeDefined();
+    });
 
-    const nameInput = screen.getByLabelText('Album Name')
-    fireEvent.change(nameInput, { target: { value: 'New Album' } })
+    const createButton = screen.getByText("Create Album");
+    fireEvent.click(createButton);
 
-    const submitButton = screen.getAllByText('Create Album').find(
-      (btn) => btn.closest('button[type="button"]') !== null || btn.closest('div[role="dialog"]') !== null
-    )
+    await waitFor(() => {
+      expect(screen.getByLabelText("Album Name")).toBeDefined();
+    });
+
+    const nameInput = screen.getByLabelText("Album Name");
+    fireEvent.change(nameInput, { target: { value: "New Album" } });
+
+    const submitButton = screen.getAllByText("Create Album").find(
+      (btn) =>
+        btn.closest('button[type="button"]') !== null || btn.closest('div[role="dialog"]') !== null,
+    );
     if (submitButton) {
-      fireEvent.click(submitButton)
+      fireEvent.click(submitButton);
     }
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/albums', expect.any(Object))
-    })
-  })
+      expect(mockFetch).toHaveBeenCalledWith("/api/albums", expect.any(Object));
+    });
+  });
 
-  it('shows privacy badge on albums', async () => {
+  it("shows privacy badge on albums", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
           albums: [
             {
-              id: 'album_1',
-              name: 'Public Album',
+              id: "album_1",
+              name: "Public Album",
               description: null,
-              privacy: 'PUBLIC',
+              privacy: "PUBLIC",
               coverImageId: null,
               imageCount: 0,
               previewImages: [],
-              createdAt: '2025-01-01T00:00:00Z',
-              updatedAt: '2025-01-01T00:00:00Z',
+              createdAt: "2025-01-01T00:00:00Z",
+              updatedAt: "2025-01-01T00:00:00Z",
             },
           ],
         }),
-    })
+    });
 
-    render(<AlbumsClient />)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByText('Public')).toBeDefined()
-    })
-  })
+      expect(screen.getByText("Public")).toBeDefined();
+    });
+  });
 
-  it('handles delete album', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+  it("handles delete album", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     mockFetch
       .mockResolvedValueOnce({
@@ -182,15 +183,15 @@ describe('AlbumsClient', () => {
           Promise.resolve({
             albums: [
               {
-                id: 'album_1',
-                name: 'Test Album',
+                id: "album_1",
+                name: "Test Album",
                 description: null,
-                privacy: 'PRIVATE',
+                privacy: "PRIVATE",
                 coverImageId: null,
                 imageCount: 0,
                 previewImages: [],
-                createdAt: '2025-01-01T00:00:00Z',
-                updatedAt: '2025-01-01T00:00:00Z',
+                createdAt: "2025-01-01T00:00:00Z",
+                updatedAt: "2025-01-01T00:00:00Z",
               },
             ],
           }),
@@ -198,23 +199,23 @@ describe('AlbumsClient', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ success: true }),
-      })
+      });
 
-    render(<AlbumsClient />)
+    render(<AlbumsClient />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Album')).toBeDefined()
-    })
+      expect(screen.getByText("Test Album")).toBeDefined();
+    });
 
-    const deleteButton = document.querySelector('button:has(svg.lucide-trash-2)')
+    const deleteButton = document.querySelector("button:has(svg.lucide-trash-2)");
     if (deleteButton) {
-      fireEvent.click(deleteButton)
+      fireEvent.click(deleteButton);
     }
 
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalled()
-    })
+      expect(confirmSpy).toHaveBeenCalled();
+    });
 
-    confirmSpy.mockRestore()
-  })
-})
+    confirmSpy.mockRestore();
+  });
+});

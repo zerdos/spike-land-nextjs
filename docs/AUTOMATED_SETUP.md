@@ -29,6 +29,7 @@ Both must use the **same secret value** for the bypass to work correctly.
 ### Status: ✅ COMPLETED
 
 The `E2E_BYPASS_SECRET` is already configured in GitHub Secrets:
+
 - **Location**: https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions
 - **Added**: October 27, 2025
 - **Status**: Active and functional
@@ -37,11 +38,11 @@ The `E2E_BYPASS_SECRET` is already configured in GitHub Secrets:
 
 ```javascript
 // Navigate to GitHub Secrets page
-await page.goto('https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions');
+await page.goto("https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions");
 
 // Verify E2E_BYPASS_SECRET exists
 const secretExists = await page.locator('code:has-text("E2E_BYPASS_SECRET")').isVisible();
-console.log('E2E_BYPASS_SECRET configured:', secretExists);
+console.log("E2E_BYPASS_SECRET configured:", secretExists);
 ```
 
 ### Manual Setup (If Needed)
@@ -83,10 +84,10 @@ The `E2E_BYPASS_SECRET` must be added to Vercel environment variables for runtim
 
 ```javascript
 // Navigate to Vercel Environment Variables page
-await page.goto('https://vercel.com/dashboard');
-await page.getByRole('link', { name: 'spike-land-nextjs' }).click();
-await page.getByRole('link', { name: 'Settings' }).click();
-await page.getByRole('link', { name: 'Environment Variables' }).click();
+await page.goto("https://vercel.com/dashboard");
+await page.getByRole("link", { name: "spike-land-nextjs" }).click();
+await page.getByRole("link", { name: "Settings" }).click();
+await page.getByRole("link", { name: "Environment Variables" }).click();
 ```
 
 ### Manual Configuration Steps
@@ -149,6 +150,7 @@ gh secret list | grep E2E_BYPASS_SECRET
 ```
 
 Expected output:
+
 ```
 E2E_BYPASS_SECRET  Updated 2025-10-27
 ```
@@ -185,6 +187,7 @@ Expected result: Tests should pass and access protected routes
 ### Problem: E2E tests fail with "Failed to bypass authentication"
 
 **Solution:**
+
 1. Verify GitHub Secret exists: `gh secret list | grep E2E_BYPASS_SECRET`
 2. Verify Vercel Environment Variable is configured for Preview environment
 3. Ensure both secrets use the **exact same value**
@@ -195,6 +198,7 @@ Expected result: Tests should pass and access protected routes
 **Expected Behavior:** This is correct! The bypass should be blocked in production.
 
 **Verification:**
+
 - Check middleware logs: `console.warn('[E2E Bypass]')` should NOT appear in production
 - Production environment check: `NODE_ENV=production` AND `VERCEL_ENV=production`
 
@@ -203,6 +207,7 @@ Expected result: Tests should pass and access protected routes
 **Explanation:** The project has existing non-sensitive environment variables, so new variables default to non-sensitive mode.
 
 **Action:** This is acceptable for E2E_BYPASS_SECRET since:
+
 - It's only configured in non-production environments
 - The value is not displayed after creation
 - Production has additional middleware protection
@@ -211,13 +216,13 @@ Expected result: Tests should pass and access protected routes
 
 ## Environment Variable Behavior Matrix
 
-| NODE_ENV | VERCEL_ENV | E2E Bypass Allowed? | Use Case |
-|----------|------------|---------------------|----------|
-| `production` | `production` | ❌ NO | Production deployment (bypass BLOCKED) |
-| `production` | `preview` | ✅ YES | Preview deployment from PR |
-| `test` | `preview` | ✅ YES | E2E tests in CI against preview |
-| `development` | (undefined) | ✅ YES | Local development |
-| `development` | `production` | ✅ YES | Local dev with prod env var |
+| NODE_ENV      | VERCEL_ENV   | E2E Bypass Allowed? | Use Case                               |
+| ------------- | ------------ | ------------------- | -------------------------------------- |
+| `production`  | `production` | ❌ NO               | Production deployment (bypass BLOCKED) |
+| `production`  | `preview`    | ✅ YES              | Preview deployment from PR             |
+| `test`        | `preview`    | ✅ YES              | E2E tests in CI against preview        |
+| `development` | (undefined)  | ✅ YES              | Local development                      |
+| `development` | `production` | ✅ YES              | Local dev with prod env var            |
 
 ---
 
@@ -237,6 +242,7 @@ When the E2E bypass is successfully used, the middleware logs:
 ```
 
 **Where to find logs:**
+
 - Vercel Dashboard → Project → Logs
 - Filter by: "E2E Bypass" string
 - Check for unexpected production bypass attempts (should be zero)

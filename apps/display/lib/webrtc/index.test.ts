@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import * as webrtcUtils from './utils';
-import * as webrtcConfig from './config';
-import * as webrtcIndex from './index';
+import { describe, expect, it } from "vitest";
+import * as webrtcConfig from "./config";
+import * as webrtcIndex from "./index";
+import * as webrtcUtils from "./utils";
 
-describe('lib/webrtc/index barrel exports', () => {
-  it('should export all utils functions', () => {
+describe("lib/webrtc/index barrel exports", () => {
+  it("should export all utils functions", () => {
     // Verify that utils exports are re-exported
     expect(webrtcIndex.getUserMediaStream).toBeDefined();
     expect(webrtcIndex.getDisplayMediaStream).toBeDefined();
@@ -22,7 +22,7 @@ describe('lib/webrtc/index barrel exports', () => {
     expect(webrtcIndex.getStreamMetadata).toBe(webrtcUtils.getStreamMetadata);
   });
 
-  it('should export all config functions', () => {
+  it("should export all config functions", () => {
     // Verify that config exports are re-exported
     expect(webrtcIndex.getPeerServerConfig).toBeDefined();
     expect(webrtcIndex.createPeerConfig).toBeDefined();

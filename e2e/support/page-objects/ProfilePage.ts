@@ -1,15 +1,15 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from "@playwright/test";
 
 export class ProfilePage {
   constructor(private page: Page) {}
 
   async navigate() {
-    await this.page.goto('/profile');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.goto("/profile");
+    await this.page.waitForLoadState("networkidle");
   }
 
   async getPageTitle() {
-    return this.page.getByRole('heading', { name: /Profile/i });
+    return this.page.getByRole("heading", { name: /Profile/i });
   }
 
   async getUserName() {
@@ -53,7 +53,7 @@ export class ProfilePage {
   async verifyAvatarImage(imageUrl: string) {
     const img = await this.getAvatarImage();
     await expect(img).toBeVisible();
-    const src = await img.getAttribute('src');
+    const src = await img.getAttribute("src");
     expect(src).toContain(imageUrl);
   }
 

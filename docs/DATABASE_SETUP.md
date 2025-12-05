@@ -47,6 +47,7 @@ docker ps | grep spike-land-postgres
 ### Option 2: Local PostgreSQL Installation
 
 #### macOS (using Homebrew)
+
 ```bash
 brew install postgresql@16
 brew services start postgresql@16
@@ -56,6 +57,7 @@ createdb spike_land
 ```
 
 #### Ubuntu/Debian
+
 ```bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
@@ -68,11 +70,13 @@ sudo -u postgres createdb spike_land
 ### Configure Environment Variables
 
 1. Copy the example environment file:
+
 ```bash
 cp .env.example .env
 ```
 
 2. Update the `DATABASE_URL` in `.env`:
+
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/spike_land?schema=public
 ```
@@ -82,25 +86,30 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/spike_land?schema=pub
 ### Recommended Cloud Providers
 
 #### 1. Supabase (Recommended for Next.js)
+
 - Free tier: 500MB database, connection pooling included
 - Setup: https://supabase.com/
 - Connection string format:
+
 ```env
 DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true
 DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 
 #### 2. Railway
+
 - Easy deployment, PostgreSQL included
 - Setup: https://railway.app/
 - Connection string provided in Railway dashboard
 
 #### 3. Neon
+
 - Serverless PostgreSQL with branching
 - Free tier: 3GB storage
 - Setup: https://neon.tech/
 
 #### 4. AWS RDS
+
 - Production-grade, scalable
 - More complex setup, higher cost
 
@@ -117,6 +126,7 @@ DIRECT_URL=postgresql://user:password@host:5432/db
 ```
 
 Update `prisma/schema.prisma`:
+
 ```prisma
 datasource db {
   provider  = "postgresql"
@@ -130,6 +140,7 @@ datasource db {
 ### Core Models
 
 #### User Model (NextAuth Integration)
+
 ```prisma
 model User {
   id            String    @id @default(cuid())
@@ -147,6 +158,7 @@ model User {
 ```
 
 #### App Model (Core Platform Entity)
+
 ```prisma
 model App {
   id          String    @id @default(cuid())
@@ -168,12 +180,14 @@ model App {
 ```
 
 **App Statuses:**
+
 - `DRAFT`: App under development
 - `ACTIVE`: Published and accessible
 - `ARCHIVED`: No longer active but preserved
 - `DELETED`: Soft deleted
 
 #### Requirement Model
+
 ```prisma
 model Requirement {
   id          String              @id @default(cuid())
@@ -193,6 +207,7 @@ model Requirement {
 **Status Types:** PENDING, IN_PROGRESS, COMPLETED, REJECTED
 
 #### MonetizationModel
+
 ```prisma
 model MonetizationModel {
   id                   String                @id @default(cuid())
@@ -220,6 +235,7 @@ model MonetizationModel {
 ### Database Indexes
 
 Performance-critical indexes included:
+
 - User email (unique)
 - App userId, forkedFrom, status, domain
 - Requirement appId, status, priority
@@ -292,6 +308,7 @@ npx prisma migrate reset
 #### Automated Daily Backups
 
 **PostgreSQL pg_dump (Recommended)**
+
 ```bash
 #!/bin/bash
 # backup-database.sh
@@ -319,6 +336,7 @@ echo "Backup completed: spike_land_$TIMESTAMP.backup.gz"
 ```
 
 **Setup Cron Job (Daily at 2 AM)**
+
 ```bash
 crontab -e
 
@@ -329,15 +347,18 @@ crontab -e
 #### Cloud Provider Backups
 
 **Supabase:**
+
 - Automatic daily backups (Pro plan)
 - Point-in-time recovery (PITR)
 - Dashboard: Database > Backups
 
 **Railway:**
+
 - Automatic daily snapshots
 - Manual snapshots via dashboard
 
 **AWS RDS:**
+
 - Automated backups with retention period
 - Manual snapshots before major changes
 
@@ -373,6 +394,7 @@ psql -U postgres -d spike_land -c "SELECT COUNT(*) FROM users;"
 #### Point-in-Time Recovery (PITR)
 
 For AWS RDS or Supabase Pro:
+
 ```bash
 # Use cloud provider dashboard or CLI
 # Example for AWS RDS:
@@ -387,6 +409,7 @@ aws rds restore-db-instance-to-point-in-time \
 **CRITICAL: Untested backups don't exist!**
 
 Monthly backup test procedure:
+
 ```bash
 # 1. Create test database
 createdb spike_land_test
@@ -431,6 +454,7 @@ dropdb spike_land_test
 ### Monitoring Queries
 
 **Active Connections**
+
 ```sql
 SELECT
   count(*) as total_connections,
@@ -442,6 +466,7 @@ GROUP BY state, application_name;
 ```
 
 **Slow Queries (requires pg_stat_statements)**
+
 ```sql
 SELECT
   query,
@@ -456,6 +481,7 @@ LIMIT 10;
 ```
 
 **Table Sizes**
+
 ```sql
 SELECT
   schemaname,
@@ -467,6 +493,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ```
 
 **Index Usage**
+
 ```sql
 SELECT
   schemaname,
@@ -481,6 +508,7 @@ ORDER BY idx_scan ASC;
 ```
 
 **Unused Indexes (candidates for removal)**
+
 ```sql
 SELECT
   schemaname || '.' || tablename AS table,
@@ -500,6 +528,7 @@ ORDER BY pg_relation_size(i.indexrelid) DESC;
 #### Weekly Maintenance (Automated)
 
 **VACUUM and ANALYZE**
+
 ```sql
 -- Run weekly to reclaim space and update statistics
 VACUUM ANALYZE;
@@ -510,6 +539,7 @@ VACUUM ANALYZE apps;
 ```
 
 **Automate with cron:**
+
 ```bash
 # Add to crontab (Sundays at 3 AM)
 0 3 * * 0 psql -U postgres -d spike_land -c "VACUUM ANALYZE;" >> /var/log/postgres-maintenance.log 2>&1
@@ -552,6 +582,7 @@ VACUUM ANALYZE apps;
 **Prisma Connection Pool (Application Layer)**
 
 Update `prisma/schema.prisma`:
+
 ```prisma
 datasource db {
   provider = "postgresql"
@@ -565,17 +596,20 @@ generator client {
 ```
 
 **Environment Configuration:**
+
 ```env
 # Connection pool settings (append to DATABASE_URL)
 DATABASE_URL=postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
 ```
 
 **Recommended Pool Sizes:**
+
 - Development: 5-10 connections
 - Production (single instance): 10-20 connections
 - Production (serverless): Use external pooler (PgBouncer)
 
 **PgBouncer Configuration (Production)**
+
 ```ini
 [databases]
 spike_land = host=localhost port=5432 dbname=spike_land
@@ -602,42 +636,46 @@ server_idle_timeout = 600
 **Use case:** Scale read-heavy workloads
 
 **Setup for AWS RDS:**
+
 1. Create read replica via AWS Console or CLI
 2. Update application to use read replica for queries
 3. Keep write operations on primary
 
 **Prisma configuration for read replicas:**
+
 ```typescript
 // src/lib/prisma.ts
-import { PrismaClient } from '@/generated/prisma'
+import { PrismaClient } from "@/generated/prisma";
 
 // Write operations (primary)
 export const prismaWrite = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL
-    }
-  }
-})
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 // Read operations (replica)
 export const prismaRead = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_READ_URL
-    }
-  }
-})
+      url: process.env.DATABASE_READ_URL,
+    },
+  },
+});
 ```
 
 ### Failover Procedures
 
 **Automatic Failover (Cloud Providers):**
+
 - AWS RDS: Multi-AZ deployment (automatic)
 - Supabase: Built-in failover
 - Railway: Platform handles failover
 
 **Manual Failover (Self-hosted):**
+
 ```bash
 # 1. Promote replica to primary
 pg_ctl promote -D /var/lib/postgresql/data
@@ -736,6 +774,7 @@ systemctl restart spike-land-app
 ### Connection Issues
 
 **Error: "Can't reach database server"**
+
 ```bash
 # Check if PostgreSQL is running
 sudo systemctl status postgresql
@@ -748,6 +787,7 @@ echo $DATABASE_URL
 ```
 
 **Error: "Too many connections"**
+
 ```bash
 # Check current connections
 psql -U postgres -c "SELECT count(*) FROM pg_stat_activity;"
@@ -760,6 +800,7 @@ max_connections = 200
 ### Migration Issues
 
 **Error: "Migration failed"**
+
 ```bash
 # Mark migration as rolled back
 npx prisma migrate resolve --rolled-back <migration_name>
@@ -769,6 +810,7 @@ npx prisma migrate dev
 ```
 
 **Error: "Database schema is not in sync"**
+
 ```bash
 # Reset migration state (dev only!)
 npx prisma migrate reset
@@ -780,6 +822,7 @@ npx prisma migrate dev --name sync_schema
 ### Performance Issues
 
 **Slow Queries**
+
 ```sql
 -- Enable query logging
 ALTER DATABASE spike_land SET log_min_duration_statement = 100;
@@ -789,6 +832,7 @@ tail -f /var/log/postgresql/postgresql-*.log | grep "duration:"
 ```
 
 **High CPU Usage**
+
 ```sql
 -- Find expensive queries
 SELECT pid, now() - query_start as duration, query

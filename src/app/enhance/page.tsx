@@ -1,32 +1,32 @@
-import { redirect } from "next/navigation"
-import { headers } from "next/headers"
-import { auth } from "@/auth"
-import prisma from "@/lib/prisma"
-import { EnhancePageClient } from "./EnhancePageClient"
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { EnhancePageClient } from "./EnhancePageClient";
 
 export default async function EnhancePage() {
   // Check for E2E bypass (middleware already validated the header)
-  const headersList = await headers()
-  const e2eBypassHeader = headersList.get('x-e2e-auth-bypass')
+  const headersList = await headers();
+  const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
   const isE2EBypass = e2eBypassHeader && process.env.E2E_BYPASS_SECRET &&
     e2eBypassHeader === process.env.E2E_BYPASS_SECRET &&
-    process.env.NODE_ENV !== 'production'
+    process.env.NODE_ENV !== "production";
 
-  let session
+  let session;
   try {
-    session = await auth()
+    session = await auth();
   } catch {
     // Auth may fail with invalid JWT in E2E tests
-    session = null
+    session = null;
   }
 
   // For E2E bypass, allow access with empty images
   if (isE2EBypass && !session) {
-    return <EnhancePageClient images={[]} />
+    return <EnhancePageClient images={[]} />;
   }
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   // Fetch user's images
@@ -44,7 +44,7 @@ export default async function EnhancePage() {
     orderBy: {
       createdAt: "desc",
     },
-  })
+  });
 
-  return <EnhancePageClient images={images} />
+  return <EnhancePageClient images={images} />;
 }

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { RequirementsManager } from './requirements-manager';
-import type { Requirement } from '@/types/app';
+import type { Requirement } from "@/types/app";
+import { useState } from "react";
+import { RequirementsManager } from "./requirements-manager";
 
 /**
  * Example usage of the RequirementsManager component
@@ -13,19 +13,19 @@ import type { Requirement } from '@/types/app';
 export function RequirementsManagerExample() {
   const [requirements, setRequirements] = useState<Requirement[]>([
     {
-      id: 'req-1',
-      text: 'User authentication with OAuth',
-      priority: 'high',
-      status: 'in-progress',
+      id: "req-1",
+      text: "User authentication with OAuth",
+      priority: "high",
+      status: "in-progress",
       order: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
-      id: 'req-2',
-      text: 'Responsive dashboard layout',
-      priority: 'medium',
-      status: 'pending',
+      id: "req-2",
+      text: "Responsive dashboard layout",
+      priority: "medium",
+      status: "pending",
       order: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -43,31 +43,37 @@ export function RequirementsManagerExample() {
       />
 
       {/* With Maximum Requirements Limit */}
-      {/*
+      {
+        /*
       <RequirementsManager
         requirements={requirements}
         onRequirementsChange={setRequirements}
         maxRequirements={10}
       />
-      */}
+      */
+      }
 
       {/* Without Reordering */}
-      {/*
+      {
+        /*
       <RequirementsManager
         requirements={requirements}
         onRequirementsChange={setRequirements}
         allowReorder={false}
       />
-      */}
+      */
+      }
 
       {/* Read-only Mode */}
-      {/*
+      {
+        /*
       <RequirementsManager
         requirements={requirements}
         onRequirementsChange={setRequirements}
         readonly
       />
-      */}
+      */
+      }
     </div>
   );
 }
@@ -77,14 +83,14 @@ export function RequirementsManagerExample() {
  */
 export function RequirementsManagerWithPersistence() {
   const [requirements, setRequirements] = useState<Requirement[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const saved = localStorage.getItem('app-requirements');
+    if (typeof window === "undefined") return [];
+    const saved = localStorage.getItem("app-requirements");
     return saved ? JSON.parse(saved) : [];
   });
 
   const handleChange = (newRequirements: Requirement[]) => {
     setRequirements(newRequirements);
-    localStorage.setItem('app-requirements', JSON.stringify(newRequirements));
+    localStorage.setItem("app-requirements", JSON.stringify(newRequirements));
   };
 
   return (
@@ -107,13 +113,13 @@ export function RequirementsManagerWithAPI() {
 
     try {
       // Sync with API
-      await fetch('/api/apps/requirements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/apps/requirements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newRequirements),
       });
     } catch (error) {
-      console.error('Failed to save requirements:', error);
+      console.error("Failed to save requirements:", error);
       // Handle error (e.g., revert changes, show notification)
     }
   };

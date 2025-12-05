@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,59 +8,59 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { PackageCard } from './PackageCard'
-import { VoucherInput } from './VoucherInput'
-import { TOKEN_PACKAGES, CURRENCY } from '@/lib/stripe/client'
-import { Coins } from 'lucide-react'
+} from "@/components/ui/dialog";
+import { CURRENCY, TOKEN_PACKAGES } from "@/lib/stripe/client";
+import { Coins } from "lucide-react";
+import { useState } from "react";
+import { PackageCard } from "./PackageCard";
+import { VoucherInput } from "./VoucherInput";
 
 interface PurchaseModalProps {
-  trigger?: React.ReactNode
-  onPurchaseComplete?: () => void
+  trigger?: React.ReactNode;
+  onPurchaseComplete?: () => void;
 }
 
 export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProps) {
-  const [open, setOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState<string | null>(null)
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const packages = Object.entries(TOKEN_PACKAGES).map(([id, pkg]) => ({
     id,
     ...pkg,
-    popular: id === 'basic'
-  }))
+    popular: id === "basic",
+  }));
 
   const handlePurchase = async (packageId: string) => {
-    setIsLoading(packageId)
+    setIsLoading(packageId);
 
     try {
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageId,
-          mode: 'payment',
-        })
-      })
+          mode: "payment",
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.url) {
-        window.location.href = data.url
+        window.location.href = data.url;
       } else {
-        console.error('No checkout URL returned')
+        console.error("No checkout URL returned");
       }
     } catch (error) {
-      console.error('Checkout error:', error)
+      console.error("Checkout error:", error);
     } finally {
-      setIsLoading(null)
+      setIsLoading(null);
     }
-  }
+  };
 
   const handleVoucherRedeemed = () => {
-    setOpen(false)
-    onPurchaseComplete?.()
-  }
+    setOpen(false);
+    onPurchaseComplete?.();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -112,5 +112,5 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

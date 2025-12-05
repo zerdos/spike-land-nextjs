@@ -28,7 +28,9 @@
     "db:seed-vouchers": "tsx prisma/seed-vouchers.ts",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
-    "db:format": "prisma format"
+    "db:format": "prisma format",
+    "dprint": "./node_modules/.bin/dprint fmt",
+    "prepare": "husky"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
@@ -98,9 +100,11 @@
     "@vitest/ui": "^4.0.15",
     "autoprefixer": "^10.4.22",
     "dotenv": "^17.2.3",
+    "dprint": "^0.50.2",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.7",
     "happy-dom": "^20.0.11",
+    "husky": "^9.1.7",
     "jsdom": "^27.2.0",
     "postcss": "^8.5.6",
     "prisma": "^7.1.0",

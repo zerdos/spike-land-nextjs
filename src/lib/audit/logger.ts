@@ -6,37 +6,37 @@
  * should be logged for accountability and security auditing.
  */
 
-import prisma from "@/lib/prisma"
-import { AuditAction, Prisma } from "@prisma/client"
+import prisma from "@/lib/prisma";
+import { AuditAction, Prisma } from "@prisma/client";
 
-type JsonValue = Prisma.JsonValue
+type JsonValue = Prisma.JsonValue;
 
 /**
  * Metadata for role change actions
  */
 export interface RoleChangeMetadata {
-  oldRole: string
-  newRole: string
-  reason?: string
+  oldRole: string;
+  newRole: string;
+  reason?: string;
 }
 
 /**
  * Metadata for token adjustment actions
  */
 export interface TokenAdjustmentMetadata {
-  amount: number
-  balanceAfter: number
-  reason?: string
+  amount: number;
+  balanceAfter: number;
+  reason?: string;
 }
 
 /**
  * Metadata for voucher operations
  */
 export interface VoucherMetadata {
-  voucherCode: string
-  voucherType?: string
-  value?: number
-  reason?: string
+  voucherCode: string;
+  voucherType?: string;
+  value?: number;
+  reason?: string;
 }
 
 /**
@@ -46,17 +46,17 @@ export type AuditMetadata =
   | RoleChangeMetadata
   | TokenAdjustmentMetadata
   | VoucherMetadata
-  | Record<string, unknown>
+  | Record<string, unknown>;
 
 /**
  * Options for creating an audit log entry
  */
 export interface AuditLogOptions {
-  userId: string // Who performed the action
-  action: AuditAction
-  targetId?: string // Target user/resource ID
-  metadata?: AuditMetadata
-  ipAddress?: string
+  userId: string; // Who performed the action
+  action: AuditAction;
+  targetId?: string; // Target user/resource ID
+  metadata?: AuditMetadata;
+  ipAddress?: string;
 }
 
 /**
@@ -76,10 +76,10 @@ export class AuditLogger {
           metadata: options.metadata as object,
           ipAddress: options.ipAddress,
         },
-      })
+      });
     } catch (error) {
       // Log but don't throw - audit logging shouldn't break main operations
-      console.error("Failed to create audit log:", error)
+      console.error("Failed to create audit log:", error);
     }
   }
 
@@ -91,7 +91,7 @@ export class AuditLogger {
     targetUserId: string,
     oldRole: string,
     newRole: string,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<void> {
     await this.log({
       userId: adminId,
@@ -102,7 +102,7 @@ export class AuditLogger {
         newRole,
       } as RoleChangeMetadata,
       ipAddress,
-    })
+    });
   }
 
   /**
@@ -114,7 +114,7 @@ export class AuditLogger {
     amount: number,
     balanceAfter: number,
     reason?: string,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<void> {
     await this.log({
       userId: adminId,
@@ -126,7 +126,7 @@ export class AuditLogger {
         reason: reason || "Manual admin adjustment",
       } as TokenAdjustmentMetadata,
       ipAddress,
-    })
+    });
   }
 
   /**
@@ -138,7 +138,7 @@ export class AuditLogger {
     voucherCode: string,
     voucherType: string,
     value: number,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<void> {
     await this.log({
       userId: adminId,
@@ -150,7 +150,7 @@ export class AuditLogger {
         value,
       } as VoucherMetadata,
       ipAddress,
-    })
+    });
   }
 
   /**
@@ -161,7 +161,7 @@ export class AuditLogger {
     voucherId: string,
     voucherCode: string,
     changes: Record<string, unknown>,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<void> {
     await this.log({
       userId: adminId,
@@ -172,7 +172,7 @@ export class AuditLogger {
         ...changes,
       },
       ipAddress,
-    })
+    });
   }
 
   /**
@@ -182,7 +182,7 @@ export class AuditLogger {
     adminId: string,
     voucherId: string,
     voucherCode: string,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<void> {
     await this.log({
       userId: adminId,
@@ -192,7 +192,7 @@ export class AuditLogger {
         voucherCode,
       } as VoucherMetadata,
       ipAddress,
-    })
+    });
   }
 
   /**
@@ -200,14 +200,14 @@ export class AuditLogger {
    */
   static async getLogsByUser(
     userId: string,
-    limit = 50
+    limit = 50,
   ): Promise<
     Array<{
-      id: string
-      action: AuditAction
-      targetId: string | null
-      metadata: JsonValue
-      createdAt: Date
+      id: string;
+      action: AuditAction;
+      targetId: string | null;
+      metadata: JsonValue;
+      createdAt: Date;
     }>
   > {
     return prisma.auditLog.findMany({
@@ -221,7 +221,7 @@ export class AuditLogger {
         metadata: true,
         createdAt: true,
       },
-    })
+    });
   }
 
   /**
@@ -229,15 +229,15 @@ export class AuditLogger {
    */
   static async getLogsByTarget(
     targetId: string,
-    limit = 50
+    limit = 50,
   ): Promise<
     Array<{
-      id: string
-      userId: string
-      action: AuditAction
-      metadata: JsonValue
-      createdAt: Date
-      user: { email: string | null; name: string | null }
+      id: string;
+      userId: string;
+      action: AuditAction;
+      metadata: JsonValue;
+      createdAt: Date;
+      user: { email: string | null; name: string | null; };
     }>
   > {
     return prisma.auditLog.findMany({
@@ -257,23 +257,23 @@ export class AuditLogger {
           },
         },
       },
-    })
+    });
   }
 
   /**
    * Get recent audit logs for admin dashboard
    */
   static async getRecentLogs(
-    limit = 100
+    limit = 100,
   ): Promise<
     Array<{
-      id: string
-      userId: string
-      action: AuditAction
-      targetId: string | null
-      metadata: JsonValue
-      createdAt: Date
-      user: { email: string | null; name: string | null }
+      id: string;
+      userId: string;
+      action: AuditAction;
+      targetId: string | null;
+      metadata: JsonValue;
+      createdAt: Date;
+      user: { email: string | null; name: string | null; };
     }>
   > {
     return prisma.auditLog.findMany({
@@ -293,6 +293,6 @@ export class AuditLogger {
           },
         },
       },
-    })
+    });
   }
 }

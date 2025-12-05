@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { processAndUploadImage } from '@/lib/storage/upload-handler'
-import prisma from '@/lib/prisma'
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Ensure user exists in database (upsert for JWT-based auth)
@@ -31,24 +31,24 @@ export async function POST(request: NextRequest) {
         email: session.user.email,
         image: session.user.image,
       },
-    })
+    });
 
     // Convert File to Buffer
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     // Process and upload image
     const result = await processAndUploadImage({
       buffer,
       originalFilename: file.name,
       userId: session.user.id,
-    })
+    });
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error || 'Failed to upload image' },
-        { status: 500 }
-      )
+        { error: result.error || "Failed to upload image" },
+        { status: 500 },
+      );
     }
 
     // Create database record
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         originalFormat: result.format,
         isPublic: false,
       },
-    })
+    });
 
     return NextResponse.json({
       success: true,
@@ -77,12 +77,12 @@ export async function POST(request: NextRequest) {
         size: enhancedImage.originalSizeBytes,
         format: enhancedImage.originalFormat,
       },
-    })
+    });
   } catch (error) {
-    console.error('Error in upload API:', error)
+    console.error("Error in upload API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Upload failed' },
-      { status: 500 }
-    )
+      { error: error instanceof Error ? error.message : "Upload failed" },
+      { status: 500 },
+    );
   }
 }
