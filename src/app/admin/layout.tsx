@@ -35,6 +35,7 @@ export default async function AdminLayout({
     { href: "/admin/system", label: "System Health", icon: "🏥" },
     { href: "/admin/vouchers", label: "Vouchers", icon: "🎟️" },
     { href: "/admin/users", label: "User Management", icon: "👥" },
+    { href: "/admin/photos", label: "Photos", icon: "📸" },
   ];
 
   return (
