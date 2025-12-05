@@ -80,9 +80,9 @@ export async function GET(request: NextRequest) {
           role: user.role,
           tokenBalance: user.tokenBalance?.balance || 0,
           imageCount: user.enhancedImages.length,
-          authProviders: user.accounts.map((a) => a.provider),
+          authProviders: user.accounts.map((a: { provider: string }) => a.provider),
           createdAt: user.createdAt.toISOString(),
-          recentTransactions: user.tokenTransactions.map((t) => ({
+          recentTransactions: user.tokenTransactions.map((t: { id: string; type: string; amount: number; createdAt: Date }) => ({
             id: t.id,
             type: t.type,
             amount: t.amount,
@@ -118,8 +118,18 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     })
 
+    type UserListItem = {
+      id: string
+      email: string | null
+      name: string | null
+      image: string | null
+      role: UserRole
+      tokenBalance: { balance: number } | null
+      _count: { enhancedImages: number }
+      createdAt: Date
+    }
     return NextResponse.json({
-      users: users.map((u) => ({
+      users: users.map((u: UserListItem) => ({
         id: u.id,
         email: u.email,
         name: u.name,

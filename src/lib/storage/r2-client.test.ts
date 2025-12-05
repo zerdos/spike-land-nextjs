@@ -4,13 +4,17 @@ import { isR2Configured, deleteFromR2 } from './r2-client'
 // Create shared mock function
 const mockSend = vi.fn()
 
-// Mock AWS SDK
+// Mock AWS SDK - Vitest 4: Use class constructors for mock classes
 vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn(() => ({
-    send: mockSend,
-  })),
-  DeleteObjectCommand: vi.fn((params) => params),
-  GetObjectCommand: vi.fn((params) => params),
+  S3Client: class MockS3Client {
+    send = mockSend
+  },
+  DeleteObjectCommand: class MockDeleteObjectCommand {
+    constructor(public params: unknown) {}
+  },
+  GetObjectCommand: class MockGetObjectCommand {
+    constructor(public params: unknown) {}
+  },
 }))
 
 vi.mock('@aws-sdk/lib-storage', () => ({

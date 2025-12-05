@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { usePeer } from './usePeer';
 import type { PeerConfig } from '@/types/webrtc';
 
-// Mock PeerJS with vi.hoisted
+// Mock PeerJS with vi.hoisted - Vitest 4: Use class constructor
 const { mockPeerInstance, MockPeer } = vi.hoisted(() => {
   const mockPeerInstance = {
     on: vi.fn(),
@@ -15,7 +15,37 @@ const { mockPeerInstance, MockPeer } = vi.hoisted(() => {
     destroyed: false,
   };
 
-  const MockPeer = vi.fn(() => mockPeerInstance);
+  // Track constructor behavior for error injection
+  let throwOnConstruct: Error | string | null = null;
+
+  // Vitest 4: Use class constructor instead of vi.fn()
+  class MockPeer {
+    static mock = { calls: [] as unknown[][] };
+    on = mockPeerInstance.on;
+    off = mockPeerInstance.off;
+    destroy = mockPeerInstance.destroy;
+    disconnect = mockPeerInstance.disconnect;
+    reconnect = mockPeerInstance.reconnect;
+    get disconnected() { return mockPeerInstance.disconnected; }
+    get destroyed() { return mockPeerInstance.destroyed; }
+
+    // Static methods for test control
+    static setThrowOnConstruct(error: Error | string | null) {
+      throwOnConstruct = error;
+    }
+    static clearMock() {
+      MockPeer.mock.calls = [];
+    }
+
+    constructor(...args: unknown[]) {
+      if (throwOnConstruct) {
+        const error = throwOnConstruct;
+        throwOnConstruct = null; // Reset for next construction
+        throw error;
+      }
+      MockPeer.mock.calls.push(args);
+    }
+  }
 
   return { mockPeerInstance, MockPeer };
 });
@@ -38,6 +68,7 @@ vi.mock('@apps/display/lib/webrtc/utils', () => ({
 describe('usePeer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    MockPeer.clearMock(); // Clear mock calls tracking
     mockPeerInstance.disconnected = false;
     mockPeerInstance.destroyed = false;
     mockPeerInstance.on = vi.fn();
@@ -59,12 +90,10 @@ describe('usePeer', () => {
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalledWith(
-        'generated-peer-id',
-        expect.objectContaining({
-          debug: expect.any(Number),
-        })
-      );
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      const [peerId, options] = MockPeer.mock.calls[0];
+      expect(peerId).toBe('generated-peer-id');
+      expect(options).toMatchObject({ debug: expect.any(Number) });
     });
   });
 
@@ -73,12 +102,10 @@ describe('usePeer', () => {
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalledWith(
-        'custom-id',
-        expect.objectContaining({
-          debug: expect.any(Number),
-        })
-      );
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      const [peerId, options] = MockPeer.mock.calls[0];
+      expect(peerId).toBe('custom-id');
+      expect(options).toMatchObject({ debug: expect.any(Number) });
     });
   });
 
@@ -95,15 +122,14 @@ describe('usePeer', () => {
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          host: 'peer.example.com',
-          port: 9000,
-          path: '/peer',
-          secure: true,
-        })
-      );
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      const [, options] = MockPeer.mock.calls[0];
+      expect(options).toMatchObject({
+        host: 'peer.example.com',
+        port: 9000,
+        path: '/peer',
+        secure: true,
+      });
     });
   });
 
@@ -120,7 +146,9 @@ describe('usePeer', () => {
     await waitFor(() => {
       expect(result.current.status).toBe('connected');
       expect(result.current.peerId).toBe('opened-peer-id');
-      expect(result.current.peer).toBe(mockPeerInstance);
+      // Peer is an instance of MockPeer with the same methods
+      expect(result.current.peer).toBeTruthy();
+      expect(result.current.peer?.on).toBeDefined();
       expect(result.current.error).toBeNull();
     });
   });
@@ -260,9 +288,8 @@ describe('usePeer', () => {
   });
 
   it('should handle initialization error', async () => {
-    MockPeer.mockImplementationOnce(() => {
-      throw new Error('Initialization failed');
-    });
+    // Use static method to set error for next constructor call
+    MockPeer.setThrowOnConstruct(new Error('Initialization failed'));
 
     const config: PeerConfig = { role: 'host' };
     const { result } = renderHook(() => usePeer(config));
@@ -340,7 +367,7 @@ describe('usePeer', () => {
     // Set peer to not be disconnected (already connected or in another state)
     mockPeerInstance.disconnected = false;
     mockPeerInstance.reconnect.mockClear();
-    MockPeer.mockClear();
+    MockPeer.clearMock();
 
     result.current.reconnect();
 
@@ -356,7 +383,7 @@ describe('usePeer', () => {
 
     // Wait for initial peer creation
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalled();
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
     });
 
     // Simulate peer opening
@@ -435,12 +462,9 @@ describe('usePeer', () => {
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          debug: 2,
-        })
-      );
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      const [, options] = MockPeer.mock.calls[0];
+      expect(options).toMatchObject({ debug: 2 });
     });
 
     process.env.NODE_ENV = originalEnv;
@@ -454,21 +478,17 @@ describe('usePeer', () => {
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
-      expect(MockPeer).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          debug: 0,
-        })
-      );
+      expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
+      const [, options] = MockPeer.mock.calls[0];
+      expect(options).toMatchObject({ debug: 0 });
     });
 
     process.env.NODE_ENV = originalEnv;
   });
 
   it('should handle non-Error exception in initialization catch block', async () => {
-    MockPeer.mockImplementationOnce(() => {
-      throw 'String error thrown';
-    });
+    // Use static method to throw string error on next constructor call
+    MockPeer.setThrowOnConstruct('String error thrown');
 
     const config: PeerConfig = { role: 'host' };
     const { result } = renderHook(() => usePeer(config));

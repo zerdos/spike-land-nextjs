@@ -28,11 +28,11 @@ interface EnhanceClientProps {
 export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   const [image, setImage] = useState(initialImage)
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
-    initialImage.enhancementJobs.find((job) => job.status === "COMPLETED")?.id || null
+    initialImage.enhancementJobs.find((job: ImageEnhancementJob) => job.status === "COMPLETED")?.id || null
   )
   const [activeJobId, setActiveJobId] = useState<string | null>(
     initialImage.enhancementJobs.find(
-      (job) => job.status === "PROCESSING" || job.status === "PENDING"
+      (job: ImageEnhancementJob) => job.status === "PROCESSING" || job.status === "PENDING"
     )?.id || null
   )
 
@@ -54,15 +54,16 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   }, [searchParams, refetchBalance])
 
   // Poll for active job completion
+  type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[] }
   useJobPolling({
     jobId: activeJobId,
     onComplete: useCallback(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (completedJob: any) => {
         // Update the image with the completed job
-        setImage((prev) => ({
+        setImage((prev: ImageWithJobs) => ({
           ...prev,
-          enhancementJobs: prev.enhancementJobs.map((job) =>
+          enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
             job.id === completedJob.id
               ? { ...job, ...completedJob, status: "COMPLETED" as const }
               : job
@@ -124,7 +125,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         processingCompletedAt: null,
       }
 
-      setImage((prev) => ({
+      setImage((prev: ImageWithJobs) => ({
         ...prev,
         enhancementJobs: [newJob, ...prev.enhancementJobs],
       }))
@@ -138,11 +139,11 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   }
 
   const selectedVersion = selectedVersionId
-    ? image.enhancementJobs.find((job) => job.id === selectedVersionId)
+    ? image.enhancementJobs.find((job: ImageEnhancementJob) => job.id === selectedVersionId)
     : null
 
   const completedVersions = image.enhancementJobs.filter(
-    (job) => job.status === "COMPLETED" && job.enhancedUrl
+    (job: ImageEnhancementJob) => job.status === "COMPLETED" && job.enhancedUrl
   )
 
   return (
@@ -222,7 +223,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             </CardHeader>
             <CardContent>
               <VersionGrid
-                versions={image.enhancementJobs.map((job) => ({
+                versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
                   id: job.id,
                   tier: job.tier,
                   enhancedUrl: job.enhancedUrl || "",
@@ -244,7 +245,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             onEnhance={handleEnhance}
             currentBalance={balance}
             isProcessing={activeJobId !== null}
-            completedVersions={completedVersions.map((job) => ({
+            completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
               tier: job.tier,
               url: job.enhancedUrl || "",
             }))}

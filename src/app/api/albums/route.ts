@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { nanoid } from 'nanoid'
+import { AlbumPrivacy } from '@prisma/client'
 
 // GET /api/albums - List user's albums
 export async function GET() {
@@ -35,15 +36,26 @@ export async function GET() {
       },
     })
 
+    type AlbumItem = {
+      id: string
+      name: string
+      description: string | null
+      privacy: AlbumPrivacy
+      coverImageId: string | null
+      _count: { albumImages: number }
+      albumImages: { image: { id: string; originalUrl: string; name: string } }[]
+      createdAt: Date
+      updatedAt: Date
+    }
     return NextResponse.json({
-      albums: albums.map((album) => ({
+      albums: albums.map((album: AlbumItem) => ({
         id: album.id,
         name: album.name,
         description: album.description,
         privacy: album.privacy,
         coverImageId: album.coverImageId,
         imageCount: album._count.albumImages,
-        previewImages: album.albumImages.map((ai) => ({
+        previewImages: album.albumImages.map((ai: { image: { id: string; originalUrl: string; name: string } }) => ({
           id: ai.image.id,
           url: ai.image.originalUrl,
           name: ai.image.name,

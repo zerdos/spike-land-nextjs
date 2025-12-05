@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { deleteFromR2 } from '@/lib/storage/r2-client'
+import { EnhancementTier, JobStatus } from '@prisma/client'
 
 export async function GET(
   _request: NextRequest,
@@ -51,7 +52,20 @@ export async function GET(
         viewCount: image.viewCount,
         createdAt: image.createdAt,
         updatedAt: image.updatedAt,
-        jobs: image.enhancementJobs.map(job => ({
+        jobs: image.enhancementJobs.map((job: {
+          id: string
+          tier: EnhancementTier
+          status: JobStatus
+          tokensCost: number
+          enhancedUrl: string | null
+          enhancedWidth: number | null
+          enhancedHeight: number | null
+          enhancedSizeBytes: number | null
+          errorMessage: string | null
+          createdAt: Date
+          processingStartedAt: Date | null
+          processingCompletedAt: Date | null
+        }) => ({
           id: job.id,
           tier: job.tier,
           status: job.status,

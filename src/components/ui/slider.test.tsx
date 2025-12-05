@@ -4,12 +4,12 @@ import { Slider } from './slider';
 
 describe('Slider Component', () => {
   beforeEach(() => {
-    // Mock ResizeObserver
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }));
+    // Mock ResizeObserver - Vitest 4: Use class constructor
+    global.ResizeObserver = class MockResizeObserver {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    } as unknown as typeof ResizeObserver;
   });
 
   it('should render slider with default props', () => {

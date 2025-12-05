@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('@prisma/client', () => {
-  const mockPrismaClient = vi.fn().mockImplementation(() => ({
-    $connect: vi.fn(),
-    $disconnect: vi.fn(),
-  }))
+// Vitest 4: Use class constructor for PrismaClient mock
+vi.mock('@prisma/client', () => ({
+  PrismaClient: class MockPrismaClient {
+    $connect = vi.fn()
+    $disconnect = vi.fn()
+  },
+}))
 
-  return {
-    PrismaClient: mockPrismaClient,
-  }
-})
+// Mock PrismaPg adapter
+vi.mock('@prisma/adapter-pg', () => ({
+  PrismaPg: class MockPrismaPg {
+    constructor() {}
+  },
+}))
 
 describe('Prisma Client Singleton', () => {
   beforeEach(() => {

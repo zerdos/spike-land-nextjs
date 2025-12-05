@@ -98,10 +98,11 @@ export async function GET() {
     })
 
     // Calculate failure rates
+    type FailureByTier = { tier: EnhancementTier; status: JobStatus; _count: number }
     const tierStats = Object.values(EnhancementTier).map((tier) => {
-      const tierJobs = failuresByTier.filter((f) => f.tier === tier)
-      const total = tierJobs.reduce((sum, j) => sum + j._count, 0)
-      const failed = tierJobs.find((j) => j.status === JobStatus.FAILED)?._count || 0
+      const tierJobs = failuresByTier.filter((f: FailureByTier) => f.tier === tier)
+      const total = tierJobs.reduce((sum: number, j: FailureByTier) => sum + j._count, 0)
+      const failed = tierJobs.find((j: FailureByTier) => j.status === JobStatus.FAILED)?._count || 0
       return {
         tier,
         total,
@@ -111,21 +112,21 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      hourlyJobs: hourlyJobs.map((row) => ({
+      hourlyJobs: hourlyJobs.map((row: { hour: Date; count: bigint }) => ({
         hour: row.hour.toISOString(),
         count: Number(row.count),
       })),
-      avgProcessingTime: avgProcessingTime.map((row) => ({
+      avgProcessingTime: avgProcessingTime.map((row: { tier: string; avg_seconds: number }) => ({
         tier: row.tier,
         seconds: Math.round(row.avg_seconds),
       })),
       tierStats,
       queueDepth,
-      jobsByStatus: jobsByStatus.map((item) => ({
+      jobsByStatus: jobsByStatus.map((item: { status: JobStatus; _count: number }) => ({
         status: item.status,
         count: item._count,
       })),
-      recentFailures: recentFailures.map((job) => ({
+      recentFailures: recentFailures.map((job: { id: string; tier: EnhancementTier; errorMessage: string | null; createdAt: Date }) => ({
         id: job.id,
         tier: job.tier,
         error: job.errorMessage,

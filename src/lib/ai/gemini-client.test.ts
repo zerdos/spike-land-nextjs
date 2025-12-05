@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   analyzeImage,
   isGeminiConfigured,
@@ -7,12 +7,26 @@ import {
   type EnhanceImageParams,
 } from './gemini-client'
 
-// Mock the @google/genai module
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn(),
-}))
+// Mock the @google/genai module - Vitest 4: Use vi.hoisted for configurable mock
+const { MockGoogleGenAI, mockGenerateContentStream } = vi.hoisted(() => {
+  const mockGenerateContentStream = vi.fn();
 
-import { GoogleGenAI } from '@google/genai'
+  class MockGoogleGenAI {
+    static mock = { instances: [] as MockGoogleGenAI[] };
+    models = {
+      generateContentStream: mockGenerateContentStream
+    };
+    constructor() {
+      MockGoogleGenAI.mock.instances.push(this);
+    }
+  }
+
+  return { MockGoogleGenAI, mockGenerateContentStream };
+});
+
+vi.mock('@google/genai', () => ({
+  GoogleGenAI: MockGoogleGenAI,
+}))
 
 describe('gemini-client', () => {
   describe('analyzeImage', () => {
@@ -71,18 +85,11 @@ describe('gemini-client', () => {
   })
 
   describe('enhanceImageWithGemini', () => {
-    const mockGenerateContentStream = vi.fn()
-    const mockGeminiClient = {
-      models: {
-        generateContentStream: mockGenerateContentStream,
-      },
-    }
-
     beforeEach(() => {
       vi.clearAllMocks()
+      MockGoogleGenAI.mock.instances = []
       resetGeminiClient()
       process.env.GEMINI_API_KEY = 'test-api-key'
-      ;(GoogleGenAI as Mock).mockImplementation(() => mockGeminiClient)
     })
 
     afterEach(() => {
@@ -368,6 +375,7 @@ describe('gemini-client', () => {
   describe('resetGeminiClient', () => {
     beforeEach(() => {
       vi.clearAllMocks()
+      MockGoogleGenAI.mock.instances = []
     })
 
     afterEach(() => {
@@ -377,15 +385,11 @@ describe('gemini-client', () => {
 
     it('should allow reinitializing client after reset', () => {
       process.env.GEMINI_API_KEY = 'first-key'
-      ;(GoogleGenAI as Mock).mockImplementation(({ apiKey }) => ({
-        apiKey,
-        models: { generateContentStream: vi.fn() },
-      }))
 
       resetGeminiClient()
 
-      // First call should create new client
-      expect(GoogleGenAI).not.toHaveBeenCalled()
+      // After reset, no new instances should be created until next call
+      expect(MockGoogleGenAI.mock.instances.length).toBe(0)
     })
   })
 })

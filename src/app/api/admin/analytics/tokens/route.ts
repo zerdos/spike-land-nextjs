@@ -94,11 +94,11 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      tokensByType: tokensByType.map((item) => ({
+      tokensByType: tokensByType.map((item: { type: TokenTransactionType; _sum: { amount: number | null } }) => ({
         type: item.type,
         total: Number(item._sum.amount || 0),
       })),
-      dailyTokens: dailyTokens.map((row) => ({
+      dailyTokens: dailyTokens.map((row: { date: Date; purchased: bigint; spent: bigint }) => ({
         date: row.date.toISOString().split("T")[0],
         purchased: Number(row.purchased),
         spent: Number(row.spent),
@@ -111,7 +111,7 @@ export async function GET() {
         average: Math.round(avgTokensPerUser),
       },
       regenerationCount,
-      packageSales: packageSales.map((pkg) => ({
+      packageSales: packageSales.map((pkg: { name: string; tokens: number; stripePayments: { id: string }[] }) => ({
         name: pkg.name,
         tokens: pkg.tokens,
         sales: pkg.stripePayments.length,
