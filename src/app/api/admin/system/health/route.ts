@@ -67,7 +67,7 @@ export async function GET() {
     let failuresByTier: Array<{ tier: EnhancementTier; status: JobStatus; _count: number; }> =
       [];
     try {
-      failuresByTier = await prisma.imageEnhancementJob.groupBy({
+      const result = await prisma.imageEnhancementJob.groupBy({
         by: ["tier", "status"],
         where: {
           createdAt: {
@@ -76,6 +76,11 @@ export async function GET() {
         },
         _count: true,
       });
+      failuresByTier = result as Array<{
+        tier: EnhancementTier;
+        status: JobStatus;
+        _count: number;
+      }>;
     } catch (error) {
       console.error("Failed to fetch failures by tier:", error);
       failuresByTier = [];
@@ -99,10 +104,11 @@ export async function GET() {
     // Job status breakdown
     let jobsByStatus: Array<{ status: JobStatus; _count: number; }> = [];
     try {
-      jobsByStatus = await prisma.imageEnhancementJob.groupBy({
+      const result = await prisma.imageEnhancementJob.groupBy({
         by: ["status"],
         _count: true,
       });
+      jobsByStatus = result as Array<{ status: JobStatus; _count: number; }>;
     } catch (error) {
       console.error("Failed to fetch jobs by status:", error);
       jobsByStatus = [];

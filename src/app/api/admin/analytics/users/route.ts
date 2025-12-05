@@ -45,12 +45,13 @@ export async function GET() {
     // Auth provider breakdown
     let authProviders: Array<{ provider: string; _count: { userId: number; }; }> = [];
     try {
-      authProviders = await prisma.account.groupBy({
+      const result = await prisma.account.groupBy({
         by: ["provider"],
         _count: {
           userId: true,
         },
       });
+      authProviders = result as Array<{ provider: string; _count: { userId: number; }; }>;
     } catch (error) {
       console.error("Failed to fetch auth providers:", error);
       // Return empty array on error

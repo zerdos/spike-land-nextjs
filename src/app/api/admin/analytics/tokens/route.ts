@@ -28,12 +28,16 @@ export async function GET() {
     let tokensByType: Array<{ type: TokenTransactionType; _sum: { amount: number | null; }; }> =
       [];
     try {
-      tokensByType = await prisma.tokenTransaction.groupBy({
+      const result = await prisma.tokenTransaction.groupBy({
         by: ["type"],
         _sum: {
           amount: true,
         },
       });
+      tokensByType = result as Array<{
+        type: TokenTransactionType;
+        _sum: { amount: number | null; };
+      }>;
     } catch (error) {
       console.error("Failed to fetch tokens by type:", error);
       tokensByType = [];
@@ -60,9 +64,9 @@ export async function GET() {
     }
 
     // Revenue from token purchases
-    let revenue = { _sum: { amountUSD: null } };
+    let revenue: { _sum: { amountUSD: number | null; }; } = { _sum: { amountUSD: null } };
     try {
-      revenue = await prisma.stripePayment.aggregate({
+      const result = await prisma.stripePayment.aggregate({
         where: {
           status: "SUCCEEDED",
         },
@@ -70,15 +74,21 @@ export async function GET() {
           amountUSD: true,
         },
       });
+      revenue = {
+        _sum: {
+          amountUSD: result._sum.amountUSD ? Number(result._sum.amountUSD) : null,
+        },
+      };
     } catch (error) {
       console.error("Failed to fetch revenue:", error);
       revenue = { _sum: { amountUSD: null } };
     }
 
     // Average tokens per user
-    let tokenBalances = { _avg: { balance: null }, _sum: { balance: null } };
+    let tokenBalances: { _avg: { balance: number | null; }; _sum: { balance: number | null; }; } =
+      { _avg: { balance: null }, _sum: { balance: null } };
     try {
-      tokenBalances = await prisma.userTokenBalance.aggregate({
+      const result = await prisma.userTokenBalance.aggregate({
         _avg: {
           balance: true,
         },
@@ -86,6 +96,10 @@ export async function GET() {
           balance: true,
         },
       });
+      tokenBalances = {
+        _avg: { balance: result._avg.balance },
+        _sum: { balance: result._sum.balance },
+      };
     } catch (error) {
       console.error("Failed to fetch token balances:", error);
       tokenBalances = { _avg: { balance: null }, _sum: { balance: null } };
