@@ -121,7 +121,10 @@ describe("Token Economics API", () => {
     expect(data.revenue.total).toBe(0);
     expect(data.circulation.total).toBe(0);
     expect(data.regenerationCount).toBe(0);
-    expect(console.error).toHaveBeenCalledWith("Failed to fetch tokens by type:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch tokens by type:",
+      expect.any(Error),
+    );
     expect(console.error).toHaveBeenCalledWith("Failed to fetch daily tokens:", expect.any(Error));
   });
 

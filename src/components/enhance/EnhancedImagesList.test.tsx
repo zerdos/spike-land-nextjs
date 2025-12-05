@@ -53,7 +53,7 @@ vi.mock("./AddToAlbumModal", () => ({
       : null,
 }));
 
-const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[] } = {
+const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; } = {
   id: "test-image-1",
   name: "Test Image",
   originalUrl: "https://example.com/original.jpg",

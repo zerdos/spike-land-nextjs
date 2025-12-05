@@ -20,7 +20,20 @@ interface EnhancedImagesListProps {
 
 function formatDate(date: Date | string): string {
   const d = new Date(date);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   // Use UTC methods to ensure consistent output across timezones
   return `${months[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
@@ -54,7 +67,7 @@ export function EnhancedImagesList({
 
   const getStatusBadge = (
     jobs: ImageEnhancementJob[],
-  ): { variant: "default" | "secondary" | "destructive"; text: string } => {
+  ): { variant: "default" | "secondary" | "destructive"; text: string; } => {
     if (jobs.length === 0) {
       return { variant: "secondary", text: "Not Enhanced" };
     }
@@ -133,8 +146,7 @@ export function EnhancedImagesList({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      handleOpenAddToAlbum(image.id, image.name ?? undefined)}
+                    onClick={() => handleOpenAddToAlbum(image.id, image.name ?? undefined)}
                     disabled={isDeleting}
                     title="Add to Album"
                     aria-label="Add to Album"
