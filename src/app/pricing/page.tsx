@@ -138,8 +138,8 @@ export default function PricingPage() {
                           variant={badge.variant}
                           className={cn(
                             "text-xs",
-                            badge.label === "Best Value"
-                              && "bg-green-500 hover:bg-green-600 text-white",
+                            badge.label === "Best Value" &&
+                              "bg-green-500 hover:bg-green-600 text-white",
                           )}
                         >
                           {badge.label}
@@ -303,9 +303,9 @@ export default function PricingPage() {
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-2">Which pack should I choose?</h3>
               <p className="text-muted-foreground">
-                If you're just getting started, the <strong>Starter Pack</strong> is perfect for
-                trying out the service. For regular use, the <strong>Pro Pack</strong>{" "}
-                offers great value. Power users should consider the{" "}
+                If you're just getting started, the <strong>Starter Pack</strong>{" "}
+                is perfect for trying out the service. For regular use, the{" "}
+                <strong>Pro Pack</strong> offers great value. Power users should consider the{" "}
                 <strong>Power Pack</strong> for maximum savings.
               </p>
             </CardContent>
@@ -314,8 +314,8 @@ export default function PricingPage() {
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-2">Can I get a refund?</h3>
               <p className="text-muted-foreground">
-                If an enhancement fails, your tokens are automatically refunded. For purchase-related
-                refunds, please contact our support team within 7 days of purchase.
+                If an enhancement fails, your tokens are automatically refunded. For
+                purchase-related refunds, please contact our support team within 7 days of purchase.
               </p>
             </CardContent>
           </Card>

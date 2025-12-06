@@ -16,7 +16,7 @@ describe("SettingsSkeleton", () => {
 
   it("renders card structure", () => {
     const { container } = render(<SettingsSkeleton />);
-    const card = container.querySelector('[class*="rounded-xl"]');
+    const card = container.querySelector('[class*="rounded-2xl"]');
     expect(card).toBeInTheDocument();
   });
 

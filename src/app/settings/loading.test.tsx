@@ -22,7 +22,7 @@ describe("SettingsLoading", () => {
 
   it("renders card structure", () => {
     const { container } = render(<SettingsLoading />);
-    const card = container.querySelector('[class*="rounded-xl"]');
+    const card = container.querySelector('[class*="rounded-2xl"]');
     expect(card).toBeInTheDocument();
   });
 });

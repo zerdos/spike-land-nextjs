@@ -1,0 +1,2 @@
+-- Add CANCELLED to JobStatus enum
+ALTER TYPE "JobStatus" ADD VALUE IF NOT EXISTS 'CANCELLED';

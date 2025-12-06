@@ -198,7 +198,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           throw new Error(error.error || "Failed to delete job");
         }
         return jobId;
-      })
+      }),
     );
 
     const deletedIds = results

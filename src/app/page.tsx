@@ -34,15 +34,20 @@ export default function Home() {
       <FAQ />
 
       {/* Final CTA Section */}
-      <section className="bg-primary py-16 text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold">Ready to Transform Your Images?</h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
+      <section className="bg-gradient-primary py-20 text-primary-foreground relative overflow-hidden">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Ready to Transform Your Images?</h2>
+          <p className="mx-auto mb-10 max-w-2xl text-lg opacity-95 leading-relaxed">
             Join thousands of creators using AI to enhance their photos. Get started for free with
             your first enhancement on us.
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Button asChild size="lg" variant="secondary" className="text-base">
+          <div className="flex flex-col gap-5 sm:flex-row sm:justify-center">
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="text-base font-semibold shadow-xl"
+            >
               <Link href="/enhance">
                 <Rocket className="mr-2 h-5 w-5" />
                 Start Enhancing Free
@@ -53,7 +58,7 @@ export default function Home() {
               asChild
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+              className="border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50 font-semibold backdrop-blur-sm"
             >
               <Link href="/pricing">
                 <Sparkles className="mr-2 h-5 w-5" />
@@ -62,6 +67,9 @@ export default function Home() {
             </Button>
           </div>
         </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 h-64 w-64 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-64 w-64 bg-white/5 rounded-full blur-3xl" />
       </section>
     </div>
   );

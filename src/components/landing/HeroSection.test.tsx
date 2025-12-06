@@ -43,7 +43,7 @@ describe("HeroSection Component", () => {
   it("should have gradient background class", () => {
     const { container } = render(<HeroSection />);
     const section = container.querySelector("section");
-    expect(section).toHaveClass("bg-gradient-to-br");
+    expect(section).toHaveClass("bg-gradient-hero");
   });
 
   it("should have decorative background elements", () => {

@@ -88,7 +88,7 @@ describe("FeatureShowcase Component", () => {
 
   it("should have hover transition on cards", () => {
     const { container } = render(<FeatureShowcase />);
-    const cards = container.querySelectorAll(".hover\\:shadow-md");
+    const cards = container.querySelectorAll(".hover\\:scale-\\[1\\.02\\]");
     expect(cards.length).toBe(8);
   });
 });

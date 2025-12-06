@@ -22,7 +22,7 @@ describe("MyAppsLoading", () => {
 
   it("renders card structure", () => {
     const { container } = render(<MyAppsLoading />);
-    const card = container.querySelector('[class*="rounded-xl"]');
+    const card = container.querySelector('[class*="rounded-2xl"]');
     expect(card).toBeInTheDocument();
   });
 
