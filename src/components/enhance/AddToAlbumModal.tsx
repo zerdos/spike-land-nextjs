@@ -126,42 +126,45 @@ export function AddToAlbumModal({
         </DialogHeader>
 
         <div className="py-4">
-          {isFetching ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : albums.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground mb-4">
-                You don&apos;t have any albums yet
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/albums">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Album
-                </Link>
-              </Button>
-            </div>
-          ) : (
-            <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an album" />
-              </SelectTrigger>
-              <SelectContent>
-                {albums.map((album) => (
-                  <SelectItem key={album.id} value={album.id}>
-                    <span className="flex items-center gap-2">
-                      {album.name}
-                      <span className="text-xs text-muted-foreground">
-                        ({album.imageCount}{" "}
-                        {album.imageCount === 1 ? "image" : "images"})
+          {isFetching
+            ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )
+            : albums.length === 0
+            ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground mb-4">
+                  You don&apos;t have any albums yet
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/albums">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Album
+                  </Link>
+                </Button>
+              </div>
+            )
+            : (
+              <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an album" />
+                </SelectTrigger>
+                <SelectContent>
+                  {albums.map((album) => (
+                    <SelectItem key={album.id} value={album.id}>
+                      <span className="flex items-center gap-2">
+                        {album.name}
+                        <span className="text-xs text-muted-foreground">
+                          ({album.imageCount} {album.imageCount === 1 ? "image" : "images"})
+                        </span>
                       </span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
         </div>
 
         <DialogFooter>

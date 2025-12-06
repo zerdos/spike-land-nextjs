@@ -182,7 +182,7 @@ Then("I should see the album selection dropdown", async function(this: CustomWor
 
 Then("I should see a success toast notification", async function(this: CustomWorld) {
   // Look for the toast container/message
-  const toast = this.page.getByText(/added to/i).or(this.page.locator('[data-sonner-toast]'));
+  const toast = this.page.getByText(/added to/i).or(this.page.locator("[data-sonner-toast]"));
   await expect(toast.first()).toBeVisible({ timeout: 5000 });
 });
 
@@ -203,7 +203,7 @@ Then("I should see a link to create an album", async function(this: CustomWorld)
 
 Then("I should see an info toast about image already in album", async function(this: CustomWorld) {
   const toast = this.page.getByText(/already in this album/i).or(
-    this.page.locator('[data-sonner-toast]'),
+    this.page.locator("[data-sonner-toast]"),
   );
   await expect(toast.first()).toBeVisible({ timeout: 5000 });
 });
