@@ -65,14 +65,15 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="voucher-code">Have a voucher code?</Label>
-        <div className="flex gap-2">
+        <Label htmlFor="voucher-code" className="text-white/80">Voucher Code</Label>
+        <div className="flex gap-3">
           <Input
             id="voucher-code"
             placeholder="Enter code"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             disabled={isLoading}
+            className="flex-1"
           />
           <Button
             onClick={handleRedeem}
@@ -85,7 +86,12 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
       </div>
 
       {result && (
-        <Alert variant={result.success ? "default" : "destructive"}>
+        <Alert
+          variant={result.success ? "default" : "destructive"}
+          className={result.success
+            ? "bg-green-500/10 border-green-500/30 text-green-400"
+            : "bg-red-500/10 border-red-500/30 text-red-400"}
+        >
           {result.success ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>

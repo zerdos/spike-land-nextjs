@@ -41,12 +41,12 @@ export function TokenDisplay({
   const balanceDisplay = (
     <div
       className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
+        "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
         isCriticalBalance
-          ? "bg-destructive/10 text-destructive"
+          ? "bg-red-500/20 text-red-400 border border-red-500/30"
           : isLowBalance
-          ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-500"
-          : "bg-muted",
+          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+          : "bg-white/10 text-white border border-white/10",
       )}
       data-testid="token-balance-display"
     >

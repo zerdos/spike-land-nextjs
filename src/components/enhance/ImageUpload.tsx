@@ -56,23 +56,23 @@ export function ImageUpload() {
   }, [router]);
 
   return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <div className="rounded-full bg-primary/10 p-4 mb-4">
+    <Card className="border-dashed border-white/20 bg-white/5">
+      <CardContent className="flex flex-col items-center justify-center py-16">
+        <div className="rounded-full bg-gradient-primary p-5 mb-6 shadow-glow-primary">
           {isUploading
-            ? <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            : <Upload className="h-8 w-8 text-primary" />}
+            ? <Loader2 className="h-10 w-10 text-white animate-spin" />
+            : <Upload className="h-10 w-10 text-white" />}
         </div>
 
-        <h3 className="text-lg font-semibold mb-2">
+        <h3 className="text-xl font-semibold mb-2 text-white">
           {isUploading ? "Uploading..." : "Upload an Image"}
         </h3>
 
-        <p className="text-sm text-muted-foreground mb-4 text-center max-w-sm">
-          Choose an image to enhance with AI. Supports JPEG, PNG, and WebP up to 50MB.
+        <p className="text-sm text-white/60 mb-6 text-center max-w-sm">
+          Drag and drop or click to browse. Supports JPEG, PNG, and WebP up to 50MB.
         </p>
 
-        {error && <p className="text-sm text-destructive mb-4">{error}</p>}
+        {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
         <input
           id="file-upload"
@@ -82,9 +82,9 @@ export function ImageUpload() {
           disabled={isUploading}
           className="hidden"
         />
-        <Button asChild disabled={isUploading}>
+        <Button asChild disabled={isUploading} size="lg">
           <label htmlFor="file-upload" className="cursor-pointer">
-            <Upload className="mr-2 h-4 w-4" />
+            <Upload className="mr-2 h-5 w-5" />
             Select Image
           </label>
         </Button>

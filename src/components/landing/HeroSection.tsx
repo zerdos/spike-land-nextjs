@@ -7,24 +7,27 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
+    <section className="relative overflow-hidden">
       <div className="container mx-auto px-4 py-24 sm:py-32 lg:py-40">
         <div className="mx-auto max-w-4xl text-center">
           {/* Social proof badge */}
           <div className="mb-10 flex justify-center">
-            <Badge variant="secondary" className="px-5 py-2 text-sm shadow-lg">
+            <Badge
+              variant="secondary"
+              className="px-5 py-2 text-sm shadow-lg bg-white/10 border-white/20 text-white"
+            >
               <Sparkles className="mr-2 h-4 w-4" />
               Trusted by 10,000+ creators
             </Badge>
           </div>
 
           {/* Main headline */}
-          <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-white">
             Transform Your Images <span className="text-gradient-primary">with AI</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
+          <p className="mx-auto mb-12 max-w-2xl text-lg text-white/60 sm:text-xl leading-relaxed">
             Enhance photos instantly with our AI-powered technology. Upscale resolution, improve
             quality, and bring your images to life in seconds.
           </p>
@@ -47,7 +50,7 @@ export function HeroSection() {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
+          <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-white/60">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-glow-primary" />
               <span>No signup required</span>
@@ -65,8 +68,8 @@ export function HeroSection() {
       </div>
 
       {/* Background decoration - More vivid */}
-      <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl opacity-60" />
-      <div className="absolute -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-accent/15 to-primary/15 blur-3xl opacity-60" />
+      <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 blur-3xl opacity-60" />
+      <div className="absolute -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-accent/20 to-primary/20 blur-3xl opacity-60" />
     </section>
   );
 }

@@ -40,10 +40,10 @@ describe("HeroSection Component", () => {
     expect(screen.getByText("Results in seconds")).toBeInTheDocument();
   });
 
-  it("should have gradient background class", () => {
+  it("should have overflow hidden class", () => {
     const { container } = render(<HeroSection />);
     const section = container.querySelector("section");
-    expect(section).toHaveClass("bg-gradient-hero");
+    expect(section).toHaveClass("overflow-hidden");
   });
 
   it("should have decorative background elements", () => {

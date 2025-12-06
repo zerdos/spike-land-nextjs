@@ -131,8 +131,8 @@ describe("TokenDisplay Component", () => {
     render(<TokenDisplay />);
 
     const display = screen.getByTestId("token-balance-display");
-    expect(display).toHaveClass("bg-destructive/10");
-    expect(display).toHaveClass("text-destructive");
+    expect(display).toHaveClass("bg-red-500/20");
+    expect(display).toHaveClass("text-red-400");
   });
 
   it("applies low balance styling", () => {
@@ -146,7 +146,7 @@ describe("TokenDisplay Component", () => {
     render(<TokenDisplay />);
 
     const display = screen.getByTestId("token-balance-display");
-    expect(display).toHaveClass("bg-yellow-500/10");
+    expect(display).toHaveClass("bg-yellow-500/20");
   });
 
   it("applies normal balance styling", () => {
@@ -155,7 +155,7 @@ describe("TokenDisplay Component", () => {
     render(<TokenDisplay />);
 
     const display = screen.getByTestId("token-balance-display");
-    expect(display).toHaveClass("bg-muted");
+    expect(display).toHaveClass("bg-white/10");
   });
 
   it("applies custom className", () => {

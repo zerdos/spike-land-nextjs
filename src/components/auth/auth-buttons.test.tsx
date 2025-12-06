@@ -81,7 +81,7 @@ describe("AuthButtons Component", () => {
     const googleButton = screen.getByRole("button", { name: /continue with google/i });
 
     expect(githubButton).toHaveClass("bg-gradient-primary");
-    expect(googleButton).toHaveClass("border-2");
+    expect(googleButton).toHaveClass("border");
   });
 
   it("should have correct button sizes", () => {

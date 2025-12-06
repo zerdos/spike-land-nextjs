@@ -16,9 +16,8 @@ describe("Card Components", () => {
       expect(card).toHaveClass(
         "rounded-2xl",
         "border",
-        "bg-card",
         "text-card-foreground",
-        "shadow-md",
+        "shadow-lg",
       );
     });
 
