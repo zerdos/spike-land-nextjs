@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
+import { AuthHeader } from "@/components/auth/auth-header";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -67,6 +68,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
+            <AuthHeader />
             {children}
           </SessionProvider>
           <CookieConsent />
