@@ -155,7 +155,7 @@ describe("TokenDisplay Component", () => {
     render(<TokenDisplay />);
 
     const display = screen.getByTestId("token-balance-display");
-    expect(display).toHaveClass("bg-white/10");
+    expect(display).toHaveClass("bg-muted/50");
   });
 
   it("applies custom className", () => {

@@ -56,7 +56,7 @@ export function ImageUpload() {
   }, [router]);
 
   return (
-    <Card className="border-dashed border-white/20 bg-white/5">
+    <Card className="border-dashed border-border bg-card/50">
       <CardContent className="flex flex-col items-center justify-center py-16">
         <div className="rounded-full bg-gradient-primary p-5 mb-6 shadow-glow-primary">
           {isUploading
@@ -64,11 +64,11 @@ export function ImageUpload() {
             : <Upload className="h-10 w-10 text-white" />}
         </div>
 
-        <h3 className="text-xl font-semibold mb-2 text-white">
+        <h3 className="text-xl font-semibold mb-2 text-foreground">
           {isUploading ? "Uploading..." : "Upload an Image"}
         </h3>
 
-        <p className="text-sm text-white/60 mb-6 text-center max-w-sm">
+        <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
           Drag and drop or click to browse. Supports JPEG, PNG, and WebP up to 50MB.
         </p>
 
