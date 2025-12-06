@@ -186,10 +186,7 @@ Then("I should see a success toast notification", async function(this: CustomWor
   await expect(toast.first()).toBeVisible({ timeout: 5000 });
 });
 
-Then("the modal should close", async function(this: CustomWorld) {
-  const dialog = this.page.getByRole("dialog");
-  await expect(dialog).not.toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("I should see the empty albums message", async function(this: CustomWorld) {
   const emptyMessage = this.page.getByText(/you don't have any albums yet/i);
