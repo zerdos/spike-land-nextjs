@@ -14,6 +14,10 @@ vi.mock("next/font/google", () => ({
   })),
 }));
 
+vi.mock("@/components/auth/auth-header", () => ({
+  AuthHeader: () => <div data-testid="auth-header">Auth Header</div>,
+}));
+
 vi.mock("@/components/auth/session-provider", () => ({
   SessionProvider: ({ children }: { children: React.ReactNode; }) => <div>{children}</div>,
 }));
@@ -107,6 +111,11 @@ describe("RootLayout", () => {
   it("should render Toaster component", () => {
     const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("toaster")).toBeInTheDocument();
+  });
+
+  it("should render AuthHeader component for global theme and user controls", () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+    expect(getByTestId("auth-header")).toBeInTheDocument();
   });
 });
 

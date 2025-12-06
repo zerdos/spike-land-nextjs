@@ -1,6 +1,5 @@
 "use client";
 
-import { AuthHeader } from "@/components/auth/auth-header";
 import {
   BeforeAfterGallery,
   ComponentDemo,
@@ -15,9 +14,6 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Auth Header - Fixed top-right */}
-      <AuthHeader />
-
       {/* Hero Section */}
       <HeroSection />
 
