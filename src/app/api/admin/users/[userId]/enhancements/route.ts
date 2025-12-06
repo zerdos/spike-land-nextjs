@@ -14,7 +14,7 @@ const DEFAULT_LIMIT = 20;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ userId: string; }>; },
 ) {
   try {
     const session = await auth();

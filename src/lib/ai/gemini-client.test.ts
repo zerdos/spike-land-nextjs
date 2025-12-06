@@ -279,7 +279,7 @@ describe("gemini-client", () => {
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-3-pro-image-preview",
+          model: "gemini-2.5-flash-image",
           config: {
             responseModalities: ["IMAGE"],
             imageConfig: {
@@ -365,7 +365,10 @@ describe("gemini-client", () => {
       await enhanceImageWithGemini(defaultParams);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Generating enhanced image with Gemini API...",
+        expect.stringContaining("Generating enhanced image with Gemini API using model:"),
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Tier: 1K, Resolution: 1024x1024"),
       );
 
       consoleSpy.mockRestore();

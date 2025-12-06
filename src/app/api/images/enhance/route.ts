@@ -213,7 +213,10 @@ export async function POST(request: NextRequest) {
       { headers: { "X-Request-ID": requestId } },
     );
   } catch (error) {
-    requestLogger.error("Unexpected error in enhance API", error instanceof Error ? error : new Error(String(error)));
+    requestLogger.error(
+      "Unexpected error in enhance API",
+      error instanceof Error ? error : new Error(String(error)),
+    );
     const errorMessage = getUserFriendlyError(
       error instanceof Error ? error : new Error("Enhancement failed"),
       500,

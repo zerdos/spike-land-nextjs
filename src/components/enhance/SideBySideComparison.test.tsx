@@ -3,7 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { SideBySideComparison } from "./SideBySideComparison";
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt, onError, ...props }: { src: string; alt: string; onError?: () => void; [key: string]: unknown }) => {
+  default: (
+    { src, alt, onError, ...props }: {
+      src: string;
+      alt: string;
+      onError?: () => void;
+      [key: string]: unknown;
+    },
+  ) => {
     return (
       <img
         src={src}
@@ -42,7 +49,7 @@ describe("SideBySideComparison Component", () => {
         {...defaultProps}
         originalLabel="Before"
         enhancedLabel="After"
-      />
+      />,
     );
 
     expect(screen.getByText("Before")).toBeInTheDocument();
@@ -62,7 +69,7 @@ describe("SideBySideComparison Component", () => {
         {...defaultProps}
         width={1920}
         height={1080}
-      />
+      />,
     );
 
     const imageContainers = container.querySelectorAll('[style*="aspect-ratio"]');
@@ -88,7 +95,7 @@ describe("SideBySideComparison Component", () => {
         {...defaultProps}
         width={0}
         height={0}
-      />
+      />,
     );
 
     const imageContainers = container.querySelectorAll('[style*="aspect-ratio"]');
@@ -125,7 +132,7 @@ describe("SideBySideComparison Component", () => {
     originalImage.dispatchEvent(new Event("error"));
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[Original Image Load Error]")
+      expect.stringContaining("[Original Image Load Error]"),
     );
 
     consoleSpy.mockRestore();

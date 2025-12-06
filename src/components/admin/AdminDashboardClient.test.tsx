@@ -2,9 +2,9 @@
  * Tests for Admin Dashboard Client Component
  */
 
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminDashboardClient } from "./AdminDashboardClient";
 
 global.fetch = vi.fn();

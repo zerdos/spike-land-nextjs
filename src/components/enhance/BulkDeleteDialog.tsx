@@ -38,7 +38,7 @@ export function BulkDeleteDialog({
 
   const totalSize = selectedVersions.reduce(
     (sum, v) => sum + (v.sizeBytes || 0),
-    0
+    0,
   );
 
   const handleDelete = async () => {
@@ -84,8 +84,9 @@ export function BulkDeleteDialog({
             Confirm Bulk Delete
           </DialogTitle>
           <DialogDescription>
-            You are about to permanently delete {selectedVersions.length} enhancement
-            version{selectedVersions.length !== 1 ? "s" : ""}. This action cannot be undone.
+            You are about to permanently delete {selectedVersions.length}{" "}
+            enhancement version{selectedVersions.length !== 1 ? "s" : ""}. This action cannot be
+            undone.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -123,17 +124,19 @@ export function BulkDeleteDialog({
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete {selectedVersions.length} Version{selectedVersions.length !== 1 ? "s" : ""}
-              </>
-            )}
+            {isDeleting
+              ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              )
+              : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete {selectedVersions.length} Version{selectedVersions.length !== 1 ? "s" : ""}
+                </>
+              )}
           </Button>
         </DialogFooter>
       </DialogContent>

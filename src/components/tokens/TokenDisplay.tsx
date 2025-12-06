@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Coins, RefreshCw } from "lucide-react";
@@ -50,8 +45,8 @@ export function TokenDisplay({
         isCriticalBalance
           ? "bg-destructive/10 text-destructive"
           : isLowBalance
-            ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-500"
-            : "bg-muted",
+          ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-500"
+          : "bg-muted",
       )}
       data-testid="token-balance-display"
     >

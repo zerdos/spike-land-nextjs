@@ -364,7 +364,7 @@ export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientPro
   );
 }
 
-function QuickLinkIcon({ icon }: { icon: string }) {
+function QuickLinkIcon({ icon }: { icon: string; }) {
   const iconClass = "h-10 w-10 text-neutral-400";
 
   switch (icon) {

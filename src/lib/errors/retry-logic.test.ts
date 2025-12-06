@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  createRetryWrapper,
-  retryBatch,
-  retryWithBackoff,
-} from "./retry-logic";
+import { createRetryWrapper, retryBatch, retryWithBackoff } from "./retry-logic";
 
 describe("retry-logic", () => {
   describe("retryWithBackoff", () => {

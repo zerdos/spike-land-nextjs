@@ -337,7 +337,9 @@ export default function AdminPhotosPage() {
                           e.stopPropagation();
                           openUserHistory(photo.user.id);
                         }}
-                        aria-label={`View enhancement history for ${photo.user.name || photo.user.email}`}
+                        aria-label={`View enhancement history for ${
+                          photo.user.name || photo.user.email
+                        }`}
                       >
                         {photo.user.name || photo.user.email}
                       </button>
@@ -594,8 +596,7 @@ export default function AdminPhotosPage() {
                                 <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                                   <span>Cost: {enhancement.tokenCost} tokens</span>
                                   <span>
-                                    Duration:{" "}
-                                    {formatDuration(
+                                    Duration: {formatDuration(
                                       enhancement.processingStartedAt,
                                       enhancement.processingCompletedAt,
                                     )}
@@ -637,8 +638,7 @@ export default function AdminPhotosPage() {
                               Previous
                             </Button>
                             <span className="text-sm text-muted-foreground">
-                              Page {userHistoryPage} of{" "}
-                              {userHistoryData.pagination.totalPages}
+                              Page {userHistoryPage} of {userHistoryData.pagination.totalPages}
                             </span>
                             <Button
                               variant="outline"
@@ -648,8 +648,8 @@ export default function AdminPhotosPage() {
                                   userHistoryModal.userId!,
                                   userHistoryPage + 1,
                                 )}
-                              disabled={userHistoryPage === userHistoryData.pagination.totalPages
-                                || userHistoryLoading}
+                              disabled={userHistoryPage === userHistoryData.pagination.totalPages ||
+                                userHistoryLoading}
                             >
                               Next
                             </Button>

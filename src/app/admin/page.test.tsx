@@ -24,7 +24,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/components/admin/AdminDashboardClient", () => ({
-  AdminDashboardClient: ({ initialMetrics }: { initialMetrics: unknown }) => (
+  AdminDashboardClient: ({ initialMetrics }: { initialMetrics: unknown; }) => (
     <div data-testid="admin-dashboard-client">
       <span data-testid="metrics">{JSON.stringify(initialMetrics)}</span>
     </div>
