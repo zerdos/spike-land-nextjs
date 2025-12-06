@@ -3,7 +3,6 @@
 import { AddToAlbumModal } from "@/components/enhance/AddToAlbumModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { FolderPlus } from "lucide-react";
 import Image from "next/image";
@@ -58,7 +57,7 @@ export function EnhancedImagesList({
   if (images.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground mb-4">
+        <p className="text-white/70 mb-4">
           No images uploaded yet. Upload your first image to get started.
         </p>
       </div>
@@ -104,60 +103,65 @@ export function EnhancedImagesList({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {images.map((image) => {
           const statusBadge = getStatusBadge(image.enhancementJobs);
           const isDeleting = deletingImageId === image.id;
 
           return (
-            <Card key={image.id} className="overflow-hidden">
+            <div key={image.id} className="group relative">
               <Link href={`/enhance/${image.id}`}>
-                <div className="relative aspect-video bg-muted cursor-pointer hover:opacity-90 transition-opacity">
+                <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/5 cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20">
                   <Image
                     src={image.originalUrl}
                     alt="Uploaded image"
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-between">
+                      <Badge variant={statusBadge.variant} className="text-xs">
+                        {statusBadge.text}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               </Link>
 
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant={statusBadge.variant}>{statusBadge.text}</Badge>
-                  <span className="text-xs text-muted-foreground" suppressHydrationWarning>
-                    {isClient ? formatDate(image.createdAt) : ""}
-                  </span>
-                </div>
-
-                <div className="flex gap-2">
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-xs text-white/70 truncate" suppressHydrationWarning>
+                  {isClient ? formatDate(image.createdAt) : ""}
+                </span>
+                <div className="flex gap-1">
                   <Button
                     asChild
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="flex-1"
+                    className="h-7 px-2 text-xs"
                     disabled={isDeleting}
                   >
                     <Link href={`/enhance/${image.id}`}>
                       {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
                     </Link>
                   </Button>
-
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
+                    className="h-7 w-7 p-0"
                     onClick={() => handleOpenAddToAlbum(image.id, image.name ?? undefined)}
                     disabled={isDeleting}
                     title="Add to Album"
                     aria-label="Add to Album"
                   >
-                    <FolderPlus className="h-4 w-4" />
+                    <FolderPlus className="h-3.5 w-3.5" />
                   </Button>
-
                   {onDelete && (
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-7 px-2 text-xs"
                       onClick={(e) => {
                         e.preventDefault();
                         onDelete(image.id);
@@ -168,8 +172,8 @@ export function EnhancedImagesList({
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>

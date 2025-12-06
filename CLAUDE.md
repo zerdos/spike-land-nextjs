@@ -771,13 +771,13 @@ gh run view <run-id> --log-failed
 
 ### GitHub Features to Use
 
-| GitHub Feature | Purpose | Replaces |
-|---------------|---------|----------|
-| **Issues** | Task tracking, bugs, features | Jira tickets |
-| **Projects** | Kanban boards, roadmaps | Jira boards |
-| **Milestones** | Release planning | Jira sprints |
-| **Wiki** | Documentation, specs | Confluence |
-| **Discussions** | RFCs, decisions, Q&A | Confluence/Slack |
+| GitHub Feature  | Purpose                       | Replaces         |
+| --------------- | ----------------------------- | ---------------- |
+| **Issues**      | Task tracking, bugs, features | Jira tickets     |
+| **Projects**    | Kanban boards, roadmaps       | Jira boards      |
+| **Milestones**  | Release planning              | Jira sprints     |
+| **Wiki**        | Documentation, specs          | Confluence       |
+| **Discussions** | RFCs, decisions, Q&A          | Confluence/Slack |
 
 ### Essential gh Commands for Agents
 

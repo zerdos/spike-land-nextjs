@@ -46,27 +46,12 @@ describe("ModeToggle", () => {
       expect(button).toBeInTheDocument();
       expect(button).toHaveAttribute(
         "aria-label",
-        "Dark mode active. Click to use system preference.",
+        "Dark mode active. Click to switch to light mode.",
       );
     });
   });
 
-  it("shows monitor icon and correct label in system mode", async () => {
-    render(
-      <ThemeProvider defaultTheme="system">
-        <ModeToggle />
-      </ThemeProvider>,
-    );
-
-    await waitFor(() => {
-      const button = screen.getByRole("button");
-      expect(button).toBeInTheDocument();
-      // System mode label depends on actual system preference
-      expect(button.getAttribute("aria-label")).toMatch(/System mode active/);
-    });
-  });
-
-  it("cycles through themes: light → dark → system → light", async () => {
+  it("toggles between light and dark modes", async () => {
     const user = userEvent.setup();
     render(
       <ThemeProvider defaultTheme="light">
@@ -91,14 +76,8 @@ describe("ModeToggle", () => {
     await waitFor(() => {
       expect(button).toHaveAttribute(
         "aria-label",
-        "Dark mode active. Click to use system preference.",
+        "Dark mode active. Click to switch to light mode.",
       );
-    });
-
-    // Click to go to system mode
-    await user.click(button);
-    await waitFor(() => {
-      expect(button.getAttribute("aria-label")).toMatch(/System mode active/);
     });
 
     // Click to go back to light mode
