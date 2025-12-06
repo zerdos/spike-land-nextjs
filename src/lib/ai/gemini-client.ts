@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // Configuration constants
 const GEMINI_API_TIMEOUT_MS = 55000; // 55 seconds (under Vercel's 60s limit)
-const DEFAULT_MODEL = "gemini-2.5-flash-image";
+const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 
 let genAI: GoogleGenAI | null = null;
 
