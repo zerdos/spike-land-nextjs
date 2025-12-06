@@ -22,7 +22,7 @@ describe("ProfileLoading", () => {
 
   it("renders multiple cards", () => {
     const { container } = render(<ProfileLoading />);
-    const cards = container.querySelectorAll('[class*="rounded-xl"]');
+    const cards = container.querySelectorAll('[class*="rounded-2xl"]');
     expect(cards.length).toBe(2);
   });
 });
