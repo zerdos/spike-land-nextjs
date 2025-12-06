@@ -80,8 +80,8 @@ describe("AuthButtons Component", () => {
     const githubButton = screen.getByRole("button", { name: /continue with github/i });
     const googleButton = screen.getByRole("button", { name: /continue with google/i });
 
-    expect(githubButton).toHaveClass("bg-primary");
-    expect(googleButton).toHaveClass("border");
+    expect(githubButton).toHaveClass("bg-gradient-primary");
+    expect(googleButton).toHaveClass("border-2");
   });
 
   it("should have correct button sizes", () => {
@@ -89,8 +89,8 @@ describe("AuthButtons Component", () => {
     const githubButton = screen.getByRole("button", { name: /continue with github/i });
     const googleButton = screen.getByRole("button", { name: /continue with google/i });
 
-    expect(githubButton).toHaveClass("h-10");
-    expect(googleButton).toHaveClass("h-10");
+    expect(githubButton).toHaveClass("h-12");
+    expect(googleButton).toHaveClass("h-12");
   });
 
   it("should have full width buttons", () => {
