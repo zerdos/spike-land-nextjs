@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ErrorBoundary, withErrorBoundary } from "./error-boundary";
 
 // Component that throws an error
-function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
+function ThrowError({ shouldThrow }: { shouldThrow: boolean; }) {
   if (shouldThrow) {
     throw new Error("Test error");
   }

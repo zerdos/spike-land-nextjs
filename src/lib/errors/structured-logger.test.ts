@@ -1,10 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import {
-  generateRequestId,
-  logger,
-  StructuredLogger,
-  type LogContext,
-} from "./structured-logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { generateRequestId, type LogContext, logger, StructuredLogger } from "./structured-logger";
 
 describe("structured-logger", () => {
   describe("generateRequestId", () => {

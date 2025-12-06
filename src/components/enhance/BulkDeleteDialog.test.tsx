@@ -18,7 +18,7 @@ describe("BulkDeleteDialog Component", () => {
 
   it("should not render when no versions selected", () => {
     const { container } = render(
-      <BulkDeleteDialog {...defaultProps} selectedVersions={[]} />
+      <BulkDeleteDialog {...defaultProps} selectedVersions={[]} />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -99,7 +99,10 @@ describe("BulkDeleteDialog Component", () => {
     const user = userEvent.setup();
     let resolveDelete: () => void;
     const onDelete = vi.fn().mockImplementation(
-      () => new Promise<void>((resolve) => { resolveDelete = resolve; })
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        }),
     );
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
@@ -116,7 +119,10 @@ describe("BulkDeleteDialog Component", () => {
     const user = userEvent.setup();
     let resolveDelete: () => void;
     const onDelete = vi.fn().mockImplementation(
-      () => new Promise<void>((resolve) => { resolveDelete = resolve; })
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        }),
     );
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
@@ -139,7 +145,7 @@ describe("BulkDeleteDialog Component", () => {
       <BulkDeleteDialog
         {...defaultProps}
         selectedVersions={[{ id: "1", tier: "1K", sizeBytes: 1024 }]}
-      />
+      />,
     );
 
     expect(screen.getByRole("button", { name: /delete selected \(1\)/i })).toBeInTheDocument();
@@ -154,7 +160,7 @@ describe("BulkDeleteDialog Component", () => {
           { id: "1", tier: "1K", sizeBytes: null },
           { id: "2", tier: "2K", sizeBytes: undefined },
         ]}
-      />
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));

@@ -66,20 +66,22 @@ export function SideBySideComparison({
           className="relative bg-muted rounded-lg overflow-hidden w-full"
           style={{ aspectRatio: `${safeWidth} / ${safeHeight}` }}
         >
-          {!originalError ? (
-            <Image
-              src={originalUrl}
-              alt={originalLabel}
-              fill
-              className="object-cover"
-              priority
-              onError={handleOriginalError}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-              <p className="text-sm text-destructive">Original image failed to load</p>
-            </div>
-          )}
+          {!originalError
+            ? (
+              <Image
+                src={originalUrl}
+                alt={originalLabel}
+                fill
+                className="object-cover"
+                priority
+                onError={handleOriginalError}
+              />
+            )
+            : (
+              <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
+                <p className="text-sm text-destructive">Original image failed to load</p>
+              </div>
+            )}
         </div>
       </div>
       <div className="relative">
@@ -90,20 +92,22 @@ export function SideBySideComparison({
           className="relative bg-muted rounded-lg overflow-hidden w-full"
           style={{ aspectRatio: `${safeWidth} / ${safeHeight}` }}
         >
-          {!enhancedError ? (
-            <Image
-              src={enhancedUrl}
-              alt={enhancedLabel}
-              fill
-              className="object-cover"
-              priority
-              onError={handleEnhancedError}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-              <p className="text-sm text-destructive">Enhanced image failed to load</p>
-            </div>
-          )}
+          {!enhancedError
+            ? (
+              <Image
+                src={enhancedUrl}
+                alt={enhancedLabel}
+                fill
+                className="object-cover"
+                priority
+                onError={handleEnhancedError}
+              />
+            )
+            : (
+              <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
+                <p className="text-sm text-destructive">Enhanced image failed to load</p>
+              </div>
+            )}
         </div>
       </div>
     </div>

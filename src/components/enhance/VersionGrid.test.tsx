@@ -53,7 +53,7 @@ vi.mock("./BulkDeleteDialog", () => ({
     onCancel: _onCancel,
     disabled,
   }: {
-    selectedVersions: Array<{ id: string; tier: string; sizeBytes?: number | null }>;
+    selectedVersions: Array<{ id: string; tier: string; sizeBytes?: number | null; }>;
     onDelete: (ids: string[]) => Promise<void>;
     onCancel: () => void;
     disabled?: boolean;
@@ -66,7 +66,9 @@ vi.mock("./BulkDeleteDialog", () => ({
             const dialog = document.createElement("div");
             dialog.setAttribute("role", "dialog");
             dialog.innerHTML = `
-              <button data-testid="confirm-delete">Delete ${selectedVersions.length} version${selectedVersions.length !== 1 ? "s" : ""}</button>
+              <button data-testid="confirm-delete">Delete ${selectedVersions.length} version${
+              selectedVersions.length !== 1 ? "s" : ""
+            }</button>
             `;
             document.body.appendChild(dialog);
             const confirmBtn = dialog.querySelector("[data-testid='confirm-delete']");

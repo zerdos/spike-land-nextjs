@@ -24,7 +24,9 @@ When("I click the buy button for the {string} pack", async function(
     });
   });
 
-  const packCard = this.page.locator('[class*="Card"]').filter({ hasText: new RegExp(packName, "i") });
+  const packCard = this.page.locator('[class*="Card"]').filter({
+    hasText: new RegExp(packName, "i"),
+  });
   const buyButton = packCard.getByRole("button", { name: /buy now/i });
   await expect(buyButton).toBeVisible();
   await buyButton.click();

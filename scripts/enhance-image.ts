@@ -7,8 +7,8 @@ import sharp from "sharp";
 // Load environment variables from .env.local
 dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
 
-const GEMINI_API_TIMEOUT_MS = 120000;
-const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+const GEMINI_API_TIMEOUT_MS = 55000; // 55 seconds (under Vercel's 60s limit)
+const DEFAULT_MODEL = "gemini-2.5-flash-image";
 const ENHANCED_JPEG_QUALITY = 95;
 
 interface EnhanceImageParams {
@@ -65,37 +65,61 @@ async function enhanceImageWithGemini(
     },
   ];
 
-  console.log("Generating enhanced image with Gemini API...");
+  console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
+  console.log(`Tier: ${tier}, Resolution: ${resolutionMap[tier]}`);
 
   const processStream = async (): Promise<Buffer> => {
-    const response = await ai.models.generateContentStream({
-      model: DEFAULT_MODEL,
-      config,
-      contents,
-    });
+    let response;
+    try {
+      response = await ai.models.generateContentStream({
+        model: DEFAULT_MODEL,
+        config,
+        contents,
+      });
+    } catch (error) {
+      console.error("Failed to initiate Gemini API stream:", error);
+      throw new Error(
+        `Failed to start image enhancement: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
 
     const imageChunks: Buffer[] = [];
+    let chunkCount = 0;
 
-    for await (const chunk of response) {
-      if (
-        !chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts
-      ) {
-        continue;
-      }
+    try {
+      for await (const chunk of response) {
+        chunkCount++;
+        if (
+          !chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts
+        ) {
+          continue;
+        }
 
-      if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-        const inlineData = chunk.candidates[0].content.parts[0].inlineData;
-        const buffer = Buffer.from(inlineData.data || "", "base64");
-        imageChunks.push(buffer);
-        process.stdout.write(".");
+        if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+          const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+          const buffer = Buffer.from(inlineData.data || "", "base64");
+          imageChunks.push(buffer);
+          process.stdout.write(".");
+        }
       }
+    } catch (error) {
+      console.error(`\nError processing stream at chunk ${chunkCount}:`, error);
+      throw new Error(
+        `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
 
     console.log("");
 
     if (imageChunks.length === 0) {
+      console.error(`No image data received after processing ${chunkCount} chunks`);
       throw new Error("No image data received from Gemini API");
     }
+
+    const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    console.log(`Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes`);
 
     return Buffer.concat(imageChunks);
   };

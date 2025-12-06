@@ -45,7 +45,8 @@ Then("I should be redirected or see access denied", async function(this: CustomW
   const url = this.page.url();
 
   const isRedirected = url.includes("/auth/signin") || !url.includes("/admin");
-  const accessDenied = await this.page.getByText(/access denied|forbidden|unauthorized/i).isVisible().catch(() => false);
+  const accessDenied = await this.page.getByText(/access denied|forbidden|unauthorized/i)
+    .isVisible().catch(() => false);
 
   expect(isRedirected || accessDenied).toBe(true);
 });

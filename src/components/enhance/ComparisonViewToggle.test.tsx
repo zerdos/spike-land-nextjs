@@ -4,7 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { ComparisonViewToggle } from "./ComparisonViewToggle";
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt, onError, ...props }: { src: string; alt: string; onError?: () => void; [key: string]: unknown }) => {
+  default: (
+    { src, alt, onError, ...props }: {
+      src: string;
+      alt: string;
+      onError?: () => void;
+      [key: string]: unknown;
+    },
+  ) => {
     return (
       <img
         src={src}
@@ -77,7 +84,7 @@ describe("ComparisonViewToggle Component", () => {
 
   it("should pass width and height to child components", () => {
     const { container } = render(
-      <ComparisonViewToggle {...defaultProps} width={1920} height={1080} />
+      <ComparisonViewToggle {...defaultProps} width={1920} height={1080} />,
     );
 
     const aspectRatioElements = container.querySelectorAll('[style*="aspect-ratio"]');
