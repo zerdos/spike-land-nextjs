@@ -57,7 +57,7 @@ export function EnhancedImagesList({
   if (images.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-white/50 mb-4">
+        <p className="text-white/70 mb-4">
           No images uploaded yet. Upload your first image to get started.
         </p>
       </div>
@@ -131,7 +131,7 @@ export function EnhancedImagesList({
               </Link>
 
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-white/50 truncate" suppressHydrationWarning>
+                <span className="text-xs text-white/70 truncate" suppressHydrationWarning>
                   {isClient ? formatDate(image.createdAt) : ""}
                 </span>
                 <div className="flex gap-1">

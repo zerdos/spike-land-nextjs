@@ -24,19 +24,23 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
-  // Package gradients matching the design
-  const packageGradients: Record<string, string> = {
+  // Package gradients matching the design - using const assertion for type safety
+  const PACKAGE_GRADIENTS = {
     starter: "gradient-blue",
     basic: "gradient-purple",
     pro: "gradient-pink",
     power: "gradient-orange",
-  };
+  } as const;
+
+  type PackageGradientKey = keyof typeof PACKAGE_GRADIENTS;
 
   const packages = Object.entries(TOKEN_PACKAGES).map(([id, pkg]) => ({
     id,
     ...pkg,
     popular: id === "basic",
-    gradient: packageGradients[id] || "gradient-blue",
+    gradient: (id in PACKAGE_GRADIENTS
+      ? PACKAGE_GRADIENTS[id as PackageGradientKey]
+      : "gradient-blue") as string,
   }));
 
   const handlePurchase = async (packageId: string) => {

@@ -61,7 +61,7 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
             <ImageUpload />
             <div className="hidden lg:block">
               <div className="text-white/80 text-lg font-semibold mb-4">Your Images</div>
-              <div className="text-white/50 text-sm">
+              <div className="text-white/70 text-sm">
                 Upload an image to get started with AI enhancement
               </div>
             </div>
