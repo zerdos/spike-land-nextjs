@@ -64,8 +64,7 @@ export async function GET() {
     }
 
     // Failure rate by tier (last 7 days)
-    let failuresByTier: Array<{ tier: EnhancementTier; status: JobStatus; _count: number; }> =
-      [];
+    let failuresByTier: Array<{ tier: EnhancementTier; status: JobStatus; _count: number; }> = [];
     try {
       const result = await prisma.imageEnhancementJob.groupBy({
         by: ["tier", "status"],

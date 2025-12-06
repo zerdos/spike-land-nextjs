@@ -25,8 +25,7 @@ export async function GET() {
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Token transactions by type
-    let tokensByType: Array<{ type: TokenTransactionType; _sum: { amount: number | null; }; }> =
-      [];
+    let tokensByType: Array<{ type: TokenTransactionType; _sum: { amount: number | null; }; }> = [];
     try {
       const result = await prisma.tokenTransaction.groupBy({
         by: ["type"],
@@ -85,8 +84,10 @@ export async function GET() {
     }
 
     // Average tokens per user
-    let tokenBalances: { _avg: { balance: number | null; }; _sum: { balance: number | null; }; } =
-      { _avg: { balance: null }, _sum: { balance: null } };
+    let tokenBalances: { _avg: { balance: number | null; }; _sum: { balance: number | null; }; } = {
+      _avg: { balance: null },
+      _sum: { balance: null },
+    };
     try {
       const result = await prisma.userTokenBalance.aggregate({
         _avg: {
