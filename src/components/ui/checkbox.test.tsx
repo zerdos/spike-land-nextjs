@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { Checkbox } from "./checkbox";
 
@@ -91,5 +92,29 @@ describe("Checkbox", () => {
     expect(handleChange).toHaveBeenLastCalledWith(false);
 
     expect(handleChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("should not call onCheckedChange when disabled", async () => {
+    const user = userEvent.setup();
+    const onCheckedChange = vi.fn();
+    render(<Checkbox disabled onCheckedChange={onCheckedChange} aria-label="test checkbox" />);
+
+    await user.click(screen.getByRole("checkbox"));
+    expect(onCheckedChange).not.toHaveBeenCalled();
+  });
+
+  it("should pass through additional props", () => {
+    render(<Checkbox data-testid="test-checkbox" aria-label="Test" />);
+    expect(screen.getByTestId("test-checkbox")).toBeInTheDocument();
+  });
+
+  it("should have correct display name", () => {
+    expect(Checkbox.displayName).toBe("Checkbox");
+  });
+
+  it("should have proper default styling classes", () => {
+    render(<Checkbox aria-label="test checkbox" />);
+    const checkbox = screen.getByRole("checkbox");
+    expect(checkbox).toHaveClass("h-4", "w-4", "rounded-sm");
   });
 });
