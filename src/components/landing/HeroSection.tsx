@@ -14,7 +14,7 @@ export function HeroSection() {
           <div className="mb-10 flex justify-center">
             <Badge
               variant="secondary"
-              className="px-5 py-2 text-sm shadow-lg bg-white/10 border-white/20 text-white"
+              className="px-5 py-2 text-sm shadow-lg bg-foreground/10 border-foreground/20 text-foreground"
             >
               <Sparkles className="mr-2 h-4 w-4" />
               Trusted by 10,000+ creators
@@ -22,12 +22,12 @@ export function HeroSection() {
           </div>
 
           {/* Main headline */}
-          <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-white">
+          <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
             Transform Your Images <span className="text-gradient-primary">with AI</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mb-12 max-w-2xl text-lg text-white/60 sm:text-xl leading-relaxed">
+          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
             Enhance photos instantly with our AI-powered technology. Upscale resolution, improve
             quality, and bring your images to life in seconds.
           </p>
@@ -50,7 +50,7 @@ export function HeroSection() {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-white/60">
+          <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-glow-primary" />
               <span>No signup required</span>

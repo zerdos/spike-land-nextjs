@@ -54,7 +54,7 @@ export default function Home() {
               asChild
               size="lg"
               variant="outline"
-              className="border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50 font-semibold backdrop-blur-sm"
+              className="border-2 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:border-primary-foreground/50 font-semibold backdrop-blur-sm"
             >
               <Link href="/pricing">
                 <Sparkles className="mr-2 h-5 w-5" />
