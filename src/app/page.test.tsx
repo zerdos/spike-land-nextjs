@@ -2,20 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import Home from "./page";
 
-// Mock next-auth
-vi.mock("next-auth/react", () => ({
-  useSession: vi.fn().mockReturnValue({
-    data: null,
-    status: "unauthenticated",
-    update: vi.fn(),
-  }),
-}));
-
-// Mock auth components
-vi.mock("@/components/auth/auth-header", () => ({
-  AuthHeader: () => <div data-testid="auth-header">Auth Header</div>,
-}));
-
 // Mock landing components
 vi.mock("@/components/landing", () => ({
   HeroSection: () => <section data-testid="hero-section">Hero Section</section>,
@@ -27,11 +13,6 @@ vi.mock("@/components/landing", () => ({
 
 describe("Home Page", () => {
   describe("Page Structure", () => {
-    it("should render AuthHeader component", () => {
-      render(<Home />);
-      expect(screen.getByTestId("auth-header")).toBeInTheDocument();
-    });
-
     it("should render HeroSection component", () => {
       render(<Home />);
       expect(screen.getByTestId("hero-section")).toBeInTheDocument();
@@ -90,7 +71,7 @@ describe("Home Page", () => {
       expect(button).toHaveAttribute("href", "/pricing");
     });
 
-    it("should have primary background color", () => {
+    it("should have primary gradient background color", () => {
       const { container } = render(<Home />);
       const ctaSection = container.querySelector("section.bg-gradient-primary");
       expect(ctaSection).toBeInTheDocument();
