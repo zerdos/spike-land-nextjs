@@ -1,8 +1,8 @@
 "use client";
 
+import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ExportSelector } from "@/components/enhance/export-selector";
-import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
 import { VersionGrid } from "@/components/enhance/VersionGrid";
 import { PurchaseModal } from "@/components/tokens";
@@ -43,12 +43,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     autoRefreshOnFocus: true,
   });
 
-  // Refresh balance when returning from successful Stripe checkout
   useEffect(() => {
     const success = searchParams.get("success");
     if (success === "true") {
       refetchBalance();
-      // Clean up URL without triggering navigation
       const url = new URL(window.location.href);
       url.searchParams.delete("success");
       url.searchParams.delete("session_id");
@@ -56,14 +54,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     }
   }, [searchParams, refetchBalance]);
 
-  // Poll for active job completion
   type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
   useJobPolling({
     jobId: activeJobId,
     onComplete: useCallback(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (completedJob: any) => {
-        // Update the image with the completed job
         setImage((prev: ImageWithJobs) => ({
           ...prev,
           enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
@@ -105,7 +101,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
       const result = await response.json();
 
-      // Add the new job to the list
       const newJob: ImageEnhancementJob = {
         id: result.jobId,
         userId: image.userId,
@@ -159,7 +154,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       throw new Error(error.error || "Failed to cancel job");
     }
 
-    // Update local state
     setImage((prev: ImageWithJobs) => ({
       ...prev,
       enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
@@ -167,7 +161,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       ),
     }));
 
-    // Refetch balance to show refunded tokens
     refetchBalance();
   };
 
@@ -181,7 +174,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       throw new Error(error.error || "Failed to delete job");
     }
 
-    // Remove job from local state
     setImage((prev: ImageWithJobs) => ({
       ...prev,
       enhancementJobs: prev.enhancementJobs.filter(
@@ -189,15 +181,49 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       ),
     }));
 
-    // Clear selected version if it was deleted
     if (selectedVersionId === jobId) {
       setSelectedVersionId(null);
     }
   };
 
+  const handleBulkDelete = async (jobIds: string[]) => {
+    const results = await Promise.allSettled(
+      jobIds.map(async (jobId) => {
+        const response = await fetch(`/api/jobs/${jobId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to delete job");
+        }
+        return jobId;
+      })
+    );
+
+    const deletedIds = results
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+      .map((r) => r.value);
+
+    setImage((prev: ImageWithJobs) => ({
+      ...prev,
+      enhancementJobs: prev.enhancementJobs.filter(
+        (job: ImageEnhancementJob) => !deletedIds.includes(job.id),
+      ),
+    }));
+
+    if (selectedVersionId && deletedIds.includes(selectedVersionId)) {
+      setSelectedVersionId(null);
+    }
+
+    const failedCount = results.filter((r) => r.status === "rejected").length;
+    if (failedCount > 0) {
+      alert(`${failedCount} deletion(s) failed. Please try again.`);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Low Balance Banner */}
       {isLowBalance && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
@@ -236,7 +262,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: Image comparison */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
@@ -247,7 +272,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             <CardContent>
               {selectedVersion && selectedVersion.enhancedUrl
                 ? (
-                  <ImageComparisonSlider
+                  <ComparisonViewToggle
                     originalUrl={image.originalUrl}
                     enhancedUrl={selectedVersion.enhancedUrl}
                     width={image.originalWidth || 1024}
@@ -267,7 +292,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             </CardContent>
           </Card>
 
-          {/* Enhancement versions grid */}
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Enhancement Versions</CardTitle>
@@ -282,17 +306,19 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                   height: job.enhancedHeight || 0,
                   createdAt: job.createdAt,
                   status: job.status,
+                  sizeBytes: job.enhancedSizeBytes,
                 }))}
                 selectedVersionId={selectedVersionId || undefined}
                 onVersionSelect={setSelectedVersionId}
                 onJobCancel={handleJobCancel}
                 onJobDelete={handleJobDelete}
+                onBulkDelete={handleBulkDelete}
+                enableBulkSelect={true}
               />
             </CardContent>
           </Card>
         </div>
 
-        {/* Right column: Enhancement settings and export */}
         <div className="space-y-6">
           <EnhancementSettings
             onEnhance={handleEnhance}
@@ -305,7 +331,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             onBalanceRefresh={refetchBalance}
           />
 
-          {/* Export selector - only show when a version is selected */}
           {selectedVersion && selectedVersion.enhancedUrl && (
             <ExportSelector
               imageId={selectedVersion.id}
