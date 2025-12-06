@@ -24,7 +24,7 @@ describe("Button Component", () => {
   it("should apply outline variant", () => {
     render(<Button variant="outline">Outline</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("border-2");
+    expect(button).toHaveClass("border");
   });
 
   it("should apply secondary variant", () => {
@@ -36,7 +36,7 @@ describe("Button Component", () => {
   it("should apply ghost variant", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("hover:bg-accent/10");
+    expect(button).toHaveClass("hover:bg-white/10");
   });
 
   it("should apply link variant", () => {

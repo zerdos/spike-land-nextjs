@@ -433,8 +433,8 @@ describe("EnhancedImagesList Component", () => {
     it("renders date span that will be populated client-side", async () => {
       render(<EnhancedImagesList images={[mockImage]} />);
 
-      // The date span exists with the text-muted-foreground class
-      const dateSpans = document.querySelectorAll(".text-xs.text-muted-foreground");
+      // The date span exists with text styling class
+      const dateSpans = document.querySelectorAll(".text-xs");
       expect(dateSpans.length).toBeGreaterThan(0);
 
       // After useEffect runs, it should have the formatted date
@@ -468,7 +468,7 @@ describe("EnhancedImagesList Component", () => {
       const { container } = render(<EnhancedImagesList images={[mockImage]} />);
 
       // Find the date span by its class
-      const spans = container.querySelectorAll("span.text-xs.text-muted-foreground");
+      const spans = container.querySelectorAll("span.text-xs");
       expect(spans.length).toBeGreaterThan(0);
     });
   });

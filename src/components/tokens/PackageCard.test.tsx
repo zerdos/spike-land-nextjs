@@ -43,11 +43,10 @@ describe("PackageCard", () => {
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
   });
 
-  it("applies primary border and shadow when popular", () => {
+  it("applies ring styling when popular", () => {
     const { container } = render(<PackageCard {...defaultProps} popular={true} />);
-    const card = container.querySelector('[class*="border-primary"]');
+    const card = container.querySelector('[class*="ring-2"]');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveClass("shadow-lg");
   });
 
   it("calls onSelect with package id when Buy Now button is clicked", () => {

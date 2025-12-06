@@ -39,7 +39,7 @@ describe("SignOutButton Component", () => {
   it("should apply outline variant", () => {
     render(<SignOutButton />);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("border-2");
+    expect(button).toHaveClass("border");
   });
 
   it("should call signOut with default callback URL when clicked", async () => {

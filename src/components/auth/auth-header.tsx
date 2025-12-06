@@ -11,7 +11,7 @@ export function AuthHeader() {
   if (status === "loading") {
     return (
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
+        <div className="h-10 w-10 animate-pulse rounded-full bg-white/10" />
         <ModeToggle />
       </div>
     );

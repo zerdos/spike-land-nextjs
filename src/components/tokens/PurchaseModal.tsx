@@ -24,10 +24,19 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
+  // Package gradients matching the design
+  const packageGradients: Record<string, string> = {
+    starter: "gradient-blue",
+    basic: "gradient-purple",
+    pro: "gradient-pink",
+    power: "gradient-orange",
+  };
+
   const packages = Object.entries(TOKEN_PACKAGES).map(([id, pkg]) => ({
     id,
     ...pkg,
     popular: id === "basic",
+    gradient: packageGradients[id] || "gradient-blue",
   }));
 
   const handlePurchase = async (packageId: string) => {
@@ -72,10 +81,10 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto !bg-zinc-900 dark:!bg-zinc-900">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Get More Tokens</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-white">Get More Tokens</DialogTitle>
+          <DialogDescription className="text-white/60">
             Choose a token package or redeem a voucher code
           </DialogDescription>
         </DialogHeader>
@@ -85,10 +94,10 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-slate-900 px-4 text-white/50">
                 or purchase tokens
               </span>
             </div>
@@ -104,6 +113,7 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
                 price={pkg.price}
                 currencySymbol={CURRENCY.symbol}
                 popular={pkg.popular}
+                gradient={pkg.gradient}
                 onSelect={handlePurchase}
                 isLoading={isLoading === pkg.id}
               />

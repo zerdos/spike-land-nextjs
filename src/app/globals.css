@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 /**
- * Color Scheme Migration: Neutral → Blue
+ * Dark Gradient Theme
  *
- * Previous: Neutral grayscale theme (0% saturation) - resulted in black & white UI
- * Current: Blue-based theme with vibrant colors for better visual hierarchy
+ * A modern dark gradient design with glass-morphism effects.
+ * Features deep blue/purple gradients with colorful accent cards.
  *
  * Color System:
- * - Primary: Blue (#3B82F6) for CTAs and interactive elements
- * - Secondary: Light blue-gray for subtle backgrounds
- * - Chart colors: Pre-defined palette for data visualization components
+ * - Background: Deep dark blue with gradient
+ * - Cards: Glass-morphism with translucent backgrounds
+ * - Accents: Gradient colors (blue, purple, pink, orange)
  */
 
 @layer base {
@@ -22,64 +22,64 @@
       ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
 
-    /* Light Mode Colors - Enhanced Vivid Palette */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262 83% 58%; /* Vibrant Purple */
+    /* Dark Gradient Theme - Light Mode (still dark-styled for consistency) */
+    --background: 224 71% 4%; /* Deep dark blue #020617 */
+    --foreground: 210 40% 98%; /* Near white */
+    --card: 224 50% 8%; /* Slightly lighter dark blue */
+    --card-foreground: 210 40% 98%;
+    --popover: 224 50% 10%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 83% 58%; /* Vibrant Purple #7c3aed */
     --primary-foreground: 0 0% 100%;
-    --secondary: 199 89% 48%; /* Vibrant Cyan */
+    --secondary: 199 89% 48%; /* Vibrant Cyan #0ea5e9 */
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 224 40% 14%;
+    --muted-foreground: 215 20% 65%;
     --accent: 280 65% 60%; /* Vibrant Magenta */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 224 30% 18%;
+    --input: 224 30% 18%;
     --ring: 262 83% 58%;
-    --radius: 0.75rem; /* Increased border radius */
+    --radius: 1rem;
 
-    /* Chart Colors - For future data visualization components */
-    --chart-1: 12 76% 61%; /* Orange */
-    --chart-2: 173 58% 39%; /* Teal */
-    --chart-3: 197 37% 24%; /* Dark Blue */
-    --chart-4: 43 74% 66%; /* Yellow */
-    --chart-5: 27 87% 67%; /* Coral */
-  }
-
-  .dark {
-    /* Dark Mode Colors - Enhanced Vivid Palette */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 80% 65%; /* Vibrant Purple (lighter for dark mode) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 199 80% 55%; /* Vibrant Cyan (lighter for dark mode) */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 280 60% 65%; /* Vibrant Magenta (lighter for dark mode) */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 262 80% 65%;
-
-    /* Chart Colors - Dark mode variants */
+    /* Chart Colors */
     --chart-1: 220 70% 50%; /* Blue */
     --chart-2: 160 60% 45%; /* Green */
     --chart-3: 30 80% 55%; /* Orange */
     --chart-4: 280 65% 60%; /* Purple */
     --chart-5: 340 75% 55%; /* Pink */
+  }
+
+  .dark {
+    /* Dark Mode - Same as light for consistent dark theme */
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 224 50% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 50% 10%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 80% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 199 80% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 224 40% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 280 60% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 224 30% 18%;
+    --input: 224 30% 18%;
+    --ring: 262 80% 65%;
+
+    /* Chart Colors - Dark mode */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   /* Global Styles */
@@ -88,12 +88,52 @@
   }
 
   body {
-    background-color: hsl(var(--background));
+    background: linear-gradient(
+      135deg,
+      hsl(224 71% 4%) 0%,
+      hsl(250 60% 8%) 50%,
+      hsl(224 71% 4%) 100%
+    );
+    background-attachment: fixed;
     color: hsl(var(--foreground));
+    min-height: 100vh;
   }
 }
 
 @layer utilities {
+  /* Glass-morphism card utility */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .glass-card-hover {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Gradient backgrounds for package cards */
+  .gradient-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  }
+
+  .gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  }
+
+  .gradient-pink {
+    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  }
+
+  .gradient-orange {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  }
+
   /* Theme-aware gradient text utility for hero headings */
   .text-gradient-primary {
     background-image: linear-gradient(
@@ -119,10 +159,21 @@
   .bg-gradient-hero {
     background: linear-gradient(
       135deg,
-      hsl(var(--primary) / 0.1),
+      hsl(var(--primary) / 0.15),
       hsl(var(--secondary) / 0.1),
-      hsl(var(--accent) / 0.05)
+      hsl(var(--accent) / 0.08)
     );
+  }
+
+  /* Dark gradient page background */
+  .bg-gradient-page {
+    background: linear-gradient(
+      135deg,
+      hsl(224 71% 4%) 0%,
+      hsl(250 60% 8%) 50%,
+      hsl(224 71% 4%) 100%
+    );
+    background-attachment: fixed;
   }
 
   /* Shadow utilities for depth */
@@ -132,5 +183,30 @@
 
   .shadow-glow-secondary {
     box-shadow: 0 0 20px hsl(var(--secondary) / 0.3), 0 4px 12px hsl(var(--secondary) / 0.2);
+  }
+
+  /* Subtle gradient border effect */
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: var(--radius);
+  }
+
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 }
