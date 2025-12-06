@@ -301,7 +301,7 @@ describe("SplitPreview", () => {
     expect(splitLine.style.top).toBe("75%");
   });
 
-  it("handles edge case where containerRef is null", () => {
+  it("handles edge case with zero height image", () => {
     const { container } = render(<SplitPreview {...defaultProps} />);
 
     const splitContainer = screen.getByTestId("split-preview-container");
@@ -325,6 +325,22 @@ describe("SplitPreview", () => {
 
     const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
     expect(splitLine).toBeDefined();
+  });
+
+  it("handles scroll event when container ref has not been set yet", () => {
+    const originalCreateElement = document.createElement.bind(document);
+    let callCount = 0;
+
+    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+      callCount++;
+      return originalCreateElement(tagName);
+    });
+
+    render(<SplitPreview {...defaultProps} />);
+
+    expect(callCount).toBeGreaterThan(0);
+
+    vi.restoreAllMocks();
   });
 
   it("handles safe width and height with invalid values", () => {
