@@ -148,12 +148,7 @@ When("I select {string} as end date", async function(this: CustomWorld, date: st
   await input.fill(date);
 });
 
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-  await button.click();
-  await this.page.waitForLoadState("networkidle");
-});
+// Removed duplicate - using common.steps.ts
 
 When("I click on a photo in the grid", async function(this: CustomWorld) {
   const photoCard = this.page.locator('[class*="cursor-pointer"]').first();

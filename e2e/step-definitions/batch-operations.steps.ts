@@ -310,11 +310,7 @@ When("I select {int} images using checkboxes", async function(this: CustomWorld,
   }
 });
 
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-  await button.click();
-});
+// Removed duplicate - using common.steps.ts
 
 When(
   "I select {string} tier for batch enhancement",
@@ -346,10 +342,7 @@ When("I confirm the batch deletion", async function(this: CustomWorld) {
   await confirmButton.click();
 });
 
-When("I cancel the deletion confirmation", async function(this: CustomWorld) {
-  const cancelButton = this.page.getByRole("button", { name: /Cancel/i });
-  await cancelButton.click();
-});
+// Removed duplicate - using common.steps.ts
 
 When("the batch is processing", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
@@ -487,10 +480,7 @@ Then("I should see {string} indicator", async function(this: CustomWorld, text: 
   await expect(indicator).toBeVisible();
 });
 
-Then("I should see {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("I should see a tier selection modal", async function(this: CustomWorld) {
   const modal = this.page.locator('[role="dialog"]');
@@ -532,10 +522,7 @@ Then("the enhancement should not proceed", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-Then("the modal should close", async function(this: CustomWorld) {
-  const modal = this.page.locator('[role="dialog"]');
-  await expect(modal).not.toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("no enhancements should start", async function(this: CustomWorld) {
   // Verify no processing indicators
@@ -627,10 +614,7 @@ Then("I should see which images failed", async function(this: CustomWorld) {
   expect(count).toBeGreaterThan(0);
 });
 
-Then("I should see {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("only failed images should be re-queued for enhancement", async function(this: CustomWorld) {
   // Verify retry logic

@@ -201,11 +201,7 @@ Then("I should see the {string} button", async function(this: CustomWorld, butto
   await expect(button).toBeVisible();
 });
 
-Then("I should see {string} button", async function(this: CustomWorld, buttonText: string) {
-  // Use first() to handle cases where Next.js dev tools add extra buttons
-  const button = this.page.getByRole("button", { name: buttonText }).first();
-  await expect(button).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("I should not see the {string} button", async function(this: CustomWorld, buttonText: string) {
   const button = this.page.getByRole("button", { name: buttonText });

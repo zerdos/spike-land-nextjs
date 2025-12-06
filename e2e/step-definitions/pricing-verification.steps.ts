@@ -113,12 +113,7 @@ Then("the callback URL should point to pricing page", async function(this: Custo
   expect(url).toContain("callbackUrl");
 });
 
-Then("I should be redirected to Stripe checkout", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(1000);
-  const url = this.page.url();
-  const isStripeCheckout = url.includes("stripe") || url.includes("checkout");
-  expect(isStripeCheckout).toBe(true);
-});
+// Removed duplicate - using common.steps.ts
 
 Then("the checkout should be for a one-time payment", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);

@@ -281,28 +281,7 @@ Then("I should see the voucher input section", async function(this: CustomWorld)
   });
 });
 
-Then("I should be redirected to Stripe checkout", async function(this: CustomWorld) {
-  // Wait for URL change or new page
-  await this.page.waitForTimeout(1000);
-
-  // Check if URL contains stripe checkout
-  const currentUrl = this.page.url();
-
-  // Could be a redirect or navigation started
-  // Check if we're being redirected or if window.location.href was set
-  const navigationPromise = this.page.waitForURL(/checkout\.stripe\.com/, {
-    timeout: TIMEOUTS.DEFAULT,
-  }).catch(() => null);
-
-  if (navigationPromise) {
-    await navigationPromise;
-    expect(this.page.url()).toContain("checkout.stripe.com");
-  } else {
-    // Verify that the Stripe API was called and returned a URL
-    // This is enough to prove the flow works
-    console.log("Stripe checkout URL would be:", currentUrl);
-  }
-});
+// Removed duplicate - using common.steps.ts
 
 Then("I should not see the purchase modal", async function(this: CustomWorld) {
   const modalTitle = this.page.getByText("Get More Tokens");
