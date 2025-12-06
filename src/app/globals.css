@@ -22,27 +22,27 @@
       ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
 
-    /* Light Mode Colors */
+    /* Light Mode Colors - Enhanced Vivid Palette */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --primary: 262 83% 58%; /* Vibrant Purple */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 199 89% 48%; /* Vibrant Cyan */
+    --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 280 65% 60%; /* Vibrant Magenta */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem; /* Increased border radius */
 
     /* Chart Colors - For future data visualization components */
     --chart-1: 12 76% 61%; /* Orange */
@@ -53,26 +53,26 @@
   }
 
   .dark {
-    /* Dark Mode Colors */
+    /* Dark Mode Colors - Enhanced Vivid Palette */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --primary: 262 80% 65%; /* Vibrant Purple (lighter for dark mode) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 199 80% 55%; /* Vibrant Cyan (lighter for dark mode) */
+    --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 280 60% 65%; /* Vibrant Magenta (lighter for dark mode) */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 262 80% 65%;
 
     /* Chart Colors - Dark mode variants */
     --chart-1: 220 70% 50%; /* Blue */
@@ -96,9 +96,41 @@
 @layer utilities {
   /* Theme-aware gradient text utility for hero headings */
   .text-gradient-primary {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent))
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* Gradient background utilities */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.1),
+      hsl(var(--secondary) / 0.1),
+      hsl(var(--accent) / 0.05)
+    );
+  }
+
+  /* Shadow utilities for depth */
+  .shadow-glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 4px 12px hsl(var(--primary) / 0.2);
+  }
+
+  .shadow-glow-secondary {
+    box-shadow: 0 0 20px hsl(var(--secondary) / 0.3), 0 4px 12px hsl(var(--secondary) / 0.2);
   }
 }
