@@ -45,6 +45,45 @@ vi.mock("./ExportButton", () => ({
   ),
 }));
 
+// Mock BulkDeleteDialog component
+vi.mock("./BulkDeleteDialog", () => ({
+  BulkDeleteDialog: ({
+    selectedVersions,
+    onDelete,
+    onCancel: _onCancel,
+    disabled,
+  }: {
+    selectedVersions: Array<{ id: string; tier: string; sizeBytes?: number | null }>;
+    onDelete: (ids: string[]) => Promise<void>;
+    onCancel: () => void;
+    disabled?: boolean;
+  }) => {
+    if (selectedVersions.length === 0) return null;
+    return (
+      <div>
+        <button
+          onClick={() => {
+            const dialog = document.createElement("div");
+            dialog.setAttribute("role", "dialog");
+            dialog.innerHTML = `
+              <button data-testid="confirm-delete">Delete ${selectedVersions.length} version${selectedVersions.length !== 1 ? "s" : ""}</button>
+            `;
+            document.body.appendChild(dialog);
+            const confirmBtn = dialog.querySelector("[data-testid='confirm-delete']");
+            confirmBtn?.addEventListener("click", () => {
+              onDelete(selectedVersions.map((v) => v.id));
+              document.body.removeChild(dialog);
+            });
+          }}
+          disabled={disabled}
+        >
+          Delete Selected ({selectedVersions.length})
+        </button>
+      </div>
+    );
+  },
+}));
+
 // Mock fetch for logging
 global.fetch = vi.fn();
 
@@ -57,6 +96,7 @@ const createMockVersion = (
     height: number;
     status: JobStatus;
     createdAt: Date;
+    sizeBytes: number | null;
   }>,
 ) => ({
   id: "version-1",
@@ -66,6 +106,7 @@ const createMockVersion = (
   height: 1080,
   createdAt: new Date("2024-01-15T10:30:00Z"),
   status: "COMPLETED" as JobStatus,
+  sizeBytes: 1024 * 500,
   ...overrides,
 });
 
@@ -117,7 +158,7 @@ describe("VersionGrid Component", () => {
 
     render(<VersionGrid versions={versions} />);
 
-    expect(screen.getByText("1920 × 1080")).toBeInTheDocument();
+    expect(screen.getByText("1920 x 1080")).toBeInTheDocument();
   });
 
   it("shows formatted date for each version", () => {
@@ -623,5 +664,299 @@ describe("VersionGrid Component", () => {
     });
 
     expect(onVersionSelect).not.toHaveBeenCalled();
+  });
+
+  // New tests for storage size display
+  it("shows storage size for completed versions", () => {
+    const versions = [createMockVersion({ sizeBytes: 1024 * 1024 * 2 })];
+
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.getByText("2.0 MB")).toBeInTheDocument();
+  });
+
+  it("shows total storage used", () => {
+    const versions = [
+      createMockVersion({ id: "v1", sizeBytes: 1024 * 1024 }),
+      createMockVersion({ id: "v2", sizeBytes: 1024 * 1024 * 2 }),
+    ];
+
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.getByText(/total storage/i)).toBeInTheDocument();
+  });
+
+  it("does not show size for versions without sizeBytes", () => {
+    const versions = [createMockVersion({ sizeBytes: null })];
+
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.queryByText("N/A")).not.toBeInTheDocument();
+  });
+
+  // New tests for bulk delete functionality
+  it("shows bulk select controls when enableBulkSelect is true", () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /select all/i })).toBeInTheDocument();
+  });
+
+  it("hides bulk select controls when enableBulkSelect is false", () => {
+    const versions = [createMockVersion()];
+
+    render(<VersionGrid versions={versions} enableBulkSelect={false} />);
+
+    expect(screen.queryByRole("button", { name: /select all/i })).not.toBeInTheDocument();
+  });
+
+  it("shows checkbox for deletable versions when bulk select is enabled", () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    expect(screen.getByRole("checkbox")).toBeInTheDocument();
+  });
+
+  it("toggles version selection when checkbox is clicked", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "checked");
+    });
+  });
+
+  it("selects all versions when Select All is clicked", async () => {
+    const versions = [
+      createMockVersion({ id: "v1" }),
+      createMockVersion({ id: "v2" }),
+    ];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const selectAllButton = screen.getByRole("button", { name: /select all/i });
+    fireEvent.click(selectAllButton);
+
+    await waitFor(() => {
+      const checkboxes = screen.getAllByRole("checkbox");
+      checkboxes.forEach((checkbox) => {
+        expect(checkbox).toHaveAttribute("data-state", "checked");
+      });
+    });
+  });
+
+  it("deselects all versions when Deselect All is clicked", async () => {
+    const versions = [
+      createMockVersion({ id: "v1" }),
+      createMockVersion({ id: "v2" }),
+    ];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    // First select all
+    const selectAllButton = screen.getByRole("button", { name: /select all/i });
+    fireEvent.click(selectAllButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /deselect all/i })).toBeInTheDocument();
+    });
+
+    // Then deselect all
+    const deselectAllButton = screen.getByRole("button", { name: /deselect all/i });
+    fireEvent.click(deselectAllButton);
+
+    await waitFor(() => {
+      const checkboxes = screen.getAllByRole("checkbox");
+      checkboxes.forEach((checkbox) => {
+        expect(checkbox).toHaveAttribute("data-state", "unchecked");
+      });
+    });
+  });
+
+  it("shows bulk delete dialog when versions are selected", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /delete selected/i })).toBeInTheDocument();
+    });
+  });
+
+  it("calls onBulkDelete when bulk delete is confirmed", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /delete selected/i })).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    fireEvent.click(deleteButton);
+
+    // Now confirm in dialog
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    const confirmButton = screen.getByRole("button", { name: /delete 1 version/i });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(onBulkDelete).toHaveBeenCalledWith(["version-1"]);
+    });
+  });
+
+  it("highlights selected versions with destructive ring", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    const { container } = render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      const selectedCard = container.querySelector("[class*='ring-destructive']");
+      expect(selectedCard).toBeInTheDocument();
+    });
+  });
+
+  it("does not show checkbox for non-deletable versions", () => {
+    const versions = [createMockVersion({ status: "PROCESSING" })];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+
+  it("shows REFUNDED status in deletable versions", () => {
+    const versions = [createMockVersion({ status: "REFUNDED" })];
+    const onJobDelete = vi.fn();
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    expect(screen.getByText("Delete")).toBeInTheDocument();
+  });
+
+  it("does not show dimensions when both width and height are 0", () => {
+    const versions = [createMockVersion({ width: 0, height: 0 })];
+
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.queryByText("0 x 0")).not.toBeInTheDocument();
+  });
+
+  it("clears selection when bulk delete succeeds", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "checked");
+    });
+
+    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    const confirmButton = screen.getByRole("button", { name: /delete 1 version/i });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(onBulkDelete).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "unchecked");
+    });
   });
 });
