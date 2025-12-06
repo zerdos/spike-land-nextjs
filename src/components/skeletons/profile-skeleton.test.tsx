@@ -16,7 +16,7 @@ describe("ProfileSkeleton", () => {
 
   it("renders multiple cards", () => {
     const { container } = render(<ProfileSkeleton />);
-    const cards = container.querySelectorAll('[class*="rounded-xl"]');
+    const cards = container.querySelectorAll('[class*="rounded-2xl"]');
     expect(cards.length).toBe(2);
   });
 

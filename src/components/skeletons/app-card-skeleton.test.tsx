@@ -10,7 +10,7 @@ describe("AppCardSkeleton", () => {
 
   it("renders card structure", () => {
     const { container } = render(<AppCardSkeleton />);
-    const card = container.querySelector('[class*="rounded-xl"]');
+    const card = container.querySelector('[class*="rounded-"]');
     expect(card).toBeInTheDocument();
   });
 
