@@ -349,9 +349,7 @@ Then("the form data should be preserved", async function(this: CustomWorld) {
   }
 });
 
-Then("I should see a success message", async function(this: CustomWorld) {
-  await waitForTextWithRetry(this.page, /success|created/i);
-});
+// Removed duplicate - using common.steps.ts
 
 Then("the new app should appear in my apps list", async function(this: CustomWorld) {
   // After redirect to /my-apps, check for app card

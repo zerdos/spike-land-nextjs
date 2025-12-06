@@ -165,10 +165,7 @@ Then(
   },
 );
 
-Then("I should see {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("the copy button should show {string} text", async function(this: CustomWorld, text: string) {
   const button = this.page.getByRole("button", { name: text });
