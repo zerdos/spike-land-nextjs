@@ -764,3 +764,142 @@ gh run view <run-id> --log-failed
 - Verify all secrets are configured (VERCEL_TOKEN, CODECOV_TOKEN)
 - Ensure tests pass locally first
 - Check if branch protection rules are blocking merge
+
+## 🔧 GitHub CLI Orchestration
+
+**CRITICAL**: This project uses GitHub as the single source of truth for all project management. Agents MUST use the `gh` CLI for orchestration tasks.
+
+### GitHub Features to Use
+
+| GitHub Feature | Purpose | Replaces |
+|---------------|---------|----------|
+| **Issues** | Task tracking, bugs, features | Jira tickets |
+| **Projects** | Kanban boards, roadmaps | Jira boards |
+| **Milestones** | Release planning | Jira sprints |
+| **Wiki** | Documentation, specs | Confluence |
+| **Discussions** | RFCs, decisions, Q&A | Confluence/Slack |
+
+### Essential gh Commands for Agents
+
+#### Issues (Task Queue)
+
+```bash
+# List open issues
+gh issue list --state open --json number,title,labels,assignees
+
+# Create a new issue (when discovering work)
+gh issue create --title "Title" --body "Description" --label "bug"
+
+# Add comment when starting work
+gh issue comment <number> --body "🤖 Starting work on this"
+
+# Close with summary when done
+gh issue close <number> --comment "✅ Completed: <summary>"
+
+# Add label when blocked
+gh issue edit <number> --add-label "blocked"
+```
+
+#### Projects (Kanban Board)
+
+**Initial Setup** (if no project exists):
+
+```bash
+# Create a new project board
+gh project create --title "Spike Land Roadmap" --owner @me
+
+# The project will have default columns. To customize:
+# Go to: https://github.com/users/{username}/projects/{n}/settings
+# Add columns: Backlog, Up Next, In Progress, Done
+```
+
+**Daily Usage**:
+
+```bash
+# List projects
+gh project list
+
+# View project items
+gh project item-list <project-number> --format json
+
+# Add issue to project
+gh project item-add <project-number> --url <issue-url>
+
+# Update item status (move between columns)
+gh project item-edit --id <item-id> --field-id <status-field-id> --single-select-option-id <option-id>
+```
+
+#### Milestones (Release Planning)
+
+```bash
+# List milestones
+gh api repos/{owner}/{repo}/milestones
+
+# Create milestone
+gh api repos/{owner}/{repo}/milestones -f title="v1.0" -f due_on="2025-01-15T00:00:00Z"
+
+# Assign issue to milestone
+gh issue edit <number> --milestone "v1.0"
+```
+
+#### Wiki (Documentation)
+
+```bash
+# Clone wiki repo (wikis are separate git repos)
+git clone https://github.com/{owner}/{repo}.wiki.git
+
+# Update wiki page
+echo "# Page Content" > wiki-repo/Page-Name.md
+cd wiki-repo && git add . && git commit -m "Update docs" && git push
+```
+
+### Agent Workflow: GitHub-First Orchestration
+
+**When starting a session:**
+
+1. Check open issues: `gh issue list --state open`
+2. Check project board status: `gh project item-list <n>`
+3. Report status to user before asking what to work on
+
+**When discovering work/bugs (AUTO-CREATE - no need to ask):**
+
+1. Create an issue immediately: `gh issue create --label "agent-created"`
+2. Add to project board if exists
+3. Add appropriate labels (bug, feature, tech-debt, p0, p1, p2)
+4. Continue with current work - don't block on the discovery
+
+**When starting work:**
+
+1. Comment on issue: `gh issue comment <n> --body "🤖 Working on this"`
+2. Assign yourself (or note agent is working): `gh issue edit <n> --add-assignee "@me"`
+
+**When blocked:**
+
+1. Add blocked label: `gh issue edit <n> --add-label "blocked"`
+2. Comment with blocker details
+3. Create new issue for the blocker if needed
+
+**When completing work:**
+
+1. Close issue with summary: `gh issue close <n> --comment "✅ Done: <summary>"`
+2. Update project board if applicable
+3. Link PR to issue: Include "Resolves #<n>" in PR description
+
+### Labels to Use
+
+- `p0`, `p1`, `p2` - Priority levels
+- `bug` - Bug fixes
+- `feature` - New features
+- `tech-debt` - Technical debt
+- `blocked` - Blocked by something
+- `in-progress` - Currently being worked on
+- `agent-created` - Auto-created by AI agent
+
+### Creating Visibility for Decision Making
+
+Agents should help the owner make decisions by:
+
+1. Keeping issues updated with current status
+2. Using labels consistently for filtering
+3. Adding context in issue comments (not just commits)
+4. Summarizing blockers and open questions prominently
