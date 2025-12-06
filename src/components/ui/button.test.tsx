@@ -12,7 +12,7 @@ describe("Button Component", () => {
   it("should apply default variant classes", () => {
     render(<Button>Default</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("bg-primary");
+    expect(button).toHaveClass("bg-gradient-primary");
   });
 
   it("should apply destructive variant", () => {
@@ -24,7 +24,7 @@ describe("Button Component", () => {
   it("should apply outline variant", () => {
     render(<Button variant="outline">Outline</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("border");
+    expect(button).toHaveClass("border-2");
   });
 
   it("should apply secondary variant", () => {
@@ -36,7 +36,7 @@ describe("Button Component", () => {
   it("should apply ghost variant", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("hover:bg-accent");
+    expect(button).toHaveClass("hover:bg-accent/10");
   });
 
   it("should apply link variant", () => {
@@ -48,19 +48,19 @@ describe("Button Component", () => {
   it("should apply small size", () => {
     render(<Button size="sm">Small</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-8");
+    expect(button).toHaveClass("h-9");
   });
 
   it("should apply large size", () => {
     render(<Button size="lg">Large</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-10");
+    expect(button).toHaveClass("h-12");
   });
 
   it("should apply icon size", () => {
     render(<Button size="icon">Icon</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-9", "w-9");
+    expect(button).toHaveClass("h-10", "w-10");
   });
 
   it("should apply custom className", () => {
@@ -122,7 +122,7 @@ describe("Button Component", () => {
   describe("buttonVariants", () => {
     it("should generate default variant classes", () => {
       const classes = buttonVariants();
-      expect(classes).toContain("bg-primary");
+      expect(classes).toContain("bg-gradient-primary");
     });
 
     it("should generate variant-specific classes", () => {
@@ -132,7 +132,7 @@ describe("Button Component", () => {
 
     it("should generate size-specific classes", () => {
       const classes = buttonVariants({ size: "lg" });
-      expect(classes).toContain("h-10");
+      expect(classes).toContain("h-12");
     });
 
     it("should merge custom className", () => {

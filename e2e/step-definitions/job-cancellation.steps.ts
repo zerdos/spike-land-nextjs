@@ -54,7 +54,7 @@ Given("I have a pending enhancement job", async function(this: CustomWorld) {
       body: JSON.stringify(mockPendingJob),
     });
   });
-  (this as CustomWorld & { currentJob: typeof mockPendingJob }).currentJob = mockPendingJob;
+  (this as CustomWorld & { currentJob: typeof mockPendingJob; }).currentJob = mockPendingJob;
 });
 
 Given("I have a processing enhancement job", async function(this: CustomWorld) {
@@ -65,7 +65,7 @@ Given("I have a processing enhancement job", async function(this: CustomWorld) {
       body: JSON.stringify(mockProcessingJob),
     });
   });
-  (this as CustomWorld & { currentJob: typeof mockProcessingJob }).currentJob = mockProcessingJob;
+  (this as CustomWorld & { currentJob: typeof mockProcessingJob; }).currentJob = mockProcessingJob;
 });
 
 Given("I have a completed enhancement job", async function(this: CustomWorld) {
@@ -76,7 +76,7 @@ Given("I have a completed enhancement job", async function(this: CustomWorld) {
       body: JSON.stringify(mockCompletedJob),
     });
   });
-  (this as CustomWorld & { currentJob: typeof mockCompletedJob }).currentJob = mockCompletedJob;
+  (this as CustomWorld & { currentJob: typeof mockCompletedJob; }).currentJob = mockCompletedJob;
 });
 
 Given("I have a failed enhancement job", async function(this: CustomWorld) {
@@ -87,7 +87,7 @@ Given("I have a failed enhancement job", async function(this: CustomWorld) {
       body: JSON.stringify(mockFailedJob),
     });
   });
-  (this as CustomWorld & { currentJob: typeof mockFailedJob }).currentJob = mockFailedJob;
+  (this as CustomWorld & { currentJob: typeof mockFailedJob; }).currentJob = mockFailedJob;
 });
 
 Given("I have a cancelled enhancement job", async function(this: CustomWorld) {
@@ -98,7 +98,7 @@ Given("I have a cancelled enhancement job", async function(this: CustomWorld) {
       body: JSON.stringify(mockCancelledJob),
     });
   });
-  (this as CustomWorld & { currentJob: typeof mockCancelledJob }).currentJob = mockCancelledJob;
+  (this as CustomWorld & { currentJob: typeof mockCancelledJob; }).currentJob = mockCancelledJob;
 });
 
 Given(
@@ -112,13 +112,13 @@ Given(
         body: JSON.stringify(jobWithCost),
       });
     });
-    (this as CustomWorld & { currentJob: typeof jobWithCost }).currentJob = jobWithCost;
+    (this as CustomWorld & { currentJob: typeof jobWithCost; }).currentJob = jobWithCost;
   },
 );
 
 Given("I have {int} tokens", async function(this: CustomWorld, balance: number) {
   await mockTokenBalance(this, balance);
-  (this as CustomWorld & { tokenBalance: number }).tokenBalance = balance;
+  (this as CustomWorld & { tokenBalance: number; }).tokenBalance = balance;
 });
 
 Given("I mock a failed job cancellation", async function(this: CustomWorld) {
@@ -216,7 +216,7 @@ Then("I should see a success message", async function(this: CustomWorld) {
 
 Then("my tokens should be refunded", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
-  const worldWithBalance = this as CustomWorld & { tokenBalance?: number };
+  const worldWithBalance = this as CustomWorld & { tokenBalance?: number; };
   if (worldWithBalance.tokenBalance !== undefined) {
     await mockTokenBalance(this, worldWithBalance.tokenBalance + 2);
   }
@@ -248,7 +248,7 @@ Then("the job status should remain {string}", async function(this: CustomWorld, 
 });
 
 Then("my token balance should not change", async function(this: CustomWorld) {
-  const worldWithBalance = this as CustomWorld & { tokenBalance?: number };
+  const worldWithBalance = this as CustomWorld & { tokenBalance?: number; };
   if (worldWithBalance.tokenBalance !== undefined) {
     await mockTokenBalance(this, worldWithBalance.tokenBalance);
   }

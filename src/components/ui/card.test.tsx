@@ -13,7 +13,13 @@ describe("Card Components", () => {
     it("should apply default card classes", () => {
       render(<Card data-testid="card">Content</Card>);
       const card = screen.getByTestId("card");
-      expect(card).toHaveClass("rounded-xl", "border", "bg-card", "text-card-foreground", "shadow");
+      expect(card).toHaveClass(
+        "rounded-2xl",
+        "border",
+        "bg-card",
+        "text-card-foreground",
+        "shadow-md",
+      );
     });
 
     it("should merge custom className", () => {
@@ -48,7 +54,7 @@ describe("Card Components", () => {
     it("should apply default header classes", () => {
       render(<CardHeader data-testid="header">Content</CardHeader>);
       const header = screen.getByTestId("header");
-      expect(header).toHaveClass("flex", "flex-col", "space-y-1.5", "p-6");
+      expect(header).toHaveClass("flex", "flex-col", "space-y-2", "p-7");
     });
 
     it("should merge custom className", () => {
@@ -139,7 +145,7 @@ describe("Card Components", () => {
     it("should apply default content classes", () => {
       render(<CardContent data-testid="content">Content</CardContent>);
       const content = screen.getByTestId("content");
-      expect(content).toHaveClass("p-6", "pt-0");
+      expect(content).toHaveClass("p-7", "pt-0");
     });
 
     it("should merge custom className", () => {
@@ -168,7 +174,7 @@ describe("Card Components", () => {
     it("should apply default footer classes", () => {
       render(<CardFooter data-testid="footer">Content</CardFooter>);
       const footer = screen.getByTestId("footer");
-      expect(footer).toHaveClass("flex", "items-center", "p-6", "pt-0");
+      expect(footer).toHaveClass("flex", "items-center", "p-7", "pt-0");
     });
 
     it("should merge custom className", () => {

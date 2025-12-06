@@ -92,7 +92,7 @@ describe("Home Page", () => {
 
     it("should have primary background color", () => {
       const { container } = render(<Home />);
-      const ctaSection = container.querySelector("section.bg-primary");
+      const ctaSection = container.querySelector("section.bg-gradient-primary");
       expect(ctaSection).toBeInTheDocument();
     });
   });

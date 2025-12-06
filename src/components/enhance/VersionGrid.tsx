@@ -71,7 +71,9 @@ export function VersionGrid({
   const [selectedForDelete, setSelectedForDelete] = useState<Set<string>>(new Set());
 
   const deletableVersions = versions.filter(
-    (v) => v.status === "COMPLETED" || v.status === "FAILED" || v.status === "CANCELLED" || v.status === "REFUNDED"
+    (v) =>
+      v.status === "COMPLETED" || v.status === "FAILED" || v.status === "CANCELLED" ||
+      v.status === "REFUNDED",
   );
 
   const handleImageError = (version: EnhancementVersion) => {

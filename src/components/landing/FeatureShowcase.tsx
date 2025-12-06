@@ -70,32 +70,47 @@ const features: Feature[] = [
 ];
 
 export function FeatureShowcase() {
+  const iconColors = [
+    "bg-gradient-to-br from-purple-500 to-pink-500",
+    "bg-gradient-to-br from-blue-500 to-cyan-500",
+    "bg-gradient-to-br from-orange-500 to-red-500",
+    "bg-gradient-to-br from-green-500 to-emerald-500",
+    "bg-gradient-to-br from-indigo-500 to-purple-500",
+    "bg-gradient-to-br from-yellow-500 to-orange-500",
+    "bg-gradient-to-br from-pink-500 to-rose-500",
+    "bg-gradient-to-br from-cyan-500 to-blue-500",
+  ];
+
   return (
-    <section className="bg-muted/30 py-16 sm:py-24">
+    <section className="bg-muted/30 py-20 sm:py-28">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-4xl text-center mb-12">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+        <div className="mx-auto max-w-4xl text-center mb-16">
+          <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
             Why Choose Our AI Enhancement
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             Powerful features designed to make image enhancement simple and effective
           </p>
         </div>
 
-        <div className="mx-auto max-w-6xl grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto max-w-6xl grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="border-0 bg-background shadow-sm hover:shadow-md transition-shadow"
+              className="border-0 bg-background group hover:scale-[1.02] transition-all"
             >
-              <CardHeader className="pb-2">
-                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <CardHeader className="pb-3">
+                <div
+                  className={`mb-3 flex h-14 w-14 items-center justify-center rounded-xl ${
+                    iconColors[index]
+                  } text-white shadow-lg transition-transform group-hover:scale-110`}
+                >
                   {feature.icon}
                 </div>
                 <CardTitle className="text-lg">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-sm leading-relaxed">
                   {feature.description}
                 </CardDescription>
               </CardContent>

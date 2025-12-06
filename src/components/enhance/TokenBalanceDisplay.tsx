@@ -3,10 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  LOW_BALANCE_THRESHOLD,
-  useTokenBalance,
-} from "@/hooks/useTokenBalance";
+import { LOW_BALANCE_THRESHOLD, useTokenBalance } from "@/hooks/useTokenBalance";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Coins, ImageIcon, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -60,8 +57,8 @@ export function TokenBalanceDisplay({
                 isCriticalBalance
                   ? "text-destructive"
                   : isLowBalance
-                    ? "text-yellow-500"
-                    : "text-yellow-500",
+                  ? "text-yellow-500"
+                  : "text-yellow-500",
               )}
             />
             <div>

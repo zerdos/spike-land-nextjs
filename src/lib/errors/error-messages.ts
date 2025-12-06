@@ -35,15 +35,13 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   NETWORK_ERROR: {
     title: "Connection Problem",
     message: "We're having trouble connecting to our servers.",
-    suggestion:
-      "Please check your internet connection and try again in a moment.",
+    suggestion: "Please check your internet connection and try again in a moment.",
     retryable: true,
   },
   TIMEOUT: {
     title: "Request Timeout",
     message: "The request took too long to complete.",
-    suggestion:
-      "This might be due to a slow connection or server load. Please try again.",
+    suggestion: "This might be due to a slow connection or server load. Please try again.",
     retryable: true,
   },
   RATE_LIMIT: {
@@ -68,15 +66,13 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   FORBIDDEN: {
     title: "Access Denied",
     message: "You don't have permission to perform this action.",
-    suggestion:
-      "This resource may belong to another user or require special permissions.",
+    suggestion: "This resource may belong to another user or require special permissions.",
     retryable: false,
   },
   NOT_FOUND: {
     title: "Not Found",
     message: "The requested resource could not be found.",
-    suggestion:
-      "The item may have been deleted or the link may be incorrect.",
+    suggestion: "The item may have been deleted or the link may be incorrect.",
     retryable: false,
   },
   INVALID_INPUT: {
@@ -88,8 +84,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   FILE_TOO_LARGE: {
     title: "File Too Large",
     message: "The selected file exceeds the maximum allowed size.",
-    suggestion:
-      "Please choose a smaller file. Maximum size is 10MB per image.",
+    suggestion: "Please choose a smaller file. Maximum size is 10MB per image.",
     retryable: false,
   },
   UNSUPPORTED_FILE_TYPE: {
@@ -101,8 +96,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   PROCESSING_FAILED: {
     title: "Processing Failed",
     message: "We encountered an error while processing your request.",
-    suggestion:
-      "This is usually temporary. Your tokens have been refunded. Please try again.",
+    suggestion: "This is usually temporary. Your tokens have been refunded. Please try again.",
     retryable: true,
   },
   UPLOAD_FAILED: {
@@ -121,15 +115,13 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   DATABASE_ERROR: {
     title: "Database Error",
     message: "We're having trouble accessing our database.",
-    suggestion:
-      "This is usually temporary. Please try again in a few moments.",
+    suggestion: "This is usually temporary. Please try again in a few moments.",
     retryable: true,
   },
   EXTERNAL_SERVICE_ERROR: {
     title: "Service Unavailable",
     message: "An external service we depend on is currently unavailable.",
-    suggestion:
-      "We're working to resolve this. Please try again in a few minutes.",
+    suggestion: "We're working to resolve this. Please try again in a few minutes.",
     retryable: true,
   },
   UNKNOWN_ERROR: {
@@ -147,8 +139,9 @@ export function detectErrorCode(
   error: Error | string,
   statusCode?: number,
 ): ErrorCode {
-  const errorMessage =
-    typeof error === "string" ? error.toLowerCase() : error.message.toLowerCase();
+  const errorMessage = typeof error === "string"
+    ? error.toLowerCase()
+    : error.message.toLowerCase();
 
   // Check status code first
   if (statusCode) {

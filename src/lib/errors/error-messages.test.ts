@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   detectErrorCode,
   ERROR_MESSAGES,
+  type ErrorCode,
   getUserFriendlyError,
   isRetryableError,
-  type ErrorCode,
 } from "./error-messages";
 
 describe("error-messages", () => {

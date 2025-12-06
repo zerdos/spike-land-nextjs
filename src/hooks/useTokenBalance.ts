@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
 import { ENHANCEMENT_COSTS } from "@/lib/stripe/client";
+import { useCallback, useEffect, useState } from "react";
 
 interface TokenBalanceResponse {
   balance: number;
