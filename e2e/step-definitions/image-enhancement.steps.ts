@@ -470,12 +470,7 @@ When("I view the comparison on different screen sizes", async function(this: Cus
   await this.page.waitForTimeout(100);
 });
 
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-  await expect(button).toBeVisible();
-  await button.click();
-  await this.page.waitForLoadState("networkidle");
-});
+// Removed duplicate - using common.steps.ts
 
 // Then steps
 Then("I should see the image upload section", async function(this: CustomWorld) {
@@ -530,7 +525,8 @@ Then(
   "I should see {string} or {string} text",
   async function(this: CustomWorld, text1: string, text2: string) {
     const element = this.page.getByText(text1).or(this.page.getByText(text2));
-    await expect(element).toBeVisible();
+    // Use first() to handle cases where the text appears multiple times on the page
+    await expect(element.first()).toBeVisible();
   },
 );
 
@@ -679,13 +675,7 @@ Then("the enhance button should be disabled", async function(this: CustomWorld) 
   await expect(button).toBeDisabled();
 });
 
-Then("I should see an error message", async function(this: CustomWorld) {
-  // Could be an alert, toast, or inline error
-  const error = this.page.locator('[role="alert"]').or(
-    this.page.getByText(/error|failed/i),
-  );
-  await expect(error).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("the enhancement status should show as failed", async function(this: CustomWorld) {
   const failedStatus = this.page.getByText(/failed|error/i);

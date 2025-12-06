@@ -160,8 +160,7 @@ Feature: Smoke Tests
     When I visit "/"
     Then I should see navigation links for:
       | Link      |
-      | Pricing   |
-      | Sign In   |
+      | Enhance   |
 
   @fast @requires-db
   Scenario: Authenticated user sees logout option

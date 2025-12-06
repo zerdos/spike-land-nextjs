@@ -209,10 +209,7 @@ Then("the job status should be {string}", async function(this: CustomWorld, stat
   await expect(statusBadge).toBeVisible();
 });
 
-Then("I should see a success message", async function(this: CustomWorld) {
-  const successMessage = this.page.getByText(/success|cancelled/i);
-  await expect(successMessage).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
 
 Then("my tokens should be refunded", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
@@ -274,7 +271,4 @@ Then(
   },
 );
 
-Then("I should see an error message", async function(this: CustomWorld) {
-  const errorMessage = this.page.getByText(/error|failed/i);
-  await expect(errorMessage).toBeVisible();
-});
+// Removed duplicate - using common.steps.ts
