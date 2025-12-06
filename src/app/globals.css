@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 /**
- * Dark Gradient Theme
+ * Dual Theme with Gradient Design
  *
- * A modern dark gradient design with glass-morphism effects.
- * Features deep blue/purple gradients with colorful accent cards.
+ * Light Mode: Warm gradient (cream to lavender)
+ * Dark Mode: Deep blue/purple gradient with glass-morphism
  *
  * Color System:
- * - Background: Deep dark blue with gradient
- * - Cards: Glass-morphism with translucent backgrounds
+ * - Light: Warm off-white with soft gradients
+ * - Dark: Deep dark blue with glass-morphism effects
  * - Accents: Gradient colors (blue, purple, pink, orange)
  */
 
@@ -22,41 +22,41 @@
       ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
 
-    /* Dark Gradient Theme - Light Mode (still dark-styled for consistency) */
-    --background: 224 71% 4%; /* Deep dark blue #020617 */
-    --foreground: 210 40% 98%; /* Near white */
-    --card: 224 50% 8%; /* Slightly lighter dark blue */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 50% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 58%; /* Vibrant Purple #7c3aed */
+    /* Light Mode - Warm gradient theme */
+    --background: 40 40% 98%; /* Warm off-white */
+    --foreground: 224 71% 10%; /* Dark blue-gray text */
+    --card: 40 30% 96%; /* Warm light card */
+    --card-foreground: 224 71% 10%;
+    --popover: 40 35% 97%;
+    --popover-foreground: 224 71% 10%;
+    --primary: 262 83% 50%; /* Vibrant Purple - slightly darker for light bg */
     --primary-foreground: 0 0% 100%;
-    --secondary: 199 89% 48%; /* Vibrant Cyan #0ea5e9 */
+    --secondary: 199 89% 42%; /* Vibrant Cyan - darker for light bg */
     --secondary-foreground: 0 0% 100%;
-    --muted: 224 40% 14%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 280 65% 60%; /* Vibrant Magenta */
+    --muted: 40 20% 94%; /* Warm muted */
+    --muted-foreground: 220 9% 40%;
+    --accent: 280 65% 55%; /* Vibrant Magenta */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 224 30% 18%;
-    --input: 224 30% 18%;
-    --ring: 262 83% 58%;
+    --destructive: 0 84.2% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 20% 88%; /* Warm border */
+    --input: 40 20% 90%;
+    --ring: 262 83% 50%;
     --radius: 1rem;
 
-    /* Chart Colors */
-    --chart-1: 220 70% 50%; /* Blue */
-    --chart-2: 160 60% 45%; /* Green */
-    --chart-3: 30 80% 55%; /* Orange */
-    --chart-4: 280 65% 60%; /* Purple */
-    --chart-5: 340 75% 55%; /* Pink */
+    /* Chart Colors - Light mode */
+    --chart-1: 220 70% 45%; /* Blue */
+    --chart-2: 160 60% 40%; /* Green */
+    --chart-3: 30 80% 50%; /* Orange */
+    --chart-4: 280 65% 55%; /* Purple */
+    --chart-5: 340 75% 50%; /* Pink */
   }
 
   .dark {
-    /* Dark Mode - Same as light for consistent dark theme */
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 224 50% 8%;
+    /* Dark Mode - Deep blue gradient theme */
+    --background: 224 71% 4%; /* Deep dark blue #020617 */
+    --foreground: 210 40% 98%; /* Near white */
+    --card: 224 50% 8%; /* Slightly lighter dark blue */
     --card-foreground: 210 40% 98%;
     --popover: 224 50% 10%;
     --popover-foreground: 210 40% 98%;
@@ -87,33 +87,56 @@
     border-color: hsl(var(--border));
   }
 
+  /* Light mode body - warm gradient */
   body {
+    background: linear-gradient(
+      135deg,
+      hsl(40 40% 98%) 0%,
+      hsl(220 40% 96%) 50%,
+      hsl(40 40% 98%) 100%
+    );
+    background-attachment: fixed;
+    color: hsl(var(--foreground));
+    min-height: 100vh;
+  }
+
+  /* Dark mode body - deep blue gradient */
+  .dark body {
     background: linear-gradient(
       135deg,
       hsl(224 71% 4%) 0%,
       hsl(250 60% 8%) 50%,
       hsl(224 71% 4%) 100%
     );
-    background-attachment: fixed;
-    color: hsl(var(--foreground));
-    min-height: 100vh;
   }
 }
 
 @layer utilities {
-  /* Glass-morphism card utility */
+  /* Glass-morphism card utility - Light mode */
   .glass-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .glass-card-hover {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  /* Glass-morphism card utility - Dark mode */
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
-  .glass-card-hover {
+  .dark .glass-card-hover {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
