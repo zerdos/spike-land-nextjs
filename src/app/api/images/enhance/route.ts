@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
 import { enhanceImageWithGemini } from "@/lib/ai/gemini-client";
+import { getUserFriendlyError } from "@/lib/errors/error-messages";
+import { retryWithBackoff } from "@/lib/errors/retry-logic";
+import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
@@ -28,11 +31,27 @@ const DEFAULT_IMAGE_DIMENSION = 1024; // Fallback dimension if metadata unavaila
 const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 }; // Black background for letterboxing
 
 export async function POST(request: NextRequest) {
+  const requestId = generateRequestId();
+  const requestLogger = logger.child({ requestId, route: "/api/images/enhance" });
+
   try {
+    requestLogger.info("Enhancement request received");
+
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      requestLogger.warn("Unauthorized enhancement attempt");
+      const errorMessage = getUserFriendlyError(new Error("Unauthorized"), 401);
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+        },
+        { status: 401 },
+      );
     }
+
+    requestLogger.info("User authenticated", { userId: session.user.id });
 
     // Check rate limit before processing
     const rateLimitResult = checkRateLimit(
@@ -41,19 +60,23 @@ export async function POST(request: NextRequest) {
     );
 
     if (rateLimitResult.isLimited) {
+      requestLogger.warn("Rate limit exceeded", { userId: session.user.id });
+      const errorMessage = getUserFriendlyError(new Error("Rate limit"), 429);
+      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
       return NextResponse.json(
         {
-          error: "Too many requests",
-          retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+          retryAfter,
         },
         {
           status: 429,
           headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
+            "Retry-After": String(retryAfter),
             "X-RateLimit-Remaining": "0",
             "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+            "X-Request-ID": requestId,
           },
         },
       );
@@ -63,14 +86,29 @@ export async function POST(request: NextRequest) {
     const { imageId, tier } = body as { imageId: string; tier: EnhancementTier; };
 
     if (!imageId || !tier) {
+      requestLogger.warn("Missing required fields", { imageId, tier });
+      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
       return NextResponse.json(
-        { error: "Missing imageId or tier" },
-        { status: 400 },
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: "Please provide both imageId and tier.",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
       );
     }
 
     if (!Object.keys(ENHANCEMENT_COSTS).includes(tier)) {
-      return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
+      requestLogger.warn("Invalid tier", { tier });
+      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: "Please select a valid enhancement tier (1K, 2K, or 4K).",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
     }
 
     const image = await prisma.enhancedImage.findUnique({
@@ -78,7 +116,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (!image || image.userId !== session.user.id) {
-      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+      requestLogger.warn("Image not found or access denied", { imageId, userId: session.user.id });
+      const errorMessage = getUserFriendlyError(new Error("Not found"), 404);
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+        },
+        { status: 404, headers: { "X-Request-ID": requestId } },
+      );
     }
 
     const tokenCost = ENHANCEMENT_COSTS[tier];
@@ -88,9 +135,22 @@ export async function POST(request: NextRequest) {
     );
 
     if (!hasEnough) {
+      requestLogger.warn("Insufficient tokens", {
+        userId: session.user.id,
+        required: tokenCost,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error("Insufficient tokens"),
+        402,
+      );
       return NextResponse.json(
-        { error: "Insufficient tokens", required: tokenCost },
-        { status: 402 },
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+          required: tokenCost,
+        },
+        { status: 402, headers: { "X-Request-ID": requestId } },
       );
     }
 
@@ -99,13 +159,24 @@ export async function POST(request: NextRequest) {
       amount: tokenCost,
       source: "image_enhancement",
       sourceId: imageId,
-      metadata: { tier },
+      metadata: { tier, requestId },
     });
 
     if (!consumeResult.success) {
+      requestLogger.error("Failed to consume tokens", new Error(consumeResult.error), {
+        userId: session.user.id,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error(consumeResult.error || "Failed to consume tokens"),
+        500,
+      );
       return NextResponse.json(
-        { error: consumeResult.error || "Failed to consume tokens" },
-        { status: 500 },
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+        },
+        { status: 500, headers: { "X-Request-ID": requestId } },
       );
     }
 
@@ -120,23 +191,40 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    processEnhancement(job.id, image.originalR2Key, tier, session.user.id).catch(
-      (error) => {
-        console.error("Enhancement failed:", error);
-      },
-    );
+    requestLogger.info("Enhancement job created", { jobId: job.id, tier });
 
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      tokenCost,
-      newBalance: consumeResult.balance,
+    processEnhancement(
+      job.id,
+      image.originalR2Key,
+      tier,
+      session.user.id,
+      requestId,
+    ).catch((error) => {
+      requestLogger.error("Enhancement processing failed", error, { jobId: job.id });
     });
-  } catch (error) {
-    console.error("Error in enhance API:", error);
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Enhancement failed" },
-      { status: 500 },
+      {
+        success: true,
+        jobId: job.id,
+        tokenCost,
+        newBalance: consumeResult.balance,
+      },
+      { headers: { "X-Request-ID": requestId } },
+    );
+  } catch (error) {
+    requestLogger.error("Unexpected error in enhance API", error instanceof Error ? error : new Error(String(error)));
+    const errorMessage = getUserFriendlyError(
+      error instanceof Error ? error : new Error("Enhancement failed"),
+      500,
+    );
+    return NextResponse.json(
+      {
+        error: errorMessage.message,
+        title: errorMessage.title,
+        suggestion: errorMessage.suggestion,
+      },
+      { status: 500, headers: { "X-Request-ID": requestId } },
     );
   }
 }
@@ -154,24 +242,49 @@ export async function POST(request: NextRequest) {
  * @param originalR2Key - R2 storage key for original image
  * @param tier - Enhancement tier (1K/2K/4K)
  * @param userId - User ID for token refunds on failure
+ * @param requestId - Request ID for tracing
  */
 async function processEnhancement(
   jobId: string,
   originalR2Key: string,
   tier: EnhancementTier,
   userId: string,
+  requestId: string,
 ) {
+  const processLogger = logger.child({ requestId, jobId, tier });
+
   try {
-    // Only log in development
-    if (process.env.NODE_ENV === "development") {
-      console.log(`[Enhancement] Starting processEnhancement for job: ${jobId}`);
+    processLogger.info("Starting enhancement processing");
+
+    // Download original image with retry logic
+    const downloadResult = await retryWithBackoff(
+      async () => {
+        const buffer = await downloadFromR2(originalR2Key);
+        if (!buffer) {
+          throw new Error("Failed to download original image");
+        }
+        return buffer;
+      },
+      {
+        maxAttempts: 3,
+        onRetry: (error, attempt, delay) => {
+          processLogger.warn("Retrying image download", {
+            attempt,
+            delay,
+            error: error.message,
+          });
+        },
+      },
+    );
+
+    if (!downloadResult.success || !downloadResult.data) {
+      throw new Error(
+        `Failed to download image after ${downloadResult.attempts} attempts: ${downloadResult.error?.message}`,
+      );
     }
 
-    const originalBuffer = await downloadFromR2(originalR2Key);
-
-    if (!originalBuffer) {
-      throw new Error("Failed to download original image");
-    }
+    const originalBuffer = downloadResult.data;
+    processLogger.debug("Original image downloaded successfully");
 
     // Get original image metadata for aspect ratio preservation and MIME type detection
     const originalMetadata = await sharp(originalBuffer).metadata();
@@ -197,18 +310,43 @@ async function processEnhancement(
 
     const tierSize = TIER_TO_SIZE[tier];
 
-    if (process.env.NODE_ENV === "development") {
-      console.log(`[Enhancement] Enhancing image with Gemini at ${tierSize} resolution...`);
-    }
-
-    // Get Gemini-enhanced image (will be square)
-    const geminiBuffer = await enhanceImageWithGemini({
-      imageData: base64Image,
-      mimeType,
-      tier: tierSize,
+    processLogger.info("Enhancing image with Gemini", {
+      resolution: tierSize,
       originalWidth,
       originalHeight,
     });
+
+    // Enhance with Gemini using retry logic
+    const geminiResult = await retryWithBackoff(
+      async () => {
+        return await enhanceImageWithGemini({
+          imageData: base64Image,
+          mimeType,
+          tier: tierSize,
+          originalWidth,
+          originalHeight,
+        });
+      },
+      {
+        maxAttempts: 2, // Gemini calls are expensive, limit retries
+        onRetry: (error, attempt, delay) => {
+          processLogger.warn("Retrying Gemini enhancement", {
+            attempt,
+            delay,
+            error: error.message,
+          });
+        },
+      },
+    );
+
+    if (!geminiResult.success || !geminiResult.data) {
+      throw new Error(
+        `Gemini enhancement failed after ${geminiResult.attempts} attempts: ${geminiResult.error?.message}`,
+      );
+    }
+
+    const geminiBuffer = geminiResult.data;
+    processLogger.debug("Gemini enhancement completed successfully");
 
     // Calculate dimensions to crop back to original aspect ratio
     const geminiMetadata = await sharp(geminiBuffer).metadata();
@@ -272,25 +410,46 @@ async function processEnhancement(
       .replace("/originals/", `/enhanced/`)
       .replace(/\.[^.]+$/, `/${jobId}.jpg`);
 
-    const uploadResult = await uploadToR2({
-      key: enhancedR2Key,
-      buffer: enhancedBuffer,
-      contentType: "image/jpeg",
-      metadata: {
-        tier,
-        jobId,
+    // Upload enhanced image with retry logic
+    const uploadResult = await retryWithBackoff(
+      async () => {
+        return await uploadToR2({
+          key: enhancedR2Key,
+          buffer: enhancedBuffer,
+          contentType: "image/jpeg",
+          metadata: {
+            tier,
+            jobId,
+          },
+        });
       },
-    });
+      {
+        maxAttempts: 3,
+        onRetry: (error, attempt, delay) => {
+          processLogger.warn("Retrying image upload", {
+            attempt,
+            delay,
+            error: error.message,
+          });
+        },
+      },
+    );
 
-    if (!uploadResult.success) {
-      throw new Error("Failed to upload enhanced image");
+    if (!uploadResult.success || !uploadResult.data?.success) {
+      throw new Error(
+        `Failed to upload enhanced image after ${uploadResult.attempts} attempts`,
+      );
     }
+
+    processLogger.debug("Enhanced image uploaded successfully", {
+      url: uploadResult.data.url,
+    });
 
     await prisma.imageEnhancementJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.COMPLETED,
-        enhancedUrl: uploadResult.url,
+        enhancedUrl: uploadResult.data.url,
         enhancedR2Key,
         enhancedWidth: metadata.width,
         enhancedHeight: metadata.height,
@@ -300,29 +459,36 @@ async function processEnhancement(
       },
     });
 
-    if (process.env.NODE_ENV === "development") {
-      console.log(`[Enhancement] Completed successfully for job ${jobId}`);
-    }
+    processLogger.info("Enhancement completed successfully");
   } catch (error) {
-    console.error("Enhancement processing failed:", error);
+    const enhancementError = error instanceof Error ? error : new Error(String(error));
+    processLogger.error("Enhancement processing failed", enhancementError);
 
     const job = await prisma.imageEnhancementJob.findUnique({
       where: { id: jobId },
     });
 
     if (job) {
-      await TokenBalanceManager.refundTokens(
+      // Refund tokens on failure
+      const refundResult = await TokenBalanceManager.refundTokens(
         userId,
         job.tokensCost,
         jobId,
-        "Enhancement failed",
+        enhancementError.message,
       );
 
+      if (refundResult.success) {
+        processLogger.info("Tokens refunded", { amount: job.tokensCost });
+      } else {
+        processLogger.error("Failed to refund tokens", new Error(refundResult.error));
+      }
+
+      // Update job status
       await prisma.imageEnhancementJob.update({
         where: { id: jobId },
         data: {
           status: JobStatus.FAILED,
-          errorMessage: error instanceof Error ? error.message : "Unknown error",
+          errorMessage: enhancementError.message,
         },
       });
     }

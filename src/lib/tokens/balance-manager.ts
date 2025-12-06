@@ -1,3 +1,5 @@
+import { getUserFriendlyError } from "@/lib/errors/error-messages";
+import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { Prisma, type TokenTransaction, TokenTransactionType } from "@prisma/client";
 
@@ -104,9 +106,23 @@ export class TokenBalanceManager {
     params: ConsumeTokensParams,
   ): Promise<TokenTransactionResult> {
     const { userId, amount, source, sourceId, metadata } = params;
+    const consumeLogger = logger.child({
+      userId,
+      amount,
+      source,
+      sourceId,
+    });
 
     try {
+      consumeLogger.debug("Attempting to consume tokens");
       this.validateUserId(userId);
+
+      if (amount <= 0) {
+        const error = new Error(`Invalid token amount: ${amount}. Must be positive.`);
+        consumeLogger.error("Invalid token amount", error);
+        throw error;
+      }
+
       // Use transaction to ensure atomic update
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await prisma.$transaction(async (tx: any) => {
@@ -134,13 +150,20 @@ export class TokenBalanceManager {
               lastRegeneration: new Date(),
             },
           });
+
+          consumeLogger.info("Created initial token balance for new user");
         }
 
         // Check if sufficient balance
         if (tokenBalance.balance < amount) {
-          throw new Error(
+          const insufficientError = new Error(
             `Insufficient tokens. Required: ${amount}, Available: ${tokenBalance.balance}`,
           );
+          consumeLogger.warn("Insufficient tokens", {
+            required: amount,
+            available: tokenBalance.balance,
+          });
+          throw insufficientError;
         }
 
         // Update balance
@@ -166,6 +189,10 @@ export class TokenBalanceManager {
           },
         });
 
+        consumeLogger.info("Tokens consumed successfully", {
+          newBalance: updatedBalance.balance,
+        });
+
         return { transaction, balance: updatedBalance.balance };
       });
 
@@ -175,11 +202,19 @@ export class TokenBalanceManager {
         balance: result.balance,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const userFriendlyError = getUserFriendlyError(
+        error instanceof Error ? error : new Error(errorMessage),
+      );
+
+      consumeLogger.error(
+        "Token consumption failed",
+        error instanceof Error ? error : new Error(errorMessage),
+      );
+
       return {
         success: false,
-        error: error instanceof Error
-          ? `Token consumption failed: ${error.message}`
-          : "Unknown error during token consumption",
+        error: userFriendlyError.message,
       };
     }
   }
@@ -191,9 +226,23 @@ export class TokenBalanceManager {
     params: AddTokensParams,
   ): Promise<TokenTransactionResult> {
     const { userId, amount, type, source, sourceId, metadata } = params;
+    const addLogger = logger.child({
+      userId,
+      amount,
+      type,
+      source,
+    });
 
     try {
+      addLogger.debug("Attempting to add tokens");
       this.validateUserId(userId);
+
+      if (amount <= 0) {
+        const error = new Error(`Invalid token amount: ${amount}. Must be positive.`);
+        addLogger.error("Invalid token amount", error);
+        throw error;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await prisma.$transaction(async (tx: any) => {
         // Get or create balance
@@ -218,12 +267,22 @@ export class TokenBalanceManager {
               lastRegeneration: new Date(),
             },
           });
+
+          addLogger.info("Created initial token balance for new user");
         }
 
         // Cap balance at maximum for regeneration
         let newBalance = tokenBalance.balance + amount;
+        const wasCapped = false;
         if (type === TokenTransactionType.EARN_REGENERATION) {
+          const beforeCap = newBalance;
           newBalance = Math.min(newBalance, MAX_TOKEN_BALANCE);
+          if (beforeCap > newBalance) {
+            addLogger.debug("Balance capped at maximum", {
+              requested: beforeCap,
+              capped: newBalance,
+            });
+          }
         }
 
         // Update balance
@@ -250,6 +309,11 @@ export class TokenBalanceManager {
           },
         });
 
+        addLogger.info("Tokens added successfully", {
+          newBalance: updatedBalance.balance,
+          wasCapped,
+        });
+
         return { transaction, balance: updatedBalance.balance };
       });
 
@@ -259,11 +323,19 @@ export class TokenBalanceManager {
         balance: result.balance,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const userFriendlyError = getUserFriendlyError(
+        error instanceof Error ? error : new Error(errorMessage),
+      );
+
+      addLogger.error(
+        "Adding tokens failed",
+        error instanceof Error ? error : new Error(errorMessage),
+      );
+
       return {
         success: false,
-        error: error instanceof Error
-          ? `Adding tokens failed: ${error.message}`
-          : "Unknown error while adding tokens",
+        error: userFriendlyError.message,
       };
     }
   }
