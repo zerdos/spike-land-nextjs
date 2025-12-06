@@ -94,6 +94,8 @@ describe("Home Page", () => {
       const { container } = render(<Home />);
       const ctaSection = container.querySelector("section.bg-gradient-primary");
       expect(ctaSection).toBeInTheDocument();
+      expect(ctaSection).toHaveClass("bg-gradient-primary");
+      expect(ctaSection).toHaveClass("text-primary-foreground");
     });
   });
 

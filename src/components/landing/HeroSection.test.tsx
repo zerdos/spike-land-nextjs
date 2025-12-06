@@ -44,6 +44,8 @@ describe("HeroSection Component", () => {
     const { container } = render(<HeroSection />);
     const section = container.querySelector("section");
     expect(section).toHaveClass("bg-gradient-hero");
+    expect(section).toHaveClass("relative");
+    expect(section).toHaveClass("overflow-hidden");
   });
 
   it("should have decorative background elements", () => {

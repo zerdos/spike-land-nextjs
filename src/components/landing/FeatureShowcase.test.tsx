@@ -88,7 +88,12 @@ describe("FeatureShowcase Component", () => {
 
   it("should have hover transition on cards", () => {
     const { container } = render(<FeatureShowcase />);
-    const cards = container.querySelectorAll(".hover\\:scale-\\[1\\.02\\]");
+    const cards = container.querySelectorAll(".group");
     expect(cards.length).toBe(8);
+    // Verify cards have hover transition classes
+    cards.forEach((card) => {
+      expect(card).toHaveClass("hover:scale-[1.02]");
+      expect(card).toHaveClass("transition-all");
+    });
   });
 });
