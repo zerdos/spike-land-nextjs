@@ -57,7 +57,7 @@ export function EnhancedImagesList({
   if (images.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-white/70 mb-4">
+        <p className="text-muted-foreground mb-4">
           No images uploaded yet. Upload your first image to get started.
         </p>
       </div>
@@ -111,7 +111,7 @@ export function EnhancedImagesList({
           return (
             <div key={image.id} className="group relative">
               <Link href={`/enhance/${image.id}`}>
-                <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/5 cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20">
+                <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted/50 cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-primary/30">
                   <Image
                     src={image.originalUrl}
                     alt="Uploaded image"
@@ -131,7 +131,7 @@ export function EnhancedImagesList({
               </Link>
 
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-white/70 truncate" suppressHydrationWarning>
+                <span className="text-xs text-muted-foreground truncate" suppressHydrationWarning>
                   {isClient ? formatDate(image.createdAt) : ""}
                 </span>
                 <div className="flex gap-1">

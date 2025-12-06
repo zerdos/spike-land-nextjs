@@ -46,7 +46,7 @@ export function TokenDisplay({
           ? "bg-red-500/20 text-red-400 border border-red-500/30"
           : isLowBalance
           ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-          : "bg-white/10 text-white border border-white/10",
+          : "bg-muted/50 text-foreground border border-border",
       )}
       data-testid="token-balance-display"
     >
