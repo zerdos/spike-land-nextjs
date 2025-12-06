@@ -373,6 +373,33 @@ describe("gemini-client", () => {
 
       consoleSpy.mockRestore();
     });
+
+    it("should timeout after 55 seconds", async () => {
+      vi.useFakeTimers();
+
+      try {
+        // Create an async generator that hangs to simulate a slow stream
+        async function* hangingStream(): AsyncGenerator<never> {
+          // Never yield - this simulates a stream that hangs indefinitely
+          await new Promise<never>(() => {});
+        }
+
+        mockGenerateContentStream.mockResolvedValueOnce(hangingStream());
+
+        const promise = enhanceImageWithGemini(defaultParams);
+
+        // Advance time to trigger timeout (56s > 55s timeout threshold)
+        await vi.advanceTimersByTimeAsync(56000);
+
+        // Expect the promise to reject with timeout error
+        // Note: This test causes an unhandled rejection warning because Promise.race
+        // leaves the losing promise (the hanging stream) unhandled. This is expected
+        // behavior when testing timeouts with fake timers and doesn't affect the test validity.
+        await expect(promise).rejects.toThrow("timed out after 55000ms");
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe("resetGeminiClient", () => {

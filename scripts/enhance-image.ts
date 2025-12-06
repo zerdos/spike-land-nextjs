@@ -66,7 +66,7 @@ async function enhanceImageWithGemini(
   ];
 
   console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
-  console.log(`Tier: ${tier}, Resolution: ${resolutionMap[tier]}`);
+  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
 
   const processStream = async (): Promise<Buffer> => {
     let response;
