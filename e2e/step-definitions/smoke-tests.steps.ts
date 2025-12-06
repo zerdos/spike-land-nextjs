@@ -2,29 +2,9 @@ import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
-Then("the page should load successfully", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("domcontentloaded");
-  const title = await this.page.title();
-  expect(title).toBeTruthy();
-});
-
 Then("I should see the navigation bar", async function(this: CustomWorld) {
   const nav = this.page.locator("nav");
   await expect(nav).toBeVisible();
-});
-
-Then("I should see {string} or {string} text", async function(
-  this: CustomWorld,
-  text1: string,
-  text2: string,
-) {
-  const element1 = this.page.getByText(text1);
-  const element2 = this.page.getByText(text2);
-
-  const isVisible1 = await element1.isVisible().catch(() => false);
-  const isVisible2 = await element2.isVisible().catch(() => false);
-
-  expect(isVisible1 || isVisible2).toBe(true);
 });
 
 Then("I should see admin dashboard content", async function(this: CustomWorld) {
