@@ -4,7 +4,9 @@ import Home from "./page";
 
 // Mock landing components
 vi.mock("@/components/landing", () => ({
+  PixelHeader: () => <header data-testid="pixel-header">Pixel Header</header>,
   HeroSection: () => <section data-testid="hero-section">Hero Section</section>,
+  TrustedBy: () => <section data-testid="trusted-by-section">Trusted By</section>,
   BeforeAfterGallery: () => <section data-testid="gallery-section">Gallery Section</section>,
   FeatureShowcase: () => <section data-testid="feature-section">Feature Section</section>,
   ComponentDemo: () => <section data-testid="component-demo-section">Component Demo</section>,
@@ -28,20 +30,25 @@ describe("Home Page", () => {
       expect(screen.getByTestId("feature-section")).toBeInTheDocument();
     });
 
-    it("should render ComponentDemo component", () => {
-      render(<Home />);
-      expect(screen.getByTestId("component-demo-section")).toBeInTheDocument();
-    });
-
     it("should render FAQ component", () => {
       render(<Home />);
       expect(screen.getByTestId("faq-section")).toBeInTheDocument();
     });
 
+    it("should render PixelHeader component", () => {
+      render(<Home />);
+      expect(screen.getByTestId("pixel-header")).toBeInTheDocument();
+    });
+
+    it("should render TrustedBy component", () => {
+      render(<Home />);
+      expect(screen.getByTestId("trusted-by-section")).toBeInTheDocument();
+    });
+
     it("should have proper semantic structure with sections", () => {
       render(<Home />);
       const sections = document.querySelectorAll("section");
-      // 5 mocked sections + 1 final CTA section
+      // 5 mocked sections (TrustedBy, hero, gallery, feature, faq) + 1 final CTA section
       expect(sections.length).toBe(6);
     });
   });

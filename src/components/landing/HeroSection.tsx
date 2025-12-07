@@ -1,75 +1,66 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { HeroComparisonSlider } from "./HeroComparisonSlider";
+
+// Mountain landscape demo images from Unsplash
+const DEMO_ORIGINAL = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=60";
+const DEMO_ENHANCED = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=95";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="container mx-auto px-4 py-24 sm:py-32 lg:py-40">
-        <div className="mx-auto max-w-4xl text-center">
-          {/* Social proof badge */}
-          <div className="mb-10 flex justify-center">
-            <Badge
-              variant="secondary"
-              className="px-5 py-2 text-sm shadow-lg bg-foreground/10 border-foreground/20 text-foreground"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Trusted by 10,000+ creators
-            </Badge>
-          </div>
-
+    <section className="relative overflow-hidden pt-24 pb-8">
+      <div className="container mx-auto px-4 py-16 sm:py-24">
+        <div className="mx-auto max-w-5xl text-center">
           {/* Main headline */}
-          <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-            Transform Your Images <span className="text-gradient-primary">with AI</span>
+          <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
+            Enhance Your Photos in <br className="hidden sm:block" />
+            <span className="text-gradient-primary">Seconds</span> with AI.
           </h1>
 
           {/* Subheadline */}
           <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Enhance photos instantly with our AI-powered technology. Upscale resolution, improve
-            quality, and bring your images to life in seconds.
+            Bring old, blurry images back to life. Pixel&apos;s advanced AI restores details and
+            clarity instantly.
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-col gap-5 sm:flex-row sm:justify-center">
-            <Button asChild size="lg" className="text-base font-semibold">
-              <Link href="/enhance">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Enhance Your First Image
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-base font-semibold">
-              <a href="#gallery">
-                <Play className="mr-2 h-5 w-5" />
-                See Examples
-              </a>
-            </Button>
+          {/* Comparison Slider */}
+          <div className="mx-auto max-w-4xl mb-12">
+            <HeroComparisonSlider
+              originalUrl={DEMO_ORIGINAL}
+              enhancedUrl={DEMO_ENHANCED}
+            />
           </div>
 
-          {/* Trust indicators */}
-          <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-glow-primary" />
-              <span>No signup required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-glow-primary" />
-              <span>Free first enhancement</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-glow-primary" />
-              <span>Results in seconds</span>
-            </div>
-          </div>
+          {/* CTA Button */}
+          <Button
+            asChild
+            size="lg"
+            className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
+          >
+            <Link href="/enhance">Try it Free</Link>
+          </Button>
         </div>
       </div>
 
-      {/* Background decoration - More vivid */}
-      <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 blur-3xl opacity-60" />
-      <div className="absolute -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-accent/20 to-primary/20 blur-3xl opacity-60" />
+      {/* Decorative spark elements */}
+      <div className="absolute top-20 right-10 opacity-20 pointer-events-none hidden lg:block">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-primary">
+          <path
+            d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div className="absolute bottom-32 left-10 opacity-10 pointer-events-none hidden lg:block">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" className="text-primary">
+          <path
+            d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
     </section>
   );
 }

@@ -285,4 +285,19 @@
   .shadow-glow-cyan-sm {
     box-shadow: 0 0 10px hsl(var(--pixel-cyan) / 0.3), 0 2px 8px hsl(var(--pixel-cyan) / 0.2);
   }
+
+  /* Grid background pattern for landing page */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .dark .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 }
