@@ -1,4 +1,3 @@
-import { JobStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
@@ -29,6 +28,16 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   },
 }));
 
+// Mock the workflow start function
+vi.mock("workflow/api", () => ({
+  start: vi.fn().mockResolvedValue({ runId: "batch-workflow-run-123" }),
+}));
+
+// Mock the batchEnhanceImages workflow
+vi.mock("@/workflows/batch-enhance.workflow", () => ({
+  batchEnhanceImages: vi.fn(),
+}));
+
 const { mockPrisma } = vi.hoisted(() => {
   return {
     mockPrisma: {
@@ -46,23 +55,6 @@ const { mockPrisma } = vi.hoisted(() => {
           },
         ]),
       },
-      imageEnhancementJob: {
-        create: vi.fn().mockImplementation(({ data }) => {
-          return Promise.resolve({
-            id: `job-${data.imageId}`,
-            imageId: data.imageId,
-            userId: data.userId,
-            tier: data.tier,
-            tokensCost: data.tokensCost,
-            status: data.status,
-          });
-        }),
-        findUnique: vi.fn().mockResolvedValue({
-          id: "job-1",
-          tokensCost: 5,
-        }),
-        update: vi.fn().mockResolvedValue({}),
-      },
     },
   };
 });
@@ -70,34 +62,6 @@ const { mockPrisma } = vi.hoisted(() => {
 vi.mock("@/lib/prisma", () => ({
   default: mockPrisma,
 }));
-
-// Mock enhancement dependencies
-vi.mock("@/lib/ai/gemini-client", () => ({
-  enhanceImageWithGemini: vi.fn().mockResolvedValue(Buffer.from("enhanced-image")),
-}));
-
-vi.mock("@/lib/storage/r2-client", () => ({
-  downloadFromR2: vi.fn().mockResolvedValue(Buffer.from("original-image")),
-  uploadToR2: vi.fn().mockResolvedValue({
-    success: true,
-    url: "https://r2.dev/images/enhanced.jpg",
-  }),
-}));
-
-vi.mock("sharp", () => {
-  const mockSharp = vi.fn(() => ({
-    metadata: vi.fn().mockResolvedValue({
-      width: 1920,
-      height: 1080,
-      format: "jpeg",
-    }),
-    resize: vi.fn().mockReturnThis(),
-    extract: vi.fn().mockReturnThis(),
-    jpeg: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn().mockResolvedValue(Buffer.from("processed-image")),
-  }));
-  return { default: mockSharp };
-});
 
 // Helper to create mock request
 function createMockRequest(body: unknown): NextRequest {
@@ -111,6 +75,12 @@ function createMockRequest(body: unknown): NextRequest {
 describe("POST /api/images/batch-enhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set Vercel environment to test workflow path
+    process.env.VERCEL = "1";
+  });
+
+  afterEach(() => {
+    delete process.env.VERCEL;
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -239,7 +209,10 @@ describe("POST /api/images/batch-enhance", () => {
     expect(data.error).toBe("Database error");
   });
 
-  it("should create enhancement jobs successfully", async () => {
+  it("should start batch enhancement workflow successfully", async () => {
+    const { start } = await import("workflow/api");
+    const { batchEnhanceImages } = await import("@/workflows/batch-enhance.workflow");
+
     const req = createMockRequest({
       imageIds: ["img-1", "img-2"],
       tier: "TIER_2K",
@@ -249,13 +222,22 @@ describe("POST /api/images/batch-enhance", () => {
 
     expect(res.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.results).toHaveLength(2);
+    expect(data.batchId).toMatch(/^batch-/);
     expect(data.summary.total).toBe(2);
-    expect(data.summary.successful).toBe(2);
-    expect(data.summary.failed).toBe(0);
     expect(data.summary.totalCost).toBe(10);
 
-    expect(mockPrisma.imageEnhancementJob.create).toHaveBeenCalledTimes(2);
+    // Verify workflow was started with correct params
+    expect(start).toHaveBeenCalledWith(batchEnhanceImages, [
+      expect.objectContaining({
+        batchId: expect.stringContaining("batch-"),
+        userId: "user-123",
+        tier: "TIER_2K",
+        images: expect.arrayContaining([
+          expect.objectContaining({ imageId: "img-1" }),
+          expect.objectContaining({ imageId: "img-2" }),
+        ]),
+      }),
+    ]);
   });
 
   it("should consume correct amount of tokens", async () => {
@@ -274,125 +256,6 @@ describe("POST /api/images/batch-enhance", () => {
       sourceId: expect.stringContaining("batch-"),
       metadata: { tier: "TIER_4K", imageCount: 2 },
     });
-  });
-
-  it("should handle partial job creation failure", async () => {
-    mockPrisma.imageEnhancementJob.create
-      .mockResolvedValueOnce({
-        id: "job-img-1",
-        imageId: "img-1",
-        userId: "user-123",
-        tier: "TIER_2K",
-        tokensCost: 5,
-        status: JobStatus.PENDING,
-      })
-      .mockRejectedValueOnce(new Error("Database error"));
-
-    const req = createMockRequest({
-      imageIds: ["img-1", "img-2"],
-      tier: "TIER_2K",
-    });
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.results).toHaveLength(2);
-    expect(data.results[0].success).toBe(true);
-    expect(data.results[1].success).toBe(false);
-    expect(data.results[1].error).toBe("Database error");
-    expect(data.summary.successful).toBe(1);
-    expect(data.summary.failed).toBe(1);
-  });
-
-  it("should refund tokens if all jobs fail", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
-
-    mockPrisma.imageEnhancementJob.create.mockRejectedValue(
-      new Error("Database error"),
-    );
-
-    const req = createMockRequest({
-      imageIds: ["img-1", "img-2"],
-      tier: "TIER_2K",
-    });
-    await POST(req);
-
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
-      "user-123",
-      10, // Full amount
-      expect.stringContaining("batch-"),
-      "All jobs failed",
-    );
-  });
-
-  it("should refund tokens for failed jobs only", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
-
-    mockPrisma.imageEnhancementJob.create
-      .mockResolvedValueOnce({
-        id: "job-img-1",
-        imageId: "img-1",
-        userId: "user-123",
-        tier: "TIER_2K",
-        tokensCost: 5,
-        status: JobStatus.PENDING,
-      })
-      .mockRejectedValueOnce(new Error("Database error"));
-
-    const req = createMockRequest({
-      imageIds: ["img-1", "img-2"],
-      tier: "TIER_2K",
-    });
-    await POST(req);
-
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
-      "user-123",
-      5, // One image worth
-      expect.stringContaining("batch-"),
-      "1 of 2 jobs failed",
-    );
-  });
-
-  it("should create jobs with QUEUED status", async () => {
-    mockPrisma.enhancedImage.findMany.mockResolvedValueOnce([
-      { id: "img-1", userId: "user-123", originalR2Key: "key1" },
-    ]);
-
-    const req = createMockRequest({
-      imageIds: ["img-1"],
-      tier: "TIER_2K",
-    });
-    await POST(req);
-
-    expect(mockPrisma.imageEnhancementJob.create).toHaveBeenCalledWith({
-      data: {
-        imageId: "img-1",
-        userId: "user-123",
-        tier: "TIER_2K",
-        tokensCost: 5,
-        status: JobStatus.PENDING,
-      },
-    });
-  });
-
-  it("should return results for all images", async () => {
-    mockPrisma.enhancedImage.findMany.mockResolvedValueOnce([
-      { id: "img-1", userId: "user-123", originalR2Key: "key1" },
-      { id: "img-2", userId: "user-123", originalR2Key: "key2" },
-    ]);
-
-    const req = createMockRequest({
-      imageIds: ["img-1", "img-2"],
-      tier: "TIER_2K",
-    });
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.results).toHaveLength(2);
-    expect(data.results[0].imageId).toBe("img-1");
-    expect(data.results[1].imageId).toBe("img-2");
-    expect(data.summary.total).toBe(2);
   });
 
   it("should calculate costs for different tiers", async () => {
@@ -455,7 +318,7 @@ describe("POST /api/images/batch-enhance", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.results).toHaveLength(1);
+    expect(data.summary.total).toBe(1);
     expect(data.summary.totalCost).toBe(5);
   });
 
@@ -477,7 +340,7 @@ describe("POST /api/images/batch-enhance", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.results).toHaveLength(20);
+    expect(data.summary.total).toBe(20);
     expect(data.summary.totalCost).toBe(100); // 20 * 5
   });
 

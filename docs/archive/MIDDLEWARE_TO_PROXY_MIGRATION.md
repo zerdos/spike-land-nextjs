@@ -19,6 +19,7 @@ Next.js 16 deprecated the `middleware.ts` file convention in favor of `proxy.ts`
 - **New Convention**: `src/proxy.ts` with `export function proxy()`
 
 The new `proxy.ts` convention:
+
 - Defaults to Node.js runtime (instead of Edge runtime)
 - Provides better alignment with server-side operations
 - Maintains backward compatibility with existing functionality
@@ -26,10 +27,12 @@ The new `proxy.ts` convention:
 ## Files Affected
 
 ### Code Files
+
 - `src/middleware.ts` → `src/proxy.ts`
 - `src/middleware.test.ts` → `src/proxy.test.ts`
 
 ### Documentation Files (Updated in PR #146)
+
 - `docs/AUTOMATED_SETUP.md`
 - `docs/best-practices/cloudflare-services.md`
 - `docs/best-practices/logging-monitoring.md`
@@ -39,6 +42,7 @@ The new `proxy.ts` convention:
 ## Changes Made
 
 ### 1. File Renaming
+
 ```bash
 # Code files
 src/middleware.ts → src/proxy.ts
@@ -46,6 +50,7 @@ src/middleware.test.ts → src/proxy.test.ts
 ```
 
 ### 2. Function Renaming
+
 ```typescript
 // Before (middleware.ts)
 export function middleware(request: NextRequest) {
@@ -59,7 +64,9 @@ export function proxy(request: NextRequest) {
 ```
 
 ### 3. Import Updates
+
 All imports and references were updated throughout the codebase:
+
 ```typescript
 // Before
 import { middleware } from "./middleware";
@@ -71,6 +78,7 @@ import { proxy } from "./proxy";
 ## Breaking Changes
 
 **None** - This migration is a drop-in replacement with zero functional changes:
+
 - ✅ All authentication logic preserved
 - ✅ All security mechanisms intact
 - ✅ All path matching rules unchanged
@@ -108,12 +116,15 @@ All 48 existing test cases were migrated and continue to pass:
 ## Deployment Notes
 
 ### Runtime Behavior
+
 - **Before**: Defaulted to Edge runtime (via config export)
 - **After**: Defaults to Node.js runtime (Next.js 16 default)
 - **Impact**: None - all operations remain compatible
 
 ### Monitoring
+
 After deployment, monitor:
+
 - Cold start times (Node.js runtime may differ from Edge)
 - Authentication check latency
 - Memory usage patterns

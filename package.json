@@ -83,6 +83,7 @@
     "sonner": "^2.0.7",
     "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0",
+    "workflow": "^4.0.1-beta.28",
     "zod": "^4.1.13"
   },
   "devDependencies": {
