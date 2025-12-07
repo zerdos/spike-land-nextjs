@@ -2,10 +2,11 @@
 
 import {
   BeforeAfterGallery,
-  ComponentDemo,
   FAQ,
   FeatureShowcase,
   HeroSection,
+  PixelHeader,
+  TrustedBy,
 } from "@/components/landing";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Rocket, Sparkles } from "lucide-react";
@@ -13,18 +14,21 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-grid-pattern">
+      {/* Fixed Header */}
+      <PixelHeader />
+
+      {/* Hero Section with new design */}
       <HeroSection />
 
-      {/* Before/After Gallery - Key selling point */}
+      {/* Social Proof - Trusted By */}
+      <TrustedBy />
+
+      {/* Before/After Gallery - More examples */}
       <BeforeAfterGallery />
 
       {/* Feature Showcase */}
       <FeatureShowcase />
-
-      {/* Component Demo - Validates Tailwind/shadcn */}
-      <ComponentDemo />
 
       {/* FAQ Section */}
       <FAQ />

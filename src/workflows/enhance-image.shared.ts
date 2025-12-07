@@ -87,7 +87,7 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
 export function calculateCropRegion(
   geminiSize: number,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): {
   extractLeft: number;
   extractTop: number;
@@ -120,7 +120,7 @@ export function calculateCropRegion(
 export function calculateTargetDimensions(
   tier: EnhancementTier,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): {
   targetWidth: number;
   targetHeight: number;
@@ -146,7 +146,11 @@ export function calculateTargetDimensions(
  * Generate R2 key for enhanced image from original key
  */
 export function generateEnhancedR2Key(originalR2Key: string, jobId: string): string {
-  return originalR2Key
-    .replace("/originals/", `/enhanced/`)
-    .replace(/\.[^.]+$/, `/${jobId}.jpg`);
+  const withEnhancedPath = originalR2Key.replace("/originals/", `/enhanced/`);
+  // Check if there's an extension to replace
+  if (/\.[^./]+$/.test(withEnhancedPath)) {
+    return withEnhancedPath.replace(/\.[^./]+$/, `/${jobId}.jpg`);
+  }
+  // No extension - just append the jobId
+  return `${withEnhancedPath}/${jobId}.jpg`;
 }

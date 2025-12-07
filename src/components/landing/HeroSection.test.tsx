@@ -1,55 +1,73 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HeroSection } from "./HeroSection";
+
+// Mock the HeroComparisonSlider component
+vi.mock("./HeroComparisonSlider", () => ({
+  HeroComparisonSlider: ({
+    originalUrl,
+    enhancedUrl,
+  }: {
+    originalUrl: string;
+    enhancedUrl: string;
+  }) => (
+    <div
+      data-testid="hero-comparison-slider"
+      data-original={originalUrl}
+      data-enhanced={enhancedUrl}
+    >
+      Comparison Slider
+    </div>
+  ),
+}));
 
 describe("HeroSection Component", () => {
   it("should render the main headline", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Transform Your Images/)).toBeInTheDocument();
-    expect(screen.getByText(/with AI/)).toBeInTheDocument();
-  });
-
-  it("should render the social proof badge", () => {
-    render(<HeroSection />);
-    expect(screen.getByText(/Trusted by 10,000\+ creators/)).toBeInTheDocument();
+    expect(screen.getByText(/Enhance Your Photos in/)).toBeInTheDocument();
+    expect(screen.getByText(/Seconds/)).toBeInTheDocument();
+    expect(screen.getByText(/with AI\./)).toBeInTheDocument();
   });
 
   it("should render the subheadline", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Enhance photos instantly/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Bring old, blurry images back to life/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/restores details and clarity instantly/),
+    ).toBeInTheDocument();
+  });
+
+  it("should render the HeroComparisonSlider", () => {
+    render(<HeroSection />);
+    expect(screen.getByTestId("hero-comparison-slider")).toBeInTheDocument();
+  });
+
+  it("should pass correct image URLs to HeroComparisonSlider", () => {
+    render(<HeroSection />);
+    const slider = screen.getByTestId("hero-comparison-slider");
+    expect(slider).toHaveAttribute(
+      "data-original",
+      expect.stringContaining("unsplash.com"),
+    );
+    expect(slider).toHaveAttribute(
+      "data-enhanced",
+      expect.stringContaining("unsplash.com"),
+    );
   });
 
   it("should render primary CTA button linking to enhance page", () => {
     render(<HeroSection />);
-    const ctaLink = screen.getByRole("link", { name: /Enhance Your First Image/i });
+    const ctaLink = screen.getByRole("link", { name: /Try it Free/i });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute("href", "/enhance");
-  });
-
-  it("should render secondary CTA button linking to gallery", () => {
-    render(<HeroSection />);
-    const secondaryLink = screen.getByRole("link", { name: /See Examples/i });
-    expect(secondaryLink).toBeInTheDocument();
-    expect(secondaryLink).toHaveAttribute("href", "#gallery");
-  });
-
-  it("should render trust indicators", () => {
-    render(<HeroSection />);
-    expect(screen.getByText("No signup required")).toBeInTheDocument();
-    expect(screen.getByText("Free first enhancement")).toBeInTheDocument();
-    expect(screen.getByText("Results in seconds")).toBeInTheDocument();
   });
 
   it("should have overflow hidden class", () => {
     const { container } = render(<HeroSection />);
     const section = container.querySelector("section");
     expect(section).toHaveClass("overflow-hidden");
-  });
-
-  it("should have decorative background elements", () => {
-    const { container } = render(<HeroSection />);
-    const blurElements = container.querySelectorAll(".blur-3xl");
-    expect(blurElements.length).toBe(2);
   });
 
   it("should have responsive text sizing", () => {
@@ -59,5 +77,30 @@ describe("HeroSection Component", () => {
     expect(headline).toHaveClass("sm:text-5xl");
     expect(headline).toHaveClass("md:text-6xl");
     expect(headline).toHaveClass("lg:text-7xl");
+  });
+
+  it("should have gradient text on 'Seconds'", () => {
+    render(<HeroSection />);
+    const gradientText = screen.getByText("Seconds");
+    expect(gradientText).toHaveClass("text-gradient-primary");
+  });
+
+  it("should have cyan glow on CTA button", () => {
+    const { container } = render(<HeroSection />);
+    const ctaButton = container.querySelector(".shadow-glow-cyan");
+    expect(ctaButton).toBeInTheDocument();
+  });
+
+  it("should have decorative spark SVG elements", () => {
+    const { container } = render(<HeroSection />);
+    const sparkSvgs = container.querySelectorAll("svg path");
+    expect(sparkSvgs.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("should have proper padding on section", () => {
+    const { container } = render(<HeroSection />);
+    const section = container.querySelector("section");
+    expect(section).toHaveClass("pt-24");
+    expect(section).toHaveClass("pb-8");
   });
 });

@@ -9,6 +9,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+        heading: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

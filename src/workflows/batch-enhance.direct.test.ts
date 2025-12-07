@@ -1,11 +1,12 @@
 import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { batchEnhanceImagesDirect } from "./batch-enhance.direct";
 
-// Mock dependencies
-const mockEnhanceImageDirect = vi.fn();
-const mockRefundTokens = vi.fn();
-const mockPrismaCreate = vi.fn();
+// Use vi.hoisted to define mocks before vi.mock is called
+const { mockEnhanceImageDirect, mockRefundTokens, mockPrismaCreate } = vi.hoisted(() => ({
+  mockEnhanceImageDirect: vi.fn(),
+  mockRefundTokens: vi.fn(),
+  mockPrismaCreate: vi.fn(),
+}));
 
 vi.mock("./enhance-image.direct", () => ({
   enhanceImageDirect: mockEnhanceImageDirect,
@@ -32,6 +33,8 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+
+import { batchEnhanceImagesDirect } from "./batch-enhance.direct";
 
 describe("batch-enhance.direct", () => {
   const validInput = {
@@ -62,37 +65,37 @@ describe("batch-enhance.direct", () => {
   describe("input validation", () => {
     it("should throw for invalid batchId", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, batchId: "" })
+        batchEnhanceImagesDirect({ ...validInput, batchId: "" }),
       ).rejects.toThrow("Invalid batchId");
     });
 
     it("should throw for non-string batchId", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, batchId: 123 as any })
+        batchEnhanceImagesDirect({ ...validInput, batchId: 123 as any }),
       ).rejects.toThrow("Invalid batchId");
     });
 
     it("should throw for invalid userId", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, userId: "" })
+        batchEnhanceImagesDirect({ ...validInput, userId: "" }),
       ).rejects.toThrow("Invalid userId");
     });
 
     it("should throw for non-array images", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, images: "not-array" as any })
+        batchEnhanceImagesDirect({ ...validInput, images: "not-array" as any }),
       ).rejects.toThrow("Invalid images");
     });
 
     it("should throw for empty images array", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, images: [] })
+        batchEnhanceImagesDirect({ ...validInput, images: [] }),
       ).rejects.toThrow("Invalid images");
     });
 
     it("should throw for invalid tier", async () => {
       await expect(
-        batchEnhanceImagesDirect({ ...validInput, tier: "INVALID" as any })
+        batchEnhanceImagesDirect({ ...validInput, tier: "INVALID" as any }),
       ).rejects.toThrow("Invalid tier");
     });
 
@@ -101,7 +104,7 @@ describe("batch-enhance.direct", () => {
         batchEnhanceImagesDirect({
           ...validInput,
           images: [{ imageId: "", originalR2Key: "key" }],
-        })
+        }),
       ).rejects.toThrow("Invalid imageId at index 0");
     });
 
@@ -110,7 +113,7 @@ describe("batch-enhance.direct", () => {
         batchEnhanceImagesDirect({
           ...validInput,
           images: [{ imageId: "img-1", originalR2Key: "" }],
-        })
+        }),
       ).rejects.toThrow("Invalid originalR2Key at index 0");
     });
 
@@ -122,7 +125,7 @@ describe("batch-enhance.direct", () => {
             { imageId: "img-1", originalR2Key: "key1" },
             { imageId: "", originalR2Key: "key2" },
           ],
-        })
+        }),
       ).rejects.toThrow("Invalid imageId at index 1");
     });
   });
@@ -249,7 +252,7 @@ describe("batch-enhance.direct", () => {
         "user-789",
         10, // 1 failed * 10 tokens
         "batch-123",
-        expect.stringContaining("1 of 2 jobs failed")
+        expect.stringContaining("1 of 2 jobs failed"),
       );
     });
 
@@ -271,7 +274,7 @@ describe("batch-enhance.direct", () => {
         "user-789",
         30, // 3 failed * 10 tokens
         "batch-123",
-        expect.stringContaining("3 of 3 jobs failed")
+        expect.stringContaining("3 of 3 jobs failed"),
       );
     });
 
@@ -286,7 +289,7 @@ describe("batch-enhance.direct", () => {
 
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to process image img-1"),
-        error
+        error,
       );
     });
 
@@ -308,7 +311,7 @@ describe("batch-enhance.direct", () => {
       expect(result.summary.failed).toBe(1);
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to refund tokens"),
-        "Refund failed"
+        "Refund failed",
       );
     });
   });
@@ -388,7 +391,7 @@ describe("batch-enhance.direct", () => {
         "user-789",
         20, // 1 failed * 20 tokens
         "batch-123",
-        expect.any(String)
+        expect.any(String),
       );
     });
   });
