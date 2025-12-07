@@ -75,7 +75,7 @@ export default function ReferralsPage() {
   };
 
   const shareOnTwitter = () => {
-    const text = `Join me on Image Enhancement App and get 50 free tokens! Use my referral link:`;
+    const text = `Join me on Pixel and get 50 free tokens! Use my referral link:`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${
       encodeURIComponent(referralLink)
     }`;

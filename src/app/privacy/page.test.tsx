@@ -41,10 +41,10 @@ describe("Privacy Policy Page", () => {
   });
 
   describe("Introduction Section", () => {
-    it("should display operator placeholder", () => {
+    it("should display operator name", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Operator:/)).toBeInTheDocument();
-      expect(screen.getByText(/\[Your Name\]/)).toBeInTheDocument();
+      expect(screen.getByText(/Zoltan Erdos/)).toBeInTheDocument();
     });
 
     it("should mention GDPR, UK GDPR and CCPA compliance", () => {

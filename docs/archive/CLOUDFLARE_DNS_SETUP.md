@@ -1,6 +1,6 @@
-# Cloudflare DNS Setup for next.spike.land
+# Cloudflare DNS Setup for spike.land
 
-This guide explains how to configure DNS records in Cloudflare for your custom domain `next.spike.land`.
+This guide explains how to configure DNS records in Cloudflare for the Spike Land platform domains.
 
 ## Prerequisites
 
@@ -15,7 +15,27 @@ This guide explains how to configure DNS records in Cloudflare for your custom d
 
 3. **Navigate to DNS**: Click on "DNS" in the left sidebar
 
-4. **Add CNAME Record**:
+4. **Add DNS Records**:
+
+   **Root domain (spike.land)**:
+   - Click "Add record"
+   - Type: `CNAME`
+   - Name: `@`
+   - Target: `cname.vercel-dns.com`
+   - Proxy status: **DNS only** (gray cloud, NOT proxied)
+   - TTL: Auto
+   - Click "Save"
+
+   **Pixel subdomain (pixel.spike.land)**:
+   - Click "Add record"
+   - Type: `CNAME`
+   - Name: `pixel`
+   - Target: `cname.vercel-dns.com`
+   - Proxy status: **DNS only** (gray cloud, NOT proxied)
+   - TTL: Auto
+   - Click "Save"
+
+   **Legacy subdomain (next.spike.land)** - Optional:
    - Click "Add record"
    - Type: `CNAME`
    - Name: `next`
@@ -65,13 +85,15 @@ After adding the DNS record:
    - Visit: https://next.spike.land
    - Should show your Next.js application
 
-## Expected DNS Record
+## Expected DNS Records
 
-After setup, your DNS record should look like:
+After setup, your DNS records should look like:
 
-| Type  | Name | Target               | Proxy Status | TTL  |
-| ----- | ---- | -------------------- | ------------ | ---- |
-| CNAME | next | cname.vercel-dns.com | DNS only     | Auto |
+| Type  | Name  | Target               | Proxy Status | TTL  |
+| ----- | ----- | -------------------- | ------------ | ---- |
+| CNAME | @     | cname.vercel-dns.com | DNS only     | Auto |
+| CNAME | pixel | cname.vercel-dns.com | DNS only     | Auto |
+| CNAME | next  | cname.vercel-dns.com | DNS only     | Auto |
 
 ## Troubleshooting
 

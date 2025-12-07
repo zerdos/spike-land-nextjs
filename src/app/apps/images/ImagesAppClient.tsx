@@ -49,7 +49,9 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">AI Image Enhancement</h1>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Pixel - AI Image Enhancement
+          </h1>
           <p className="mt-2 text-muted-foreground">
             Upload and enhance your images with AI technology
           </p>

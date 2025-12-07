@@ -2,7 +2,7 @@
 
 > **Last Updated**: December 2025
 > **Status**: MVP Release
-> **Base URL**: `https://next.spike.land` (Production) or `http://localhost:3000` (Development)
+> **Base URL**: `https://spike.land` (Production) or `http://localhost:3000` (Development)
 
 ---
 

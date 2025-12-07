@@ -28,7 +28,7 @@ const apps: App[] = [
   },
   {
     id: "images",
-    title: "AI Image Enhancement",
+    title: "Pixel - AI Image Enhancement",
     description:
       "Upload and enhance your images using AI-powered technology. Choose from 1K, 2K, or 4K enhancement tiers and compare results with an interactive slider.",
     href: "/apps/images",
