@@ -45,7 +45,7 @@ The configuration follows security best practices:
 | Preview     | ✅ Configured     | Allowed for E2E testing   |
 | Development | ✅ Configured     | Allowed for local testing |
 
-This matches the multi-layer defense implemented in `src/middleware.ts`:
+This matches the multi-layer defense implemented in `src/proxy.ts`:
 
 1. Secret not available in production environment
 2. Code-level production check prevents bypass

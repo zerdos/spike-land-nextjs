@@ -559,14 +559,14 @@ A correlation ID (also called request ID or trace ID) uniquely identifies a requ
    npm install cls-rtracer
    ```
 
-2. Use in middleware:
+2. Use in proxy:
    ```typescript
-   // middleware.ts
+   // proxy.ts
    import { rTracer } from "cls-rtracer";
    import { NextResponse } from "next/server";
    import type { NextRequest } from "next/server";
 
-   export function middleware(request: NextRequest) {
+   export function proxy(request: NextRequest) {
      const requestId = request.headers.get("x-request-id") ||
        crypto.randomUUID();
 
