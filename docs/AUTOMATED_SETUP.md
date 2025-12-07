@@ -268,8 +268,8 @@ When the E2E bypass is successfully used, the middleware logs:
 
 - **GitHub Secrets Documentation**: https://docs.github.com/en/actions/security-guides/encrypted-secrets
 - **Vercel Environment Variables**: https://vercel.com/docs/environment-variables
-- **Middleware Code**: `src/middleware.ts:99-121`
-- **Middleware Tests**: `src/middleware.test.ts:382-525`
+- **Proxy Code**: `src/proxy.ts:99-121`
+- **Proxy Tests**: `src/proxy.test.ts:382-525`
 - **Setup Documentation**: `docs/archive/WORKFLOW_CHANGES_NEEDED.md`
 - **Environment Variable Examples**: `.env.example:48-78`
 
