@@ -67,9 +67,9 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  Welcome to Spike Land Image Enhancement App. We are committed to protecting your
-                  privacy and ensuring you have a positive experience on our platform. This Privacy
-                  Policy explains:
+                  Welcome to Pixel (Spike Land). We are committed to protecting your privacy and
+                  ensuring you have a positive experience on our platform. This Privacy Policy
+                  explains:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-2">
                   <li>What information we collect</li>
@@ -614,8 +614,8 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  The Image Enhancement App is not intended for children under 13 years of age. We
-                  do not knowingly collect personal information from children under 13.
+                  Pixel (Spike Land) is not intended for children under 13 years of age. We do not
+                  knowingly collect personal information from children under 13.
                 </p>
                 <div className="bg-muted p-4 rounded-lg space-y-2">
                   <p className="font-semibold">

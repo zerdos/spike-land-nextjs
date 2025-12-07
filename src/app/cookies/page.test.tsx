@@ -49,7 +49,7 @@ describe("Cookie Policy Page", () => {
 
     it("should explain how cookies work", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/You visit the Spike Land Image Enhancement App/))
+      expect(screen.getByText(/You visit the Pixel \(Spike Land\)/))
         .toBeInTheDocument();
       expect(screen.getByText(/When you return to the website, your browser sends the cookie back/))
         .toBeInTheDocument();
@@ -68,7 +68,7 @@ describe("Cookie Policy Page", () => {
 
     it("should define first-party cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Set by the website you are visiting \(Spike Land\)/))
+      expect(screen.getByText(/Set by the website you are visiting \(Pixel\)/))
         .toBeInTheDocument();
     });
 

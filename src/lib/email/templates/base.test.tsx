@@ -15,7 +15,7 @@ describe("BaseEmail", () => {
     expect(html).toContain("Test Heading");
     expect(html).toContain("Test content");
     expect(html).toContain("Spike Land");
-    expect(html).toContain("AI-Powered Image Enhancement");
+    expect(html).toContain("Pixel - AI Image Enhancement");
   });
 
   it("should include footer links", async () => {

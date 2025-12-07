@@ -1,4 +1,4 @@
-# Image Enhancement App - User Guide
+# Pixel - AI Image Enhancement User Guide
 
 > **Last Updated**: December 2025
 > **Platform**: Spike Land
@@ -23,7 +23,7 @@
 
 ### Creating Your Account
 
-1. Visit [next.spike.land](https://next.spike.land)
+1. Visit [pixel.spike.land](https://pixel.spike.land)
 2. Click "Sign Up" in the header
 3. Choose your preferred authentication method:
    - **GitHub OAuth**: Fast login via GitHub account
@@ -62,7 +62,7 @@ The platform accepts these image formats:
 
 ### What Are Tokens?
 
-Tokens are Spike Land's currency. You spend tokens to enhance images at different quality levels. Think of tokens like credits in the system.
+Tokens are Pixel's currency. You spend tokens to enhance images at different quality levels. Think of tokens like credits in the system.
 
 ### Token Sources
 

@@ -45,7 +45,7 @@ describe("Terms of Service Page", () => {
   describe("Acceptance of Terms Section", () => {
     it("should state terms agreement", () => {
       render(<TermsPage />);
-      expect(screen.getByText(/By accessing and using the Spike Land Image Enhancement App/))
+      expect(screen.getByText(/By accessing and using the Pixel \(Spike Land\)/))
         .toBeInTheDocument();
     });
 
