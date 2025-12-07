@@ -5,40 +5,15 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
-import { enhanceImage, type EnhanceImageInput } from "@/workflows/enhance-image.workflow";
+import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
+import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { start } from "workflow/api";
 
-// Check if we're running in Vercel environment (workflows only work there)
+// Check if we're running in Vercel environment
 function isVercelEnvironment(): boolean {
   return process.env.VERCEL === "1";
-}
-
-/**
- * Runs image enhancement directly without workflow orchestration.
- * Used in local development where Vercel Workflows are not available.
- */
-async function runEnhancementDirect(input: EnhanceImageInput): Promise<void> {
-  const requestLogger = logger.child({ jobId: input.jobId, mode: "direct" });
-
-  try {
-    requestLogger.info("Starting direct enhancement (dev mode)");
-    const result = await enhanceImage(input);
-
-    if (result.success) {
-      requestLogger.info("Direct enhancement completed successfully", {
-        enhancedUrl: result.enhancedUrl,
-      });
-    } else {
-      requestLogger.warn("Direct enhancement failed", { error: result.error });
-    }
-  } catch (error) {
-    requestLogger.error(
-      "Direct enhancement threw error",
-      error instanceof Error ? error : new Error(String(error)),
-    );
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -214,27 +189,34 @@ export async function POST(request: NextRequest) {
     };
 
     if (isVercelEnvironment()) {
-      // Production: Use durable workflow for crash recovery and automatic retries
+      // Production: Use Vercel's durable workflow infrastructure
       const workflowRun = await start(enhanceImage, [enhancementInput]);
 
-      // Store the workflow run ID for cancellation support
-      await prisma.imageEnhancementJob.update({
-        where: { id: job.id },
-        data: { workflowRunId: workflowRun.runId },
-      });
+      // Store the workflow run ID for cancellation support (if available)
+      if (workflowRun?.runId) {
+        await prisma.imageEnhancementJob.update({
+          where: { id: job.id },
+          data: { workflowRunId: workflowRun.runId },
+        });
+      }
 
-      requestLogger.info("Enhancement workflow started", {
+      requestLogger.info("Enhancement workflow started (production)", {
         jobId: job.id,
-        workflowRunId: workflowRun.runId,
+        workflowRunId: workflowRun?.runId,
       });
     } else {
       // Development: Run enhancement directly (fire-and-forget)
-      // This allows local development without Vercel Workflow infrastructure
+      // The workflow infrastructure doesn't fully execute in dev mode
       requestLogger.info("Running enhancement directly (dev mode)", { jobId: job.id });
-      runEnhancementDirect(enhancementInput).catch((error) => {
+
+      // Fire and forget - don't await, let it run in the background
+      enhanceImageDirect(enhancementInput).catch((error) => {
         requestLogger.error(
           "Direct enhancement failed",
           error instanceof Error ? error : new Error(String(error)),
+          {
+            jobId: job.id,
+          },
         );
       });
     }

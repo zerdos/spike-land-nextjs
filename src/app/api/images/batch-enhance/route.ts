@@ -2,34 +2,17 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
-import { batchEnhanceImages, type BatchEnhanceInput } from "@/workflows/batch-enhance.workflow";
+import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
+import { batchEnhanceImages } from "@/workflows/batch-enhance.workflow";
 import { EnhancementTier } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { start } from "workflow/api";
 
 const MAX_BATCH_SIZE = 20;
 
-// Check if we're running in Vercel environment (workflows only work there)
+// Check if we're running in Vercel environment
 function isVercelEnvironment(): boolean {
   return process.env.VERCEL === "1";
-}
-
-/**
- * Runs batch image enhancement directly without workflow orchestration.
- * Used in local development where Vercel Workflows are not available.
- */
-async function runBatchEnhancementDirect(input: BatchEnhanceInput): Promise<void> {
-  try {
-    console.log(`Starting direct batch enhancement (dev mode) for ${input.images.length} images`);
-    const result = await batchEnhanceImages(input);
-
-    console.log(`Direct batch enhancement completed:`, {
-      batchId: result.batchId,
-      summary: result.summary,
-    });
-  } catch (error) {
-    console.error("Direct batch enhancement threw error:", error);
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -127,13 +110,20 @@ export async function POST(request: NextRequest) {
     };
 
     if (isVercelEnvironment()) {
-      // Production: Use durable workflow for crash recovery and automatic retries
+      // Production: Use Vercel's durable workflow infrastructure
       await start(batchEnhanceImages, [batchInput]);
+
+      console.log("Batch enhancement workflow started (production)", {
+        batchId,
+        imageCount: imageIds.length,
+      });
     } else {
       // Development: Run enhancement directly (fire-and-forget)
-      // This allows local development without Vercel Workflow infrastructure
+      // The workflow infrastructure doesn't fully execute in dev mode
       console.log("Running batch enhancement directly (dev mode)", { batchId });
-      runBatchEnhancementDirect(batchInput).catch((error) => {
+
+      // Fire and forget - don't await, let it run in the background
+      batchEnhanceImagesDirect(batchInput).catch((error) => {
         console.error("Direct batch enhancement failed:", error);
       });
     }
