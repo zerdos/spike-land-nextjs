@@ -96,15 +96,16 @@ const header = {
 };
 
 const logo = {
-  color: "#3b82f6", // Primary blue from globals.css
+  color: "#00E5FF", // Pixel Cyan
   fontSize: "32px",
   fontWeight: "bold",
+  fontFamily: "'Montserrat', system-ui, sans-serif",
   margin: "0",
   padding: "0",
 };
 
 const tagline = {
-  color: "#6b7280",
+  color: "#A0A0C0", // Text Muted
   fontSize: "14px",
   margin: "8px 0 0",
   padding: "0",
@@ -138,7 +139,7 @@ const footerText = {
 };
 
 const link = {
-  color: "#3b82f6", // Primary blue
+  color: "#00E5FF", // Pixel Cyan
   textDecoration: "underline",
 };
 
@@ -162,9 +163,9 @@ export const emailStyles = {
     margin: "16px 0",
   },
   button: {
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#00E5FF", // Pixel Cyan
     borderRadius: "8px",
-    color: "#ffffff",
+    color: "#08081C", // Deep Space for contrast
     display: "inline-block",
     fontSize: "16px",
     fontWeight: "bold",

@@ -36,87 +36,79 @@ describe("enhance-image.shared", () => {
     });
 
     it("should throw for empty jobId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, jobId: "" })
-      ).toThrow("Invalid jobId");
+      expect(() => validateEnhanceImageInput({ ...validInput, jobId: "" })).toThrow(
+        "Invalid jobId",
+      );
     });
 
     it("should throw for non-string jobId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, jobId: 123 as any })
-      ).toThrow("Invalid jobId");
+      expect(() => validateEnhanceImageInput({ ...validInput, jobId: 123 as any })).toThrow(
+        "Invalid jobId",
+      );
     });
 
     it("should throw for empty imageId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, imageId: "" })
-      ).toThrow("Invalid imageId");
+      expect(() => validateEnhanceImageInput({ ...validInput, imageId: "" })).toThrow(
+        "Invalid imageId",
+      );
     });
 
     it("should throw for non-string imageId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, imageId: null as any })
-      ).toThrow("Invalid imageId");
+      expect(() => validateEnhanceImageInput({ ...validInput, imageId: null as any })).toThrow(
+        "Invalid imageId",
+      );
     });
 
     it("should throw for empty userId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, userId: "" })
-      ).toThrow("Invalid userId");
+      expect(() => validateEnhanceImageInput({ ...validInput, userId: "" })).toThrow(
+        "Invalid userId",
+      );
     });
 
     it("should throw for non-string userId", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, userId: undefined as any })
-      ).toThrow("Invalid userId");
+      expect(() => validateEnhanceImageInput({ ...validInput, userId: undefined as any })).toThrow(
+        "Invalid userId",
+      );
     });
 
     it("should throw for empty originalR2Key", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, originalR2Key: "" })
-      ).toThrow("Invalid originalR2Key");
+      expect(() => validateEnhanceImageInput({ ...validInput, originalR2Key: "" })).toThrow(
+        "Invalid originalR2Key",
+      );
     });
 
     it("should throw for non-string originalR2Key", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, originalR2Key: [] as any })
-      ).toThrow("Invalid originalR2Key");
+      expect(() => validateEnhanceImageInput({ ...validInput, originalR2Key: [] as any })).toThrow(
+        "Invalid originalR2Key",
+      );
     });
 
     it("should throw for invalid tier", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tier: "INVALID" as any })
-      ).toThrow("Invalid tier");
+      expect(() => validateEnhanceImageInput({ ...validInput, tier: "INVALID" as any })).toThrow(
+        "Invalid tier",
+      );
     });
 
     it("should accept all valid tiers", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tier: "TIER_1K" })
-      ).not.toThrow();
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tier: "TIER_2K" })
-      ).not.toThrow();
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tier: "TIER_4K" })
-      ).not.toThrow();
+      expect(() => validateEnhanceImageInput({ ...validInput, tier: "TIER_1K" })).not.toThrow();
+      expect(() => validateEnhanceImageInput({ ...validInput, tier: "TIER_2K" })).not.toThrow();
+      expect(() => validateEnhanceImageInput({ ...validInput, tier: "TIER_4K" })).not.toThrow();
     });
 
     it("should throw for negative tokensCost", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tokensCost: -1 })
-      ).toThrow("Invalid tokensCost");
+      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: -1 })).toThrow(
+        "Invalid tokensCost",
+      );
     });
 
     it("should throw for non-number tokensCost", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tokensCost: "10" as any })
-      ).toThrow("Invalid tokensCost");
+      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: "10" as any })).toThrow(
+        "Invalid tokensCost",
+      );
     });
 
     it("should accept zero tokensCost", () => {
-      expect(() =>
-        validateEnhanceImageInput({ ...validInput, tokensCost: 0 })
-      ).not.toThrow();
+      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: 0 })).not.toThrow();
     });
   });
 
@@ -230,7 +222,7 @@ describe("enhance-image.shared", () => {
     it("should replace /originals/ with /enhanced/", () => {
       const result = generateEnhancedR2Key(
         "users/user-123/originals/image.jpg",
-        "job-456"
+        "job-456",
       );
       expect(result).toContain("/enhanced/");
       expect(result).not.toContain("/originals/");
@@ -239,7 +231,7 @@ describe("enhance-image.shared", () => {
     it("should replace file extension with /jobId.jpg", () => {
       const result = generateEnhancedR2Key(
         "users/user-123/originals/image.png",
-        "job-789"
+        "job-789",
       );
       expect(result).toMatch(/\/job-789\.jpg$/);
     });
@@ -250,7 +242,7 @@ describe("enhance-image.shared", () => {
       for (const ext of extensions) {
         const result = generateEnhancedR2Key(
           `users/user-123/originals/image.${ext}`,
-          "job-999"
+          "job-999",
         );
         expect(result).toBe("users/user-123/enhanced/image/job-999.jpg");
       }
@@ -259,7 +251,7 @@ describe("enhance-image.shared", () => {
     it("should handle paths without extension", () => {
       const result = generateEnhancedR2Key(
         "users/user-123/originals/image",
-        "job-111"
+        "job-111",
       );
       expect(result).toBe("users/user-123/enhanced/image/job-111.jpg");
     });
@@ -267,7 +259,7 @@ describe("enhance-image.shared", () => {
     it("should preserve user path structure", () => {
       const result = generateEnhancedR2Key(
         "users/user-abc/originals/subfolder/image.jpg",
-        "job-222"
+        "job-222",
       );
       expect(result).toBe("users/user-abc/enhanced/subfolder/image/job-222.jpg");
     });

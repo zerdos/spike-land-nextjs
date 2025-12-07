@@ -1,5 +1,6 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,10 +50,13 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Pixel - AI Image Enhancement
-          </h1>
-          <p className="mt-2 text-muted-foreground">
+          <div className="flex items-center gap-3 mb-2">
+            <PixelLogo size="lg" />
+            <span className="text-muted-foreground text-lg hidden md:inline">
+              AI Image Enhancement
+            </span>
+          </div>
+          <p className="text-muted-foreground text-sm md:text-base">
             Upload and enhance your images with AI technology
           </p>
         </div>

@@ -60,7 +60,7 @@ function validateBatchEnhanceInput(input: BatchEnhanceInput): void {
   // Validate each image entry
   for (let i = 0; i < input.images.length; i++) {
     const image = input.images[i];
-    if (!image.imageId || typeof image.imageId !== "string") {
+    if (!image || !image.imageId || typeof image.imageId !== "string") {
       throw new Error(`Invalid imageId at index ${i}: must be a non-empty string`);
     }
     if (!image.originalR2Key || typeof image.originalR2Key !== "string") {
