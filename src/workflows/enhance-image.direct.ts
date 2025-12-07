@@ -5,41 +5,31 @@
  * for local development where Vercel Workflow infrastructure is not available.
  *
  * In production, use the workflow version via start() from workflow/api.
+ *
+ * **Dev Mode Limitations:**
+ * - Runs synchronously without workflow infrastructure
+ * - No automatic retries on transient failures
+ * - No durable execution - if process crashes, jobs may be abandoned
+ * - Uses in-process execution instead of isolated steps
  */
 
 import { enhanceImageWithGemini } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import { JobStatus } from "@prisma/client";
 import sharp from "sharp";
-
-// Resolution constants for each enhancement tier
-const TIER_RESOLUTIONS = {
-  TIER_1K: 1024,
-  TIER_2K: 2048,
-  TIER_4K: 4096,
-} as const;
-
-const TIER_TO_SIZE = {
-  TIER_1K: "1K" as const,
-  TIER_2K: "2K" as const,
-  TIER_4K: "4K" as const,
-};
-
-// Image processing constants
-const ENHANCED_JPEG_QUALITY = 95;
-const DEFAULT_IMAGE_DIMENSION = 1024;
-const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 };
-
-export interface EnhanceImageInput {
-  jobId: string;
-  imageId: string;
-  userId: string;
-  originalR2Key: string;
-  tier: EnhancementTier;
-  tokensCost: number;
-}
+import {
+  calculateCropRegion,
+  calculateTargetDimensions,
+  DEFAULT_IMAGE_DIMENSION,
+  ENHANCED_JPEG_QUALITY,
+  type EnhanceImageInput,
+  generateEnhancedR2Key,
+  PADDING_BACKGROUND,
+  TIER_TO_SIZE,
+  validateEnhanceImageInput,
+} from "./enhance-image.shared";
 
 /**
  * Direct enhancement execution for dev mode.
@@ -50,6 +40,9 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
   enhancedUrl?: string;
   error?: string;
 }> {
+  // Validate input parameters
+  validateEnhanceImageInput(input);
+
   const { jobId, userId, originalR2Key, tier, tokensCost } = input;
 
   try {
@@ -103,33 +96,14 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     }
 
     // Calculate crop region to restore original aspect ratio
-    const aspectRatio = width / height;
-
-    let extractLeft = 0;
-    let extractTop = 0;
-    let extractWidth = geminiSize;
-    let extractHeight = geminiSize;
-
-    if (aspectRatio > 1) {
-      extractHeight = Math.round(geminiSize / aspectRatio);
-      extractTop = Math.round((geminiSize - extractHeight) / 2);
-    } else {
-      extractWidth = Math.round(geminiSize * aspectRatio);
-      extractLeft = Math.round((geminiSize - extractWidth) / 2);
-    }
+    const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
+      geminiSize,
+      width,
+      height
+    );
 
     // Calculate target dimensions based on tier
-    const tierResolution = TIER_RESOLUTIONS[tier];
-    let targetWidth: number;
-    let targetHeight: number;
-
-    if (aspectRatio > 1) {
-      targetWidth = tierResolution;
-      targetHeight = Math.round(tierResolution / aspectRatio);
-    } else {
-      targetHeight = tierResolution;
-      targetWidth = Math.round(tierResolution * aspectRatio);
-    }
+    const { targetWidth, targetHeight } = calculateTargetDimensions(tier, width, height);
 
     // Crop and resize
     const finalBuffer = await sharp(enhancedBuffer)
@@ -149,9 +123,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     const finalMetadata = await sharp(finalBuffer).metadata();
 
     // Generate R2 key for enhanced image
-    const enhancedR2Key = originalR2Key
-      .replace("/originals/", `/enhanced/`)
-      .replace(/\.[^.]+$/, `/${jobId}.jpg`);
+    const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);
 
     // Upload to R2
     const uploadResult = await uploadToR2({
@@ -186,7 +158,8 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     return { success: true, enhancedUrl: uploadResult.url };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[Dev Enhancement] Job ${jobId} failed:`, errorMessage);
+    // Include full error stack trace for better debugging
+    console.error(`[Dev Enhancement] Job ${jobId} failed:`, error);
 
     // Refund tokens on failure
     const refundResult = await TokenBalanceManager.refundTokens(
