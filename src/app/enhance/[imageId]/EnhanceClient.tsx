@@ -9,7 +9,7 @@ import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useJobPolling } from "@/hooks/useJobPolling";
+import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Coins } from "lucide-react";
@@ -55,7 +55,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   }, [searchParams, refetchBalance]);
 
   type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
-  useJobPolling({
+
+  // Use SSE for real-time job status updates (replaces polling)
+  useJobStream({
     jobId: activeJobId,
     onComplete: useCallback(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,7 +66,13 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           ...prev,
           enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
             job.id === completedJob.id
-              ? { ...job, ...completedJob, status: "COMPLETED" as const }
+              ? {
+                ...job,
+                status: "COMPLETED" as const,
+                enhancedUrl: completedJob.enhancedUrl,
+                enhancedWidth: completedJob.enhancedWidth,
+                enhancedHeight: completedJob.enhancedHeight,
+              }
               : job
           ),
         }));
@@ -117,6 +125,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         retryCount: 0,
         maxRetries: 3,
         geminiPrompt: null,
+        workflowRunId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         processingStartedAt: null,

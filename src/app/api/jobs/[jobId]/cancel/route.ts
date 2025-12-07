@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { Run } from "workflow/api";
 
 export async function POST(
   _request: NextRequest,
@@ -29,6 +30,17 @@ export async function POST(
         { error: `Cannot cancel job with status: ${job.status}` },
         { status: 400 },
       );
+    }
+
+    // Cancel the workflow run if one exists
+    if (job.workflowRunId) {
+      try {
+        const workflowRun = new Run(job.workflowRunId);
+        await workflowRun.cancel();
+      } catch (workflowError) {
+        // Log but don't fail - the workflow may have already completed
+        console.warn("Failed to cancel workflow run:", workflowError);
+      }
     }
 
     const updatedJob = await prisma.imageEnhancementJob.update({
