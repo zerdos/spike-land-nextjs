@@ -31,10 +31,10 @@ export async function GET() {
       hourlyJobs = await prisma.$queryRaw<
         Array<{ hour: Date; count: bigint; }>
       >`
-        SELECT DATE_TRUNC('hour', created_at) as hour, COUNT(*)::bigint as count
+        SELECT DATE_TRUNC('hour', "createdAt") as hour, COUNT(*)::bigint as count
         FROM image_enhancement_jobs
-        WHERE created_at >= ${last24Hours}
-        GROUP BY DATE_TRUNC('hour', created_at)
+        WHERE "createdAt" >= ${last24Hours}
+        GROUP BY DATE_TRUNC('hour', "createdAt")
         ORDER BY hour ASC
       `;
     } catch (error) {
@@ -50,12 +50,12 @@ export async function GET() {
       >`
         SELECT
           tier,
-          AVG(EXTRACT(EPOCH FROM (processing_completed_at - processing_started_at)))::float as avg_seconds
+          AVG(EXTRACT(EPOCH FROM ("processingCompletedAt" - "processingStartedAt")))::float as avg_seconds
         FROM image_enhancement_jobs
         WHERE status = 'COMPLETED'
-          AND processing_started_at IS NOT NULL
-          AND processing_completed_at IS NOT NULL
-          AND created_at >= ${last7Days}
+          AND "processingStartedAt" IS NOT NULL
+          AND "processingCompletedAt" IS NOT NULL
+          AND "createdAt" >= ${last7Days}
         GROUP BY tier
       `;
     } catch (error) {
