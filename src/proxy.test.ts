@@ -1,7 +1,7 @@
 /**
- * Tests for Next.js Middleware Protected Routes
+ * Tests for Next.js Proxy Protected Routes
  *
- * These tests verify that the middleware correctly:
+ * These tests verify that the proxy correctly:
  * - Allows authenticated users to access protected routes
  * - Redirects unauthenticated users from protected routes
  * - Allows all users to access public routes
@@ -33,12 +33,12 @@ vi.mock("next-auth", () => ({
   }),
 }));
 
-import { constantTimeCompare, isProtectedPath, middleware } from "./middleware";
+import { constantTimeCompare, isProtectedPath, proxy } from "./proxy";
 
 // Use mockAuth as auth
 const auth = mockAuth;
 
-describe("middleware", () => {
+describe("proxy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -122,7 +122,7 @@ describe("middleware", () => {
     });
   });
 
-  describe("middleware function", () => {
+  describe("proxy function", () => {
     const createMockRequest = (pathname: string, url?: string): NextRequest => {
       const baseUrl = url || `http://localhost:3000${pathname}`;
       return {
@@ -136,7 +136,7 @@ describe("middleware", () => {
       it("should allow access to home page without auth", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -145,7 +145,7 @@ describe("middleware", () => {
       it("should allow access to public apps without auth", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/apps/display");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -154,7 +154,7 @@ describe("middleware", () => {
       it("should allow access to auth endpoints without auth", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/api/auth/signin");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -163,7 +163,7 @@ describe("middleware", () => {
       it("should allow access to signin page without auth", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/auth/signin");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -172,7 +172,7 @@ describe("middleware", () => {
       it("should allow access to non-protected paths without auth", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/about");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -183,7 +183,7 @@ describe("middleware", () => {
       it("should redirect from /my-apps when not authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -194,7 +194,7 @@ describe("middleware", () => {
       it("should redirect from /my-apps/app-123 when not authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps/app-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -205,7 +205,7 @@ describe("middleware", () => {
       it("should redirect from /settings when not authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/settings");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -216,7 +216,7 @@ describe("middleware", () => {
       it("should redirect from /profile when not authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/profile");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -227,7 +227,7 @@ describe("middleware", () => {
       it("should preserve callback URL for nested protected paths", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps/app-123/settings");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -250,7 +250,7 @@ describe("middleware", () => {
       it("should allow access to /my-apps when authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(mockSession);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -259,7 +259,7 @@ describe("middleware", () => {
       it("should allow access to /my-apps/app-123 when authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(mockSession);
         const request = createMockRequest("/my-apps/app-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -268,7 +268,7 @@ describe("middleware", () => {
       it("should allow access to /settings when authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(mockSession);
         const request = createMockRequest("/settings");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -277,7 +277,7 @@ describe("middleware", () => {
       it("should allow access to /profile when authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(mockSession);
         const request = createMockRequest("/profile");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -286,7 +286,7 @@ describe("middleware", () => {
       it("should allow access to nested protected paths when authenticated", async () => {
         vi.mocked(auth).mockResolvedValue(mockSession);
         const request = createMockRequest("/my-apps/app-123/settings");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -326,7 +326,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -338,7 +338,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "wrong-secret");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toContain("callbackUrl");
@@ -350,7 +350,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toContain("callbackUrl");
@@ -362,7 +362,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "any-secret");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toContain("callbackUrl");
@@ -377,7 +377,7 @@ describe("middleware", () => {
         for (const path of protectedPaths) {
           vi.mocked(auth).mockResolvedValue(null);
           const request = createMockRequestWithHeader(path, "test-secret-123");
-          const response = await middleware(request);
+          const response = await proxy(request);
 
           expect(response.status).toBe(200);
           expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -389,7 +389,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("x-middleware-next")).toBe("1");
@@ -400,9 +400,9 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
-        // Empty string secret should NOT bypass (falsy check in middleware)
+        // Empty string secret should NOT bypass (falsy check in proxy)
         expect(response.status).toBe(307);
         expect(auth).toHaveBeenCalled();
       });
@@ -460,7 +460,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         // Should redirect (bypass blocked)
         expect(response.status).toBe(307);
@@ -476,7 +476,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         // Should allow bypass
         expect(response.status).toBe(200);
@@ -500,7 +500,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         // Should allow bypass (not full production)
         expect(response.status).toBe(200);
@@ -515,7 +515,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         // Should allow bypass (not full production)
         expect(response.status).toBe(200);
@@ -530,7 +530,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps/app-123", "test-secret-123");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(200);
         expect(consoleWarnSpy).toHaveBeenCalledWith("[E2E Bypass]", {
@@ -550,7 +550,7 @@ describe("middleware", () => {
 
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
-        await middleware(request);
+        await proxy(request);
 
         expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
@@ -560,7 +560,7 @@ describe("middleware", () => {
       it("should handle session without user object", async () => {
         vi.mocked(auth).mockResolvedValue({ expires: new Date().toISOString() } as never);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
@@ -571,7 +571,7 @@ describe("middleware", () => {
       it("should handle null session", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toContain("callbackUrl");
@@ -580,7 +580,7 @@ describe("middleware", () => {
       it("should handle undefined session", async () => {
         vi.mocked(auth).mockResolvedValue(undefined as never);
         const request = createMockRequest("/my-apps");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toContain("callbackUrl");
@@ -590,13 +590,13 @@ describe("middleware", () => {
         vi.mocked(auth).mockRejectedValue(new Error("Auth error"));
         const request = createMockRequest("/my-apps");
 
-        await expect(middleware(request)).rejects.toThrow("Auth error");
+        await expect(proxy(request)).rejects.toThrow("Auth error");
       });
 
       it("should correctly encode special characters in callback URL", async () => {
         vi.mocked(auth).mockResolvedValue(null);
         const request = createMockRequest("/my-apps/app with spaces/settings");
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         const location = response.headers.get("location");
