@@ -12,6 +12,10 @@ vi.mock("next/font/google", () => ({
     variable: "--font-geist-mono",
     className: "geist-mono-test-class",
   })),
+  Montserrat: vi.fn(() => ({
+    variable: "--font-montserrat",
+    className: "montserrat-test-class",
+  })),
 }));
 
 vi.mock("@/components/auth/auth-header", () => ({
@@ -76,6 +80,7 @@ describe("RootLayout", () => {
     const bodyClassName = result.props.children.props.className;
     expect(bodyClassName).toContain("--font-geist-sans");
     expect(bodyClassName).toContain("--font-geist-mono");
+    expect(bodyClassName).toContain("--font-montserrat");
     expect(bodyClassName).toContain("antialiased");
   });
 
