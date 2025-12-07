@@ -87,7 +87,7 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
 export function calculateCropRegion(
   geminiSize: number,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): {
   extractLeft: number;
   extractTop: number;
@@ -120,7 +120,7 @@ export function calculateCropRegion(
 export function calculateTargetDimensions(
   tier: EnhancementTier,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): {
   targetWidth: number;
   targetHeight: number;

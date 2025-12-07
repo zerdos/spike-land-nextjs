@@ -1,15 +1,13 @@
 @import "tailwindcss";
 
 /**
- * Dual Theme with Gradient Design
+ * Pixel Brand Design System
  *
- * Light Mode: Warm gradient (cream to lavender)
- * Dark Mode: Deep blue/purple gradient with glass-morphism
+ * Brand Philosophy: Dark Futuristic - "The AI Spark"
+ * Primary Color: Pixel Cyan #00E5FF
  *
- * Color System:
- * - Light: Warm off-white with soft gradients
- * - Dark: Deep dark blue with glass-morphism effects
- * - Accents: Gradient colors (blue, purple, pink, orange)
+ * Light Mode: Clean white with subtle surfaces
+ * Dark Mode: Deep Space with Surface Blue cards (Default/Primary)
  */
 
 @layer base {
@@ -21,6 +19,8 @@
     --font-geist-mono:
       ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --font-montserrat:
+      "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
     /* Glass-morphism variables */
     --glass-blur: 12px;
@@ -29,64 +29,72 @@
     --shadow-opacity-light: 0.1;
     --shadow-opacity-dark: 0.3;
 
-    /* Light Mode - Warm gradient theme */
-    --background: 40 40% 98%; /* Warm off-white */
-    --foreground: 224 71% 10%; /* Dark blue-gray text */
-    --card: 40 30% 96%; /* Warm light card */
-    --card-foreground: 224 71% 10%;
-    --popover: 40 35% 97%;
-    --popover-foreground: 224 71% 10%;
-    --primary: 262 83% 50%; /* Vibrant Purple - slightly darker for light bg */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 199 89% 42%; /* Vibrant Cyan - darker for light bg */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 40 20% 94%; /* Warm muted */
-    --muted-foreground: 220 9% 40%;
-    --accent: 280 65% 55%; /* Vibrant Magenta */
-    --accent-foreground: 0 0% 100%;
+    /* Light Mode - Pixel Brand */
+    --background: 0 0% 100%; /* Clean White #FFFFFF */
+    --foreground: 240 24% 9%; /* Carbon Text #12121C */
+    --card: 210 22% 97%; /* Light Surface #F4F6F8 */
+    --card-foreground: 240 24% 9%; /* Carbon Text */
+    --popover: 210 22% 97%; /* Light Surface */
+    --popover-foreground: 240 24% 9%; /* Carbon Text */
+    --primary: 187 100% 50%; /* Pixel Cyan #00E5FF */
+    --primary-foreground: 240 24% 9%; /* Carbon Text for contrast */
+    --secondary: 240 38% 14%; /* Surface Blue for accents */
+    --secondary-foreground: 0 0% 100%; /* White */
+    --muted: 210 22% 97%; /* Light Surface */
+    --muted-foreground: 240 25% 50%; /* Darker muted */
+    --accent: 187 100% 50%; /* Pixel Cyan */
+    --accent-foreground: 240 24% 9%; /* Carbon Text */
     --destructive: 0 84.2% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 40 20% 88%; /* Warm border */
-    --input: 40 20% 90%;
-    --ring: 262 83% 50%;
+    --border: 220 24% 89%; /* Grid Grey #DCE0E8 */
+    --input: 220 24% 89%; /* Grid Grey */
+    --ring: 187 100% 50%; /* Pixel Cyan */
     --radius: 1rem;
 
+    /* Brand-specific variables */
+    --pixel-cyan: 187 100% 50%;
+    --grid-inactive: 220 24% 89%; /* Grid Grey for light mode */
+
     /* Chart Colors - Light mode */
-    --chart-1: 220 70% 45%; /* Blue */
+    --chart-1: 187 100% 45%; /* Pixel Cyan darker */
     --chart-2: 160 60% 40%; /* Green */
     --chart-3: 30 80% 50%; /* Orange */
-    --chart-4: 280 65% 55%; /* Purple */
+    --chart-4: 240 38% 30%; /* Surface Blue lighter */
     --chart-5: 340 75% 50%; /* Pink */
   }
 
   .dark {
-    /* Dark Mode - Deep blue gradient theme */
-    --background: 224 71% 4%; /* Deep dark blue #020617 */
-    --foreground: 210 40% 98%; /* Near white */
-    --card: 224 50% 8%; /* Slightly lighter dark blue */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 50% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 80% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 199 80% 55%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 224 40% 14%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 280 60% 65%;
-    --accent-foreground: 0 0% 100%;
+    /* Dark Mode - Pixel Brand (Default/Primary) */
+    --background: 240 55% 7%; /* Deep Space #08081C */
+    --foreground: 0 0% 100%; /* Pure White */
+    --card: 240 38% 14%; /* Surface Blue #151530 */
+    --card-foreground: 0 0% 100%; /* Pure White */
+    --popover: 240 38% 14%; /* Surface Blue */
+    --popover-foreground: 0 0% 100%; /* Pure White */
+    --primary: 187 100% 50%; /* Pixel Cyan #00E5FF */
+    --primary-foreground: 240 55% 7%; /* Deep Space for contrast */
+    --secondary: 240 38% 20%; /* Lighter Surface Blue */
+    --secondary-foreground: 0 0% 100%; /* Pure White */
+    --muted: 240 38% 14%; /* Surface Blue */
+    --muted-foreground: 240 25% 69%; /* Text Muted #A0A0C0 */
+    --accent: 187 100% 50%; /* Pixel Cyan */
+    --accent-foreground: 240 55% 7%; /* Deep Space */
     --destructive: 0 62.8% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 224 30% 18%;
-    --input: 224 30% 18%;
-    --ring: 262 80% 65%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 30% 22%; /* Slightly lighter than Surface Blue */
+    --input: 240 30% 22%;
+    --ring: 187 100% 50%; /* Pixel Cyan */
+
+    /* Brand-specific variables */
+    --pixel-cyan: 187 100% 50%;
+    --grid-inactive: 240 38% 14%; /* Surface Blue for dark mode */
 
     /* Chart Colors - Dark mode */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 187 100% 50%; /* Pixel Cyan */
+    --chart-2: 160 60% 45%; /* Green */
+    --chart-3: 30 80% 55%; /* Orange */
+    --chart-4: 240 38% 40%; /* Surface Blue lighter */
+    --chart-5: 340 75% 55%; /* Pink */
   }
 
   /* Global Styles */
@@ -106,22 +114,26 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(
-      135deg,
-      hsl(40 40% 98%) 0%,
-      hsl(220 40% 96%) 50%,
-      hsl(40 40% 98%) 100%
-    );
+    background: hsl(0 0% 100%); /* Clean White */
   }
 
-  /* Dark mode body - deep blue gradient */
+  /* Dark mode body - Deep Space gradient */
   .dark body::before {
     background: linear-gradient(
       135deg,
-      hsl(224 71% 4%) 0%,
-      hsl(250 60% 8%) 50%,
-      hsl(224 71% 4%) 100%
+      hsl(240 55% 7%) 0%,
+      hsl(240 45% 10%) 50%,
+      hsl(240 55% 7%) 100%
     );
+  }
+
+  /* Heading typography - use Montserrat */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-montserrat);
+  }
+
+  .font-heading {
+    font-family: var(--font-montserrat);
   }
 
   /* Reduced motion support */
@@ -260,5 +272,17 @@
 
   .shadow-glow-secondary {
     box-shadow: 0 0 20px hsl(var(--secondary) / 0.3), 0 4px 12px hsl(var(--secondary) / 0.2);
+  }
+
+  /* Pixel Cyan glow effects */
+  .shadow-glow-cyan {
+    box-shadow:
+      0 0 20px hsl(var(--pixel-cyan) / 0.4),
+      0 0 40px hsl(var(--pixel-cyan) / 0.2),
+      0 4px 12px hsl(var(--pixel-cyan) / 0.3);
+  }
+
+  .shadow-glow-cyan-sm {
+    box-shadow: 0 0 10px hsl(var(--pixel-cyan) / 0.3), 0 2px 8px hsl(var(--pixel-cyan) / 0.2);
   }
 }

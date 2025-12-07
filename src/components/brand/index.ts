@@ -1,0 +1,1 @@
+export { PixelLogo } from "./PixelLogo";

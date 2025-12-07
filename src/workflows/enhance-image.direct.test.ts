@@ -86,25 +86,25 @@ describe("enhance-image.direct", () => {
   describe("input validation", () => {
     it("should throw for invalid jobId", async () => {
       await expect(
-        enhanceImageDirect({ ...validInput, jobId: "" })
+        enhanceImageDirect({ ...validInput, jobId: "" }),
       ).rejects.toThrow("Invalid jobId");
     });
 
     it("should throw for invalid userId", async () => {
       await expect(
-        enhanceImageDirect({ ...validInput, userId: "" })
+        enhanceImageDirect({ ...validInput, userId: "" }),
       ).rejects.toThrow("Invalid userId");
     });
 
     it("should throw for invalid tier", async () => {
       await expect(
-        enhanceImageDirect({ ...validInput, tier: "INVALID" as any })
+        enhanceImageDirect({ ...validInput, tier: "INVALID" as any }),
       ).rejects.toThrow("Invalid tier");
     });
 
     it("should throw for negative tokensCost", async () => {
       await expect(
-        enhanceImageDirect({ ...validInput, tokensCost: -1 })
+        enhanceImageDirect({ ...validInput, tokensCost: -1 }),
       ).rejects.toThrow("Invalid tokensCost");
     });
   });
@@ -124,7 +124,7 @@ describe("enhance-image.direct", () => {
           tier: "1K",
           originalWidth: 1920,
           originalHeight: 1080,
-        })
+        }),
       );
     });
 
@@ -139,7 +139,7 @@ describe("enhance-image.direct", () => {
             tier: "TIER_1K",
             jobId: "job-123",
           }),
-        })
+        }),
       );
     });
 
@@ -217,7 +217,7 @@ describe("enhance-image.direct", () => {
         "user-789",
         10,
         "job-123",
-        expect.any(String)
+        expect.any(String),
       );
     });
 
@@ -229,7 +229,7 @@ describe("enhance-image.direct", () => {
 
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Job job-123 failed"),
-        error
+        error,
       );
     });
 
@@ -259,7 +259,7 @@ describe("enhance-image.direct", () => {
       expect(result.success).toBe(false);
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to refund tokens"),
-        "Refund failed"
+        "Refund failed",
       );
     });
 
@@ -296,7 +296,7 @@ describe("enhance-image.direct", () => {
           originalWidth: 1024, // DEFAULT_IMAGE_DIMENSION
           originalHeight: 1024,
           mimeType: "image/jpeg",
-        })
+        }),
       );
     });
 
@@ -311,7 +311,7 @@ describe("enhance-image.direct", () => {
         expect(mockEnhanceImageWithGemini).toHaveBeenCalledWith(
           expect.objectContaining({
             tier: expectedSizes[i],
-          })
+          }),
         );
       }
     });
@@ -350,7 +350,7 @@ describe("enhance-image.direct", () => {
       expect(mockUploadToR2).toHaveBeenCalledWith(
         expect.objectContaining({
           key: "users/user-789/enhanced/image/job-123.jpg",
-        })
+        }),
       );
     });
 
@@ -363,7 +363,7 @@ describe("enhance-image.direct", () => {
       expect(mockUploadToR2).toHaveBeenCalledWith(
         expect.objectContaining({
           key: "users/abc/enhanced/subfolder/pic/job-123.jpg",
-        })
+        }),
       );
     });
   });

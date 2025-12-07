@@ -31,6 +31,8 @@ import {
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
 
+export type { EnhanceImageInput };
+
 /**
  * Direct enhancement execution for dev mode.
  * This runs the enhancement synchronously without workflow infrastructure.
@@ -99,7 +101,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
       geminiSize,
       width,
-      height
+      height,
     );
 
     // Calculate target dimensions based on tier

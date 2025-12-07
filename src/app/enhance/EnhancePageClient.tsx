@@ -1,5 +1,6 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
 import { EnhancedImagesList } from "@/components/enhance/EnhancedImagesList";
 import { ImageUpload } from "@/components/enhance/ImageUpload";
 import { TokenDisplay } from "@/components/tokens/TokenDisplay";
@@ -53,7 +54,12 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
       <div className="container mx-auto py-8 px-4">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Pixel - AI Image Enhancement</h1>
+            <div className="flex items-center gap-3">
+              <PixelLogo size="lg" />
+              <span className="text-muted-foreground text-lg hidden sm:inline">
+                AI Image Enhancement
+              </span>
+            </div>
             <TokenDisplay />
           </div>
 
