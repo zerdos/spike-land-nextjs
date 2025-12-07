@@ -133,15 +133,20 @@ describe("PixelLogo", () => {
       expect(linearGradient).toBeInTheDocument();
     });
 
-    it("has unique IDs for different sizes to avoid conflicts", () => {
-      const { container: containerSm } = render(<PixelLogo size="sm" />);
-      const { container: containerLg } = render(<PixelLogo size="lg" />);
+    it("has unique IDs for multiple instances to avoid conflicts", () => {
+      const { container } = render(
+        <>
+          <PixelLogo size="md" />
+          <PixelLogo size="md" />
+        </>,
+      );
 
-      const filterSm = containerSm.querySelector("filter");
-      const filterLg = containerLg.querySelector("filter");
+      const filters = container.querySelectorAll("filter");
+      const filterIds = Array.from(filters).map((f) => f.id);
 
-      expect(filterSm?.id).toBe("glow-sm");
-      expect(filterLg?.id).toBe("glow-lg");
+      // Each filter should have a unique ID (using React's useId())
+      expect(filters.length).toBe(2);
+      expect(filterIds[0]).not.toBe(filterIds[1]);
     });
   });
 

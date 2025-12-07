@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useId } from "react";
 
 interface PixelLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -16,18 +17,29 @@ const sizeMap = {
   xl: { grid: 96, text: "text-4xl", gap: "gap-4" },
 };
 
+// Constants for grid cell calculations
+const GAP_RATIO = 0.12; // 12% gap between cells
+const CORNER_RATIO = 0.18; // 18% corner radius for soft pixel aesthetic
+
 export function PixelLogo({
   size = "md",
   variant = "horizontal",
   className,
   showText = true,
 }: PixelLogoProps) {
+  // Use React's useId() for unique SVG element IDs to prevent collisions
+  const uniqueId = useId();
+  const glowId = `glow-${uniqueId}`;
+  const sparkGradientId = `sparkGradient-${uniqueId}`;
+  const sparkShineId = `sparkShine-${uniqueId}`;
+
   const { grid, text, gap } = sizeMap[size];
   const cellSize = grid / 3;
-  const cellGap = cellSize * 0.12;
-  const cornerRadius = cellSize * 0.18;
+  const cellGap = cellSize * GAP_RATIO;
+  const cornerRadius = cellSize * CORNER_RATIO;
 
-  const GridIcon = () => (
+  // Grid icon SVG - inlined to avoid function recreation on each render
+  const gridIcon = (
     <svg
       width={grid}
       height={grid}
@@ -38,19 +50,19 @@ export function PixelLogo({
       aria-hidden="true"
     >
       <defs>
-        <filter id={`glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
+        <filter id={glowId} x="-100%" y="-100%" width="300%" height="300%">
           <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
           <feMerge>
             <feMergeNode in="coloredBlur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <radialGradient id={`sparkGradient-${size}`} cx="50%" cy="50%" r="50%">
+        <radialGradient id={sparkGradientId} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#FFFFFF" />
           <stop offset="35%" stopColor="#00E5FF" />
           <stop offset="100%" stopColor="#00E5FF" stopOpacity="0.85" />
         </radialGradient>
-        <linearGradient id={`sparkShine-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={sparkShineId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
           <stop offset="50%" stopColor="#00E5FF" stopOpacity="0" />
           <stop offset="100%" stopColor="#00E5FF" stopOpacity="0.3" />
@@ -73,8 +85,8 @@ export function PixelLogo({
                   width={rectSize}
                   height={rectSize}
                   rx={cornerRadius}
-                  fill={`url(#sparkGradient-${size})`}
-                  filter={`url(#glow-${size})`}
+                  fill={`url(#${sparkGradientId})`}
+                  filter={`url(#${glowId})`}
                 />
                 <rect
                   x={x}
@@ -82,7 +94,7 @@ export function PixelLogo({
                   width={rectSize}
                   height={rectSize}
                   rx={cornerRadius}
-                  fill={`url(#sparkShine-${size})`}
+                  fill={`url(#${sparkShineId})`}
                 />
               </g>
             );
@@ -104,7 +116,8 @@ export function PixelLogo({
     </svg>
   );
 
-  const Wordmark = () => (
+  // Wordmark text - inlined to avoid function recreation on each render
+  const wordmark = (
     <span
       className={cn(
         "font-heading font-bold tracking-tight lowercase",
@@ -119,7 +132,7 @@ export function PixelLogo({
   if (variant === "icon" || !showText) {
     return (
       <div className={cn("inline-flex items-center", className)} role="img" aria-label="Pixel logo">
-        <GridIcon />
+        {gridIcon}
       </div>
     );
   }
@@ -131,8 +144,8 @@ export function PixelLogo({
         role="img"
         aria-label="Pixel logo"
       >
-        <GridIcon />
-        <Wordmark />
+        {gridIcon}
+        {wordmark}
       </div>
     );
   }
@@ -143,8 +156,8 @@ export function PixelLogo({
       role="img"
       aria-label="Pixel logo"
     >
-      <GridIcon />
-      <Wordmark />
+      {gridIcon}
+      {wordmark}
     </div>
   );
 }
