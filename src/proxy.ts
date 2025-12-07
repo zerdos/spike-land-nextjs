@@ -1,7 +1,7 @@
 /**
- * Next.js Middleware for Protected Routes
+ * Next.js Proxy for Protected Routes
  *
- * This middleware handles authentication-based route protection for the Spike Land platform.
+ * This proxy handles authentication-based route protection for the Spike Land platform.
  * It checks user authentication status and redirects unauthenticated users attempting to
  * access protected routes to the home page with a callback URL.
  *
@@ -97,7 +97,7 @@ export function isProtectedPath(pathname: string): boolean {
 }
 
 /**
- * Next.js Middleware Function
+ * Next.js Proxy Function
  *
  * Executed for every request that matches the config matcher.
  * Checks authentication status for protected routes and redirects
@@ -106,10 +106,10 @@ export function isProtectedPath(pathname: string): boolean {
  * @param request - The incoming Next.js request
  * @returns NextResponse - Either continues the request or redirects
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for non-protected paths
+  // Skip proxy for non-protected paths
   if (!isProtectedPath(pathname)) {
     return NextResponse.next();
   }
@@ -157,9 +157,9 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Middleware Configuration
+ * Proxy Configuration
  *
- * Defines which routes the middleware should run on.
+ * Defines which routes the proxy should run on.
  * Using a matcher to exclude static files, images, and internal Next.js routes
  * for better performance.
  */
