@@ -45,7 +45,7 @@ describe("GET /api/referral/link", () => {
 
   it("should use NEXT_PUBLIC_APP_URL if available", async () => {
     const originalEnv = process.env.NEXT_PUBLIC_APP_URL;
-    process.env.NEXT_PUBLIC_APP_URL = "https://next.spike.land";
+    process.env.NEXT_PUBLIC_APP_URL = "https://spike.land";
 
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-123" },
@@ -56,7 +56,7 @@ describe("GET /api/referral/link", () => {
     const response = await GET(mockRequest);
     const data = await response.json();
 
-    expect(data.url).toBe("https://next.spike.land?ref=ABC12345");
+    expect(data.url).toBe("https://spike.land?ref=ABC12345");
 
     process.env.NEXT_PUBLIC_APP_URL = originalEnv;
   });
