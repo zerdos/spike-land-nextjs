@@ -336,6 +336,7 @@ model ImageEnhancementJob {
   retryCount            Int              @default(0)
   maxRetries            Int              @default(3)
   geminiPrompt          String?          @db.Text
+  workflowRunId         String?          // Vercel Workflow run ID for cancellation
   processingStartedAt   DateTime?
   processingCompletedAt DateTime?
   createdAt             DateTime         @default(now())
@@ -347,6 +348,7 @@ model ImageEnhancementJob {
   @@index([userId, status, createdAt])
   @@index([imageId])
   @@index([status, updatedAt])
+  @@index([workflowRunId])
   @@map("image_enhancement_jobs")
 }
 
