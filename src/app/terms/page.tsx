@@ -77,7 +77,7 @@ export default function TermsPage() {
                     to these Terms, please do not use the Service.
                   </p>
                   <p className="mt-3">
-                    These Terms constitute the entire agreement between you and [Your Name]
+                    These Terms constitute the entire agreement between you and Zoltan Erdos
                     (&quot;Operator&quot;) regarding the Service and supersede all prior agreements
                     and understandings.
                   </p>
@@ -105,7 +105,7 @@ export default function TermsPage() {
 
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-muted-foreground text-sm">
-                    <strong>Operator:</strong> [Your Name]
+                    <strong>Operator:</strong> Zoltan Erdos
                   </p>
                   <p className="text-muted-foreground text-sm mt-2">
                     <strong>Jurisdiction:</strong>{" "}

@@ -66,7 +66,7 @@ describe("Terms of Service Page", () => {
 
     it("should specify operator as individual", () => {
       const { container } = render(<TermsPage />);
-      expect(container.textContent?.includes("[Your Name]")).toBe(true);
+      expect(container.textContent?.includes("Zoltan Erdos")).toBe(true);
     });
 
     it("should mention capacity to agree", () => {

@@ -79,7 +79,7 @@ export default function PrivacyPage() {
                   <li>How to contact us</li>
                 </ul>
                 <p className="pt-4">
-                  <strong>Operator:</strong> [Your Name]
+                  <strong>Operator:</strong> Zoltan Erdos
                 </p>
                 <p>
                   <strong>Jurisdiction:</strong>{" "}
