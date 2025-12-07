@@ -1,6 +1,14 @@
-# Vercel Domain Setup for next.spike.land
+# Vercel Domain Setup for spike.land
 
-This guide explains how to configure your custom domain `next.spike.land` on Vercel.
+This guide explains how to configure custom domains for the Spike Land platform on Vercel.
+
+## Domain Structure
+
+| Domain             | Purpose       | Redirect                    |
+| ------------------ | ------------- | --------------------------- |
+| `spike.land`       | Main platform | Production domain           |
+| `pixel.spike.land` | Pixel app     | Redirects to `/apps/images` |
+| `next.spike.land`  | Legacy        | Redirects to `spike.land`   |
 
 ## Vercel Configuration
 
@@ -10,38 +18,43 @@ This guide explains how to configure your custom domain `next.spike.land` on Ver
 
 3. **Go to Settings → Domains**
 
-4. **Add Custom Domain**:
-   - Click "Add"
-   - Enter: `next.spike.land`
-   - Click "Add"
+4. **Add Custom Domains**:
+   - Click "Add" and enter: `spike.land` (set as **Production Domain**)
+   - Click "Add" and enter: `pixel.spike.land`
+   - Click "Add" and enter: `next.spike.land` (optional, for legacy support)
 
 5. **Vercel will provide DNS records**:
    - You'll see instructions showing what DNS records to add
    - Typically it will be a CNAME record pointing to `cname.vercel-dns.com`
 
-6. **Production Domain Assignment**:
-   - Once the domain is verified, go to "Domains" settings
-   - Make sure `next.spike.land` is marked as the **Production Domain**
-   - If it's not, click on the domain and select "Set as Production Domain"
+## Redirects (vercel.json)
+
+Redirects are configured in `vercel.json` at the project root:
+
+- `pixel.spike.land/*` → `spike.land/apps/images/*` (301 permanent)
+- `next.spike.land/*` → `spike.land/*` (301 permanent)
 
 ## Important Notes
 
-- **Production Deployment**: The main branch will automatically deploy to `next.spike.land` after domain is configured
-- **Preview Deployments**: All other branches will continue to get unique preview URLs
-- **SSL Certificate**: Vercel automatically provisions and renews SSL certificates for your custom domain
-- **Propagation Time**: DNS changes may take up to 48 hours to propagate globally (usually faster)
+- **Production Deployment**: The main branch automatically deploys to `spike.land`
+- **Preview Deployments**: All other branches get unique preview URLs
+- **SSL Certificate**: Vercel automatically provisions and renews SSL certificates
+- **Propagation Time**: DNS changes may take up to 48 hours globally (usually faster)
 
 ## Verification
 
 After adding the DNS records in Cloudflare (see CLOUDFLARE_DNS_SETUP.md):
 
 1. Wait a few minutes for DNS propagation
-2. Vercel will automatically verify the domain
-3. Once verified, you'll see a green checkmark next to the domain
-4. Future pushes to `main` branch will deploy to `next.spike.land`
+2. Vercel will automatically verify the domains
+3. Once verified, you'll see a green checkmark next to each domain
+4. Test the redirects:
+   - `https://pixel.spike.land` → should redirect to `https://spike.land/apps/images`
+   - `https://next.spike.land` → should redirect to `https://spike.land`
 
 ## Troubleshooting
 
 - **Domain verification fails**: Double-check DNS records in Cloudflare match Vercel's requirements
 - **SSL certificate issues**: Ensure Cloudflare SSL mode is set to "Full" or "Full (strict)"
+- **Redirects not working**: Ensure `vercel.json` is committed and deployed
 - **Deployment not showing on custom domain**: Ensure the domain is set as "Production Domain" in Vercel settings
