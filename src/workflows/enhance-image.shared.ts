@@ -146,7 +146,11 @@ export function calculateTargetDimensions(
  * Generate R2 key for enhanced image from original key
  */
 export function generateEnhancedR2Key(originalR2Key: string, jobId: string): string {
-  return originalR2Key
-    .replace("/originals/", `/enhanced/`)
-    .replace(/\.[^.]+$/, `/${jobId}.jpg`);
+  const withEnhancedPath = originalR2Key.replace("/originals/", `/enhanced/`);
+  // Check if there's an extension to replace
+  if (/\.[^./]+$/.test(withEnhancedPath)) {
+    return withEnhancedPath.replace(/\.[^./]+$/, `/${jobId}.jpg`);
+  }
+  // No extension - just append the jobId
+  return `${withEnhancedPath}/${jobId}.jpg`;
 }
