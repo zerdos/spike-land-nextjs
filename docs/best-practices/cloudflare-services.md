@@ -1317,13 +1317,13 @@ export async function setSession(sessionId: string, data: any, env: any) {
 }
 ```
 
-#### Middleware with Workers
+#### Proxy with Workers
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Add custom headers
   const response = NextResponse.next();
   response.headers.set("X-Custom-Header", "value");

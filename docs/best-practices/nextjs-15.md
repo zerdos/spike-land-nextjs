@@ -660,14 +660,14 @@ export default function Dashboard() {
 // yarn build shows build size
 ```
 
-### Middleware Performance
+### Proxy Performance
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Runs at Edge - very fast
   if (request.nextUrl.pathname.startsWith("/api/")) {
     // Add security headers
@@ -909,15 +909,15 @@ const handler = NextAuth({
 export { handler as GET, handler as POST };
 ```
 
-### Middleware Authentication
+### Proxy Authentication
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
   // Protect admin routes
