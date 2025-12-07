@@ -107,7 +107,7 @@ We are building a platform where:
 - [x] User profiles
 - [x] Settings page
 
-**Phase 2: My Apps Platform** ✅ (Complete - Demonstrated with Image Enhancement App)
+**Phase 2: My Apps Platform** ✅ (Complete - Demonstrated with Pixel)
 
 - [x] "My Apps" protected section
 - [x] App creation wizard
@@ -136,9 +136,9 @@ We are building a platform where:
 - [ ] Revenue tracking
 - [ ] Payout system
 
-### **Image Enhancement App - Completed Implementation**
+### **Pixel - AI Image Enhancement App (Completed Implementation)**
 
-The Image Enhancement App serves as the showcase application for the Spike Land platform. All 5 implementation phases are complete:
+Pixel (https://pixel.spike.land) is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. All 5 implementation phases are complete:
 
 **Phase 1: MVP** ✅ Complete
 
@@ -463,7 +463,7 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
    - Build artifacts uploaded
 
 3. **Deploy Job** - Runs on all branches after successful build
-   - **Main branch**: Deploys to Vercel Production (https://next.spike.land)
+   - **Main branch**: Deploys to Vercel Production (https://spike.land)
    - **Other branches**: Deploys to Vercel Preview (temporary URLs)
    - Outputs deployment URL
 
@@ -473,9 +473,10 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
 
 ### Deployment Strategy
 
-- **Production**: `main` branch automatically deploys to https://next.spike.land
+- **Production**: `main` branch automatically deploys to https://spike.land
 - **Preview**: All other branches get temporary preview URLs for testing
-- **Domain**: Custom domain `next.spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
+- **Domain**: Custom domain `spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
+- **Subdomain**: `pixel.spike.land` redirects to the image enhancement app at `/apps/images`
 - **Configuration**: See `docs/archive/VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
 
 ### Required GitHub Secrets

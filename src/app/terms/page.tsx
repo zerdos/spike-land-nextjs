@@ -72,13 +72,12 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Agreement</h3>
                   <p>
-                    By accessing and using the Spike Land Image Enhancement App
-                    (&quot;Service&quot;), you agree to be bound by these Terms of Service
-                    (&quot;Terms&quot;). If you do not agree to these Terms, please do not use the
-                    Service.
+                    By accessing and using the Pixel (Spike Land) (&quot;Service&quot;), you agree
+                    to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree
+                    to these Terms, please do not use the Service.
                   </p>
                   <p className="mt-3">
-                    These Terms constitute the entire agreement between you and [Your Name]
+                    These Terms constitute the entire agreement between you and Zoltan Erdos
                     (&quot;Operator&quot;) regarding the Service and supersede all prior agreements
                     and understandings.
                   </p>
@@ -106,7 +105,7 @@ export default function TermsPage() {
 
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-muted-foreground text-sm">
-                    <strong>Operator:</strong> [Your Name]
+                    <strong>Operator:</strong> Zoltan Erdos
                   </p>
                   <p className="text-muted-foreground text-sm mt-2">
                     <strong>Jurisdiction:</strong>{" "}
@@ -202,7 +201,7 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">General Obligations</h3>
                   <p>
-                    As a user of the Spike Land Image Enhancement App, you are responsible for:
+                    As a user of the Pixel (Spike Land), you are responsible for:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Ensuring all images you upload comply with our Acceptable Use Policy</li>
@@ -398,9 +397,9 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Overview</h3>
                   <p>
-                    The Spike Land Image Enhancement App is an AI-powered image processing service
-                    that uses Google Gemini to enhance uploaded images. The Service allows users to
-                    upload images and receive enhanced versions at three different resolution tiers.
+                    The Pixel (Spike Land) is an AI-powered image processing service that uses
+                    Google Gemini to enhance uploaded images. The Service allows users to upload
+                    images and receive enhanced versions at three different resolution tiers.
                   </p>
                 </div>
 

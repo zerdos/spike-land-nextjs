@@ -81,7 +81,7 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">How Cookies Work</h3>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                    <li>You visit the Spike Land Image Enhancement App</li>
+                    <li>You visit the Pixel (Spike Land)</li>
                     <li>The website sends a small file (cookie) to your browser</li>
                     <li>Your browser stores this cookie on your device</li>
                     <li>When you return to the website, your browser sends the cookie back</li>
@@ -109,7 +109,7 @@ export default function CookiePage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">First-Party Cookies</h4>
                       <p className="text-muted-foreground text-sm">
-                        Set by the website you are visiting (Spike Land). Used for essential
+                        Set by the website you are visiting (Pixel). Used for essential
                         functionality and user preferences.
                       </p>
                     </div>
@@ -652,7 +652,7 @@ export default function CookiePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">How We Obtain Consent</h3>
                   <p className="text-muted-foreground mb-4">
-                    When you first visit the Spike Land Image Enhancement App:
+                    When you first visit the Pixel (Spike Land):
                   </p>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
                     <li>A cookie consent banner appears on your screen</li>

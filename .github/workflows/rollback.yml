@@ -97,7 +97,7 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
             for i in {1..30}; do
-              if curl -f "https://next.spike.land" > /dev/null 2>&1; then
+              if curl -f "https://spike.land" > /dev/null 2>&1; then
                 echo "✓ Rollback successful!"
                 exit 0
               fi
