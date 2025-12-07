@@ -1,7 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Configuration constants
-const GEMINI_API_TIMEOUT_MS = 55000; // 55 seconds (under Vercel's 60s limit)
 const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 
 let genAI: GoogleGenAI | null = null;
@@ -25,17 +24,6 @@ function getGeminiClient(): GoogleGenAI {
  */
 export function resetGeminiClient(): void {
   genAI = null;
-}
-
-/**
- * Creates a timeout promise that rejects after the specified duration.
- */
-function createTimeoutPromise(ms: number): Promise<never> {
-  return new Promise((_, reject) => {
-    setTimeout(() => {
-      reject(new Error(`Gemini API request timed out after ${ms}ms`));
-    }, ms);
-  });
 }
 
 export interface ImageAnalysisResult {
@@ -140,7 +128,7 @@ export async function enhanceImageWithGemini(
   console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
 
-  // Process streaming response with timeout
+  // Process streaming response
   const processStream = async (): Promise<Buffer> => {
     let response;
     try {
@@ -198,11 +186,7 @@ export async function enhanceImageWithGemini(
     return Buffer.concat(imageChunks);
   };
 
-  // Race between the stream processing and timeout
-  return Promise.race([
-    processStream(),
-    createTimeoutPromise(GEMINI_API_TIMEOUT_MS),
-  ]);
+  return processStream();
 }
 
 export function isGeminiConfigured(): boolean {
