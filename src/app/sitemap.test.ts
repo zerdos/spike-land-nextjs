@@ -23,46 +23,46 @@ describe("sitemap", () => {
     const result = sitemap();
     const urls = result.map((entry) => entry.url);
 
-    expect(urls).toContain("https://next.spike.land/");
-    expect(urls).toContain("https://next.spike.land/pricing");
-    expect(urls).toContain("https://next.spike.land/apps");
-    expect(urls).toContain("https://next.spike.land/apps/images");
-    expect(urls).toContain("https://next.spike.land/apps/display");
-    expect(urls).toContain("https://next.spike.land/auth/signin");
-    expect(urls).toContain("https://next.spike.land/terms");
-    expect(urls).toContain("https://next.spike.land/privacy");
-    expect(urls).toContain("https://next.spike.land/cookies");
+    expect(urls).toContain("https://spike.land/");
+    expect(urls).toContain("https://spike.land/pricing");
+    expect(urls).toContain("https://spike.land/apps");
+    expect(urls).toContain("https://spike.land/apps/images");
+    expect(urls).toContain("https://spike.land/apps/display");
+    expect(urls).toContain("https://spike.land/auth/signin");
+    expect(urls).toContain("https://spike.land/terms");
+    expect(urls).toContain("https://spike.land/privacy");
+    expect(urls).toContain("https://spike.land/cookies");
   });
 
   it("includes all protected pages", () => {
     const result = sitemap();
     const urls = result.map((entry) => entry.url);
 
-    expect(urls).toContain("https://next.spike.land/enhance");
-    expect(urls).toContain("https://next.spike.land/albums");
-    expect(urls).toContain("https://next.spike.land/my-apps");
-    expect(urls).toContain("https://next.spike.land/my-apps/new");
-    expect(urls).toContain("https://next.spike.land/profile");
-    expect(urls).toContain("https://next.spike.land/settings");
-    expect(urls).toContain("https://next.spike.land/referrals");
+    expect(urls).toContain("https://spike.land/enhance");
+    expect(urls).toContain("https://spike.land/albums");
+    expect(urls).toContain("https://spike.land/my-apps");
+    expect(urls).toContain("https://spike.land/my-apps/new");
+    expect(urls).toContain("https://spike.land/profile");
+    expect(urls).toContain("https://spike.land/settings");
+    expect(urls).toContain("https://spike.land/referrals");
   });
 
   it("includes all admin pages", () => {
     const result = sitemap();
     const urls = result.map((entry) => entry.url);
 
-    expect(urls).toContain("https://next.spike.land/admin");
-    expect(urls).toContain("https://next.spike.land/admin/analytics");
-    expect(urls).toContain("https://next.spike.land/admin/tokens");
-    expect(urls).toContain("https://next.spike.land/admin/system");
-    expect(urls).toContain("https://next.spike.land/admin/vouchers");
-    expect(urls).toContain("https://next.spike.land/admin/users");
+    expect(urls).toContain("https://spike.land/admin");
+    expect(urls).toContain("https://spike.land/admin/analytics");
+    expect(urls).toContain("https://spike.land/admin/tokens");
+    expect(urls).toContain("https://spike.land/admin/system");
+    expect(urls).toContain("https://spike.land/admin/vouchers");
+    expect(urls).toContain("https://spike.land/admin/users");
   });
 
   it("sets home page with highest priority", () => {
     const result = sitemap();
     const homePage = result.find(
-      (entry) => entry.url === "https://next.spike.land/",
+      (entry) => entry.url === "https://spike.land/",
     );
 
     expect(homePage).toBeDefined();
@@ -73,13 +73,13 @@ describe("sitemap", () => {
   it("sets legal pages with lowest priority", () => {
     const result = sitemap();
     const termsPage = result.find(
-      (entry) => entry.url === "https://next.spike.land/terms",
+      (entry) => entry.url === "https://spike.land/terms",
     );
     const privacyPage = result.find(
-      (entry) => entry.url === "https://next.spike.land/privacy",
+      (entry) => entry.url === "https://spike.land/privacy",
     );
     const cookiesPage = result.find(
-      (entry) => entry.url === "https://next.spike.land/cookies",
+      (entry) => entry.url === "https://spike.land/cookies",
     );
 
     expect(termsPage?.priority).toBe(0.3);

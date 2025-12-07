@@ -53,7 +53,7 @@ export function EnhancePageClient({ images: initialImages }: EnhancePageClientPr
       <div className="container mx-auto py-8 px-4">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-foreground">AI Image Enhancement</h1>
+            <h1 className="text-3xl font-bold text-foreground">Pixel - AI Image Enhancement</h1>
             <TokenDisplay />
           </div>
 

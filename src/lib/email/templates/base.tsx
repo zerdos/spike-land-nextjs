@@ -33,7 +33,7 @@ export function BaseEmail({
           {/* Header */}
           <Section style={header}>
             <Heading style={logo}>Spike Land</Heading>
-            <Text style={tagline}>AI-Powered Image Enhancement</Text>
+            <Text style={tagline}>Pixel - AI Image Enhancement</Text>
           </Section>
 
           {/* Main Content */}

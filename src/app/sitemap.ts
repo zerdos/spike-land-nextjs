@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://next.spike.land";
+const BASE_URL = "https://spike.land";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();

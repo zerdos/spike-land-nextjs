@@ -11,12 +11,12 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
 
   return (
     <BaseEmail
-      preview="Welcome to Spike Land - Start enhancing your images with AI"
-      heading={`Welcome to Spike Land, ${displayName}!`}
+      preview="Welcome to Pixel - Start enhancing your images with AI"
+      heading={`Welcome to Pixel, ${displayName}!`}
     >
       <Text style={emailStyles.text}>
-        Thank you for joining Spike Land, the AI-powered image enhancement platform. We're excited
-        to help you transform your images with cutting-edge AI technology.
+        Thank you for joining Pixel, the AI-powered image enhancement platform from Spike Land.
+        We're excited to help you transform your images with cutting-edge AI technology.
       </Text>
 
       <Section style={emailStyles.success}>
@@ -25,7 +25,7 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
         </Text>
       </Section>
 
-      <Text style={emailStyles.text}>Here's what you can do with Spike Land:</Text>
+      <Text style={emailStyles.text}>Here's what you can do with Pixel:</Text>
 
       <Text style={emailStyles.text}>
         ✨ <strong>Enhance Images</strong> - Improve quality and resolution
@@ -58,7 +58,7 @@ export function WelcomeEmail({ userName, userEmail }: WelcomeEmailProps) {
       <Text style={emailStyles.text}>
         Happy enhancing!
         <br />
-        The Spike Land Team
+        The Pixel Team
       </Text>
     </BaseEmail>
   );
