@@ -1,14 +1,22 @@
 import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { enhanceImageDirect } from "./enhance-image.direct";
 
-// Mock dependencies
-const mockDownloadFromR2 = vi.fn();
-const mockUploadToR2 = vi.fn();
-const mockEnhanceImageWithGemini = vi.fn();
-const mockRefundTokens = vi.fn();
-const mockPrismaUpdate = vi.fn();
-const mockSharp = vi.fn();
+// Use vi.hoisted to define mocks before vi.mock is called
+const {
+  mockDownloadFromR2,
+  mockUploadToR2,
+  mockEnhanceImageWithGemini,
+  mockRefundTokens,
+  mockPrismaUpdate,
+  mockSharp,
+} = vi.hoisted(() => ({
+  mockDownloadFromR2: vi.fn(),
+  mockUploadToR2: vi.fn(),
+  mockEnhanceImageWithGemini: vi.fn(),
+  mockRefundTokens: vi.fn(),
+  mockPrismaUpdate: vi.fn(),
+  mockSharp: vi.fn(),
+}));
 
 vi.mock("@/lib/storage/r2-client", () => ({
   downloadFromR2: mockDownloadFromR2,
@@ -37,6 +45,8 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("sharp", () => ({
   default: mockSharp,
 }));
+
+import { enhanceImageDirect } from "./enhance-image.direct";
 
 describe("enhance-image.direct", () => {
   const validInput = {

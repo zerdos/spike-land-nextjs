@@ -1,11 +1,12 @@
 import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { batchEnhanceImagesDirect } from "./batch-enhance.direct";
 
-// Mock dependencies
-const mockEnhanceImageDirect = vi.fn();
-const mockRefundTokens = vi.fn();
-const mockPrismaCreate = vi.fn();
+// Use vi.hoisted to define mocks before vi.mock is called
+const { mockEnhanceImageDirect, mockRefundTokens, mockPrismaCreate } = vi.hoisted(() => ({
+  mockEnhanceImageDirect: vi.fn(),
+  mockRefundTokens: vi.fn(),
+  mockPrismaCreate: vi.fn(),
+}));
 
 vi.mock("./enhance-image.direct", () => ({
   enhanceImageDirect: mockEnhanceImageDirect,
@@ -32,6 +33,8 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+
+import { batchEnhanceImagesDirect } from "./batch-enhance.direct";
 
 describe("batch-enhance.direct", () => {
   const validInput = {
