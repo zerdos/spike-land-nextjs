@@ -21,6 +21,7 @@ model User {
   email            String?   @unique
   emailVerified    DateTime?
   image            String?
+  passwordHash     String?   // For email/password authentication (testing)
   role             UserRole  @default(USER)
   stripeCustomerId String?   @unique
   referralCode     String?   @unique

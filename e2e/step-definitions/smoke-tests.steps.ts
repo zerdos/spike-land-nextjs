@@ -73,8 +73,8 @@ Then("I should see navigation links for:", async function(this: CustomWorld, dat
       continue; // Button found and visible
     }
 
-    // Last resort: try to find as any text element
-    const anyText = this.page.getByText(new RegExp(linkText, "i"));
+    // Last resort: try to find as any text element (use first() to avoid strict mode violation)
+    const anyText = this.page.getByText(new RegExp(linkText, "i")).first();
     await expect(anyText).toBeVisible();
   }
 });

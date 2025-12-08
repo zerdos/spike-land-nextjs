@@ -38,6 +38,7 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchUsers = async (searchTerm?: string) => {
     setLoading(true);
@@ -137,6 +138,55 @@ export default function UserManagementPage() {
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to adjust tokens");
+    }
+  };
+
+  const handleUserDelete = async (
+    userId: string,
+    userName: string | null,
+    userEmail: string | null,
+  ) => {
+    const displayName = userName || userEmail || userId;
+
+    // Double confirmation for safety
+    const firstConfirm = confirm(
+      `Are you sure you want to delete user "${displayName}"?\n\nThis will permanently delete ALL their data including:\n- Albums\n- Images\n- Enhancement jobs\n- Token balance\n- Transaction history\n\nThis action cannot be undone.`,
+    );
+
+    if (!firstConfirm) return;
+
+    const confirmInput = prompt(
+      `To confirm deletion, type "DELETE" (case sensitive):`,
+    );
+
+    if (confirmInput !== "DELETE") {
+      alert("Deletion cancelled - confirmation text did not match.");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete user");
+      }
+
+      const data = await response.json();
+      alert(
+        `User deleted successfully.\n\nDeleted data:\n- Albums: ${data.deletedData.albums}\n- Images: ${data.deletedData.images}\n- Enhancement Jobs: ${data.deletedData.enhancementJobs}\n- Token Balance: ${data.deletedData.tokenBalance}`,
+      );
+
+      setSelectedUser(null);
+      await fetchUsers(search);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -344,6 +394,26 @@ export default function UserManagementPage() {
                             </div>
                           ))
                         )}
+                    </div>
+                  </div>
+
+                  {/* Danger Zone */}
+                  <div className="border-t border-red-200 pt-6">
+                    <h3 className="mb-3 font-semibold text-red-600">Danger Zone</h3>
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-950/20">
+                      <p className="mb-3 text-sm text-red-700 dark:text-red-400">
+                        Permanently delete this user and all their data. This action cannot be
+                        undone.
+                      </p>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() =>
+                          handleUserDelete(selectedUser.id, selectedUser.name, selectedUser.email)}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Deleting..." : "Delete User"}
+                      </Button>
                     </div>
                   </div>
                 </div>
