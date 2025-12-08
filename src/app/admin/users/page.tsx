@@ -141,7 +141,11 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleUserDelete = async (userId: string, userName: string | null, userEmail: string | null) => {
+  const handleUserDelete = async (
+    userId: string,
+    userName: string | null,
+    userEmail: string | null,
+  ) => {
     const displayName = userName || userEmail || userId;
 
     // Double confirmation for safety
@@ -398,12 +402,14 @@ export default function UserManagementPage() {
                     <h3 className="mb-3 font-semibold text-red-600">Danger Zone</h3>
                     <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-950/20">
                       <p className="mb-3 text-sm text-red-700 dark:text-red-400">
-                        Permanently delete this user and all their data. This action cannot be undone.
+                        Permanently delete this user and all their data. This action cannot be
+                        undone.
                       </p>
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleUserDelete(selectedUser.id, selectedUser.name, selectedUser.email)}
+                        onClick={() =>
+                          handleUserDelete(selectedUser.id, selectedUser.name, selectedUser.email)}
                         disabled={isDeleting}
                       >
                         {isDeleting ? "Deleting..." : "Delete User"}

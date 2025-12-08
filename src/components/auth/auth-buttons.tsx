@@ -77,76 +77,78 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         </div>
       </div>
 
-      {!showEmailForm ? (
-        <Button
-          onClick={() => setShowEmailForm(true)}
-          variant="outline"
-          className="w-full"
-          size="lg"
-        >
-          <Mail className="mr-2 h-5 w-5" />
-          Continue with Email
-        </Button>
-      ) : (
-        <form onSubmit={handleEmailSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="test@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+      {!showEmailForm
+        ? (
           <Button
-            type="submit"
+            onClick={() => setShowEmailForm(true)}
+            variant="outline"
             className="w-full"
             size="lg"
-            disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign in with Email"
-            )}
+            <Mail className="mr-2 h-5 w-5" />
+            Continue with Email
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => {
-              setShowEmailForm(false);
-              setError(null);
-              setEmail("");
-              setPassword("");
-            }}
-          >
-            Back to other options
-          </Button>
-        </form>
-      )}
+        )
+        : (
+          <form onSubmit={handleEmailSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="test@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                minLength={6}
+              />
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                )
+                : (
+                  "Sign in with Email"
+                )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setShowEmailForm(false);
+                setError(null);
+                setEmail("");
+                setPassword("");
+              }}
+            >
+              Back to other options
+            </Button>
+          </form>
+        )}
 
       <SignInButton className="w-full" />
     </div>

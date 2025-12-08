@@ -18,8 +18,8 @@ import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import NextAuth, { DefaultSession } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
+import Credentials from "next-auth/providers/credentials";
 import { authConfig, createStableUserId } from "./auth.config";
 
 declare module "next-auth" {
