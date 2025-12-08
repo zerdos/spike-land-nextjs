@@ -46,6 +46,10 @@ vi.mock("@/components/ui/sonner", () => ({
   Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
 
+vi.mock("@/components/feedback/FeedbackButton", () => ({
+  FeedbackButton: () => <div data-testid="feedback-button">FeedbackButton</div>,
+}));
+
 describe("RootLayout", () => {
   it("should be a function component", () => {
     expect(typeof RootLayout).toBe("function");
@@ -121,6 +125,11 @@ describe("RootLayout", () => {
   it("should render AuthHeader component for global theme and user controls", () => {
     const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("auth-header")).toBeInTheDocument();
+  });
+
+  it("should render FeedbackButton component", () => {
+    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+    expect(getByTestId("feedback-button")).toBeInTheDocument();
   });
 });
 

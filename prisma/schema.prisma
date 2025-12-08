@@ -46,6 +46,7 @@ model User {
   referrerReferrals  Referral[] @relation("ReferrerReferrals")
   refereeReferrals   Referral[] @relation("RefereeReferrals")
   auditLogs          AuditLog[]
+  feedback           Feedback[]
 
   @@map("users")
 }
@@ -294,6 +295,7 @@ model EnhancedImage {
   originalFormat    String
   isPublic          Boolean  @default(false)
   viewCount         Int      @default(0)
+  shareToken        String?  @unique // For public sharing via /share/[token]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -303,6 +305,7 @@ model EnhancedImage {
 
   @@index([userId, createdAt])
   @@index([isPublic, createdAt])
+  @@index([shareToken])
   @@map("enhanced_images")
 }
 
@@ -536,4 +539,40 @@ model AuditLog {
   @@index([targetId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// Feedback System Models
+enum FeedbackType {
+  BUG
+  IDEA
+  OTHER
+}
+
+enum FeedbackStatus {
+  NEW
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+model Feedback {
+  id        String         @id @default(cuid())
+  userId    String?        // Optional - anonymous feedback allowed
+  email     String?        // For non-authenticated users
+  type      FeedbackType
+  message   String         @db.Text
+  page      String         // URL/path where feedback was submitted
+  userAgent String?        // Browser info for bug reports
+  status    FeedbackStatus @default(NEW)
+  adminNote String?        @db.Text // Admin response/notes
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("feedback")
 }
