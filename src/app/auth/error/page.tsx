@@ -6,11 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AlertCircle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
+import { logAuthError } from "./actions";
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const hasLoggedError = useRef(false);
+
+  // Log the error to the server when the page loads
+  useEffect(() => {
+    if (!hasLoggedError.current) {
+      hasLoggedError.current = true;
+      logAuthError(error).catch(() => {
+        // Silently ignore logging failures - don't disrupt user experience
+      });
+    }
+  }, [error]);
 
   const errorDetails: Record<string, { title: string; description: string; }> = {
     Configuration: {

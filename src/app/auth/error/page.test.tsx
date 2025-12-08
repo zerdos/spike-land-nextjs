@@ -9,6 +9,11 @@ vi.mock("next/navigation", () => ({
   useSearchParams: vi.fn(),
 }));
 
+// Mock the server action for logging auth errors
+vi.mock("./actions", () => ({
+  logAuthError: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("AuthErrorPage", () => {
   beforeEach(() => {
     vi.mocked(useSearchParams).mockReturnValue({
