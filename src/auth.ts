@@ -16,7 +16,9 @@ import { validateReferralAfterVerification } from "@/lib/referral/fraud-detectio
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
 import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import NextAuth, { DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
 import { authConfig, createStableUserId } from "./auth.config";
 
@@ -128,6 +130,61 @@ export async function handleSignIn(user: {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  // Add Credentials provider for email/password login (primarily for testing)
+  providers: [
+    ...authConfig.providers,
+    Credentials({
+      name: "Email & Password",
+      credentials: {
+        email: { label: "Email", type: "email", placeholder: "test@example.com" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+
+        try {
+          // Find user by email
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              passwordHash: true,
+            },
+          });
+
+          if (!user || !user.passwordHash) {
+            // User not found or no password set
+            return null;
+          }
+
+          // Verify password
+          const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+          if (!isValidPassword) {
+            return null;
+          }
+
+          // Return user object (NextAuth will use this)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Credentials auth error:", error);
+          return null;
+        }
+      },
+    }),
+  ],
   // Enable debug mode in development for detailed auth logs
   debug: process.env.NODE_ENV === "development",
   // Custom logger to capture auth errors in production

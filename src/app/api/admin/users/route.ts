@@ -335,3 +335,121 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await requireAdminByUserId(session.user.id);
+
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Missing required parameter: userId" },
+        { status: 400 },
+      );
+    }
+
+    // Validate userId format
+    if (!CUID_PATTERN.test(userId)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 },
+      );
+    }
+
+    // Prevent self-deletion
+    if (userId === session.user.id) {
+      return NextResponse.json(
+        { error: "Cannot delete your own account" },
+        { status: 400 },
+      );
+    }
+
+    // Get target user details
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        _count: {
+          select: {
+            albums: true,
+            enhancedImages: true,
+            enhancementJobs: true,
+          },
+        },
+        tokenBalance: {
+          select: { balance: true },
+        },
+      },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 },
+      );
+    }
+
+    // Prevent deleting super admins (only super admins can delete super admins)
+    if (targetUser.role === UserRole.SUPER_ADMIN) {
+      const isSuperAdminUser = await isSuperAdmin(session.user.id);
+      if (!isSuperAdminUser) {
+        return NextResponse.json(
+          { error: "Only super admins can delete super admins" },
+          { status: 403 },
+        );
+      }
+    }
+
+    // Capture deletion stats before deleting
+    const deletedData = {
+      albums: targetUser._count.albums,
+      images: targetUser._count.enhancedImages,
+      enhancementJobs: targetUser._count.enhancementJobs,
+      tokenBalance: targetUser.tokenBalance?.balance || 0,
+    };
+
+    // Delete user (cascade delete will handle related records)
+    // The Prisma schema has onDelete: Cascade configured for all relations
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    // Log user deletion
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined;
+    await AuditLogger.logUserDelete(
+      session.user.id,
+      userId,
+      targetUser.email,
+      targetUser.name,
+      deletedData,
+      ipAddress,
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "User deleted successfully",
+      deletedData,
+    });
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+    if (error instanceof Error && error.message.includes("Forbidden")) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
