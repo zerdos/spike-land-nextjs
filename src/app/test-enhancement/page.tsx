@@ -193,6 +193,7 @@ export default function TestEnhancementPage() {
           />
           {imagePreview && (
             <div className="mt-4 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded preview */}
               <img
                 src={imagePreview}
                 alt="Preview"

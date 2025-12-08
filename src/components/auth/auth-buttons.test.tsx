@@ -203,11 +203,11 @@ describe("AuthButtons Component", () => {
       const user = userEvent.setup();
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
-      // Mock window.location
+      // Mock window.location with origin for URL validation
       const originalLocation = window.location;
       Object.defineProperty(window, "location", {
         writable: true,
-        value: { ...originalLocation, href: "", search: "" },
+        value: { ...originalLocation, href: "", search: "", origin: "http://localhost:3000" },
       });
 
       render(<AuthButtons />);
@@ -329,9 +329,15 @@ describe("AuthButtons Component", () => {
 
       // Mock window.location with callbackUrl
       const originalLocation = window.location;
+      const mockOrigin = "http://localhost:3000";
       Object.defineProperty(window, "location", {
         writable: true,
-        value: { ...originalLocation, href: "", search: "?callbackUrl=/dashboard" },
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "?callbackUrl=/dashboard",
+          origin: mockOrigin,
+        },
       });
 
       render(<AuthButtons />);
@@ -341,9 +347,9 @@ describe("AuthButtons Component", () => {
       await user.type(screen.getByLabelText(/password/i), "password");
       await user.click(screen.getByRole("button", { name: /sign in with email/i }));
 
-      // Wait for async operations
+      // Wait for async operations - URL validation returns full URL
       await vi.waitFor(() => {
-        expect(window.location.href).toBe("/dashboard");
+        expect(window.location.href).toBe(`${mockOrigin}/dashboard`);
       });
 
       // Restore window.location
@@ -359,9 +365,10 @@ describe("AuthButtons Component", () => {
 
       // Mock window.location without callbackUrl
       const originalLocation = window.location;
+      const mockOrigin = "http://localhost:3000";
       Object.defineProperty(window, "location", {
         writable: true,
-        value: { ...originalLocation, href: "", search: "" },
+        value: { ...originalLocation, href: "", search: "", origin: mockOrigin },
       });
 
       render(<AuthButtons />);
@@ -371,9 +378,9 @@ describe("AuthButtons Component", () => {
       await user.type(screen.getByLabelText(/password/i), "password");
       await user.click(screen.getByRole("button", { name: /sign in with email/i }));
 
-      // Wait for async operations
+      // Wait for async operations - URL validation returns full URL
       await vi.waitFor(() => {
-        expect(window.location.href).toBe("/");
+        expect(window.location.href).toBe(`${mockOrigin}/`);
       });
 
       // Restore window.location
@@ -434,6 +441,42 @@ describe("AuthButtons Component", () => {
       const passwordInput = screen.getByLabelText(/password/i);
       await user.type(passwordInput, "secretpass");
       expect(passwordInput).toHaveValue("secretpass");
+    });
+
+    it("should block external URLs and redirect to home (security)", async () => {
+      const user = userEvent.setup();
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+
+      // Mock window.location with malicious external callback URL
+      const originalLocation = window.location;
+      const mockOrigin = "http://localhost:3000";
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "?callbackUrl=https://malicious-site.com/phishing",
+          origin: mockOrigin,
+        },
+      });
+
+      render(<AuthButtons />);
+
+      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.type(screen.getByLabelText(/email/i), "test@example.com");
+      await user.type(screen.getByLabelText(/password/i), "password");
+      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
+
+      // Wait for async operations - external URL should be blocked, redirect to home
+      await vi.waitFor(() => {
+        expect(window.location.href).toBe("/");
+      });
+
+      // Restore window.location
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: originalLocation,
+      });
     });
   });
 });

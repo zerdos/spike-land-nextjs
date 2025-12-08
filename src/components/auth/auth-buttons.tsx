@@ -37,7 +37,19 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         // Redirect to callback URL or home on success
         const params = new URLSearchParams(window.location.search);
         const callbackUrl = params.get("callbackUrl") || "/";
-        window.location.href = callbackUrl;
+
+        // Validate URL to prevent open redirect attacks
+        let safeUrl = "/";
+        try {
+          // Only allow same-origin absolute URLs or relative paths
+          const url = new URL(callbackUrl, window.location.origin);
+          if (url.origin === window.location.origin) {
+            safeUrl = url.href;
+          }
+        } catch {
+          // Malformed URL; use default
+        }
+        window.location.href = safeUrl;
       }
     } catch (error) {
       console.error("Sign in error:", error);
