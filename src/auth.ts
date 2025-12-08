@@ -202,20 +202,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Enable debug mode in development for detailed auth logs
   debug: process.env.NODE_ENV === "development",
   // Custom logger to capture auth errors in production
+  // NextAuth v5 logger signature: (code, ...message) for all methods
   logger: {
-    error: (error: Error) => {
-      logger.error("NextAuth error", error, {
+    error(code, ...message) {
+      logger.error(`NextAuth error: ${code}`, undefined, {
         route: "/api/auth",
+        details: message,
       });
     },
-    warn: (code: string) => {
-      logger.warn(`NextAuth warning: ${code}`, { route: "/api/auth" });
+    warn(code, ...message) {
+      logger.warn(`NextAuth warning: ${code}`, {
+        route: "/api/auth",
+        details: message,
+      });
     },
-    debug: (code: string, metadata: unknown) => {
+    debug(code, ...message) {
       if (process.env.NODE_ENV === "development") {
         logger.debug(`NextAuth debug: ${code}`, {
           route: "/api/auth",
-          metadata: metadata as Record<string, unknown>,
+          details: message,
         });
       }
     },
