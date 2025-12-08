@@ -11,13 +11,16 @@
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
 import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
 import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import NextAuth, { DefaultSession } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import Credentials from "next-auth/providers/credentials";
 import { authConfig, createStableUserId } from "./auth.config";
 
 declare module "next-auth" {
@@ -128,6 +131,74 @@ export async function handleSignIn(user: {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  // Add Credentials provider for email/password login (primarily for testing)
+  providers: [
+    ...authConfig.providers,
+    Credentials({
+      name: "Email & Password",
+      credentials: {
+        email: { label: "Email", type: "email", placeholder: "test@example.com" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+
+        // Rate limit login attempts per email (5 attempts per 15 minutes)
+        const rateLimitResult = checkRateLimit(`login:${email.toLowerCase()}`, {
+          maxRequests: 5,
+          windowMs: 15 * 60 * 1000, // 15 minutes
+        });
+
+        if (rateLimitResult.isLimited) {
+          console.warn(`Rate limited login attempt for: ${email}`);
+          return null;
+        }
+
+        try {
+          // Find user by email
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              passwordHash: true,
+            },
+          });
+
+          // Pre-computed dummy hash for timing attack prevention
+          // This ensures bcrypt.compare always runs regardless of user existence
+          const dummyHash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeN9qo8uLOickgx2ZMRZoMy";
+
+          // Always run bcrypt comparison to prevent timing attacks
+          const hashToCompare = user?.passwordHash || dummyHash;
+          const isValidPassword = await bcrypt.compare(password, hashToCompare);
+
+          // Return null if user doesn't exist, has no password, or password is invalid
+          if (!user || !user.passwordHash || !isValidPassword) {
+            return null;
+          }
+
+          // Return user object (NextAuth will use this)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Credentials auth error:", error);
+          return null;
+        }
+      },
+    }),
+  ],
   // Enable debug mode in development for detailed auth logs
   debug: process.env.NODE_ENV === "development",
   // Custom logger to capture auth errors in production

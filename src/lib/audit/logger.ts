@@ -40,12 +40,28 @@ export interface VoucherMetadata {
 }
 
 /**
+ * Metadata for user deletion actions
+ */
+export interface UserDeleteMetadata {
+  userEmail: string | null;
+  userName: string | null;
+  reason?: string;
+  deletedData?: {
+    albums?: number;
+    images?: number;
+    enhancementJobs?: number;
+    tokenBalance?: number;
+  };
+}
+
+/**
  * Union type for all metadata types
  */
 export type AuditMetadata =
   | RoleChangeMetadata
   | TokenAdjustmentMetadata
   | VoucherMetadata
+  | UserDeleteMetadata
   | Record<string, unknown>;
 
 /**
@@ -191,6 +207,35 @@ export class AuditLogger {
       metadata: {
         voucherCode,
       } as VoucherMetadata,
+      ipAddress,
+    });
+  }
+
+  /**
+   * Log a user deletion action
+   */
+  static async logUserDelete(
+    adminId: string,
+    targetUserId: string,
+    userEmail: string | null,
+    userName: string | null,
+    deletedData?: {
+      albums?: number;
+      images?: number;
+      enhancementJobs?: number;
+      tokenBalance?: number;
+    },
+    ipAddress?: string,
+  ): Promise<void> {
+    await this.log({
+      userId: adminId,
+      action: AuditAction.USER_DELETE,
+      targetId: targetUserId,
+      metadata: {
+        userEmail,
+        userName,
+        deletedData,
+      } as UserDeleteMetadata,
       ipAddress,
     });
   }

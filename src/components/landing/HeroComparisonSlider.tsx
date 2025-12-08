@@ -67,6 +67,7 @@ export function HeroComparisonSlider({
     >
       {/* Enhanced image (full width, underneath) */}
       <div className="absolute inset-0">
+        {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic comparison slider requires native img for clip-path */}
         <img
           src={enhancedUrl}
           alt="Enhanced"
@@ -84,6 +85,7 @@ export function HeroComparisonSlider({
         className="absolute inset-0 overflow-hidden"
         style={{ width: `${sliderPosition}%` }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic comparison slider requires native img for clip-path */}
         <img
           src={originalUrl}
           alt="Original"

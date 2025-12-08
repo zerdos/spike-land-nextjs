@@ -303,6 +303,7 @@ export function BatchUpload({ onUploadComplete }: BatchUploadProps) {
                 <div className="relative w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
                   {fileStatus.thumbnail
                     ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded thumbnail
                       <img
                         src={fileStatus.thumbnail}
                         alt={fileStatus.file.name}

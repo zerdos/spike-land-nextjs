@@ -67,6 +67,71 @@ export function BatchEnhance({
     setSelectedImages(new Set());
   }, []);
 
+  const pollJobStatuses = useCallback(async (jobIds: string[]) => {
+    // Exponential backoff configuration
+    const initialInterval = 2000; // Start at 2 seconds
+    const maxInterval = 10000; // Cap at 10 seconds
+    const backoffMultiplier = 1.5; // Increase by 50% each time
+    const maxAttempts = 60; // Maximum polling attempts
+
+    let attempts = 0;
+    let currentInterval = initialInterval;
+
+    const poll = async () => {
+      attempts++;
+
+      try {
+        // Check status of all jobs
+        const statusChecks = await Promise.all(
+          jobIds.map(async (jobId) => {
+            const response = await fetch(`/api/images/jobs/${jobId}`);
+            if (!response.ok) {
+              return { jobId, status: "FAILED", error: "Failed to fetch status" };
+            }
+            const data = await response.json();
+            return { jobId, status: data.status, error: data.errorMessage };
+          }),
+        );
+
+        // Update statuses
+        setEnhancingImages((prev) =>
+          prev.map((img) => {
+            const statusCheck = statusChecks.find((s) => s.jobId === img.jobId);
+            if (statusCheck) {
+              if (statusCheck.status === "COMPLETED") {
+                return { ...img, status: "completed" as const };
+              } else if (statusCheck.status === "FAILED") {
+                return { ...img, status: "error" as const, error: statusCheck.error };
+              }
+            }
+            return img;
+          })
+        );
+
+        // Check if all jobs are complete
+        const allComplete = statusChecks.every(
+          (s) => s.status === "COMPLETED" || s.status === "FAILED",
+        );
+
+        if (allComplete || attempts >= maxAttempts) {
+          setIsProcessing(false);
+          if (onEnhanceComplete) {
+            onEnhanceComplete();
+          }
+        } else {
+          // Apply exponential backoff with cap
+          currentInterval = Math.min(currentInterval * backoffMultiplier, maxInterval);
+          setTimeout(poll, currentInterval);
+        }
+      } catch (error) {
+        console.error("Error polling job statuses:", error);
+        setIsProcessing(false);
+      }
+    };
+
+    poll();
+  }, [onEnhanceComplete]);
+
   const startBatchEnhancement = useCallback(async () => {
     if (selectedImages.size === 0 || !hasEnoughTokens) {
       return;
@@ -144,72 +209,7 @@ export function BatchEnhance({
       );
       setIsProcessing(false);
     }
-  }, [selectedImages, selectedTier, hasEnoughTokens, images, onBalanceRefresh]);
-
-  const pollJobStatuses = useCallback(async (jobIds: string[]) => {
-    // Exponential backoff configuration
-    const initialInterval = 2000; // Start at 2 seconds
-    const maxInterval = 10000; // Cap at 10 seconds
-    const backoffMultiplier = 1.5; // Increase by 50% each time
-    const maxAttempts = 60; // Maximum polling attempts
-
-    let attempts = 0;
-    let currentInterval = initialInterval;
-
-    const poll = async () => {
-      attempts++;
-
-      try {
-        // Check status of all jobs
-        const statusChecks = await Promise.all(
-          jobIds.map(async (jobId) => {
-            const response = await fetch(`/api/images/jobs/${jobId}`);
-            if (!response.ok) {
-              return { jobId, status: "FAILED", error: "Failed to fetch status" };
-            }
-            const data = await response.json();
-            return { jobId, status: data.status, error: data.errorMessage };
-          }),
-        );
-
-        // Update statuses
-        setEnhancingImages((prev) =>
-          prev.map((img) => {
-            const statusCheck = statusChecks.find((s) => s.jobId === img.jobId);
-            if (statusCheck) {
-              if (statusCheck.status === "COMPLETED") {
-                return { ...img, status: "completed" as const };
-              } else if (statusCheck.status === "FAILED") {
-                return { ...img, status: "error" as const, error: statusCheck.error };
-              }
-            }
-            return img;
-          })
-        );
-
-        // Check if all jobs are complete
-        const allComplete = statusChecks.every(
-          (s) => s.status === "COMPLETED" || s.status === "FAILED",
-        );
-
-        if (allComplete || attempts >= maxAttempts) {
-          setIsProcessing(false);
-          if (onEnhanceComplete) {
-            onEnhanceComplete();
-          }
-        } else {
-          // Apply exponential backoff with cap
-          currentInterval = Math.min(currentInterval * backoffMultiplier, maxInterval);
-          setTimeout(poll, currentInterval);
-        }
-      } catch (error) {
-        console.error("Error polling job statuses:", error);
-        setIsProcessing(false);
-      }
-    };
-
-    poll();
-  }, [onEnhanceComplete]);
+  }, [selectedImages, selectedTier, hasEnoughTokens, images, onBalanceRefresh, pollJobStatuses]);
 
   const clearCompleted = useCallback(() => {
     setEnhancingImages((prev) => prev.filter((img) => img.status !== "completed"));
@@ -298,6 +298,7 @@ export function BatchEnhance({
                       ${isProcessing ? "opacity-50 cursor-not-allowed" : "hover:border-primary/50"}
                     `}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded image from R2 */}
                     <img
                       src={image.url}
                       alt={image.name}
@@ -378,6 +379,7 @@ export function BatchEnhance({
               {enhancingImages.map((image) => (
                 <div key={image.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <div className="relative w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded image from R2 */}
                     <img
                       src={image.url}
                       alt={image.name}
