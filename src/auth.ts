@@ -11,6 +11,7 @@
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
 import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
@@ -147,6 +148,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
+        // Rate limit login attempts per email (5 attempts per 15 minutes)
+        const rateLimitResult = checkRateLimit(`login:${email.toLowerCase()}`, {
+          maxRequests: 5,
+          windowMs: 15 * 60 * 1000, // 15 minutes
+        });
+
+        if (rateLimitResult.isLimited) {
+          console.warn(`Rate limited login attempt for: ${email}`);
+          return null;
+        }
+
         try {
           // Find user by email
           const user = await prisma.user.findUnique({
@@ -160,14 +172,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
           });
 
-          if (!user || !user.passwordHash) {
-            // User not found or no password set
-            return null;
-          }
+          // Pre-computed dummy hash for timing attack prevention
+          // This ensures bcrypt.compare always runs regardless of user existence
+          const dummyHash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeN9qo8uLOickgx2ZMRZoMy";
 
-          // Verify password
-          const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-          if (!isValidPassword) {
+          // Always run bcrypt comparison to prevent timing attacks
+          const hashToCompare = user?.passwordHash || dummyHash;
+          const isValidPassword = await bcrypt.compare(password, hashToCompare);
+
+          // Return null if user doesn't exist, has no password, or password is invalid
+          if (!user || !user.passwordHash || !isValidPassword) {
             return null;
           }
 

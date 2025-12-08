@@ -5,7 +5,7 @@
 import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GET, PATCH } from "./route";
+import { DELETE, GET, PATCH } from "./route";
 
 // Valid CUID format for tests
 const VALID_ADMIN_ID = "user_abc123def456abc123def456";
@@ -20,6 +20,7 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+      delete: vi.fn(),
     },
     userTokenBalance: {
       upsert: vi.fn(),
@@ -37,6 +38,7 @@ vi.mock("@/lib/audit/logger", () => ({
   AuditLogger: {
     logRoleChange: vi.fn(),
     logTokenAdjustment: vi.fn(),
+    logUserDelete: vi.fn(),
   },
 }));
 
@@ -435,6 +437,282 @@ describe("User Management API", () => {
 
       expect(response.status).toBe(400);
       expect(data.error).toContain("Invalid action");
+    });
+  });
+
+  describe("DELETE", () => {
+    it("should return 401 if not authenticated", async () => {
+      vi.mocked(auth).mockResolvedValue(null);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+    });
+
+    it("should return 400 when userId is missing", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      const request = new NextRequest("http://localhost/api/admin/users", {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Missing required parameter");
+    });
+
+    it("should return 400 for invalid userId format", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      const request = new NextRequest("http://localhost/api/admin/users?userId=invalid", {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid user ID format");
+    });
+
+    it("should return 400 when trying to delete own account", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_ADMIN_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Cannot delete your own account");
+    });
+
+    it("should return 404 when user not found", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("User not found");
+    });
+
+    it("should return 403 when non-super-admin tries to delete super admin", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: VALID_USER_ID,
+        email: "superadmin@test.com",
+        name: "Super Admin",
+        role: UserRole.SUPER_ADMIN,
+        _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
+        tokenBalance: { balance: 0 },
+      } as any);
+
+      const { isSuperAdmin } = await import("@/lib/auth/admin-middleware");
+      vi.mocked(isSuperAdmin).mockResolvedValue(false);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toContain("Only super admins can delete super admins");
+    });
+
+    it("should successfully delete user and return deleted data", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: VALID_USER_ID,
+        email: "user@test.com",
+        name: "Test User",
+        role: UserRole.USER,
+        _count: { albums: 2, enhancedImages: 10, enhancementJobs: 5 },
+        tokenBalance: { balance: 150 },
+      } as any);
+
+      vi.mocked(prisma.user.delete).mockResolvedValue({} as any);
+
+      const { AuditLogger } = await import("@/lib/audit/logger");
+      vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.message).toBe("User deleted successfully");
+      expect(data.deletedData).toEqual({
+        albums: 2,
+        images: 10,
+        enhancementJobs: 5,
+        tokenBalance: 150,
+      });
+
+      expect(prisma.user.delete).toHaveBeenCalledWith({
+        where: { id: VALID_USER_ID },
+      });
+
+      expect(AuditLogger.logUserDelete).toHaveBeenCalledWith(
+        VALID_ADMIN_ID,
+        VALID_USER_ID,
+        "user@test.com",
+        "Test User",
+        expect.objectContaining({
+          albums: 2,
+          images: 10,
+          enhancementJobs: 5,
+          tokenBalance: 150,
+        }),
+        undefined,
+      );
+    });
+
+    it("should handle user with null token balance", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: VALID_USER_ID,
+        email: "user@test.com",
+        name: "Test User",
+        role: UserRole.USER,
+        _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
+        tokenBalance: null,
+      } as any);
+
+      vi.mocked(prisma.user.delete).mockResolvedValue({} as any);
+
+      const { AuditLogger } = await import("@/lib/audit/logger");
+      vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.deletedData.tokenBalance).toBe(0);
+    });
+
+    it("should allow super admin to delete another super admin", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: VALID_USER_ID,
+        email: "superadmin@test.com",
+        name: "Super Admin",
+        role: UserRole.SUPER_ADMIN,
+        _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
+        tokenBalance: null,
+      } as any);
+
+      const { isSuperAdmin } = await import("@/lib/auth/admin-middleware");
+      vi.mocked(isSuperAdmin).mockResolvedValue(true);
+
+      vi.mocked(prisma.user.delete).mockResolvedValue({} as any);
+
+      const { AuditLogger } = await import("@/lib/audit/logger");
+      vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+    });
+
+    it("should return 500 on database error", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: VALID_USER_ID,
+        email: "user@test.com",
+        name: "Test User",
+        role: UserRole.USER,
+        _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
+        tokenBalance: null,
+      } as any);
+
+      vi.mocked(prisma.user.delete).mockRejectedValue(new Error("Database error"));
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+    });
+
+    it("should return 403 on Forbidden error", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+      vi.mocked(requireAdminByUserId).mockRejectedValue(
+        new Error("Forbidden: Admin access required"),
+      );
+
+      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
+        method: "DELETE",
+      });
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toContain("Forbidden");
     });
   });
 });

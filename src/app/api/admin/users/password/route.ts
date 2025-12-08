@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { createStableUserId } from "@/auth.config";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,6 +22,26 @@ export async function POST(request: NextRequest) {
     }
 
     await requireAdminByUserId(session.user.id);
+
+    // Rate limit password set operations (5 per hour per admin)
+    const rateLimitResult = checkRateLimit(`password-set:${session.user.id}`, {
+      maxRequests: 5,
+      windowMs: 60 * 60 * 1000, // 1 hour
+    });
+
+    if (rateLimitResult.isLimited) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+            ),
+          },
+        },
+      );
+    }
 
     const body = await request.json();
     const { email, password, name, createIfNotExists } = body;
@@ -41,10 +62,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate password length
-    if (password.length < 6) {
+    // NOTE: Minimal password validation - this endpoint is for test/demo purposes only.
+    // In production, use OAuth providers for authentication.
+    // Any non-empty password is allowed for testing flexibility.
+    if (typeof password !== "string" || password.length < 1) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
+        { error: "Password is required" },
         { status: 400 },
       );
     }

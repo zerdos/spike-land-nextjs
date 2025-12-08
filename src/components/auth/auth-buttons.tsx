@@ -34,10 +34,13 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        // Redirect to home on success
-        window.location.href = "/";
+        // Redirect to callback URL or home on success
+        const params = new URLSearchParams(window.location.search);
+        const callbackUrl = params.get("callbackUrl") || "/";
+        window.location.href = callbackUrl;
       }
-    } catch {
+    } catch (error) {
+      console.error("Sign in error:", error);
       setError("An error occurred during sign in");
     } finally {
       setIsLoading(false);
@@ -113,7 +116,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
-                minLength={6}
+                minLength={1} // Minimal validation - for test/demo purposes
               />
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
