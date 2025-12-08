@@ -60,6 +60,9 @@ export function createStableUserId(email: string): string {
  * Does not include database operations.
  */
 export const authConfig: NextAuthConfig = {
+  // Trust the host when running behind a proxy (required for Vercel, Cloudflare, etc.)
+  // This allows NextAuth to correctly handle X-Forwarded-Host headers
+  trustHost: true,
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID,

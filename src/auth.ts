@@ -9,6 +9,7 @@
  */
 
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
+import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
 import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
@@ -127,6 +128,59 @@ export async function handleSignIn(user: {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  // Enable debug mode in development for detailed auth logs
+  debug: process.env.NODE_ENV === "development",
+  // Custom logger to capture auth errors in production
+  logger: {
+    error: (error: Error) => {
+      logger.error("NextAuth error", error, {
+        route: "/api/auth",
+      });
+    },
+    warn: (code: string) => {
+      logger.warn(`NextAuth warning: ${code}`, { route: "/api/auth" });
+    },
+    debug: (code: string, metadata: unknown) => {
+      if (process.env.NODE_ENV === "development") {
+        logger.debug(`NextAuth debug: ${code}`, {
+          route: "/api/auth",
+          metadata: metadata as Record<string, unknown>,
+        });
+      }
+    },
+  },
+  // Track auth events for monitoring and debugging
+  events: {
+    signIn: ({ user, account }) => {
+      logger.info("User signed in", {
+        userId: user.id,
+        provider: account?.provider,
+        route: "/api/auth",
+      });
+    },
+    signOut: (message) => {
+      // Handle both token and session based signOut
+      // JWT strategy uses token, database strategy uses session
+      const identifier = "token" in message ? message.token?.sub : undefined;
+      logger.info("User signed out", {
+        userId: identifier,
+        route: "/api/auth",
+      });
+    },
+    createUser: ({ user }) => {
+      logger.info("New user created via auth", {
+        userId: user.id,
+        route: "/api/auth",
+      });
+    },
+    linkAccount: ({ user, account }) => {
+      logger.info("Account linked", {
+        userId: user.id,
+        provider: account.provider,
+        route: "/api/auth",
+      });
+    },
+  },
   callbacks: {
     async signIn({ user }) {
       return handleSignIn(user);
