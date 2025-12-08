@@ -6,46 +6,36 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
-
-// User ID is overridden by auth.ts signIn callback with stable email-based ID (user_<hash>).
-// The @default(cuid()) is kept as a fallback for direct Prisma operations (non-auth flows).
-// See: src/auth.ts handleSignIn() and src/auth.config.ts createStableUserId()
 model User {
-  id               String    @id @default(cuid())
-  name             String?
-  email            String?   @unique
-  emailVerified    DateTime?
-  image            String?
-  passwordHash     String?   // For email/password authentication (testing)
-  role             UserRole  @default(USER)
-  stripeCustomerId String?   @unique
-  referralCode     String?   @unique
-  referredById     String?
-  referralCount    Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  accounts          Account[]
-  sessions          Session[]
-  apps              App[]
-  tokenBalance      UserTokenBalance?
-  tokenTransactions TokenTransaction[]
-  stripePayments    StripePayment[]
-  subscription       Subscription?
+  id                 String                @id @default(cuid())
+  name               String?
+  email              String?               @unique
+  emailVerified      DateTime?
+  image              String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  stripeCustomerId   String?
+  role               UserRole              @default(USER)
+  referralCode       String?
+  referredById       String?
+  referralCount      Int                   @default(0)
+  passwordHash       String?
+  accounts           Account[]
+  albums             Album[]
+  apps               App[]
+  auditLogs          AuditLog[]
   enhancedImages     EnhancedImage[]
   enhancementJobs    ImageEnhancementJob[]
-  albums             Album[]
+  refereeReferrals   Referral[]            @relation("RefereeReferrals")
+  referrerReferrals  Referral[]            @relation("ReferrerReferrals")
+  sessions           Session[]
+  stripePayments     StripePayment[]
+  subscription       Subscription?
+  tokenTransactions  TokenTransaction[]
+  tokenBalance       UserTokenBalance?
+  referredBy         User?                 @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]                @relation("Referrals")
   voucherRedemptions VoucherRedemption[]
-  referredBy         User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals          User[]    @relation("Referrals")
-  referrerReferrals  Referral[] @relation("ReferrerReferrals")
-  refereeReferrals   Referral[] @relation("RefereeReferrals")
-  auditLogs          AuditLog[]
   feedback           Feedback[]
 
   @@map("users")
@@ -57,15 +47,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -90,34 +79,360 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-enum AppStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
-  DELETED
-}
-
 model App {
-  id          String    @id @default(cuid())
-  name        String
-  description String?   @db.Text
-  userId      String
-  forkedFrom  String?
-  status      AppStatus @default(DRAFT)
-  domain      String?   @unique
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id], onDelete: SetNull)
+  id                 String              @id @default(cuid())
+  name               String
+  description        String?
+  userId             String
+  forkedFrom         String?
+  status             AppStatus           @default(DRAFT)
+  domain             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id])
   forks              App[]               @relation("AppForks")
-  requirements       Requirement[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   monetizationModels MonetizationModel[]
+  requirements       Requirement[]
 
   @@index([userId])
   @@index([forkedFrom])
   @@index([status])
   @@map("apps")
+}
+
+model Requirement {
+  id          String              @id @default(cuid())
+  appId       String
+  description String
+  priority    RequirementPriority @default(MEDIUM)
+  status      RequirementStatus   @default(PENDING)
+  version     Int                 @default(1)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  app         App                 @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId])
+  @@index([status])
+  @@index([priority])
+  @@map("requirements")
+}
+
+model MonetizationModel {
+  id                   String                @id @default(cuid())
+  appId                String
+  type                 MonetizationType      @default(FREE)
+  price                Decimal?              @db.Decimal(10, 2)
+  subscriptionInterval SubscriptionInterval?
+  features             String[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  app                  App                   @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId])
+  @@index([type])
+  @@map("monetization_models")
+}
+
+model UserTokenBalance {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  balance          Int      @default(0)
+  lastRegeneration DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_token_balances")
+}
+
+model TokenTransaction {
+  id           String               @id @default(cuid())
+  userId       String
+  amount       Int
+  type         TokenTransactionType
+  source       String?
+  sourceId     String?
+  balanceAfter Int
+  metadata     Json?
+  createdAt    DateTime             @default(now())
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sourceId])
+  @@map("token_transactions")
+}
+
+model TokensPackage {
+  id             String          @id @default(cuid())
+  name           String
+  tokens         Int
+  priceUSD       Decimal         @db.Decimal(10, 2)
+  stripePriceId  String          @unique
+  active         Boolean         @default(true)
+  sortOrder      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  stripePayments StripePayment[]
+
+  @@index([active, sortOrder])
+  @@map("tokens_packages")
+}
+
+model StripePayment {
+  id                    String              @id @default(cuid())
+  userId                String
+  packageId             String
+  tokensGranted         Int
+  amountUSD             Decimal             @db.Decimal(10, 2)
+  stripePaymentIntentId String              @unique
+  status                StripePaymentStatus
+  metadata              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  package               TokensPackage       @relation(fields: [packageId], references: [id])
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([stripePaymentIntentId])
+  @@map("stripe_payments")
+}
+
+model EnhancedImage {
+  id                String                @id @default(cuid())
+  userId            String
+  name              String
+  description       String?
+  originalUrl       String
+  originalR2Key     String
+  originalWidth     Int
+  originalHeight    Int
+  originalSizeBytes Int
+  originalFormat    String
+  isPublic          Boolean               @default(false)
+  viewCount         Int                   @default(0)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  shareToken        String?               @unique
+  albumImages       AlbumImage[]
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enhancementJobs   ImageEnhancementJob[]
+
+  @@index([userId, createdAt])
+  @@index([isPublic, createdAt])
+  @@index([shareToken])
+  @@map("enhanced_images")
+}
+
+model ImageEnhancementJob {
+  id                    String          @id @default(cuid())
+  imageId               String
+  userId                String
+  tier                  EnhancementTier
+  tokensCost            Int
+  status                JobStatus
+  enhancedUrl           String?
+  enhancedR2Key         String?
+  enhancedWidth         Int?
+  enhancedHeight        Int?
+  enhancedSizeBytes     Int?
+  errorMessage          String?
+  retryCount            Int             @default(0)
+  maxRetries            Int             @default(3)
+  geminiPrompt          String?
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  workflowRunId         String?
+  image                 EnhancedImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@index([imageId])
+  @@index([status, updatedAt])
+  @@index([workflowRunId])
+  @@map("image_enhancement_jobs")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  tokensPerMonth       Int
+  rolloverTokens       Int                @default(0)
+  maxRollover          Int                @default(0)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model SubscriptionPlan {
+  id             String   @id @default(cuid())
+  name           String
+  tokensPerMonth Int
+  priceGBP       Decimal  @db.Decimal(10, 2)
+  stripePriceId  String   @unique
+  maxRollover    Int      @default(0)
+  priority       Boolean  @default(false)
+  apiAccess      Boolean  @default(false)
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([active, sortOrder])
+  @@map("subscription_plans")
+}
+
+model Album {
+  id           String       @id @default(cuid())
+  userId       String
+  name         String
+  description  String?
+  coverImageId String?
+  privacy      AlbumPrivacy @default(PRIVATE)
+  shareToken   String?      @unique
+  sortOrder    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  albumImages  AlbumImage[]
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([privacy])
+  @@index([shareToken])
+  @@map("albums")
+}
+
+model AlbumImage {
+  id        String        @id @default(cuid())
+  albumId   String
+  imageId   String
+  sortOrder Int           @default(0)
+  addedAt   DateTime      @default(now())
+  album     Album         @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  image     EnhancedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([albumId, imageId])
+  @@index([albumId, sortOrder])
+  @@index([imageId])
+  @@map("album_images")
+}
+
+model Voucher {
+  id          String              @id @default(cuid())
+  code        String              @unique
+  type        VoucherType
+  value       Int
+  maxUses     Int?
+  currentUses Int                 @default(0)
+  expiresAt   DateTime?
+  status      VoucherStatus       @default(ACTIVE)
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  redemptions VoucherRedemption[]
+
+  @@index([code])
+  @@index([status, expiresAt])
+  @@map("vouchers")
+}
+
+model VoucherRedemption {
+  id            String   @id @default(cuid())
+  voucherId     String
+  userId        String
+  tokensGranted Int
+  redeemedAt    DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher       Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, userId])
+  @@index([userId, redeemedAt])
+  @@index([voucherId])
+  @@map("voucher_redemptions")
+}
+
+model Referral {
+  id            String         @id @default(cuid())
+  referrerId    String
+  refereeId     String
+  status        ReferralStatus @default(PENDING)
+  tokensGranted Int            @default(0)
+  ipAddress     String?
+  createdAt     DateTime       @default(now())
+  completedAt   DateTime?
+  referee       User           @relation("RefereeReferrals", fields: [refereeId], references: [id], onDelete: Cascade)
+  referrer      User           @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, refereeId])
+  @@index([referrerId, status])
+  @@index([refereeId])
+  @@index([status, createdAt])
+  @@map("referrals")
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String
+  action    AuditAction
+  targetId  String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Feedback {
+  id        String         @id @default(cuid())
+  userId    String?
+  email     String?
+  type      FeedbackType
+  message   String
+  page      String
+  userAgent String?
+  status    FeedbackStatus @default(NEW)
+  adminNote String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("feedback")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AppStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DELETED
 }
 
 enum RequirementPriority {
@@ -132,24 +447,6 @@ enum RequirementStatus {
   IN_PROGRESS
   COMPLETED
   REJECTED
-}
-
-model Requirement {
-  id          String              @id @default(cuid())
-  appId       String
-  description String              @db.Text
-  priority    RequirementPriority @default(MEDIUM)
-  status      RequirementStatus   @default(PENDING)
-  version     Int                 @default(1)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
-
-  @@index([appId])
-  @@index([status])
-  @@index([priority])
-  @@map("requirements")
 }
 
 enum MonetizationType {
@@ -179,38 +476,6 @@ enum VoucherStatus {
   DEPLETED
 }
 
-model MonetizationModel {
-  id                   String                @id @default(cuid())
-  appId                String
-  type                 MonetizationType      @default(FREE)
-  price                Decimal?              @db.Decimal(10, 2)
-  subscriptionInterval SubscriptionInterval?
-  features             String[]
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-
-  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
-
-  @@index([appId])
-  @@index([type])
-  @@map("monetization_models")
-}
-
-// Token System Models
-model UserTokenBalance {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  balance          Int      @default(0)
-  lastRegeneration DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("user_token_balances")
-}
-
 enum TokenTransactionType {
   EARN_REGENERATION
   EARN_PURCHASE
@@ -219,94 +484,11 @@ enum TokenTransactionType {
   REFUND
 }
 
-model TokenTransaction {
-  id           String               @id @default(cuid())
-  userId       String
-  amount       Int
-  type         TokenTransactionType
-  source       String?
-  sourceId     String?
-  balanceAfter Int
-  metadata     Json?
-  createdAt    DateTime             @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([sourceId])
-  @@map("token_transactions")
-}
-
-model TokensPackage {
-  id            String   @id @default(cuid())
-  name          String
-  tokens        Int
-  priceUSD      Decimal  @db.Decimal(10, 2)
-  stripePriceId String   @unique
-  active        Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  stripePayments StripePayment[]
-
-  @@index([active, sortOrder])
-  @@map("tokens_packages")
-}
-
 enum StripePaymentStatus {
   PENDING
   SUCCEEDED
   FAILED
   REFUNDED
-}
-
-model StripePayment {
-  id                    String              @id @default(cuid())
-  userId                String
-  packageId             String
-  tokensGranted         Int
-  amountUSD             Decimal             @db.Decimal(10, 2)
-  stripePaymentIntentId String              @unique
-  status                StripePaymentStatus
-  metadata              Json?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-
-  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package TokensPackage @relation(fields: [packageId], references: [id])
-
-  @@index([userId, createdAt])
-  @@index([stripePaymentIntentId])
-  @@map("stripe_payments")
-}
-
-// Image Enhancement Models
-model EnhancedImage {
-  id                String   @id @default(cuid())
-  userId            String
-  name              String
-  description       String?
-  originalUrl       String
-  originalR2Key     String
-  originalWidth     Int
-  originalHeight    Int
-  originalSizeBytes Int
-  originalFormat    String
-  isPublic          Boolean  @default(false)
-  viewCount         Int      @default(0)
-  shareToken        String?  @unique // For public sharing via /share/[token]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enhancementJobs ImageEnhancementJob[]
-  albumImages     AlbumImage[]
-
-  @@index([userId, createdAt])
-  @@index([isPublic, createdAt])
-  @@index([shareToken])
-  @@map("enhanced_images")
 }
 
 enum EnhancementTier {
@@ -324,39 +506,6 @@ enum JobStatus {
   CANCELLED
 }
 
-model ImageEnhancementJob {
-  id                    String           @id @default(cuid())
-  imageId               String
-  userId                String
-  tier                  EnhancementTier
-  tokensCost            Int
-  status                JobStatus
-  enhancedUrl           String?
-  enhancedR2Key         String?
-  enhancedWidth         Int?
-  enhancedHeight        Int?
-  enhancedSizeBytes     Int?
-  errorMessage          String?
-  retryCount            Int              @default(0)
-  maxRetries            Int              @default(3)
-  geminiPrompt          String?          @db.Text
-  workflowRunId         String?          // Vercel Workflow run ID for cancellation
-  processingStartedAt   DateTime?
-  processingCompletedAt DateTime?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-
-  image EnhancedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, status, createdAt])
-  @@index([imageId])
-  @@index([status, updatedAt])
-  @@index([workflowRunId])
-  @@map("image_enhancement_jobs")
-}
-
-// Subscription Models
 enum SubscriptionStatus {
   ACTIVE
   CANCELED
@@ -365,154 +514,18 @@ enum SubscriptionStatus {
   TRIALING
 }
 
-model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String             @unique
-  stripeSubscriptionId String             @unique
-  stripePriceId        String
-  status               SubscriptionStatus
-  currentPeriodStart   DateTime
-  currentPeriodEnd     DateTime
-  cancelAtPeriodEnd    Boolean            @default(false)
-  tokensPerMonth       Int
-  rolloverTokens       Int                @default(0)
-  maxRollover          Int                @default(0)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([stripeSubscriptionId])
-  @@index([status])
-  @@map("subscriptions")
-}
-
-model SubscriptionPlan {
-  id            String   @id @default(cuid())
-  name          String
-  tokensPerMonth Int
-  priceGBP      Decimal  @db.Decimal(10, 2)
-  stripePriceId String   @unique
-  maxRollover   Int      @default(0)
-  priority      Boolean  @default(false)
-  apiAccess     Boolean  @default(false)
-  active        Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([active, sortOrder])
-  @@map("subscription_plans")
-}
-
-// Album and Gallery Models
 enum AlbumPrivacy {
   PRIVATE
   UNLISTED
   PUBLIC
 }
 
-model Album {
-  id          String       @id @default(cuid())
-  userId      String
-  name        String
-  description String?      @db.Text
-  coverImageId String?
-  privacy     AlbumPrivacy @default(PRIVATE)
-  shareToken  String?      @unique
-  sortOrder   Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  albumImages AlbumImage[]
-
-  @@index([userId, createdAt])
-  @@index([privacy])
-  @@index([shareToken])
-  @@map("albums")
-}
-
-model AlbumImage {
-  id        String   @id @default(cuid())
-  albumId   String
-  imageId   String
-  sortOrder Int      @default(0)
-  addedAt   DateTime @default(now())
-
-  album Album         @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  image EnhancedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
-  @@unique([albumId, imageId])
-  @@index([albumId, sortOrder])
-  @@index([imageId])
-  @@map("album_images")
-}
-
-// Voucher System Models
-model Voucher {
-  id          String            @id @default(cuid())
-  code        String            @unique
-  type        VoucherType
-  value       Int // tokens or percentage
-  maxUses     Int?
-  currentUses Int               @default(0)
-  expiresAt   DateTime?
-  status      VoucherStatus     @default(ACTIVE)
-  metadata    Json?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  redemptions VoucherRedemption[]
-
-  @@index([code])
-  @@index([status, expiresAt])
-  @@map("vouchers")
-}
-
-model VoucherRedemption {
-  id            String   @id @default(cuid())
-  voucherId     String
-  userId        String
-  tokensGranted Int
-  redeemedAt    DateTime @default(now())
-
-  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([voucherId, userId])
-  @@index([userId, redeemedAt])
-  @@index([voucherId])
-  @@map("voucher_redemptions")
-}
-
-// Referral System Models
 enum ReferralStatus {
   PENDING
   COMPLETED
   INVALID
 }
 
-model Referral {
-  id            String         @id @default(cuid())
-  referrerId    String
-  refereeId     String
-  status        ReferralStatus @default(PENDING)
-  tokensGranted Int            @default(0)
-  ipAddress     String?
-  createdAt     DateTime       @default(now())
-  completedAt   DateTime?
-
-  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
-  referee  User @relation("RefereeReferrals", fields: [refereeId], references: [id], onDelete: Cascade)
-
-  @@unique([referrerId, refereeId])
-  @@index([referrerId, status])
-  @@index([refereeId])
-  @@index([status, createdAt])
-  @@map("referrals")
-}
-
-// Audit Logging Models
 enum AuditAction {
   ROLE_CHANGE
   TOKEN_ADJUSTMENT
@@ -523,25 +536,6 @@ enum AuditAction {
   ADMIN_LOGIN
 }
 
-model AuditLog {
-  id        String      @id @default(cuid())
-  userId    String      // Who performed the action
-  action    AuditAction // Type of action
-  targetId  String?     // Target user/resource ID
-  metadata  Json?       // Additional details (oldValue, newValue, reason)
-  ipAddress String?     // IP address of actor
-  createdAt DateTime    @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([action])
-  @@index([targetId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// Feedback System Models
 enum FeedbackType {
   BUG
   IDEA
@@ -553,26 +547,4 @@ enum FeedbackStatus {
   REVIEWED
   RESOLVED
   DISMISSED
-}
-
-model Feedback {
-  id        String         @id @default(cuid())
-  userId    String?        // Optional - anonymous feedback allowed
-  email     String?        // For non-authenticated users
-  type      FeedbackType
-  message   String         @db.Text
-  page      String         // URL/path where feedback was submitted
-  userAgent String?        // Browser info for bug reports
-  status    FeedbackStatus @default(NEW)
-  adminNote String?        @db.Text // Admin response/notes
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([status])
-  @@index([type])
-  @@index([createdAt])
-  @@map("feedback")
 }
