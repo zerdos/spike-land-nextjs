@@ -4,6 +4,7 @@ import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 import { AuthHeader } from "@/components/auth/auth-header";
 import { SessionProvider } from "@/components/auth/session-provider";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
@@ -77,6 +78,7 @@ export default function RootLayout({
           <SessionProvider>
             <AuthHeader />
             {children}
+            <FeedbackButton />
           </SessionProvider>
           <CookieConsent />
           <Toaster />

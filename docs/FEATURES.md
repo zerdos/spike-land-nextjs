@@ -1,15 +1,15 @@
 # Spike Land - Feature Documentation
 
-> **Last Updated**: November 2025
-> **Status**: Phase 2 - My Apps Platform (In Progress)
+> **Last Updated**: December 2025
+> **Status**: Pixel App Complete (Phases 1-5) | Platform Phase 2 Complete
 
 ---
 
 ## Table of Contents
 
 1. [Platform Overview](#platform-overview)
-2. [Implemented Features](#implemented-features)
-3. [In Progress Features](#in-progress-features)
+2. [Pixel - AI Image Enhancement App](#pixel---ai-image-enhancement-app)
+3. [Platform Features](#platform-features)
 4. [Roadmap & Future Plans](#roadmap--future-plans)
 5. [Technical Stack](#technical-stack)
 6. [Database Schema](#database-schema)
@@ -30,7 +30,78 @@
 
 ---
 
-## Implemented Features
+## Pixel - AI Image Enhancement App
+
+**URL**: [pixel.spike.land](https://pixel.spike.land)
+
+Pixel is the flagship AI-powered image enhancement application on the Spike Land platform. All 5 implementation phases are complete.
+
+### Phase 1: MVP ✅ Complete
+
+| Feature             | Status      | Description                       |
+| ------------------- | ----------- | --------------------------------- |
+| Image Upload        | ✅ Complete | Drag-drop UI with preview         |
+| AI Enhancement      | ✅ Complete | Single-tier enhancement (TIER_1K) |
+| Before/After Slider | ✅ Complete | Interactive comparison view       |
+| Download            | ✅ Complete | Export enhanced images            |
+| Auth Integration    | ✅ Complete | NextAuth authentication           |
+
+### Phase 2: Token Economy ✅ Complete
+
+| Feature                | Status      | Description                          |
+| ---------------------- | ----------- | ------------------------------------ |
+| Multi-tier Enhancement | ✅ Complete | TIER_1K, TIER_2K, TIER_4K options    |
+| Token Balance System   | ✅ Complete | Auto-regeneration (1 per 15 min)     |
+| Stripe Integration     | ✅ Complete | One-time purchases and subscriptions |
+| Transaction History    | ✅ Complete | Full token transaction log           |
+| Low Balance Warnings   | ✅ Complete | User notifications                   |
+| Refunds on Failure     | ✅ Complete | Automatic token refund               |
+
+### Phase 3: Albums & Export ✅ Complete
+
+| Feature           | Status      | Description                      |
+| ----------------- | ----------- | -------------------------------- |
+| Album Management  | ✅ Complete | Create, edit, delete albums      |
+| Batch Upload      | ✅ Complete | Multiple image upload            |
+| Album Sharing     | ✅ Complete | Unlisted links with share tokens |
+| Export Formats    | ✅ Complete | JPEG, PNG, WebP support          |
+| Version History   | ✅ Complete | Track enhancement versions       |
+| Batch Enhancement | ✅ Complete | Queue processing                 |
+
+### Phase 4: Referral Program ✅ Complete
+
+| Feature              | Status      | Description                        |
+| -------------------- | ----------- | ---------------------------------- |
+| Referral Links       | ✅ Complete | Unique per-user referral codes     |
+| Token Rewards        | ✅ Complete | 50 tokens for referrer and referee |
+| Referral Dashboard   | ✅ Complete | Statistics and tracking            |
+| Anti-fraud Measures  | ✅ Complete | IP-based and email verification    |
+| Attribution Tracking | ✅ Complete | Sign-up source tracking            |
+
+### Phase 5: Admin Dashboard ✅ Complete
+
+| Feature              | Status      | Description                   |
+| -------------------- | ----------- | ----------------------------- |
+| User Analytics       | ✅ Complete | Registrations, MAU, retention |
+| Token Analytics      | ✅ Complete | Purchases, spend, burn rate   |
+| System Health        | ✅ Complete | Job queue, failure rates      |
+| Admin Tools          | ✅ Complete | User search, voucher creation |
+| Legal Pages          | ✅ Complete | Terms, Privacy, Contact       |
+| Email Infrastructure | ✅ Complete | Resend integration            |
+
+**Key Files:**
+
+- `src/app/enhance/` - Enhancement pages
+- `src/app/albums/` - Album management
+- `src/app/pricing/` - Token pricing
+- `src/app/referrals/` - Referral program
+- `src/app/admin/` - Admin dashboard
+- `src/components/enhance/` - Enhancement UI components
+- `src/components/tokens/` - Token system components
+
+---
+
+## Platform Features
 
 ### 1. Authentication System
 
@@ -127,73 +198,59 @@
 
 ---
 
-## In Progress Features
-
-### Currently Being Developed
-
-| Feature             | Priority | Assigned | Notes                                   |
-| ------------------- | -------- | -------- | --------------------------------------- |
-| App Search & Filter | High     | -        | Search bar UI exists but disabled       |
-| App Edit Page       | High     | -        | Edit buttons exist, need implementation |
-| App View Page       | High     | -        | View buttons exist, need implementation |
-| Fork Functionality  | Medium   | -        | Database schema ready                   |
-| Public App Gallery  | Medium   | -        | `/apps` page exists                     |
-
-### Placeholder Features (UI Ready, Logic Pending)
-
-1. **Search Bar** - Styled input field exists in My Apps dashboard
-2. **Filter Badges** - All/Active/Draft badges visible but non-functional
-3. **App Actions** - View/Edit buttons on cards need routing
-
----
-
 ## Roadmap & Future Plans
 
-### Phase 1: Authentication & Foundation ✅ COMPLETE
+### Platform Development Phases
+
+#### Phase 1: Authentication & Foundation ✅ COMPLETE
 
 - [x] NextAuth setup (GitHub, Google, Phone)
 - [x] Protected routes
-- [x] User profiles (basic)
-- [x] Settings page (skeleton)
+- [x] User profiles
+- [x] Settings page
 
-### Phase 2: My Apps Platform - IN PROGRESS
+#### Phase 2: My Apps Platform ✅ COMPLETE (Demonstrated with Pixel)
 
 - [x] "My Apps" protected section
 - [x] App creation wizard
+- [x] Fork functionality
+- [x] Requirements management UI
 - [x] Database schema for apps & requirements
-- [ ] App edit functionality
-- [ ] App view/details page
-- [ ] Fork functionality
-- [ ] Search and filtering
-- [ ] Requirements management improvements
 
-### Phase 3: AI Agent Integration - PLANNED
+#### Phase 3: AI Agent Integration - FUTURE
 
-| Task                                   | Priority | Complexity | Status  |
-| -------------------------------------- | -------- | ---------- | ------- |
-| AI agent orchestration system          | High     | High       | Planned |
-| Requirement-to-code pipeline           | High     | High       | Planned |
-| Automated app generation               | High     | High       | Planned |
-| Quality assurance & testing            | Medium   | Medium     | Planned |
-| Iterative refinement based on feedback | Medium   | Medium     | Planned |
+| Task                          | Priority | Status  |
+| ----------------------------- | -------- | ------- |
+| AI agent orchestration system | High     | Planned |
+| Requirement-to-code pipeline  | High     | Planned |
+| Automated app generation      | High     | Planned |
+| Quality assurance & testing   | Medium   | Planned |
 
-### Phase 4: Deployment & Hosting - PLANNED
+#### Phase 4: Deployment & Hosting - FUTURE
 
-| Task                   | Priority | Complexity | Status  |
-| ---------------------- | -------- | ---------- | ------- |
-| App deployment system  | High     | High       | Planned |
-| Custom domain support  | Medium   | Medium     | Planned |
-| External hosting       | Medium   | High       | Planned |
-| Monitoring & analytics | Low      | Medium     | Planned |
+| Task                  | Priority | Status  |
+| --------------------- | -------- | ------- |
+| App deployment system | High     | Planned |
+| Custom domain support | Medium   | Planned |
+| External hosting      | Medium   | Planned |
 
-### Phase 5: Monetization - PLANNED
+#### Phase 5: Platform Monetization - FUTURE
 
-| Task                       | Priority | Complexity | Status  |
-| -------------------------- | -------- | ---------- | ------- |
-| Stripe payment integration | High     | Medium     | Planned |
-| Subscription management    | High     | Medium     | Planned |
-| Revenue tracking           | Medium   | Low        | Planned |
-| Payout system              | Medium   | Medium     | Planned |
+| Task                      | Priority | Status  |
+| ------------------------- | -------- | ------- |
+| Platform fee on paid apps | High     | Planned |
+| Premium features          | Medium   | Planned |
+| White-label solutions     | Low      | Planned |
+
+### Pixel App - December 2025 Launch
+
+| Task                                 | Status              |
+| ------------------------------------ | ------------------- |
+| Feedback system (bug/idea reporting) | In Progress         |
+| Individual image sharing             | In Progress         |
+| Landing page improvements            | Planned             |
+| UTM tracking                         | Planned             |
+| Product Hunt launch                  | Planned (Dec 16-18) |
 
 ---
 
@@ -241,64 +298,47 @@
 
 ### Core Models
 
-```
-User
-├── id: String (cuid)
-├── name: String?
-├── email: String? (unique)
-├── emailVerified: DateTime?
-├── image: String?
-├── createdAt: DateTime
-├── updatedAt: DateTime
-├── accounts: Account[]
-├── sessions: Session[]
-└── apps: App[]
+See `prisma/schema.prisma` for the complete schema. Key models:
 
-App
-├── id: String (cuid)
-├── name: String
-├── description: String?
-├── userId: String (owner)
-├── forkedFrom: String? (parent app)
-├── status: DRAFT | ACTIVE | ARCHIVED | DELETED
-├── domain: String? (unique)
-├── createdAt: DateTime
-├── updatedAt: DateTime
-├── requirements: Requirement[]
-├── monetizationModels: MonetizationModel[]
-└── forks: App[]
+#### User & Authentication
 
-Requirement
-├── id: String (cuid)
-├── appId: String
-├── description: String
-├── priority: LOW | MEDIUM | HIGH | CRITICAL
-├── status: PENDING | IN_PROGRESS | COMPLETED | REJECTED
-├── version: Int
-├── createdAt: DateTime
-└── updatedAt: DateTime
+- `User` - User accounts with role (USER/ADMIN/SUPER_ADMIN), referral info
+- `Account` - OAuth provider accounts
+- `Session` - User sessions
+- `VerificationToken` - Email verification
 
-MonetizationModel
-├── id: String (cuid)
-├── appId: String
-├── type: FREE | ONE_TIME | SUBSCRIPTION | FREEMIUM | USAGE_BASED
-├── price: Decimal?
-├── subscriptionInterval: MONTHLY | QUARTERLY | YEARLY
-├── features: String[]
-├── createdAt: DateTime
-└── updatedAt: DateTime
-```
+#### Platform Apps
 
-### Indexes
+- `App` - User-created applications with status
+- `Requirement` - App requirements with priority and status
+- `MonetizationModel` - Pricing configuration
 
-- `apps.userId` - Fast user app lookup
-- `apps.forkedFrom` - Fork relationship queries
-- `apps.status` - Status filtering
-- `requirements.appId` - App requirements lookup
-- `requirements.status` - Status filtering
-- `requirements.priority` - Priority filtering
-- `monetization_models.appId` - App monetization lookup
-- `monetization_models.type` - Type filtering
+#### Image Enhancement (Pixel)
+
+- `EnhancedImage` - Uploaded images with metadata and shareToken
+- `ImageEnhancementJob` - Enhancement jobs with tier, status, results
+
+#### Token Economy
+
+- `UserTokenBalance` - User token balance with regeneration
+- `TokenTransaction` - Token movements (earn/spend/refund)
+- `TokensPackage` - Purchasable token packages
+- `StripePayment` - Payment records
+- `Subscription` - Recurring subscriptions
+- `SubscriptionPlan` - Subscription tiers
+
+#### Albums & Organization
+
+- `Album` - Image albums with privacy settings
+- `AlbumImage` - Album-image associations with sort order
+
+#### Growth & Admin
+
+- `Voucher` - Promotional codes
+- `VoucherRedemption` - Voucher usage tracking
+- `Referral` - Referral relationships and rewards
+- `AuditLog` - Admin action logging
+- `Feedback` - User feedback (bug reports, ideas)
 
 ---
 
@@ -308,7 +348,7 @@ MonetizationModel
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Set up environment variables
 cp .env.example .env.local
@@ -319,21 +359,21 @@ npx prisma generate
 npx prisma db push
 
 # Start development server
-npm run dev
+yarn dev
 ```
 
 ### Running Tests
 
 ```bash
 # Unit tests (watch mode)
-npm test
+yarn test
 
-# Unit tests with coverage
-npm run test:coverage
+# Unit tests with coverage (100% required)
+yarn test:coverage
 
 # E2E tests (requires dev server)
-npm run dev
-npm run test:e2e:local
+yarn dev
+yarn test:e2e:local
 ```
 
 ---

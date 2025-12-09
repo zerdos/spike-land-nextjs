@@ -104,6 +104,9 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Run tests (shard ${{ matrix.shard }}/8)
         run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
         env:
