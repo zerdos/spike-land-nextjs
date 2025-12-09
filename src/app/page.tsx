@@ -6,7 +6,6 @@ import {
   FeatureShowcase,
   HeroSection,
   PixelHeader,
-  TrustedBy,
 } from "@/components/landing";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Rocket, Sparkles } from "lucide-react";
@@ -20,9 +19,6 @@ export default function Home() {
 
       {/* Hero Section with new design */}
       <HeroSection />
-
-      {/* Social Proof - Trusted By */}
-      <TrustedBy />
 
       {/* Before/After Gallery - More examples */}
       <BeforeAfterGallery />
