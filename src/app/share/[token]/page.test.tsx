@@ -206,7 +206,6 @@ describe("SharePage", () => {
       );
       expect(metadata.openGraph?.type).toBe("website");
       expect(metadata.openGraph?.siteName).toBe("Pixel - AI Image Enhancement");
-      // Note: OG images are now auto-generated via opengraph-image.tsx
       expect(metadata.twitter?.card).toBe("summary_large_image");
     });
 
