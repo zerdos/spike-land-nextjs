@@ -2,7 +2,7 @@ import {
   BeforeAfterGallery,
   FAQ,
   FeatureShowcase,
-  HeroSection,
+  HeroSectionWithData,
   PixelHeader,
 } from "@/components/landing";
 import { CTASection } from "@/components/landing/CTASection";
@@ -14,7 +14,7 @@ export default async function Home() {
       <PixelHeader />
 
       {/* Hero Section with new design */}
-      <HeroSection />
+      <HeroSectionWithData />
 
       {/* Before/After Gallery - More examples */}
       <BeforeAfterGallery />

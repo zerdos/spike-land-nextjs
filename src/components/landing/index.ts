@@ -6,4 +6,5 @@ export { FAQ } from "./FAQ";
 export { FeatureShowcase } from "./FeatureShowcase";
 export { HeroComparisonSlider } from "./HeroComparisonSlider";
 export { HeroSection } from "./HeroSection";
+export { HeroSectionWithData } from "./HeroSectionWithData";
 export { PixelHeader } from "./PixelHeader";

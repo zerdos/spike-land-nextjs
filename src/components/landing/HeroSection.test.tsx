@@ -44,7 +44,7 @@ describe("HeroSection Component", () => {
     expect(screen.getByTestId("hero-comparison-slider")).toBeInTheDocument();
   });
 
-  it("should pass correct image URLs to HeroComparisonSlider", () => {
+  it("should use fallback URLs when no props provided", () => {
     render(<HeroSection />);
     const slider = screen.getByTestId("hero-comparison-slider");
     expect(slider).toHaveAttribute(
@@ -55,6 +55,17 @@ describe("HeroSection Component", () => {
       "data-enhanced",
       expect.stringContaining("unsplash.com"),
     );
+  });
+
+  it("should use custom URLs when props provided", () => {
+    const customOriginal = "https://example.com/original.jpg";
+    const customEnhanced = "https://example.com/enhanced.jpg";
+    render(
+      <HeroSection originalUrl={customOriginal} enhancedUrl={customEnhanced} />,
+    );
+    const slider = screen.getByTestId("hero-comparison-slider");
+    expect(slider).toHaveAttribute("data-original", customOriginal);
+    expect(slider).toHaveAttribute("data-enhanced", customEnhanced);
   });
 
   it("should render primary CTA button linking to enhance page", () => {
