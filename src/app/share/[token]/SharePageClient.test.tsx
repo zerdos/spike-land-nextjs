@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SharePageClient } from "./SharePageClient";
 
 vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
@@ -8,6 +8,8 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
     enhancedUrl,
     originalLabel,
     enhancedLabel,
+    width,
+    height,
   }: {
     originalUrl: string;
     enhancedUrl: string;
@@ -21,6 +23,8 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
       <span data-testid="slider-enhanced-url">{enhancedUrl}</span>
       <span data-testid="slider-original-label">{originalLabel}</span>
       <span data-testid="slider-enhanced-label">{enhancedLabel}</span>
+      <span data-testid="slider-width">{width}</span>
+      <span data-testid="slider-height">{height}</span>
     </div>
   ),
 }));
@@ -32,9 +36,20 @@ const defaultProps = {
   enhancedUrl: "https://example.com/enhanced.jpg",
   originalWidth: 1920,
   originalHeight: 1080,
+  enhancedWidth: 3840,
+  enhancedHeight: 2160,
+  tier: "TIER_4K",
+  shareToken: "test-share-token",
 };
 
 describe("SharePageClient", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    global.fetch = vi.fn();
+    global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
+    global.URL.revokeObjectURL = vi.fn();
+  });
+
   it("renders the image name as title", () => {
     render(<SharePageClient {...defaultProps} />);
 
@@ -59,6 +74,20 @@ describe("SharePageClient", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders the tier badge", () => {
+    render(<SharePageClient {...defaultProps} />);
+
+    expect(screen.getByText("4K")).toBeInTheDocument();
+  });
+
+  it("renders different tier badges correctly", () => {
+    const { rerender } = render(<SharePageClient {...defaultProps} tier="TIER_1K" />);
+    expect(screen.getByText("1K")).toBeInTheDocument();
+
+    rerender(<SharePageClient {...defaultProps} tier="TIER_2K" />);
+    expect(screen.getByText("2K")).toBeInTheDocument();
+  });
+
   it("renders the ImageComparisonSlider with correct props", () => {
     render(<SharePageClient {...defaultProps} />);
 
@@ -77,48 +106,172 @@ describe("SharePageClient", () => {
     );
   });
 
-  it("renders the CTA button linking to home page", () => {
+  it("uses enhanced dimensions for the slider", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    const ctaButton = screen.getByRole("link", {
-      name: /enhance your photos/i,
+    expect(screen.getByTestId("slider-width")).toHaveTextContent("3840");
+    expect(screen.getByTestId("slider-height")).toHaveTextContent("2160");
+  });
+
+  it("falls back to original dimensions when enhanced are null", () => {
+    render(
+      <SharePageClient
+        {...defaultProps}
+        enhancedWidth={null}
+        enhancedHeight={null}
+      />,
+    );
+
+    expect(screen.getByTestId("slider-width")).toHaveTextContent("1920");
+    expect(screen.getByTestId("slider-height")).toHaveTextContent("1080");
+  });
+
+  it("renders download original button", () => {
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadOriginal = screen.getByRole("button", {
+      name: /download original/i,
     });
-    expect(ctaButton).toBeInTheDocument();
-    expect(ctaButton).toHaveAttribute("href", "/");
+    expect(downloadOriginal).toBeInTheDocument();
+  });
+
+  it("renders download enhanced button", () => {
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadEnhanced = screen.getByRole("button", {
+      name: /download enhanced/i,
+    });
+    expect(downloadEnhanced).toBeInTheDocument();
+  });
+
+  it("calls download API when download original is clicked", async () => {
+    const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: new Headers({
+        "Content-Disposition": 'attachment; filename="test.jpg"',
+      }),
+    } as Response);
+
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadOriginal = screen.getByRole("button", {
+      name: /download original/i,
+    });
+    fireEvent.click(downloadOriginal);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/share/test-share-token/download?type=original",
+      );
+    });
+  });
+
+  it("calls download API when download enhanced is clicked", async () => {
+    const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: new Headers({
+        "Content-Disposition": 'attachment; filename="test.jpg"',
+      }),
+    } as Response);
+
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadEnhanced = screen.getByRole("button", {
+      name: /download enhanced/i,
+    });
+    fireEvent.click(downloadEnhanced);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/share/test-share-token/download?type=enhanced",
+      );
+    });
   });
 
   it("renders the header with Pixel branding", () => {
-    render(<SharePageClient {...defaultProps} />);
+    const { container } = render(<SharePageClient {...defaultProps} />);
 
-    const headerLink = screen.getAllByRole("link").find(
-      (link) => link.textContent === "Pixel",
-    );
+    // Get the link within the header specifically
+    const header = container.querySelector("header");
+    const headerLink = header?.querySelector("a");
     expect(headerLink).toBeInTheDocument();
     expect(headerLink).toHaveAttribute("href", "/");
+    expect(headerLink?.textContent).toContain("pixel");
   });
 
-  it("renders the footer with Pixel branding", () => {
+  it("has dark background styling", () => {
+    const { container } = render(<SharePageClient {...defaultProps} />);
+
+    const rootDiv = container.firstChild as HTMLElement;
+    expect(rootDiv.className).toContain("bg-neutral-950");
+  });
+
+  it("sets max width based on enhanced dimensions", () => {
+    const { container } = render(<SharePageClient {...defaultProps} />);
+
+    const mainContent = container.querySelector("main > div");
+    expect(mainContent).toHaveStyle({ maxWidth: "min(3840px, 90vw)" });
+  });
+
+  it("renders the footer with CTA link", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    expect(screen.getByText(/made with/i)).toBeInTheDocument();
-    const footerLink = screen.getByRole("contentinfo").querySelector("a");
+    const footerLink = screen.getByRole("link", { name: /enhanced with pixel/i });
+    expect(footerLink).toBeInTheDocument();
     expect(footerLink).toHaveAttribute("href", "/");
-    expect(footerLink).toHaveTextContent("Pixel");
   });
 
-  it("displays 'Enhanced with Pixel' subtitle", () => {
+  it("handles download error gracefully", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: false,
+    } as Response);
+
     render(<SharePageClient {...defaultProps} />);
 
-    const aiImageTexts = screen.getAllByText(/ai image enhancement/i);
-    expect(aiImageTexts.length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText(/enhanced with/i).length).toBeGreaterThanOrEqual(1);
+    const downloadOriginal = screen.getByRole("button", {
+      name: /download original/i,
+    });
+    fireEvent.click(downloadOriginal);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith("Download failed:", expect.any(Error));
+    });
+
+    consoleSpy.mockRestore();
   });
 
-  it("renders want to enhance text", () => {
+  it("shows loading state while downloading", async () => {
+    let resolvePromise: (value: Response) => void;
+    const fetchPromise = new Promise<Response>((resolve) => {
+      resolvePromise = resolve;
+    });
+    vi.mocked(global.fetch).mockReturnValue(fetchPromise);
+
     render(<SharePageClient {...defaultProps} />);
 
-    expect(
-      screen.getByText(/want to enhance your own photos with ai/i),
-    ).toBeInTheDocument();
+    const downloadOriginal = screen.getByRole("button", {
+      name: /download original/i,
+    });
+    fireEvent.click(downloadOriginal);
+
+    // Button should be disabled during download
+    expect(downloadOriginal).toBeDisabled();
+
+    // Resolve the fetch
+    const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
+    resolvePromise!({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: new Headers(),
+    } as Response);
+
+    await waitFor(() => {
+      expect(downloadOriginal).not.toBeDisabled();
+    });
   });
 });

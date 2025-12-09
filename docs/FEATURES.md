@@ -32,7 +32,7 @@
 
 ## Pixel - AI Image Enhancement App
 
-**URL**: [pixel.spike.land](https://pixel.spike.land)
+**URL**: [spike.land/apps/images](https://spike.land/apps/images)
 
 Pixel is the flagship AI-powered image enhancement application on the Spike Land platform. All 5 implementation phases are complete.
 

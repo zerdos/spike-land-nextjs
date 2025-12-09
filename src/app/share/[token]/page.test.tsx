@@ -66,6 +66,10 @@ vi.mock("./SharePageClient", () => ({
     description,
     originalUrl,
     enhancedUrl,
+    enhancedWidth,
+    enhancedHeight,
+    tier,
+    shareToken,
   }: {
     imageName: string;
     description: string | null;
@@ -73,12 +77,20 @@ vi.mock("./SharePageClient", () => ({
     enhancedUrl: string;
     originalWidth: number;
     originalHeight: number;
+    enhancedWidth: number | null;
+    enhancedHeight: number | null;
+    tier: string;
+    shareToken: string;
   }) => (
     <div data-testid="share-page-client">
       <span data-testid="image-name">{imageName}</span>
       <span data-testid="description">{description}</span>
       <span data-testid="original-url">{originalUrl}</span>
       <span data-testid="enhanced-url">{enhancedUrl}</span>
+      <span data-testid="enhanced-width">{enhancedWidth}</span>
+      <span data-testid="enhanced-height">{enhancedHeight}</span>
+      <span data-testid="tier">{tier}</span>
+      <span data-testid="share-token">{shareToken}</span>
     </div>
   ),
 }));
@@ -116,6 +128,10 @@ describe("SharePage", () => {
       expect(screen.getByTestId("enhanced-url")).toHaveTextContent(
         "https://example.com/enhanced.jpg",
       );
+      expect(screen.getByTestId("enhanced-width")).toHaveTextContent("2048");
+      expect(screen.getByTestId("enhanced-height")).toHaveTextContent("1152");
+      expect(screen.getByTestId("tier")).toHaveTextContent("TIER_2K");
+      expect(screen.getByTestId("share-token")).toHaveTextContent("abc123");
     });
 
     it("increments view count when image is loaded", async () => {
