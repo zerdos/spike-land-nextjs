@@ -3,6 +3,7 @@
 import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ExportSelector } from "@/components/enhance/export-selector";
+import { ShareButton } from "@/components/enhance/ShareButton";
 import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
 import { VersionGrid } from "@/components/enhance/VersionGrid";
 import { PurchaseModal } from "@/components/tokens";
@@ -347,6 +348,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               originalSizeBytes={selectedVersion.enhancedSizeBytes || undefined}
             />
           )}
+
+          <ShareButton
+            imageId={image.id}
+            shareToken={image.shareToken}
+            imageName={image.name}
+          />
         </div>
       </div>
     </div>

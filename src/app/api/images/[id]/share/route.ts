@@ -35,7 +35,7 @@ export async function POST(
     if (image.shareToken) {
       return NextResponse.json({
         shareToken: image.shareToken,
-        shareUrl: `https://pixel.spike.land/share/${image.shareToken}`,
+        shareUrl: `https://spike.land/share/${image.shareToken}`,
       });
     }
 
@@ -48,7 +48,7 @@ export async function POST(
 
     return NextResponse.json({
       shareToken,
-      shareUrl: `https://pixel.spike.land/share/${shareToken}`,
+      shareUrl: `https://spike.land/share/${shareToken}`,
     });
   } catch (error) {
     console.error("Error in POST share API:", error);
@@ -94,7 +94,7 @@ export async function GET(
 
     return NextResponse.json({
       shareToken: image.shareToken,
-      shareUrl: `https://pixel.spike.land/share/${image.shareToken}`,
+      shareUrl: `https://spike.land/share/${image.shareToken}`,
     });
   } catch (error) {
     console.error("Error in GET share API:", error);
