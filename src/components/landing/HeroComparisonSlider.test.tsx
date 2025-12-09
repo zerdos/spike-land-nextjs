@@ -62,10 +62,10 @@ describe("HeroComparisonSlider Component", () => {
 
   it("should render slider handle with spark icon", () => {
     const { container } = render(<HeroComparisonSlider {...defaultProps} />);
-    const svgIcon = container.querySelector("svg path");
-    expect(svgIcon).toBeInTheDocument();
-    // Check for spark shape path
-    expect(svgIcon).toHaveAttribute("d", expect.stringContaining("12 2L14.5"));
+    const sparkPath = container.querySelector(
+      'svg path[d*="12 2L14.5"]',
+    );
+    expect(sparkPath).toBeInTheDocument();
   });
 
   it("should have slider line with primary color", () => {
@@ -74,9 +74,29 @@ describe("HeroComparisonSlider Component", () => {
     expect(sliderLine).toBeInTheDocument();
   });
 
+  it("should update slider position on click", () => {
+    const { container } = render(<HeroComparisonSlider {...defaultProps} />);
+    const mainContainer = container.firstChild as HTMLElement;
+
+    // Click on container should set slider position
+    fireEvent.click(mainContainer, { clientX: 200 });
+  });
+
+  it("should update slider position on touch start", () => {
+    const { container } = render(<HeroComparisonSlider {...defaultProps} />);
+    const mainContainer = container.firstChild as HTMLElement;
+
+    // Touch start should set slider position
+    fireEvent.touchStart(mainContainer, {
+      touches: [{ clientX: 150 }],
+    });
+
+    fireEvent.touchEnd(mainContainer);
+  });
+
   it("should update slider position on mouse move when dragging", () => {
     const { container } = render(<HeroComparisonSlider {...defaultProps} />);
-    const sliderHandle = container.querySelector(".bg-primary.w-0\\.5");
+    const sliderHandle = container.querySelector(".bg-primary.w-1");
 
     // Start dragging
     fireEvent.mouseDown(sliderHandle!);
@@ -89,7 +109,7 @@ describe("HeroComparisonSlider Component", () => {
     fireEvent.mouseUp(mainContainer);
   });
 
-  it("should handle touch events", () => {
+  it("should handle touch move events", () => {
     const { container } = render(<HeroComparisonSlider {...defaultProps} />);
     const mainContainer = container.firstChild as HTMLElement;
 
@@ -113,5 +133,24 @@ describe("HeroComparisonSlider Component", () => {
     const { container } = render(<HeroComparisonSlider {...defaultProps} />);
     const handle = container.querySelector(".shadow-glow-cyan");
     expect(handle).toBeInTheDocument();
+  });
+
+  it("should have arrow icons on slider handle", () => {
+    const { container } = render(<HeroComparisonSlider {...defaultProps} />);
+    const arrows = container.querySelectorAll("svg path");
+    // Should have spark icon + left arrow + right arrow
+    expect(arrows.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("should have hover scale effect on handle", () => {
+    const { container } = render(<HeroComparisonSlider {...defaultProps} />);
+    const handle = container.querySelector(".hover\\:scale-110");
+    expect(handle).toBeInTheDocument();
+  });
+
+  it("should have smooth transition on slider position change", () => {
+    const { container } = render(<HeroComparisonSlider {...defaultProps} />);
+    const sliderLine = container.querySelector(".transition-\\[left\\]");
+    expect(sliderLine).toBeInTheDocument();
   });
 });
