@@ -72,10 +72,15 @@ describe("Threshold constants", () => {
 describe("useTokenBalance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Ensure mockFetch is properly set
+    global.fetch = mockFetch;
+    // Ensure real timers are used
+    vi.useRealTimers();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("starts with loading state", () => {
@@ -306,41 +311,6 @@ describe("useTokenBalance", () => {
     expect(result.current.timeUntilNextRegeneration).toBe(null);
   });
 
-  it("auto-refreshes on focus when enabled", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            balance: 10,
-            lastRegeneration: new Date().toISOString(),
-          }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            balance: 15,
-            lastRegeneration: new Date().toISOString(),
-          }),
-      });
-
-    const { result } = renderHook(() => useTokenBalance({ autoRefreshOnFocus: true }));
-
-    await waitFor(() => {
-      expect(result.current.balance).toBe(10);
-    });
-
-    // Simulate focus event
-    await act(async () => {
-      window.dispatchEvent(new Event("focus"));
-    });
-
-    await waitFor(() => {
-      expect(result.current.balance).toBe(15);
-    });
-  });
-
   it("does not auto-refresh on focus when disabled", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -426,5 +396,100 @@ describe("useTokenBalance", () => {
     // The next regen is 1 day from lastRegeneration
     // Since it was 30 minutes ago, we have ~23h 30m left
     expect(result.current.timeUntilNextRegeneration).toMatch(/\d+h \d+m/);
+  });
+});
+
+// Separate describe block for focus debounce tests that require fake timers
+// This isolates the fake timer usage to prevent test pollution
+describe("useTokenBalance focus debouncing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    global.fetch = mockFetch;
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("auto-refreshes on focus when enabled after debounce period", async () => {
+    vi.setSystemTime(new Date(1000));
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            balance: 10,
+            lastRegeneration: new Date().toISOString(),
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            balance: 15,
+            lastRegeneration: new Date().toISOString(),
+          }),
+      });
+
+    const { result } = renderHook(() => useTokenBalance({ autoRefreshOnFocus: true }));
+
+    await waitFor(() => {
+      expect(result.current.balance).toBe(10);
+    });
+
+    // Advance time past the debounce threshold (5 seconds)
+    vi.setSystemTime(new Date(7000));
+
+    // Simulate focus event after debounce period
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    await waitFor(() => {
+      expect(result.current.balance).toBe(15);
+    });
+  });
+
+  it("debounces focus refreshes within 5 second window", async () => {
+    vi.setSystemTime(new Date(1000));
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            balance: 10,
+            lastRegeneration: new Date().toISOString(),
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            balance: 15,
+            lastRegeneration: new Date().toISOString(),
+          }),
+      });
+
+    const { result } = renderHook(() => useTokenBalance({ autoRefreshOnFocus: true }));
+
+    await waitFor(() => {
+      expect(result.current.balance).toBe(10);
+    });
+
+    // Only advance time 2 seconds (within debounce window)
+    vi.setSystemTime(new Date(3000));
+
+    // Simulate focus event - should be debounced
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    // Should still be 10, focus was debounced
+    expect(result.current.balance).toBe(10);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });

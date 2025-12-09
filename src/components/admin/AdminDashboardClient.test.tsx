@@ -9,6 +9,9 @@ import { AdminDashboardClient } from "./AdminDashboardClient";
 
 global.fetch = vi.fn();
 
+// Polling interval is now 30 seconds (changed from 10 seconds for performance)
+const POLLING_INTERVAL = 30000;
+
 describe("AdminDashboardClient", () => {
   const mockInitialMetrics = {
     totalUsers: 100,
@@ -30,6 +33,12 @@ describe("AdminDashboardClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers({ shouldAdvanceTime: true });
+    // Mock document.visibilityState to 'visible' by default
+    Object.defineProperty(document, "visibilityState", {
+      value: "visible",
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {
@@ -225,7 +234,7 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -244,7 +253,7 @@ describe("AdminDashboardClient", () => {
     vi.mocked(fetch).mockClear();
 
     await act(async () => {
-      vi.advanceTimersByTime(15000);
+      vi.advanceTimersByTime(POLLING_INTERVAL + 5000);
     });
 
     expect(fetch).not.toHaveBeenCalled();
@@ -258,7 +267,7 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -272,7 +281,7 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -291,7 +300,7 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -299,7 +308,7 @@ describe("AdminDashboardClient", () => {
     });
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -318,7 +327,7 @@ describe("AdminDashboardClient", () => {
     const initialUpdateText = screen.getByText(/Last updated:/);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
@@ -368,11 +377,60 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     await act(async () => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(POLLING_INTERVAL);
     });
 
     await waitFor(() => {
       expect(screen.getByText("Error: Unknown error")).toBeInTheDocument();
+    });
+  });
+
+  it("should not poll when tab is not visible", async () => {
+    render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
+
+    // Clear any initial fetches
+    vi.mocked(fetch).mockClear();
+
+    // Set visibility to hidden after initial render
+    Object.defineProperty(document, "visibilityState", {
+      value: "hidden",
+      writable: true,
+      configurable: true,
+    });
+
+    // Dispatch visibility change event to trigger the effect
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLLING_INTERVAL);
+    });
+
+    // Should not have polled since tab is hidden
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("should refresh immediately when tab becomes visible", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => mockInitialMetrics,
+    } as Response);
+
+    render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
+
+    vi.mocked(fetch).mockClear();
+
+    // Simulate tab becoming visible
+    Object.defineProperty(document, "visibilityState", {
+      value: "visible",
+      writable: true,
+      configurable: true,
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith("/api/admin/dashboard");
     });
   });
 });

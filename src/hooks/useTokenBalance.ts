@@ -22,6 +22,9 @@ export interface TokenStats {
 export const LOW_BALANCE_THRESHOLD = 10;
 export const CRITICAL_BALANCE_THRESHOLD = 5;
 
+// Minimum time between focus-triggered refreshes (5 seconds)
+const FOCUS_DEBOUNCE_MS = 5000;
+
 /**
  * Calculate estimated enhancements remaining based on balance and average tier usage
  */
@@ -62,6 +65,8 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  // Track last fetch time for debouncing focus refreshes
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
   const fetchBalance = useCallback(async () => {
     try {
@@ -77,6 +82,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
         setStats(data.stats);
       }
       setError(null);
+      setLastFetchTime(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Unknown error"));
     } finally {
@@ -88,19 +94,23 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
     fetchBalance();
   }, [fetchBalance]);
 
-  // Auto-refresh on window focus
+  // Auto-refresh on window focus with debouncing
   useEffect(() => {
     if (!options?.autoRefreshOnFocus) return;
 
     const handleFocus = () => {
-      fetchBalance();
+      // Only fetch if more than FOCUS_DEBOUNCE_MS has passed since last fetch
+      const now = Date.now();
+      if (now - lastFetchTime >= FOCUS_DEBOUNCE_MS) {
+        fetchBalance();
+      }
     };
 
     window.addEventListener("focus", handleFocus);
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
-  }, [options?.autoRefreshOnFocus, fetchBalance]);
+  }, [options?.autoRefreshOnFocus, fetchBalance, lastFetchTime]);
 
   // Compute if balance is low (< 10) or critical (< 5)
   const isLowBalance = balance < LOW_BALANCE_THRESHOLD;
