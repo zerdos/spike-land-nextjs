@@ -49,33 +49,35 @@ Welcome to the comprehensive documentation for Spike Land, an AI-powered app pla
 
 ## Platform Overview
 
-**Spike Land** is an innovative platform that democratizes AI-powered image enhancement through:
+**Spike Land** is an AI-powered app platform that enables anyone to create, use, and monetize applications.
 
-- **AI Image Enhancement**: Google Gemini-powered upscaling and quality improvement
-- **Flexible Pricing**: Token-based system with multiple acquisition methods
-- **Promotional Campaigns**: Voucher system for user acquisition and engagement
-- **Scalable Architecture**: Built on Next.js with PostgreSQL backend
+### Platform Infrastructure
 
-### Core Features
+Every Spike Land user gets:
 
-1. **Image Enhancement**
-   - Upload images (JPEG, PNG, WebP, GIF, BMP)
-   - Choose from 3 quality tiers (1K, 2K, 4K)
-   - AI-powered upscaling with aspect ratio preservation
-   - Side-by-side before/after comparison
-   - Download enhanced images
+- **Single Account**: One login works across all apps
+- **Token Balance**: Platform currency that works across all apps
+- **Profile & Settings**: Managed at the platform level
 
-2. **Token System**
-   - Free tokens: 1 per 15 minutes (max 100)
-   - Purchase tokens: 50-2000 token packages (£2.99-£59.99)
-   - Subscriptions: 20-500 tokens/month (£2.99-£29.99)
-   - Vouchers: Promotional codes (LAUNCH100, WELCOME50, BETA25)
+### Token System (Platform-Level)
 
-3. **Monetization**
-   - Token-based pricing for features
-   - One-time purchases via Stripe
-   - Monthly subscriptions with rollover
-   - Promotional voucher campaigns
+Tokens are Spike Land's universal currency. Your token balance works across all apps on the platform.
+
+- **Free tokens**: 1 per 15 minutes (max 100)
+- **Purchase tokens**: 50-2000 token packages (£2.99-£59.99)
+- **Subscriptions**: 20-500 tokens/month (£2.99-£29.99)
+- **Vouchers**: Promotional codes (LAUNCH100, WELCOME50, BETA25)
+
+### Current Apps
+
+**Pixel** - AI Image Enhancement ([spike.land/apps/images](https://spike.land/apps/images))
+
+- Upload images (JPEG, PNG, WebP, GIF, BMP)
+- Choose from 3 quality tiers (1K, 2K, 4K)
+- AI-powered upscaling with aspect ratio preservation
+- Side-by-side before/after comparison
+- Download enhanced images
+- _Consumes platform tokens for enhancements_
 
 ---
 
@@ -138,7 +140,9 @@ See [API_REFERENCE.md](API_REFERENCE.md) for complete documentation.
 
 ---
 
-## Token System Overview
+## Token System Overview (Platform-Level)
+
+Tokens are Spike Land's platform currency. Every user has ONE token balance that works across all apps.
 
 ### Token Acquisition Methods
 
@@ -149,7 +153,9 @@ One-Time Purchase    50-2000 tokens (£2.99-£59.99)
 Monthly Subscription 20-500 tokens/month (£2.99-£29.99)
 ```
 
-### Enhancement Costs
+### Token Costs by App
+
+**Pixel App (Image Enhancement):**
 
 ```
 TIER_1K (1024px)  =  2 tokens  (quick preview)

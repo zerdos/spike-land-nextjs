@@ -2,6 +2,7 @@
 
 > **Last Updated**: December 2025
 > **Platform**: Spike Land
+> **Note**: Pixel is an app on the Spike Land platform. Your Spike Land account and tokens work across all platform apps.
 
 ---
 
@@ -62,7 +63,9 @@ The platform accepts these image formats:
 
 ### What Are Tokens?
 
-Tokens are Pixel's currency. You spend tokens to enhance images at different quality levels. Think of tokens like credits in the system.
+Tokens are Spike Land's platform currency. When you create a Spike Land account, you get a token balance that can be spent across any app on the platform. Think of tokens like credits that work everywhere on Spike Land.
+
+Currently, the Pixel image enhancement app uses tokens to pay for AI-powered image enhancements. As more apps are added to the platform, your same token balance will work with all of them.
 
 ### Token Sources
 
@@ -159,9 +162,9 @@ Subscribe for automatic monthly token allocation.
 **Pause Subscription**: No charge during pause, no tokens added
 **Cancel Anytime**: Keep remaining tokens forever
 
-### Token Costs by Tier
+### Token Costs (Pixel App)
 
-When you enhance an image, the cost depends on the quality tier you choose:
+When you enhance an image in Pixel, the cost depends on the quality tier you choose:
 
 | Tier    | Max Resolution | Cost      | Use Case                        |
 | ------- | -------------- | --------- | ------------------------------- |
