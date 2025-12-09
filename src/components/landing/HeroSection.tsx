@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { HeroComparisonSlider } from "./HeroComparisonSlider";
 
-// Mountain landscape demo images from Unsplash
-const DEMO_ORIGINAL = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=60";
-const DEMO_ENHANCED = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=95";
+// Fallback demo images (used when no featured gallery items exist)
+const FALLBACK_ORIGINAL = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=60";
+const FALLBACK_ENHANCED =
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=95";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  originalUrl?: string;
+  enhancedUrl?: string;
+}
+
+export function HeroSection({
+  originalUrl = FALLBACK_ORIGINAL,
+  enhancedUrl = FALLBACK_ENHANCED,
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
       <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -28,8 +37,8 @@ export function HeroSection() {
           {/* Comparison Slider */}
           <div className="mx-auto max-w-4xl mb-12">
             <HeroComparisonSlider
-              originalUrl={DEMO_ORIGINAL}
-              enhancedUrl={DEMO_ENHANCED}
+              originalUrl={originalUrl}
+              enhancedUrl={enhancedUrl}
             />
           </div>
 
