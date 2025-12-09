@@ -6,17 +6,6 @@
       "has": [
         {
           "type": "host",
-          "value": "pixel.spike.land"
-        }
-      ],
-      "destination": "https://spike.land/apps/images/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
           "value": "next.spike.land"
         }
       ],

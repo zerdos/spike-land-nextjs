@@ -2,8 +2,9 @@
 
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Download, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface SharePageClientProps {
   imageName: string;
@@ -12,7 +13,17 @@ interface SharePageClientProps {
   enhancedUrl: string;
   originalWidth: number;
   originalHeight: number;
+  enhancedWidth: number | null;
+  enhancedHeight: number | null;
+  tier: string;
+  shareToken: string;
 }
+
+const tierLabels: Record<string, string> = {
+  TIER_1K: "1K",
+  TIER_2K: "2K",
+  TIER_4K: "4K",
+};
 
 export function SharePageClient({
   imageName,
@@ -21,78 +32,145 @@ export function SharePageClient({
   enhancedUrl,
   originalWidth,
   originalHeight,
+  enhancedWidth,
+  enhancedHeight,
+  tier,
+  shareToken,
 }: SharePageClientProps) {
+  const [downloadingOriginal, setDownloadingOriginal] = useState(false);
+  const [downloadingEnhanced, setDownloadingEnhanced] = useState(false);
+
+  // Use enhanced dimensions if available, otherwise fall back to original
+  const displayWidth = enhancedWidth ?? originalWidth;
+  const displayHeight = enhancedHeight ?? originalHeight;
+
+  const tierLabel = tierLabels[tier] || tier.replace("TIER_", "");
+
+  const handleDownload = async (type: "original" | "enhanced") => {
+    const setLoading = type === "original" ? setDownloadingOriginal : setDownloadingEnhanced;
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/share/${shareToken}/download?type=${type}`);
+
+      if (!response.ok) {
+        throw new Error("Download failed");
+      }
+
+      // Get filename from Content-Disposition header
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `${imageName}_${type}.jpg`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="([^"]+)"/);
+        if (match?.[1]) {
+          filename = match[1];
+        }
+      }
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-neutral-950 flex flex-col">
       {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <Link
-            href="/"
-            className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
-          >
-            Pixel
-          </Link>
-        </div>
+      <header className="p-4 md:p-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xl font-bold text-white hover:opacity-80 transition-opacity"
+        >
+          <Sparkles className="h-6 w-6 text-cyan-400" />
+          <span>pixel</span>
+        </Link>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12">
-        <div className="mx-auto max-w-4xl">
-          {/* Image Title */}
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+      {/* Main - centered image comparison */}
+      <main className="flex-1 flex items-center justify-center p-4 md:p-6">
+        <div
+          className="w-full"
+          style={{
+            maxWidth: `min(${displayWidth}px, 90vw)`,
+          }}
+        >
+          {/* Image name with tier badge */}
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <h1 className="text-lg md:text-xl font-medium text-white/90">
               {imageName}
             </h1>
-            {description && <p className="mt-2 text-muted-foreground">{description}</p>}
-            <p className="mt-2 text-sm text-muted-foreground">
-              Enhanced with <span className="font-medium text-primary">Pixel</span>{" "}
-              - AI Image Enhancement
-            </p>
+            <span className="px-2 py-0.5 text-xs font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
+              {tierLabel}
+            </span>
           </div>
 
-          {/* Comparison Slider */}
-          <div className="rounded-xl border border-border/50 bg-card p-2 shadow-lg md:p-4">
+          {/* Optional description */}
+          {description && (
+            <p className="text-sm text-white/60 text-center mb-4">
+              {description}
+            </p>
+          )}
+
+          {/* Comparison slider */}
+          <div className="rounded-lg overflow-hidden">
             <ImageComparisonSlider
               originalUrl={originalUrl}
               enhancedUrl={enhancedUrl}
               originalLabel="Before"
               enhancedLabel="After"
-              width={originalWidth}
-              height={originalHeight}
+              width={displayWidth}
+              height={displayHeight}
             />
           </div>
 
-          {/* CTA Section */}
-          <div className="mt-8 text-center">
-            <p className="mb-4 text-muted-foreground">
-              Want to enhance your own photos with AI?
-            </p>
-            <Button asChild size="lg" className="font-semibold">
-              <Link href="/">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Enhance Your Photos
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+          {/* Download buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+              onClick={() => handleDownload("original")}
+              disabled={downloadingOriginal}
+            >
+              {downloadingOriginal
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <Download className="mr-2 h-4 w-4" />}
+              Download Original
+            </Button>
+            <Button
+              size="lg"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white"
+              onClick={() => handleDownload("enhanced")}
+              disabled={downloadingEnhanced}
+            >
+              {downloadingEnhanced
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <Download className="mr-2 h-4 w-4" />}
+              Download Enhanced
             </Button>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-border/40 bg-muted/30 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            Made with{" "}
-            <Link
-              href="/"
-              className="font-medium text-primary hover:underline"
-            >
-              Pixel
-            </Link>{" "}
-            - AI Image Enhancement
-          </p>
-        </div>
+      {/* Minimal footer */}
+      <footer className="p-4 md:p-6 text-center">
+        <Link
+          href="/"
+          className="text-sm text-white/40 hover:text-white/60 transition-colors"
+        >
+          Enhanced with Pixel
+        </Link>
       </footer>
     </div>
   );

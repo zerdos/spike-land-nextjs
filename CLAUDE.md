@@ -138,7 +138,7 @@ We are building a platform where:
 
 ### **Pixel - AI Image Enhancement App (Completed Implementation)**
 
-Pixel (https://pixel.spike.land) is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. All 5 implementation phases are complete:
+Pixel is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. Access it at https://spike.land/apps/images. All 5 implementation phases are complete:
 
 **Phase 1: MVP** ✅ Complete
 
@@ -476,7 +476,6 @@ The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
 - **Production**: `main` branch automatically deploys to https://spike.land
 - **Preview**: All other branches get temporary preview URLs for testing
 - **Domain**: Custom domain `spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
-- **Subdomain**: `pixel.spike.land` redirects to the image enhancement app at `/apps/images`
 - **Configuration**: See `docs/archive/VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
 
 ### Required GitHub Secrets
