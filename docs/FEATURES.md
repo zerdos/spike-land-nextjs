@@ -46,16 +46,16 @@ Pixel is the flagship AI-powered image enhancement application on the Spike Land
 | Download            | ✅ Complete | Export enhanced images            |
 | Auth Integration    | ✅ Complete | NextAuth authentication           |
 
-### Phase 2: Token Economy ✅ Complete
+### Phase 2: Token Consumption ✅ Complete
 
-| Feature                | Status      | Description                          |
-| ---------------------- | ----------- | ------------------------------------ |
-| Multi-tier Enhancement | ✅ Complete | TIER_1K, TIER_2K, TIER_4K options    |
-| Token Balance System   | ✅ Complete | Auto-regeneration (1 per 15 min)     |
-| Stripe Integration     | ✅ Complete | One-time purchases and subscriptions |
-| Transaction History    | ✅ Complete | Full token transaction log           |
-| Low Balance Warnings   | ✅ Complete | User notifications                   |
-| Refunds on Failure     | ✅ Complete | Automatic token refund               |
+Pixel consumes tokens from the Spike Land platform token economy.
+
+| Feature                | Status      | Description                                |
+| ---------------------- | ----------- | ------------------------------------------ |
+| Multi-tier Enhancement | ✅ Complete | TIER_1K, TIER_2K, TIER_4K options          |
+| Platform Token Usage   | ✅ Complete | Consumes Spike Land platform tokens        |
+| Low Balance Warnings   | ✅ Complete | User notifications                         |
+| Refunds on Failure     | ✅ Complete | Automatic token refund to platform balance |
 
 ### Phase 3: Albums & Export ✅ Complete
 
@@ -102,6 +102,24 @@ Pixel is the flagship AI-powered image enhancement application on the Spike Land
 ---
 
 ## Platform Features
+
+### Token Economy (Platform-Level)
+
+The token system is core platform infrastructure that all apps on Spike Land can use.
+
+| Feature              | Status      | Description                            |
+| -------------------- | ----------- | -------------------------------------- |
+| Token Balance System | ✅ Complete | Single balance per user, platform-wide |
+| Auto-Regeneration    | ✅ Complete | 1 token per 15 min, max 100            |
+| Stripe Integration   | ✅ Complete | One-time purchases and subscriptions   |
+| Transaction History  | ✅ Complete | Full token transaction log             |
+| Voucher System       | ✅ Complete | Promotional codes for bonus tokens     |
+
+**Key Files:**
+
+- `src/lib/tokens/balance-manager.ts` - Token operations (platform API)
+- `src/app/api/tokens/balance/route.ts` - Balance query endpoint
+- `src/app/api/stripe/` - Payment processing
 
 ### 1. Authentication System
 
@@ -300,42 +318,46 @@ Pixel is the flagship AI-powered image enhancement application on the Spike Land
 
 See `prisma/schema.prisma` for the complete schema. Key models:
 
-#### User & Authentication
+#### Platform Infrastructure (Spike Land)
+
+**User & Authentication:**
 
 - `User` - User accounts with role (USER/ADMIN/SUPER_ADMIN), referral info
 - `Account` - OAuth provider accounts
 - `Session` - User sessions
 - `VerificationToken` - Email verification
 
-#### Platform Apps
+**Token Economy (Platform-Level):**
 
-- `App` - User-created applications with status
-- `Requirement` - App requirements with priority and status
-- `MonetizationModel` - Pricing configuration
-
-#### Image Enhancement (Pixel)
-
-- `EnhancedImage` - Uploaded images with metadata and shareToken
-- `ImageEnhancementJob` - Enhancement jobs with tier, status, results
-
-#### Token Economy
-
-- `UserTokenBalance` - User token balance with regeneration
+- `UserTokenBalance` - User token balance with regeneration (one per user)
 - `TokenTransaction` - Token movements (earn/spend/refund)
 - `TokensPackage` - Purchasable token packages
 - `StripePayment` - Payment records
 - `Subscription` - Recurring subscriptions
 - `SubscriptionPlan` - Subscription tiers
+- `Voucher` - Promotional codes
+- `VoucherRedemption` - Voucher usage tracking
 
-#### Albums & Organization
+**Platform Apps:**
+
+- `App` - User-created applications with status
+- `Requirement` - App requirements with priority and status
+- `MonetizationModel` - Pricing configuration
+
+#### App-Specific Models (Pixel)
+
+**Image Enhancement:**
+
+- `EnhancedImage` - Uploaded images with metadata and shareToken
+- `ImageEnhancementJob` - Enhancement jobs with tier, status, results
+
+**Albums & Organization:**
 
 - `Album` - Image albums with privacy settings
 - `AlbumImage` - Album-image associations with sort order
 
-#### Growth & Admin
+#### Growth & Admin (Platform-Level)
 
-- `Voucher` - Promotional codes
-- `VoucherRedemption` - Voucher usage tracking
 - `Referral` - Referral relationships and rewards
 - `AuditLog` - Admin action logging
 - `Feedback` - User feedback (bug reports, ideas)

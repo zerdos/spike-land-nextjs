@@ -40,7 +40,7 @@ We are building a platform where:
 - Deploy apps (future)
 - Monetize apps (future)
 
-#### **Key Features**
+#### **Platform Infrastructure**
 
 1. **Authentication System**
    - Multi-provider OAuth (GitHub, Google)
@@ -48,36 +48,42 @@ We are building a platform where:
    - User profiles and settings
    - Protected routes and content
 
-2. **My Apps Dashboard** (Protected Route)
+2. **Token Economy (Platform-Level)**
+   - Single token balance per user (works across all apps)
+   - Auto-regeneration (1 token per 15 min, max 100)
+   - Stripe integration for purchases and subscriptions
+   - Voucher system for promotional codes
+   - Transaction history and analytics
+
+3. **My Apps Dashboard** (Protected Route)
    - User's app collection
    - Create new app wizard
    - Fork existing apps
    - App management interface
 
-3. **Requirements Management**
+4. **Requirements Management**
    - Natural language app requirements
    - Structured requirement storage
    - Version control for requirements
    - Safe, secure database storage
 
-4. **AI Agent Integration** (Future Phase)
+5. **AI Agent Integration** (Future Phase)
    - Claude Code agents build apps on demand
    - Interpret user requirements
    - Generate production-ready code
    - Iterative refinement based on feedback
    - Automated testing and deployment
 
-5. **App Deployment** (Future Phase)
+6. **App Deployment** (Future Phase)
    - Custom domain support
    - One-click deployment
    - External domain hosting
    - Scalable infrastructure
 
-6. **Monetization Models** (Future Phase)
-   - One-off payments
-   - Subscription models
-   - Freemium + Pro tiers
+7. **App Monetization** (Future Phase)
+   - Apps consume platform tokens for premium features
    - Revenue sharing with platform
+   - Freemium + Pro tiers
 
 ### **Technical Stack**
 
@@ -138,7 +144,9 @@ We are building a platform where:
 
 ### **Pixel - AI Image Enhancement App (Completed Implementation)**
 
-Pixel is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. Access it at https://spike.land/apps/images. All 5 implementation phases are complete:
+Pixel is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. Access it at https://spike.land/apps/images. All 5 implementation phases are complete.
+
+**Note:** Pixel consumes platform tokens for image enhancements. The token system itself is platform infrastructure (see "Token Economy" above).
 
 **Phase 1: MVP** ✅ Complete
 
@@ -146,14 +154,12 @@ Pixel is the AI-powered image enhancement app that serves as the showcase applic
 - [x] Single-tier AI enhancement (TIER_1K)
 - [x] Before/after comparison slider
 - [x] Download functionality
-- [x] Authentication integration
+- [x] Authentication integration (uses platform auth)
 
-**Phase 2: Token Economy** ✅ Complete
+**Phase 2: Token Consumption** ✅ Complete
 
 - [x] Multi-tier enhancement (TIER_1K, TIER_2K, TIER_4K)
-- [x] Token balance system with auto-regeneration (1 per 15 min)
-- [x] Stripe integration (one-time purchases and subscriptions)
-- [x] Token transaction history
+- [x] Consumes platform tokens (2/5/10 tokens per tier)
 - [x] Low balance warnings and refunds on failure
 
 **Phase 3: Albums & Export** ✅ Complete
@@ -182,20 +188,46 @@ Pixel is the AI-powered image enhancement app that serves as the showcase applic
 - [x] Legal pages (Terms, Privacy, Contact)
 - [x] Email infrastructure (Resend integration)
 
-### **Database Schema (Future)**
+### **Database Schema**
 
 ```typescript
-// Core Models
+// ========================================
+// PLATFORM INFRASTRUCTURE (Spike Land)
+// ========================================
+
+// User & Authentication (Platform-Level)
 User {
   id: string
   email: string
   name: string
   image: string
+  role: UserRole (USER, ADMIN, SUPER_ADMIN)
+  tokenBalance: UserTokenBalance  // Platform token balance
   apps: App[]
   createdAt: DateTime
   updatedAt: DateTime
 }
 
+// Token Economy (Platform-Level)
+UserTokenBalance {
+  id: string
+  userId: string (unique)
+  balance: int
+  lastRegeneration: DateTime
+}
+
+TokenTransaction {
+  id: string
+  userId: string
+  amount: int
+  type: TokenTransactionType
+  source: string  // e.g., "pixel_app", "voucher", "stripe"
+  sourceId: string
+  balanceAfter: int
+  createdAt: DateTime
+}
+
+// Platform Apps
 App {
   id: string
   name: string
@@ -228,6 +260,28 @@ MonetizationModel {
   price: decimal?
   subscriptionInterval: string?
   features: json
+}
+
+// ========================================
+// APP-SPECIFIC MODELS (Pixel)
+// ========================================
+
+EnhancedImage {
+  id: string
+  userId: string
+  originalUrl: string
+  enhancedUrl: string?
+  // ...other Pixel-specific fields
+}
+
+ImageEnhancementJob {
+  id: string
+  userId: string
+  imageId: string
+  tier: EnhancementTier
+  tokensCost: int  // Tokens consumed from platform balance
+  status: JobStatus
+  // ...other Pixel-specific fields
 }
 ```
 
