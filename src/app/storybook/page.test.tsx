@@ -2,15 +2,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock next-themes
-const mockSetTheme = vi.fn();
-vi.mock("next-themes", () => ({
-  useTheme: () => ({
-    theme: "dark",
-    setTheme: mockSetTheme,
-  }),
-}));
-
 // Mock PixelLogo component
 vi.mock("@/components/brand", () => ({
   PixelLogo: (
@@ -30,10 +21,6 @@ vi.mock("@/components/brand", () => ({
 import StorybookPage from "./page";
 
 describe("StorybookPage", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe("rendering", () => {
     it("should render the page title", () => {
       render(<StorybookPage />);
@@ -58,22 +45,6 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       expect(screen.getByText(/pixel design system v1\.0/i)).toBeInTheDocument();
       expect(screen.getByText(/part of the spike land platform/i)).toBeInTheDocument();
-    });
-  });
-
-  describe("theme toggle", () => {
-    it("should render theme toggle switch", () => {
-      render(<StorybookPage />);
-      expect(screen.getByRole("switch")).toBeInTheDocument();
-      expect(screen.getByText(/dark mode/i)).toBeInTheDocument();
-    });
-
-    it("should toggle theme when switch is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      const themeSwitch = screen.getByRole("switch");
-      await user.click(themeSwitch);
-      expect(mockSetTheme).toHaveBeenCalledWith("light");
     });
   });
 
@@ -327,12 +298,6 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       const tablist = screen.getByRole("tablist");
       expect(tablist).toBeInTheDocument();
-    });
-
-    it("should have accessible switch with label", () => {
-      render(<StorybookPage />);
-      const switchEl = screen.getByRole("switch");
-      expect(switchEl).toHaveAccessibleName(/dark mode/i);
     });
   });
 });

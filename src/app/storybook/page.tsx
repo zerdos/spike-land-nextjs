@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 const colorPalette = {
@@ -80,7 +79,6 @@ function Section({
 }
 
 export default function StorybookPage() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -96,23 +94,11 @@ export default function StorybookPage() {
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold font-heading mb-2">Design System</h1>
-              <p className="text-muted-foreground text-lg">
-                Pixel Brand Guidelines & Component Library
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="theme-toggle" className="text-sm">
-                Dark Mode
-              </Label>
-              <Switch
-                id="theme-toggle"
-                checked={theme === "dark"}
-                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-              />
-            </div>
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold font-heading mb-2">Design System</h1>
+            <p className="text-muted-foreground text-lg">
+              Pixel Brand Guidelines & Component Library
+            </p>
           </div>
           <Separator />
         </div>
