@@ -7,6 +7,9 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+// Cache for 5 minutes, stale-while-revalidate for 10 minutes
+export const revalidate = 300;
+
 export async function GET() {
   try {
     const items = await prisma.featuredGalleryItem.findMany({

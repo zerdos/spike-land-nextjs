@@ -21,6 +21,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { GalleryItemForm } from "./GalleryItemForm";
 import { ImageBrowserDialog } from "./ImageBrowserDialog";
 
@@ -103,7 +104,7 @@ export function GalleryAdminClient() {
 
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, isActive: !i.isActive } : i));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update item");
+      toast.error(err instanceof Error ? err.message : "Failed to update item");
     } finally {
       setIsUpdating(false);
     }
@@ -134,7 +135,7 @@ export function GalleryAdminClient() {
 
       await fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to reorder item");
+      toast.error(err instanceof Error ? err.message : "Failed to reorder item");
     } finally {
       setIsUpdating(false);
     }
@@ -165,7 +166,7 @@ export function GalleryAdminClient() {
 
       await fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to reorder item");
+      toast.error(err instanceof Error ? err.message : "Failed to reorder item");
     } finally {
       setIsUpdating(false);
     }
@@ -194,7 +195,7 @@ export function GalleryAdminClient() {
       setShowDeleteDialog(false);
       setItemToDelete(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete item");
+      toast.error(err instanceof Error ? err.message : "Failed to delete item");
     } finally {
       setIsUpdating(false);
     }
@@ -258,7 +259,7 @@ export function GalleryAdminClient() {
       setSelectedItem(null);
       setSelectedImageData(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save item");
+      toast.error(err instanceof Error ? err.message : "Failed to save item");
     } finally {
       setIsUpdating(false);
     }

@@ -7,12 +7,10 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import { reorderItemsSchema } from "@/lib/types/gallery";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-
-interface ReorderItem {
-  id: string;
-  sortOrder: number;
-}
+import { ZodError } from "zod";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -25,28 +23,13 @@ export async function PATCH(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const body = await request.json();
-    const { items } = body as { items?: ReorderItem[]; };
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: "Missing or invalid items array" },
-        { status: 400 },
-      );
-    }
-
-    // Validate that all items have required fields
-    for (const item of items) {
-      if (!item.id || typeof item.sortOrder !== "number") {
-        return NextResponse.json(
-          { error: "Each item must have id and sortOrder" },
-          { status: 400 },
-        );
-      }
-    }
+    // Validate request body with Zod
+    const validatedData = reorderItemsSchema.parse(body);
 
     // Update all items in a transaction
     await prisma.$transaction(
-      items.map((item) =>
+      validatedData.items.map((item) =>
         prisma.featuredGalleryItem.update({
           where: { id: item.id },
           data: { sortOrder: item.sortOrder },
@@ -54,12 +37,21 @@ export async function PATCH(request: NextRequest) {
       ),
     );
 
+    // Revalidate the homepage cache
+    revalidatePath("/");
+
     return NextResponse.json({
       success: true,
-      updated: items.length,
+      updated: validatedData.items.length,
     });
   } catch (error) {
     console.error("Failed to reorder gallery items:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.issues },
+        { status: 400 },
+      );
+    }
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

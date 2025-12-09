@@ -7,8 +7,10 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import { browseQuerySchema } from "@/lib/types/gallery";
 import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,10 +23,15 @@ export async function GET(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const userId = searchParams.get("userId");
-    const shareToken = searchParams.get("shareToken");
+
+    // Validate query parameters with Zod
+    // Use || undefined so that .default() is applied when param is missing (null from get())
+    const validatedQuery = browseQuerySchema.parse({
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      userId: searchParams.get("userId") || undefined,
+      shareToken: searchParams.get("shareToken") || undefined,
+    });
 
     const where: {
       userId?: string;
@@ -42,12 +49,12 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    if (userId) {
-      where.userId = userId;
+    if (validatedQuery.userId) {
+      where.userId = validatedQuery.userId;
     }
 
-    if (shareToken) {
-      where.shareToken = shareToken;
+    if (validatedQuery.shareToken) {
+      where.shareToken = validatedQuery.shareToken;
     }
 
     const [images, total] = await Promise.all([
@@ -83,8 +90,8 @@ export async function GET(request: NextRequest) {
         orderBy: {
           createdAt: "desc",
         },
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (validatedQuery.page - 1) * validatedQuery.limit,
+        take: validatedQuery.limit,
       }),
       prisma.enhancedImage.count({ where }),
     ]);
@@ -112,14 +119,20 @@ export async function GET(request: NextRequest) {
         })),
       })),
       pagination: {
-        page,
-        limit,
+        page: validatedQuery.page,
+        limit: validatedQuery.limit,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / validatedQuery.limit),
       },
     });
   } catch (error) {
     console.error("Failed to browse images:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.issues },
+        { status: 400 },
+      );
+    }
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

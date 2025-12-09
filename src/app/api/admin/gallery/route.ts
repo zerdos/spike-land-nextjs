@@ -7,8 +7,15 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import {
+  createGalleryItemSchema,
+  GALLERY_CONSTANTS,
+  updateGalleryItemSchema,
+} from "@/lib/types/gallery";
 import { GalleryCategory } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +29,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const limit = Math.min(
+      parseInt(searchParams.get("limit") || String(GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE), 10),
+      GALLERY_CONSTANTS.MAX_PAGE_SIZE,
+    );
     const category = searchParams.get("category") as GalleryCategory | null;
     const isActiveParam = searchParams.get("isActive");
 
@@ -122,46 +132,18 @@ export async function POST(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const body = await request.json();
-    const {
-      title,
-      description,
-      category,
-      sourceImageId,
-      sourceJobId,
-      width,
-      height,
-      sortOrder,
-    } = body;
 
-    if (!title) {
-      return NextResponse.json(
-        { error: "Missing required field: title" },
-        { status: 400 },
-      );
-    }
-
-    if (!sourceImageId || !sourceJobId) {
-      return NextResponse.json(
-        { error: "Missing required fields: sourceImageId and sourceJobId" },
-        { status: 400 },
-      );
-    }
-
-    if (category && !Object.values(GalleryCategory).includes(category)) {
-      return NextResponse.json(
-        { error: "Invalid gallery category" },
-        { status: 400 },
-      );
-    }
+    // Validate request body with Zod
+    const validatedData = createGalleryItemSchema.parse(body);
 
     // Fetch the source image and job to get URLs
     const [sourceImage, sourceJob] = await Promise.all([
       prisma.enhancedImage.findUnique({
-        where: { id: sourceImageId },
+        where: { id: validatedData.sourceImageId },
         select: { originalUrl: true },
       }),
       prisma.imageEnhancementJob.findUnique({
-        where: { id: sourceJobId },
+        where: { id: validatedData.sourceJobId },
         select: { enhancedUrl: true },
       }),
     ]);
@@ -175,16 +157,16 @@ export async function POST(request: NextRequest) {
 
     const item = await prisma.featuredGalleryItem.create({
       data: {
-        title,
-        description: description || null,
-        category: category || GalleryCategory.PORTRAIT,
+        title: validatedData.title,
+        description: validatedData.description || null,
+        category: validatedData.category,
         originalUrl: sourceImage.originalUrl,
         enhancedUrl: sourceJob.enhancedUrl,
-        width: width || 16,
-        height: height || 9,
-        sourceImageId,
-        sourceJobId,
-        sortOrder: sortOrder ?? 0,
+        width: validatedData.width || 16,
+        height: validatedData.height || 9,
+        sourceImageId: validatedData.sourceImageId,
+        sourceJobId: validatedData.sourceJobId,
+        sortOrder: validatedData.sortOrder ?? 0,
         isActive: true,
         createdBy: session.user.id,
       },
@@ -198,6 +180,9 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Revalidate the homepage cache
+    revalidatePath("/");
 
     return NextResponse.json({
       item: {
@@ -220,6 +205,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Failed to create gallery item:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.issues },
+        { status: 400 },
+      );
+    }
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -241,21 +232,9 @@ export async function PATCH(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const body = await request.json();
-    const { id, title, description, category, sortOrder, isActive } = body;
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing required field: id" },
-        { status: 400 },
-      );
-    }
-
-    if (category && !Object.values(GalleryCategory).includes(category)) {
-      return NextResponse.json(
-        { error: "Invalid gallery category" },
-        { status: 400 },
-      );
-    }
+    // Validate request body with Zod
+    const validatedData = updateGalleryItemSchema.parse(body);
 
     const data: {
       title?: string;
@@ -265,14 +244,16 @@ export async function PATCH(request: NextRequest) {
       isActive?: boolean;
     } = {};
 
-    if (title !== undefined) data.title = title;
-    if (description !== undefined) data.description = description || null;
-    if (category !== undefined) data.category = category;
-    if (sortOrder !== undefined) data.sortOrder = sortOrder;
-    if (isActive !== undefined) data.isActive = isActive;
+    if (validatedData.title !== undefined) data.title = validatedData.title;
+    if (validatedData.description !== undefined) {
+      data.description = validatedData.description || null;
+    }
+    if (validatedData.category !== undefined) data.category = validatedData.category;
+    if (validatedData.sortOrder !== undefined) data.sortOrder = validatedData.sortOrder;
+    if (validatedData.isActive !== undefined) data.isActive = validatedData.isActive;
 
     const item = await prisma.featuredGalleryItem.update({
-      where: { id },
+      where: { id: validatedData.id },
       data,
       include: {
         creator: {
@@ -284,6 +265,9 @@ export async function PATCH(request: NextRequest) {
         },
       },
     });
+
+    // Revalidate the homepage cache
+    revalidatePath("/");
 
     return NextResponse.json({
       item: {
@@ -306,6 +290,12 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     console.error("Failed to update gallery item:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.issues },
+        { status: 400 },
+      );
+    }
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -339,6 +329,9 @@ export async function DELETE(request: NextRequest) {
     await prisma.featuredGalleryItem.delete({
       where: { id: itemId },
     });
+
+    // Revalidate the homepage cache
+    revalidatePath("/");
 
     return NextResponse.json({ success: true });
   } catch (error) {
