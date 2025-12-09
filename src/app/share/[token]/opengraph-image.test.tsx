@@ -206,17 +206,80 @@ describe("opengraph-image", () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it("renders image with correct structure when valid image exists", async () => {
+    it("renders split comparison when both original and enhanced images exist", async () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(mockImage);
 
       const params = Promise.resolve({ token: "abc123" });
       const result = await Image({ params });
 
-      // Verify the element structure contains the expected image
+      // Verify the element structure contains the expected background
       expect(result.element).toBeDefined();
-      // The mock ImageResponse stores the element
       const element = result.element as React.ReactElement;
       expect(element.props.style.background).toBe("#0a0a0a");
+    });
+
+    it("renders single image when only original URL exists", async () => {
+      const imageWithOnlyOriginal = {
+        ...mockImage,
+        enhancementJobs: [],
+      };
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithOnlyOriginal);
+
+      const params = Promise.resolve({ token: "abc123" });
+      const result = await Image({ params });
+
+      expect(result).toBeDefined();
+      expect(result.options).toEqual({ width: 1200, height: 630 });
+    });
+
+    it("renders single image when only enhanced URL exists", async () => {
+      const imageWithOnlyEnhanced = {
+        ...mockImage,
+        originalUrl: null,
+      };
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithOnlyEnhanced);
+
+      const params = Promise.resolve({ token: "abc123" });
+      const result = await Image({ params });
+
+      expect(result).toBeDefined();
+      expect(result.options).toEqual({ width: 1200, height: 630 });
+    });
+
+    it("falls back to enhanced-only view when original URL fails SSRF validation", async () => {
+      const imageWithMixedUrls = {
+        ...mockImage,
+        originalUrl: "https://evil.com/malicious.jpg",
+        // Enhanced URL is valid
+      };
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithMixedUrls);
+
+      const params = Promise.resolve({ token: "abc123" });
+      const result = await Image({ params });
+
+      // Should still render (with just the enhanced image)
+      expect(result).toBeDefined();
+      expect(result.options).toEqual({ width: 1200, height: 630 });
+    });
+
+    it("falls back to original-only view when enhanced URL fails SSRF validation", async () => {
+      const imageWithMixedUrls = {
+        ...mockImage,
+        enhancementJobs: [
+          {
+            ...mockImage.enhancementJobs[0],
+            enhancedUrl: "https://evil.com/malicious.jpg",
+          },
+        ],
+      };
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithMixedUrls);
+
+      const params = Promise.resolve({ token: "abc123" });
+      const result = await Image({ params });
+
+      // Should still render (with just the original image)
+      expect(result).toBeDefined();
+      expect(result.options).toEqual({ width: 1200, height: 630 });
     });
   });
 });
