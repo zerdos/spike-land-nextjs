@@ -1,6 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { HeroSectionWithData } from "./HeroSectionWithData";
+
+// Mock next/cache - unstable_cache should pass through the function
+vi.mock("next/cache", () => ({
+  unstable_cache: vi.fn((fn) => fn),
+}));
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -31,6 +35,9 @@ vi.mock("./HeroSection", () => ({
 }));
 
 import prisma from "@/lib/prisma";
+
+// Need to import after mocks are set up
+const { HeroSectionWithData } = await import("./HeroSectionWithData");
 
 describe("HeroSectionWithData Component", () => {
   beforeEach(() => {

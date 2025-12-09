@@ -18,20 +18,24 @@ export function HeroComparisonSlider({
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleMove = useCallback(
-    (clientX: number) => {
-      if (!containerRef.current) return;
+  const handleMove = useCallback((clientX: number) => {
+    if (!containerRef.current) return;
 
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-      setSliderPosition(percentage);
-    },
-    [],
-  );
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  }, []);
 
   const handleMouseDown = () => setIsDragging(true);
   const handleMouseUp = () => setIsDragging(false);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      handleMove(e.clientX);
+    },
+    [handleMove],
+  );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -40,6 +44,17 @@ export function HeroComparisonSlider({
       }
     },
     [isDragging, handleMove],
+  );
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch) {
+        handleMove(touch.clientX);
+      }
+      setIsDragging(true);
+    },
+    [handleMove],
   );
 
   const handleTouchMove = useCallback(
@@ -59,9 +74,11 @@ export function HeroComparisonSlider({
         "relative w-full aspect-video overflow-hidden rounded-2xl border border-border/50 shadow-2xl cursor-ew-resize select-none",
         className,
       )}
+      onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleMouseUp}
     >
@@ -82,7 +99,7 @@ export function HeroComparisonSlider({
 
       {/* Original image (clipped) */}
       <div
-        className="absolute inset-0 overflow-hidden"
+        className="absolute inset-0 overflow-hidden transition-[width] duration-75 ease-out"
         style={{ width: `${sliderPosition}%` }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic comparison slider requires native img for clip-path */}
@@ -101,16 +118,29 @@ export function HeroComparisonSlider({
 
       {/* Slider line and handle */}
       <div
-        className="absolute top-0 bottom-0 w-0.5 bg-primary cursor-ew-resize"
+        className="absolute top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(0,200,255,0.6)] cursor-ew-resize transition-[left] duration-75 ease-out"
         style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
       >
-        {/* Handle circle with spark icon */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-glow-cyan cursor-ew-resize">
+        {/* Handle circle with arrows and spark icon */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-glow-cyan cursor-ew-resize transition-transform hover:scale-110 active:scale-95">
+          {/* Left arrow */}
           <svg
-            width="20"
-            height="20"
+            className="absolute left-1.5 w-3 h-3 text-primary-foreground opacity-80"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          {/* Spark icon center */}
+          <svg
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             className="text-primary-foreground"
@@ -119,6 +149,18 @@ export function HeroComparisonSlider({
               d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
               fill="currentColor"
             />
+          </svg>
+          {/* Right arrow */}
+          <svg
+            className="absolute right-1.5 w-3 h-3 text-primary-foreground opacity-80"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 6l6 6-6 6" />
           </svg>
         </div>
       </div>
