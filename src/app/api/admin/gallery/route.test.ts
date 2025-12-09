@@ -31,7 +31,7 @@ vi.mock("@/lib/auth/admin-middleware", () => ({
   requireAdminByUserId: vi.fn(),
 }));
 vi.mock("next/cache", () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 const { auth } = await import("@/auth");

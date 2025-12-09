@@ -9,11 +9,12 @@ import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import {
   createGalleryItemSchema,
+  deleteItemSchema,
   GALLERY_CONSTANTS,
   updateGalleryItemSchema,
 } from "@/lib/types/gallery";
 import { GalleryCategory } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -28,10 +29,13 @@ export async function GET(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || String(GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE), 10),
-      GALLERY_CONSTANTS.MAX_PAGE_SIZE,
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(
+      1,
+      Math.min(
+        parseInt(searchParams.get("limit") || String(GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE), 10),
+        GALLERY_CONSTANTS.MAX_PAGE_SIZE,
+      ),
     );
     const category = searchParams.get("category") as GalleryCategory | null;
     const isActiveParam = searchParams.get("isActive");
@@ -181,8 +185,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Revalidate the homepage cache
-    revalidatePath("/");
+    // Revalidate gallery cache tag (Next.js 16 requires cacheLife profile)
+    revalidateTag("gallery", "max");
 
     return NextResponse.json({
       item: {
@@ -266,8 +270,8 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    // Revalidate the homepage cache
-    revalidatePath("/");
+    // Revalidate gallery cache tag (Next.js 16 requires cacheLife profile)
+    revalidateTag("gallery", "max");
 
     return NextResponse.json({
       item: {
@@ -319,23 +323,25 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("id");
 
-    if (!itemId) {
-      return NextResponse.json(
-        { error: "Gallery item ID required" },
-        { status: 400 },
-      );
-    }
+    // Validate the ID parameter with Zod
+    const validatedData = deleteItemSchema.parse({ id: itemId });
 
     await prisma.featuredGalleryItem.delete({
-      where: { id: itemId },
+      where: { id: validatedData.id },
     });
 
-    // Revalidate the homepage cache
-    revalidatePath("/");
+    // Revalidate gallery cache tag (Next.js 16 requires cacheLife profile)
+    revalidateTag("gallery", "max");
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete gallery item:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Gallery item ID required", details: error.issues },
+        { status: 400 },
+      );
+    }
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

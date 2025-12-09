@@ -4,7 +4,7 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PATCH } from "./route";
+import { PATCH, POST } from "./route";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock("@/lib/auth/admin-middleware", () => ({
   requireAdminByUserId: vi.fn(),
 }));
 vi.mock("next/cache", () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 const { auth } = await import("@/auth");
@@ -302,6 +302,199 @@ describe("Reorder Gallery Items API", () => {
       await PATCH(request);
 
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("POST (single-item reorder)", () => {
+    it("should return 401 if not authenticated", async () => {
+      vi.mocked(auth).mockResolvedValue(null);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: VALID_ITEM1_ID,
+            newOrder: 0,
+          }),
+        },
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+    });
+
+    it("should return 403 if not admin", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_USER_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockRejectedValue(
+        new Error("Forbidden: Admin access required"),
+      );
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: VALID_ITEM1_ID,
+            newOrder: 0,
+          }),
+        },
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toContain("Forbidden");
+    });
+
+    it("should perform atomic swap when moving item", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+      // Mock the transaction to verify atomic swap behavior
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        if (typeof callback === "function") {
+          const mockTx = {
+            featuredGalleryItem: {
+              findUnique: vi.fn().mockResolvedValue({ sortOrder: 5 }),
+              findFirst: vi.fn().mockResolvedValue({ id: VALID_ITEM2_ID }),
+              update: vi.fn().mockResolvedValue({}),
+            },
+          };
+          await callback(mockTx as any);
+        }
+        return [];
+      });
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: VALID_ITEM1_ID,
+            newOrder: 10,
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.updated).toBe(1);
+    });
+
+    it("should return 404 if item not found", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        if (typeof callback === "function") {
+          const mockTx = {
+            featuredGalleryItem: {
+              findUnique: vi.fn().mockResolvedValue(null),
+            },
+          };
+          await callback(mockTx as any);
+        }
+        return [];
+      });
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "nonexistent",
+            newOrder: 0,
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("Item not found");
+    });
+
+    it("should return 400 if id is missing", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            newOrder: 0,
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+    });
+
+    it("should return 400 if newOrder is missing", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: VALID_ITEM1_ID,
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+    });
+
+    it("should return 400 if newOrder is negative", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+      vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/gallery/reorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: VALID_ITEM1_ID,
+            newOrder: -1,
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
     });
   });
 });

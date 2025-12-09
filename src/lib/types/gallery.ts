@@ -77,6 +77,17 @@ export const reorderItemsSchema = z.object({
   })).min(1).max(100),
 });
 
+// Schema for single-item reorder (POST request from client)
+export const singleReorderSchema = z.object({
+  id: idSchema,
+  newOrder: z.number().int().min(0),
+});
+
+// Schema for DELETE validation
+export const deleteItemSchema = z.object({
+  id: idSchema,
+});
+
 // Gallery item interface for frontend
 export interface GalleryItem {
   id: string;

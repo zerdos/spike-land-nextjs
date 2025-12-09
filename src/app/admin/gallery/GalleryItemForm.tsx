@@ -31,9 +31,9 @@ interface GalleryItem {
   originalUrl: string;
   enhancedUrl: string;
   isActive: boolean;
-  displayOrder: number;
-  imageId: string;
-  jobId: string;
+  sortOrder: number;
+  sourceImageId: string | null;
+  sourceJobId: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -22,9 +22,9 @@ const mockGalleryItems = [
     originalUrl: "https://example.com/original1.jpg",
     enhancedUrl: "https://example.com/enhanced1.jpg",
     isActive: true,
-    displayOrder: 1,
-    imageId: "img1",
-    jobId: "job1",
+    sortOrder: 1,
+    sourceImageId: "img1",
+    sourceJobId: "job1",
     createdAt: "2024-01-15T10:00:00.000Z",
     updatedAt: "2024-01-15T10:00:00.000Z",
   },
@@ -36,9 +36,9 @@ const mockGalleryItems = [
     originalUrl: "https://example.com/original2.jpg",
     enhancedUrl: "https://example.com/enhanced2.jpg",
     isActive: false,
-    displayOrder: 2,
-    imageId: "img2",
-    jobId: "job2",
+    sortOrder: 2,
+    sourceImageId: "img2",
+    sourceJobId: "job2",
     createdAt: "2024-01-16T10:00:00.000Z",
     updatedAt: "2024-01-16T10:00:00.000Z",
   },
@@ -282,7 +282,7 @@ describe("GalleryAdminClient", () => {
       mockFetchResponse({ items: mockGalleryItems }),
     );
 
-    // Click Move Up on the second item
+    // Click Move Up on the second item (item2 at index 1 wants to move to item1's sortOrder which is 1)
     const moveUpButtons = screen.getAllByText("Up");
     fireEvent.click(moveUpButtons[1]);
 
@@ -292,7 +292,7 @@ describe("GalleryAdminClient", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: "item2",
-          newOrder: 1,
+          newOrder: 1, // item1's sortOrder
         }),
       });
     });
@@ -319,7 +319,7 @@ describe("GalleryAdminClient", () => {
       mockFetchResponse({ items: mockGalleryItems }),
     );
 
-    // Click Move Down on the first item
+    // Click Move Down on the first item (item1 at index 0 wants to move to item2's sortOrder which is 2)
     const moveDownButtons = screen.getAllByText("Down");
     fireEvent.click(moveDownButtons[0]);
 
@@ -329,7 +329,7 @@ describe("GalleryAdminClient", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: "item1",
-          newOrder: 2,
+          newOrder: 2, // item2's sortOrder
         }),
       });
     });

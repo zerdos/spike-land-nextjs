@@ -581,5 +581,6 @@ model FeaturedGalleryItem {
   creator     User                 @relation("GalleryItemCreator", fields: [createdBy], references: [id])
 
   @@index([isActive, sortOrder])
+  @@index([isActive, category, sortOrder])
   @@map("featured_gallery_items")
 }

@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
             orderBy: {
               createdAt: "desc",
             },
+            take: 10, // Limit to prevent N+1 query pattern
             select: {
               id: true,
               tier: true,
