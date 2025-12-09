@@ -63,6 +63,41 @@ export const authConfig: NextAuthConfig = {
   // Trust the host when running behind a proxy (required for Vercel, Cloudflare, etc.)
   // This allows NextAuth to correctly handle X-Forwarded-Host headers
   trustHost: true,
+  // Explicit cookie configuration for Safari ITP compatibility
+  // Safari's Intelligent Tracking Prevention in incognito mode blocks cookies aggressively
+  // Using sameSite: "lax" and explicit maxAge improves compatibility
+  cookies: {
+    pkceCodeVerifier: {
+      name: "authjs.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15, // 15 minutes
+      },
+    },
+    state: {
+      name: "authjs.state",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15, // 15 minutes
+      },
+    },
+    callbackUrl: {
+      name: "authjs.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15, // 15 minutes
+      },
+    },
+  },
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID,
