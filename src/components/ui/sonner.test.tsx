@@ -2,11 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { Toaster } from "./sonner";
 
-// Mock next-themes
-vi.mock("next-themes", () => ({
-  useTheme: () => ({ theme: "light" }),
-}));
-
 // Mock sonner
 vi.mock("sonner", () => ({
   Toaster: ({
@@ -46,11 +41,11 @@ describe("Toaster", () => {
     expect(screen.getByTestId("sonner-toaster")).toBeInTheDocument();
   });
 
-  it("passes theme from useTheme hook", () => {
+  it("uses dark theme by default", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster).toHaveAttribute("data-theme", "light");
+    expect(toaster).toHaveAttribute("data-theme", "dark");
   });
 
   it("applies toaster group className", () => {
@@ -100,35 +95,5 @@ describe("Toaster", () => {
     expect(toaster.dataset.cancelClass).toContain(
       "group-[.toast]:text-muted-foreground",
     );
-  });
-
-  it("uses system theme when theme is undefined", () => {
-    vi.doMock("next-themes", () => ({
-      useTheme: () => ({ theme: undefined }),
-    }));
-
-    render(<Toaster />);
-
-    const toaster = screen.getByTestId("sonner-toaster");
-    // Default should be "system" when theme is undefined
-    expect(toaster).toHaveAttribute("data-theme", "light");
-  });
-});
-
-describe("Toaster with dark theme", () => {
-  it("passes dark theme when useTheme returns dark", async () => {
-    vi.doMock("next-themes", () => ({
-      useTheme: () => ({ theme: "dark" }),
-    }));
-
-    // Re-import to get the mocked version
-    const { Toaster: DarkToaster } = await import("./sonner");
-
-    render(<DarkToaster />);
-
-    const toaster = screen.getByTestId("sonner-toaster");
-    // Note: Due to module caching, this might still show "light"
-    // In real usage, the theme would properly switch
-    expect(toaster).toBeInTheDocument();
   });
 });
