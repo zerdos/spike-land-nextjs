@@ -37,6 +37,7 @@ model User {
   referrals          User[]                @relation("Referrals")
   voucherRedemptions VoucherRedemption[]
   feedback           Feedback[]
+  createdGalleryItems FeaturedGalleryItem[] @relation("GalleryItemCreator")
 
   @@map("users")
 }
@@ -218,6 +219,7 @@ model EnhancedImage {
   albumImages       AlbumImage[]
   user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   enhancementJobs   ImageEnhancementJob[]
+  featuredGalleryItems FeaturedGalleryItem[]
 
   @@index([userId, createdAt])
   @@index([isPublic, createdAt])
@@ -248,6 +250,7 @@ model ImageEnhancementJob {
   workflowRunId         String?
   image                 EnhancedImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featuredGalleryItems FeaturedGalleryItem[]
 
   @@index([userId, status, createdAt])
   @@index([imageId])
@@ -547,4 +550,37 @@ enum FeedbackStatus {
   REVIEWED
   RESOLVED
   DISMISSED
+}
+
+enum GalleryCategory {
+  PORTRAIT
+  LANDSCAPE
+  PRODUCT
+  ARCHITECTURE
+}
+
+model FeaturedGalleryItem {
+  id            String          @id @default(cuid())
+  title         String
+  description   String?
+  category      GalleryCategory @default(PORTRAIT)
+  originalUrl   String
+  enhancedUrl   String
+  width         Int             @default(16)
+  height        Int             @default(9)
+  sourceImageId String?
+  sourceJobId   String?
+  sortOrder     Int             @default(0)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  createdBy     String
+
+  sourceImage EnhancedImage?       @relation(fields: [sourceImageId], references: [id], onDelete: SetNull)
+  sourceJob   ImageEnhancementJob? @relation(fields: [sourceJobId], references: [id], onDelete: SetNull)
+  creator     User                 @relation("GalleryItemCreator", fields: [createdBy], references: [id])
+
+  @@index([isActive, sortOrder])
+  @@index([isActive, category, sortOrder])
+  @@map("featured_gallery_items")
 }

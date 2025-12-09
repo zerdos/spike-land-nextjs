@@ -1,5 +1,7 @@
 export { BeforeAfterGallery } from "./BeforeAfterGallery";
+export { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
 export { ComponentDemo } from "./ComponentDemo";
+export { CTASection } from "./CTASection";
 export { FAQ } from "./FAQ";
 export { FeatureShowcase } from "./FeatureShowcase";
 export { HeroComparisonSlider } from "./HeroComparisonSlider";
