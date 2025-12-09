@@ -204,40 +204,10 @@ describe("SharePage", () => {
       expect(metadata.openGraph?.title).toBe(
         "Beautiful Sunset - Enhanced with Pixel",
       );
-      expect(metadata.openGraph?.images).toEqual([
-        {
-          url: "https://example.com/enhanced.jpg",
-          width: 2048,
-          height: 1152,
-          alt: "Beautiful Sunset",
-        },
-      ]);
+      expect(metadata.openGraph?.type).toBe("website");
+      expect(metadata.openGraph?.siteName).toBe("Pixel - AI Image Enhancement");
+      // Note: OG images are now auto-generated via opengraph-image.tsx
       expect(metadata.twitter?.card).toBe("summary_large_image");
-      expect(metadata.twitter?.images).toEqual([
-        "https://example.com/enhanced.jpg",
-      ]);
-    });
-
-    it("uses original image URL when no enhancement exists", async () => {
-      const imageWithoutEnhancement = {
-        ...mockImage,
-        enhancementJobs: [],
-      };
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue(
-        imageWithoutEnhancement,
-      );
-
-      const params = Promise.resolve({ token: "abc123" });
-      const metadata = await generateMetadata({ params });
-
-      expect(metadata.openGraph?.images).toEqual([
-        {
-          url: "https://example.com/original.jpg",
-          width: 1920,
-          height: 1080,
-          alt: "Beautiful Sunset",
-        },
-      ]);
     });
 
     it("returns not found metadata when image does not exist", async () => {
