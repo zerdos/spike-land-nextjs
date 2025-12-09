@@ -10,7 +10,6 @@ describe("ExportSelector", () => {
   const mockProps = {
     imageId: "job-123",
     fileName: "test-image.jpg",
-    originalSizeBytes: 1000000,
   };
 
   beforeEach(() => {
@@ -18,39 +17,11 @@ describe("ExportSelector", () => {
     document.body.innerHTML = "";
   });
 
-  it("should render format selector with default JPEG format", () => {
+  it("should render export card with download button", () => {
     render(<ExportSelector {...mockProps} />);
 
     expect(screen.getByText("Export Enhanced Image")).toBeInTheDocument();
-    expect(screen.getByLabelText("Format")).toBeInTheDocument();
-  });
-
-  it("should show quality slider for JPEG format", () => {
-    render(<ExportSelector {...mockProps} />);
-
-    expect(screen.getByText("JPEG Quality")).toBeInTheDocument();
-    expect(screen.getByText("95%")).toBeInTheDocument();
-  });
-
-  it("should hide quality slider for PNG format", async () => {
-    render(<ExportSelector {...mockProps} />);
-
-    const selectTrigger = screen.getByRole("combobox");
-    fireEvent.click(selectTrigger);
-
-    await waitFor(() => {
-      const pngOption = screen.getByText("PNG");
-      fireEvent.click(pngOption);
-    });
-
-    expect(screen.queryByText("JPEG Quality")).not.toBeInTheDocument();
-  });
-
-  it("should display estimated file size", () => {
-    render(<ExportSelector {...mockProps} />);
-
-    expect(screen.getByText("Estimated file size:")).toBeInTheDocument();
-    expect(screen.getByText(/MB|KB/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Download JPEG/i })).toBeInTheDocument();
   });
 
   it("should handle successful export", async () => {
@@ -141,17 +112,7 @@ describe("ExportSelector", () => {
     );
   });
 
-  it("should update estimated size when quality changes", () => {
-    render(<ExportSelector {...mockProps} />);
-
-    const initialSize = screen.getByText(/MB|KB/);
-    expect(initialSize).toBeInTheDocument();
-
-    // Just verify the display exists and is responsive to format selection
-    // Slider interaction is complex with Radix UI, so we test the logic separately
-  });
-
-  it("should create download link with correct filename", async () => {
+  it("should create download link with correct filename from header", async () => {
     const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
     const mockCreateElement = vi.spyOn(document, "createElement");
 
@@ -175,18 +136,25 @@ describe("ExportSelector", () => {
     mockCreateElement.mockRestore();
   });
 
-  it("should format file size correctly", () => {
-    render(<ExportSelector {...mockProps} originalSizeBytes={500} />);
-    expect(screen.getByText(/B$/)).toBeInTheDocument();
+  it("should use provided fileName when no Content-Disposition header", async () => {
+    const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: new Headers(),
+    } as Response);
 
-    render(<ExportSelector {...mockProps} originalSizeBytes={5000} />);
-    expect(screen.getByText(/KB$/)).toBeInTheDocument();
+    render(<ExportSelector {...mockProps} />);
 
-    render(<ExportSelector {...mockProps} originalSizeBytes={5000000} />);
-    expect(screen.getByText(/MB$/)).toBeInTheDocument();
+    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    fireEvent.click(downloadButton);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
   });
 
-  it("should send correct quality for JPEG export", async () => {
+  it("should send fixed JPEG format with quality 95", async () => {
     const mockBlob = new Blob(["image-data"], { type: "image/jpeg" });
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
@@ -203,38 +171,11 @@ describe("ExportSelector", () => {
       expect(fetch).toHaveBeenCalledWith(
         "/api/images/export",
         expect.objectContaining({
-          body: expect.stringContaining('"quality":95'),
-        }),
-      );
-    });
-  });
-
-  it("should not send quality for PNG export", async () => {
-    const mockBlob = new Blob(["image-data"], { type: "image/png" });
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      blob: () => Promise.resolve(mockBlob),
-      headers: new Headers(),
-    } as Response);
-
-    render(<ExportSelector {...mockProps} />);
-
-    const selectTrigger = screen.getByRole("combobox");
-    fireEvent.click(selectTrigger);
-
-    await waitFor(() => {
-      const pngOption = screen.getByText("PNG");
-      fireEvent.click(pngOption);
-    });
-
-    const downloadButton = screen.getByRole("button", { name: /Download PNG/i });
-    fireEvent.click(downloadButton);
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/images/export",
-        expect.objectContaining({
-          body: expect.not.stringContaining('"quality"'),
+          body: JSON.stringify({
+            imageId: "job-123",
+            format: "jpeg",
+            quality: 95,
+          }),
         }),
       );
     });

@@ -40,7 +40,7 @@ export function ShareButton({
 
   const generateShareUrl = useCallback(async () => {
     if (initialShareToken) {
-      return `https://pixel.spike.land/share/${initialShareToken}`;
+      return `https://spike.land/share/${initialShareToken}`;
     }
 
     setIsLoading(true);

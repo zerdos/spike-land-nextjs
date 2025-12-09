@@ -116,7 +116,7 @@ describe("POST /api/images/[id]/share", () => {
 
     expect(response.status).toBe(200);
     expect(data.shareToken).toBe("existing-token");
-    expect(data.shareUrl).toBe("https://pixel.spike.land/share/existing-token");
+    expect(data.shareUrl).toBe("https://spike.land/share/existing-token");
     expect(prisma.enhancedImage.update).not.toHaveBeenCalled();
   });
 
@@ -150,7 +150,7 @@ describe("POST /api/images/[id]/share", () => {
 
     expect(response.status).toBe(200);
     expect(data.shareToken).toBe("mock-share-token");
-    expect(data.shareUrl).toBe("https://pixel.spike.land/share/mock-share-token");
+    expect(data.shareUrl).toBe("https://spike.land/share/mock-share-token");
 
     expect(nanoid).toHaveBeenCalledWith(12);
     expect(prisma.enhancedImage.update).toHaveBeenCalledWith({
@@ -321,7 +321,7 @@ describe("GET /api/images/[id]/share", () => {
 
     expect(response.status).toBe(200);
     expect(data.shareToken).toBe("existing-token");
-    expect(data.shareUrl).toBe("https://pixel.spike.land/share/existing-token");
+    expect(data.shareUrl).toBe("https://spike.land/share/existing-token");
   });
 
   it("should return 500 on database error", async () => {

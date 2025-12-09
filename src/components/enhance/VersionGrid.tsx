@@ -10,7 +10,6 @@ import { HardDrive, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { BulkDeleteDialog } from "./BulkDeleteDialog";
-import { ExportButton } from "./ExportButton";
 
 async function logBrokenImage(versionId: string, tier: string, url: string) {
   try {
@@ -315,23 +314,15 @@ export function VersionGrid({
 
                 {/* Action buttons */}
                 <div className="flex gap-2">
-                  {version.status === "COMPLETED" && (
-                    <>
-                      <ExportButton
-                        imageUrl={version.enhancedUrl}
-                        fileName={`enhanced-${tierLabels[version.tier]}-${version.id}.jpg`}
-                      />
-                      {onJobDelete && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => handleDelete(version.id, e)}
-                          disabled={processingJobId === version.id}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </>
+                  {version.status === "COMPLETED" && onJobDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDelete(version.id, e)}
+                      disabled={processingJobId === version.id}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   )}
 
                   {(version.status === "PENDING" || version.status === "PROCESSING") &&
