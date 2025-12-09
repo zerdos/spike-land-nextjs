@@ -2,6 +2,14 @@ import prisma from "@/lib/prisma";
 import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
 import { FALLBACK_GALLERY_ITEMS, type GalleryItem } from "./gallery-fallback-data";
 
+// Type-safe category mapping from database enum to frontend type
+const CATEGORY_MAP: Record<string, GalleryItem["category"]> = {
+  PORTRAIT: "portrait",
+  LANDSCAPE: "landscape",
+  PRODUCT: "product",
+  ARCHITECTURE: "architecture",
+};
+
 export async function BeforeAfterGallery() {
   let galleryItems: GalleryItem[];
 
@@ -26,11 +34,7 @@ export async function BeforeAfterGallery() {
         id: item.id,
         title: item.title,
         description: item.description || "",
-        category: item.category.toLowerCase() as
-          | "portrait"
-          | "landscape"
-          | "product"
-          | "architecture",
+        category: CATEGORY_MAP[item.category] || "portrait",
         originalUrl: item.originalUrl,
         enhancedUrl: item.enhancedUrl,
         width: item.width,

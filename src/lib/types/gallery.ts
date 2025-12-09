@@ -13,8 +13,14 @@ export const GalleryCategoryEnum = z.enum(["PORTRAIT", "LANDSCAPE", "PRODUCT", "
 export type GalleryCategory = z.infer<typeof GalleryCategoryEnum>;
 
 // Helper to sanitize text (strip HTML tags)
+// Uses iterative replacement to handle nested/incomplete tags (fixes CodeQL alert)
 export function sanitizeText(text: string): string {
-  return text.replace(/<[^>]*>/g, "").trim();
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]*>/g, "");
+  } while (text !== prev);
+  return text.trim();
 }
 
 // ID validation - accepts CUIDs and other reasonable ID formats

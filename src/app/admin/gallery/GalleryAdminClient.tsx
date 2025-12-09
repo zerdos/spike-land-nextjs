@@ -241,8 +241,8 @@ export function GalleryAdminClient() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...data,
-            imageId: selectedImageData.imageId,
-            jobId: selectedImageData.jobId,
+            sourceImageId: selectedImageData.imageId,
+            sourceJobId: selectedImageData.jobId,
             originalUrl: selectedImageData.originalUrl,
             enhancedUrl: selectedImageData.enhancedUrl,
           }),
