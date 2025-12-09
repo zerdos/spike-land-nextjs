@@ -36,6 +36,7 @@ export default async function AdminLayout({
     { href: "/admin/vouchers", label: "Vouchers", icon: "🎟️" },
     { href: "/admin/users", label: "User Management", icon: "👥" },
     { href: "/admin/photos", label: "Photos", icon: "📸" },
+    { href: "/admin/gallery", label: "Featured Gallery", icon: "🖼️" },
     { href: "/admin/feedback", label: "Feedback", icon: "💬" },
   ];
 
