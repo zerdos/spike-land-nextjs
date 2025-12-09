@@ -88,12 +88,12 @@ export const deleteItemSchema = z.object({
   id: idSchema,
 });
 
-// Gallery item interface for frontend
+// Gallery item interface for frontend (matches Prisma/Zod enum)
 export interface GalleryItem {
   id: string;
   title: string;
   description: string;
-  category: "portrait" | "landscape" | "product" | "architecture";
+  category: GalleryCategory;
   originalUrl: string;
   enhancedUrl: string;
   width?: number;
