@@ -5,4 +5,3 @@ export { FeatureShowcase } from "./FeatureShowcase";
 export { HeroComparisonSlider } from "./HeroComparisonSlider";
 export { HeroSection } from "./HeroSection";
 export { PixelHeader } from "./PixelHeader";
-export { TrustedBy } from "./TrustedBy";
