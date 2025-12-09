@@ -8,6 +8,8 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
     enhancedUrl,
     originalLabel,
     enhancedLabel,
+    width,
+    height,
   }: {
     originalUrl: string;
     enhancedUrl: string;
@@ -21,6 +23,8 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
       <span data-testid="slider-enhanced-url">{enhancedUrl}</span>
       <span data-testid="slider-original-label">{originalLabel}</span>
       <span data-testid="slider-enhanced-label">{enhancedLabel}</span>
+      <span data-testid="slider-width">{width}</span>
+      <span data-testid="slider-height">{height}</span>
     </div>
   ),
 }));
@@ -32,6 +36,9 @@ const defaultProps = {
   enhancedUrl: "https://example.com/enhanced.jpg",
   originalWidth: 1920,
   originalHeight: 1080,
+  enhancedWidth: 3840,
+  enhancedHeight: 2160,
+  tier: "TIER_4K",
 };
 
 describe("SharePageClient", () => {
@@ -41,22 +48,6 @@ describe("SharePageClient", () => {
     expect(
       screen.getByRole("heading", { name: "Beautiful Sunset" }),
     ).toBeInTheDocument();
-  });
-
-  it("renders the description when provided", () => {
-    render(<SharePageClient {...defaultProps} />);
-
-    expect(
-      screen.getByText("A stunning sunset over the mountains"),
-    ).toBeInTheDocument();
-  });
-
-  it("does not render description when null", () => {
-    render(<SharePageClient {...defaultProps} description={null} />);
-
-    expect(
-      screen.queryByText("A stunning sunset over the mountains"),
-    ).not.toBeInTheDocument();
   });
 
   it("renders the ImageComparisonSlider with correct props", () => {
@@ -77,48 +68,73 @@ describe("SharePageClient", () => {
     );
   });
 
-  it("renders the CTA button linking to home page", () => {
+  it("uses enhanced dimensions for the slider", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    const ctaButton = screen.getByRole("link", {
-      name: /enhance your photos/i,
+    expect(screen.getByTestId("slider-width")).toHaveTextContent("3840");
+    expect(screen.getByTestId("slider-height")).toHaveTextContent("2160");
+  });
+
+  it("falls back to original dimensions when enhanced are null", () => {
+    render(
+      <SharePageClient
+        {...defaultProps}
+        enhancedWidth={null}
+        enhancedHeight={null}
+      />,
+    );
+
+    expect(screen.getByTestId("slider-width")).toHaveTextContent("1920");
+    expect(screen.getByTestId("slider-height")).toHaveTextContent("1080");
+  });
+
+  it("renders download original button with correct link", () => {
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadOriginal = screen.getByRole("link", {
+      name: /download original/i,
     });
-    expect(ctaButton).toBeInTheDocument();
-    expect(ctaButton).toHaveAttribute("href", "/");
+    expect(downloadOriginal).toBeInTheDocument();
+    expect(downloadOriginal).toHaveAttribute(
+      "href",
+      "https://example.com/original.jpg",
+    );
+    expect(downloadOriginal).toHaveAttribute("download");
+  });
+
+  it("renders download enhanced button with correct link", () => {
+    render(<SharePageClient {...defaultProps} />);
+
+    const downloadEnhanced = screen.getByRole("link", {
+      name: /download enhanced/i,
+    });
+    expect(downloadEnhanced).toBeInTheDocument();
+    expect(downloadEnhanced).toHaveAttribute(
+      "href",
+      "https://example.com/enhanced.jpg",
+    );
+    expect(downloadEnhanced).toHaveAttribute("download");
   });
 
   it("renders the header with Pixel branding", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    const headerLink = screen.getAllByRole("link").find(
-      (link) => link.textContent === "Pixel",
-    );
+    const headerLink = screen.getByRole("link", { name: /pixel/i });
     expect(headerLink).toBeInTheDocument();
     expect(headerLink).toHaveAttribute("href", "/");
   });
 
-  it("renders the footer with Pixel branding", () => {
-    render(<SharePageClient {...defaultProps} />);
+  it("has dark background styling", () => {
+    const { container } = render(<SharePageClient {...defaultProps} />);
 
-    expect(screen.getByText(/made with/i)).toBeInTheDocument();
-    const footerLink = screen.getByRole("contentinfo").querySelector("a");
-    expect(footerLink).toHaveAttribute("href", "/");
-    expect(footerLink).toHaveTextContent("Pixel");
+    const rootDiv = container.firstChild as HTMLElement;
+    expect(rootDiv.className).toContain("bg-neutral-950");
   });
 
-  it("displays 'Enhanced with Pixel' subtitle", () => {
-    render(<SharePageClient {...defaultProps} />);
+  it("sets max width based on enhanced dimensions", () => {
+    const { container } = render(<SharePageClient {...defaultProps} />);
 
-    const aiImageTexts = screen.getAllByText(/ai image enhancement/i);
-    expect(aiImageTexts.length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText(/enhanced with/i).length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("renders want to enhance text", () => {
-    render(<SharePageClient {...defaultProps} />);
-
-    expect(
-      screen.getByText(/want to enhance your own photos with ai/i),
-    ).toBeInTheDocument();
+    const mainContent = container.querySelector("main > div");
+    expect(mainContent).toHaveStyle({ maxWidth: "min(3840px, 90vw)" });
   });
 });
