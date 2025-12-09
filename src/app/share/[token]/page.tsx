@@ -112,6 +112,7 @@ export default async function SharePage({ params }: SharePageProps) {
       enhancedWidth={latestEnhancement.enhancedWidth}
       enhancedHeight={latestEnhancement.enhancedHeight}
       tier={latestEnhancement.tier}
+      shareToken={token}
     />
   );
 }

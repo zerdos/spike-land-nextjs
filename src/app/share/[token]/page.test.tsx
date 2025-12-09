@@ -69,6 +69,7 @@ vi.mock("./SharePageClient", () => ({
     enhancedWidth,
     enhancedHeight,
     tier,
+    shareToken,
   }: {
     imageName: string;
     description: string | null;
@@ -79,6 +80,7 @@ vi.mock("./SharePageClient", () => ({
     enhancedWidth: number | null;
     enhancedHeight: number | null;
     tier: string;
+    shareToken: string;
   }) => (
     <div data-testid="share-page-client">
       <span data-testid="image-name">{imageName}</span>
@@ -88,6 +90,7 @@ vi.mock("./SharePageClient", () => ({
       <span data-testid="enhanced-width">{enhancedWidth}</span>
       <span data-testid="enhanced-height">{enhancedHeight}</span>
       <span data-testid="tier">{tier}</span>
+      <span data-testid="share-token">{shareToken}</span>
     </div>
   ),
 }));
@@ -128,6 +131,7 @@ describe("SharePage", () => {
       expect(screen.getByTestId("enhanced-width")).toHaveTextContent("2048");
       expect(screen.getByTestId("enhanced-height")).toHaveTextContent("1152");
       expect(screen.getByTestId("tier")).toHaveTextContent("TIER_2K");
+      expect(screen.getByTestId("share-token")).toHaveTextContent("abc123");
     });
 
     it("increments view count when image is loaded", async () => {
