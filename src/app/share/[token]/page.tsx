@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { SharePageClient } from "./SharePageClient";
 
 interface SharePageProps {
-  params: Promise<{ token: string }>;
+  params: Promise<{ token: string; }>;
 }
 
 async function getImageByShareToken(token: string) {
