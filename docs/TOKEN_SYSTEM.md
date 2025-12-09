@@ -21,15 +21,18 @@
 
 ## Token Overview
 
-**Tokens** are the primary currency on the Spike Land platform, used to pay for premium features like image enhancement.
+**Tokens** are the primary currency on the Spike Land platform. Every Spike Land user has a single token balance that can be spent across any app on the platform. Apps built on Spike Land consume these platform tokens to provide premium features.
+
+Currently, the **Pixel** image enhancement app uses tokens to pay for AI-powered image enhancements. As more apps are added to the platform, they will all share this same token economy.
 
 ### Key Characteristics
 
-- **Currency**: One token = one unit of purchasing power
+- **Platform Currency**: Tokens belong to your Spike Land account, not to individual apps
+- **Cross-App Usage**: One token balance works across all apps on the platform
 - **Non-transferable**: Cannot be gifted between users
 - **Non-refundable**: Consumed tokens cannot be recovered (except on service failure)
 - **Expiration**: Free regenerated tokens expire after 30 days if unused
-- **Account-Specific**: Each user maintains separate token balance
+- **Account-Specific**: Each user maintains a single platform-wide token balance
 
 ### Token Balance Limits
 
@@ -600,7 +603,9 @@ Users can export transaction history as:
 
 ### Pricing Model
 
-**Tokens are the primary pricing mechanism** for premium features.
+**Tokens are the platform's universal currency** for premium features across all apps.
+
+### Current Token Costs (Pixel App)
 
 **Image Enhancement Costs**:
 
@@ -643,27 +648,47 @@ For Professional Pack (500 tokens, £19.99):
 
 ## Implementation Files
 
-**Database Models**:
+### Platform Token Infrastructure
+
+**Database Models** (Platform-Level):
 
 - `prisma/schema.prisma` - UserTokenBalance, TokenTransaction, Subscription
+- These models are platform infrastructure, not app-specific
 
-**Token Management**:
+**Token Management** (Platform-Level):
 
-- `src/lib/tokens/balance-manager.ts` - Token operations
+- `src/lib/tokens/balance-manager.ts` - Token operations (used by all apps)
 - `src/lib/tokens/regeneration.ts` - Automatic regeneration logic
 - `src/lib/tokens/costs.ts` - Cost configuration
 
-**API Endpoints**:
+**API Endpoints** (Platform-Level):
 
-- `src/app/api/tokens/balance/route.ts` - Balance query
+- `src/app/api/tokens/balance/route.ts` - Balance query (platform API)
 - `src/app/api/stripe/checkout/route.ts` - Payment session creation
 - `src/app/api/stripe/webhook/route.ts` - Stripe event handling
 
-**Frontend Components**:
+**Frontend Components** (Shared):
 
 - `src/components/tokens/balance-display.tsx` - Balance widget
 - `src/components/tokens/purchase-modal.tsx` - Token purchase UI
 - `src/app/settings/tokens/page.tsx` - Token management page
+
+### How Apps Consume Tokens
+
+Apps on Spike Land consume tokens by calling `TokenBalanceManager`:
+
+```typescript
+// App requests token consumption
+await TokenBalanceManager.consumeTokens({
+  userId: user.id,
+  amount: tokenCost,
+  type: "SPEND_ENHANCEMENT",
+  source: "pixel_app",
+  sourceId: jobId,
+});
+```
+
+This architecture allows any future app to use the same token system.
 
 ---
 
