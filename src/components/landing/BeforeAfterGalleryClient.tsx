@@ -6,7 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import type { GalleryItem } from "./gallery-fallback-data";
 
-const categories = [
+// Category tab type - exported for use by server component
+export interface CategoryTab {
+  value: string;
+  label: string;
+}
+
+// Default categories for fallback
+const DEFAULT_CATEGORIES: CategoryTab[] = [
   { value: "all", label: "All" },
   { value: "portrait", label: "Portrait" },
   { value: "landscape", label: "Landscape" },
@@ -16,10 +23,14 @@ const categories = [
 
 interface BeforeAfterGalleryClientProps {
   items: GalleryItem[];
+  categories?: CategoryTab[];
 }
 
-export function BeforeAfterGalleryClient({ items }: BeforeAfterGalleryClientProps) {
+export function BeforeAfterGalleryClient({ items, categories }: BeforeAfterGalleryClientProps) {
   const [activeCategory, setActiveCategory] = useState("all");
+
+  // Use passed categories or fallback to defaults
+  const categoryTabs = categories || DEFAULT_CATEGORIES;
 
   const filteredItems = activeCategory === "all"
     ? items
@@ -44,14 +55,14 @@ export function BeforeAfterGalleryClient({ items }: BeforeAfterGalleryClientProp
           className="mx-auto max-w-6xl"
         >
           <TabsList className="mx-auto mb-8 flex w-fit">
-            {categories.map(category => (
+            {categoryTabs.map(category => (
               <TabsTrigger key={category.value} value={category.value}>
                 {category.label}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {categories.map(category => (
+          {categoryTabs.map(category => (
             <TabsContent key={category.value} value={category.value}>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {(category.value === "all" ? items : filteredItems).map(item => (

@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
+import { BeforeAfterGalleryClient, type CategoryTab } from "./BeforeAfterGalleryClient";
 import { FALLBACK_GALLERY_ITEMS, type GalleryItem } from "./gallery-fallback-data";
 
 // Type-safe category mapping from database enum to frontend type
@@ -8,6 +8,14 @@ const CATEGORY_MAP: Record<string, GalleryItem["category"]> = {
   LANDSCAPE: "landscape",
   PRODUCT: "product",
   ARCHITECTURE: "architecture",
+};
+
+// Human-readable labels for categories
+const CATEGORY_LABELS: Record<string, string> = {
+  portrait: "Portrait",
+  landscape: "Landscape",
+  product: "Product",
+  architecture: "Architecture",
 };
 
 export async function BeforeAfterGallery() {
@@ -48,5 +56,15 @@ export async function BeforeAfterGallery() {
     galleryItems = FALLBACK_GALLERY_ITEMS;
   }
 
-  return <BeforeAfterGalleryClient items={galleryItems} />;
+  // Extract unique categories from items and build dynamic tabs
+  const uniqueCategories = [...new Set(galleryItems.map(item => item.category))];
+  const categories: CategoryTab[] = [
+    { value: "all", label: "All" },
+    ...uniqueCategories.map(cat => ({
+      value: cat,
+      label: CATEGORY_LABELS[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
+    })),
+  ];
+
+  return <BeforeAfterGalleryClient items={galleryItems} categories={categories} />;
 }
