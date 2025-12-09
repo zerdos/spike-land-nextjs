@@ -30,21 +30,6 @@ vi.mock("next/image", () => ({
   },
 }));
 
-// Mock ExportButton component
-vi.mock("./ExportButton", () => ({
-  ExportButton: ({
-    imageUrl,
-    fileName,
-  }: {
-    imageUrl: string;
-    fileName: string;
-  }) => (
-    <button data-testid="export-button" data-url={imageUrl} data-filename={fileName}>
-      Export
-    </button>
-  ),
-}));
-
 // Mock BulkDeleteDialog component
 vi.mock("./BulkDeleteDialog", () => ({
   BulkDeleteDialog: ({
@@ -211,30 +196,6 @@ describe("VersionGrid Component", () => {
     expect(cards[1]?.className).not.toContain("ring-2");
   });
 
-  it("shows export button for completed versions", () => {
-    const versions = [createMockVersion({ status: "COMPLETED" })];
-
-    render(<VersionGrid versions={versions} />);
-
-    expect(screen.getByTestId("export-button")).toBeInTheDocument();
-  });
-
-  it("does not show export button for processing versions", () => {
-    const versions = [createMockVersion({ status: "PROCESSING" })];
-
-    render(<VersionGrid versions={versions} />);
-
-    expect(screen.queryByTestId("export-button")).not.toBeInTheDocument();
-  });
-
-  it("does not show export button for failed versions", () => {
-    const versions = [createMockVersion({ status: "FAILED" })];
-
-    render(<VersionGrid versions={versions} />);
-
-    expect(screen.queryByTestId("export-button")).not.toBeInTheDocument();
-  });
-
   it("shows processing state with spinner", () => {
     const versions = [createMockVersion({ status: "PROCESSING" })];
 
@@ -336,22 +297,6 @@ describe("VersionGrid Component", () => {
     expect(screen.getByText("Image failed to load")).toBeInTheDocument();
   });
 
-  it("renders export button with correct props", () => {
-    const versions = [
-      createMockVersion({
-        id: "version-1",
-        tier: "TIER_2K",
-        enhancedUrl: "https://example.com/enhanced-2k.jpg",
-      }),
-    ];
-
-    render(<VersionGrid versions={versions} />);
-
-    const exportButton = screen.getByTestId("export-button");
-    expect(exportButton).toHaveAttribute("data-url", "https://example.com/enhanced-2k.jpg");
-    expect(exportButton).toHaveAttribute("data-filename", "enhanced-2K-version-1.jpg");
-  });
-
   it("renders multiple versions with different statuses", () => {
     const versions = [
       createMockVersion({ id: "version-1", status: "COMPLETED" }),
@@ -364,7 +309,6 @@ describe("VersionGrid Component", () => {
     expect(screen.getAllByTestId("next-image")).toHaveLength(1); // Only completed shows image
     expect(screen.getByText("Processing...")).toBeInTheDocument();
     expect(screen.getByText("Enhancement Failed")).toBeInTheDocument();
-    expect(screen.getByTestId("export-button")).toBeInTheDocument(); // Only for completed
   });
 
   it("handles version selection with onVersionSelect callback", () => {

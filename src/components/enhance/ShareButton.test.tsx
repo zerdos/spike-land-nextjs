@@ -77,7 +77,7 @@ describe("ShareButton Component", () => {
       ok: true,
       json: async () => ({
         shareToken: "abc123",
-        shareUrl: "https://pixel.spike.land/share/abc123",
+        shareUrl: "https://spike.land/share/abc123",
       }),
     } as Response);
 
@@ -110,7 +110,7 @@ describe("ShareButton Component", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/existing-token"))
+      expect(screen.getByDisplayValue("https://spike.land/share/existing-token"))
         .toBeInTheDocument();
     });
 
@@ -122,7 +122,7 @@ describe("ShareButton Component", () => {
       ok: true,
       json: async () => ({
         shareToken: "new-token",
-        shareUrl: "https://pixel.spike.land/share/new-token",
+        shareUrl: "https://spike.land/share/new-token",
       }),
     } as Response);
 
@@ -144,7 +144,7 @@ describe("ShareButton Component", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/new-token"))
+      expect(screen.getByDisplayValue("https://spike.land/share/new-token"))
         .toBeInTheDocument();
     });
   });
@@ -175,7 +175,7 @@ describe("ShareButton Component", () => {
       ok: true,
       json: async () => ({
         shareToken: "new-token",
-        shareUrl: "https://pixel.spike.land/share/new-token",
+        shareUrl: "https://spike.land/share/new-token",
       }),
     } as Response);
 
@@ -243,7 +243,7 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/test-token"))
+      expect(screen.getByDisplayValue("https://spike.land/share/test-token"))
         .toBeInTheDocument();
     });
 
@@ -251,7 +251,7 @@ describe("ShareButton Component", () => {
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(mockWriteText).toHaveBeenCalledWith("https://pixel.spike.land/share/test-token");
+      expect(mockWriteText).toHaveBeenCalledWith("https://spike.land/share/test-token");
     });
 
     expect(toast.success).toHaveBeenCalledWith("Link copied to clipboard!");
@@ -272,7 +272,7 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/test-token"))
+      expect(screen.getByDisplayValue("https://spike.land/share/test-token"))
         .toBeInTheDocument();
     });
 
@@ -310,7 +310,7 @@ describe("ShareButton Component", () => {
     );
     expect(twitterLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://pixel.spike.land/share/test-token")),
+      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
     );
     expect(twitterLink).toHaveAttribute(
       "href",
@@ -323,13 +323,13 @@ describe("ShareButton Component", () => {
     );
     expect(facebookLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://pixel.spike.land/share/test-token")),
+      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
     );
 
     expect(whatsappLink).toHaveAttribute("href", expect.stringContaining("wa.me"));
     expect(whatsappLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://pixel.spike.land/share/test-token")),
+      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
     );
   });
 
@@ -381,7 +381,7 @@ describe("ShareButton Component", () => {
     await user.click(shareButton);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/test-token"))
+      expect(screen.getByDisplayValue("https://spike.land/share/test-token"))
         .toBeInTheDocument();
     });
 
@@ -406,7 +406,7 @@ describe("ShareButton Component", () => {
       ok: true,
       json: async () => ({
         shareToken: "abc123",
-        shareUrl: "https://pixel.spike.land/share/abc123",
+        shareUrl: "https://spike.land/share/abc123",
       }),
     } as Response);
 
@@ -422,7 +422,7 @@ describe("ShareButton Component", () => {
 
     fireEvent.click(button);
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/abc123")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("https://spike.land/share/abc123")).toBeInTheDocument();
     });
 
     const closeButton = screen.getByRole("button", { name: /Close/i });
@@ -434,7 +434,7 @@ describe("ShareButton Component", () => {
 
     fireEvent.click(button);
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://pixel.spike.land/share/abc123")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("https://spike.land/share/abc123")).toBeInTheDocument();
     });
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -458,7 +458,7 @@ describe("ShareButton Component", () => {
       ok: true,
       json: async () => ({
         shareToken: "abc123",
-        shareUrl: "https://pixel.spike.land/share/abc123",
+        shareUrl: "https://spike.land/share/abc123",
       }),
     } as Response);
 
@@ -492,7 +492,7 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      const input = screen.getByDisplayValue("https://pixel.spike.land/share/test-token");
+      const input = screen.getByDisplayValue("https://spike.land/share/test-token");
       expect(input).toHaveAttribute("readonly");
     });
   });
