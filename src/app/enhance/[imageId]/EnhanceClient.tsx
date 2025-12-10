@@ -126,6 +126,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         retryCount: 0,
         maxRetries: 3,
         geminiPrompt: null,
+        geminiModel: null,
+        geminiTemp: null,
         workflowRunId: null,
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -1,4 +1,4 @@
-import { enhanceImageWithGemini } from "@/lib/ai/gemini-client";
+import { DEFAULT_MODEL, DEFAULT_TEMPERATURE, enhanceImageWithGemini } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -257,6 +257,8 @@ async function updateJobStatus(
           enhancedHeight: data.height,
           enhancedSizeBytes: data.sizeBytes,
           processingCompletedAt: new Date(),
+          geminiModel: DEFAULT_MODEL,
+          geminiTemp: DEFAULT_TEMPERATURE,
         }
         : {}),
       ...(status === "FAILED" && data?.errorMessage
