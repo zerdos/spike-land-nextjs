@@ -87,6 +87,8 @@ The backend processes the image through the enhancement pipeline.
    - Padded image is sent to Google Gemini API
    - AI performs upscaling and quality enhancement
    - Output is generated at selected tier resolution
+   - Timeout protection: 120 seconds for 4K tier (prevents stuck jobs)
+   - Automatic token refund on timeout or failure
 
 3. **Aspect Ratio Restoration**
    - Gemini output is cropped to remove padding
@@ -573,6 +575,64 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 
 ---
 
+## Job Management & Reliability
+
+### Timeout Handling
+
+To ensure jobs don't get stuck indefinitely, the system implements timeout protection:
+
+**Timeout Configuration:**
+- TIER_1K: 60 seconds (default)
+- TIER_2K: 90 seconds (default)
+- TIER_4K: 120 seconds (120000ms) - Extended for larger processing
+
+**Timeout Behavior:**
+1. Job exceeds timeout threshold
+2. Job status set to FAILED
+3. Error message: "Enhancement timed out"
+4. Tokens automatically refunded to user
+5. Admin notification logged
+
+**Monitoring:**
+- Admin dashboard shows timeout statistics
+- Jobs dashboard (`/admin/jobs`) displays timeout errors
+- Automatic alerting for high timeout rates
+
+### Job Cleanup System
+
+Automatic cleanup maintains system performance:
+
+**Cleanup Schedule:**
+- Runs daily via cron job
+- Removes old completed/failed jobs (>30 days)
+- Preserves job metadata for analytics
+- Prevents database bloat
+
+**Cleanup Actions:**
+1. Archive old job records
+2. Remove temporary processing files
+3. Update statistics aggregates
+4. Generate cleanup reports
+
+### Admin Job Dashboard
+
+Comprehensive job management interface at `/admin/jobs`:
+
+**Features:**
+- Real-time job queue monitoring
+- Filter by status (PENDING, PROCESSING, COMPLETED, FAILED)
+- Search by user email or job ID
+- Retry failed jobs manually
+- View detailed error logs
+- Export job statistics
+
+**Access Control:**
+- SUPER_ADMIN role required
+- Audit logging of all admin actions
+- Protected API endpoints
+
+---
+
 ## File Locations
 
 **Implementation**:
@@ -582,6 +642,13 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 - Token manager: `src/lib/tokens/balance-manager.ts`
 - R2 client: `src/lib/storage/r2-client.ts`
 - Gemini client: `src/lib/ai/gemini-client.ts`
+- Admin jobs dashboard: `src/app/admin/jobs/page.tsx`
+
+**Image Enhancement Pages**:
+
+- Main app: `src/app/apps/images/` (formerly `/enhance`, then `/pixel`)
+- Album management: `src/app/albums/`
+- Pricing page: `src/app/pricing/`
 
 **Database**:
 
@@ -603,3 +670,5 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 - Scheduled enhancement jobs
 - Enhancement templates and presets
 - Team/workspace image sharing
+- Enhanced retry logic with exponential backoff
+- Job priority queuing
