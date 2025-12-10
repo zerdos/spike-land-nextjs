@@ -13,7 +13,7 @@
  * - Uses in-process execution instead of isolated steps
  */
 
-import { enhanceImageWithGemini } from "@/lib/ai/gemini-client";
+import { DEFAULT_MODEL, DEFAULT_TEMPERATURE, enhanceImageWithGemini } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -154,6 +154,8 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
         enhancedHeight: finalMetadata.height || targetHeight,
         enhancedSizeBytes: finalBuffer.length,
         processingCompletedAt: new Date(),
+        geminiModel: DEFAULT_MODEL,
+        geminiTemp: DEFAULT_TEMPERATURE,
       },
     });
 

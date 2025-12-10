@@ -1,7 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Configuration constants
-const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+// Configuration constants - exported for job metadata tracking
+export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 let genAI: GoogleGenAI | null = null;
 
