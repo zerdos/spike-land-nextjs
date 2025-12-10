@@ -185,6 +185,11 @@ Pixel is the AI-powered image enhancement app that serves as the showcase applic
 - [x] Token economy analytics (purchases, spend, burn rate)
 - [x] System health monitoring (job queue, failure rates)
 - [x] Admin tools (user search, voucher creation)
+- [x] Jobs management dashboard (/admin/jobs)
+- [x] Featured gallery system (FeaturedGalleryItem model)
+- [x] Feedback collection system (bug reports, ideas)
+- [x] Gemini API timeout handling (120s for 4K jobs)
+- [x] Job cleanup cron system
 - [x] Legal pages (Terms, Privacy, Contact)
 - [x] Email infrastructure (Resend integration)
 
