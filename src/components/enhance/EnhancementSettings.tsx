@@ -15,6 +15,7 @@ interface EnhancementSettingsProps {
   isProcessing: boolean;
   completedVersions: Array<{ tier: EnhancementTier; url: string; }>;
   onBalanceRefresh?: () => void;
+  asCard?: boolean;
 }
 
 const TIER_INFO = {
@@ -29,6 +30,7 @@ export function EnhancementSettings({
   isProcessing,
   completedVersions,
   onBalanceRefresh,
+  asCard = true,
 }: EnhancementSettingsProps) {
   const [selectedTier, setSelectedTier] = useState<EnhancementTier>("TIER_2K");
 
@@ -43,16 +45,9 @@ export function EnhancementSettings({
   const tierCost = TIER_INFO[selectedTier].cost;
   const hasEnoughTokens = currentBalance >= tierCost;
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Enhancement Settings</CardTitle>
-        <CardDescription>
-          Choose the quality tier for AI enhancement
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Current Balance Display */}
+  const content = (
+    <div className="space-y-6">
+      {asCard && (
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-yellow-500" />
@@ -60,31 +55,33 @@ export function EnhancementSettings({
           </div>
           <span className="text-lg font-bold">{currentBalance} tokens</span>
         </div>
+      )}
 
-        {/* Insufficient Balance Warning */}
-        {!hasEnoughTokens && (
-          <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-            <div className="flex items-start gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-destructive">Insufficient Tokens</p>
-                <p className="text-sm text-muted-foreground">
-                  You need {tierCost} tokens but only have {currentBalance}
-                </p>
-              </div>
+      {!hasEnoughTokens && (
+        <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+          <div className="flex items-start gap-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-destructive">Insufficient Tokens</p>
+              <p className="text-sm text-muted-foreground">
+                You need {tierCost} tokens but only have {currentBalance}
+              </p>
             </div>
-            <PurchaseModal
-              trigger={
-                <Button size="sm" variant="destructive" className="w-full mt-2">
-                  <Coins className="mr-2 h-4 w-4" />
-                  Get Tokens
-                </Button>
-              }
-              onPurchaseComplete={onBalanceRefresh}
-            />
           </div>
-        )}
+          <PurchaseModal
+            trigger={
+              <Button size="sm" variant="destructive" className="w-full mt-2">
+                <Coins className="mr-2 h-4 w-4" />
+                Get Tokens
+              </Button>
+            }
+            onPurchaseComplete={onBalanceRefresh}
+          />
+        </div>
+      )}
 
+      <div>
+        {!asCard && <h3 className="text-sm font-medium mb-3">Enhancement Settings</h3>}
         <RadioGroup
           value={selectedTier}
           onValueChange={(value) => setSelectedTier(value as EnhancementTier)}
@@ -103,7 +100,6 @@ export function EnhancementSettings({
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-medium">{info.label}</p>
-                      <p className="text-sm text-muted-foreground">{info.description}</p>
                     </div>
                     <p className="text-sm font-medium">
                       {info.cost} tokens
@@ -115,33 +111,51 @@ export function EnhancementSettings({
             );
           })}
         </RadioGroup>
+      </div>
 
-        {versionExists && (
-          <p className="text-sm text-muted-foreground">
-            Note: A {TIER_INFO[selectedTier].label}{" "}
-            version already exists. Creating another will use additional tokens.
-          </p>
-        )}
+      {versionExists && (
+        <p className="text-sm text-muted-foreground">
+          Note: A {TIER_INFO[selectedTier].label}{" "}
+          version already exists. Creating another will use additional tokens.
+        </p>
+      )}
 
-        <Button
-          onClick={handleEnhance}
-          disabled={isProcessing || currentBalance < TIER_INFO[selectedTier].cost}
-          className="w-full"
-        >
-          {isProcessing
-            ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enhancing...
-              </>
-            )
-            : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Enhance Image ({TIER_INFO[selectedTier].cost} tokens)
-              </>
-            )}
-        </Button>
+      <Button
+        onClick={handleEnhance}
+        disabled={isProcessing || currentBalance < TIER_INFO[selectedTier].cost}
+        className="w-full"
+      >
+        {isProcessing
+          ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enhancing...
+            </>
+          )
+          : (
+            <>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Enhance Image ({TIER_INFO[selectedTier].cost} tokens)
+            </>
+          )}
+      </Button>
+    </div>
+  );
+
+  if (!asCard) {
+    return content;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Enhancement Settings</CardTitle>
+        <CardDescription>
+          Choose the quality tier for AI enhancement
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {content}
       </CardContent>
     </Card>
   );

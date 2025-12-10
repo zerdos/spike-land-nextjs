@@ -38,15 +38,12 @@ describe("EnhancementSettings Component", () => {
     render(<EnhancementSettings {...defaultProps} />);
 
     expect(screen.getByText("1K (1024px)")).toBeInTheDocument();
-    expect(screen.getByText("Fast, good for previews")).toBeInTheDocument();
     expect(screen.getByText("2 tokens")).toBeInTheDocument();
 
     expect(screen.getByText("2K (2048px)")).toBeInTheDocument();
-    expect(screen.getByText("Balanced quality and speed")).toBeInTheDocument();
     expect(screen.getByText("5 tokens")).toBeInTheDocument();
 
     expect(screen.getByText("4K (4096px)")).toBeInTheDocument();
-    expect(screen.getByText("Maximum quality")).toBeInTheDocument();
 
     const tokenLabels = screen.getAllByText(/\d+ tokens/);
     expect(tokenLabels.length).toBeGreaterThanOrEqual(3);
@@ -234,5 +231,61 @@ describe("EnhancementSettings Component", () => {
     });
 
     consoleErrorSpy.mockRestore();
+  });
+
+  describe("asCard prop", () => {
+    it("renders with Card wrapper by default", () => {
+      render(<EnhancementSettings {...defaultProps} />);
+
+      expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
+      expect(screen.getByText("Choose the quality tier for AI enhancement")).toBeInTheDocument();
+    });
+
+    it("renders with Card wrapper when asCard is true", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={true} />);
+
+      expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
+      expect(screen.getByText("Choose the quality tier for AI enhancement")).toBeInTheDocument();
+    });
+
+    it("renders without Card wrapper when asCard is false", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={false} />);
+
+      expect(screen.queryByText("Choose the quality tier for AI enhancement")).not
+        .toBeInTheDocument();
+      expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
+    });
+
+    it("hides balance display when asCard is false", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={false} />);
+
+      expect(screen.queryByText("Your Balance")).not.toBeInTheDocument();
+    });
+
+    it("shows balance display when asCard is true", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={true} />);
+
+      expect(screen.getByText("Your Balance")).toBeInTheDocument();
+    });
+
+    it("still shows tier options when asCard is false", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={false} />);
+
+      expect(screen.getByText("1K (1024px)")).toBeInTheDocument();
+      expect(screen.getByText("2K (2048px)")).toBeInTheDocument();
+      expect(screen.getByText("4K (4096px)")).toBeInTheDocument();
+    });
+
+    it("still shows enhance button when asCard is false", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={false} />);
+
+      expect(screen.getByRole("button", { name: /Enhance Image/i })).toBeInTheDocument();
+    });
+
+    it("still shows insufficient warning when asCard is false", () => {
+      render(<EnhancementSettings {...defaultProps} asCard={false} currentBalance={3} />);
+
+      expect(screen.getByText("Insufficient Tokens")).toBeInTheDocument();
+    });
   });
 });
