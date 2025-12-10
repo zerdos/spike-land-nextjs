@@ -1,4 +1,9 @@
-import { DeleteObjectCommand, GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 // Global type declaration for development caching
@@ -204,4 +209,88 @@ export function isR2Configured(): boolean {
     process.env.CLOUDFLARE_R2_ENDPOINT &&
     process.env.CLOUDFLARE_R2_PUBLIC_URL
   );
+}
+
+export interface StorageStats {
+  totalFiles: number;
+  totalSizeBytes: number;
+  averageSizeBytes: number;
+  byFileType: Record<string, { count: number; sizeBytes: number; }>;
+}
+
+export interface ListStorageResult {
+  success: boolean;
+  stats: StorageStats | null;
+  error?: string;
+}
+
+/**
+ * List all objects in R2 bucket and calculate storage statistics
+ */
+export async function listR2StorageStats(): Promise<ListStorageResult> {
+  try {
+    const client = getR2Client();
+    const bucket = getBucketName();
+
+    const stats: StorageStats = {
+      totalFiles: 0,
+      totalSizeBytes: 0,
+      averageSizeBytes: 0,
+      byFileType: {},
+    };
+
+    let continuationToken: string | undefined;
+    let hasMore = true;
+
+    // Paginate through all objects
+    while (hasMore) {
+      const command = new ListObjectsV2Command({
+        Bucket: bucket,
+        ContinuationToken: continuationToken,
+        MaxKeys: 1000,
+      });
+
+      const response = await client.send(command);
+
+      if (response.Contents) {
+        for (const object of response.Contents) {
+          const size = object.Size || 0;
+          stats.totalFiles++;
+          stats.totalSizeBytes += size;
+
+          // Extract file extension
+          const key = object.Key || "";
+          const ext = key.includes(".")
+            ? key.split(".").pop()?.toLowerCase() || "unknown"
+            : "unknown";
+
+          if (!stats.byFileType[ext]) {
+            stats.byFileType[ext] = { count: 0, sizeBytes: 0 };
+          }
+          stats.byFileType[ext].count++;
+          stats.byFileType[ext].sizeBytes += size;
+        }
+      }
+
+      continuationToken = response.NextContinuationToken;
+      hasMore = response.IsTruncated === true;
+    }
+
+    // Calculate average
+    if (stats.totalFiles > 0) {
+      stats.averageSizeBytes = Math.round(stats.totalSizeBytes / stats.totalFiles);
+    }
+
+    return {
+      success: true,
+      stats,
+    };
+  } catch (error) {
+    console.error("Error listing R2 storage:", error);
+    return {
+      success: false,
+      stats: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 }

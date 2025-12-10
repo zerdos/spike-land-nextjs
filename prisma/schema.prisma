@@ -38,6 +38,7 @@ model User {
   voucherRedemptions VoucherRedemption[]
   feedback           Feedback[]
   createdGalleryItems FeaturedGalleryItem[] @relation("GalleryItemCreator")
+  emailLogs          EmailLog[]
 
   @@map("users")
 }
@@ -561,6 +562,16 @@ enum GalleryCategory {
   ARCHITECTURE
 }
 
+enum EmailStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+}
+
 model FeaturedGalleryItem {
   id            String          @id @default(cuid())
   title         String
@@ -585,4 +596,26 @@ model FeaturedGalleryItem {
   @@index([isActive, sortOrder])
   @@index([isActive, category, sortOrder])
   @@map("featured_gallery_items")
+}
+
+model EmailLog {
+  id         String      @id @default(cuid())
+  userId     String
+  to         String
+  subject    String
+  template   String
+  status     EmailStatus @default(SENT)
+  resendId   String?     @unique
+  sentAt     DateTime    @default(now())
+  openedAt   DateTime?
+  clickedAt  DateTime?
+  bouncedAt  DateTime?
+  metadata   Json?
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([sentAt])
+  @@index([template])
+  @@map("email_logs")
 }

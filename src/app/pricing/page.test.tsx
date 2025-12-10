@@ -358,11 +358,24 @@ describe("PricingPage", () => {
     fireEvent.click(buyButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Processing...")).toBeDefined();
+      expect(screen.getByText("Redirecting to checkout...")).toBeDefined();
     });
 
     // Cleanup
     resolvePromise!({ url: "https://checkout.stripe.com/123" });
+  });
+
+  it("shows Loading text when session is loading", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "loading",
+    });
+
+    render(<PricingPage />);
+
+    const buyButton = screen.getByTestId("buy-button-starter");
+    expect(buyButton.textContent).toContain("Loading...");
+    expect(buyButton).toHaveProperty("disabled", true);
   });
 
   it("renders token packages grid with data-testid", () => {
