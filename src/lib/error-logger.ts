@@ -1,13 +1,16 @@
 /**
  * Error logging utility for tracking and reporting errors
- * Supports development logging and production error tracking (Sentry integration ready)
+ * Integrates with Sentry for production error tracking
  */
+
+import * as Sentry from "@sentry/nextjs";
 
 export interface ErrorContext {
   componentStack?: string;
   userId?: string;
   userEmail?: string;
   route?: string;
+  digest?: string;
   [key: string]: unknown;
 }
 
@@ -57,17 +60,47 @@ class ErrorLogger {
   }
 
   /**
-   * Send error to external tracking service (Sentry, LogRocket, etc.)
+   * Send error to external tracking service (Sentry)
    */
-  private sendToErrorTracking(_error: Error, errorInfo: Record<string, unknown>): void {
-    // This is where you would integrate with Sentry or other services
-    // For now, we'll just console.error in production as a fallback
+  private sendToErrorTracking(error: Error, errorInfo: Record<string, unknown>): void {
     if (this.config.sentryDsn) {
-      // Future: Initialize and use Sentry SDK
-      // Sentry.captureException(_error, { contexts: { errorInfo } });
-      console.error("[ErrorLogger] Error would be sent to Sentry:", errorInfo);
+      try {
+        // Set user context if available
+        if (errorInfo.userId || errorInfo.userEmail) {
+          Sentry.setUser({
+            id: errorInfo.userId as string | undefined,
+            email: errorInfo.userEmail as string | undefined,
+          });
+        }
+
+        // Set additional context
+        Sentry.setContext("errorInfo", {
+          timestamp: errorInfo.timestamp,
+          route: errorInfo.route,
+          digest: errorInfo.digest,
+          componentStack: errorInfo.componentStack,
+        });
+
+        // Set tags for better filtering in Sentry
+        if (errorInfo.route) {
+          Sentry.setTag("route", errorInfo.route as string);
+        }
+        if (errorInfo.digest) {
+          Sentry.setTag("digest", errorInfo.digest as string);
+        }
+
+        // Capture the exception
+        Sentry.captureException(error);
+
+        console.error("[ErrorLogger] Error sent to Sentry:", errorInfo.message);
+      } catch (sentryError) {
+        // Fallback if Sentry fails
+        console.error("[ErrorLogger] Failed to send error to Sentry:", sentryError);
+        console.error("[ErrorLogger] Original error:", errorInfo);
+      }
     } else {
-      console.error("[ErrorLogger] Production error:", errorInfo);
+      // Fallback to console if Sentry not configured
+      console.error("[ErrorLogger] Production error (Sentry not configured):", errorInfo);
     }
   }
 

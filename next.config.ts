@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import { withWorkflow } from "workflow/next";
 
@@ -51,7 +52,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com",
+      "connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://*.ingest.sentry.io",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -90,4 +91,32 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withWorkflow(nextConfig);
+// Sentry configuration options
+// @see https://github.com/getsentry/sentry-webpack-plugin#options
+const sentryWebpackPluginOptions = {
+  // Only upload source maps if auth token is available
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Suppress source map upload logs during build
+  silent: true,
+
+  // Organization and project names from Sentry
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Only upload source maps in production
+  disableServerWebpackPlugin: process.env.NODE_ENV !== "production",
+  disableClientWebpackPlugin: process.env.NODE_ENV !== "production",
+
+  // Hide source maps from public (security best practice)
+  hideSourceMaps: true,
+
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+};
+
+// Apply Sentry wrapper only if DSN is configured
+const configWithWorkflow = withWorkflow(nextConfig);
+export default process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
+  ? withSentryConfig(configWithWorkflow, sentryWebpackPluginOptions)
+  : configWithWorkflow;
