@@ -1,6 +1,7 @@
 "use client";
 
 import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
+import { EnhancementHistoryScroll } from "@/components/enhance/EnhancementHistoryScroll";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ExportSelector } from "@/components/enhance/export-selector";
 import { ShareButton } from "@/components/enhance/ShareButton";
@@ -166,10 +167,11 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       throw new Error(error.error || "Failed to cancel job");
     }
 
+    // Remove the cancelled job from the UI (since users don't see cancelled jobs)
     setImage((prev: ImageWithJobs) => ({
       ...prev,
-      enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
-        job.id === jobId ? { ...job, status: "CANCELLED" as const } : job
+      enhancementJobs: prev.enhancementJobs.filter(
+        (job: ImageEnhancementJob) => job.id !== jobId,
       ),
     }));
 
@@ -260,7 +262,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/enhance")}
+          onClick={() => router.push("/pixel")}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -306,10 +308,11 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Enhancement Versions</CardTitle>
+              <CardTitle>Enhancement History</CardTitle>
             </CardHeader>
             <CardContent>
-              <VersionGrid
+              {/* Horizontal scroll view */}
+              <EnhancementHistoryScroll
                 versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
                   id: job.id,
                   tier: job.tier,
@@ -324,9 +327,31 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                 onVersionSelect={setSelectedVersionId}
                 onJobCancel={handleJobCancel}
                 onJobDelete={handleJobDelete}
-                onBulkDelete={handleBulkDelete}
-                enableBulkSelect={true}
               />
+
+              {/* Grid view for detailed management */}
+              {image.enhancementJobs.length > 0 && (
+                <div className="mt-6 pt-6 border-t">
+                  <VersionGrid
+                    versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
+                      id: job.id,
+                      tier: job.tier,
+                      enhancedUrl: job.enhancedUrl || "",
+                      width: job.enhancedWidth || 0,
+                      height: job.enhancedHeight || 0,
+                      createdAt: job.createdAt,
+                      status: job.status,
+                      sizeBytes: job.enhancedSizeBytes,
+                    }))}
+                    selectedVersionId={selectedVersionId || undefined}
+                    onVersionSelect={setSelectedVersionId}
+                    onJobCancel={handleJobCancel}
+                    onJobDelete={handleJobDelete}
+                    onBulkDelete={handleBulkDelete}
+                    enableBulkSelect={true}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

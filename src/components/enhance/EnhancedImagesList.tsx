@@ -110,7 +110,7 @@ export function EnhancedImagesList({
 
           return (
             <div key={image.id} className="group relative">
-              <Link href={`/enhance/${image.id}`}>
+              <Link href={`/pixel/${image.id}`}>
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted/50 cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-primary/30">
                   <Image
                     src={image.originalUrl}
@@ -142,7 +142,7 @@ export function EnhancedImagesList({
                     className="h-7 px-2 text-xs"
                     disabled={isDeleting}
                   >
-                    <Link href={`/enhance/${image.id}`}>
+                    <Link href={`/pixel/${image.id}`}>
                       {image.enhancementJobs.length > 0 ? "View" : "Enhance"}
                     </Link>
                   </Button>

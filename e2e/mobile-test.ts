@@ -98,7 +98,7 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
 
     // Test 2: Enhancement Page (requires auth, so just check redirect)
     console.log(`\n[${deviceName}] Testing Enhancement Page (unauthenticated)...`);
-    await page.goto(`${BASE_URL}/enhance`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE_URL}/pixel`, { waitUntil: "networkidle" });
 
     const enhanceScreenshot = `${deviceName.replace(/\s/g, "-")}-enhance.png`;
     await page.screenshot({

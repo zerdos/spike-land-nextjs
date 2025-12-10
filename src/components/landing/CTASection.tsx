@@ -20,7 +20,7 @@ export function CTASection() {
             variant="secondary"
             className="text-base font-semibold shadow-xl"
           >
-            <Link href="/enhance">
+            <Link href="/pixel">
               <Rocket className="mr-2 h-5 w-5" />
               Start Enhancing Free
               <ArrowRight className="ml-2 h-5 w-5" />

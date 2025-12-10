@@ -38,7 +38,7 @@ describe("sitemap", () => {
     const result = sitemap();
     const urls = result.map((entry) => entry.url);
 
-    expect(urls).toContain("https://spike.land/enhance");
+    expect(urls).toContain("https://spike.land/pixel");
     expect(urls).toContain("https://spike.land/albums");
     expect(urls).toContain("https://spike.land/my-apps");
     expect(urls).toContain("https://spike.land/my-apps/new");

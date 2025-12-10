@@ -61,7 +61,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
           </p>
         </div>
         <Button asChild>
-          <Link href="/enhance">
+          <Link href="/pixel">
             <Upload className="mr-2 h-4 w-4" />
             Upload Image
           </Link>
@@ -78,7 +78,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
                 Upload your first image to get started with AI enhancement
               </p>
               <Button asChild>
-                <Link href="/enhance">
+                <Link href="/pixel">
                   <Upload className="mr-2 h-4 w-4" />
                   Upload Image
                 </Link>
@@ -120,7 +120,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
                   <CardContent className="space-y-2">
                     <div className="flex gap-2">
                       <Button asChild className="flex-1">
-                        <Link href={`/enhance/${image.id}`}>
+                        <Link href={`/pixel/${image.id}`}>
                           <Sparkles className="mr-2 h-4 w-4" />
                           {hasEnhancement ? "View" : "Enhance"}
                         </Link>

@@ -56,13 +56,13 @@ Feature: Batch Image Operations
 
   Scenario: View batch uploaded images in list
     Given I have uploaded 5 images in a batch
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should see all 5 images in the images list
     And images should be sorted by upload date
 
   Scenario: Select multiple images for batch enhancement
     Given I have uploaded multiple images
-    When I visit "/enhance"
+    When I visit "/pixel"
     And I select 3 images using checkboxes
     Then I should see "3 selected" indicator
     And I should see "Enhance Selected" button
@@ -149,7 +149,7 @@ Feature: Batch Image Operations
 
   Scenario: Resume failed batch enhancements
     Given I had a batch enhancement that partially failed
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should see which images failed
     And I should see "Retry Failed" button
     When I click "Retry Failed" button
@@ -157,7 +157,7 @@ Feature: Batch Image Operations
 
   Scenario: View batch enhancement history
     Given I have completed several batch enhancements
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should see batch enhancement completion times
     And I should see which images were processed together
 

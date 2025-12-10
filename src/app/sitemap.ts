@@ -64,7 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Protected Pages (visible to search engines, auth required to use)
     {
-      url: `${BASE_URL}/enhance`,
+      url: `${BASE_URL}/pixel`,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 0.9,

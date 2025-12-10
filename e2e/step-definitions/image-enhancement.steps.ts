@@ -119,7 +119,7 @@ Given("I am on the enhance page", async function(this: CustomWorld) {
   const worldWithBalance = this as CustomWorld & { desiredTokenBalance?: number; };
   const tokenBalance = worldWithBalance.desiredTokenBalance ?? 10;
   await mockTokenBalance(this, tokenBalance);
-  await this.page.goto(`${this.baseUrl}/enhance`);
+  await this.page.goto(`${this.baseUrl}/pixel`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -134,7 +134,7 @@ Given("I have an uploaded image", async function(this: CustomWorld) {
   });
 
   await mockTokenBalance(this, 10);
-  await this.page.goto(`${this.baseUrl}/enhance/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -150,7 +150,7 @@ Given("I have an enhanced image", async function(this: CustomWorld) {
   }, imageWithEnhancement);
 
   await mockTokenBalance(this, 10);
-  await this.page.goto(`${this.baseUrl}/enhance/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -169,7 +169,7 @@ Given("I have multiple enhancement versions", async function(this: CustomWorld) 
   }, imageWithMultipleVersions);
 
   await mockTokenBalance(this, 20);
-  await this.page.goto(`${this.baseUrl}/enhance/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -344,7 +344,7 @@ When("I start uploading an image", async function(this: CustomWorld) {
 });
 
 When("I visit the image enhancement page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/enhance/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -454,13 +454,13 @@ When("the job is processing", async function(this: CustomWorld) {
 
 When("I try to access that image's enhancement page", async function(this: CustomWorld) {
   // Try to access another user's image
-  await this.page.goto(`${this.baseUrl}/enhance/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
 When("I return from successful Stripe checkout", async function(this: CustomWorld) {
   await this.page.goto(
-    `${this.baseUrl}/enhance/${mockImageId}?success=true&session_id=cs_test_123`,
+    `${this.baseUrl}/pixel/${mockImageId}?success=true&session_id=cs_test_123`,
   );
   await this.page.waitForLoadState("networkidle");
 });
@@ -503,10 +503,10 @@ Then("I should see upload error {string}", async function(this: CustomWorld, err
 
 Then("I should be redirected to the image enhancement page", async function(this: CustomWorld) {
   // Wait for navigation to complete
-  await this.page.waitForURL(/\/enhance\//, { timeout: 10000 }).catch(() => {
+  await this.page.waitForURL(/\/pixel\//, { timeout: 10000 }).catch(() => {
     // If navigation didn't happen, fail with current URL
     const url = this.page.url();
-    expect(url).toContain("/enhance/");
+    expect(url).toContain("/pixel/");
   });
 });
 

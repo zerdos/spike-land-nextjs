@@ -144,7 +144,7 @@ When("I visit each main page", async function(this: CustomWorld) {
   const pages = [
     "/",
     "/pricing",
-    "/enhance",
+    "/pixel",
     "/settings",
     "/my-apps",
   ];

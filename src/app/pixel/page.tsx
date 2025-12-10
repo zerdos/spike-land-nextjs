@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { EnhancePageClient } from "./EnhancePageClient";
 
-export default async function EnhancePage() {
+export default async function PixelPage() {
   // Check for E2E bypass (middleware already validated the header)
   const headersList = await headers();
   const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
@@ -29,13 +29,16 @@ export default async function EnhancePage() {
     redirect("/auth/signin");
   }
 
-  // Fetch user's images
+  // Fetch user's images (filter out CANCELLED jobs - users don't see cancelled)
   const images = await prisma.enhancedImage.findMany({
     where: {
       userId: session.user.id,
     },
     include: {
       enhancementJobs: {
+        where: {
+          status: { not: "CANCELLED" },
+        },
         orderBy: {
           createdAt: "desc",
         },
