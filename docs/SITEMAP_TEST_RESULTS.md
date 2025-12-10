@@ -17,9 +17,9 @@
 
 ## Pages with Errors
 
-### 1. /apps/images (formerly /enhance)
+### 1. /enhance
 
-**URL:** https://spike.land/apps/images
+**URL:** https://spike.land/enhance
 **Status:** FAIL
 **Error Type:** React Hydration Error
 **Error Details:**
@@ -94,7 +94,7 @@ Failed to load resource: the server responded with a status of 500 ()
 | Terms           | /terms           | PASS     | Full terms of service content                |
 | Privacy         | /privacy         | PASS     | Full privacy policy content                  |
 | Cookies         | /cookies         | PASS     | Full cookie policy content                   |
-| Apps/Images     | /apps/images     | **FAIL** | React hydration error #418                   |
+| Enhance         | /enhance         | **FAIL** | React hydration error #418                   |
 | Albums          | /albums          | PASS     | Empty state displayed (as expected)          |
 | My Apps         | /my-apps         | PASS     | Empty state with create button               |
 | My Apps/New     | /my-apps/new     | PASS     | App creation wizard step 1                   |
@@ -129,7 +129,7 @@ This is a known Vercel Analytics issue when viewing pages in automated testing c
 
 ### High Priority
 
-1. **Fix React Hydration Error on /apps/images** - Investigate the source of the hydration mismatch. Common causes:
+1. **Fix React Hydration Error on /enhance** - Investigate the source of the hydration mismatch. Common causes:
    - Conditional rendering based on `window` or `document`
    - Using `Date.now()` or `Math.random()` during render
    - Browser-only APIs being called during SSR
