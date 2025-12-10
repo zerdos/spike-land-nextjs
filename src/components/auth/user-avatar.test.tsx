@@ -140,6 +140,8 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
+    expect(screen.getByText("Pixel - AI Photo Enhance")).toBeInTheDocument();
+    expect(screen.getByText("Token Management")).toBeInTheDocument();
     expect(screen.getByText("My Apps")).toBeInTheDocument();
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
@@ -203,6 +205,48 @@ describe("UserAvatar Component", () => {
 
     await user.click(screen.getByTestId("user-avatar"));
     expect(screen.getByText("No email")).toBeInTheDocument();
+  });
+
+  it("should have Pixel link pointing to /pixel", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: "John Doe",
+          email: "john@example.com",
+        },
+        expires: "2024-01-01",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    const user = userEvent.setup();
+    render(<UserAvatar />);
+
+    await user.click(screen.getByTestId("user-avatar"));
+    const pixelLink = screen.getByRole("menuitem", { name: /pixel - ai photo enhance/i });
+    expect(pixelLink).toHaveAttribute("href", "/pixel");
+  });
+
+  it("should have Token Management link pointing to /tokens", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: "John Doe",
+          email: "john@example.com",
+        },
+        expires: "2024-01-01",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    const user = userEvent.setup();
+    render(<UserAvatar />);
+
+    await user.click(screen.getByTestId("user-avatar"));
+    const tokensLink = screen.getByRole("menuitem", { name: /token management/i });
+    expect(tokensLink).toHaveAttribute("href", "/tokens");
   });
 
   it("should have My Apps link pointing to /my-apps", async () => {
