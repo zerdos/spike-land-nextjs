@@ -1,14 +1,18 @@
 # Vercel Domain Setup for spike.land
 
+**Note:** This is archived documentation. Subdomain references (next.spike.land, pixel.spike.land) are now deprecated. All traffic should use the main domain: https://spike.land with route-based navigation (e.g., /apps/images).
+
 This guide explains how to configure custom domains for the Spike Land platform on Vercel.
 
 ## Domain Structure
 
-| Domain             | Purpose       | Redirect                    |
-| ------------------ | ------------- | --------------------------- |
-| `spike.land`       | Main platform | Production domain           |
-| `pixel.spike.land` | Pixel app     | Redirects to `/apps/images` |
-| `next.spike.land`  | Legacy        | Redirects to `spike.land`   |
+| Domain             | Purpose       | Status     | Notes                                             |
+| ------------------ | ------------- | ---------- | ------------------------------------------------- |
+| `spike.land`       | Main platform | Active     | Production domain                                 |
+| `pixel.spike.land` | Pixel app     | DEPRECATED | Was intended to redirect to `/apps/images`        |
+| `next.spike.land`  | Legacy        | DEPRECATED | Was intended to redirect to `spike.land`          |
+
+**Current Setup:** Only `spike.land` is actively used. All routes are accessed via the main domain (e.g., `spike.land/apps/images`).
 
 ## Vercel Configuration
 
@@ -20,8 +24,8 @@ This guide explains how to configure custom domains for the Spike Land platform 
 
 4. **Add Custom Domains**:
    - Click "Add" and enter: `spike.land` (set as **Production Domain**)
-   - Click "Add" and enter: `pixel.spike.land`
-   - Click "Add" and enter: `next.spike.land` (optional, for legacy support)
+   - ~~Click "Add" and enter: `pixel.spike.land`~~ (DEPRECATED - no longer needed)
+   - ~~Click "Add" and enter: `next.spike.land`~~ (DEPRECATED - no longer needed)
 
 5. **Vercel will provide DNS records**:
    - You'll see instructions showing what DNS records to add
@@ -29,10 +33,12 @@ This guide explains how to configure custom domains for the Spike Land platform 
 
 ## Redirects (vercel.json)
 
-Redirects are configured in `vercel.json` at the project root:
+**Historical Note:** Previously, redirects were configured in `vercel.json` for subdomain support:
 
-- `pixel.spike.land/*` → `spike.land/apps/images/*` (301 permanent)
-- `next.spike.land/*` → `spike.land/*` (301 permanent)
+- ~~`pixel.spike.land/*` → `spike.land/apps/images/*` (301 permanent)~~ - REMOVED
+- ~~`next.spike.land/*` → `spike.land/*` (301 permanent)~~ - REMOVED
+
+**Current:** No subdomain redirects are configured. All routing is handled via Next.js App Router.
 
 ## Important Notes
 
@@ -46,11 +52,11 @@ Redirects are configured in `vercel.json` at the project root:
 After adding the DNS records in Cloudflare (see CLOUDFLARE_DNS_SETUP.md):
 
 1. Wait a few minutes for DNS propagation
-2. Vercel will automatically verify the domains
-3. Once verified, you'll see a green checkmark next to each domain
-4. Test the redirects:
-   - `https://pixel.spike.land` → should redirect to `https://spike.land/apps/images`
-   - `https://next.spike.land` → should redirect to `https://spike.land`
+2. Vercel will automatically verify the domain
+3. Once verified, you'll see a green checkmark next to the domain
+4. Test the deployment:
+   - `https://spike.land` → should show the homepage
+   - `https://spike.land/apps/images` → should show the Pixel image enhancement app
 
 ## Troubleshooting
 

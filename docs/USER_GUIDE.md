@@ -429,7 +429,7 @@ Share your referral link on:
 **Example Link:**
 
 ```
-https://next.spike.land?ref=abc123xyz
+https://spike.land?ref=abc123xyz
 ```
 
 ### Tracking Referrals
@@ -704,7 +704,7 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 ### Still Need Help?
 
 - Check this guide's FAQ section
-- Visit docs at [next.spike.land/docs](https://next.spike.land/docs)
+- Visit docs at [spike.land/docs](https://spike.land/docs)
 - Contact support: support@spike.land
 - Email: hello@spike.land
 

@@ -18,7 +18,7 @@
 
 **Status**: Requires manual configuration in GitHub OAuth App settings
 **Issue**: GitHub OAuth shows "Invalid Redirect URI" error
-**Current Redirect URI**: `https://next.spike.land/api/auth/callback/github`
+**Current Redirect URI**: `https://spike.land/api/auth/callback/github`
 **Error**: "The redirect_uri is not associated with this application"
 
 **Solution Required**:
@@ -26,7 +26,7 @@
 1. Go to GitHub OAuth App settings: https://github.com/settings/applications
 2. Find the OAuth app with Client ID: `Ov23liMoRsb1WZ7wlFou`
 3. Add the following to **Authorization callback URLs**:
-   - `https://next.spike.land/api/auth/callback/github`
+   - `https://spike.land/api/auth/callback/github`
    - `http://localhost:3000/api/auth/callback/github` (for local development)
 4. Save changes
 
@@ -45,10 +45,10 @@
 
 After deployment:
 
-- [ ] Visit https://next.spike.land/apps - should see Images app
+- [ ] Visit https://spike.land/apps - should see Images app
 - [ ] Click "Launch App" on Images - should redirect to sign-in
 - [ ] Try GitHub OAuth - should work after redirect URI is configured
-- [ ] After sign-in, visit /apps/images - should show empty state (no server error)
+- [ ] After sign-in, visit https://spike.land/apps/images - should show empty state (no server error)
 - [ ] Upload an image - should work
 - [ ] View enhancement page - should work
 

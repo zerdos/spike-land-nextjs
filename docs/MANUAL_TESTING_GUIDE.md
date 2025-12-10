@@ -1,7 +1,7 @@
 # Manual Testing Guide - Image Enhancement App
 
 **Version:** Phase 3-5 Release
-**Environment:** https://next.spike.land
+**Environment:** https://spike.land
 **Last Updated:** December 2024
 
 ---
@@ -39,7 +39,7 @@
 
 ### Creating a Test Account
 
-1. Navigate to https://next.spike.land
+1. Navigate to https://spike.land
 2. Click "Sign In" button
 3. Choose authentication provider (GitHub or Google)
 4. Complete OAuth flow
@@ -100,7 +100,7 @@
 
 | Step | Action                            | Expected Result                  |
 | ---- | --------------------------------- | -------------------------------- |
-| 1    | Navigate to /enhance              | Enhancement page loads           |
+| 1    | Navigate to /apps/images          | Enhancement page loads           |
 | 2    | Drag & drop image OR click upload | File dialog opens                |
 | 3    | Select JPEG image (<10MB)         | Image preview appears            |
 | 4    | Verify upload progress            | Progress bar shown               |
@@ -478,7 +478,7 @@ When reporting bugs, please include:
 - Browser: [Chrome/Firefox/Safari/Edge + version]
 - OS: [Windows/macOS/Linux/iOS/Android]
 - Device: [Desktop/Mobile/Tablet]
-- URL: https://next.spike.land
+- URL: https://spike.land
 
 **Steps to Reproduce:**
 1. [Step 1]
@@ -505,7 +505,7 @@ When reporting bugs, please include:
 
 ## Test Environment Notes
 
-- **Production URL:** https://next.spike.land
+- **Production URL:** https://spike.land
 - **Test Stripe Cards:**
   - Success: `4242 4242 4242 4242`
   - Decline: `4000 0000 0000 0002`

@@ -1,5 +1,7 @@
 # Deployment Guide
 
+**Note:** This is archived documentation. Domain references have been updated from next.spike.land to spike.land.
+
 This document explains the CI/CD pipeline and deployment process for Spike Land.
 
 ## Pipeline Overview
@@ -70,7 +72,7 @@ push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
 
 - Pulls Vercel production environment configuration
 - Builds with `vercel build --prod`
-- Deploys to Vercel production (`next.spike.land`)
+- Deploys to Vercel production (`spike.land`)
 - Runs smoke tests against production URL
 - **Time:** ~2.5-3 minutes
 
@@ -183,7 +185,7 @@ The pipeline is heavily optimized for speed through multi-layer caching:
 
 ### Production Environment
 
-- Custom domain: `https://next.spike.land`
+- Custom domain: `https://spike.land`
 - DNS managed by Cloudflare
 - Automatic deployments from `main` branch
 

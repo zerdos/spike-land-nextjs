@@ -636,7 +636,7 @@ Content-Type: application/json
     "description": "Summer vacation photos",
     "isPublic": false,
     "imageCount": 0,
-    "shareLink": "https://next.spike.land/albums/album_abc123/share/token_xyz",
+    "shareLink": "https://spike.land/albums/album_abc123/share/token_xyz",
     "createdAt": "2025-12-02T10:00:00Z"
   }
 }
@@ -1010,7 +1010,7 @@ Authorization: Bearer {session_token}
 ```json
 {
   "success": true,
-  "referralLink": "https://next.spike.land?ref=abc123xyz",
+  "referralLink": "https://spike.land?ref=abc123xyz",
   "referralCode": "abc123xyz",
   "baseTokenReward": 50
 }
