@@ -446,13 +446,13 @@ This checklist ensures all critical systems, security measures, and operational 
 
 ## 📞 Emergency Contacts
 
-| Role | Name | Contact |
-|------|------|---------|
-| Platform Owner | zerdos | [Contact Info] |
-| DevOps Lead | [Name] | [Contact Info] |
-| Security Lead | [Name] | [Contact Info] |
-| Vercel Support | N/A | https://vercel.com/support |
-| Database Provider | N/A | [Support Link] |
+| Role              | Name   | Contact                    |
+| ----------------- | ------ | -------------------------- |
+| Platform Owner    | zerdos | [Contact Info]             |
+| DevOps Lead       | [Name] | [Contact Info]             |
+| Security Lead     | [Name] | [Contact Info]             |
+| Vercel Support    | N/A    | https://vercel.com/support |
+| Database Provider | N/A    | [Support Link]             |
 
 ---
 
