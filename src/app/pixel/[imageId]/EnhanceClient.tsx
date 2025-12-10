@@ -1,16 +1,15 @@
 "use client";
 
 import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
-import { EnhancementHistoryScroll } from "@/components/enhance/EnhancementHistoryScroll";
+import { EnhancementHistoryGrid } from "@/components/enhance/EnhancementHistoryGrid";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ExportSelector } from "@/components/enhance/export-selector";
 import { ShareButton } from "@/components/enhance/ShareButton";
-import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
-import { VersionGrid } from "@/components/enhance/VersionGrid";
 import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
@@ -200,42 +199,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     }
   };
 
-  const handleBulkDelete = async (jobIds: string[]) => {
-    const results = await Promise.allSettled(
-      jobIds.map(async (jobId) => {
-        const response = await fetch(`/api/jobs/${jobId}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to delete job");
-        }
-        return jobId;
-      }),
-    );
-
-    const deletedIds = results
-      .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-      .map((r) => r.value);
-
-    setImage((prev: ImageWithJobs) => ({
-      ...prev,
-      enhancementJobs: prev.enhancementJobs.filter(
-        (job: ImageEnhancementJob) => !deletedIds.includes(job.id),
-      ),
-    }));
-
-    if (selectedVersionId && deletedIds.includes(selectedVersionId)) {
-      setSelectedVersionId(null);
-    }
-
-    const failedCount = results.filter((r) => r.status === "rejected").length;
-    if (failedCount > 0) {
-      alert(`${failedCount} deletion(s) failed. Please try again.`);
-    }
-  };
-
   return (
     <div className="container mx-auto py-8 px-4">
       {isLowBalance && (
@@ -269,14 +232,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           Back to Images
         </Button>
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Image Enhancement</h1>
-          <TokenBalanceDisplay />
-        </div>
+        <h1 className="text-3xl font-bold">Pixel Image Enhancement</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+        {/* Left Column - Main Content */}
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>
@@ -306,13 +267,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
               <CardTitle>Enhancement History</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Horizontal scroll view */}
-              <EnhancementHistoryScroll
+              <EnhancementHistoryGrid
                 versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
                   id: job.id,
                   tier: job.tier,
@@ -328,59 +288,59 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                 onJobCancel={handleJobCancel}
                 onJobDelete={handleJobDelete}
               />
-
-              {/* Grid view for detailed management */}
-              {image.enhancementJobs.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <VersionGrid
-                    versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
-                      id: job.id,
-                      tier: job.tier,
-                      enhancedUrl: job.enhancedUrl || "",
-                      width: job.enhancedWidth || 0,
-                      height: job.enhancedHeight || 0,
-                      createdAt: job.createdAt,
-                      status: job.status,
-                      sizeBytes: job.enhancedSizeBytes,
-                    }))}
-                    selectedVersionId={selectedVersionId || undefined}
-                    onVersionSelect={setSelectedVersionId}
-                    onJobCancel={handleJobCancel}
-                    onJobDelete={handleJobDelete}
-                    onBulkDelete={handleBulkDelete}
-                    enableBulkSelect={true}
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <EnhancementSettings
-            onEnhance={handleEnhance}
-            currentBalance={balance}
-            isProcessing={activeJobId !== null}
-            completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
-              tier: job.tier,
-              url: job.enhancedUrl || "",
-            }))}
-            onBalanceRefresh={refetchBalance}
-          />
+        {/* Right Column - Sidebar */}
+        <div>
+          <Card>
+            <CardContent className="pt-6 space-y-6">
+              {/* Balance Display */}
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <Coins className="h-5 w-5 text-yellow-500" />
+                  Your Balance
+                </span>
+                <span className="text-lg font-bold">{balance} tokens</span>
+              </div>
 
-          {selectedVersion && selectedVersion.enhancedUrl && (
-            <ExportSelector
-              imageId={selectedVersion.id}
-              fileName={image.name}
-              originalSizeBytes={selectedVersion.enhancedSizeBytes || undefined}
-            />
-          )}
+              <Separator />
 
-          <ShareButton
-            imageId={image.id}
-            shareToken={image.shareToken}
-            imageName={image.name}
-          />
+              {/* Enhancement Settings */}
+              <EnhancementSettings
+                onEnhance={handleEnhance}
+                currentBalance={balance}
+                isProcessing={activeJobId !== null}
+                completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
+                  tier: job.tier,
+                  url: job.enhancedUrl || "",
+                }))}
+                onBalanceRefresh={refetchBalance}
+                asCard={false}
+              />
+
+              <Separator />
+
+              {/* Actions */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Actions</h3>
+                {selectedVersion && selectedVersion.enhancedUrl && (
+                  <ExportSelector
+                    imageId={selectedVersion.id}
+                    fileName={image.name}
+                    originalSizeBytes={selectedVersion.enhancedSizeBytes || undefined}
+                  />
+                )}
+                <ShareButton
+                  imageId={image.id}
+                  shareToken={image.shareToken}
+                  imageName={image.name}
+                  className="w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
