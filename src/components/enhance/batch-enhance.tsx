@@ -81,22 +81,33 @@ export function BatchEnhance({
       attempts++;
 
       try {
-        // Check status of all jobs
-        const statusChecks = await Promise.all(
-          jobIds.map(async (jobId) => {
-            const response = await fetch(`/api/images/jobs/${jobId}`);
-            if (!response.ok) {
-              return { jobId, status: "FAILED", error: "Failed to fetch status" };
-            }
-            const data = await response.json();
-            return { jobId, status: data.status, error: data.errorMessage };
-          }),
-        );
+        // Use batch status endpoint instead of individual requests
+        // This reduces N API calls to 1 per poll cycle
+        const response = await fetch("/api/jobs/batch-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ jobIds }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch batch status");
+        }
+
+        const data = await response.json();
+        const statusChecks = (data.jobs || []).map((
+          job: { id: string; status: string; errorMessage: string | null; },
+        ) => ({
+          jobId: job.id,
+          status: job.status,
+          error: job.errorMessage,
+        }));
 
         // Update statuses
         setEnhancingImages((prev) =>
           prev.map((img) => {
-            const statusCheck = statusChecks.find((s) => s.jobId === img.jobId);
+            const statusCheck = statusChecks.find((s: { jobId: string; }) => s.jobId === img.jobId);
             if (statusCheck) {
               if (statusCheck.status === "COMPLETED") {
                 return { ...img, status: "completed" as const };
@@ -110,7 +121,7 @@ export function BatchEnhance({
 
         // Check if all jobs are complete
         const allComplete = statusChecks.every(
-          (s) => s.status === "COMPLETED" || s.status === "FAILED",
+          (s: { status: string; }) => s.status === "COMPLETED" || s.status === "FAILED",
         );
 
         if (allComplete || attempts >= maxAttempts) {

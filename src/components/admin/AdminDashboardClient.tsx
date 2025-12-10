@@ -33,7 +33,8 @@ interface AdminDashboardClientProps {
   initialMetrics: DashboardMetrics;
 }
 
-const POLLING_INTERVAL = 10000;
+// Increased polling interval from 10s to 30s for reduced database load
+const POLLING_INTERVAL = 30000;
 
 export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientProps) {
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics);
@@ -41,6 +42,7 @@ export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientPro
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   const fetchMetrics = useCallback(async () => {
     try {
@@ -63,12 +65,30 @@ export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientPro
     setIsRefreshing(false);
   }, [fetchMetrics]);
 
+  // Track page visibility to pause polling when tab is hidden
   useEffect(() => {
-    if (!isPolling) return;
+    const handleVisibilityChange = () => {
+      const visible = document.visibilityState === "visible";
+      setIsVisible(visible);
+      // Refresh immediately when tab becomes visible again
+      if (visible && isPolling) {
+        fetchMetrics();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isPolling, fetchMetrics]);
+
+  // Only poll when tab is visible AND polling is enabled
+  useEffect(() => {
+    if (!isPolling || !isVisible) return;
 
     const intervalId = setInterval(fetchMetrics, POLLING_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [isPolling, fetchMetrics]);
+  }, [isPolling, isVisible, fetchMetrics]);
 
   const quickLinks = [
     {
