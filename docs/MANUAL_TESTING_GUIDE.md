@@ -100,7 +100,7 @@
 
 | Step | Action                            | Expected Result                  |
 | ---- | --------------------------------- | -------------------------------- |
-| 1    | Navigate to /apps/images              | Enhancement page loads           |
+| 1    | Navigate to /apps/images          | Enhancement page loads           |
 | 2    | Drag & drop image OR click upload | File dialog opens                |
 | 3    | Select JPEG image (<10MB)         | Image preview appears            |
 | 4    | Verify upload progress            | Progress bar shown               |

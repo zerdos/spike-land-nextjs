@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import prisma from "@/lib/prisma";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TokenBalanceManager } from "./balance-manager";
 import {
-  processAllUserRegenerations,
-  processUserRegeneration,
   getNextRegenerationTime,
   getTimeUntilNextRegeneration,
+  processAllUserRegenerations,
+  processUserRegeneration,
 } from "./regeneration";
 
 vi.mock("@/lib/prisma", () => ({

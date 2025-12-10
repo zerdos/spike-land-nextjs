@@ -41,6 +41,7 @@
 The Pixel AI image enhancement app (https://spike.land/apps/images) demonstrates the complete platform functionality:
 
 **Phase 1: MVP** ✅ Complete
+
 - Image upload with drag-drop UI
 - Single-tier AI enhancement (TIER_1K)
 - Before/after comparison slider
@@ -48,11 +49,13 @@ The Pixel AI image enhancement app (https://spike.land/apps/images) demonstrates
 - Authentication integration
 
 **Phase 2: Token Consumption** ✅ Complete
+
 - Multi-tier enhancement (TIER_1K, TIER_2K, TIER_4K)
 - Platform token consumption (2/5/10 tokens per tier)
 - Low balance warnings and refunds on failure
 
 **Phase 3: Albums & Export** ✅ Complete
+
 - Album creation, editing, deletion
 - Batch image upload and organization
 - Album sharing with unlisted links
@@ -61,6 +64,7 @@ The Pixel AI image enhancement app (https://spike.land/apps/images) demonstrates
 - Batch enhancement with queue processing
 
 **Phase 4: Referral Program** ✅ Complete
+
 - Unique referral links per user
 - Referrer and referee token rewards (50 each)
 - Referral dashboard with statistics
@@ -68,6 +72,7 @@ The Pixel AI image enhancement app (https://spike.land/apps/images) demonstrates
 - Sign-up attribution tracking
 
 **Phase 5: Admin Dashboard** ✅ Complete
+
 - User analytics (registrations, MAU, retention)
 - Token economy analytics (purchases, spend, burn rate)
 - System health monitoring (job queue, failure rates)
