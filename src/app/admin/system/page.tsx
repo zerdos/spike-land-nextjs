@@ -31,10 +31,28 @@ interface SystemHealthData {
   recentFailures: Array<{ id: string; tier: string; error: string | null; timestamp: string; }>;
 }
 
+interface StorageData {
+  totalFiles: number;
+  totalSizeBytes: number;
+  totalSizeFormatted: string;
+  averageSizeBytes: number;
+  averageSizeFormatted: string;
+  imageStats: {
+    count: number;
+    sizeBytes: number;
+    sizeFormatted: string;
+  };
+  byFileType: Record<string, { count: number; sizeBytes: number; sizeFormatted: string; }>;
+  isConfigured: boolean;
+}
+
 export default function SystemHealthPage() {
   const [data, setData] = useState<SystemHealthData | null>(null);
+  const [storageData, setStorageData] = useState<StorageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [storageLoading, setStorageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchHealth() {
@@ -52,7 +70,23 @@ export default function SystemHealthPage() {
       }
     }
 
+    async function fetchStorage() {
+      try {
+        const response = await fetch("/api/admin/storage");
+        if (!response.ok) {
+          throw new Error("Failed to fetch storage stats");
+        }
+        const result = await response.json();
+        setStorageData(result);
+      } catch (err) {
+        setStorageError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setStorageLoading(false);
+      }
+    }
+
     fetchHealth();
+    fetchStorage();
   }, []);
 
   if (loading) {
@@ -93,42 +127,31 @@ export default function SystemHealthPage() {
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Queue Depth
-          </p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Queue Depth</p>
           <p className="mt-2 text-3xl font-bold">{data.queueDepth}</p>
-          <p className="mt-2 text-xs text-neutral-500">
-            Pending + Processing
-          </p>
+          <p className="mt-2 text-xs text-neutral-500">Pending + Processing</p>
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Total Jobs
-          </p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Jobs</p>
           <p className="mt-2 text-3xl font-bold">{totalJobs.toLocaleString()}</p>
           <p className="mt-2 text-xs text-neutral-500">All time</p>
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Failure Rate
-          </p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Failure Rate</p>
           <p className="mt-2 text-3xl font-bold">{overallFailureRate.toFixed(1)}%</p>
-          <p className="mt-2 text-xs text-neutral-500">
-            {failedJobs} failed jobs
-          </p>
+          <p className="mt-2 text-xs text-neutral-500">{failedJobs} failed jobs</p>
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Avg Processing
-          </p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Avg Processing</p>
           <p className="mt-2 text-3xl font-bold">
             {Math.round(
               data.avgProcessingTime.reduce((sum, t) => sum + t.seconds, 0) /
                 (data.avgProcessingTime.length || 1),
-            )}s
+            )}
+            s
           </p>
           <p className="mt-2 text-xs text-neutral-500">Across all tiers</p>
         </Card>
@@ -169,9 +192,7 @@ export default function SystemHealthPage() {
       {/* Processing Time & Failure Rates */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="p-6">
-          <h2 className="mb-4 text-xl font-semibold">
-            Avg Processing Time by Tier
-          </h2>
+          <h2 className="mb-4 text-xl font-semibold">Avg Processing Time by Tier</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={data.avgProcessingTime}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -248,6 +269,85 @@ export default function SystemHealthPage() {
                 </div>
               ))}
             </div>
+          )}
+      </Card>
+
+      {/* R2 Storage Metrics */}
+      <Card className="p-6">
+        <h2 className="mb-4 text-xl font-semibold">R2 Storage</h2>
+        {storageLoading
+          ? (
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-20 animate-pulse rounded bg-neutral-100" />
+              ))}
+            </div>
+          )
+          : storageError
+          ? (
+            <p className="text-center text-red-500">
+              Error loading storage data: {storageError}
+            </p>
+          )
+          : !storageData?.isConfigured
+          ? (
+            <p className="text-center text-neutral-500">
+              R2 storage is not configured. Set environment variables to enable storage monitoring.
+            </p>
+          )
+          : (
+            <>
+              <div className="mb-6 grid gap-4 md:grid-cols-4">
+                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Storage</p>
+                  <p className="mt-1 text-2xl font-bold">{storageData.totalSizeFormatted}</p>
+                </div>
+                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Files</p>
+                  <p className="mt-1 text-2xl font-bold">
+                    {storageData.totalFiles.toLocaleString()}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">Images Stored</p>
+                  <p className="mt-1 text-2xl font-bold">
+                    {storageData.imageStats.count.toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    {storageData.imageStats.sizeFormatted}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">Avg File Size</p>
+                  <p className="mt-1 text-2xl font-bold">{storageData.averageSizeFormatted}</p>
+                </div>
+              </div>
+
+              {/* File Type Breakdown */}
+              {Object.keys(storageData.byFileType).length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Storage by File Type
+                  </h3>
+                  <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-4">
+                    {Object.entries(storageData.byFileType)
+                      .sort((a, b) => b[1].sizeBytes - a[1].sizeBytes)
+                      .slice(0, 8)
+                      .map(([ext, fileData]) => (
+                        <div
+                          key={ext}
+                          className="flex items-center justify-between rounded border border-neutral-200 px-3 py-2 dark:border-neutral-800"
+                        >
+                          <span className="font-mono text-sm uppercase">.{ext}</span>
+                          <span className="text-sm text-neutral-500">
+                            {fileData.count} ({fileData.sizeFormatted})
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
       </Card>
     </div>
