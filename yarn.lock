@@ -814,6 +814,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axe-core/react@npm:^4.11.0":
+  version: 4.11.0
+  resolution: "@axe-core/react@npm:4.11.0"
+  dependencies:
+    axe-core: "npm:~4.11.0"
+    requestidlecallback: "npm:^0.3.0"
+  checksum: 10c0/da3208a78738a41f915b430d62227114e1fc97ca4651d9ee0a678bd2a6220f8116043fe01081eacf4498d03d7133367c41a08e4d0c8451376b6af3793b0e14d9
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.26.2, @babel/code-frame@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/code-frame@npm:7.27.1"
@@ -6808,7 +6818,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0":
+"axe-core@npm:^4.10.0, axe-core@npm:^4.11.0, axe-core@npm:~4.11.0":
   version: 4.11.0
   resolution: "axe-core@npm:4.11.0"
   checksum: 10c0/7d7020a568a824c303711858c2fcfe56d001d27e46c0c2ff75dc31b436cfddfd4857a301e70536cc9e64829d25338f7fb782102d23497ebdc66801e9900fc895
@@ -12594,6 +12604,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"requestidlecallback@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "requestidlecallback@npm:0.3.0"
+  checksum: 10c0/68a2ff3154788643ccf96436cfaf8ad5bbe2f4d3f4b4d7858ec74681bf7d6a487d17df6a238130ff1e73d0a4a85bdc44b5f945eb79ef7d5552e23fc6288e795f
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -14399,6 +14416,7 @@ __metadata:
     "@auth/core": "npm:^0.41.1"
     "@aws-sdk/client-s3": "npm:^3.947.0"
     "@aws-sdk/lib-storage": "npm:^3.947.0"
+    "@axe-core/react": "npm:^4.11.0"
     "@cucumber/cucumber": "npm:^12.3.0"
     "@cucumber/pretty-formatter": "npm:^2.4.1"
     "@eslint/eslintrc": "npm:^3.3.3"
@@ -14441,6 +14459,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:^4.0.15"
     "@vitest/ui": "npm:^4.0.15"
     autoprefixer: "npm:^10.4.22"
+    axe-core: "npm:^4.11.0"
     bcryptjs: "npm:^3.0.3"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"

@@ -582,17 +582,20 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 To ensure jobs don't get stuck indefinitely, the system implements timeout protection:
 
 **Current Implementation:**
+
 - Vercel serverless function timeout: 300 seconds (5 minutes)
 - All enhancement tiers share the same Vercel timeout limit
 - No tier-specific timeouts currently implemented
 
 **Planned Enhancements:**
 Future improvements may include tier-specific timeouts:
+
 - TIER_1K: 60 seconds (planned)
 - TIER_2K: 90 seconds (planned)
 - TIER_4K: 120 seconds (planned)
 
 **Timeout Behavior:**
+
 1. Job exceeds timeout threshold
 2. Job status set to FAILED
 3. Error message: "Enhancement timed out"
@@ -600,6 +603,7 @@ Future improvements may include tier-specific timeouts:
 5. Admin notification logged
 
 **Monitoring:**
+
 - Admin dashboard shows timeout statistics
 - Jobs dashboard (`/admin/jobs`) displays timeout errors
 - Automatic alerting for high timeout rates
@@ -609,12 +613,14 @@ Future improvements may include tier-specific timeouts:
 Automatic cleanup maintains system performance:
 
 **Cleanup Schedule:**
+
 - Runs daily via cron job
 - Removes old completed/failed jobs (>30 days)
 - Preserves job metadata for analytics
 - Prevents database bloat
 
 **Cleanup Actions:**
+
 1. Archive old job records
 2. Remove temporary processing files
 3. Update statistics aggregates
@@ -625,6 +631,7 @@ Automatic cleanup maintains system performance:
 Comprehensive job management interface at `/admin/jobs`:
 
 **Features:**
+
 - Real-time job queue monitoring
 - Filter by status (PENDING, PROCESSING, COMPLETED, FAILED)
 - Search by user email or job ID
@@ -633,6 +640,7 @@ Comprehensive job management interface at `/admin/jobs`:
 - Export job statistics
 
 **Access Control:**
+
 - SUPER_ADMIN role required
 - Audit logging of all admin actions
 - Protected API endpoints
