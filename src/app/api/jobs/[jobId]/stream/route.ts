@@ -12,6 +12,12 @@ interface JobStreamData {
   message?: string;
 }
 
+// Polling intervals based on job status (reduced from 1s to reduce DB load)
+const PENDING_POLL_INTERVAL = 5000; // 5 seconds for pending jobs (in queue)
+const PROCESSING_POLL_INTERVAL = 3000; // 3 seconds for processing jobs
+const MAX_POLL_INTERVAL = 5000; // Maximum interval with backoff
+const BACKOFF_THRESHOLD = 5; // Start backoff after this many polls
+
 /**
  * SSE endpoint for real-time job status updates
  *
@@ -54,6 +60,7 @@ export async function GET(
   const encoder = new TextEncoder();
   let isStreamClosed = false;
   let timeoutId: NodeJS.Timeout | null = null;
+  let pollCount = 0;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -67,11 +74,31 @@ export async function GET(
         }
       };
 
+      // Calculate next poll interval based on job status and poll count
+      const getNextPollInterval = (status: string): number => {
+        // Base interval depends on job status
+        let baseInterval = status === "PENDING"
+          ? PENDING_POLL_INTERVAL
+          : PROCESSING_POLL_INTERVAL;
+
+        // Apply exponential backoff after threshold
+        if (pollCount > BACKOFF_THRESHOLD) {
+          const backoffMultiplier = Math.min(
+            Math.pow(1.2, pollCount - BACKOFF_THRESHOLD),
+            MAX_POLL_INTERVAL / baseInterval,
+          );
+          baseInterval = Math.min(baseInterval * backoffMultiplier, MAX_POLL_INTERVAL);
+        }
+
+        return Math.round(baseInterval);
+      };
+
       // Send initial connected event
       sendEvent({ type: "connected", message: "Connected to job stream" });
 
       const checkStatus = async () => {
         if (isStreamClosed) return;
+        pollCount++;
 
         try {
           const currentJob = await prisma.imageEnhancementJob.findUnique({
@@ -106,16 +133,18 @@ export async function GET(
             return;
           }
 
-          // Continue checking every 1 second (server-side polling)
-          timeoutId = setTimeout(checkStatus, 1000);
+          // Calculate next poll interval based on status and poll count
+          const nextInterval = getNextPollInterval(currentJob.status);
+          timeoutId = setTimeout(checkStatus, nextInterval);
         } catch (error) {
           console.error("Error checking job status:", error);
           sendEvent({
             type: "error",
             message: "Failed to check job status",
           });
-          // Don't close stream on transient errors, retry
-          timeoutId = setTimeout(checkStatus, 2000);
+          // Don't close stream on transient errors, retry with backoff
+          const nextInterval = getNextPollInterval("PROCESSING");
+          timeoutId = setTimeout(checkStatus, nextInterval);
         }
       };
 
