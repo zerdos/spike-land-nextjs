@@ -23,7 +23,7 @@ function _createMockFiles(count: number, options?: { oversized?: boolean; nonIma
 
 // Given steps
 Given("I am on the enhance page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/enhance`);
+  await this.page.goto(`${this.baseUrl}/pixel`);
   await this.page.waitForLoadState("networkidle");
 });
 

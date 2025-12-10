@@ -307,11 +307,11 @@ describe("EnhancedImagesList Component", () => {
 
     const links = screen.getAllByRole("link");
     const enhanceLink = links.find((link) =>
-      link.getAttribute("href")?.includes("/enhance/test-image-1")
+      link.getAttribute("href")?.includes("/pixel/test-image-1")
     );
 
     expect(enhanceLink).toBeInTheDocument();
-    expect(enhanceLink?.getAttribute("href")).toBe("/enhance/test-image-1");
+    expect(enhanceLink?.getAttribute("href")).toBe("/pixel/test-image-1");
   });
 
   it("renders image with correct URL", () => {

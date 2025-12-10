@@ -8,8 +8,8 @@ Feature: Image Enhancement
 
   @flaky
   Scenario: View enhance page as authenticated user
-    When I visit "/enhance"
-    Then I should be on the "/enhance" page
+    When I visit "/pixel"
+    Then I should be on the "/pixel" page
     And I should see "AI Image Enhancement" heading
     And I should see the image upload section
     And I should see the token balance display
@@ -17,12 +17,12 @@ Feature: Image Enhancement
   @flaky
   Scenario: Unauthenticated user redirected from enhance page
     Given I am not logged in
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should be on the "/auth/signin" page
 
   @flaky
   Scenario: Image upload section displays correctly
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should see the upload icon
     And I should see "Upload an Image" text
     And I should see "Choose an image to enhance with AI" text
@@ -34,7 +34,7 @@ Feature: Image Enhancement
     And I mock a successful image upload
     When I upload a valid image file
     Then I should be redirected to the image enhancement page
-    And the URL should contain "/enhance/"
+    And the URL should contain "/pixel/"
 
   @flaky
   Scenario: Image upload shows validation error for large file
@@ -127,7 +127,7 @@ Feature: Image Enhancement
   @requires-db
   Scenario: Delete an image from list
     Given I have uploaded images
-    When I visit "/enhance"
+    When I visit "/pixel"
     And I delete an image from the list
     And I confirm the deletion
     Then the image should be removed from the list
@@ -135,7 +135,7 @@ Feature: Image Enhancement
   @requires-db
   Scenario: Cancel image deletion
     Given I have uploaded images
-    When I visit "/enhance"
+    When I visit "/pixel"
     And I attempt to delete an image
     And I cancel the deletion confirmation
     Then the image should remain in the list
@@ -145,13 +145,13 @@ Feature: Image Enhancement
     Given I have an uploaded image
     And I am on the image enhancement page
     When I click the "Back to Images" button
-    Then I should be on the "/enhance" page
+    Then I should be on the "/pixel" page
     And I should see "Your Images" heading
 
   @requires-db
   Scenario: View empty state when no images
     Given I have no uploaded images
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should see "Your Images" heading
     And I should see an empty images list
 
@@ -193,7 +193,7 @@ Feature: Image Enhancement
     Given I am logged in as "User A" with email "usera@example.com"
     And another user has an uploaded image
     When I try to access that image's enhancement page
-    Then I should be redirected to "/enhance"
+    Then I should be redirected to "/pixel"
 
   @requires-db
   Scenario: Return from Stripe checkout refreshes balance
@@ -212,9 +212,9 @@ Feature: Image Enhancement
 
   @fast @requires-db
   Scenario: Enhancement page displays user's images only
-    Given I am logged in as "User A" with email "usera@example.com"
+    Given I am logged in as "User A" with email="usera@example.com"
     And I have uploaded images
     And other users have uploaded images
-    When I visit "/enhance"
+    When I visit "/pixel"
     Then I should only see my own images
     And I should not see other users' images

@@ -106,7 +106,7 @@ describe("ImageUpload Component", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/enhance/test-image-id");
+      expect(mockPush).toHaveBeenCalledWith("/pixel/test-image-id");
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
