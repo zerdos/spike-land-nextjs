@@ -17,9 +17,9 @@
 
 ## Pages with Errors
 
-### 1. /enhance
+### 1. /apps/images (formerly /enhance)
 
-**URL:** https://next.spike.land/enhance
+**URL:** https://spike.land/apps/images
 **Status:** FAIL
 **Error Type:** React Hydration Error
 **Error Details:**
@@ -35,14 +35,14 @@ for the full message or use the non-minified dev environment for full errors and
 
 ### 2. /admin/analytics
 
-**URL:** https://next.spike.land/admin/analytics
+**URL:** https://spike.land/admin/analytics
 **Status:** FAIL
 **Error Type:** API Server Error (500)
 **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
-@ https://next.spike.land/api/admin/analytics/users
+@ https://spike.land/api/admin/analytics/users
 ```
 
 **Description:** The page displays "Error: Failed to fetch analytics". The backend API endpoint `/api/admin/analytics/users` is returning a 500 Internal Server Error.
@@ -51,14 +51,14 @@ Failed to load resource: the server responded with a status of 500 ()
 
 ### 3. /admin/tokens
 
-**URL:** https://next.spike.land/admin/tokens
+**URL:** https://spike.land/admin/tokens
 **Status:** FAIL
 **Error Type:** API Server Error (500)
 **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
-@ https://next.spike.land/api/admin/analytics/tokens
+@ https://spike.land/api/admin/analytics/tokens
 ```
 
 **Description:** The page displays "Error: Failed to fetch token analytics". The backend API endpoint `/api/admin/analytics/tokens` is returning a 500 Internal Server Error.
@@ -67,14 +67,14 @@ Failed to load resource: the server responded with a status of 500 ()
 
 ### 4. /admin/system
 
-**URL:** https://next.spike.land/admin/system
+**URL:** https://spike.land/admin/system
 **Status:** FAIL
 **Error Type:** API Server Error (500)
 **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
-@ https://next.spike.land/api/admin/system/health
+@ https://spike.land/api/admin/system/health
 ```
 
 **Description:** The page displays "Error: Failed to fetch system health". The backend API endpoint `/api/admin/system/health` is returning a 500 Internal Server Error.
@@ -94,7 +94,7 @@ Failed to load resource: the server responded with a status of 500 ()
 | Terms           | /terms           | PASS     | Full terms of service content                |
 | Privacy         | /privacy         | PASS     | Full privacy policy content                  |
 | Cookies         | /cookies         | PASS     | Full cookie policy content                   |
-| Enhance         | /enhance         | **FAIL** | React hydration error #418                   |
+| Apps/Images     | /apps/images     | **FAIL** | React hydration error #418                   |
 | Albums          | /albums          | PASS     | Empty state displayed (as expected)          |
 | My Apps         | /my-apps         | PASS     | Empty state with create button               |
 | My Apps/New     | /my-apps/new     | PASS     | App creation wizard step 1                   |
@@ -118,7 +118,7 @@ All pages show the following error in the console:
 
 ```
 Failed to load resource: the server responded with a status of 405 ()
-@ https://next.spike.land/_vercel/insights/view
+@ https://spike.land/_vercel/insights/view
 ```
 
 This is a known Vercel Analytics issue when viewing pages in automated testing contexts and is not a functional problem for end users.
@@ -129,7 +129,7 @@ This is a known Vercel Analytics issue when viewing pages in automated testing c
 
 ### High Priority
 
-1. **Fix React Hydration Error on /enhance** - Investigate the source of the hydration mismatch. Common causes:
+1. **Fix React Hydration Error on /apps/images** - Investigate the source of the hydration mismatch. Common causes:
    - Conditional rendering based on `window` or `document`
    - Using `Date.now()` or `Math.random()` during render
    - Browser-only APIs being called during SSR
