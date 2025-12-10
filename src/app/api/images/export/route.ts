@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `export:${session.user.id}`,
       rateLimitConfigs.general,
     );

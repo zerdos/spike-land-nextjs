@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     // Rate limit password set operations (5 per hour per admin)
-    const rateLimitResult = checkRateLimit(`password-set:${session.user.id}`, {
+    const rateLimitResult = await checkRateLimit(`password-set:${session.user.id}`, {
       maxRequests: 5,
       windowMs: 60 * 60 * 1000, // 1 hour
     });

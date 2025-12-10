@@ -29,7 +29,7 @@ export async function GET(
     }
 
     // Apply rate limiting
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `versions-${session.user.id}`,
       rateLimitConfigs.general,
     );

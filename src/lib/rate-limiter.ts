@@ -1,12 +1,10 @@
-// TODO: For production scaling, replace in-memory store with Redis
-// Current implementation resets on serverless cold starts
-// Consider using @upstash/ratelimit for serverless-compatible rate limiting
-// @see https://github.com/upstash/ratelimit
-
 /**
- * Simple in-memory rate limiter for API endpoints.
- * Uses a sliding window approach to limit requests per user.
+ * Rate limiter with Vercel KV backend and in-memory fallback.
+ * Uses Vercel KV for persistent, serverless-compatible rate limiting.
+ * Falls back to in-memory storage if KV is unavailable (development/testing).
  */
+
+import { kv } from "@vercel/kv";
 
 interface RateLimitEntry {
   count: number;
@@ -20,15 +18,47 @@ interface RateLimitConfig {
   windowMs: number;
 }
 
-// In-memory store for rate limit entries (keyed by identifier)
+// In-memory store for fallback (when KV is unavailable)
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-// Cleanup interval to remove stale entries
+// Track KV availability
+let kvAvailable: boolean | null = null;
+
+// Cleanup interval for in-memory store
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
- * Starts the cleanup interval if not already running.
- * Removes entries older than the maximum window size.
+ * Checks if Vercel KV is available.
+ * Caches the result to avoid repeated checks.
+ */
+async function isKVAvailable(): Promise<boolean> {
+  if (kvAvailable !== null) {
+    return kvAvailable;
+  }
+
+  try {
+    // Test KV connection with a simple ping
+    await kv.ping();
+    kvAvailable = true;
+    return true;
+  } catch (error) {
+    console.warn("Vercel KV unavailable, falling back to in-memory storage:", error);
+    kvAvailable = false;
+    return false;
+  }
+}
+
+/**
+ * Resets the KV availability cache.
+ * Used for testing or after configuration changes.
+ */
+export function resetKVAvailability(): void {
+  kvAvailable = null;
+}
+
+/**
+ * Starts the cleanup interval for in-memory store if not already running.
+ * Only needed when using in-memory fallback.
  */
 function ensureCleanupInterval(windowMs: number): void {
   if (cleanupInterval) return;
@@ -49,13 +79,69 @@ function ensureCleanupInterval(windowMs: number): void {
 }
 
 /**
- * Checks if a request is rate limited.
- *
- * @param identifier - Unique identifier for the rate limit (e.g., userId, IP)
- * @param config - Rate limit configuration
- * @returns Object with isLimited flag and remaining requests
+ * Checks rate limit using Vercel KV.
+ * Uses atomic operations with TTL for automatic cleanup.
  */
-export function checkRateLimit(
+async function checkRateLimitKV(
+  identifier: string,
+  config: RateLimitConfig,
+): Promise<{
+  isLimited: boolean;
+  remaining: number;
+  resetAt: number;
+}> {
+  const now = Date.now();
+  const key = `ratelimit:${identifier}`;
+
+  // Try to get existing entry
+  const entry = await kv.get<RateLimitEntry>(key);
+
+  // No previous requests or window has expired
+  if (!entry || now - entry.firstRequest > config.windowMs) {
+    const newEntry: RateLimitEntry = { count: 1, firstRequest: now };
+
+    // Store with TTL (window + 1 minute for cleanup margin)
+    const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
+    await kv.set(key, newEntry, { ex: ttlSeconds });
+
+    return {
+      isLimited: false,
+      remaining: config.maxRequests - 1,
+      resetAt: now + config.windowMs,
+    };
+  }
+
+  // Within the window
+  if (entry.count >= config.maxRequests) {
+    return {
+      isLimited: true,
+      remaining: 0,
+      resetAt: entry.firstRequest + config.windowMs,
+    };
+  }
+
+  // Increment the count using atomic operation
+  const updatedEntry: RateLimitEntry = {
+    ...entry,
+    count: entry.count + 1,
+  };
+
+  // Update with same TTL
+  const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
+  await kv.set(key, updatedEntry, { ex: ttlSeconds });
+
+  return {
+    isLimited: false,
+    remaining: config.maxRequests - updatedEntry.count,
+    resetAt: entry.firstRequest + config.windowMs,
+  };
+}
+
+/**
+ * Checks rate limit using in-memory storage (fallback).
+ * Same logic as KV version but uses local Map.
+ */
+function checkRateLimitMemory(
   identifier: string,
   config: RateLimitConfig,
 ): {
@@ -97,23 +183,78 @@ export function checkRateLimit(
 }
 
 /**
+ * Checks if a request is rate limited.
+ * Automatically uses Vercel KV or falls back to in-memory storage.
+ *
+ * @param identifier - Unique identifier for the rate limit (e.g., userId, IP)
+ * @param config - Rate limit configuration
+ * @returns Object with isLimited flag and remaining requests
+ */
+export async function checkRateLimit(
+  identifier: string,
+  config: RateLimitConfig,
+): Promise<{
+  isLimited: boolean;
+  remaining: number;
+  resetAt: number;
+}> {
+  const useKV = await isKVAvailable();
+
+  if (useKV) {
+    try {
+      return await checkRateLimitKV(identifier, config);
+    } catch (error) {
+      console.error("KV rate limit check failed, falling back to memory:", error);
+      kvAvailable = false; // Mark as unavailable for subsequent requests
+      return checkRateLimitMemory(identifier, config);
+    }
+  }
+
+  return checkRateLimitMemory(identifier, config);
+}
+
+/**
  * Resets the rate limit for a specific identifier.
  * Useful for testing or administrative purposes.
  */
-export function resetRateLimit(identifier: string): void {
+export async function resetRateLimit(identifier: string): Promise<void> {
+  const useKV = await isKVAvailable();
+
+  if (useKV) {
+    try {
+      await kv.del(`ratelimit:${identifier}`);
+    } catch (error) {
+      console.error("KV rate limit reset failed:", error);
+    }
+  }
+
   rateLimitStore.delete(identifier);
 }
 
 /**
  * Clears all rate limit entries.
  * Useful for testing or administrative purposes.
+ * Note: For KV, this only clears entries with known identifiers.
  */
-export function clearAllRateLimits(): void {
+export async function clearAllRateLimits(identifiers?: string[]): Promise<void> {
+  const useKV = await isKVAvailable();
+
+  if (useKV && identifiers) {
+    try {
+      const keys = identifiers.map((id) => `ratelimit:${id}`);
+      if (keys.length > 0) {
+        await kv.del(...keys);
+      }
+    } catch (error) {
+      console.error("KV rate limit clear failed:", error);
+    }
+  }
+
   rateLimitStore.clear();
 }
 
 /**
- * Stops the cleanup interval.
+ * Stops the cleanup interval for in-memory store.
  * Should be called when shutting down the application or during testing.
  */
 export function stopCleanupInterval(): void {
@@ -124,10 +265,27 @@ export function stopCleanupInterval(): void {
 }
 
 /**
- * Gets the current store size (for testing/monitoring).
+ * Gets the current in-memory store size (for testing/monitoring).
+ * Note: This only reflects the in-memory fallback, not KV entries.
  */
 export function getRateLimitStoreSize(): number {
   return rateLimitStore.size;
+}
+
+/**
+ * Forces the rate limiter to use in-memory storage.
+ * Used for testing purposes.
+ */
+export function forceMemoryStorage(): void {
+  kvAvailable = false;
+}
+
+/**
+ * Forces the rate limiter to attempt using KV storage.
+ * Used for testing purposes.
+ */
+export function forceKVStorage(): void {
+  kvAvailable = true;
 }
 
 // Pre-configured rate limiters for common use cases

@@ -149,7 +149,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials.password as string;
 
         // Rate limit login attempts per email (5 attempts per 15 minutes)
-        const rateLimitResult = checkRateLimit(`login:${email.toLowerCase()}`, {
+        const rateLimitResult = await checkRateLimit(`login:${email.toLowerCase()}`, {
           maxRequests: 5,
           windowMs: 15 * 60 * 1000, // 15 minutes
         });

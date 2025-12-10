@@ -35,7 +35,7 @@ const { checkRateLimit } = await import("@/lib/rate-limiter");
 describe("GET /api/images/[id]/versions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkRateLimit).mockReturnValue({
+    vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: false,
       remaining: 99,
       resetAt: Date.now() + 60000,
@@ -61,7 +61,7 @@ describe("GET /api/images/[id]/versions", () => {
     } as Session);
 
     const resetAt = Date.now() + 60000;
-    vi.mocked(checkRateLimit).mockReturnValue({
+    vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: true,
       remaining: 0,
       resetAt,

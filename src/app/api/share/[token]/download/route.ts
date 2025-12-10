@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const ip = request.headers.get("x-forwarded-for") ||
       request.headers.get("x-real-ip") ||
       "unknown";
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `share-download:${ip}`,
       rateLimitConfigs.general,
     );

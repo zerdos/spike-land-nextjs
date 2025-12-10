@@ -62,6 +62,7 @@ export default defineConfig({
       "@/utils": path.resolve(__dirname, "./src/lib/utils"),
       "@/hooks": path.resolve(__dirname, "./src/hooks"),
       "@apps": path.resolve(__dirname, "./apps"),
+      "@vercel/kv": path.resolve(__dirname, "./vitest.mock-vercel-kv.ts"),
     },
   },
 });

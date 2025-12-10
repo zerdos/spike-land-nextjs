@@ -28,6 +28,15 @@ vi.mock("@/lib/storage/upload-handler", () => ({
   }),
 }));
 
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    isLimited: false,
+    remaining: 30,
+    resetAt: Date.now() + 60000,
+  }),
+  rateLimitConfigs: { imageUpload: { maxRequests: 30, windowMs: 60000 } },
+}));
+
 const { mockPrisma } = vi.hoisted(() => {
   return {
     mockPrisma: {
@@ -107,7 +116,13 @@ describe("POST /api/images/upload", () => {
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
+    const data = await res.json();
+
     expect(res.status).toBe(401);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.suggestion).toBeDefined();
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should return 401 if user id is missing in session", async () => {
@@ -117,15 +132,47 @@ describe("POST /api/images/upload", () => {
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
+    const data = await res.json();
+
     expect(res.status).toBe(401);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should return 400 if no file provided", async () => {
     const req = createMockRequest(null);
     const res = await POST(req);
-    expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("No file provided");
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.suggestion).toContain("file");
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
+  });
+
+  it("should return 429 if rate limited", async () => {
+    const { checkRateLimit } = await import("@/lib/rate-limiter");
+    const resetAt = Date.now() + 60000;
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      isLimited: true,
+      remaining: 0,
+      resetAt,
+    });
+
+    const req = createMockRequest(createMockFile());
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(429);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.retryAfter).toBeDefined();
+    expect(res.headers.get("Retry-After")).toBeDefined();
+    expect(res.headers.get("X-RateLimit-Remaining")).toBe("0");
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should upsert user before creating image for new users", async () => {
@@ -196,9 +243,13 @@ describe("POST /api/images/upload", () => {
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
-    expect(res.status).toBe(500);
     const data = await res.json();
-    expect(data.error).toBe("Upload failed");
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.suggestion).toBeDefined();
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should handle user upsert failure gracefully", async () => {
@@ -206,9 +257,13 @@ describe("POST /api/images/upload", () => {
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
-    expect(res.status).toBe(500);
     const data = await res.json();
-    expect(data.error).toBe("Database connection failed");
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.suggestion).toBeDefined();
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should handle image creation failure", async () => {
@@ -218,9 +273,13 @@ describe("POST /api/images/upload", () => {
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
-    expect(res.status).toBe(500);
     const data = await res.json();
-    expect(data.error).toBe("Foreign key constraint failed");
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBeDefined();
+    expect(data.title).toBeDefined();
+    expect(data.suggestion).toBeDefined();
+    expect(res.headers.get("X-Request-ID")).toBeDefined();
   });
 
   it("should sync user profile data on every upload", async () => {

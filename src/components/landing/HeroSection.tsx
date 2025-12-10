@@ -1,8 +1,8 @@
 "use client";
 
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { HeroComparisonSlider } from "./HeroComparisonSlider";
 
 // Fallback demo images (used when no featured gallery items exist)
 const FALLBACK_ORIGINAL = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=60";
@@ -35,10 +35,12 @@ export function HeroSection({
           </p>
 
           {/* Comparison Slider */}
-          <div className="mx-auto max-w-4xl mb-12">
-            <HeroComparisonSlider
+          <div className="mx-auto max-w-4xl mb-12 rounded-2xl border border-border/50 shadow-2xl overflow-hidden">
+            <ImageComparisonSlider
               originalUrl={originalUrl}
               enhancedUrl={enhancedUrl}
+              originalLabel="Original"
+              enhancedLabel="Enhanced by Pixel"
             />
           </div>
 
