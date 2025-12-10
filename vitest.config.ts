@@ -42,6 +42,7 @@ export default defineConfig({
         "src/types/**/*.ts", // Type definition files
         "src/app/apps/**/*.tsx", // Apps pages - presentational UI
         "src/components/apps/**/*.tsx", // Apps components - presentational UI
+        "src/workflows/**/*.workflow.ts", // Temporal workflow files - require special SDK testing
         "node_modules/**",
       ],
       all: true,
