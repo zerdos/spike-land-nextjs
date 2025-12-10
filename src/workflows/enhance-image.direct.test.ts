@@ -25,6 +25,8 @@ vi.mock("@/lib/storage/r2-client", () => ({
 
 vi.mock("@/lib/ai/gemini-client", () => ({
   enhanceImageWithGemini: mockEnhanceImageWithGemini,
+  DEFAULT_MODEL: "gemini-3-pro-image-preview",
+  DEFAULT_TEMPERATURE: null,
 }));
 
 vi.mock("@/lib/tokens/balance-manager", () => ({

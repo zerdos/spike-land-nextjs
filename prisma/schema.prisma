@@ -243,6 +243,8 @@ model ImageEnhancementJob {
   retryCount            Int             @default(0)
   maxRetries            Int             @default(3)
   geminiPrompt          String?
+  geminiModel           String?
+  geminiTemp            Float?
   processingStartedAt   DateTime?
   processingCompletedAt DateTime?
   createdAt             DateTime        @default(now())
