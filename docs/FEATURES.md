@@ -109,7 +109,7 @@ A comprehensive dashboard for monitoring and managing image enhancement jobs:
 
 **Key Files:**
 - `src/app/admin/jobs/page.tsx` - Jobs dashboard
-- `src/components/admin/jobs-table.tsx` - Jobs table component
+- `src/app/admin/jobs/JobsAdminClient.tsx` - Jobs table component
 - `src/app/api/admin/jobs/route.ts` - Jobs API endpoints
 
 #### Featured Gallery System (NEW)
@@ -141,9 +141,8 @@ Structured feedback system for bug reports and feature ideas:
 | ------- | ----------- |
 | Feedback Types | BUG or IDEA categories |
 | User Attribution | Link feedback to user accounts |
-| Status Tracking | OPEN, IN_PROGRESS, RESOLVED, CLOSED states |
+| Status Tracking | NEW, REVIEWED, RESOLVED, DISMISSED states |
 | Admin Dashboard | View and manage all feedback submissions |
-| Priority Levels | HIGH, MEDIUM, LOW priority assignment |
 
 **Access**: `/admin/feedback` (ADMIN/SUPER_ADMIN)
 

@@ -581,10 +581,16 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 
 To ensure jobs don't get stuck indefinitely, the system implements timeout protection:
 
-**Timeout Configuration:**
-- TIER_1K: 60 seconds (default)
-- TIER_2K: 90 seconds (default)
-- TIER_4K: 120 seconds (120000ms) - Extended for larger processing
+**Current Implementation:**
+- Vercel serverless function timeout: 300 seconds (5 minutes)
+- All enhancement tiers share the same Vercel timeout limit
+- No tier-specific timeouts currently implemented
+
+**Planned Enhancements:**
+Future improvements may include tier-specific timeouts:
+- TIER_1K: 60 seconds (planned)
+- TIER_2K: 90 seconds (planned)
+- TIER_4K: 120 seconds (planned)
 
 **Timeout Behavior:**
 1. Job exceeds timeout threshold
