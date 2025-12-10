@@ -3,6 +3,7 @@ import {
   analyzeImage,
   type EnhanceImageParams,
   enhanceImageWithGemini,
+  GEMINI_TIMEOUT_MS,
   isGeminiConfigured,
   resetGeminiClient,
 } from "./gemini-client";
@@ -372,6 +373,31 @@ describe("gemini-client", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+
+    it("should have a reasonable timeout constant", () => {
+      // Verify the timeout constant exists and is set to 5 minutes
+      expect(GEMINI_TIMEOUT_MS).toBe(5 * 60 * 1000);
+    });
+
+    it("should handle stream error during processing", async () => {
+      async function* mockErrorStream() {
+        throw new Error("Network disconnected");
+      }
+
+      mockGenerateContentStream.mockResolvedValueOnce(mockErrorStream());
+
+      await expect(enhanceImageWithGemini(defaultParams)).rejects.toThrow(
+        "Stream processing failed",
+      );
+    });
+
+    it("should handle API initialization failure", async () => {
+      mockGenerateContentStream.mockRejectedValueOnce(new Error("Service unavailable"));
+
+      await expect(enhanceImageWithGemini(defaultParams)).rejects.toThrow(
+        "Failed to start image enhancement: Service unavailable",
+      );
     });
   });
 

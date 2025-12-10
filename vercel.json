@@ -16,7 +16,7 @@
   "crons": [
     {
       "path": "/api/cron/cleanup-jobs",
-      "schedule": "0 0 * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }
