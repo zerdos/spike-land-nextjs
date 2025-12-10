@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteFromR2, isR2Configured } from "./r2-client";
+import { deleteFromR2, isR2Configured, listR2StorageStats } from "./r2-client";
 
 // Create shared mock function
 const mockSend = vi.fn();
@@ -13,6 +13,9 @@ vi.mock("@aws-sdk/client-s3", () => ({
     constructor(public params: unknown) {}
   },
   GetObjectCommand: class MockGetObjectCommand {
+    constructor(public params: unknown) {}
+  },
+  ListObjectsV2Command: class MockListObjectsV2Command {
     constructor(public params: unknown) {}
   },
 }));
@@ -143,6 +146,175 @@ describe("r2-client", () => {
       expect(result.success).toBe(false);
       expect(result.key).toBe("test-key.jpg");
       expect(result.error).toBe("Unknown error");
+    });
+  });
+
+  describe("listR2StorageStats", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      // Set up required env vars
+      process.env.CLOUDFLARE_ACCOUNT_ID = "test-account-id";
+      process.env.CLOUDFLARE_R2_ACCESS_KEY_ID = "test-access-key";
+      process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY = "test-secret";
+      process.env.CLOUDFLARE_R2_BUCKET_NAME = "test-bucket";
+      process.env.CLOUDFLARE_R2_ENDPOINT = "https://test.r2.cloudflarestorage.com";
+    });
+
+    it("should return storage stats for a single page of objects", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [
+          { Key: "images/photo1.jpg", Size: 1024 },
+          { Key: "images/photo2.png", Size: 2048 },
+          { Key: "documents/file.pdf", Size: 4096 },
+        ],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats).not.toBeNull();
+      expect(result.stats!.totalFiles).toBe(3);
+      expect(result.stats!.totalSizeBytes).toBe(7168);
+      expect(result.stats!.averageSizeBytes).toBe(Math.round(7168 / 3));
+      expect(result.stats!.byFileType.jpg).toEqual({ count: 1, sizeBytes: 1024 });
+      expect(result.stats!.byFileType.png).toEqual({ count: 1, sizeBytes: 2048 });
+      expect(result.stats!.byFileType.pdf).toEqual({ count: 1, sizeBytes: 4096 });
+    });
+
+    it("should handle pagination correctly", async () => {
+      mockSend
+        .mockResolvedValueOnce({
+          Contents: [
+            { Key: "photo1.jpg", Size: 1000 },
+            { Key: "photo2.jpg", Size: 1000 },
+          ],
+          IsTruncated: true,
+          NextContinuationToken: "token123",
+        })
+        .mockResolvedValueOnce({
+          Contents: [{ Key: "photo3.jpg", Size: 1000 }],
+          IsTruncated: false,
+        });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.totalFiles).toBe(3);
+      expect(result.stats!.totalSizeBytes).toBe(3000);
+      expect(mockSend).toHaveBeenCalledTimes(2);
+    });
+
+    it("should handle empty bucket", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.totalFiles).toBe(0);
+      expect(result.stats!.totalSizeBytes).toBe(0);
+      expect(result.stats!.averageSizeBytes).toBe(0);
+      expect(result.stats!.byFileType).toEqual({});
+    });
+
+    it("should handle missing Contents in response", async () => {
+      mockSend.mockResolvedValue({
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.totalFiles).toBe(0);
+    });
+
+    it("should handle missing Size in objects", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [
+          { Key: "photo.jpg" }, // Size is undefined
+        ],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.totalFiles).toBe(1);
+      expect(result.stats!.totalSizeBytes).toBe(0);
+    });
+
+    it("should handle missing Key in objects", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [
+          { Size: 1000 }, // Key is undefined
+        ],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.totalFiles).toBe(1);
+      expect(result.stats!.byFileType.unknown).toEqual({ count: 1, sizeBytes: 1000 });
+    });
+
+    it("should handle files without extensions", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [
+          { Key: "README", Size: 500 },
+          { Key: "LICENSE", Size: 1000 },
+        ],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.byFileType.unknown).toEqual({ count: 2, sizeBytes: 1500 });
+    });
+
+    it("should handle error from S3 client", async () => {
+      mockSend.mockRejectedValue(new Error("Network error"));
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(false);
+      expect(result.stats).toBeNull();
+      expect(result.error).toBe("Network error");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error listing R2 storage:",
+        expect.any(Error),
+      );
+    });
+
+    it("should handle non-Error exceptions", async () => {
+      mockSend.mockRejectedValue("String error");
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(false);
+      expect(result.stats).toBeNull();
+      expect(result.error).toBe("Unknown error");
+    });
+
+    it("should normalize file extensions to lowercase", async () => {
+      mockSend.mockResolvedValue({
+        Contents: [
+          { Key: "PHOTO.JPG", Size: 1000 },
+          { Key: "image.Png", Size: 2000 },
+        ],
+        IsTruncated: false,
+      });
+
+      const result = await listR2StorageStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats!.byFileType.jpg).toEqual({ count: 1, sizeBytes: 1000 });
+      expect(result.stats!.byFileType.png).toEqual({ count: 1, sizeBytes: 2000 });
     });
   });
 });

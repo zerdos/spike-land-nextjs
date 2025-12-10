@@ -13,7 +13,12 @@ import { withWorkflow } from "workflow/next";
  * - Referrer-Policy: Controls referrer information leakage
  * - Permissions-Policy: Restricts browser feature access
  *
+ * NOTE: Content-Security-Policy is now handled by middleware (src/middleware.ts)
+ * to enable dynamic nonce generation for each request. This eliminates the need
+ * for 'unsafe-inline' in script-src, providing better XSS protection.
+ *
  * @see https://owasp.org/www-project-secure-headers/
+ * @see src/middleware.ts for CSP nonce implementation
  */
 const securityHeaders = [
   {
@@ -43,20 +48,6 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
-  },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "img-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://images.unsplash.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com data: blob:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
-      "style-src 'self' 'unsafe-inline'",
-      "font-src 'self' data:",
-      "connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://*.ingest.sentry.io",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
   },
 ];
 

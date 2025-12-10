@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 import { AuthHeader } from "@/components/auth/auth-header";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { NonceProvider } from "@/components/security/nonce-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
@@ -59,32 +61,38 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? "";
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
-          disableTransitionOnChange
-        >
-          <SessionProvider>
-            <AuthHeader />
-            {children}
-            <FeedbackButton />
-          </SessionProvider>
-          <CookieConsent />
-          <Toaster />
-        </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        <NonceProvider nonce={nonce}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            disableTransitionOnChange
+            nonce={nonce}
+          >
+            <SessionProvider>
+              <AuthHeader />
+              {children}
+              <FeedbackButton />
+            </SessionProvider>
+            <CookieConsent />
+            <Toaster />
+          </ThemeProvider>
+        </NonceProvider>
+        <Analytics nonce={nonce} />
+        <SpeedInsights nonce={nonce} />
       </body>
     </html>
   );

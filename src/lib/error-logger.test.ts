@@ -12,16 +12,24 @@ vi.mock("@sentry/nextjs", () => ({
 describe("ErrorLogger", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let originalNodeEnv: string | undefined;
+  let originalSentryDsn: string | undefined;
 
   beforeEach(() => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     originalNodeEnv = process.env.NODE_ENV;
-    vi.clearAllMocks();
+    originalSentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    // Clear Sentry DSN by default to ensure consistent test behavior
+    delete process.env.NEXT_PUBLIC_SENTRY_DSN;
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
     process.env.NODE_ENV = originalNodeEnv;
+    if (originalSentryDsn) {
+      process.env.NEXT_PUBLIC_SENTRY_DSN = originalSentryDsn;
+    } else {
+      delete process.env.NEXT_PUBLIC_SENTRY_DSN;
+    }
   });
 
   describe("constructor", () => {
@@ -88,7 +96,7 @@ describe("ErrorLogger", () => {
       logger.logError(error);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[ErrorLogger] Production error:",
+        "[ErrorLogger] Production error (Sentry not configured):",
         expect.objectContaining({
           message: "Production error",
           environment: "production",
@@ -106,11 +114,8 @@ describe("ErrorLogger", () => {
       logger.logError(error);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[ErrorLogger] Error would be sent to Sentry:",
-        expect.objectContaining({
-          message: "Sentry error",
-          environment: "production",
-        }),
+        "[ErrorLogger] Error sent to Sentry:",
+        "Sentry error",
       );
     });
 
