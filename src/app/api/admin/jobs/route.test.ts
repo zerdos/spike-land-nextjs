@@ -148,7 +148,7 @@ describe("Admin Jobs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/jobs?status=COMPLETED");
       const response = await GET(request);
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
@@ -206,7 +206,7 @@ describe("Admin Jobs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/jobs?limit=100");
       const response = await GET(request);
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
@@ -227,7 +227,7 @@ describe("Admin Jobs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/jobs?search=job_123");
       const response = await GET(request);
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
