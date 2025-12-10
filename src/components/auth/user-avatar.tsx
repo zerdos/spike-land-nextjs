@@ -1,5 +1,6 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutGrid, LogOut, Settings, User } from "lucide-react";
+import { Coins, LayoutGrid, LogOut, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -48,6 +49,24 @@ export function UserAvatar({ className }: UserAvatarProps) {
             </p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/pixel" className="flex items-center">
+            <PixelLogo
+              size="sm"
+              variant="icon"
+              showText={false}
+              className="mr-2 h-4 w-4 scale-[0.5] origin-left"
+            />
+            <span>Pixel - AI Photo Enhance</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/tokens">
+            <Coins className="mr-2 h-4 w-4" />
+            <span>Token Management</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/my-apps">
