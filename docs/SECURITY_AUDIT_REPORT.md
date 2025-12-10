@@ -14,6 +14,7 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
 ### Overall Security Rating: **STRONG** (85/100)
 
 **Key Strengths:**
+
 - Modern OAuth 2.0 authentication with multiple providers
 - Comprehensive role-based access control (RBAC)
 - Proper use of Prisma ORM with parameterized queries
@@ -22,6 +23,7 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
 - Rate limiting on critical endpoints
 
 **Areas for Improvement:**
+
 - Custom hashing algorithm for user IDs (Low Risk)
 - CSP allows 'unsafe-inline' and 'unsafe-eval' (Medium Risk)
 - Missing middleware-level authentication checks (Low Risk)
@@ -133,13 +135,13 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
 
    **Recommendation:** Replace with crypto-based UUID generation:
    ```typescript
-   import { createHash } from 'crypto';
+   import { createHash } from "crypto";
 
    export function createStableUserId(email: string): string {
      const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET;
-     const hash = createHash('sha256')
+     const hash = createHash("sha256")
        .update(`${salt}:${email.toLowerCase().trim()}`)
-       .digest('hex');
+       .digest("hex");
      return `user_${hash}`;
    }
    ```
@@ -269,7 +271,7 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
    - script-src includes 'unsafe-inline' and 'unsafe-eval'
    - Location: `next.config.ts` (line 51)
    ```typescript
-   "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+   "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
    ```
 
    **Risk:** Weakens XSS protection by allowing inline scripts
@@ -522,45 +524,53 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
 ### Test Scenarios Executed
 
 #### 1. Authentication Bypass Attempts ✅ SECURE
+
 - **Test:** Access `/admin/*` without authentication
 - **Result:** Properly redirected to sign-in page
 - **Test:** Access admin API routes without session
 - **Result:** 401 Unauthorized returned correctly
 
 #### 2. Authorization Bypass Attempts ✅ SECURE
+
 - **Test:** Regular user accessing admin endpoints
 - **Result:** 403 Forbidden returned by `requireAdminByUserId()`
 - **Test:** User A accessing User B's images
 - **Result:** Ownership validation prevents access
 
 #### 3. Rate Limiting ✅ FUNCTIONAL
+
 - **Test:** Rapid enhancement requests (>10/min)
 - **Expected:** 429 Too Many Requests after 10 requests
 - **Implementation:** Rate limiter in place with proper headers
 - **Endpoints Protected:** `/api/images/enhance`, `/api/images/batch-upload`, voucher redemption
 
 #### 4. SQL Injection ✅ SECURE
+
 - **Test:** Malicious input in imageId, userId, email fields
 - **Result:** Prisma parameterization prevents injection
 - **Note:** No raw SQL vulnerable to injection found
 
 #### 5. XSS Attempts ⚠️ PARTIALLY PROTECTED
+
 - **Test:** Script injection in image names, descriptions
 - **Result:** React auto-escapes output
 - **Concern:** CSP allows 'unsafe-inline', weakens defense-in-depth
 - **Recommendation:** Implement nonce-based CSP (see A05)
 
 #### 6. CSRF ✅ PROTECTED
+
 - **Test:** State-changing requests from external origin
 - **Result:** NextAuth includes CSRF tokens in forms
 - **Cookie Configuration:** sameSite: 'lax' provides CSRF protection
 
 #### 7. Token Economy Race Conditions ✅ SECURE
+
 - **Test:** Concurrent token consumption requests
 - **Result:** Prisma transactions prevent double-spending
 - **Location:** `src/lib/tokens/balance-manager.ts` uses `$transaction()`
 
 #### 8. File Upload Security ✅ SECURE
+
 - **Test:** Upload non-image files, oversized files
 - **Expected:** Type and size validation
 - **Note:** Upload handled by R2 with client-side validation
@@ -569,18 +579,18 @@ This comprehensive security audit evaluated the Spike Land platform against OWAS
 
 ## Risk Summary
 
-| OWASP Category | Rating | Risk Level | Priority |
-|----------------|--------|------------|----------|
-| A01: Broken Access Control | 9/10 | LOW | Low |
-| A02: Cryptographic Failures | 7/10 | MEDIUM | Medium |
-| A03: Injection | 10/10 | NONE | None |
-| A04: Insecure Design | 8/10 | LOW | Low |
-| A05: Security Misconfiguration | 7/10 | MEDIUM | Medium |
-| A06: Vulnerable Components | 8/10 | LOW | Medium |
-| A07: Auth Failures | 9/10 | LOW | Low |
-| A08: Data Integrity Failures | 8/10 | LOW | Low |
-| A09: Logging & Monitoring | 9/10 | LOW | Medium |
-| A10: SSRF | 10/10 | NONE | None |
+| OWASP Category                 | Rating | Risk Level | Priority |
+| ------------------------------ | ------ | ---------- | -------- |
+| A01: Broken Access Control     | 9/10   | LOW        | Low      |
+| A02: Cryptographic Failures    | 7/10   | MEDIUM     | Medium   |
+| A03: Injection                 | 10/10  | NONE       | None     |
+| A04: Insecure Design           | 8/10   | LOW        | Low      |
+| A05: Security Misconfiguration | 7/10   | MEDIUM     | Medium   |
+| A06: Vulnerable Components     | 8/10   | LOW        | Medium   |
+| A07: Auth Failures             | 9/10   | LOW        | Low      |
+| A08: Data Integrity Failures   | 8/10   | LOW        | Low      |
+| A09: Logging & Monitoring      | 9/10   | LOW        | Medium   |
+| A10: SSRF                      | 10/10  | NONE       | None     |
 
 **Overall Risk Level:** LOW to MEDIUM
 

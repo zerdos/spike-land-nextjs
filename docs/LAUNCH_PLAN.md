@@ -22,12 +22,14 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 ### Launch Goals
 
 #### Primary Goals
+
 - Achieve 99.9% uptime in first 30 days
 - Process 100+ image enhancements without critical failures
 - Onboard 50+ users successfully
 - Zero critical security incidents
 
 #### Secondary Goals
+
 - Average API response time < 500ms (p95)
 - Image enhancement success rate > 95%
 - User retention > 60% (returning within 7 days)
@@ -42,6 +44,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T-14: Private Beta Launch (Two Weeks Before)
 
 **Activities:**
+
 - [ ] Deploy to production environment (main branch)
 - [ ] Verify all systems operational
 - [ ] Invite internal team members (5-10 people)
@@ -49,12 +52,14 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - [ ] Generate initial voucher codes for beta testers
 
 **Testing Focus:**
+
 - Complete user flows (signup, upload, enhance, share)
 - Admin functionality (dashboard, analytics, voucher creation)
 - Performance under light load
 - Mobile responsiveness
 
 **Success Criteria:**
+
 - All team members can sign up and use platform
 - No critical bugs discovered
 - All security measures verified
@@ -62,12 +67,14 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T-10: Beta Feedback Review (10 Days Before)
 
 **Activities:**
+
 - [ ] Review bug reports from internal testing
 - [ ] Prioritize and fix critical issues
 - [ ] Update documentation based on feedback
 - [ ] Refine error messages and UX
 
 **Deliverables:**
+
 - Bug fix release deployed
 - Known issues documented
 - Updated user guide (if applicable)
@@ -75,18 +82,21 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T-7: Public Beta Launch (One Week Before)
 
 **Activities:**
+
 - [ ] Generate 50 invitation codes
 - [ ] Share invitation codes with trusted community (Twitter, Reddit, Discord)
 - [ ] Set up monitoring alerts
 - [ ] Prepare support email responses (templates)
 
 **Monitoring Focus:**
+
 - Error rates and types
 - User sign-up conversion rate
 - Image enhancement success rate
 - Database and storage usage
 
 **Success Criteria:**
+
 - 20+ beta users onboarded
 - < 5% error rate on critical endpoints
 - No security incidents
@@ -95,12 +105,14 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T-3: Launch Readiness Review (3 Days Before)
 
 **Activities:**
+
 - [ ] Complete launch checklist (see LAUNCH_CHECKLIST.md)
 - [ ] Final security review (HIGH priority items from audit)
 - [ ] Load testing on staging environment
 - [ ] Team readiness meeting
 
 **Go/No-Go Decision Points:**
+
 - All critical bugs fixed?
 - Security audit recommendations addressed?
 - Monitoring and alerting working?
@@ -111,6 +123,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T-1: Final Preparations (Day Before Launch)
 
 **Activities:**
+
 - [ ] Final smoke test on production
 - [ ] Verify all environment variables
 - [ ] Test rollback procedure
@@ -118,6 +131,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - [ ] Set up on-call schedule for launch day
 
 **Checklist:**
+
 - [ ] Database backups verified
 - [ ] Rollback plan ready
 - [ ] Team on standby
@@ -150,6 +164,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - [ ] **12:00 PM:** Team check-in (any issues?)
 
 **Monitoring Priorities:**
+
 - Authentication success rate
 - Image enhancement completion rate
 - API error rates (especially 500s)
@@ -167,6 +182,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - [ ] **6:00 PM:** Decide on full marketing push (T+1 or delay)
 
 **Success Indicators:**
+
 - Error rate < 2% on critical endpoints
 - No production incidents requiring rollback
 - Positive user feedback (if any received)
@@ -188,18 +204,21 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T+1: Day 1 Post-Launch
 
 **Morning Review:**
+
 - [ ] Review overnight metrics and logs
 - [ ] Check for any errors or alerts
 - [ ] Review user sign-ups and activity
 - [ ] Plan day 1 marketing push
 
 **Activities:**
+
 - [ ] Post full launch announcement (blog, Twitter, HackerNews, Product Hunt)
 - [ ] Respond to initial user feedback
 - [ ] Monitor traffic spike from announcements
 - [ ] Fix any minor issues discovered
 
 **Metrics to Track:**
+
 - Total users signed up
 - Total images enhanced
 - Error rate (target: < 2%)
@@ -208,6 +227,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 #### T+2 to T+7: First Week Post-Launch
 
 **Daily Activities:**
+
 - [ ] Morning standup (15 min): Review previous 24h
 - [ ] Monitor dashboard throughout day
 - [ ] Respond to user support requests (target: < 24h response)
@@ -215,10 +235,12 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - [ ] Deploy fixes for non-critical issues
 
 **Weekly Milestones:**
+
 - [ ] **T+3:** Mid-week review meeting
 - [ ] **T+7:** End of week 1 retrospective
 
 **Week 1 Focus Areas:**
+
 - User onboarding experience
 - Image enhancement reliability
 - Performance optimization opportunities
@@ -258,32 +280,32 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 
 #### System Health Metrics
 
-| Metric | Target | Alert Threshold | Priority |
-|--------|--------|-----------------|----------|
-| API Response Time (p95) | < 500ms | > 1000ms | HIGH |
-| Error Rate | < 2% | > 5% | CRITICAL |
-| Database Connection Pool | < 80% | > 90% | HIGH |
-| R2 Storage Latency | < 200ms | > 500ms | MEDIUM |
-| Workflow Success Rate | > 95% | < 85% | HIGH |
+| Metric                   | Target  | Alert Threshold | Priority |
+| ------------------------ | ------- | --------------- | -------- |
+| API Response Time (p95)  | < 500ms | > 1000ms        | HIGH     |
+| Error Rate               | < 2%    | > 5%            | CRITICAL |
+| Database Connection Pool | < 80%   | > 90%           | HIGH     |
+| R2 Storage Latency       | < 200ms | > 500ms         | MEDIUM   |
+| Workflow Success Rate    | > 95%   | < 85%           | HIGH     |
 
 #### Business Metrics
 
-| Metric | Target (Week 1) | Monitor |
-|--------|-----------------|---------|
-| User Sign-ups | 50+ | Daily |
-| Image Enhancements | 100+ | Daily |
-| Enhancement Success Rate | > 95% | Hourly |
-| User Retention (7-day) | > 60% | Weekly |
-| Average Session Duration | > 5 min | Daily |
+| Metric                   | Target (Week 1) | Monitor |
+| ------------------------ | --------------- | ------- |
+| User Sign-ups            | 50+             | Daily   |
+| Image Enhancements       | 100+            | Daily   |
+| Enhancement Success Rate | > 95%           | Hourly  |
+| User Retention (7-day)   | > 60%           | Weekly  |
+| Average Session Duration | > 5 min         | Daily   |
 
 #### Security Metrics
 
-| Metric | Target | Alert Threshold | Priority |
-|--------|--------|-----------------|----------|
-| Failed Login Attempts | < 10/hour/user | > 20/hour/user | HIGH |
-| Admin Role Changes | 0 (unless expected) | Any change | CRITICAL |
-| Rate Limit Violations | < 50/day | > 200/day | MEDIUM |
-| Suspicious Token Activity | 0 | Any anomaly | HIGH |
+| Metric                    | Target              | Alert Threshold | Priority |
+| ------------------------- | ------------------- | --------------- | -------- |
+| Failed Login Attempts     | < 10/hour/user      | > 20/hour/user  | HIGH     |
+| Admin Role Changes        | 0 (unless expected) | Any change      | CRITICAL |
+| Rate Limit Violations     | < 50/day            | > 200/day       | MEDIUM   |
+| Suspicious Token Activity | 0                   | Any anomaly     | HIGH     |
 
 ### Alert Configuration
 
@@ -323,30 +345,30 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 
 #### Launch Day (T-Day)
 
-| Time | Activity | Owner |
-|------|----------|-------|
-| Every 15 min | Check error dashboard | On-call engineer |
-| Every 30 min | Review metrics summary | Team lead |
-| Every 1 hour | Update team on status | Team lead |
-| Every 4 hours | Deep dive into logs | DevOps |
+| Time          | Activity               | Owner            |
+| ------------- | ---------------------- | ---------------- |
+| Every 15 min  | Check error dashboard  | On-call engineer |
+| Every 30 min  | Review metrics summary | Team lead        |
+| Every 1 hour  | Update team on status  | Team lead        |
+| Every 4 hours | Deep dive into logs    | DevOps           |
 
 #### Week 1 (T+1 to T+7)
 
-| Frequency | Activity | Owner |
-|-----------|----------|-------|
-| Daily 9 AM | Morning standup + metrics review | Full team |
-| Daily 5 PM | End-of-day metrics review | Team lead |
-| Continuous | Alert monitoring | On-call engineer |
-| Weekly | Retrospective meeting | Full team |
+| Frequency  | Activity                         | Owner            |
+| ---------- | -------------------------------- | ---------------- |
+| Daily 9 AM | Morning standup + metrics review | Full team        |
+| Daily 5 PM | End-of-day metrics review        | Team lead        |
+| Continuous | Alert monitoring                 | On-call engineer |
+| Weekly     | Retrospective meeting            | Full team        |
 
 #### Ongoing (T+8 onwards)
 
-| Frequency | Activity | Owner |
-|-----------|----------|-------|
-| Daily | Automated error reports | DevOps |
-| Weekly | Metrics dashboard review | Team lead |
-| Monthly | Performance optimization review | Full team |
-| Quarterly | Security audit | Security team |
+| Frequency | Activity                        | Owner         |
+| --------- | ------------------------------- | ------------- |
+| Daily     | Automated error reports         | DevOps        |
+| Weekly    | Metrics dashboard review        | Team lead     |
+| Monthly   | Performance optimization review | Full team     |
+| Quarterly | Security audit                  | Security team |
 
 ---
 
@@ -355,6 +377,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 ### When to Rollback
 
 **Immediate Rollback Triggers:**
+
 - Critical security vulnerability discovered
 - Data integrity issue detected (data loss or corruption)
 - Complete service outage > 15 minutes
@@ -362,6 +385,7 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
 - Payment processing failures affecting users
 
 **Evaluate Rollback:**
+
 - Error rate > 10% for > 15 minutes
 - Enhancement failure rate > 50%
 - Significant performance degradation
@@ -415,18 +439,21 @@ npx prisma migrate deploy
 ### Post-Rollback Actions
 
 **Immediately After Rollback:**
+
 1. [ ] Verify production is stable
 2. [ ] Notify team in Slack
 3. [ ] Post status update (if public-facing)
 4. [ ] Begin incident post-mortem
 
 **Within 1 Hour:**
+
 1. [ ] Document what went wrong
 2. [ ] Identify root cause
 3. [ ] Create hotfix plan
 4. [ ] Test hotfix in staging
 
 **Within 4 Hours:**
+
 1. [ ] Deploy tested hotfix
 2. [ ] Verify fix resolves issue
 3. [ ] Complete incident report
@@ -434,12 +461,12 @@ npx prisma migrate deploy
 
 ### Rollback Decision Matrix
 
-| Severity | Error Rate | Affected Users | Action | Timeline |
-|----------|-----------|----------------|--------|----------|
-| Critical | > 50% | All | Immediate rollback | < 5 min |
-| High | > 25% | > 50% | Evaluate → Likely rollback | < 15 min |
-| Medium | > 10% | > 25% | Investigate → Fix forward if possible | < 1 hour |
-| Low | > 5% | < 10% | Fix forward | < 4 hours |
+| Severity | Error Rate | Affected Users | Action                                | Timeline  |
+| -------- | ---------- | -------------- | ------------------------------------- | --------- |
+| Critical | > 50%      | All            | Immediate rollback                    | < 5 min   |
+| High     | > 25%      | > 50%          | Evaluate → Likely rollback            | < 15 min  |
+| Medium   | > 10%      | > 25%          | Investigate → Fix forward if possible | < 1 hour  |
+| Low      | > 5%       | < 10%          | Fix forward                           | < 4 hours |
 
 ---
 
@@ -448,51 +475,63 @@ npx prisma migrate deploy
 ### Incident Severity Levels
 
 #### P0 - CRITICAL (Drop Everything)
+
 **Examples:**
+
 - Complete platform outage
 - Data breach or security incident
 - Payment system failure
 - Data loss or corruption
 
 **Response:**
+
 - Immediate notification to entire team
 - All hands on deck
 - Incident commander assigned
 - Status page updated every 15 minutes
 
 #### P1 - HIGH (Urgent)
+
 **Examples:**
+
 - Major feature broken (image enhancement failure)
 - Significant performance degradation
 - Authentication issues affecting multiple users
 - Database connection issues
 
 **Response:**
+
 - Notification to on-call engineer + team lead
 - Response within 15 minutes
 - Status update every 30 minutes
 - Fix within 2 hours
 
 #### P2 - MEDIUM (Important)
+
 **Examples:**
+
 - Minor feature broken (album sorting not working)
 - Intermittent errors affecting < 10% users
 - Non-critical performance issues
 - Email delivery delays
 
 **Response:**
+
 - Notification to on-call engineer
 - Response within 1 hour
 - Fix within 8 hours (same day)
 
 #### P3 - LOW (Normal)
+
 **Examples:**
+
 - UI bug (button misaligned)
 - Documentation error
 - Feature request
 - User questions
 
 **Response:**
+
 - Add to backlog
 - Response within 24 hours
 - Fix in next release
@@ -523,18 +562,19 @@ Support Email (support@spike.land)
 
 ### On-Call Schedule (Week 1)
 
-| Date | On-Call Engineer | Backup |
-|------|------------------|--------|
-| T-Day (Launch Day) | [Primary] | [Backup] |
-| T+1 | [Primary] | [Backup] |
-| T+2 | [Primary] | [Backup] |
-| T+3 | [Rotate] | [Backup] |
-| T+4 | [Rotate] | [Backup] |
-| T+5 | [Rotate] | [Backup] |
-| T+6 | [Rotate] | [Backup] |
-| T+7 | [Rotate] | [Backup] |
+| Date               | On-Call Engineer | Backup   |
+| ------------------ | ---------------- | -------- |
+| T-Day (Launch Day) | [Primary]        | [Backup] |
+| T+1                | [Primary]        | [Backup] |
+| T+2                | [Primary]        | [Backup] |
+| T+3                | [Rotate]         | [Backup] |
+| T+4                | [Rotate]         | [Backup] |
+| T+5                | [Rotate]         | [Backup] |
+| T+6                | [Rotate]         | [Backup] |
+| T+7                | [Rotate]         | [Backup] |
 
 **On-Call Responsibilities:**
+
 - Monitor alerts and dashboards
 - Respond to P0/P1 incidents immediately
 - Triage P2/P3 issues
@@ -545,39 +585,42 @@ Support Email (support@spike.land)
 
 #### Internal Communication
 
-| Channel | Use For | Response Time |
-|---------|---------|---------------|
-| Slack #incidents | P0/P1 incidents | Real-time |
-| Slack #eng-team | P2/P3 issues, updates | < 1 hour |
-| Email | Non-urgent updates | < 24 hours |
-| Phone/SMS | P0 escalation only | Immediate |
+| Channel          | Use For               | Response Time |
+| ---------------- | --------------------- | ------------- |
+| Slack #incidents | P0/P1 incidents       | Real-time     |
+| Slack #eng-team  | P2/P3 issues, updates | < 1 hour      |
+| Email            | Non-urgent updates    | < 24 hours    |
+| Phone/SMS        | P0 escalation only    | Immediate     |
 
 #### External Communication
 
-| Channel | Use For | Owner |
-|---------|---------|-------|
-| Twitter (@spike_land) | Status updates, outages | Marketing/Ops |
-| Status Page (optional) | Real-time status | DevOps |
-| Support Email | User inquiries | Support team |
-| Blog | Post-mortems, updates | Team lead |
+| Channel                | Use For                 | Owner         |
+| ---------------------- | ----------------------- | ------------- |
+| Twitter (@spike_land)  | Status updates, outages | Marketing/Ops |
+| Status Page (optional) | Real-time status        | DevOps        |
+| Support Email          | User inquiries          | Support team  |
+| Blog                   | Post-mortems, updates   | Team lead     |
 
 ### Incident Response Playbook
 
 #### P0 Incident Response Process
 
 **Phase 1: Detection & Notification (0-5 minutes)**
+
 1. [ ] Alert triggered or incident reported
 2. [ ] Notify entire team (Slack #incidents + SMS)
 3. [ ] Assign incident commander
 4. [ ] Create incident channel (#incident-[timestamp])
 
 **Phase 2: Assessment (5-15 minutes)**
+
 1. [ ] Incident commander assesses severity
 2. [ ] Confirm incident is P0
 3. [ ] Identify affected systems/users
 4. [ ] Post initial status update (internal + external)
 
 **Phase 3: Mitigation (15-60 minutes)**
+
 1. [ ] Evaluate rollback vs. fix forward
 2. [ ] If rollback: Execute rollback procedure
 3. [ ] If fix forward: Deploy hotfix
@@ -585,12 +628,14 @@ Support Email (support@spike.land)
 5. [ ] Post status update
 
 **Phase 4: Resolution (1-4 hours)**
+
 1. [ ] Confirm all systems operational
 2. [ ] Monitor for recurrence (30 min)
 3. [ ] Post resolution update
 4. [ ] Begin post-mortem process
 
 **Phase 5: Post-Mortem (1-2 days after)**
+
 1. [ ] Schedule post-mortem meeting (blameless)
 2. [ ] Document timeline, root cause, impact
 3. [ ] Identify action items and owners
@@ -669,6 +714,7 @@ Support Email (support@spike.land)
    - Who owns each action item?
 
 **Deliverables:**
+
 - [ ] Retrospective notes document
 - [ ] Action items with owners and deadlines
 - [ ] Updated launch playbook (this document)
@@ -693,6 +739,7 @@ Support Email (support@spike.land)
    - Set Q2 goals
 
 **Deliverables:**
+
 - [ ] Month 1 report (internal)
 - [ ] Q2 roadmap
 - [ ] Technical debt prioritization
@@ -703,21 +750,21 @@ Support Email (support@spike.land)
 
 ### Team Contacts
 
-| Role | Name | Email | Phone | Availability |
-|------|------|-------|-------|--------------|
+| Role           | Name   | Email   | Phone   | Availability       |
+| -------------- | ------ | ------- | ------- | ------------------ |
 | Platform Owner | zerdos | [Email] | [Phone] | 24/7 (launch week) |
-| Tech Lead | [Name] | [Email] | [Phone] | 24/7 (launch week) |
-| DevOps Lead | [Name] | [Email] | [Phone] | On-call schedule |
-| Support Lead | [Name] | [Email] | [Phone] | Business hours |
+| Tech Lead      | [Name] | [Email] | [Phone] | 24/7 (launch week) |
+| DevOps Lead    | [Name] | [Email] | [Phone] | On-call schedule   |
+| Support Lead   | [Name] | [Email] | [Phone] | Business hours     |
 
 ### External Contacts
 
-| Service | Support URL | Emergency Contact |
-|---------|-------------|-------------------|
-| Vercel | https://vercel.com/support | [Email] |
-| Database Provider | [Support Link] | [Emergency Phone] |
-| Cloudflare | https://www.cloudflare.com/support | [Email] |
-| Stripe (future) | https://stripe.com/support | [Email] |
+| Service           | Support URL                        | Emergency Contact |
+| ----------------- | ---------------------------------- | ----------------- |
+| Vercel            | https://vercel.com/support         | [Email]           |
+| Database Provider | [Support Link]                     | [Emergency Phone] |
+| Cloudflare        | https://www.cloudflare.com/support | [Email]           |
+| Stripe (future)   | https://stripe.com/support         | [Email]           |
 
 ---
 
@@ -761,7 +808,8 @@ Join us and enhance your images today! 🎉
 
 **Product Hunt (T+1, Optional):**
 
-*Submit product listing with:*
+_Submit product listing with:_
+
 - Product description
 - Demo GIF or video
 - Feature list
@@ -771,9 +819,9 @@ Join us and enhance your images today! 🎉
 
 ## 📝 Change Log
 
-| Version | Date | Changes | Author |
-|---------|------|---------|--------|
-| 1.0 | Dec 10, 2025 | Initial launch plan | Security Audit Agent |
+| Version | Date         | Changes             | Author               |
+| ------- | ------------ | ------------------- | -------------------- |
+| 1.0     | Dec 10, 2025 | Initial launch plan | Security Audit Agent |
 
 ---
 
