@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type ErrorContext, ErrorLogger, errorLogger } from "./error-logger";
 
+// Mock Sentry
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  setUser: vi.fn(),
+  setContext: vi.fn(),
+  setTag: vi.fn(),
+}));
+
 describe("ErrorLogger", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let originalNodeEnv: string | undefined;
@@ -8,6 +16,7 @@ describe("ErrorLogger", () => {
   beforeEach(() => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     originalNodeEnv = process.env.NODE_ENV;
+    vi.clearAllMocks();
   });
 
   afterEach(() => {

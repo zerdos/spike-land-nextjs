@@ -15,8 +15,8 @@ describe("next.config.ts", () => {
 
   beforeEach(async () => {
     // Dynamically import to pick up the mock
-    const module = await import("./next.config");
-    nextConfig = module.default;
+    const configModule = await import("./next.config");
+    nextConfig = configModule.default;
   });
 
   describe("security headers", () => {

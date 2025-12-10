@@ -78,11 +78,16 @@ This checklist ensures all critical systems, security measures, and operational 
   - [x] `prisma generate` run successfully
   - [x] Database indexes verified for performance
 
-- [ ] **Database Backups**
-  - [ ] Automated daily backups enabled
-  - [ ] Backup retention policy set (minimum 7 days)
-  - [ ] Backup restoration tested
-  - [ ] Point-in-time recovery available (if needed)
+- [ ] **Database Backups** (See [DATABASE_BACKUPS.md](./DATABASE_BACKUPS.md) for detailed guide)
+  - [ ] PITR retention set to 30 days in Neon Console (Project Settings > Storage > History retention)
+  - [ ] Automated daily snapshots enabled in Neon Console (Project Settings > Backups > Schedule)
+  - [ ] Daily snapshot retention set to 30 days
+  - [ ] Weekly external backups configured (GitHub Actions workflow)
+  - [ ] AWS S3 bucket created for external backups with lifecycle policy (90 days)
+  - [ ] Backup secrets configured in GitHub Actions (DATABASE_URL, AWS credentials)
+  - [ ] First backup restoration tested successfully
+  - [ ] Monthly restore test scheduled (First Sunday of each month)
+  - [ ] Backup monitoring and alerts configured (Slack/Email)
 
 ### Cloudflare R2 Storage
 
