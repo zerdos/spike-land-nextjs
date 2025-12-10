@@ -175,6 +175,9 @@ export function JobsAdminClient() {
     }
   }, [selectedJob]);
 
+  // Note: eslint-disable is intentional here. We exclude:
+  // - fetchJobs: it's memoized with useCallback and stable
+  // - searchQuery: changes are handled separately via handleSearch() to avoid fetches on every keystroke
   useEffect(() => {
     const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
     fetchJobs(status, pagination.page, searchQuery);
@@ -226,7 +229,7 @@ export function JobsAdminClient() {
       </div>
 
       {/* Search and Refresh */}
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="search">
         <input
           type="text"
           placeholder="Search by Job ID or email..."
@@ -234,11 +237,12 @@ export function JobsAdminClient() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           className="flex-1 rounded-md border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+          aria-label="Search by Job ID or email"
         />
-        <Button variant="outline" onClick={handleSearch}>
+        <Button variant="outline" onClick={handleSearch} aria-label="Search">
           Search
         </Button>
-        <Button variant="outline" onClick={handleRefresh}>
+        <Button variant="outline" onClick={handleRefresh} aria-label="Refresh job list">
           Refresh
         </Button>
       </div>
