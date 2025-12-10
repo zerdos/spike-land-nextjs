@@ -245,7 +245,7 @@ All endpoints except `/api/vouchers/validate` require authentication.
 ### Enhance Image
 
 ```bash
-curl -X POST https://next.spike.land/api/images/enhance \
+curl -X POST https://spike.land/api/images/enhance \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{"imageId": "img_123", "tier": "TIER_2K"}'
@@ -254,14 +254,14 @@ curl -X POST https://next.spike.land/api/images/enhance \
 ### Check Balance
 
 ```bash
-curl https://next.spike.land/api/tokens/balance \
+curl https://spike.land/api/tokens/balance \
   -H "Authorization: Bearer {token}"
 ```
 
 ### Redeem Voucher
 
 ```bash
-curl -X POST https://next.spike.land/api/vouchers/redeem \
+curl -X POST https://spike.land/api/vouchers/redeem \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{"code": "WELCOME50"}'
@@ -270,7 +270,7 @@ curl -X POST https://next.spike.land/api/vouchers/redeem \
 ### Create Album
 
 ```bash
-curl -X POST https://next.spike.land/api/albums \
+curl -X POST https://spike.land/api/albums \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{"name": "My Album", "description": "Photos", "isPublic": false}'
@@ -279,7 +279,7 @@ curl -X POST https://next.spike.land/api/albums \
 ### Get Referral Link
 
 ```bash
-curl https://next.spike.land/api/referral/link \
+curl https://spike.land/api/referral/link \
   -H "Authorization: Bearer {token}"
 ```
 

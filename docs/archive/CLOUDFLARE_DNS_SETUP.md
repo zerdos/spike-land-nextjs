@@ -1,5 +1,7 @@
 # Cloudflare DNS Setup for spike.land
 
+**Note:** This is archived documentation. Subdomain references (next.spike.land, pixel.spike.land) are now deprecated. All traffic should use the main domain: https://spike.land
+
 This guide explains how to configure DNS records in Cloudflare for the Spike Land platform domains.
 
 ## Prerequisites
@@ -26,16 +28,7 @@ This guide explains how to configure DNS records in Cloudflare for the Spike Lan
    - TTL: Auto
    - Click "Save"
 
-   **Pixel subdomain (pixel.spike.land)**:
-   - Click "Add record"
-   - Type: `CNAME`
-   - Name: `pixel`
-   - Target: `cname.vercel-dns.com`
-   - Proxy status: **DNS only** (gray cloud, NOT proxied)
-   - TTL: Auto
-   - Click "Save"
-
-   **Legacy subdomain (next.spike.land)** - Optional:
+   **Legacy subdomain (next.spike.land)** - DEPRECATED:
    - Click "Add record"
    - Type: `CNAME`
    - Name: `next`
@@ -69,11 +62,11 @@ After adding the DNS record:
 1. **Check DNS propagation**:
    ```bash
    # On your terminal
-   dig next.spike.land
+   dig spike.land
    # or
-   nslookup next.spike.land
+   nslookup spike.land
    ```
-   Should show: `next.spike.land. IN CNAME cname.vercel-dns.com.`
+   Should show: `spike.land. IN CNAME cname.vercel-dns.com.`
 
 2. **Verify in Vercel**:
    - Go back to Vercel Dashboard → Project → Settings → Domains
@@ -82,18 +75,17 @@ After adding the DNS record:
 
 3. **Test the deployment**:
    - After next deployment to `main` branch
-   - Visit: https://next.spike.land
+   - Visit: https://spike.land
    - Should show your Next.js application
 
 ## Expected DNS Records
 
 After setup, your DNS records should look like:
 
-| Type  | Name  | Target               | Proxy Status | TTL  |
-| ----- | ----- | -------------------- | ------------ | ---- |
-| CNAME | @     | cname.vercel-dns.com | DNS only     | Auto |
-| CNAME | pixel | cname.vercel-dns.com | DNS only     | Auto |
-| CNAME | next  | cname.vercel-dns.com | DNS only     | Auto |
+| Type  | Name | Target               | Proxy Status | TTL  | Status     |
+| ----- | ---- | -------------------- | ------------ | ---- | ---------- |
+| CNAME | @    | cname.vercel-dns.com | DNS only     | Auto | Active     |
+| CNAME | next | cname.vercel-dns.com | DNS only     | Auto | DEPRECATED |
 
 ## Troubleshooting
 

@@ -1,7 +1,7 @@
 # Spike Land - Complete Manual Testing Guide
 
 **Last Updated:** December 6, 2025
-**Production URL:** https://next.spike.land
+**Production URL:** https://spike.land
 **Pre-tested by:** Claude Code with Playwright MCP
 
 ---
@@ -13,7 +13,7 @@ Before testing, ensure you have:
 - A modern browser (Chrome, Firefox, Safari, or Edge)
 - Test account credentials (GitHub or Google OAuth)
 - Admin account credentials (for admin dashboard testing)
-- Production URL: https://next.spike.land
+- Production URL: https://spike.land
 
 ---
 
@@ -21,7 +21,7 @@ Before testing, ensure you have:
 
 ### A.1 Sign In with GitHub
 
-1. Navigate to https://next.spike.land
+1. Navigate to https://spike.land
 2. Click the user avatar/sign-in button in the top right
 3. Select "Sign in with GitHub"
 4. Complete GitHub OAuth flow
@@ -29,7 +29,7 @@ Before testing, ensure you have:
 
 ### A.2 Sign In with Google
 
-1. Navigate to https://next.spike.land
+1. Navigate to https://spike.land
 2. Click the user avatar/sign-in button
 3. Select "Sign in with Google"
 4. Complete Google OAuth flow
@@ -37,10 +37,10 @@ Before testing, ensure you have:
 
 ### A.3 Protected Route Access
 
-1. While logged out, navigate to https://next.spike.land/enhance
+1. While logged out, navigate to https://spike.land/apps/images
 2. **Expected:** Redirected to sign-in page
 3. After signing in, try accessing:
-   - `/enhance` - Should load image enhancement page
+   - `/apps/images` - Should load image enhancement page
    - `/settings` - Should load settings page
    - `/albums` - Should load albums page
    - `/referrals` - Should load referral dashboard
@@ -56,7 +56,7 @@ Before testing, ensure you have:
 
 1. Sign in to the app
 2. Close the browser tab
-3. Open a new tab and navigate to https://next.spike.land/enhance
+3. Open a new tab and navigate to https://spike.land/apps/images
 4. **Expected:** Still logged in, no re-authentication needed
 
 ---
@@ -65,7 +65,7 @@ Before testing, ensure you have:
 
 ### B.1 Upload Image
 
-1. Navigate to https://next.spike.land/enhance
+1. Navigate to https://spike.land/apps/images
 2. Drag and drop an image onto the upload area (or click to select)
 3. **Supported formats:** JPEG, PNG, WebP
 4. **Max size:** 50MB
@@ -113,13 +113,13 @@ Before testing, ensure you have:
 
 ### C.1 Check Token Balance
 
-1. Navigate to https://next.spike.land/enhance
+1. Navigate to https://spike.land/apps/images
 2. Look at the token balance display (top right area)
 3. **Expected:** Shows current token count and "Available balance"
 
 ### C.2 Purchase Tokens (One-Time)
 
-1. Navigate to https://next.spike.land/pricing
+1. Navigate to https://spike.land/pricing
 2. View available token packs:
    - Starter Pack: 10 tokens - £2.99
    - Basic Pack: 50 tokens - £9.99
@@ -135,7 +135,7 @@ Before testing, ensure you have:
    - Your email pre-filled
    - Payment options available
 2. You can use Stripe test cards for testing (if in test mode)
-3. **Expected:** After purchase, redirected to /enhance with updated balance
+3. **Expected:** After purchase, redirected to /apps/images with updated balance
 
 ### C.4 Verify Low Balance Warnings
 
@@ -155,7 +155,7 @@ Before testing, ensure you have:
 
 ### D.1 Create Album
 
-1. Navigate to https://next.spike.land/albums
+1. Navigate to https://spike.land/albums
 2. Click "New Album" button
 3. Enter album name (e.g., "My Test Album")
 4. Select privacy setting (Private or Unlisted)
@@ -164,14 +164,14 @@ Before testing, ensure you have:
 
 ### D.2 Add Images to Album
 
-1. Navigate to https://next.spike.land/enhance
+1. Navigate to https://spike.land/apps/images
 2. On any image, click "Add to Album" button
 3. Select target album from dropdown
 4. **Expected:** Image added to album, confirmation shown
 
 ### D.3 View Album
 
-1. Navigate to https://next.spike.land/albums
+1. Navigate to https://spike.land/albums
 2. Click "View Album" on any album
 3. **Expected:** Album detail page shows all images in album
 
@@ -201,7 +201,7 @@ Before testing, ensure you have:
 
 ### E.1 Batch Upload
 
-1. Navigate to https://next.spike.land/enhance
+1. Navigate to https://spike.land/apps/images
 2. Select multiple images at once (drag multiple or Shift+click)
 3. **Expected:** All images upload and appear in gallery
 
@@ -225,8 +225,8 @@ Before testing, ensure you have:
 
 ### F.1 View Referral Link
 
-1. Navigate to https://next.spike.land/referrals
-2. **Expected:** Your unique referral link displayed (e.g., `https://next.spike.land?ref=XXXXXXXX`)
+1. Navigate to https://spike.land/referrals
+2. **Expected:** Your unique referral link displayed (e.g., `https://spike.land?ref=XXXXXXXX`)
 
 ### F.2 Copy Referral Link
 
@@ -262,11 +262,11 @@ Before testing, ensure you have:
 ### G.1 Access Control (Admin Only)
 
 1. Log in with a non-admin account
-2. Navigate to https://next.spike.land/admin
+2. Navigate to https://spike.land/admin
 3. **Expected:** Access denied or redirect to home
 
 4. Log in with admin account
-5. Navigate to https://next.spike.land/admin
+5. Navigate to https://spike.land/admin
 6. **Expected:** Admin dashboard loads successfully
 
 ### G.2 Dashboard Overview
@@ -333,20 +333,20 @@ Before testing, ensure you have:
 
 ### H.1 Terms of Service
 
-1. Navigate to https://next.spike.land/terms
+1. Navigate to https://spike.land/terms
 2. **Expected:** Full Terms of Service document loads
 3. Verify table of contents links work
 4. Check all sections expand/collapse properly
 
 ### H.2 Privacy Policy
 
-1. Navigate to https://next.spike.land/privacy
+1. Navigate to https://spike.land/privacy
 2. **Expected:** Full Privacy Policy document loads
 3. Verify data collection and retention sections present
 
 ### H.3 Cookie Policy
 
-1. Navigate to https://next.spike.land/cookies
+1. Navigate to https://spike.land/cookies
 2. **Expected:** Full Cookie Policy document loads
 3. Verify cookie types and management info present
 
@@ -356,7 +356,7 @@ Before testing, ensure you have:
 
 ### I.1 View Apps List
 
-1. Navigate to https://next.spike.land/my-apps
+1. Navigate to https://spike.land/my-apps
 2. **Expected:** Grid of your apps (or empty state)
 
 ### I.2 Create New App
@@ -466,13 +466,13 @@ Before testing, ensure you have:
 
 ## Appendix: Quick Links
 
-- **Production:** https://next.spike.land
-- **Pricing:** https://next.spike.land/pricing
-- **Enhance:** https://next.spike.land/enhance
-- **Albums:** https://next.spike.land/albums
-- **Referrals:** https://next.spike.land/referrals
-- **Admin:** https://next.spike.land/admin
-- **Settings:** https://next.spike.land/settings
-- **Terms:** https://next.spike.land/terms
-- **Privacy:** https://next.spike.land/privacy
-- **Cookies:** https://next.spike.land/cookies
+- **Production:** https://spike.land
+- **Pricing:** https://spike.land/pricing
+- **Enhance:** https://spike.land/apps/images
+- **Albums:** https://spike.land/albums
+- **Referrals:** https://spike.land/referrals
+- **Admin:** https://spike.land/admin
+- **Settings:** https://spike.land/settings
+- **Terms:** https://spike.land/terms
+- **Privacy:** https://spike.land/privacy
+- **Cookies:** https://spike.land/cookies
