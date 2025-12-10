@@ -61,7 +61,7 @@ describe("/api/images/export", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(rateLimiter.checkRateLimit).mockReturnValue({
+    vi.mocked(rateLimiter.checkRateLimit).mockResolvedValue({
       isLimited: false,
       remaining: 99,
       resetAt: Date.now() + 60000,
@@ -95,7 +95,7 @@ describe("/api/images/export", () => {
 
   it("should return 429 if rate limited", async () => {
     const resetAt = Date.now() + 30000;
-    vi.mocked(rateLimiter.checkRateLimit).mockReturnValue({
+    vi.mocked(rateLimiter.checkRateLimit).mockResolvedValue({
       isLimited: true,
       remaining: 0,
       resetAt,

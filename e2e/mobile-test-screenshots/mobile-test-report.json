@@ -1,0 +1,62 @@
+[
+  {
+    "viewport": "iPhone SE",
+    "url": "https://spike.land",
+    "status": "fail",
+    "issues": [
+      "Navigation menu not visible",
+      "Admin page did not handle unauthenticated access correctly",
+      "Horizontal overflow detected (scroll: 417px, client: 375px)",
+      "Found 5 buttons smaller than 44x44px (touch target size)"
+    ],
+    "screenshots": [
+      "iPhone-SE-landing.png",
+      "iPhone-SE-enhance.png",
+      "iPhone-SE-admin.png"
+    ]
+  },
+  {
+    "viewport": "iPad",
+    "url": "https://spike.land",
+    "status": "fail",
+    "issues": [
+      "Admin page did not handle unauthenticated access correctly",
+      "Found 4 buttons smaller than 44x44px (touch target size)"
+    ],
+    "screenshots": [
+      "iPad-landing.png",
+      "iPad-enhance.png",
+      "iPad-admin.png"
+    ]
+  },
+  {
+    "viewport": "Desktop HD",
+    "url": "https://spike.land",
+    "status": "fail",
+    "issues": [
+      "Comparison slider missing touch support",
+      "Admin page did not handle unauthenticated access correctly",
+      "Found 4 buttons smaller than 44x44px (touch target size)"
+    ],
+    "screenshots": [
+      "Desktop-HD-landing.png",
+      "Desktop-HD-enhance.png",
+      "Desktop-HD-admin.png"
+    ]
+  },
+  {
+    "viewport": "Mobile Landscape",
+    "url": "https://spike.land",
+    "status": "fail",
+    "issues": [
+      "Navigation menu not visible",
+      "Admin page did not handle unauthenticated access correctly",
+      "Found 5 buttons smaller than 44x44px (touch target size)"
+    ],
+    "screenshots": [
+      "Mobile-Landscape-landing.png",
+      "Mobile-Landscape-enhance.png",
+      "Mobile-Landscape-admin.png"
+    ]
+  }
+]

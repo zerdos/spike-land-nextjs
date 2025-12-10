@@ -17,7 +17,7 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
 }));
 
 vi.mock("@/lib/rate-limiter", () => ({
-  checkRateLimit: vi.fn().mockReturnValue({ isLimited: false }),
+  checkRateLimit: vi.fn().mockResolvedValue({ isLimited: false }),
   rateLimitConfigs: { imageEnhancement: {} },
 }));
 
@@ -180,7 +180,7 @@ describe("POST /api/images/enhance", () => {
   it("should return 429 if rate limited", async () => {
     const { checkRateLimit } = await import("@/lib/rate-limiter");
 
-    vi.mocked(checkRateLimit).mockReturnValueOnce({
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
       isLimited: true,
       resetAt: Date.now() + 60000,
       remaining: 0,

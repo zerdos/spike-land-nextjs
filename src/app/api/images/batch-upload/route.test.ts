@@ -28,6 +28,43 @@ vi.mock("@/lib/storage/upload-handler", () => ({
   }),
 }));
 
+vi.mock("@/lib/storage/r2-client", () => ({
+  deleteFromR2: vi.fn().mockResolvedValue({
+    success: true,
+  }),
+  uploadToR2: vi.fn(),
+}));
+
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    isLimited: false,
+    resetAt: Date.now() + 60000,
+  }),
+  rateLimitConfigs: {
+    imageUpload: { points: 10, duration: 60 },
+  },
+}));
+
+vi.mock("@/lib/errors/error-messages", () => ({
+  getUserFriendlyError: vi.fn((error: Error, statusCode?: number) => ({
+    message: error.message,
+    title: "Error",
+    suggestion: "Please try again",
+    statusCode: statusCode || 500,
+  })),
+}));
+
+vi.mock("@/lib/errors/structured-logger", () => ({
+  logger: {
+    child: vi.fn(() => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    })),
+  },
+  generateRequestId: vi.fn(() => "test-request-id"),
+}));
+
 const { mockPrisma } = vi.hoisted(() => {
   return {
     mockPrisma: {
@@ -55,6 +92,14 @@ const { mockPrisma } = vi.hoisted(() => {
           });
         }),
       },
+      $transaction: vi.fn().mockImplementation(async (operations) => {
+        // Execute all operations in sequence for testing
+        const results = [];
+        for (const op of operations) {
+          results.push(await op);
+        }
+        return results;
+      }),
     },
   };
 });
@@ -97,6 +142,14 @@ function createMockRequest(files: MockFile[]): NextRequest {
 describe("POST /api/images/batch-upload", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Restore transaction mock implementation after clearAllMocks
+    mockPrisma.$transaction.mockImplementation(async (operations) => {
+      const results = [];
+      for (const op of operations) {
+        results.push(await op);
+      }
+      return results;
+    });
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -122,7 +175,8 @@ describe("POST /api/images/batch-upload", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("No files provided");
+    expect(data.error).toBe("Invalid input");
+    expect(data.suggestion).toBe("Please provide files to upload.");
   });
 
   it("should return 400 if more than 20 files provided", async () => {
@@ -131,7 +185,8 @@ describe("POST /api/images/batch-upload", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("Maximum 20 files allowed per batch");
+    expect(data.error).toBe("Invalid input");
+    expect(data.suggestion).toContain("maximum of 20 files");
   });
 
   it("should return 400 if any file exceeds 10MB", async () => {
@@ -143,7 +198,9 @@ describe("POST /api/images/batch-upload", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("File test2.jpg exceeds maximum size of 10MB");
+    expect(data.error).toBe("Invalid input");
+    expect(data.suggestion).toContain("test2.jpg");
+    expect(data.suggestion).toContain("10MB");
   });
 
   it("should return 400 if total batch size exceeds 50MB", async () => {
@@ -159,7 +216,8 @@ describe("POST /api/images/batch-upload", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toContain("Total batch size exceeds maximum of 50MB");
+    expect(data.error).toBe("Invalid input");
+    expect(data.suggestion).toContain("50MB");
   });
 
   it("should upsert user before uploading images", async () => {
@@ -213,7 +271,7 @@ describe("POST /api/images/batch-upload", () => {
   it("should handle partial upload failure", async () => {
     const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
 
-    // First file succeeds, second fails
+    // First file succeeds, second fails DURING UPLOAD (before transaction)
     vi.mocked(processAndUploadImage)
       .mockResolvedValueOnce({
         success: true,
@@ -244,9 +302,13 @@ describe("POST /api/images/batch-upload", () => {
 
     expect(res.status).toBe(200);
     expect(data.results).toHaveLength(2);
+    // File 1: Successfully uploaded to R2 and saved to database
     expect(data.results[0].success).toBe(true);
+    expect(data.results[0].errorType).toBeUndefined();
+    // File 2: Failed during R2 upload, marked as upload error
     expect(data.results[1].success).toBe(false);
     expect(data.results[1].error).toBe("Processing failed");
+    expect(data.results[1].errorType).toBe("upload");
     expect(data.summary.successful).toBe(1);
     expect(data.summary.failed).toBe(1);
   });
@@ -277,23 +339,25 @@ describe("POST /api/images/batch-upload", () => {
     expect(data.results[0].success).toBe(true);
     expect(data.results[1].success).toBe(false);
     expect(data.results[1].error).toBe("Network error");
+    expect(data.results[1].errorType).toBe("unknown");
   });
 
-  it("should handle database creation failure for individual file", async () => {
-    mockPrisma.enhancedImage.create
-      .mockResolvedValueOnce({
-        id: "img-test1.jpg",
-        userId: "user-123",
-        name: "test1.jpg",
-        originalUrl: "https://r2.dev/images/test1.jpg",
-        originalR2Key: "users/user-123/originals/test1.jpg",
-        originalWidth: 1920,
-        originalHeight: 1080,
-        originalSizeBytes: 1024000,
-        originalFormat: "jpeg",
-        isPublic: false,
-      })
-      .mockRejectedValueOnce(new Error("Database error"));
+  it("should handle database transaction failure", async () => {
+    // Mock successful R2 uploads for both files
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    vi.mocked(processAndUploadImage).mockResolvedValue({
+      success: true,
+      url: "https://r2.dev/images/test.jpg",
+      r2Key: "users/user-123/originals/test.jpg",
+      width: 1920,
+      height: 1080,
+      sizeBytes: 1024000,
+      format: "jpeg",
+      imageId: "img-1",
+    });
+
+    // Mock database transaction failure
+    mockPrisma.$transaction.mockRejectedValueOnce(new Error("Database error"));
 
     const files = [createMockFile("test1.jpg"), createMockFile("test2.jpg")];
     const req = createMockRequest(files);
@@ -302,9 +366,13 @@ describe("POST /api/images/batch-upload", () => {
 
     expect(res.status).toBe(200);
     expect(data.results).toHaveLength(2);
-    expect(data.results[0].success).toBe(true);
+    // Both files fail because transaction failed (even though R2 uploads succeeded)
+    expect(data.results[0].success).toBe(false);
+    expect(data.results[0].errorType).toBe("database");
     expect(data.results[1].success).toBe(false);
-    expect(data.results[1].error).toBe("Database error");
+    expect(data.results[1].errorType).toBe("database");
+    expect(data.summary.successful).toBe(0);
+    expect(data.summary.failed).toBe(2);
   });
 
   it("should upload exactly 20 files successfully", async () => {
@@ -403,5 +471,252 @@ describe("POST /api/images/batch-upload", () => {
         image: "https://example.com/new-avatar.jpg",
       },
     });
+  });
+
+  // TRANSACTIONAL SAFETY TESTS
+  // Note: Transaction usage is verified implicitly by the rollback tests below
+
+  it("should rollback R2 uploads when database transaction fails", async () => {
+    const { deleteFromR2 } = await import("@/lib/storage/r2-client");
+
+    // Mock successful R2 uploads
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    vi.mocked(processAndUploadImage)
+      .mockResolvedValueOnce({
+        success: true,
+        url: "https://r2.dev/images/test1.jpg",
+        r2Key: "users/user-123/originals/test1.jpg",
+        width: 1920,
+        height: 1080,
+        sizeBytes: 1024000,
+        format: "jpeg",
+        imageId: "img-1",
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        url: "https://r2.dev/images/test2.jpg",
+        r2Key: "users/user-123/originals/test2.jpg",
+        width: 1920,
+        height: 1080,
+        sizeBytes: 1024000,
+        format: "jpeg",
+        imageId: "img-2",
+      });
+
+    // Mock database transaction failure
+    mockPrisma.$transaction.mockRejectedValueOnce(new Error("Database transaction failed"));
+
+    const files = [createMockFile("test1.jpg"), createMockFile("test2.jpg")];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    const data = await res.json();
+
+    // Verify R2 cleanup was called for both files
+    expect(deleteFromR2).toHaveBeenCalledTimes(2);
+    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test1.jpg");
+    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test2.jpg");
+
+    // Verify all results marked as failed
+    expect(data.summary.successful).toBe(0);
+    expect(data.summary.failed).toBe(2);
+    expect(data.results[0].success).toBe(false);
+    expect(data.results[0].errorType).toBe("database");
+    expect(data.results[1].success).toBe(false);
+    expect(data.results[1].errorType).toBe("database");
+  });
+
+  it("should handle R2 cleanup failure gracefully during rollback", async () => {
+    const { deleteFromR2 } = await import("@/lib/storage/r2-client");
+
+    // Mock successful R2 upload
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    vi.mocked(processAndUploadImage).mockResolvedValueOnce({
+      success: true,
+      url: "https://r2.dev/images/test1.jpg",
+      r2Key: "users/user-123/originals/test1.jpg",
+      width: 1920,
+      height: 1080,
+      sizeBytes: 1024000,
+      format: "jpeg",
+      imageId: "img-1",
+    });
+
+    // Mock database transaction failure
+    mockPrisma.$transaction.mockRejectedValueOnce(new Error("Database error"));
+
+    // Mock R2 cleanup failure
+    vi.mocked(deleteFromR2).mockRejectedValueOnce(new Error("R2 cleanup failed"));
+
+    const files = [createMockFile("test1.jpg")];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    const data = await res.json();
+
+    // Should still return response even if cleanup fails
+    expect(res.status).toBe(200);
+    expect(data.summary.successful).toBe(0);
+    expect(data.summary.failed).toBe(1);
+    expect(data.results[0].errorType).toBe("database");
+  });
+
+  it("should categorize upload errors correctly", async () => {
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+
+    // Mock R2 upload failure
+    vi.mocked(processAndUploadImage).mockResolvedValueOnce({
+      success: false,
+      error: "R2 upload failed",
+      url: "",
+      r2Key: "",
+      width: 0,
+      height: 0,
+      sizeBytes: 0,
+      format: "",
+      imageId: "",
+    });
+
+    const files = [createMockFile("test1.jpg")];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.results[0].success).toBe(false);
+    expect(data.results[0].errorType).toBe("upload");
+    expect(data.results[0].error).toBe("R2 upload failed");
+  });
+
+  it("should handle mixed upload and database failures", async () => {
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { deleteFromR2 } = await import("@/lib/storage/r2-client");
+
+    // First file: upload fails
+    // Second file: upload succeeds
+    // Third file: upload succeeds
+    vi.mocked(processAndUploadImage)
+      .mockResolvedValueOnce({
+        success: false,
+        error: "R2 upload failed",
+        url: "",
+        r2Key: "",
+        width: 0,
+        height: 0,
+        sizeBytes: 0,
+        format: "",
+        imageId: "",
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        url: "https://r2.dev/images/test2.jpg",
+        r2Key: "users/user-123/originals/test2.jpg",
+        width: 1920,
+        height: 1080,
+        sizeBytes: 1024000,
+        format: "jpeg",
+        imageId: "img-2",
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        url: "https://r2.dev/images/test3.jpg",
+        r2Key: "users/user-123/originals/test3.jpg",
+        width: 1920,
+        height: 1080,
+        sizeBytes: 1024000,
+        format: "jpeg",
+        imageId: "img-3",
+      });
+
+    // Mock database transaction failure for the two successful uploads
+    mockPrisma.$transaction.mockRejectedValueOnce(new Error("Database error"));
+
+    const files = [
+      createMockFile("test1.jpg"),
+      createMockFile("test2.jpg"),
+      createMockFile("test3.jpg"),
+    ];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    const data = await res.json();
+
+    // Verify R2 cleanup was only called for successfully uploaded files
+    expect(deleteFromR2).toHaveBeenCalledTimes(2);
+    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test2.jpg");
+    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test3.jpg");
+
+    // Verify results
+    expect(data.summary.total).toBe(3);
+    expect(data.summary.successful).toBe(0);
+    expect(data.summary.failed).toBe(3);
+
+    // File 1: upload error
+    expect(data.results[0].filename).toBe("test1.jpg");
+    expect(data.results[0].errorType).toBe("upload");
+
+    // Files 2 & 3: database error
+    expect(data.results[1].filename).toBe("test2.jpg");
+    expect(data.results[1].errorType).toBe("database");
+    expect(data.results[2].filename).toBe("test3.jpg");
+    expect(data.results[2].errorType).toBe("database");
+  });
+
+  it("should not call transaction when all files fail upload", async () => {
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+
+    // All uploads fail
+    vi.mocked(processAndUploadImage).mockResolvedValue({
+      success: false,
+      error: "Upload failed",
+      url: "",
+      r2Key: "",
+      width: 0,
+      height: 0,
+      sizeBytes: 0,
+      format: "",
+      imageId: "",
+    });
+
+    const files = [createMockFile("test1.jpg"), createMockFile("test2.jpg")];
+    const req = createMockRequest(files);
+    await POST(req);
+
+    // Transaction should not be called
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("should return partial success when some files upload successfully after transaction failure", async () => {
+    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+
+    // First batch: upload succeeds, transaction succeeds
+    vi.mocked(processAndUploadImage)
+      .mockResolvedValueOnce({
+        success: true,
+        url: "https://r2.dev/images/test1.jpg",
+        r2Key: "users/user-123/originals/test1.jpg",
+        width: 1920,
+        height: 1080,
+        sizeBytes: 1024000,
+        format: "jpeg",
+        imageId: "img-1",
+      })
+      .mockResolvedValueOnce({
+        success: false,
+        error: "Upload failed",
+        url: "",
+        r2Key: "",
+        width: 0,
+        height: 0,
+        sizeBytes: 0,
+        format: "",
+        imageId: "",
+      });
+
+    const files = [createMockFile("test1.jpg"), createMockFile("test2.jpg")];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    const data = await res.json();
+
+    // Should show partial success
+    expect(data.success).toBe(true);
+    expect(data.summary.successful).toBe(1);
+    expect(data.summary.failed).toBe(1);
   });
 });

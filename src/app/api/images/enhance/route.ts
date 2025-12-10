@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     requestLogger.info("User authenticated", { userId: session.user.id });
 
     // Check rate limit before processing
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `enhance:${session.user.id}`,
       rateLimitConfigs.imageEnhancement,
     );

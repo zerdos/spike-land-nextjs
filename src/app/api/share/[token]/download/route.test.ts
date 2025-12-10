@@ -16,7 +16,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const mockCheckRateLimit = vi.fn(() => ({
+const mockCheckRateLimit = vi.fn(async () => ({
   isLimited: false,
   remaining: 99,
   resetAt: Date.now() + 60000,
@@ -56,7 +56,7 @@ describe("GET /api/share/[token]/download", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn();
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: false,
       remaining: 99,
       resetAt: Date.now() + 60000,
@@ -217,7 +217,7 @@ describe("GET /api/share/[token]/download", () => {
   });
 
   it("should return 429 when rate limited", async () => {
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: true,
       remaining: 0,
       resetAt: Date.now() + 60000,

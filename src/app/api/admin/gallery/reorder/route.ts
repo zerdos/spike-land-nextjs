@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // Revalidate gallery cache tag (Next.js 16 requires cacheLife profile)
+    // Revalidate gallery cache tag
     revalidateTag("gallery", "max");
 
     return NextResponse.json({
@@ -131,7 +131,7 @@ export async function PATCH(request: NextRequest) {
       ),
     );
 
-    // Revalidate gallery cache tag (Next.js 16 requires cacheLife profile)
+    // Revalidate gallery cache tag
     revalidateTag("gallery", "max");
 
     return NextResponse.json({

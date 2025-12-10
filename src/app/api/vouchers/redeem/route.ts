@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting: 5 redemption attempts per hour per user
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `voucher_redeem:${session.user.id}`,
       rateLimitConfigs.voucherRedemption,
     );

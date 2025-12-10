@@ -12,5 +12,11 @@
       "destination": "https://spike.land/:path*",
       "permanent": true
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-jobs",
+      "schedule": "*/15 * * * *"
+    }
   ]
 }

@@ -69,7 +69,7 @@ describe("Password API Route", () => {
     mockRequireAdmin.mockResolvedValue(undefined);
 
     // Default: not rate limited
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: false,
       remaining: 4,
       resetAt: Date.now() + 3600000,
@@ -149,7 +149,7 @@ describe("Password API Route", () => {
   describe("Rate Limiting", () => {
     it("returns 429 when rate limited", async () => {
       const resetAt = Date.now() + 3600000;
-      mockCheckRateLimit.mockReturnValue({
+      mockCheckRateLimit.mockResolvedValue({
         isLimited: true,
         remaining: 0,
         resetAt,

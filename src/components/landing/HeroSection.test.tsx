@@ -2,19 +2,25 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { HeroSection } from "./HeroSection";
 
-// Mock the HeroComparisonSlider component
-vi.mock("./HeroComparisonSlider", () => ({
-  HeroComparisonSlider: ({
+// Mock the ImageComparisonSlider component
+vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
+  ImageComparisonSlider: ({
     originalUrl,
     enhancedUrl,
+    originalLabel,
+    enhancedLabel,
   }: {
     originalUrl: string;
     enhancedUrl: string;
+    originalLabel?: string;
+    enhancedLabel?: string;
   }) => (
     <div
-      data-testid="hero-comparison-slider"
+      data-testid="image-comparison-slider"
       data-original={originalUrl}
       data-enhanced={enhancedUrl}
+      data-original-label={originalLabel}
+      data-enhanced-label={enhancedLabel}
     >
       Comparison Slider
     </div>
@@ -39,14 +45,14 @@ describe("HeroSection Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("should render the HeroComparisonSlider", () => {
+  it("should render the ImageComparisonSlider", () => {
     render(<HeroSection />);
-    expect(screen.getByTestId("hero-comparison-slider")).toBeInTheDocument();
+    expect(screen.getByTestId("image-comparison-slider")).toBeInTheDocument();
   });
 
   it("should use fallback URLs when no props provided", () => {
     render(<HeroSection />);
-    const slider = screen.getByTestId("hero-comparison-slider");
+    const slider = screen.getByTestId("image-comparison-slider");
     expect(slider).toHaveAttribute(
       "data-original",
       expect.stringContaining("unsplash.com"),
@@ -63,9 +69,16 @@ describe("HeroSection Component", () => {
     render(
       <HeroSection originalUrl={customOriginal} enhancedUrl={customEnhanced} />,
     );
-    const slider = screen.getByTestId("hero-comparison-slider");
+    const slider = screen.getByTestId("image-comparison-slider");
     expect(slider).toHaveAttribute("data-original", customOriginal);
     expect(slider).toHaveAttribute("data-enhanced", customEnhanced);
+  });
+
+  it("should pass correct labels to ImageComparisonSlider", () => {
+    render(<HeroSection />);
+    const slider = screen.getByTestId("image-comparison-slider");
+    expect(slider).toHaveAttribute("data-original-label", "Original");
+    expect(slider).toHaveAttribute("data-enhanced-label", "Enhanced by Pixel");
   });
 
   it("should render primary CTA button linking to enhance page", () => {

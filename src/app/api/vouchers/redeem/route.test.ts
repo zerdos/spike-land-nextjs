@@ -53,7 +53,7 @@ describe("POST /api/vouchers/redeem", () => {
     // Set default mock session
     mockAuth.mockResolvedValue(mockSession);
     // Set default rate limit to allow requests
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: false,
       remaining: 4,
       resetAt: Date.now() + 60 * 60 * 1000,
@@ -348,7 +348,7 @@ describe("POST /api/vouchers/redeem", () => {
   });
 
   it("should return 429 when rate limited", async () => {
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: true,
       remaining: 0,
       resetAt: Date.now() + 30 * 60 * 1000, // 30 minutes from now
@@ -365,7 +365,7 @@ describe("POST /api/vouchers/redeem", () => {
 
   it("should include Retry-After header when rate limited", async () => {
     const resetAt = Date.now() + 30 * 60 * 1000; // 30 minutes from now
-    mockCheckRateLimit.mockReturnValue({
+    mockCheckRateLimit.mockResolvedValue({
       isLimited: true,
       remaining: 0,
       resetAt,
