@@ -4,6 +4,11 @@ import { GoogleGenAI } from "@google/genai";
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
+// Timeout for Gemini API requests (5 minutes)
+// 4K images can take up to 2 minutes based on observed successful jobs,
+// so 5 minutes provides a safe buffer while preventing indefinite hangs
+export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000;
+
 let genAI: GoogleGenAI | null = null;
 
 function getGeminiClient(): GoogleGenAI {
@@ -128,8 +133,9 @@ export async function enhanceImageWithGemini(
 
   console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
 
-  // Process streaming response
+  // Process streaming response with timeout
   const processStream = async (): Promise<Buffer> => {
     let response;
     try {
@@ -149,42 +155,85 @@ export async function enhanceImageWithGemini(
 
     const imageChunks: Buffer[] = [];
     let chunkCount = 0;
+    let timedOut = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const startTime = Date.now();
 
-    try {
-      for await (const chunk of response) {
-        chunkCount++;
-        if (
-          !chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts
-        ) {
-          console.log(`Skipping chunk ${chunkCount}: no valid candidates`);
-          continue;
-        }
+    // Create a timeout promise that rejects after GEMINI_TIMEOUT_MS
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        timedOut = true;
+        reject(
+          new Error(
+            `Gemini API request timed out after ${GEMINI_TIMEOUT_MS / 1000} seconds. ` +
+              `Processed ${chunkCount} chunks before timeout.`,
+          ),
+        );
+      }, GEMINI_TIMEOUT_MS);
+    });
 
-        if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-          const inlineData = chunk.candidates[0].content.parts[0].inlineData;
-          const buffer = Buffer.from(inlineData.data || "", "base64");
-          imageChunks.push(buffer);
-          console.log(
-            `Received chunk ${chunkCount}: ${buffer.length} bytes (total: ${imageChunks.length} chunks)`,
-          );
+    // Process chunks with timeout protection
+    const processChunks = async (): Promise<Buffer> => {
+      try {
+        for await (const chunk of response) {
+          // Check if we've timed out (defensive check)
+          if (timedOut) {
+            throw new Error("Stream processing aborted due to timeout");
+          }
+
+          chunkCount++;
+          const elapsed = Math.round((Date.now() - startTime) / 1000);
+
+          if (
+            !chunk.candidates || !chunk.candidates[0]?.content ||
+            !chunk.candidates[0]?.content.parts
+          ) {
+            console.log(`Skipping chunk ${chunkCount}: no valid candidates (${elapsed}s elapsed)`);
+            continue;
+          }
+
+          if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+            const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+            const buffer = Buffer.from(inlineData.data || "", "base64");
+            imageChunks.push(buffer);
+            console.log(
+              `Received chunk ${chunkCount}: ${buffer.length} bytes (total: ${imageChunks.length} chunks, ${elapsed}s elapsed)`,
+            );
+          }
         }
+      } catch (error) {
+        if (timedOut) {
+          throw error; // Re-throw timeout error
+        }
+        console.error(`Error processing stream at chunk ${chunkCount}:`, error);
+        throw new Error(
+          `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
       }
-    } catch (error) {
-      console.error(`Error processing stream at chunk ${chunkCount}:`, error);
-      throw new Error(
-        `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+
+      if (imageChunks.length === 0) {
+        console.error(`No image data received after processing ${chunkCount} chunks`);
+        throw new Error("No image data received from Gemini API");
+      }
+
+      const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const totalTime = Math.round((Date.now() - startTime) / 1000);
+      console.log(
+        `Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes in ${totalTime}s`,
       );
+
+      return Buffer.concat(imageChunks);
+    };
+
+    // Race between processing and timeout, then clear timeout on success
+    try {
+      const result = await Promise.race([processChunks(), timeoutPromise]);
+      if (timeoutId) clearTimeout(timeoutId);
+      return result;
+    } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
+      throw error;
     }
-
-    if (imageChunks.length === 0) {
-      console.error(`No image data received after processing ${chunkCount} chunks`);
-      throw new Error("No image data received from Gemini API");
-    }
-
-    const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    console.log(`Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes`);
-
-    return Buffer.concat(imageChunks);
   };
 
   return processStream();

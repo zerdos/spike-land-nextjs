@@ -11,6 +11,10 @@ import { EnhancementTier, JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { start } from "workflow/api";
 
+// Allow longer execution time for 4K image enhancements (5 minutes)
+// Vercel Pro plan supports up to 300s function timeout
+export const maxDuration = 300;
+
 // Check if we're running in Vercel environment
 function isVercelEnvironment(): boolean {
   return process.env.VERCEL === "1";
