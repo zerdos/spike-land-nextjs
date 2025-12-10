@@ -62,11 +62,11 @@ export default function PricingPage() {
         window.location.href = data.url;
       } else {
         alert(data.error || "Failed to create checkout session");
+        setLoading(null);
       }
     } catch (error) {
       console.error("Checkout error:", error);
       alert("Failed to start checkout");
-    } finally {
       setLoading(null);
     }
   };
@@ -210,7 +210,9 @@ export default function PricingPage() {
                       data-testid={`buy-button-${id}`}
                     >
                       {loading === id
-                        ? "Processing..."
+                        ? "Redirecting to checkout..."
+                        : status === "loading"
+                        ? "Loading..."
                         : (
                           <>
                             <Zap className="h-4 w-4 mr-1.5" />
