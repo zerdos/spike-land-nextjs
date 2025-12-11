@@ -102,6 +102,12 @@
     border-color: hsl(var(--border));
   }
 
+  /* Prevent horizontal scroll on mobile (especially when menu opens) */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
   /* Body background using pseudo-element for better mobile performance */
   body {
     position: relative;
