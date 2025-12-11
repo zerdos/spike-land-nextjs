@@ -15,11 +15,12 @@ export default defineConfig({
       "**/fix-r2-versioning-cache/**",
       "**/.git/**",
     ],
-    // Optimize for parallel execution and sharding
-    pool: "threads",
+    // Use forks pool for better memory isolation in CI
+    // Each test file runs in separate process with fresh memory
+    pool: "forks",
     poolOptions: {
-      threads: {
-        singleThread: false,
+      forks: {
+        singleFork: false,
         isolate: true,
       },
     },
