@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
@@ -35,6 +36,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Lock,
+  QrCode,
   Settings,
   Sparkles,
   Square,
@@ -118,6 +120,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   // Cover image selection state
   const [isSettingCover, setIsSettingCover] = useState(false);
+  const [showQRSheet, setShowQRSheet] = useState(false);
 
   // Ref for tracking original order
   const originalOrderRef = useRef<string[]>([]);
@@ -590,12 +593,23 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               {album.isOwner && (
                 <div className="flex gap-2">
                   {album.shareToken && album.privacy !== "PRIVATE" && (
-                    <Button variant="outline" size="sm" onClick={copyShareLink}>
-                      {copied
-                        ? <Check className="mr-2 h-4 w-4" />
-                        : <Copy className="mr-2 h-4 w-4" />}
-                      {copied ? "Copied!" : "Copy Link"}
-                    </Button>
+                    <>
+                      <Button variant="outline" size="sm" onClick={copyShareLink}>
+                        {copied
+                          ? <Check className="mr-2 h-4 w-4" />
+                          : <Copy className="mr-2 h-4 w-4" />}
+                        {copied ? "Copied!" : "Copy Link"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="lg:hidden"
+                        onClick={() => setShowQRSheet(true)}
+                        aria-label="Show QR code for Canvas display"
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                   <Button
                     variant="outline"
@@ -934,6 +948,24 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile QR Sheet */}
+      {album?.shareToken && album.privacy !== "PRIVATE" && album.isOwner && (
+        <Sheet open={showQRSheet} onOpenChange={setShowQRSheet}>
+          <SheetContent side="bottom" className="h-auto max-h-[80vh]">
+            <SheetHeader>
+              <SheetTitle>Canvas Display</SheetTitle>
+            </SheetHeader>
+            <div className="pt-4">
+              <QRCodePanel
+                albumId={album.id}
+                shareToken={album.shareToken}
+                albumName={album.name}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
