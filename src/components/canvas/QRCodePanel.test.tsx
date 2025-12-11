@@ -102,9 +102,10 @@ describe("QRCodePanel", () => {
       const title = qrCode.querySelector("title");
       expect(title?.textContent).toContain("/canvas/test-album-123");
       expect(title?.textContent).toContain("token=share-token-abc");
-      expect(title?.textContent).toContain("rotation=0");
-      expect(title?.textContent).toContain("order=album");
-      expect(title?.textContent).toContain("interval=10");
+      // Default settings (rotation=0, order=album, interval=10) are not included in URL by shared utility
+      expect(title?.textContent).not.toContain("rotation=");
+      expect(title?.textContent).not.toContain("order=");
+      expect(title?.textContent).not.toContain("interval=");
     });
 
     it("updates URL when rotation changes", () => {

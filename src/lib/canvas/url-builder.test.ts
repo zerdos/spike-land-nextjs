@@ -20,7 +20,7 @@ describe("buildCanvasUrl", () => {
       );
 
       expect(url).toBe(
-        `${baseUrl}/apps/images/album/${albumId}/canvas`,
+        `${baseUrl}/canvas/${albumId}`,
       );
     });
 
@@ -28,7 +28,7 @@ describe("buildCanvasUrl", () => {
       const url = buildCanvasUrl(albumId, null, {}, baseUrl);
 
       expect(url).toBe(
-        `${baseUrl}/apps/images/album/${albumId}/canvas`,
+        `${baseUrl}/canvas/${albumId}`,
       );
     });
   });
@@ -39,7 +39,7 @@ describe("buildCanvasUrl", () => {
       const url = buildCanvasUrl(albumId, shareToken, {}, baseUrl);
 
       expect(url).toBe(
-        `${baseUrl}/apps/images/album/${albumId}/canvas?token=${shareToken}`,
+        `${baseUrl}/canvas/${albumId}?token=${shareToken}`,
       );
     });
 
@@ -217,7 +217,7 @@ describe("buildCanvasUrl", () => {
       const url = buildCanvasUrl(albumId, null, {});
 
       expect(url).toBe(
-        `https://example.com/apps/images/album/${albumId}/canvas`,
+        `https://example.com/canvas/${albumId}`,
       );
     });
 
@@ -230,7 +230,7 @@ describe("buildCanvasUrl", () => {
 
       const url = buildCanvasUrl(albumId, null, {});
 
-      expect(url).toBe(`http://localhost/apps/images/album/${albumId}/canvas`);
+      expect(url).toBe(`http://localhost/canvas/${albumId}`);
     });
   });
 

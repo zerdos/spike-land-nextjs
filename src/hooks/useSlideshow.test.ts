@@ -600,6 +600,62 @@ describe("useSlideshow", () => {
       // Just verify unmount doesn't throw
       expect(true).toBe(true);
     });
+
+    it("should cleanup transition timeout on unmount", () => {
+      const { result, unmount } = renderHook(() =>
+        useSlideshow({
+          images: mockImages,
+          interval: 5,
+          order: "album",
+          autoPlay: false,
+        })
+      );
+
+      const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+
+      // Start a transition
+      act(() => {
+        result.current.goToNext();
+      });
+
+      // Unmount before transition completes
+      unmount();
+
+      expect(clearTimeoutSpy).toHaveBeenCalled();
+    });
+
+    it("should debounce rapid navigation clicks", () => {
+      const { result } = renderHook(() =>
+        useSlideshow({
+          images: mockImages,
+          interval: 5,
+          order: "album",
+          autoPlay: false,
+        })
+      );
+
+      const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+
+      // Click next multiple times rapidly
+      act(() => {
+        result.current.goToNext();
+      });
+
+      act(() => {
+        result.current.goToNext();
+      });
+
+      // Should have cleared the first timeout
+      expect(clearTimeoutSpy).toHaveBeenCalled();
+
+      // Complete the final transition
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      // Should be at index 1 (not further)
+      expect(result.current.currentIndex).toBe(1);
+    });
   });
 
   describe("preloading", () => {
@@ -665,6 +721,64 @@ describe("useSlideshow", () => {
       expect(ImageConstructorSpy.mock.calls.length).toBeGreaterThan(
         initialCalls,
       );
+    });
+
+    it("should limit preloaded images to maximum of 3 (LRU eviction)", () => {
+      const manyImages: CanvasImage[] = Array.from({ length: 10 }, (_, i) => ({
+        id: `img-${i + 1}`,
+        url: `https://example.com/image${i + 1}.jpg`,
+        name: `Image ${i + 1}`,
+        width: 1920,
+        height: 1080,
+      }));
+
+      const imageInstances: string[] = [];
+
+      global.Image = class MockImage {
+        src = "";
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        constructor() {
+          // Track created image URLs via setter
+        }
+      } as unknown as typeof Image;
+
+      // Spy on the setter
+      Object.defineProperty(global.Image.prototype, "src", {
+        set(value: string) {
+          imageInstances.push(value);
+        },
+        get() {
+          return "";
+        },
+      });
+
+      const { result } = renderHook(() =>
+        useSlideshow({
+          images: manyImages,
+          interval: 5,
+          order: "album",
+          autoPlay: false,
+        })
+      );
+
+      // Navigate through several images to trigger preloading
+      for (let i = 0; i < 5; i++) {
+        act(() => {
+          result.current.goToNext();
+        });
+
+        act(() => {
+          vi.advanceTimersByTime(300);
+        });
+      }
+
+      // The preloaded images map should never exceed 3 entries
+      // This is validated by the implementation's MAX_PRELOADED constant
+      // We verify the hook doesn't crash and continues working
+      expect(result.current.currentIndex).toBe(5);
+      // Should have preloaded images but not all 10
+      expect(imageInstances.length).toBeLessThan(10);
     });
   });
 

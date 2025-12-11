@@ -42,6 +42,7 @@ export function useSlideshow({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPaused, setIsPaused] = useState(!autoPlay);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const preloadedImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Order images based on order setting
@@ -56,7 +57,7 @@ export function useSlideshow({
     setCurrentIndex(0);
   }, [images, order]);
 
-  // Preload next image
+  // Preload next image with LRU eviction
   useEffect(() => {
     if (orderedImages.length === 0) return;
 
@@ -64,6 +65,15 @@ export function useSlideshow({
     const nextImg = orderedImages[nextIdx];
 
     if (nextImg && !preloadedImagesRef.current.has(nextImg.id)) {
+      // LRU eviction: keep max 3 preloaded images
+      const MAX_PRELOADED = 3;
+      if (preloadedImagesRef.current.size >= MAX_PRELOADED) {
+        const firstKey = preloadedImagesRef.current.keys().next().value;
+        if (firstKey) {
+          preloadedImagesRef.current.delete(firstKey);
+        }
+      }
+
       const img = new Image();
       img.src = nextImg.url;
       preloadedImagesRef.current.set(nextImg.id, img);
@@ -73,20 +83,32 @@ export function useSlideshow({
   const goToNext = useCallback(() => {
     if (orderedImages.length === 0) return;
 
+    // Clear any existing transition timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
     setIsTransitioning(true);
-    setTimeout(() => {
+    transitionTimeoutRef.current = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % orderedImages.length);
       setIsTransitioning(false);
+      transitionTimeoutRef.current = null;
     }, 300);
   }, [orderedImages.length]);
 
   const goToPrev = useCallback(() => {
     if (orderedImages.length === 0) return;
 
+    // Clear any existing transition timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
     setIsTransitioning(true);
-    setTimeout(() => {
+    transitionTimeoutRef.current = setTimeout(() => {
       setCurrentIndex((prev) => prev === 0 ? orderedImages.length - 1 : prev - 1);
       setIsTransitioning(false);
+      transitionTimeoutRef.current = null;
     }, 300);
   }, [orderedImages.length]);
 
@@ -129,6 +151,9 @@ export function useSlideshow({
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+      }
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
       }
       preloadedImagesRef.current.clear();
     };

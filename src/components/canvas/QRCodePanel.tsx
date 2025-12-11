@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { buildCanvasUrl } from "@/lib/canvas";
 import { Copy, ExternalLink } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useState } from "react";
@@ -18,25 +19,6 @@ const DEFAULT_SETTINGS: CanvasSettings = {
   order: "album",
   interval: 10,
 };
-
-function buildCanvasUrl(
-  albumId: string,
-  shareToken: string,
-  settings: CanvasSettings,
-): string {
-  const baseUrl = typeof window !== "undefined"
-    ? window.location.origin
-    : "https://spike.land";
-
-  const params = new URLSearchParams({
-    token: shareToken,
-    rotation: settings.rotation.toString(),
-    order: settings.order,
-    interval: settings.interval.toString(),
-  });
-
-  return `${baseUrl}/canvas/${albumId}?${params.toString()}`;
-}
 
 export function QRCodePanel({
   albumId,

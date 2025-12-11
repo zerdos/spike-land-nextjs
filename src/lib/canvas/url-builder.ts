@@ -9,7 +9,7 @@ export function buildCanvasUrl(
 ): string {
   const base = baseUrl ||
     (typeof window !== "undefined" ? window.location.origin : "http://localhost");
-  const url = new URL(`/apps/images/album/${albumId}/canvas`, base);
+  const url = new URL(`/canvas/${albumId}`, base);
 
   if (shareToken) {
     url.searchParams.set("token", shareToken);
