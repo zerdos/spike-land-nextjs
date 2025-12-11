@@ -301,7 +301,7 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 [x] Create voucher management UI
 [x] Add user search/management
 [x] Build job queue monitoring
-[x] Add error tracking integration (Sentry)
+[x] Add error tracking integration (structured logging)
 [x] Create legal pages (Terms of Service, Privacy Policy, Contact)
 ```
 

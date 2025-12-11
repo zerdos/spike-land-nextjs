@@ -17,7 +17,6 @@ Spike Land uses Vercel Analytics and Speed Insights to track user behavior, moni
 
 ### Phase 2 (Future)
 
-- Sentry for error tracking
 - PostHog for advanced analytics with A/B testing
 - Feature flags
 
@@ -228,7 +227,6 @@ npm run test:coverage
 
 ### Phase 2: Advanced Analytics
 
-- **Sentry Integration** - Error tracking with stack traces
 - **PostHog Integration** - Advanced analytics and feature flags
 - **Conversion Funnels** - Track user journey through app creation
 - **Cohort Analysis** - Understand user retention

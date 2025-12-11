@@ -286,7 +286,7 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 function logError(error: Error, info: { componentStack: string; }) {
   console.error("Error caught by boundary:", error);
   console.error("Component stack:", info.componentStack);
-  // Send to Sentry or other error tracking service
+  // Send to error tracking service (e.g., errorLogger.logError)
 }
 
 /**
@@ -829,86 +829,51 @@ export function ErrorPage({
 
 ## Logging & Error Tracking
 
-### Sentry Integration
+### Error Logger (Spike Land Implementation)
+
+This project uses a custom error logger (`src/lib/error-logger.ts`) combined with Vercel Analytics for monitoring, rather than external error tracking services.
 
 ```typescript
-import * as Sentry from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
+// src/lib/error-logger.ts
+import { errorLogger } from "@/lib/error-logger";
 
 /**
- * Initialize Sentry for error tracking
+ * Log an error with context
  */
-export function initializeSentry() {
-  Sentry.init({
-    dsn: process.env.REACT_APP_SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-    tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-    integrations: [
-      new BrowserTracing(),
-      new Sentry.Replay({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
-    // Session replay configuration
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
+errorLogger.logError(error, {
+  userId: session?.user?.id,
+  route: "/api/images/enhance",
+  componentStack: info?.componentStack,
+});
+
+/**
+ * Error boundary usage
+ */
+function logError(error: Error, info: { componentStack: string }) {
+  errorLogger.logError(error, {
+    componentStack: info.componentStack,
   });
 }
 
 /**
- * Capture exceptions
+ * Usage in your app
  */
-function captureException(error: Error, context?: Record<string, any>) {
-  Sentry.captureException(error, {
-    tags: {
-      errorType: error.constructor.name,
-    },
-    extra: context,
-  });
-}
-
-/**
- * Capture messages
- */
-function captureMessage(message: string, level: "fatal" | "error" | "warning" | "info" = "info") {
-  Sentry.captureMessage(message, level);
-}
-
-/**
- * Add breadcrumb for tracking user actions
- */
-function addBreadcrumb(
-  message: string,
-  category: string = "user-action",
-  data?: Record<string, any>,
-) {
-  Sentry.addBreadcrumb({
-    message,
-    category,
-    data,
-    level: "info",
-  });
-}
-
-/**
- * Set user context for better error association
- */
-function setUserContext(userId: string, email?: string, username?: string) {
-  Sentry.setUser({
-    id: userId,
-    email,
-    username,
-  });
-}
-
-/**
- * Clear user context on logout
- */
-function clearUserContext() {
-  Sentry.setUser(null);
+export function App() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback} onError={logError}>
+      <YourAppContent />
+    </ErrorBoundary>
+  );
 }
 ```
+
+**Key Features:**
+
+- Structured JSON logging
+- Environment-aware (development vs production)
+- Context-aware error capture with user and route info
+- Request ID tracking for distributed tracing
+- No external dependencies required
 
 ### Structured Logging
 
@@ -1282,7 +1247,7 @@ async function fetchWithTimeout<T>(url: string): Promise<T> {
 - [ ] Custom error classes defined for your domain
 - [ ] Error boundaries set up at appropriate levels
 - [ ] API error handling with retry logic
-- [ ] Sentry or similar logging configured
+- [ ] Error logging configured (e.g., errorLogger)
 - [ ] Toast notifications for user feedback
 - [ ] Circuit breaker for critical API calls
 - [ ] Timeout handling for network requests
@@ -1299,7 +1264,7 @@ async function fetchWithTimeout<T>(url: string): Promise<T> {
 - [React Error Boundaries](https://legacy.reactjs.org/docs/error-boundaries.html)
 - [react-error-boundary Package](https://github.com/bvaughn/react-error-boundary)
 - [Next.js Error Handling](https://nextjs.org/docs/app/getting-started/error-handling)
-- [Sentry Documentation](https://docs.sentry.io/platforms/javascript/)
+- [Vercel Analytics Documentation](https://vercel.com/docs/analytics)
 - [axios-retry Documentation](https://www.npmjs.com/package/axios-retry)
 
 ### Related Best Practices

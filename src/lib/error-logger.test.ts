@@ -22,20 +22,17 @@ describe("ErrorLogger", () => {
 
       expect(config.enabled).toBe(true);
       expect(config.environment).toBe("test"); // vitest sets NODE_ENV to test
-      expect(config.sentryDsn).toBeUndefined();
     });
 
     it("should initialize with custom config", () => {
       const logger = new ErrorLogger({
         enabled: false,
         environment: "production",
-        sentryDsn: "https://example.com/sentry",
       });
       const config = logger.getConfig();
 
       expect(config.enabled).toBe(false);
       expect(config.environment).toBe("production");
-      expect(config.sentryDsn).toBe("https://example.com/sentry");
     });
   });
 
@@ -72,7 +69,7 @@ describe("ErrorLogger", () => {
       );
     });
 
-    it("should log to error tracking in production without Sentry DSN", () => {
+    it("should log to error tracking in production", () => {
       const logger = new ErrorLogger({ environment: "production" });
       const error = new Error("Production error");
 
@@ -80,28 +77,7 @@ describe("ErrorLogger", () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "[ErrorLogger] Production error:",
-        expect.objectContaining({
-          message: "Production error",
-          environment: "production",
-        }),
-      );
-    });
-
-    it("should log to Sentry in production with DSN", () => {
-      const logger = new ErrorLogger({
-        environment: "production",
-        sentryDsn: "https://example.com/sentry",
-      });
-      const error = new Error("Sentry error");
-
-      logger.logError(error);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[ErrorLogger] Error would be sent to Sentry:",
-        expect.objectContaining({
-          message: "Sentry error",
-          environment: "production",
-        }),
+        expect.any(String), // JSON stringified error info
       );
     });
 
