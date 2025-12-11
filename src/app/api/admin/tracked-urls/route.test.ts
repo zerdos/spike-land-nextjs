@@ -1,5 +1,5 @@
 /**
- * Tests for Tracked URLs Management API Route
+ * Tests for Tracked Paths Management API Route
  */
 
 import { NextRequest } from "next/server";
@@ -27,7 +27,7 @@ const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
 const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
 
-describe("Tracked URLs Management API", () => {
+describe("Tracked Paths Management API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -46,16 +46,16 @@ describe("Tracked URLs Management API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return tracked URLs list for admin users", async () => {
+    it("should return tracked paths list for admin users", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
 
       vi.mocked(prisma.trackedUrl.findMany).mockResolvedValue([
         {
-          id: "url1",
-          url: "https://example.com",
-          label: "Example Site",
+          id: "path1",
+          path: "/custom-page",
+          label: "Custom Page",
           createdAt: new Date("2025-01-01"),
           createdBy: {
             name: "Admin User",
@@ -63,8 +63,8 @@ describe("Tracked URLs Management API", () => {
           },
         },
         {
-          id: "url2",
-          url: "https://test.com",
+          id: "path2",
+          path: "/another-page",
           label: null,
           createdAt: new Date("2025-01-02"),
           createdBy: {
@@ -78,12 +78,28 @@ describe("Tracked URLs Management API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.trackedUrls).toHaveLength(2);
-      expect(data.trackedUrls[0].url).toBe("https://example.com");
-      expect(data.trackedUrls[0].label).toBe("Example Site");
-      expect(data.trackedUrls[0].createdBy.name).toBe("Admin User");
-      expect(data.trackedUrls[1].url).toBe("https://test.com");
-      expect(data.trackedUrls[1].label).toBeNull();
+      expect(data.trackedPaths).toHaveLength(2);
+      expect(data.trackedPaths[0].path).toBe("/custom-page");
+      expect(data.trackedPaths[0].label).toBe("Custom Page");
+      expect(data.trackedPaths[0].createdBy.name).toBe("Admin User");
+      expect(data.trackedPaths[1].path).toBe("/another-page");
+      expect(data.trackedPaths[1].label).toBeNull();
+    });
+
+    it("should query only active tracked paths", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      vi.mocked(prisma.trackedUrl.findMany).mockResolvedValue([]);
+
+      await GET();
+
+      expect(prisma.trackedUrl.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isActive: true },
+        }),
+      );
     });
 
     it("should return 403 if admin check fails", async () => {
@@ -117,23 +133,23 @@ describe("Tracked URLs Management API", () => {
       expect(response.status).toBe(500);
       expect(data.error).toBe("Internal server error");
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to fetch tracked URLs:",
+        "Failed to fetch tracked paths:",
         expect.any(Error),
       );
     });
   });
 
   describe("POST", () => {
-    it("should create a new tracked URL", async () => {
+    it("should create a new tracked path", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
 
       vi.mocked(prisma.trackedUrl.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.trackedUrl.create).mockResolvedValue({
-        id: "url1",
-        url: "https://newsite.com",
-        label: "New Site",
+        id: "path1",
+        path: "/new-page",
+        label: "New Page",
         createdAt: new Date("2025-01-01"),
         createdBy: {
           name: "Admin User",
@@ -141,32 +157,35 @@ describe("Tracked URLs Management API", () => {
         },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://newsite.com",
-          label: "New Site",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/new-page",
+            label: "New Page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.trackedUrl.url).toBe("https://newsite.com");
-      expect(data.trackedUrl.label).toBe("New Site");
-      expect(data.trackedUrl.createdBy.name).toBe("Admin User");
+      expect(data.trackedPath.path).toBe("/new-page");
+      expect(data.trackedPath.label).toBe("New Page");
+      expect(data.trackedPath.createdBy.name).toBe("Admin User");
     });
 
-    it("should create tracked URL without label", async () => {
+    it("should create tracked path without label", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
 
       vi.mocked(prisma.trackedUrl.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.trackedUrl.create).mockResolvedValue({
-        id: "url1",
-        url: "https://newsite.com",
+        id: "path1",
+        path: "/new-page",
         label: null,
         createdAt: new Date("2025-01-01"),
         createdBy: {
@@ -175,55 +194,132 @@ describe("Tracked URLs Management API", () => {
         },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://newsite.com",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/new-page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.trackedUrl.url).toBe("https://newsite.com");
-      expect(data.trackedUrl.label).toBeNull();
+      expect(data.trackedPath.path).toBe("/new-page");
+      expect(data.trackedPath.label).toBeNull();
     });
 
-    it("should return 400 for missing url field", async () => {
+    it("should return 400 for missing path field", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({ label: "Test" }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({ label: "Test" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain("Missing required field");
+      expect(data.error).toContain("Missing required field: path");
     });
 
-    it("should return 409 if URL already exists", async () => {
+    it("should return 400 if path does not start with /", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "no-leading-slash",
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Path must start with /");
+    });
+
+    it("should return 400 if full URL is provided instead of path", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "https://example.com/page",
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Full URLs don't start with /, so we get the "must start with /" error first
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Path must start with /");
+    });
+
+    it("should return 400 if path contains URL scheme", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      // Path that starts with / but contains ://
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/https://example.com",
+          }),
+        },
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Provide a path");
+    });
+
+    it("should return 409 if path already exists", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
 
       vi.mocked(prisma.trackedUrl.findUnique).mockResolvedValue({
-        id: "url1",
-        url: "https://existing.com",
+        id: "path1",
+        path: "/existing-page",
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://existing.com",
-          label: "Existing Site",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/existing-page",
+            label: "Existing Page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -235,13 +331,16 @@ describe("Tracked URLs Management API", () => {
     it("should return 401 if not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://newsite.com",
-          label: "New Site",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/new-page",
+            label: "New Page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -259,13 +358,16 @@ describe("Tracked URLs Management API", () => {
         new Error("Forbidden: Admin access required"),
       );
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://newsite.com",
-          label: "New Site",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/new-page",
+            label: "New Page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -284,13 +386,16 @@ describe("Tracked URLs Management API", () => {
         new Error("Database error"),
       );
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "POST",
-        body: JSON.stringify({
-          url: "https://newsite.com",
-          label: "New Site",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/new-page",
+            label: "New Page",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -298,14 +403,14 @@ describe("Tracked URLs Management API", () => {
       expect(response.status).toBe(500);
       expect(data.error).toBe("Internal server error");
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to create tracked URL:",
+        "Failed to create tracked path:",
         expect.any(Error),
       );
     });
   });
 
   describe("DELETE", () => {
-    it("should delete a tracked URL", async () => {
+    it("should delete a tracked path", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "admin_123" },
       } as any);
@@ -313,7 +418,7 @@ describe("Tracked URLs Management API", () => {
       vi.mocked(prisma.trackedUrl.delete).mockResolvedValue({} as any);
 
       const request = new NextRequest(
-        "http://localhost/api/admin/tracked-urls?id=url1",
+        "http://localhost/api/admin/tracked-urls?id=path1",
         {
           method: "DELETE",
         },
@@ -325,7 +430,7 @@ describe("Tracked URLs Management API", () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(prisma.trackedUrl.delete).toHaveBeenCalledWith({
-        where: { id: "url1" },
+        where: { id: "path1" },
       });
     });
 
@@ -334,9 +439,12 @@ describe("Tracked URLs Management API", () => {
         user: { id: "admin_123" },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/tracked-urls", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -349,7 +457,7 @@ describe("Tracked URLs Management API", () => {
       vi.mocked(auth).mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/admin/tracked-urls?id=url1",
+        "http://localhost/api/admin/tracked-urls?id=path1",
         {
           method: "DELETE",
         },
@@ -372,7 +480,7 @@ describe("Tracked URLs Management API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/admin/tracked-urls?id=url1",
+        "http://localhost/api/admin/tracked-urls?id=path1",
         {
           method: "DELETE",
         },
@@ -395,7 +503,7 @@ describe("Tracked URLs Management API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/admin/tracked-urls?id=url1",
+        "http://localhost/api/admin/tracked-urls?id=path1",
         {
           method: "DELETE",
         },
@@ -407,7 +515,7 @@ describe("Tracked URLs Management API", () => {
       expect(response.status).toBe(500);
       expect(data.error).toBe("Internal server error");
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to delete tracked URL:",
+        "Failed to delete tracked path:",
         expect.any(Error),
       );
     });

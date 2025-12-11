@@ -623,7 +623,7 @@ model EmailLog {
 
 model TrackedUrl {
   id          String   @id @default(cuid())
-  url         String   @unique
+  path        String   @unique  // Store path only (e.g., "/custom-page"), not full URL
   label       String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

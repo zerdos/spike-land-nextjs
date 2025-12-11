@@ -13,164 +13,247 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-interface SitemapPreviewClientProps {
-  sitemapUrls: string[];
-  trackedUrls: string[];
+interface TrackedPath {
+  id: string;
+  path: string;
 }
 
+interface SitemapPreviewClientProps {
+  sitemapPaths: string[];
+  trackedPaths: TrackedPath[];
+  origin: string;
+}
+
+/**
+ * Maximum number of iframes to load concurrently.
+ * Limited to prevent browser performance issues and excessive network requests.
+ */
 const MAX_CONCURRENT_LOADS = 4;
 
 export function SitemapPreviewClient({
-  sitemapUrls,
-  trackedUrls,
+  sitemapPaths,
+  trackedPaths: initialTrackedPaths,
+  origin,
 }: SitemapPreviewClientProps) {
-  const [allUrls, setAllUrls] = useState<string[]>([
-    ...sitemapUrls,
-    ...trackedUrls.filter((url) => !sitemapUrls.includes(url)),
-  ]);
-  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
-  const [loadingUrls, setLoadingUrls] = useState<Set<string>>(new Set());
+  const [trackedPaths, setTrackedPaths] = useState<TrackedPath[]>(initialTrackedPaths);
+  const [loadedPaths, setLoadedPaths] = useState<Set<string>>(new Set());
+  const [loadingPaths, setLoadingPaths] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newUrl, setNewUrl] = useState("");
-  const [urlError, setUrlError] = useState("");
+  const [newPath, setNewPath] = useState("");
+  const [pathError, setPathError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const startLoadingUrl = useCallback((url: string) => {
-    setLoadingUrls((prev) => new Set(prev).add(url));
+  // Ref to track loading state without triggering re-renders
+  const loadingRef = useRef<Set<string>>(new Set());
+
+  // Combine sitemap paths with tracked paths (deduped)
+  const allPaths = useMemo(() => {
+    const trackedPathStrings = trackedPaths.map((t) => t.path);
+    const customPaths = trackedPathStrings.filter(
+      (p) => !sitemapPaths.includes(p),
+    );
+    return [...sitemapPaths, ...customPaths];
+  }, [sitemapPaths, trackedPaths]);
+
+  // Convert path to full URL
+  const pathToUrl = useCallback(
+    (path: string) => `${origin}${path}`,
+    [origin],
+  );
+
+  const startLoadingPath = useCallback((path: string) => {
+    loadingRef.current.add(path);
+    setLoadingPaths(new Set(loadingRef.current));
   }, []);
 
-  const finishLoadingUrl = useCallback((url: string) => {
-    setLoadingUrls((prev) => {
-      const next = new Set(prev);
-      next.delete(url);
-      return next;
-    });
-    setLoadedUrls((prev) => new Set(prev).add(url));
+  const finishLoadingPath = useCallback((path: string) => {
+    loadingRef.current.delete(path);
+    setLoadingPaths(new Set(loadingRef.current));
+    setLoadedPaths((prev) => new Set(prev).add(path));
   }, []);
 
   useEffect(() => {
-    const urlsToLoad = allUrls.filter(
-      (url) => !loadedUrls.has(url) && !loadingUrls.has(url),
+    const pathsToLoad = allPaths.filter(
+      (path) => !loadedPaths.has(path) && !loadingRef.current.has(path),
     );
 
-    const availableSlots = MAX_CONCURRENT_LOADS - loadingUrls.size;
-    const urlsToStart = urlsToLoad.slice(0, availableSlots);
+    const availableSlots = MAX_CONCURRENT_LOADS - loadingRef.current.size;
+    const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
-    urlsToStart.forEach((url) => {
-      startLoadingUrl(url);
+    pathsToStart.forEach((path) => {
+      startLoadingPath(path);
     });
-  }, [allUrls, loadedUrls, loadingUrls, startLoadingUrl]);
+  }, [allPaths, loadedPaths, startLoadingPath]);
 
-  const handleAddUrl = () => {
-    setUrlError("");
+  const handleAddPath = async () => {
+    setPathError("");
 
-    if (!newUrl.trim()) {
-      setUrlError("URL is required");
+    let pathToAdd = newPath.trim();
+
+    if (!pathToAdd) {
+      setPathError("Path is required");
+      return;
+    }
+
+    // If user entered a full URL, extract the path
+    if (pathToAdd.includes("://")) {
+      try {
+        const urlObj = new URL(pathToAdd);
+        pathToAdd = urlObj.pathname;
+      } catch {
+        setPathError("Invalid URL format");
+        return;
+      }
+    }
+
+    // Ensure path starts with /
+    if (!pathToAdd.startsWith("/")) {
+      pathToAdd = `/${pathToAdd}`;
+    }
+
+    if (allPaths.includes(pathToAdd)) {
+      setPathError("Path already exists in the list");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/admin/tracked-urls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: pathToAdd }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setPathError(data.error || "Failed to add path");
+        return;
+      }
+
+      // Add to local state
+      setTrackedPaths((prev) => [
+        { id: data.trackedPath.id, path: data.trackedPath.path },
+        ...prev,
+      ]);
+      setNewPath("");
+      setDialogOpen(false);
+    } catch {
+      setPathError("Failed to add path. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemovePath = async (path: string) => {
+    // Find the tracked path to get its ID
+    const trackedPath = trackedPaths.find((t) => t.path === path);
+    if (!trackedPath) return;
+
+    // Can't remove sitemap paths
+    if (sitemapPaths.includes(path)) {
       return;
     }
 
     try {
-      const urlObj = new URL(newUrl.trim());
-      if (!urlObj.protocol.startsWith("http")) {
-        setUrlError("URL must start with http:// or https://");
+      const response = await fetch(
+        `/api/admin/tracked-urls?id=${trackedPath.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        console.error("Failed to delete tracked path");
         return;
       }
-    } catch {
-      setUrlError("Invalid URL format");
-      return;
-    }
 
-    if (allUrls.includes(newUrl.trim())) {
-      setUrlError("URL already exists in the list");
-      return;
+      // Remove from local state
+      setTrackedPaths((prev) => prev.filter((t) => t.id !== trackedPath.id));
+      setLoadedPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(path);
+        return next;
+      });
+      loadingRef.current.delete(path);
+      setLoadingPaths(new Set(loadingRef.current));
+    } catch (error) {
+      console.error("Failed to delete tracked path:", error);
     }
-
-    setAllUrls((prev) => [...prev, newUrl.trim()]);
-    setNewUrl("");
-    setDialogOpen(false);
   };
 
-  const handleRemoveUrl = (url: string) => {
-    if (sitemapUrls.includes(url)) {
-      return;
-    }
-    setAllUrls((prev) => prev.filter((u) => u !== url));
-    setLoadedUrls((prev) => {
-      const next = new Set(prev);
-      next.delete(url);
-      return next;
-    });
-    setLoadingUrls((prev) => {
-      const next = new Set(prev);
-      next.delete(url);
-      return next;
-    });
-  };
-
-  const isCustomUrl = (url: string) => !sitemapUrls.includes(url);
+  const isCustomPath = (path: string) => !sitemapPaths.includes(path);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4" aria-live="polite">
           <Badge variant="secondary">
-            {loadedUrls.size} / {allUrls.length} loaded
+            {loadedPaths.size} / {allPaths.length} loaded
           </Badge>
-          <Badge variant="outline">
-            {loadingUrls.size} loading
-          </Badge>
+          <Badge variant="outline">{loadingPaths.size} loading</Badge>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add URL</Button>
+            <Button>Add Path</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Custom URL</DialogTitle>
+              <DialogTitle>Add Custom Path</DialogTitle>
               <DialogDescription>
-                Add a custom URL to preview. This URL will not be added to the permanent sitemap.
+                Add a custom path to preview. The path will be persisted to the database and
+                available across environments.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <Input
-                placeholder="https://example.com/page"
-                value={newUrl}
+                placeholder="/custom-page"
+                value={newPath}
                 onChange={(e) => {
-                  setNewUrl(e.target.value);
-                  setUrlError("");
+                  setNewPath(e.target.value);
+                  setPathError("");
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleAddUrl();
+                  if (e.key === "Enter" && !isSubmitting) {
+                    handleAddPath();
                   }
                 }}
+                disabled={isSubmitting}
               />
-              {urlError && <p className="text-sm text-destructive">{urlError}</p>}
+              {pathError && <p className="text-sm text-destructive">{pathError}</p>}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
-              <Button onClick={handleAddUrl}>Add URL</Button>
+              <Button onClick={handleAddPath} disabled={isSubmitting}>
+                {isSubmitting ? "Adding..." : "Add Path"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {allUrls.map((url) => {
-          const isLoading = loadingUrls.has(url);
-          const isLoaded = loadedUrls.has(url);
-          const isCustom = isCustomUrl(url);
+        {allPaths.map((path) => {
+          const isLoading = loadingPaths.has(path);
+          const isLoaded = loadedPaths.has(path);
+          const isCustom = isCustomPath(path);
 
           return (
-            <Card key={url} className="overflow-hidden">
+            <Card key={path} className="overflow-hidden">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-sm font-medium truncate flex-1">
-                    {url.replace("https://spike.land", "")}
+                    {path}
                   </CardTitle>
                   <div className="flex items-center gap-2 shrink-0">
                     {isCustom && (
@@ -183,8 +266,8 @@ export function SitemapPreviewClient({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleRemoveUrl(url)}
-                        aria-label={`Remove ${url}`}
+                        onClick={() => handleRemovePath(path)}
+                        aria-label={`Remove ${path}`}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -238,8 +321,8 @@ export function SitemapPreviewClient({
                   )}
                   {(isLoading || isLoaded) && (
                     <iframe
-                      src={url}
-                      title={`Preview of ${url}`}
+                      src={pathToUrl(path)}
+                      title={`Preview of ${path}`}
                       className="border-0 origin-top-left"
                       style={{
                         width: "200%",
@@ -247,7 +330,7 @@ export function SitemapPreviewClient({
                         transform: "scale(0.5)",
                       }}
                       sandbox="allow-scripts allow-same-origin"
-                      onLoad={() => finishLoadingUrl(url)}
+                      onLoad={() => finishLoadingPath(path)}
                     />
                   )}
                   {!isLoading && !isLoaded && (

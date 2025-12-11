@@ -36,21 +36,17 @@ const SITEMAP_PATHS = [
 ];
 
 export default async function SitemapPreviewPage() {
-  const trackedUrls = await prisma.trackedUrl.findMany({
+  // Fetch tracked paths from database
+  const trackedPaths = await prisma.trackedUrl.findMany({
     where: { isActive: true },
     orderBy: { createdAt: "desc" },
   });
-
-  const trackedUrlStrings = trackedUrls.map((t) => t.url);
 
   // Get the current origin from headers
   const headersList = await headers();
   const host = headersList.get("host") || "localhost:3000";
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const origin = `${protocol}://${host}`;
-
-  // Convert paths to full URLs using current origin
-  const sitemapUrls = SITEMAP_PATHS.map((path) => `${origin}${path}`);
 
   return (
     <div>
@@ -59,8 +55,9 @@ export default async function SitemapPreviewPage() {
         Preview all pages in the sitemap with staggered iframe loading.
       </p>
       <SitemapPreviewClient
-        sitemapUrls={sitemapUrls}
-        trackedUrls={trackedUrlStrings}
+        sitemapPaths={SITEMAP_PATHS}
+        trackedPaths={trackedPaths.map((t) => ({ id: t.id, path: t.path }))}
+        origin={origin}
       />
     </div>
   );

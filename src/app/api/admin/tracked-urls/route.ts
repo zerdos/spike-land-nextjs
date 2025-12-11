@@ -1,7 +1,8 @@
 /**
- * Tracked URLs Management API Route
+ * Tracked Paths Management API Route
  *
- * CRUD operations for tracked URLs (admin only).
+ * CRUD operations for tracked paths (admin only).
+ * Paths are stored without domain to work across environments (localhost, production).
  */
 
 import { auth } from "@/auth";
@@ -19,7 +20,8 @@ export async function GET() {
 
     await requireAdminByUserId(session.user.id);
 
-    const trackedUrls = await prisma.trackedUrl.findMany({
+    const trackedPaths = await prisma.trackedUrl.findMany({
+      where: { isActive: true },
       include: {
         createdBy: {
           select: {
@@ -33,28 +35,28 @@ export async function GET() {
       },
     });
 
-    type TrackedUrlItem = {
+    type TrackedPathItem = {
       id: string;
-      url: string;
+      path: string;
       label: string | null;
       createdAt: Date;
       createdBy: { name: string | null; email: string | null; };
     };
 
     return NextResponse.json({
-      trackedUrls: trackedUrls.map((u: TrackedUrlItem) => ({
-        id: u.id,
-        url: u.url,
-        label: u.label,
-        createdAt: u.createdAt.toISOString(),
+      trackedPaths: trackedPaths.map((p: TrackedPathItem) => ({
+        id: p.id,
+        path: p.path,
+        label: p.label,
+        createdAt: p.createdAt.toISOString(),
         createdBy: {
-          name: u.createdBy.name,
-          email: u.createdBy.email,
+          name: p.createdBy.name,
+          email: p.createdBy.email,
         },
       })),
     });
   } catch (error) {
-    console.error("Failed to fetch tracked URLs:", error);
+    console.error("Failed to fetch tracked paths:", error);
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -76,32 +78,48 @@ export async function POST(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     const body = await request.json();
-    const { url, label } = body;
+    const { path, label } = body;
 
     // Validate input
-    if (!url) {
+    if (!path) {
       return NextResponse.json(
-        { error: "Missing required field: url" },
+        { error: "Missing required field: path" },
         { status: 400 },
       );
     }
 
-    // Check if URL already exists
+    // Validate path format - must start with /
+    if (!path.startsWith("/")) {
+      return NextResponse.json(
+        { error: "Path must start with /" },
+        { status: 400 },
+      );
+    }
+
+    // Reject full URLs - only paths allowed
+    if (path.includes("://")) {
+      return NextResponse.json(
+        { error: "Provide a path (e.g., /custom-page), not a full URL" },
+        { status: 400 },
+      );
+    }
+
+    // Check if path already exists
     const existing = await prisma.trackedUrl.findUnique({
-      where: { url },
+      where: { path },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: "URL already tracked" },
+        { error: "Path already tracked" },
         { status: 409 },
       );
     }
 
-    // Create tracked URL
-    const trackedUrl = await prisma.trackedUrl.create({
+    // Create tracked path
+    const trackedPath = await prisma.trackedUrl.create({
       data: {
-        url,
+        path,
         label: label || null,
         createdById: session.user.id,
       },
@@ -116,19 +134,19 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      trackedUrl: {
-        id: trackedUrl.id,
-        url: trackedUrl.url,
-        label: trackedUrl.label,
-        createdAt: trackedUrl.createdAt.toISOString(),
+      trackedPath: {
+        id: trackedPath.id,
+        path: trackedPath.path,
+        label: trackedPath.label,
+        createdAt: trackedPath.createdAt.toISOString(),
         createdBy: {
-          name: trackedUrl.createdBy.name,
-          email: trackedUrl.createdBy.email,
+          name: trackedPath.createdBy.name,
+          email: trackedPath.createdBy.email,
         },
       },
     });
   } catch (error) {
-    console.error("Failed to create tracked URL:", error);
+    console.error("Failed to create tracked path:", error);
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -165,7 +183,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete tracked URL:", error);
+    console.error("Failed to delete tracked path:", error);
     if (error instanceof Error && error.message.includes("Forbidden")) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

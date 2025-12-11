@@ -28,15 +28,18 @@ vi.mock("next/headers", () => ({
 
 vi.mock("./SitemapPreviewClient", () => ({
   SitemapPreviewClient: ({
-    sitemapUrls,
-    trackedUrls,
+    sitemapPaths,
+    trackedPaths,
+    origin,
   }: {
-    sitemapUrls: string[];
-    trackedUrls: string[];
+    sitemapPaths: string[];
+    trackedPaths: { id: string; path: string; }[];
+    origin: string;
   }) => (
     <div data-testid="sitemap-preview-client">
-      <span data-testid="sitemap-urls-count">{sitemapUrls.length}</span>
-      <span data-testid="tracked-urls-count">{trackedUrls.length}</span>
+      <span data-testid="sitemap-paths-count">{sitemapPaths.length}</span>
+      <span data-testid="tracked-paths-count">{trackedPaths.length}</span>
+      <span data-testid="origin">{origin}</span>
     </div>
   ),
 }));
@@ -60,7 +63,9 @@ describe("SitemapPreviewPage", () => {
     render(result);
 
     expect(
-      screen.getByText("Preview all pages in the sitemap with staggered iframe loading."),
+      screen.getByText(
+        "Preview all pages in the sitemap with staggered iframe loading.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -73,21 +78,21 @@ describe("SitemapPreviewPage", () => {
     expect(screen.getByTestId("sitemap-preview-client")).toBeInTheDocument();
   });
 
-  it("should pass sitemap URLs to client component", async () => {
+  it("should pass sitemap paths to client component", async () => {
     vi.mocked(prisma.trackedUrl.findMany).mockResolvedValueOnce([]);
 
     const result = await SitemapPreviewPage();
     render(result);
 
-    const sitemapCount = screen.getByTestId("sitemap-urls-count");
+    const sitemapCount = screen.getByTestId("sitemap-paths-count");
     expect(parseInt(sitemapCount.textContent || "0")).toBe(22);
   });
 
-  it("should pass tracked URLs from database to client component", async () => {
+  it("should pass tracked paths from database to client component", async () => {
     vi.mocked(prisma.trackedUrl.findMany).mockResolvedValueOnce([
       {
         id: "1",
-        url: "https://custom.example.com/page",
+        path: "/custom-page",
         label: "Custom Page",
         isActive: true,
         createdAt: new Date(),
@@ -96,7 +101,7 @@ describe("SitemapPreviewPage", () => {
       },
       {
         id: "2",
-        url: "https://another.example.com/page",
+        path: "/another-page",
         label: null,
         isActive: true,
         createdAt: new Date(),
@@ -108,11 +113,11 @@ describe("SitemapPreviewPage", () => {
     const result = await SitemapPreviewPage();
     render(result);
 
-    const trackedCount = screen.getByTestId("tracked-urls-count");
+    const trackedCount = screen.getByTestId("tracked-paths-count");
     expect(parseInt(trackedCount.textContent || "0")).toBe(2);
   });
 
-  it("should query only active tracked URLs ordered by creation date", async () => {
+  it("should query only active tracked paths ordered by creation date", async () => {
     vi.mocked(prisma.trackedUrl.findMany).mockResolvedValueOnce([]);
 
     await SitemapPreviewPage();
@@ -121,5 +126,15 @@ describe("SitemapPreviewPage", () => {
       where: { isActive: true },
       orderBy: { createdAt: "desc" },
     });
+  });
+
+  it("should pass the correct origin to client component", async () => {
+    vi.mocked(prisma.trackedUrl.findMany).mockResolvedValueOnce([]);
+
+    const result = await SitemapPreviewPage();
+    render(result);
+
+    const origin = screen.getByTestId("origin");
+    expect(origin.textContent).toBe("http://localhost:3000");
   });
 });
