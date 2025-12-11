@@ -109,6 +109,16 @@ Given("I have an UNLISTED album with multiple images", async function(this: Cust
 });
 
 // Canvas page navigation steps
+When("I navigate to the canvas page", async function(this: CustomWorld) {
+  if (shouldSkipCanvasTests) {
+    return "skipped";
+  }
+
+  const url = `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`;
+  await this.page.goto(url);
+  await this.page.waitForLoadState("networkidle");
+});
+
 When("I navigate to the canvas page for that album", async function(this: CustomWorld) {
   if (shouldSkipCanvasTests) {
     return "skipped";
