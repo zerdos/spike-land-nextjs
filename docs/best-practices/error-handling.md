@@ -849,7 +849,7 @@ errorLogger.logError(error, {
 /**
  * Error boundary usage
  */
-function logError(error: Error, info: { componentStack: string }) {
+function logError(error: Error, info: { componentStack: string; }) {
   errorLogger.logError(error, {
     componentStack: info.componentStack,
   });

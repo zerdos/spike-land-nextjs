@@ -18,17 +18,20 @@
 Sentry shall NOT be included in the Spike Land tech stack for error tracking and monitoring.
 
 **Rationale**:
+
 - Alternative monitoring solutions are preferred
 - Vercel Analytics and built-in logging provide sufficient observability
 - Cost optimization consideration
 - Reduced external dependencies
 
 **Impact**:
+
 - Error tracking to use alternative approaches (Vercel Analytics, structured logging)
 - Remove all Sentry references from documentation and code
 - Update environment variable examples to exclude SENTRY_DSN
 
 **Related Files Updated**:
+
 - `docs/LAUNCH_CHECKLIST.md`
 - `docs/LAUNCH_PLAN.md`
 - `docs/best-practices/logging-monitoring.md`
@@ -48,18 +51,21 @@ Sentry shall NOT be included in the Spike Land tech stack for error tracking and
 The official AI model for image enhancement in Pixel is `gemini-3-pro-image-preview`. This model name is confirmed correct and exists in the Google Gemini API.
 
 **Rationale**:
+
 - Model provides excellent image enhancement capabilities
 - Supports multiple resolution tiers (1K, 2K, 4K)
 - Reliable API performance with appropriate timeout handling (5 minutes)
 - Cost-effective for the enhancement quality delivered
 
 **Technical Details**:
+
 - Model ID: `gemini-3-pro-image-preview`
 - Location: `src/lib/ai/gemini-client.ts`
 - Timeout: 5 minutes (300 seconds) - sufficient for 4K image processing
 - API: Google Generative AI (@google/genai)
 
 **Related Configuration**:
+
 ```typescript
 // src/lib/ai/gemini-client.ts
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
@@ -71,14 +77,17 @@ export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 ## Decision Categories
 
 ### Technology Decisions
+
 - DEC-001: No Sentry in tech stack
 - DEC-002: Gemini model for image enhancement
 
 ### Business Decisions
-*(None recorded yet)*
+
+_(None recorded yet)_
 
 ### Product Decisions
-*(None recorded yet)*
+
+_(None recorded yet)_
 
 ---
 
@@ -104,14 +113,17 @@ export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 [Clear statement of what was decided]
 
 **Rationale**:
+
 - [Reason 1]
 - [Reason 2]
 
 **Impact**:
+
 - [Impact 1]
 - [Impact 2]
 
 **Related Files Updated**:
+
 - [File 1]
 - [File 2]
 ```

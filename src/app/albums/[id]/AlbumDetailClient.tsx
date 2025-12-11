@@ -1,5 +1,6 @@
 "use client";
 
+import { QRCodePanel } from "@/components/canvas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
@@ -34,6 +36,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Lock,
+  QrCode,
   Settings,
   Sparkles,
   Square,
@@ -117,6 +120,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   // Cover image selection state
   const [isSettingCover, setIsSettingCover] = useState(false);
+  const [showQRSheet, setShowQRSheet] = useState(false);
 
   // Ref for tracking original order
   const originalOrderRef = useRef<string[]>([]);
@@ -547,226 +551,259 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/albums">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">{album.name}</h1>
-              <Badge variant="secondary" className="gap-1">
-                {getPrivacyIcon(album.privacy)}
-                {album.privacy === "PRIVATE"
-                  ? "Private"
-                  : album.privacy === "UNLISTED"
-                  ? "Unlisted"
-                  : "Public"}
-              </Badge>
+      <div className="flex gap-6">
+        {/* QR Panel Sidebar - only for shareable albums */}
+        {album.shareToken && album.privacy !== "PRIVATE" && album.isOwner && (
+          <div className="hidden lg:block w-72 flex-shrink-0">
+            <div className="sticky top-4">
+              <QRCodePanel
+                albumId={album.id}
+                shareToken={album.shareToken}
+                albumName={album.name}
+              />
             </div>
-            {album.description && <p className="mt-2 text-muted-foreground">{album.description}</p>}
-          </div>
-          {album.isOwner && (
-            <div className="flex gap-2">
-              {album.shareToken && album.privacy !== "PRIVATE" && (
-                <Button variant="outline" size="sm" onClick={copyShareLink}>
-                  {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-                  {copied ? "Copied!" : "Copy Link"}
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowSettings(true)}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {album.imageCount} {album.imageCount === 1 ? "image" : "images"}
-            {isSavingOrder && (
-              <span className="ml-2 text-muted-foreground">
-                <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
-                Saving order...
-              </span>
-            )}
-          </p>
-          {album.isOwner && album.images.length > 0 && (
-            <div className="flex gap-2">
-              {isSelectionMode
-                ? (
-                  <>
-                    <Button variant="outline" size="sm" onClick={toggleSelectAll}>
-                      {selectedImages.size === album.images.length
-                        ? (
-                          <>
-                            <Square className="mr-2 h-4 w-4" />
-                            Deselect All
-                          </>
-                        )
-                        : (
-                          <>
-                            <CheckSquare className="mr-2 h-4 w-4" />
-                            Select All
-                          </>
-                        )}
-                    </Button>
-                    {selectedImages.size > 0 && (
-                      <>
-                        <Button variant="outline" size="sm" onClick={openMoveDialog}>
-                          <FolderInput className="mr-2 h-4 w-4" />
-                          Move ({selectedImages.size})
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleRemoveSelectedImages}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Remove ({selectedImages.size})
-                        </Button>
-                      </>
-                    )}
-                    <Button variant="ghost" size="sm" onClick={exitSelectionMode}>
-                      <X className="mr-2 h-4 w-4" />
-                      Cancel
-                    </Button>
-                  </>
-                )
-                : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsSelectionMode(true)}
-                  >
-                    <CheckSquare className="mr-2 h-4 w-4" />
-                    Select
-                  </Button>
-                )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {album.images.length === 0
-        ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No images yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Add images from your enhanced images collection
-              </p>
-              <Button asChild>
-                <Link href="/apps/images">Browse Images</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )
-        : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {album.images.map((image) => (
-              <Card
-                key={image.id}
-                className={`overflow-hidden group relative transition-all ${
-                  draggedImageId === image.id ? "opacity-50" : ""
-                } ${dragOverImageId === image.id ? "ring-2 ring-primary" : ""} ${
-                  selectedImages.has(image.id) ? "ring-2 ring-primary" : ""
-                }`}
-                draggable={album.isOwner && !isSelectionMode}
-                onDragStart={(e) => handleDragStart(e, image.id)}
-                onDragOver={(e) => handleDragOver(e, image.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, image.id)}
-                onDragEnd={handleDragEnd}
-              >
-                <div className="relative aspect-square bg-muted">
-                  <Image
-                    src={image.enhancedUrl || image.originalUrl}
-                    alt={image.name || "Album image"}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-                  {image.enhancedUrl && (
-                    <Badge className="absolute top-2 right-2 bg-green-500">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Enhanced
-                    </Badge>
-                  )}
-                  {album.coverImageId === image.id && (
-                    <Badge className="absolute top-2 left-2" variant="secondary">
-                      <Star className="h-3 w-3 mr-1 fill-current" />
-                      Cover
-                    </Badge>
-                  )}
-                  {album.isOwner && !isSelectionMode && (
-                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-                      <GripVertical className="h-5 w-5 text-white drop-shadow-lg" />
-                    </div>
-                  )}
-                  {isSelectionMode && (
-                    <div
-                      className="absolute inset-0 bg-black/20 flex items-start justify-start p-3 cursor-pointer"
-                      onClick={() => toggleImageSelection(image.id)}
-                    >
-                      <Checkbox
-                        checked={selectedImages.has(image.id)}
-                        onCheckedChange={() => toggleImageSelection(image.id)}
-                        className="h-5 w-5 bg-white border-white"
-                        aria-label={`Select ${image.name || "image"}`}
-                      />
-                    </div>
-                  )}
-                  {album.isOwner && !isSelectionMode && (
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        asChild
-                      >
-                        <Link href={`/pixel/${image.id}`}>View</Link>
-                      </Button>
-                      {album.coverImageId !== image.id && (
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleSetCover(image.id)}
-                          disabled={isSettingCover}
-                          title="Set as cover"
-                        >
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleRemoveImage(image.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-3">
-                  <p className="text-sm font-medium truncate">
-                    {image.name || "Untitled"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {image.width} x {image.height}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         )}
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-4">
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/albums">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold tracking-tight">{album.name}</h1>
+                  <Badge variant="secondary" className="gap-1">
+                    {getPrivacyIcon(album.privacy)}
+                    {album.privacy === "PRIVATE"
+                      ? "Private"
+                      : album.privacy === "UNLISTED"
+                      ? "Unlisted"
+                      : "Public"}
+                  </Badge>
+                </div>
+                {album.description && (
+                  <p className="mt-2 text-muted-foreground">{album.description}</p>
+                )}
+              </div>
+              {album.isOwner && (
+                <div className="flex gap-2">
+                  {album.shareToken && album.privacy !== "PRIVATE" && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={copyShareLink}>
+                        {copied
+                          ? <Check className="mr-2 h-4 w-4" />
+                          : <Copy className="mr-2 h-4 w-4" />}
+                        {copied ? "Copied!" : "Copy Link"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="lg:hidden"
+                        onClick={() => setShowQRSheet(true)}
+                        aria-label="Show QR code for Canvas display"
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSettings(true)}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {album.imageCount} {album.imageCount === 1 ? "image" : "images"}
+                {isSavingOrder && (
+                  <span className="ml-2 text-muted-foreground">
+                    <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
+                    Saving order...
+                  </span>
+                )}
+              </p>
+              {album.isOwner && album.images.length > 0 && (
+                <div className="flex gap-2">
+                  {isSelectionMode
+                    ? (
+                      <>
+                        <Button variant="outline" size="sm" onClick={toggleSelectAll}>
+                          {selectedImages.size === album.images.length
+                            ? (
+                              <>
+                                <Square className="mr-2 h-4 w-4" />
+                                Deselect All
+                              </>
+                            )
+                            : (
+                              <>
+                                <CheckSquare className="mr-2 h-4 w-4" />
+                                Select All
+                              </>
+                            )}
+                        </Button>
+                        {selectedImages.size > 0 && (
+                          <>
+                            <Button variant="outline" size="sm" onClick={openMoveDialog}>
+                              <FolderInput className="mr-2 h-4 w-4" />
+                              Move ({selectedImages.size})
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleRemoveSelectedImages}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Remove ({selectedImages.size})
+                            </Button>
+                          </>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={exitSelectionMode}>
+                          <X className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
+                      </>
+                    )
+                    : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsSelectionMode(true)}
+                      >
+                        <CheckSquare className="mr-2 h-4 w-4" />
+                        Select
+                      </Button>
+                    )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {album.images.length === 0
+            ? (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No images yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Add images from your enhanced images collection
+                  </p>
+                  <Button asChild>
+                    <Link href="/apps/images">Browse Images</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+            : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {album.images.map((image) => (
+                  <Card
+                    key={image.id}
+                    className={`overflow-hidden group relative transition-all ${
+                      draggedImageId === image.id ? "opacity-50" : ""
+                    } ${dragOverImageId === image.id ? "ring-2 ring-primary" : ""} ${
+                      selectedImages.has(image.id) ? "ring-2 ring-primary" : ""
+                    }`}
+                    draggable={album.isOwner && !isSelectionMode}
+                    onDragStart={(e) => handleDragStart(e, image.id)}
+                    onDragOver={(e) => handleDragOver(e, image.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, image.id)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div className="relative aspect-square bg-muted">
+                      <Image
+                        src={image.enhancedUrl || image.originalUrl}
+                        alt={image.name || "Album image"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+                      {image.enhancedUrl && (
+                        <Badge className="absolute top-2 right-2 bg-green-500">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Enhanced
+                        </Badge>
+                      )}
+                      {album.coverImageId === image.id && (
+                        <Badge className="absolute top-2 left-2" variant="secondary">
+                          <Star className="h-3 w-3 mr-1 fill-current" />
+                          Cover
+                        </Badge>
+                      )}
+                      {album.isOwner && !isSelectionMode && (
+                        <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+                          <GripVertical className="h-5 w-5 text-white drop-shadow-lg" />
+                        </div>
+                      )}
+                      {isSelectionMode && (
+                        <div
+                          className="absolute inset-0 bg-black/20 flex items-start justify-start p-3 cursor-pointer"
+                          onClick={() => toggleImageSelection(image.id)}
+                        >
+                          <Checkbox
+                            checked={selectedImages.has(image.id)}
+                            onCheckedChange={() => toggleImageSelection(image.id)}
+                            className="h-5 w-5 bg-white border-white"
+                            aria-label={`Select ${image.name || "image"}`}
+                          />
+                        </div>
+                      )}
+                      {album.isOwner && !isSelectionMode && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            asChild
+                          >
+                            <Link href={`/pixel/${image.id}`}>View</Link>
+                          </Button>
+                          {album.coverImageId !== image.id && (
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleSetCover(image.id)}
+                              disabled={isSettingCover}
+                              title="Set as cover"
+                            >
+                              <Star className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleRemoveImage(image.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-3">
+                      <p className="text-sm font-medium truncate">
+                        {image.name || "Untitled"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {image.width} x {image.height}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+        </div>
+      </div>
 
       {/* Settings Dialog */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
@@ -911,6 +948,24 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile QR Sheet */}
+      {album?.shareToken && album.privacy !== "PRIVATE" && album.isOwner && (
+        <Sheet open={showQRSheet} onOpenChange={setShowQRSheet}>
+          <SheetContent side="bottom" className="h-auto max-h-[80vh]">
+            <SheetHeader>
+              <SheetTitle>Canvas Display</SheetTitle>
+            </SheetHeader>
+            <div className="pt-4">
+              <QRCodePanel
+                albumId={album.id}
+                shareToken={album.shareToken}
+                albumName={album.name}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
