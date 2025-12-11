@@ -1454,7 +1454,7 @@ yarn add --dev @axe-core/react
 ### Deployment
 
 - [ ] Environment variables configured
-- [ ] Error tracking setup (Sentry, etc.)
+- [ ] Error tracking setup (structured logging)
 - [ ] Analytics configured
 - [ ] Monitoring and alerts in place
 - [ ] Build artifacts optimized

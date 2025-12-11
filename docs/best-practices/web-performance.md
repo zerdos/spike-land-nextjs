@@ -1247,7 +1247,7 @@ curl "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://exa
 ### Monitoring & Analytics
 
 - **Google Analytics 4**: Standard analytics
-- **Sentry**: Error tracking
+- **Vercel Analytics**: Built-in performance monitoring
 - **LogRocket**: Session replay + RUM
 - **DataDog**: Comprehensive APM
 
