@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
-import { CookieConsent } from "@/components/analytics/cookie-consent";
 import { AuthHeader } from "@/components/auth/auth-header";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
@@ -80,7 +79,6 @@ export default function RootLayout({
             {children}
             <FeedbackButton />
           </SessionProvider>
-          <CookieConsent />
           <Toaster />
         </ThemeProvider>
         <Analytics />
