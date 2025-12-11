@@ -38,10 +38,6 @@ vi.mock("@vercel/speed-insights/next", () => ({
   SpeedInsights: () => <div data-testid="speed-insights">SpeedInsights</div>,
 }));
 
-vi.mock("@/components/analytics/cookie-consent", () => ({
-  CookieConsent: () => <div data-testid="cookie-consent">CookieConsent</div>,
-}));
-
 vi.mock("@/components/ui/sonner", () => ({
   Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
@@ -100,11 +96,6 @@ describe("RootLayout", () => {
     const { getByText } = render(RootLayout({ children: testChild }));
     // Verify the child content is rendered (it will be wrapped by providers)
     expect(getByText("Test Child")).toBeInTheDocument();
-  });
-
-  it("should render CookieConsent component", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
-    expect(getByTestId("cookie-consent")).toBeInTheDocument();
   });
 
   it("should render Analytics component", () => {
