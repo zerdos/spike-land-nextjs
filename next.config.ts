@@ -81,7 +81,27 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    // Create modified headers for sitemap preview (allows same-origin iframes)
+    const sitemapHeaders = securityHeaders.map((h) =>
+      h.key === "X-Frame-Options"
+        ? { ...h, value: "SAMEORIGIN" }
+        : h.key === "Content-Security-Policy"
+        ? {
+          ...h,
+          value: h.value.replace(
+            "frame-ancestors 'none'",
+            "frame-ancestors 'self'",
+          ),
+        }
+        : h
+    );
+
     return [
+      {
+        // Sitemap preview needs SAMEORIGIN to load iframes of our own pages
+        source: "/admin/sitemap",
+        headers: sitemapHeaders,
+      },
       {
         source: "/:path*",
         headers: securityHeaders,
