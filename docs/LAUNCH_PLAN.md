@@ -259,10 +259,10 @@ We recommend a **phased rollout** strategy to minimize risk and ensure platform 
    - Monitor: Deployment status, function executions, bandwidth
    - Check frequency: Every 15-30 minutes during launch day
 
-2. **Error Tracking (Recommended: Sentry/Datadog)**
-   - Real-time error tracking
-   - Error rate alerts
-   - Stack traces for debugging
+2. **Error Tracking (Vercel Analytics + Structured Logging)**
+   - Real-time error tracking via structured logging
+   - Error rate alerts via admin dashboard
+   - Stack traces in production logs
    - Check frequency: Continuous (alerts enabled)
 
 3. **Database Monitoring**

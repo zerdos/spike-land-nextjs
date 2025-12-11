@@ -431,61 +431,40 @@ module.exports = {
 - Infrastructure metrics
 - Session replay
 
-#### Sentry (Error Tracking and Performance)
+#### Structured Logging (Spike Land Approach)
 
-**Best for:** Error tracking and crash reporting
+**Best for:** Applications requiring custom error tracking without external dependencies
 
-**Installation:**
+This project uses structured logging with `src/lib/error-logger.ts` combined with Vercel Analytics for monitoring. This approach provides:
 
-```bash
-npm install @sentry/nextjs
-```
+- Full control over error logging format
+- No external service dependencies
+- Cost-effective solution
+- Integration with admin dashboard for alerts
 
-**Configuration:**
+**Implementation:**
 
 ```typescript
-// sentry.server.config.ts
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+// src/lib/error-logger.ts
+export const errorLogger = new ErrorLogger({
+  enabled: true,
   environment: process.env.NODE_ENV,
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new Sentry.Integrations.OnUncaughtException(),
-    new Sentry.Integrations.OnUnhandledRejection(),
-  ],
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-  debug: false,
 });
-```
 
-```typescript
-// sentry.client.config.ts
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  integrations: [
-    new Sentry.Replay({
-      maskAllText: true,
-      blockAllMedia: true,
-    }),
-  ],
-  tracesSampleRate: 0.1,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+// Usage
+errorLogger.logError(error, {
+  userId: session?.user?.id,
+  route: '/api/images/enhance',
+  componentStack: info?.componentStack,
 });
 ```
 
 **Key Features:**
 
-- Automatic error capture
-- Session replay
-- Performance monitoring
-- Release tracking
-- Source map support
+- Structured JSON logging
+- Request ID tracking
+- Context-aware error capture
+- Environment-specific handling
 
 ### Open-Source Monitoring Stack
 
@@ -1321,7 +1300,7 @@ Days 31+: Cold storage (Glacier, minimal cost)
 
 **Phase 2: Monitoring (Week 2)**
 
-- [ ] Set up APM tool (DataDog/Sentry)
+- [ ] Set up monitoring (Vercel Analytics + structured logging)
 - [ ] Create health check endpoints
 - [ ] Configure basic alerts
 
@@ -1360,12 +1339,12 @@ Days 31+: Cold storage (Glacier, minimal cost)
 - Infrastructure monitoring needed
 - Want unified observability
 
-**Choose Sentry if:**
+**Choose Vercel Analytics + Structured Logging if:**
 
-- Error tracking is priority
-- Need crash reporting
-- Session replay useful
-- Open-source option acceptable
+- Deploying on Vercel
+- Want zero-configuration monitoring
+- Need Web Vitals tracking
+- Prefer cost-effective solution
 
 **Choose Open-Source if:**
 
@@ -1394,7 +1373,7 @@ Days 31+: Cold storage (Glacier, minimal cost)
 - [Bunyan Logger Documentation](https://github.com/trentm/node-bunyan)
 - [OpenTelemetry Node.js Documentation](https://opentelemetry.io/docs/languages/js/)
 - [DataDog Documentation](https://docs.datadoghq.com/)
-- [Sentry Documentation](https://docs.sentry.io/)
+- [Vercel Analytics Documentation](https://vercel.com/docs/analytics)
 
 ### Related Articles and Guides
 
@@ -1405,7 +1384,7 @@ Days 31+: Cold storage (Glacier, minimal cost)
 - [11 Best Practices for Logging in Node.js](https://betterstack.com/community/guides/logging/nodejs-logging-best-practices/)
 - [Comparing Node.js Logging Tools](https://blog.logrocket.com/comparing-node-js-logging-tools/)
 - [Monitor Your Next.js App With RUM](https://docs.datadoghq.com/real_user_monitoring/guide/monitor-your-nextjs-app-with-rum/)
-- [Deploy and Monitor your Next.js Applications with Vercel & Sentry](https://sentry.io/resources/deploy-and-monitor-with-vercel-and-sentry/)
+- [Vercel Analytics and Monitoring Guide](https://vercel.com/docs/observability)
 - [Observability Practices: The 3 Pillars with Node.js + OpenTelemetry Example](https://dev.to/wsalas651/observability-practices-the-3-pillars-with-a-nodejs-opentelemetry-example-11k7)
 - [Essential OpenTelemetry Best Practices for Robust Observability](https://betterstack.com/community/guides/observability/opentelemetry-best-practices/)
 - [Monitoring Node.js Apps with OpenTelemetry Metrics](https://betterstack.com/community/guides/observability/opentelemetry-metrics-nodejs/)

@@ -245,8 +245,7 @@ LOG_LEVEL=info
 DB_POOL_SIZE=10
 CACHE_TTL=300
 
-# Monitoring
-SENTRY_DSN=https://...
+# Monitoring (Vercel Analytics + structured logging)
 ```
 
 ---
