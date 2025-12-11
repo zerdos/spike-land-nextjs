@@ -454,7 +454,7 @@ export const errorLogger = new ErrorLogger({
 // Usage
 errorLogger.logError(error, {
   userId: session?.user?.id,
-  route: '/api/images/enhance',
+  route: "/api/images/enhance",
   componentStack: info?.componentStack,
 });
 ```

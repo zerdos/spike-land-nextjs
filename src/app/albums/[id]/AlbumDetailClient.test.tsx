@@ -9,6 +9,21 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/components/canvas", () => ({
+  QRCodePanel: (
+    { albumId, shareToken, albumName }: { albumId: string; shareToken: string; albumName: string; },
+  ) => (
+    <div
+      data-testid="qr-panel"
+      data-album-id={albumId}
+      data-share-token={shareToken}
+      data-album-name={albumName}
+    >
+      QR Panel
+    </div>
+  ),
+}));
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
@@ -1041,6 +1056,128 @@ describe("AlbumDetailClient", () => {
           }),
         );
       });
+    });
+  });
+
+  describe("QR Panel Sidebar", () => {
+    it("renders QR panel for UNLISTED album owned by user", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            album: createMockAlbum({
+              name: "Unlisted Album",
+              privacy: "UNLISTED",
+              shareToken: "share-token-123",
+              isOwner: true,
+            }),
+          }),
+      });
+
+      render(<AlbumDetailClient albumId="album_1" />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("qr-panel")).toBeDefined();
+      });
+
+      const qrPanel = screen.getByTestId("qr-panel");
+      expect(qrPanel.getAttribute("data-album-id")).toBe("album_1");
+      expect(qrPanel.getAttribute("data-share-token")).toBe("share-token-123");
+      expect(qrPanel.getAttribute("data-album-name")).toBe("Unlisted Album");
+    });
+
+    it("renders QR panel for PUBLIC album owned by user", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            album: createMockAlbum({
+              name: "Public Album",
+              privacy: "PUBLIC",
+              shareToken: "public-share-token",
+              isOwner: true,
+            }),
+          }),
+      });
+
+      render(<AlbumDetailClient albumId="album_1" />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("qr-panel")).toBeDefined();
+      });
+
+      const qrPanel = screen.getByTestId("qr-panel");
+      expect(qrPanel.getAttribute("data-album-id")).toBe("album_1");
+      expect(qrPanel.getAttribute("data-share-token")).toBe("public-share-token");
+    });
+
+    it("does NOT render QR panel for PRIVATE album", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            album: createMockAlbum({
+              name: "Private Album",
+              privacy: "PRIVATE",
+              shareToken: null,
+              isOwner: true,
+            }),
+          }),
+      });
+
+      render(<AlbumDetailClient albumId="album_1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Private Album")).toBeDefined();
+      });
+
+      expect(screen.queryByTestId("qr-panel")).toBeNull();
+    });
+
+    it("does NOT render QR panel when user is not owner", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            album: createMockAlbum({
+              name: "Not My Album",
+              privacy: "PUBLIC",
+              shareToken: "share-token-123",
+              isOwner: false,
+            }),
+          }),
+      });
+
+      render(<AlbumDetailClient albumId="album_1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Not My Album")).toBeDefined();
+      });
+
+      expect(screen.queryByTestId("qr-panel")).toBeNull();
+    });
+
+    it("does NOT render QR panel when no shareToken", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            album: createMockAlbum({
+              name: "No Share Token Album",
+              privacy: "PUBLIC",
+              shareToken: null,
+              isOwner: true,
+            }),
+          }),
+      });
+
+      render(<AlbumDetailClient albumId="album_1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("No Share Token Album")).toBeDefined();
+      });
+
+      expect(screen.queryByTestId("qr-panel")).toBeNull();
     });
   });
 });
