@@ -44,7 +44,7 @@ describe("Privacy Policy Page", () => {
     it("should display operator name", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Operator:/)).toBeInTheDocument();
-      expect(screen.getByText(/Zoltan Erdos/)).toBeInTheDocument();
+      expect(screen.getByText(/Spike Land Ltd/)).toBeInTheDocument();
     });
 
     it("should mention GDPR, UK GDPR and CCPA compliance", () => {
@@ -188,7 +188,7 @@ describe("Privacy Policy Page", () => {
 
     it("should provide privacy contact email", () => {
       render(<PrivacyPage />);
-      const privacyEmails = screen.getAllByText(/privacy@\[your-domain\.com\]/);
+      const privacyEmails = screen.getAllByText(/hello@spike\.land/);
       expect(privacyEmails.length).toBeGreaterThan(0);
     });
 
@@ -361,7 +361,7 @@ describe("Privacy Policy Page", () => {
   describe("Contact Section", () => {
     it("should display privacy contact email link", () => {
       render(<PrivacyPage />);
-      const emailLinks = screen.getAllByRole("link", { name: /privacy@\[your-domain\.com\]/ });
+      const emailLinks = screen.getAllByRole("link", { name: /hello@spike\.land/ });
       expect(emailLinks.length).toBeGreaterThan(0);
     });
 

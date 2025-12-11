@@ -64,9 +64,9 @@ describe("Terms of Service Page", () => {
       expect(screen.getByText(/or have obtained parental consent/)).toBeInTheDocument();
     });
 
-    it("should specify operator as individual", () => {
+    it("should specify operator as company", () => {
       const { container } = render(<TermsPage />);
-      expect(container.textContent?.includes("Zoltan Erdos")).toBe(true);
+      expect(container.textContent?.includes("Spike Land Ltd")).toBe(true);
     });
 
     it("should mention capacity to agree", () => {
@@ -264,7 +264,7 @@ describe("Terms of Service Page", () => {
 
     it("should explain copyright infringement reporting", () => {
       const { container } = render(<TermsPage />);
-      expect(container.textContent?.includes("contact us at privacy@[your-domain.com]")).toBe(true);
+      expect(container.textContent?.includes("contact us at hello@spike.land")).toBe(true);
       expect(container.textContent?.includes("Identification of the infringing content")).toBe(
         true,
       );
@@ -584,7 +584,7 @@ describe("Terms of Service Page", () => {
 
     it("should have email link for disputes", () => {
       render(<TermsPage />);
-      const emailLinks = screen.getAllByText(/privacy@\[your-domain\.com\]/);
+      const emailLinks = screen.getAllByText(/hello@spike\.land/);
       expect(emailLinks.length).toBeGreaterThan(0);
     });
   });

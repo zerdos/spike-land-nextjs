@@ -79,7 +79,13 @@ export default function PrivacyPage() {
                   <li>How to contact us</li>
                 </ul>
                 <p className="pt-4">
-                  <strong>Operator:</strong> Zoltan Erdos
+                  <strong>Operator:</strong> Spike Land Ltd (Company Number pending)
+                </p>
+                <p>
+                  <strong>Registered Office:</strong> United Kingdom
+                </p>
+                <p>
+                  <strong>Contact:</strong> hello@spike.land
                 </p>
                 <p>
                   <strong>Jurisdiction:</strong>{" "}
@@ -345,10 +351,10 @@ export default function PrivacyPage() {
                     <p className="text-muted-foreground text-sm">
                       To exercise any of these rights, contact us at{" "}
                       <a
-                        href="mailto:privacy@[your-domain.com]"
+                        href="mailto:hello@spike.land"
                         className="text-primary hover:underline"
                       >
-                        privacy@[your-domain.com]
+                        hello@spike.land
                       </a>
                       . We will respond to your request within 30 days.
                     </p>
@@ -362,7 +368,7 @@ export default function PrivacyPage() {
                       California residents have the right to know what personal information is
                       collected, the right to delete, and the right to opt-out of the selling of
                       their personal data. We do not sell personal data. For requests, contact
-                      privacy@[your-domain.com].
+                      hello@spike.land.
                     </p>
                   </div>
                 </div>
@@ -624,10 +630,10 @@ export default function PrivacyPage() {
                   <p className="text-muted-foreground text-sm">
                     Please contact us at{" "}
                     <a
-                      href="mailto:privacy@[your-domain.com]"
+                      href="mailto:hello@spike.land"
                       className="text-primary hover:underline"
                     >
-                      privacy@[your-domain.com]
+                      hello@spike.land
                     </a>{" "}
                     and we will delete the account within 30 days.
                   </p>
@@ -654,10 +660,10 @@ export default function PrivacyPage() {
                     <p>
                       Email:{" "}
                       <a
-                        href="mailto:privacy@[your-domain.com]"
+                        href="mailto:hello@spike.land"
                         className="text-primary hover:underline"
                       >
-                        privacy@[your-domain.com]
+                        hello@spike.land
                       </a>
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">Response time: 72 hours</p>

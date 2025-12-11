@@ -4,6 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🏢 BUSINESS STRUCTURE
+
+### Company Information
+
+| Field               | Value                            |
+| ------------------- | -------------------------------- |
+| **Company Name**    | Spike Land Ltd                   |
+| **Status**          | Application Submitted (Dec 2025) |
+| **Application Ref** | 112-184507                       |
+| **Corp Tax Ref**    | BRCT00003618256                  |
+| **Jurisdiction**    | United Kingdom                   |
+| **Structure**       | Private Limited Company          |
+| **Domain**          | spike.land                       |
+| **Owner/Director**  | Zoltan Erdos                     |
+
+### Business Context
+
+Spike Land operates as a UK Limited Company (Ltd) for:
+
+- **Limited Liability** - Personal assets protected from business obligations
+- **GDPR Compliance** - Company bears regulatory responsibility
+- **Tax Efficiency** - Corporation Tax structure for growing revenue
+- **Professional Operations** - B2B and user trust
+
+See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full documentation.
+
+---
+
 ## 🚀 PLATFORM VISION & MANIFESTO
 
 ### **Spike Land: AI-Powered App Platform**

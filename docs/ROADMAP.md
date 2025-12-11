@@ -2,18 +2,49 @@
 
 > **Last Updated**: December 2025
 > **Current Phase**: Phase 2 Complete - Preparing for Phase 3
+> **Business Structure**: UK Limited Company (Spike Land Ltd) - Formation in progress
 
 ---
 
 ## Quick Status Overview
 
-| Phase                                | Status   | Progress |
-| ------------------------------------ | -------- | -------- |
-| Phase 1: Authentication & Foundation | Complete | 100%     |
-| Phase 2: My Apps Platform            | Complete | 100%     |
-| Phase 3: AI Agent Integration        | Planned  | 0%       |
-| Phase 4: Deployment & Hosting        | Planned  | 0%       |
-| Phase 5: Monetization                | Planned  | 0%       |
+| Phase                                | Status      | Progress |
+| ------------------------------------ | ----------- | -------- |
+| Phase 0: Business Foundation         | In Progress | 75%      |
+| Phase 1: Authentication & Foundation | Complete    | 100%     |
+| Phase 2: My Apps Platform            | Complete    | 100%     |
+| Phase 3: AI Agent Integration        | Planned     | 0%       |
+| Phase 4: Deployment & Hosting        | Planned     | 0%       |
+| Phase 5: Monetization                | Planned     | 0%       |
+
+---
+
+## Phase 0: Business Foundation (Priority)
+
+### Company Formation - Application Submitted ✅
+
+| Task                                 | Status       | Notes                           |
+| ------------------------------------ | ------------ | ------------------------------- |
+| Check company name availability      | ✅ Complete  | "Spike Land Ltd" available      |
+| Register at Companies House          | ✅ Submitted | Reference: 112-184507           |
+| Register for Corporation Tax         | ✅ Submitted | Reference: BRCT00003618256      |
+| Receive Certificate of Incorporation | ⏳ Pending   | Expected within 2 working days  |
+| Receive UTR number                   | ⏳ Pending   | Expected within 15 working days |
+| Open business bank account           | 📋 Next      | Starling/Tide recommended       |
+| Update Stripe to company details     | 📋 Queued    | After bank account              |
+| Update Terms of Service              | 📋 Queued    | After certificate received      |
+| Update Privacy Policy                | 📋 Queued    | After certificate received      |
+
+### Why Phase 0?
+
+With >£10k/year revenue and user data obligations:
+
+- **Limited liability** protects personal assets
+- **GDPR compliance** - fines against company, not personally
+- **Tax efficiency** - Corporation Tax vs Income Tax + NI
+- **Professional credibility** for user trust
+
+See [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) for full analysis.
 
 ---
 

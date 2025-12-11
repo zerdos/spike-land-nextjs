@@ -77,9 +77,9 @@ export default function TermsPage() {
                     to these Terms, please do not use the Service.
                   </p>
                   <p className="mt-3">
-                    These Terms constitute the entire agreement between you and Zoltan Erdos
-                    (&quot;Operator&quot;) regarding the Service and supersede all prior agreements
-                    and understandings.
+                    These Terms constitute the entire agreement between you and Spike Land Ltd
+                    (&quot;Operator&quot;, Company Number pending) regarding the Service and
+                    supersede all prior agreements and understandings.
                   </p>
                 </div>
 
@@ -105,7 +105,13 @@ export default function TermsPage() {
 
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-muted-foreground text-sm">
-                    <strong>Operator:</strong> Zoltan Erdos
+                    <strong>Operator:</strong> Spike Land Ltd (Company Number pending)
+                  </p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    <strong>Registered Office:</strong> United Kingdom
+                  </p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    <strong>Contact:</strong> hello@spike.land
                   </p>
                   <p className="text-muted-foreground text-sm mt-2">
                     <strong>Jurisdiction:</strong>{" "}
@@ -523,7 +529,7 @@ export default function TermsPage() {
                   </p>
                   <p className="mt-3">
                     If you believe content infringes your rights, please contact us at
-                    privacy@[your-domain.com] with:
+                    hello@spike.land with:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Identification of the infringing content</li>
@@ -858,8 +864,8 @@ export default function TermsPage() {
                   <h3 className="font-semibold text-lg mb-3">Informal Resolution</h3>
                   <p>
                     Before pursuing any legal action, both parties agree to attempt to resolve
-                    disputes through informal negotiation. Please contact us at
-                    privacy@[your-domain.com] with:
+                    disputes through informal negotiation. Please contact us at hello@spike.land
+                    with:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>A detailed description of the dispute</li>
