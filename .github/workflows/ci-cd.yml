@@ -108,7 +108,7 @@ jobs:
         run: npx prisma generate
 
       - name: Run tests (shard ${{ matrix.shard }}/12)
-        run: yarn test:run --shard=${{ matrix.shard }}/12 --reporter=github-actions
+        run: yarn test:run --shard=${{ matrix.shard }}/12 --reporter=github-actions --no-file-parallelism
         env:
           # Increase Node.js heap size for test shards
           NODE_OPTIONS: --max-old-space-size=4096
