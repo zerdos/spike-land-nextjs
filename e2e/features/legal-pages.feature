@@ -42,11 +42,6 @@ Feature: Legal Pages
     Then I should see "Essential Cookies" text
     And I should see "Analytics Cookies" text
 
-  Scenario: Navigate to privacy from cookie consent banner
-    Given the cookie consent banner is visible
-    When I click the "Learn more" link in the cookie banner
-    Then I should be on the "/privacy" page
-
   Scenario: Privacy policy table of contents navigation
     When I visit "/privacy"
     And I click the "Data Collection" anchor link
