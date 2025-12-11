@@ -240,7 +240,12 @@ export function SitemapPreviewClient({
                     <iframe
                       src={url}
                       title={`Preview of ${url}`}
-                      className="w-full h-full border-0"
+                      className="border-0 origin-top-left"
+                      style={{
+                        width: "400%",
+                        height: "400%",
+                        transform: "scale(0.25)",
+                      }}
                       sandbox="allow-scripts allow-same-origin"
                       onLoad={() => finishLoadingUrl(url)}
                     />
