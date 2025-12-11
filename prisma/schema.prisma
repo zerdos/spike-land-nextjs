@@ -39,6 +39,7 @@ model User {
   feedback           Feedback[]
   createdGalleryItems FeaturedGalleryItem[] @relation("GalleryItemCreator")
   emailLogs          EmailLog[]
+  trackedUrls        TrackedUrl[]
 
   @@map("users")
 }
@@ -618,4 +619,18 @@ model EmailLog {
   @@index([sentAt])
   @@index([template])
   @@map("email_logs")
+}
+
+model TrackedUrl {
+  id          String   @id @default(cuid())
+  path        String   @unique  // Store path only (e.g., "/custom-page"), not full URL
+  label       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([isActive])
+  @@map("tracked_urls")
 }
