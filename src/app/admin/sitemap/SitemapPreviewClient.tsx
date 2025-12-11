@@ -242,9 +242,9 @@ export function SitemapPreviewClient({
                       title={`Preview of ${url}`}
                       className="border-0 origin-top-left"
                       style={{
-                        width: "400%",
-                        height: "400%",
-                        transform: "scale(0.25)",
+                        width: "200%",
+                        height: "200%",
+                        transform: "scale(0.5)",
                       }}
                       sandbox="allow-scripts allow-same-origin"
                       onLoad={() => finishLoadingUrl(url)}
