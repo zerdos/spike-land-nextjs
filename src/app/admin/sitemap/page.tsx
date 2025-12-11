@@ -6,31 +6,33 @@
  */
 
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
 import { SitemapPreviewClient } from "./SitemapPreviewClient";
 
-const SITEMAP_URLS = [
-  "https://spike.land/",
-  "https://spike.land/pricing",
-  "https://spike.land/apps",
-  "https://spike.land/apps/images",
-  "https://spike.land/apps/display",
-  "https://spike.land/auth/signin",
-  "https://spike.land/terms",
-  "https://spike.land/privacy",
-  "https://spike.land/cookies",
-  "https://spike.land/pixel",
-  "https://spike.land/albums",
-  "https://spike.land/my-apps",
-  "https://spike.land/my-apps/new",
-  "https://spike.land/profile",
-  "https://spike.land/settings",
-  "https://spike.land/referrals",
-  "https://spike.land/admin",
-  "https://spike.land/admin/analytics",
-  "https://spike.land/admin/tokens",
-  "https://spike.land/admin/system",
-  "https://spike.land/admin/vouchers",
-  "https://spike.land/admin/users",
+// Relative paths from sitemap - will be prefixed with current origin
+const SITEMAP_PATHS = [
+  "/",
+  "/pricing",
+  "/apps",
+  "/apps/images",
+  "/apps/display",
+  "/auth/signin",
+  "/terms",
+  "/privacy",
+  "/cookies",
+  "/pixel",
+  "/albums",
+  "/my-apps",
+  "/my-apps/new",
+  "/profile",
+  "/settings",
+  "/referrals",
+  "/admin",
+  "/admin/analytics",
+  "/admin/tokens",
+  "/admin/system",
+  "/admin/vouchers",
+  "/admin/users",
 ];
 
 export default async function SitemapPreviewPage() {
@@ -41,6 +43,15 @@ export default async function SitemapPreviewPage() {
 
   const trackedUrlStrings = trackedUrls.map((t) => t.url);
 
+  // Get the current origin from headers
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const origin = `${protocol}://${host}`;
+
+  // Convert paths to full URLs using current origin
+  const sitemapUrls = SITEMAP_PATHS.map((path) => `${origin}${path}`);
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Sitemap Preview</h1>
@@ -48,7 +59,7 @@ export default async function SitemapPreviewPage() {
         Preview all pages in the sitemap with staggered iframe loading.
       </p>
       <SitemapPreviewClient
-        sitemapUrls={SITEMAP_URLS}
+        sitemapUrls={sitemapUrls}
         trackedUrls={trackedUrlStrings}
       />
     </div>

@@ -14,6 +14,18 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("next/headers", () => ({
+  headers: vi.fn(() =>
+    Promise.resolve({
+      get: (name: string) => {
+        if (name === "host") return "localhost:3000";
+        if (name === "x-forwarded-proto") return "http";
+        return null;
+      },
+    })
+  ),
+}));
+
 vi.mock("./SitemapPreviewClient", () => ({
   SitemapPreviewClient: ({
     sitemapUrls,
