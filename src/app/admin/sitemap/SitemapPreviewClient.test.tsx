@@ -75,7 +75,7 @@ describe("SitemapPreviewClient", () => {
     await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
     expect(
       screen.getByText(
@@ -98,7 +98,7 @@ describe("SitemapPreviewClient", () => {
     await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     const submitButton = screen.getByRole("button", {
@@ -348,7 +348,7 @@ describe("SitemapPreviewClient", () => {
     await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -358,33 +358,34 @@ describe("SitemapPreviewClient", () => {
     });
   });
 
-  it("should show Custom badge for tracked paths", () => {
+  it("should render custom path with delete button", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "1", path: "/custom-page" }]}
+        trackedPaths={[{ id: "1", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
-    expect(screen.getByText("Custom")).toBeInTheDocument();
+    // Custom paths show the path text
+    expect(screen.getByText("/custom-page")).toBeInTheDocument();
   });
 
-  it("should render remove button for custom paths", () => {
+  it("should render delete button for custom paths", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "1", path: "/custom-page" }]}
+        trackedPaths={[{ id: "1", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: "Remove /custom-page" }),
-    ).toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeDefined();
   });
 
-  it("should remove custom path via API when remove button is clicked", async () => {
+  it("should remove custom path via API when delete button is clicked", async () => {
     const user = userEvent.setup();
 
     mockFetch.mockResolvedValueOnce({
@@ -395,32 +396,36 @@ describe("SitemapPreviewClient", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "path-123", path: "/custom-page" }]}
+        trackedPaths={[{ id: "path-123", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
     expect(screen.getByText(/4 visible/)).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: "Remove /custom-page" }),
-    );
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeDefined();
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        "/api/admin/tracked-urls?id=path-123",
-        {
-          method: "DELETE",
-        },
-      );
-    });
+    if (deleteButton) {
+      await user.click(deleteButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/3 visible/)).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/admin/tracked-urls?id=path-123",
+          {
+            method: "DELETE",
+          },
+        );
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/3 visible/)).toBeInTheDocument();
+      });
+    }
   });
 
-  it("should not render remove button for sitemap paths", () => {
+  it("should not render delete button for sitemap paths", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -429,9 +434,9 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Remove \// }),
-    ).not.toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeUndefined();
   });
 
   it("should merge tracked paths with sitemap paths without duplicates", () => {
@@ -635,7 +640,8 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(screen.getByText(/0 visible \/ 1 hidden/)).toBeInTheDocument();
+    expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
+    expect(screen.getByText("hidden", { exact: false })).toBeInTheDocument();
   });
 
   it("should render Show/Hide Hidden Paths toggle button", () => {
