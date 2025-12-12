@@ -1,4 +1,4 @@
-import { Then, When } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
@@ -83,6 +83,16 @@ When("I am not logged in", async function(this: CustomWorld) {
 
   // Mock no session for client-side requests
   await mockSession(this, null);
+});
+
+// Generic test user login
+Given("I am logged in as a test user", async function(this: CustomWorld) {
+  await mockSession(this, {
+    name: "Test User",
+    email: "test@example.com",
+  });
+  await this.page.reload();
+  await this.page.waitForLoadState("networkidle");
 });
 
 When(
