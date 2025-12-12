@@ -634,13 +634,15 @@ model TrackedUrl {
   id          String   @id @default(cuid())
   path        String   @unique  // Store path only (e.g., "/custom-page"), not full URL
   label       String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean  @default(true)  // true = visible, false = hidden
+  isBuiltIn   Boolean  @default(false) // true = sitemap path, false = custom
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@index([isActive])
+  @@index([isBuiltIn])
   @@map("tracked_urls")
 }
 

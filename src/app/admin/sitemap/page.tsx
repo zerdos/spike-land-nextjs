@@ -34,9 +34,8 @@ const SITEMAP_PATHS = [
 ];
 
 export default async function SitemapPreviewPage() {
-  // Fetch tracked paths from database
+  // Fetch ALL tracked paths from database (including hidden ones)
   const trackedPaths = await prisma.trackedUrl.findMany({
-    where: { isActive: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -54,7 +53,12 @@ export default async function SitemapPreviewPage() {
       </p>
       <SitemapPreviewClient
         sitemapPaths={SITEMAP_PATHS}
-        trackedPaths={trackedPaths.map((t) => ({ id: t.id, path: t.path }))}
+        trackedPaths={trackedPaths.map((t) => ({
+          id: t.id,
+          path: t.path,
+          isActive: t.isActive,
+          isBuiltIn: t.isBuiltIn,
+        }))}
         origin={origin}
       />
     </div>

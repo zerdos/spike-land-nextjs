@@ -157,6 +157,78 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await requireAdminByUserId(session.user.id);
+
+    const body = await request.json();
+    const { path, isActive } = body;
+
+    if (!path || typeof isActive !== "boolean") {
+      return NextResponse.json(
+        { error: "Missing required fields: path and isActive" },
+        { status: 400 },
+      );
+    }
+
+    // Check if tracked URL exists for this path
+    const existing = await prisma.trackedUrl.findUnique({
+      where: { path },
+    });
+
+    if (existing) {
+      // Update existing entry
+      const updated = await prisma.trackedUrl.update({
+        where: { path },
+        data: { isActive },
+      });
+
+      return NextResponse.json({
+        trackedPath: {
+          id: updated.id,
+          path: updated.path,
+          isActive: updated.isActive,
+          isBuiltIn: updated.isBuiltIn,
+        },
+      });
+    } else {
+      // Create new entry for built-in path with isBuiltIn flag
+      const created = await prisma.trackedUrl.create({
+        data: {
+          path,
+          isActive,
+          isBuiltIn: true,
+          createdById: session.user.id,
+        },
+      });
+
+      return NextResponse.json({
+        trackedPath: {
+          id: created.id,
+          path: created.path,
+          isActive: created.isActive,
+          isBuiltIn: created.isBuiltIn,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Failed to update tracked path visibility:", error);
+    if (error instanceof Error && error.message.includes("Forbidden")) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();

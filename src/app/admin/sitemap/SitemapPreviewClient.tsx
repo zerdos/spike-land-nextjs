@@ -18,6 +18,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 interface TrackedPath {
   id: string;
   path: string;
+  isActive: boolean;
+  isBuiltIn: boolean;
 }
 
 interface SitemapPreviewClientProps {
@@ -44,9 +46,25 @@ export function SitemapPreviewClient({
   const [newPath, setNewPath] = useState("");
   const [pathError, setPathError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
 
   // Ref to track loading state without triggering re-renders
   const loadingRef = useRef<Set<string>>(new Set());
+
+  // Create a map of path -> visibility state
+  const pathVisibility = useMemo(() => {
+    const map = new Map<string, boolean>();
+    trackedPaths.forEach((t) => {
+      map.set(t.path, t.isActive);
+    });
+    // All sitemap paths are visible by default unless explicitly hidden
+    sitemapPaths.forEach((p) => {
+      if (!map.has(p)) {
+        map.set(p, true);
+      }
+    });
+    return map;
+  }, [trackedPaths, sitemapPaths]);
 
   // Combine sitemap paths with tracked paths (deduped)
   const allPaths = useMemo(() => {
@@ -54,8 +72,34 @@ export function SitemapPreviewClient({
     const customPaths = trackedPathStrings.filter(
       (p) => !sitemapPaths.includes(p),
     );
-    return [...sitemapPaths, ...customPaths];
-  }, [sitemapPaths, trackedPaths]);
+    const combined = [...sitemapPaths, ...customPaths];
+
+    // Filter based on showHidden state
+    if (showHidden) {
+      return combined;
+    } else {
+      return combined.filter((p) => pathVisibility.get(p) !== false);
+    }
+  }, [sitemapPaths, trackedPaths, showHidden, pathVisibility]);
+
+  // Calculate counts for badges
+  const visibleCount = useMemo(() => {
+    const trackedPathStrings = trackedPaths.map((t) => t.path);
+    const customPaths = trackedPathStrings.filter(
+      (p) => !sitemapPaths.includes(p),
+    );
+    const combined = [...sitemapPaths, ...customPaths];
+    return combined.filter((p) => pathVisibility.get(p) !== false).length;
+  }, [sitemapPaths, trackedPaths, pathVisibility]);
+
+  const hiddenCount = useMemo(() => {
+    const trackedPathStrings = trackedPaths.map((t) => t.path);
+    const customPaths = trackedPathStrings.filter(
+      (p) => !sitemapPaths.includes(p),
+    );
+    const combined = [...sitemapPaths, ...customPaths];
+    return combined.filter((p) => pathVisibility.get(p) === false).length;
+  }, [sitemapPaths, trackedPaths, pathVisibility]);
 
   // Convert path to full URL
   const pathToUrl = useCallback(
@@ -187,6 +231,52 @@ export function SitemapPreviewClient({
 
   const isCustomPath = (path: string) => !sitemapPaths.includes(path);
 
+  const handleToggleVisibility = async (path: string) => {
+    const currentVisibility = pathVisibility.get(path) ?? true;
+    const newVisibility = !currentVisibility;
+
+    try {
+      const response = await fetch("/api/admin/tracked-urls", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path, isActive: newVisibility }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to toggle path visibility");
+        return;
+      }
+
+      const data = await response.json();
+
+      // Update local state
+      setTrackedPaths((prev) => {
+        const existing = prev.find((t) => t.path === path);
+        if (existing) {
+          // Update existing entry
+          return prev.map((t) =>
+            t.path === path
+              ? { ...t, isActive: data.trackedPath.isActive }
+              : t,
+          );
+        } else {
+          // Add new entry for built-in path
+          return [
+            ...prev,
+            {
+              id: data.trackedPath.id,
+              path: data.trackedPath.path,
+              isActive: data.trackedPath.isActive,
+              isBuiltIn: data.trackedPath.isBuiltIn,
+            },
+          ];
+        }
+      });
+    } catch (error) {
+      console.error("Failed to toggle path visibility:", error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -195,6 +285,16 @@ export function SitemapPreviewClient({
             {loadedPaths.size} / {allPaths.length} loaded
           </Badge>
           <Badge variant="outline">{loadingPaths.size} loading</Badge>
+          <Badge variant="outline">
+            {visibleCount} visible / {hiddenCount} hidden
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHidden(!showHidden)}
+          >
+            {showHidden ? "Hide Hidden Paths" : "Show Hidden Paths"}
+          </Button>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -247,9 +347,13 @@ export function SitemapPreviewClient({
           const isLoading = loadingPaths.has(path);
           const isLoaded = loadedPaths.has(path);
           const isCustom = isCustomPath(path);
+          const isHidden = pathVisibility.get(path) === false;
 
           return (
-            <Card key={path} className="overflow-hidden">
+            <Card
+              key={path}
+              className={`overflow-hidden ${isHidden ? "opacity-50 border-dashed" : ""}`}
+            >
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-sm font-medium truncate flex-1">
@@ -261,6 +365,53 @@ export function SitemapPreviewClient({
                         Custom
                       </Badge>
                     )}
+                    {isHidden && (
+                      <Badge variant="secondary" className="text-xs">
+                        Hidden
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                      onClick={() => handleToggleVisibility(path)}
+                      aria-label={isHidden ? `Show ${path}` : `Hide ${path}`}
+                      title={isHidden ? "Show this path" : "Hide this path"}
+                    >
+                      {isHidden ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                          <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                          <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                          <line x1="2" x2="22" y1="2" y2="22" />
+                        </svg>
+                      )}
+                    </Button>
                     {isCustom && (
                       <Button
                         variant="ghost"

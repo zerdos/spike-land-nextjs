@@ -25,7 +25,7 @@ const securityHeaders = [
   },
   {
     key: "X-Frame-Options",
-    value: "DENY",
+    value: "SAMEORIGIN",
   },
   {
     key: "X-Content-Type-Options",
@@ -52,7 +52,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com",
-      "frame-ancestors 'none'",
+      "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
     ].join("; "),
@@ -81,27 +81,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    // Create modified headers for sitemap preview (allows same-origin iframes)
-    const sitemapHeaders = securityHeaders.map((h) =>
-      h.key === "X-Frame-Options"
-        ? { ...h, value: "SAMEORIGIN" }
-        : h.key === "Content-Security-Policy"
-        ? {
-          ...h,
-          value: h.value.replace(
-            "frame-ancestors 'none'",
-            "frame-ancestors 'self'",
-          ),
-        }
-        : h
-    );
-
     return [
-      {
-        // Sitemap preview needs SAMEORIGIN to load iframes of our own pages
-        source: "/admin/sitemap",
-        headers: sitemapHeaders,
-      },
       {
         source: "/:path*",
         headers: securityHeaders,
