@@ -181,6 +181,7 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
                   ...album,
                   createdAt: new Date(album.createdAt),
                 }))}
+                onAlbumClick={(albumId) => router.push(`/canvas/${albumId}`)}
                 onDragOver={(albumId) => setDragOver(albumId)}
                 onDragLeave={() => setDragOver(null)}
                 dragOverAlbumId={dragOverAlbumId}
