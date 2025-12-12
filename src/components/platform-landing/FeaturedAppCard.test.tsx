@@ -1,7 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { Image as ImageIcon } from "lucide-react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FeaturedAppCard } from "./FeaturedAppCard";
+
+// Mock next/image for ImageComparisonSlider
+vi.mock("next/image", () => ({
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...props} />
+  ),
+}));
 
 describe("FeaturedAppCard Component", () => {
   const defaultProps = {
@@ -128,5 +136,74 @@ describe("FeaturedAppCard Component", () => {
     render(<FeaturedAppCard {...defaultProps} />);
     expect(screen.queryByText("Featured")).not.toBeInTheDocument();
     expect(screen.getByTestId("app-card")).toBeInTheDocument();
+  });
+
+  describe("PixelLogo integration", () => {
+    it("should render PixelLogo when usePixelLogo is true", () => {
+      render(<FeaturedAppCard {...defaultProps} usePixelLogo />);
+      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+    });
+
+    it("should not render icon when usePixelLogo is true", () => {
+      render(<FeaturedAppCard {...defaultProps} usePixelLogo />);
+      expect(screen.queryByTestId("app-icon")).not.toBeInTheDocument();
+    });
+
+    it("should not render app name CardTitle when usePixelLogo is true", () => {
+      render(<FeaturedAppCard {...defaultProps} usePixelLogo />);
+      expect(screen.queryByText("Test App")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Tagline feature", () => {
+    it("should render tagline when provided", () => {
+      render(<FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />);
+      expect(screen.getByText("AI Image Enhancement")).toBeInTheDocument();
+    });
+
+    it("should not render tagline when not provided", () => {
+      render(<FeaturedAppCard {...defaultProps} />);
+      expect(screen.queryByText("AI Image Enhancement")).not.toBeInTheDocument();
+    });
+
+    it("should render tagline with primary color styling", () => {
+      render(<FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />);
+      const tagline = screen.getByText("AI Image Enhancement");
+      expect(tagline).toHaveClass("text-primary");
+    });
+  });
+
+  describe("Comparison slider feature", () => {
+    const comparisonImages = {
+      originalUrl: "https://example.com/before.jpg",
+      enhancedUrl: "https://example.com/after.jpg",
+    };
+
+    it("should render comparison slider when featured and comparisonImages provided", () => {
+      render(
+        <FeaturedAppCard
+          {...defaultProps}
+          featured
+          comparisonImages={comparisonImages}
+        />,
+      );
+      expect(screen.getByAltText("Before")).toBeInTheDocument();
+      expect(screen.getByAltText("After")).toBeInTheDocument();
+    });
+
+    it("should not render comparison slider when not featured", () => {
+      render(
+        <FeaturedAppCard
+          {...defaultProps}
+          comparisonImages={comparisonImages}
+        />,
+      );
+      expect(screen.queryByAltText("Before")).not.toBeInTheDocument();
+    });
+
+    it("should not render comparison slider when comparisonImages not provided", () => {
+      render(<FeaturedAppCard {...defaultProps} featured />);
+      expect(screen.queryByAltText("Before")).not.toBeInTheDocument();
+    });
   });
 });

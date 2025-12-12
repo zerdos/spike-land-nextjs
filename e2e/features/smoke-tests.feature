@@ -120,10 +120,11 @@ Feature: Smoke Tests
     And I should see "Photo Gallery" heading
 
   @fast
-  Scenario: Unauthenticated user redirected from enhance page
+  Scenario: Unauthenticated user sees Pixel landing page
     Given I am not logged in
     When I visit "/apps/pixel"
-    Then I should be redirected to sign-in page
+    Then the page should load successfully
+    And I should see "Enhance Your Photos" text
 
   @fast
   Scenario: Unauthenticated user redirected from settings page
