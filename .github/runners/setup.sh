@@ -4,7 +4,6 @@ set -e
 # Self-hosted GitHub Actions Runner Setup Script
 # Usage: ./setup.sh
 
-REPO="zerdos/spike-land-nextjs"
 ENV_FILE=".env"
 
 echo "=== GitHub Actions Self-Hosted Runner Setup ==="
@@ -22,16 +21,13 @@ if ! gh auth status &> /dev/null; then
     exit 1
 fi
 
-# Generate a runner registration token
-echo "Generating runner registration token..."
-RUNNER_TOKEN=$(gh api \
-  --method POST \
-  -H "Accept: application/vnd.github+json" \
-  "/repos/${REPO}/actions/runners/registration-token" \
-  --jq '.token')
+# Get the current token from gh CLI
+echo "Retrieving GitHub token from gh CLI..."
+GITHUB_TOKEN=$(gh auth token)
 
-if [ -z "$RUNNER_TOKEN" ]; then
-    echo "Error: Failed to generate runner token"
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo "Error: Failed to get GitHub token"
+    echo "Make sure you're logged in with: gh auth login"
     exit 1
 fi
 
@@ -39,16 +35,15 @@ fi
 cat > "$ENV_FILE" << EOF
 # GitHub Actions Runner Configuration
 # Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-# Token expires in 1 hour - regenerate if needed with: ./setup.sh
+# Uses your gh CLI token (PAT with repo scope)
 
-RUNNER_TOKEN=${RUNNER_TOKEN}
+GITHUB_TOKEN=${GITHUB_TOKEN}
 EOF
 
 echo ""
 echo "Setup complete!"
 echo ""
-echo "Runner token saved to $ENV_FILE"
-echo "Note: Token expires in 1 hour. Re-run this script if needed."
+echo "Token saved to $ENV_FILE"
 echo ""
 echo "To start the runner:"
 echo "  docker compose up -d"
@@ -58,4 +53,7 @@ echo "  docker compose logs -f"
 echo ""
 echo "To stop:"
 echo "  docker compose down"
+echo ""
+echo "To verify runner is registered:"
+echo "  gh api /repos/zerdos/spike-land-nextjs/actions/runners --jq '.runners[]'"
 echo ""

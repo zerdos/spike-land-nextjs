@@ -33,6 +33,14 @@ on:
         options:
           - "true"
           - "false"
+      runner:
+        description: "Runner to use (self-hosted if laptop is on, github if off)"
+        required: false
+        default: "self-hosted"
+        type: choice
+        options:
+          - "self-hosted"
+          - "github"
 
 jobs:
   # ============================================================================
@@ -40,7 +48,7 @@ jobs:
   # ============================================================================
   quality-checks:
     name: Quality Checks (Lint + Security)
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
 
     steps:
       - name: Checkout code
@@ -74,7 +82,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests [${{ matrix.shard }}/4]
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     strategy:
       matrix:
         shard: [1, 2, 3, 4]
@@ -128,7 +136,7 @@ jobs:
   # Build runs in PARALLEL with quality-checks and unit-tests (no needs)
   build:
     name: Build Application
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     # NO DEPENDENCIES - runs immediately in parallel with tests and lint!
 
     steps:
@@ -179,7 +187,7 @@ jobs:
 
   deploy-preview:
     name: Deploy Preview
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     needs: build # Only waits for build, NOT for tests or lint
     if: needs.build.result == 'success' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch')
     outputs:
@@ -304,7 +312,7 @@ jobs:
   # Production deploy still gates on ALL checks passing.
   e2e:
     name: E2E Tests
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     needs: [deploy-preview, build] # Explicit build dependency for clarity
     # Run if deploy-preview succeeded OR was skipped (for main branch push)
     # AND build must have succeeded
@@ -389,7 +397,7 @@ jobs:
   # Post-E2E notification (uses the preview URL from deploy-preview)
   notify-pr:
     name: Notify PR
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     needs: [e2e, deploy-preview, quality-checks, unit-tests]
     if: |
       always() &&
@@ -458,7 +466,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    runs-on: [self-hosted, docker, mac]
+    runs-on: ${{ github.event.inputs.runner == 'github' && 'ubuntu-latest' || fromJSON('["self-hosted", "docker", "mac"]') }}
     needs: [e2e, quality-checks, unit-tests, build] # Explicit build dependency
     # Deploy to production only when ALL checks pass
     # Note: always() required to evaluate when some jobs might be skipped
