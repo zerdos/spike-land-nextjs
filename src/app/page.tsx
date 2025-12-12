@@ -7,6 +7,11 @@ import {
 } from "@/components/platform-landing";
 import { Image as ImageIcon } from "lucide-react";
 
+const DEMO_COMPARISON_IMAGES = {
+  originalUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
+  enhancedUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=95",
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-grid-pattern">
@@ -30,10 +35,13 @@ export default function Home() {
         <div className="mx-auto max-w-5xl grid gap-6 md:grid-cols-3">
           <FeaturedAppCard
             name="Pixel"
-            description="AI-powered image enhancement. Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
+            description="Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
             icon={<ImageIcon className="h-8 w-8" />}
             href="/apps/pixel"
             featured
+            usePixelLogo
+            tagline="AI Image Enhancement"
+            comparisonImages={DEMO_COMPARISON_IMAGES}
           />
           {/* More apps coming soon */}
         </div>

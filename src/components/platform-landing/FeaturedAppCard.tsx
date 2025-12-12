@@ -1,10 +1,17 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
+
+export interface ComparisonImages {
+  originalUrl: string;
+  enhancedUrl: string;
+}
 
 export interface FeaturedAppCardProps {
   name: string;
@@ -12,6 +19,9 @@ export interface FeaturedAppCardProps {
   icon: ReactNode;
   href: string;
   featured?: boolean;
+  tagline?: string;
+  usePixelLogo?: boolean;
+  comparisonImages?: ComparisonImages;
 }
 
 export function FeaturedAppCard({
@@ -20,6 +30,9 @@ export function FeaturedAppCard({
   icon,
   href,
   featured = false,
+  tagline,
+  usePixelLogo = false,
+  comparisonImages,
 }: FeaturedAppCardProps) {
   return (
     <Card
@@ -31,16 +44,29 @@ export function FeaturedAppCard({
       data-testid={featured ? "featured-app-card" : "app-card"}
     >
       <CardHeader className={featured ? "pb-4" : "pb-3"}>
-        <div
-          className={`mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-lg transition-transform group-hover:scale-110 ${
-            featured ? "h-16 w-16" : "h-14 w-14"
-          }`}
-        >
-          {icon}
-        </div>
-        <CardTitle className={featured ? "text-2xl" : "text-lg"}>
-          {name}
-        </CardTitle>
+        {usePixelLogo ? (
+          <div className="mb-3">
+            <PixelLogo size="lg" variant="horizontal" />
+          </div>
+        ) : (
+          <div
+            className={`mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-lg transition-transform group-hover:scale-110 ${
+              featured ? "h-16 w-16" : "h-14 w-14"
+            }`}
+          >
+            {icon}
+          </div>
+        )}
+        {!usePixelLogo && (
+          <CardTitle className={featured ? "text-2xl" : "text-lg"}>
+            {name}
+          </CardTitle>
+        )}
+        {tagline && (
+          <span className="text-sm text-primary font-medium">
+            {tagline}
+          </span>
+        )}
         {featured && (
           <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary w-fit">
             Featured
@@ -53,6 +79,18 @@ export function FeaturedAppCard({
         >
           {description}
         </CardDescription>
+        {featured && comparisonImages && (
+          <div className="mt-4 rounded-lg overflow-hidden border border-border/50">
+            <ImageComparisonSlider
+              originalUrl={comparisonImages.originalUrl}
+              enhancedUrl={comparisonImages.enhancedUrl}
+              originalLabel="Before"
+              enhancedLabel="After"
+              width={16}
+              height={9}
+            />
+          </div>
+        )}
         {featured && (
           <Button asChild className="mt-4">
             <Link href={href}>
