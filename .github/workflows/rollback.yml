@@ -38,8 +38,8 @@ jobs:
       - name: Get Vercel Project Info
         id: project
         run: |
-          VERCEL_ORG_ID=$(npx vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .teamId')
-          VERCEL_PROJECT_ID=$(npx vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .id')
+          VERCEL_ORG_ID=$(yarn vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .teamId')
+          VERCEL_PROJECT_ID=$(yarn vercel list --json | jq -r '.[] | select(.name=="spike-land-nextjs") | .id')
           echo "org_id=$VERCEL_ORG_ID" >> $GITHUB_OUTPUT
           echo "project_id=$VERCEL_PROJECT_ID" >> $GITHUB_OUTPUT
         env:
@@ -49,9 +49,9 @@ jobs:
         id: deployments
         run: |
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            DEPLOYMENTS=$(npx vercel deploy list --json --limit=5 --prod)
+            DEPLOYMENTS=$(yarn vercel deploy list --json --limit=5 --prod)
           else
-            DEPLOYMENTS=$(npx vercel deploy list --json --limit=5)
+            DEPLOYMENTS=$(yarn vercel deploy list --json --limit=5)
           fi
           echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
           echo "Recent deployments:"
@@ -85,7 +85,7 @@ jobs:
           DEPLOYMENT_ID="${{ steps.target.outputs.deployment_id }}"
 
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            npx vercel promote "$DEPLOYMENT_ID" --token=${{ secrets.VERCEL_TOKEN }}
+            yarn vercel promote "$DEPLOYMENT_ID" --token=${{ secrets.VERCEL_TOKEN }}
           else
             echo "Promotion to preview environment not applicable"
             exit 1
