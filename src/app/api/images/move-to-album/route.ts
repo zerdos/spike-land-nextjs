@@ -119,11 +119,16 @@ export async function POST(request: NextRequest) {
       _max: { sortOrder: true },
     });
 
-    let currentSortOrder = (maxSortOrder._max.sortOrder ?? -1) + 1;
+    // Pre-calculate sort orders to avoid race condition in Promise.all
+    const baseSortOrder = (maxSortOrder._max.sortOrder ?? -1) + 1;
+    const sortOrders = Object.fromEntries(
+      uniqueImageIds.map((id, idx) => [id, baseSortOrder + idx]),
+    );
 
     // Process each image
     const results = await Promise.all(
       uniqueImageIds.map(async (imageId: string) => {
+        const sortOrder = sortOrders[imageId]; // Pre-calculated, immutable
         try {
           // Add to target album (use upsert to handle duplicates gracefully)
           const albumImage = await prisma.albumImage.upsert({
@@ -135,17 +140,14 @@ export async function POST(request: NextRequest) {
             },
             update: {
               // If already exists, just update the sort order
-              sortOrder: currentSortOrder,
+              sortOrder,
             },
             create: {
               albumId: targetAlbumId,
               imageId,
-              sortOrder: currentSortOrder,
+              sortOrder,
             },
           });
-
-          // Increment sort order for next image
-          currentSortOrder++;
 
           // Remove from source album if requested
           if (removeFromSourceAlbum && typeof removeFromSourceAlbum === "string") {

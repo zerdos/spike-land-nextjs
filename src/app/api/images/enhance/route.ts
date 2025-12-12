@@ -198,10 +198,19 @@ export async function POST(request: NextRequest) {
 
       // Store the workflow run ID for cancellation support (if available)
       if (workflowRun?.runId) {
-        await prisma.imageEnhancementJob.update({
-          where: { id: job.id },
-          data: { workflowRunId: workflowRun.runId },
-        });
+        try {
+          await prisma.imageEnhancementJob.update({
+            where: { id: job.id },
+            data: { workflowRunId: workflowRun.runId },
+          });
+        } catch (updateError) {
+          requestLogger.error(
+            "Failed to store workflowRunId - job may not be cancellable",
+            updateError instanceof Error ? updateError : new Error(String(updateError)),
+            { jobId: job.id, workflowRunId: workflowRun.runId },
+          );
+          // Continue - workflow is running, we just can't cancel it
+        }
       }
 
       requestLogger.info("Enhancement workflow started (production)", {

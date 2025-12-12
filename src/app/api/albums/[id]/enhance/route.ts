@@ -241,7 +241,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         // Fire and forget - don't await, let it run in the background
         batchEnhanceImagesDirect(batchInput).catch((error) => {
-          console.error("Direct album batch enhancement failed:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error("Direct album batch enhancement failed:", {
+            error: errorMessage,
+            albumId,
+            tier,
+            imageCount: imagesToEnhance.length,
+          });
         });
       }
     } catch (error) {

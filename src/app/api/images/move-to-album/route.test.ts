@@ -664,5 +664,77 @@ describe("/api/images/move-to-album", () => {
       expect(response.status).toBe(500);
       expect(data).toEqual({ error: "Failed to move images to album" });
     });
+
+    it("should assign unique sequential sort orders to multiple images", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: mockUserId },
+      } as any);
+
+      (prisma.album.findUnique as Mock).mockResolvedValue({
+        userId: mockUserId,
+      } as any);
+
+      const threeImageIds = [
+        "clq1234567890img1abcdefgh",
+        "clq1234567890img2abcdefgh",
+        "clq1234567890img3abcdefgh",
+      ];
+
+      (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
+        { id: "clq1234567890img3abcdefgh" },
+      ] as any);
+
+      // Existing album has max sort order of 9
+      (prisma.albumImage.aggregate as Mock).mockResolvedValue({
+        _max: { sortOrder: 9 },
+      } as any);
+
+      const now = new Date();
+      const upsertMock = prisma.albumImage.upsert as Mock;
+
+      // Mock upsert to return albumImage with the sort order it was called with
+      upsertMock.mockImplementation(async ({ create }: any) => ({
+        id: `album-image-${create.imageId}`,
+        albumId: mockTargetAlbumId,
+        imageId: create.imageId,
+        sortOrder: create.sortOrder,
+        addedAt: now,
+      }));
+
+      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
+        method: "POST",
+        body: JSON.stringify({
+          imageIds: threeImageIds,
+          targetAlbumId: mockTargetAlbumId,
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.moved).toBe(3);
+      expect(data.failed).toBe(0);
+
+      // Verify each image got a unique sequential sort order starting from 10
+      const sortOrders = new Set<number>();
+      expect(upsertMock).toHaveBeenCalledTimes(3);
+
+      // Extract sort orders from mock calls
+      for (let i = 0; i < 3; i++) {
+        const call = upsertMock.mock.calls[i][0];
+        const sortOrder = call.create.sortOrder;
+        sortOrders.add(sortOrder);
+      }
+
+      // All sort orders should be unique
+      expect(sortOrders.size).toBe(3);
+
+      // Sort orders should be 10, 11, 12 (sequential from baseSortOrder)
+      expect(Array.from(sortOrders).sort()).toEqual([10, 11, 12]);
+    });
   });
 });
