@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useId } from "react";
+import { useEffect, useState } from "react";
 
 interface PixelLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -21,14 +21,23 @@ const sizeMap = {
 const GAP_RATIO = 0.12; // 12% gap between cells
 const CORNER_RATIO = 0.18; // 18% corner radius for soft pixel aesthetic
 
+// Module-level counter for generating unique IDs after hydration
+let instanceCounter = 0;
+
 export function PixelLogo({
   size = "md",
   variant = "horizontal",
   className,
   showText = true,
 }: PixelLogoProps) {
-  // Use React's useId() for unique SVG element IDs to prevent collisions
-  const uniqueId = useId();
+  // Start with a stable ID for SSR, then update to unique ID after mount
+  // This prevents hydration mismatches while still ensuring unique IDs for multiple instances
+  const [uniqueId, setUniqueId] = useState("ssr");
+
+  useEffect(() => {
+    setUniqueId(`client-${++instanceCounter}`);
+  }, []);
+
   const glowId = `glow-${uniqueId}`;
   const sparkGradientId = `sparkGradient-${uniqueId}`;
   const sparkShineId = `sparkShine-${uniqueId}`;
