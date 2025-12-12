@@ -11,8 +11,10 @@ const MockFeaturedAppsSection = () => (
     <h2>Featured Applications</h2>
     <p>Discover AI-powered apps built on Spike Land</p>
     <div data-testid="featured-app-card">
-      <span>Pixel</span>
-      <span>AI-powered image enhancement</span>
+      <div role="img" aria-label="Pixel logo">pixel</div>
+      <span>AI Image Enhancement</span>
+      <span>Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly.</span>
+      <div data-testid="comparison-slider">Before/After</div>
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a role="link" href="/apps/pixel">Get Started</a>
     </div>
@@ -90,9 +92,19 @@ describe("Home Page", () => {
       expect(screen.getByText(/Discover AI-powered apps/)).toBeInTheDocument();
     });
 
-    it("should render Pixel app card", () => {
+    it("should render Pixel logo", () => {
       render(<TestableHome />);
-      expect(screen.getByText("Pixel")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+    });
+
+    it("should render AI Image Enhancement tagline", () => {
+      render(<TestableHome />);
+      expect(screen.getByText("AI Image Enhancement")).toBeInTheDocument();
+    });
+
+    it("should render comparison slider", () => {
+      render(<TestableHome />);
+      expect(screen.getByTestId("comparison-slider")).toBeInTheDocument();
     });
 
     it("should link to Pixel app", () => {
