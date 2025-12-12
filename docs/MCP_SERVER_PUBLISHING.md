@@ -11,45 +11,36 @@ This document describes how to publish the `@spike-land/mcp-server` package to n
 
 ## Prerequisites
 
-### 1. npm Account Setup
+### npm Account Setup
 
 You need an npm account with access to the `@spike-land` organization scope:
 
 1. Create an npm account at https://www.npmjs.com/signup
 2. Request access to the `@spike-land` organization (or create it)
-3. Generate an npm access token:
-   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Click "Generate New Token" → "Classic Token"
-   - Select "Automation" type (for CI/CD)
-   - Copy the token (starts with `npm_...`)
 
-### 2. GitHub Secret Configuration
-
-Add the npm token to GitHub repository secrets:
-
-1. Go to: https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions
-2. Click "New repository secret"
-3. Name: `NPM_TOKEN`
-4. Value: Your npm token from step 1
-5. Click "Add secret"
+**Note**: As of December 2024, npm classic tokens have been permanently revoked. This project uses **OIDC Trusted Publishing** which requires no tokens - authentication happens automatically via GitHub Actions.
 
 ## Publishing Methods
 
 ### Method 1: Automated Publishing via GitHub Actions (Recommended)
 
-A GitHub Actions workflow template is provided at `docs/workflows/publish-mcp-server.yml`. To use it:
+This project uses **OIDC Trusted Publishing** - no npm tokens needed! The GitHub Actions workflow authenticates directly with npm using OpenID Connect.
 
-1. **Copy the workflow file**:
-   ```bash
-   cp docs/workflows/publish-mcp-server.yml .github/workflows/
-   git add .github/workflows/publish-mcp-server.yml
-   git commit -m "chore: Add MCP server publishing workflow"
-   git push
-   ```
+#### One-Time Setup: Configure Trusted Publisher on npmjs.com
 
-2. **Follow the publishing steps below**
+Before the first publish, you must configure the trusted publisher on npm:
 
-#### Option A: Tag-based Publishing
+1. Go to your package settings: https://www.npmjs.com/package/@spike-land/mcp-server/access
+2. Find the **"Trusted Publisher"** section
+3. Click **"GitHub Actions"** under "Select your publisher"
+4. Configure the following fields:
+   - **Organization or user**: `zerdos`
+   - **Repository**: `spike-land-nextjs`
+   - **Workflow filename**: `publish-mcp-server.yml`
+   - **Environment name**: (leave empty unless using GitHub environments)
+5. Save the configuration
+
+#### Publishing with Tags
 
 ```bash
 # 1. Update version in package.json
@@ -67,11 +58,12 @@ git push origin mcp-server-v0.1.1
 
 # 4. GitHub Actions will automatically:
 #    - Build the package
+#    - Authenticate via OIDC (no token needed!)
 #    - Publish to npm with provenance
 #    - Create a GitHub release
 ```
 
-#### Option B: Manual Workflow Dispatch
+#### Manual Workflow Dispatch
 
 ```bash
 # Trigger the workflow manually from GitHub UI:
@@ -165,6 +157,7 @@ Follow semantic versioning (semver):
 ### Error: "You do not have permission to publish"
 
 **Solution**: Ensure you have access to the `@spike-land` organization on npm:
+
 ```bash
 npm owner add YOUR_USERNAME @spike-land/mcp-server
 ```
@@ -176,35 +169,52 @@ npm owner add YOUR_USERNAME @spike-land/mcp-server
 ### Error: "dist/ directory not found"
 
 **Solution**: Run the build command before publishing:
+
 ```bash
 npm run build
 ```
 
-### Error: "Invalid authentication token"
+### Error: "Unable to authenticate" in GitHub Actions
 
-**Solution**: For GitHub Actions, verify `NPM_TOKEN` secret is set correctly. For local publishing, run:
+**Solution**: Verify your trusted publisher configuration on npmjs.com:
+
+1. Check that the workflow filename matches exactly (including `.yml` extension)
+2. Verify repository owner and name are correct
+3. Ensure you're using GitHub-hosted runners (self-hosted not supported)
+4. Check that `id-token: write` permission is set in workflow
+
+### Error: "Invalid authentication token" (Local)
+
+**Solution**: For local publishing, run:
+
 ```bash
 npm logout
 npm login
 ```
+
+Note: Local `npm login` now creates 2-hour session tokens that expire automatically.
 
 ## Package Distribution
 
 Once published, users can install the package:
 
 ### Via npx (Recommended)
+
 ```bash
 SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server
 ```
 
 ### Via npm install
+
 ```bash
 npm install -g @spike-land/mcp-server
 SPIKE_LAND_API_KEY=sk_live_... spike-mcp
 ```
 
 ### Claude Desktop Configuration
+
 Users add to `~/.config/claude/claude_desktop_config.json`:
+
 ```json
 {
   "mcpServers": {
@@ -221,10 +231,11 @@ Users add to `~/.config/claude/claude_desktop_config.json`:
 
 ## Security Considerations
 
-1. **npm Token**: Keep the `NPM_TOKEN` secret secure. Rotate it periodically.
-2. **Provenance**: The GitHub Actions workflow uses `--provenance` flag for supply chain security.
+1. **OIDC Trusted Publishing**: No long-lived tokens to manage or rotate - authentication uses short-lived OIDC credentials.
+2. **Provenance**: Automatically generated with OIDC publishing for supply chain security.
 3. **Access Control**: Limit npm organization access to trusted maintainers.
 4. **Version Tags**: Use git tags to track published versions.
+5. **Trusted Publisher Config**: Regularly audit your trusted publisher configuration on npmjs.com.
 
 ## Related Documentation
 
@@ -236,5 +247,6 @@ Users add to `~/.config/claude/claude_desktop_config.json`:
 ## Support
 
 For issues with publishing, contact:
+
 - Repository owner: @zerdos
 - Create an issue: https://github.com/zerdos/spike-land-nextjs/issues
