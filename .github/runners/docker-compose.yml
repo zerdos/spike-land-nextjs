@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  runner:
+    image: myoung34/github-runner:latest
+    environment:
+      RUNNER_NAME: "mac-laptop-${RUNNER_ID:-1}"
+      RUNNER_TOKEN: ${RUNNER_TOKEN}
+      RUNNER_REPOSITORY_URL: https://github.com/zerdos/spike-land-nextjs
+      RUNNER_LABELS: self-hosted,docker,mac
+      RUNNER_WORKDIR: /tmp/github-runner
+      DISABLE_AUTO_UPDATE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner-work:/tmp/github-runner
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+
+  # Uncomment to run multiple runners in parallel
+  # runner-2:
+  #   image: myoung34/github-runner:latest
+  #   environment:
+  #     RUNNER_NAME: "mac-laptop-2"
+  #     RUNNER_TOKEN: ${RUNNER_TOKEN}
+  #     RUNNER_REPOSITORY_URL: https://github.com/zerdos/spike-land-nextjs
+  #     RUNNER_LABELS: self-hosted,docker,mac
+  #     RUNNER_WORKDIR: /tmp/github-runner
+  #     DISABLE_AUTO_UPDATE: "true"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - runner-work-2:/tmp/github-runner
+  #   restart: unless-stopped
+
+volumes:
+  runner-work:
+  # runner-work-2:
