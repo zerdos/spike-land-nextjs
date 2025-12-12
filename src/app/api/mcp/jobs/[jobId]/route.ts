@@ -1,4 +1,4 @@
-import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { getJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { NextRequest, NextResponse } from "next/server";
@@ -34,8 +34,8 @@ interface RouteParams {
  *   }
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  // Authenticate via API key
-  const authResult = await authenticateMcpRequest(request);
+  // Authenticate via API key or session
+  const authResult = await authenticateMcpOrSession(request);
   if (!authResult.success) {
     return NextResponse.json({ error: authResult.error }, { status: 401 });
   }
