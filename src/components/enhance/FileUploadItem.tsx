@@ -70,6 +70,13 @@ export function FileUploadItem({
             <span className="text-sm">Failed</span>
           </div>
         );
+      case "cancelled":
+        return (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <X className="h-4 w-4" />
+            <span className="text-sm">Cancelled</span>
+          </div>
+        );
     }
   };
 
