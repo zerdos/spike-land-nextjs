@@ -56,7 +56,7 @@ export default async function SitemapPreviewPage() {
         trackedPaths={trackedPaths.map((t) => ({
           id: t.id,
           path: t.path,
-          isActive: t.isActive
+          isActive: t.isActive,
         }))}
         origin={origin}
       />
