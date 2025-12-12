@@ -151,7 +151,7 @@ export function CustomValidationExample() {
  * Example 5: Integration with Album System
  */
 export function AlbumUploadExample() {
-  const { upload, files, completedCount, reset } = useMultiFileUpload({
+  const { upload: _upload, files: _files, completedCount, reset } = useMultiFileUpload({
     parallel: true,
     onFileComplete: (imageId) => {
       // Add image to album

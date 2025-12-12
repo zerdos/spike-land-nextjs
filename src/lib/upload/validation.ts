@@ -12,7 +12,14 @@
 // Constants
 const DEFAULT_MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const DEFAULT_MAX_FILES = 20;
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+];
 
 /**
  * Validation options for file upload
@@ -52,9 +59,13 @@ export interface SingleValidationResult {
 
 /**
  * Check if a file is an image based on MIME type
+ *
+ * Security: Only allows explicit MIME types from IMAGE_TYPES array.
+ * Does NOT accept arbitrary image/* types to prevent potentially
+ * dangerous formats like image/svg+xml (XSS risk) or image/x-icon.
  */
 export function isImageFile(file: File): boolean {
-  return IMAGE_TYPES.includes(file.type) || file.type.startsWith("image/");
+  return IMAGE_TYPES.includes(file.type);
 }
 
 /**
@@ -102,11 +113,39 @@ export function validateFile(
     };
   }
 
-  // Validate file name
+  // Validate file name exists
   if (!file.name || file.name.trim() === "") {
     return {
       valid: false,
       error: "File must have a valid name.",
+    };
+  }
+
+  // Validate filename security (path traversal, hidden files, length)
+  if (!isSecureFilename(file.name)) {
+    // Provide specific error messages based on the security issue
+    if (file.name.includes("..") || file.name.includes("/") || file.name.includes("\\")) {
+      return {
+        valid: false,
+        error: "Insecure filename: path traversal characters are not allowed.",
+      };
+    }
+    if (file.name.startsWith(".")) {
+      return {
+        valid: false,
+        error: "Insecure filename: hidden files (starting with '.') are not allowed.",
+      };
+    }
+    if (file.name.length > 255) {
+      return {
+        valid: false,
+        error: "Insecure filename: name exceeds maximum length of 255 characters.",
+      };
+    }
+    // Generic fallback for any other security issue
+    return {
+      valid: false,
+      error: "Insecure filename: the filename contains disallowed characters or patterns.",
     };
   }
 

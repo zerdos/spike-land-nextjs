@@ -30,9 +30,40 @@ describe("isImageFile", () => {
     expect(isImageFile(file)).toBe(true);
   });
 
-  it("should return true for generic image/* MIME types", () => {
-    const file = new File([], "test.svg", { type: "image/svg+xml" });
+  it("should return true for HEIC files", () => {
+    const file = new File([], "test.heic", { type: "image/heic" });
     expect(isImageFile(file)).toBe(true);
+  });
+
+  it("should return true for HEIF files", () => {
+    const file = new File([], "test.heif", { type: "image/heif" });
+    expect(isImageFile(file)).toBe(true);
+  });
+
+  // Security: Reject potentially dangerous image/* types not in whitelist
+  it("should reject image/svg+xml files (XSS risk)", () => {
+    const file = new File([], "test.svg", { type: "image/svg+xml" });
+    expect(isImageFile(file)).toBe(false);
+  });
+
+  it("should reject image/x-icon files", () => {
+    const file = new File([], "test.ico", { type: "image/x-icon" });
+    expect(isImageFile(file)).toBe(false);
+  });
+
+  it("should reject image/vnd.microsoft.icon files", () => {
+    const file = new File([], "test.ico", { type: "image/vnd.microsoft.icon" });
+    expect(isImageFile(file)).toBe(false);
+  });
+
+  it("should reject image/bmp files (not in whitelist)", () => {
+    const file = new File([], "test.bmp", { type: "image/bmp" });
+    expect(isImageFile(file)).toBe(false);
+  });
+
+  it("should reject image/tiff files (not in whitelist)", () => {
+    const file = new File([], "test.tiff", { type: "image/tiff" });
+    expect(isImageFile(file)).toBe(false);
   });
 
   it("should return false for non-image files", () => {
@@ -142,6 +173,73 @@ describe("validateFile", () => {
     const result = validateFile(file, {
       allowedTypes: ["image/*"],
     });
+    expect(result.valid).toBe(true);
+  });
+
+  // Security: Path traversal prevention tests
+  it("should reject files with path traversal using '..'", () => {
+    const file = new File([new ArrayBuffer(1024)], "../etc/passwd.jpg", {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("path traversal");
+  });
+
+  it("should reject files with forward slash in name", () => {
+    const file = new File([new ArrayBuffer(1024)], "path/to/file.jpg", {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("path traversal");
+  });
+
+  it("should reject files with backslash in name", () => {
+    const file = new File([new ArrayBuffer(1024)], "path\\to\\file.jpg", {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("path traversal");
+  });
+
+  // Security: Hidden files prevention tests
+  it("should reject hidden files starting with dot", () => {
+    const file = new File([new ArrayBuffer(1024)], ".hidden.jpg", {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("hidden files");
+  });
+
+  it("should reject .htaccess files", () => {
+    const file = new File([new ArrayBuffer(1024)], ".htaccess", {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("hidden files");
+  });
+
+  // Security: Filename length tests
+  it("should reject files with overly long filenames", () => {
+    const longName = "a".repeat(256) + ".jpg";
+    const file = new File([new ArrayBuffer(1024)], longName, {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("maximum length");
+  });
+
+  it("should accept files with maximum allowed filename length", () => {
+    const maxName = "a".repeat(250) + ".jpg"; // 254 chars total
+    const file = new File([new ArrayBuffer(1024)], maxName, {
+      type: "image/jpeg",
+    });
+    const result = validateFile(file);
     expect(result.valid).toBe(true);
   });
 });

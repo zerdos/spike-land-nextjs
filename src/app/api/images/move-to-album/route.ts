@@ -22,6 +22,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate max array length (100 items max)
+    if (imageIds.length > 100) {
+      return NextResponse.json(
+        { error: "Cannot move more than 100 images at once" },
+        { status: 400 },
+      );
+    }
+
+    // Validate imageId format (CUID pattern: starts with 'c', followed by alphanumeric)
+    const cuidPattern = /^c[a-z0-9]{24,}$/;
+    const invalidIds = imageIds.filter(
+      (id) => typeof id !== "string" || id.trim() === "" || !cuidPattern.test(id),
+    );
+    if (invalidIds.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Invalid image ID format",
+          invalidIds: invalidIds.slice(0, 5), // Show first 5 invalid IDs
+        },
+        { status: 400 },
+      );
+    }
+
+    // Deduplicate imageIds
+    const uniqueImageIds = [...new Set(imageIds)];
+
     if (!targetAlbumId || typeof targetAlbumId !== "string") {
       return NextResponse.json(
         { error: "Target album ID is required" },
@@ -52,13 +78,13 @@ export async function POST(request: NextRequest) {
     // Verify all images belong to the user
     const images = await prisma.enhancedImage.findMany({
       where: {
-        id: { in: imageIds },
+        id: { in: uniqueImageIds },
         userId: session.user.id,
       },
       select: { id: true },
     });
 
-    if (images.length !== imageIds.length) {
+    if (images.length !== uniqueImageIds.length) {
       return NextResponse.json(
         { error: "Some images were not found or do not belong to you" },
         { status: 400 },
@@ -97,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     // Process each image
     const results = await Promise.all(
-      imageIds.map(async (imageId: string) => {
+      uniqueImageIds.map(async (imageId: string) => {
         try {
           // Add to target album (use upsert to handle duplicates gracefully)
           const albumImage = await prisma.albumImage.upsert({

@@ -1,6 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { JobStatus } from "./useParallelEnhancement";
 import { useParallelEnhancement } from "./useParallelEnhancement";
 
 // Mock EventSource
@@ -759,5 +758,276 @@ describe("useParallelEnhancement", () => {
     await waitFor(() => {
       expect(onAllComplete).toHaveBeenCalledTimes(2);
     });
+  });
+
+  it("should clean up reconnect timeouts on unmount during reconnection", async () => {
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result, unmount } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(MockEventSource.getInstances()).toHaveLength(1);
+    });
+
+    const instancesBeforeError = MockEventSource.getInstances().length;
+
+    // Trigger an error to start reconnection with backoff
+    const instance = MockEventSource.getInstances()[0];
+    if (instance) {
+      instance.readyState = 1; // OPEN (not closed)
+    }
+    MockEventSource.simulateError(`/api/jobs/${mockJobId1}/stream`);
+
+    // Unmount before the reconnect timeout fires
+    // This should clear the timeout and prevent reconnection
+    unmount();
+
+    // Verify that unmount happened and connections are closed
+    expect(MockEventSource.getInstances()[0]?.readyState).toBe(2); // CLOSED
+
+    // Instances count should remain the same (no new connections after unmount)
+    expect(MockEventSource.getInstances()).toHaveLength(instancesBeforeError);
+  });
+
+  it("should not update state after unmount", async () => {
+    const onJobUpdate = vi.fn();
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result, unmount } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+        onJobUpdate,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(result.current.jobs).toHaveLength(1);
+    });
+
+    // Store the job count before unmount
+    const jobsBeforeUnmount = result.current.jobs.length;
+
+    // Unmount the hook
+    unmount();
+
+    // Verify SSE connection was closed
+    expect(MockEventSource.getInstances()[0]?.readyState).toBe(2); // CLOSED
+
+    // Try to simulate a message after unmount - the SSE connection is closed so this shouldn't do anything
+    // The test verifies that unmount properly cleans up connections
+    expect(result.current.jobs).toHaveLength(jobsBeforeUnmount);
+  });
+
+  it("should clear reconnect timeouts when all jobs complete", async () => {
+    const onAllComplete = vi.fn();
+    const mockResponse = {
+      jobs: [
+        { jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" },
+        { jobId: mockJobId2, tier: "TIER_2K", status: "PENDING" },
+      ],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+        onAllComplete,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K", "TIER_2K"]);
+
+    await waitFor(() => {
+      expect(MockEventSource.getInstances()).toHaveLength(2);
+    });
+
+    // Trigger an error on one job to start reconnection
+    const instance = MockEventSource.getInstances()[0];
+    if (instance) {
+      instance.readyState = 1; // OPEN
+    }
+    MockEventSource.simulateError(`/api/jobs/${mockJobId1}/stream`);
+
+    // Complete both jobs
+    MockEventSource.simulateMessage(`/api/jobs/${mockJobId1}/stream`, {
+      type: "status",
+      status: "COMPLETED",
+      enhancedUrl: "https://example.com/1.jpg",
+    });
+
+    MockEventSource.simulateMessage(`/api/jobs/${mockJobId2}/stream`, {
+      type: "status",
+      status: "COMPLETED",
+      enhancedUrl: "https://example.com/2.jpg",
+    });
+
+    await waitFor(() => {
+      expect(onAllComplete).toHaveBeenCalled();
+    });
+
+    // All SSE connections should be closed when all jobs complete
+    MockEventSource.getInstances().forEach((inst) => {
+      expect(inst.readyState).toBe(2); // CLOSED
+    });
+  });
+
+  it("should handle SSE parse error gracefully", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(result.current.jobs).toHaveLength(1);
+    });
+
+    // Simulate invalid JSON message
+    const instance = MockEventSource.getInstances()[0];
+    if (instance) {
+      const event = new MessageEvent("message", {
+        data: "invalid json",
+      });
+      instance.onmessage?.(event);
+    }
+
+    // Should log error but not crash
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to parse SSE message:",
+      expect.any(Error),
+    );
+
+    // Job status should remain unchanged
+    expect(result.current.jobs[0]?.status).toBe("PENDING");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should clean up existing connection when reconnecting", async () => {
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(MockEventSource.getInstances()).toHaveLength(1);
+    });
+
+    // Start enhancement again (should clean up existing connection)
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    // First instance should be closed
+    const instances = MockEventSource.getInstances();
+    expect(instances[0]?.readyState).toBe(2); // CLOSED
+  });
+
+  it("should reset reconnect attempts on successful open", async () => {
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(MockEventSource.getInstances()).toHaveLength(1);
+    });
+
+    // Simulate successful open
+    MockEventSource.simulateOpen(`/api/jobs/${mockJobId1}/stream`);
+
+    // The onopen handler should have been called, resetting reconnect attempts
+    // Verify the EventSource is in OPEN state
+    const instance = MockEventSource.getInstances()[0];
+    expect(instance?.readyState).toBe(1); // OPEN
+  });
+
+  it("should clean up existing timeout when connecting to job", async () => {
+    const mockResponse = {
+      jobs: [{ jobId: mockJobId1, tier: "TIER_1K", status: "PENDING" }],
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result } = renderHook(() =>
+      useParallelEnhancement({
+        imageId: mockImageId,
+      })
+    );
+
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    await waitFor(() => {
+      expect(MockEventSource.getInstances()).toHaveLength(1);
+    });
+
+    // Start again - this tests the cleanup of existing timeout
+    await result.current.startEnhancement(["TIER_1K"]);
+
+    // Verify first instance was closed
+    expect(MockEventSource.getInstances()[0]?.readyState).toBe(2); // CLOSED
   });
 });

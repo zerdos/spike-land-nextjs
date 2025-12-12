@@ -6,8 +6,9 @@ import { useCallback, useRef, useState } from "react";
  * Status of an individual file upload
  */
 export interface FileUploadStatus {
+  id: string; // Unique identifier for the file
   file: File;
-  status: "pending" | "uploading" | "completed" | "failed";
+  status: "pending" | "uploading" | "completed" | "failed" | "cancelled";
   progress: number; // 0-100
   imageId?: string; // Set on success
   error?: string;
@@ -35,6 +36,7 @@ export interface UseMultiFileUploadReturn {
   progress: number; // Overall 0-100
   completedCount: number;
   failedCount: number;
+  cancelledCount: number;
   cancel: () => void;
   reset: () => void;
 }
@@ -78,6 +80,23 @@ export function useMultiFileUpload(
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
+   * Generate a unique ID for file tracking
+   */
+  const generateFileId = useCallback((): string => {
+    return crypto.randomUUID();
+  }, []);
+
+  /**
+   * Update a file's status by its unique ID
+   */
+  const updateFileById = useCallback(
+    (fileId: string, update: Partial<Omit<FileUploadStatus, "id" | "file">>) => {
+      setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, ...update } : f)));
+    },
+    [],
+  );
+
+  /**
    * Validate a single file
    */
   const validateFile = useCallback(
@@ -102,21 +121,17 @@ export function useMultiFileUpload(
    * Upload a single file
    */
   const uploadSingleFile = useCallback(
-    async (
-      fileStatus: FileUploadStatus,
-      index: number,
-      signal: AbortSignal,
-    ): Promise<void> => {
-      // Skip files that already failed validation
-      if (fileStatus.status === "failed") {
+    async (fileStatus: FileUploadStatus, signal: AbortSignal): Promise<void> => {
+      const fileId = fileStatus.id;
+
+      // Skip files that already failed validation or are cancelled
+      if (fileStatus.status === "failed" || fileStatus.status === "cancelled") {
         return;
       }
 
       try {
-        // Update status to uploading
-        setFiles((prev) =>
-          prev.map((f, i) => i === index ? { ...f, status: "uploading" as const, progress: 0 } : f)
-        );
+        // Update status to uploading using ID-based update
+        updateFileById(fileId, { status: "uploading", progress: 0 });
 
         const formData = new FormData();
         formData.append("file", fileStatus.file);
@@ -137,46 +152,33 @@ export function useMultiFileUpload(
 
         const data = await response.json();
 
-        // Update status to completed
-        setFiles((prev) =>
-          prev.map((f, i) =>
-            i === index
-              ? {
-                ...f,
-                status: "completed" as const,
-                progress: 100,
-                imageId: data.imageId,
-              }
-              : f
-          )
-        );
+        // Update status to completed using ID-based update
+        updateFileById(fileId, {
+          status: "completed",
+          progress: 100,
+          imageId: data.imageId,
+        });
 
         // Call onFileComplete callback
         if (onFileComplete && data.imageId) {
           onFileComplete(data.imageId);
         }
       } catch (error) {
-        // Don't mark as failed if it was an abort
+        // Don't mark as failed if it was an abort - mark as cancelled instead
         if (error instanceof Error && error.name === "AbortError") {
+          updateFileById(fileId, { status: "cancelled" });
           return;
         }
 
         const errorMessage = error instanceof Error ? error.message : "Upload failed";
 
-        setFiles((prev) =>
-          prev.map((f, i) =>
-            i === index
-              ? {
-                ...f,
-                status: "failed" as const,
-                error: errorMessage,
-              }
-              : f
-          )
-        );
+        updateFileById(fileId, {
+          status: "failed",
+          error: errorMessage,
+        });
       }
     },
-    [albumId, onFileComplete],
+    [albumId, onFileComplete, updateFileById],
   );
 
   /**
@@ -184,12 +186,9 @@ export function useMultiFileUpload(
    */
   const uploadSequential = useCallback(
     async (fileStatuses: FileUploadStatus[], signal: AbortSignal) => {
-      for (let i = 0; i < fileStatuses.length; i++) {
+      for (const fileStatus of fileStatuses) {
         if (signal.aborted) break;
-        const fileStatus = fileStatuses[i];
-        if (fileStatus) {
-          await uploadSingleFile(fileStatus, i, signal);
-        }
+        await uploadSingleFile(fileStatus, signal);
       }
     },
     [uploadSingleFile],
@@ -201,7 +200,7 @@ export function useMultiFileUpload(
   const uploadParallel = useCallback(
     async (fileStatuses: FileUploadStatus[], signal: AbortSignal) => {
       await Promise.all(
-        fileStatuses.map((fileStatus, index) => uploadSingleFile(fileStatus, index, signal)),
+        fileStatuses.map((fileStatus) => uploadSingleFile(fileStatus, signal)),
       );
     },
     [uploadSingleFile],
@@ -221,10 +220,11 @@ export function useMultiFileUpload(
         throw new Error(`Maximum ${maxFiles} files allowed`);
       }
 
-      // Validate all files upfront
+      // Validate all files upfront and assign unique IDs
       const fileStatuses: FileUploadStatus[] = filesToUpload.map((file) => {
         const validationError = validateFile(file);
         return {
+          id: generateFileId(),
           file,
           status: validationError ? ("failed" as const) : ("pending" as const),
           progress: 0,
@@ -260,7 +260,15 @@ export function useMultiFileUpload(
         abortControllerRef.current = null;
       }
     },
-    [maxFiles, validateFile, parallel, uploadParallel, uploadSequential, onUploadComplete],
+    [
+      maxFiles,
+      validateFile,
+      parallel,
+      uploadParallel,
+      uploadSequential,
+      onUploadComplete,
+      generateFileId,
+    ],
   );
 
   /**
@@ -271,6 +279,14 @@ export function useMultiFileUpload(
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    // Mark all in-progress and pending files as cancelled
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.status === "uploading" || f.status === "pending"
+          ? { ...f, status: "cancelled" as const }
+          : f
+      )
+    );
     setIsUploading(false);
   }, []);
 
@@ -291,6 +307,7 @@ export function useMultiFileUpload(
       files.reduce((sum, f) => {
         if (f.status === "completed") return sum + 100;
         if (f.status === "failed") return sum + 100;
+        if (f.status === "cancelled") return sum + 100; // Treat cancelled as complete for progress
         return sum + f.progress;
       }, 0) / files.length,
     );
@@ -305,6 +322,11 @@ export function useMultiFileUpload(
    */
   const failedCount = files.filter((f) => f.status === "failed").length;
 
+  /**
+   * Count cancelled files
+   */
+  const cancelledCount = files.filter((f) => f.status === "cancelled").length;
+
   return {
     upload,
     files,
@@ -312,6 +334,7 @@ export function useMultiFileUpload(
     progress,
     completedCount,
     failedCount,
+    cancelledCount,
     cancel,
     reset,
   };

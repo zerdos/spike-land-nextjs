@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
@@ -24,6 +25,30 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check rate limit
+    const rateLimitKey = `album-batch-enhance:${session.user.id}`;
+    const rateLimitResult = await checkRateLimit(
+      rateLimitKey,
+      rateLimitConfigs.albumBatchEnhancement,
+    );
+    if (rateLimitResult.isLimited) {
+      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded for batch enhancement",
+          retryAfter: rateLimitResult.resetAt - Date.now(),
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+            "Retry-After": String(retryAfter),
+          },
+        },
+      );
     }
 
     const body = await request.json();
@@ -51,43 +76,42 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Fetch all images in album with their enhancement jobs
-    const albumImages = await prisma.albumImage.findMany({
+    // First, count total images in the album (lightweight query)
+    const totalAlbumImagesCount = await prisma.albumImage.count({
       where: { albumId },
-      include: {
-        image: {
-          include: {
-            enhancementJobs: {
-              where: {
-                status: "COMPLETED",
-                tier,
-              },
-              select: { id: true },
-            },
-          },
-        },
-      },
-      orderBy: { sortOrder: "asc" },
     });
 
-    if (albumImages.length === 0) {
+    if (totalAlbumImagesCount === 0) {
       return NextResponse.json(
         { error: "No images found in album" },
         { status: 404 },
       );
     }
 
-    // Filter out already enhanced images if requested
-    const imagesToEnhance = skipAlreadyEnhanced
-      ? albumImages.filter((ai) => ai.image.enhancementJobs.length === 0)
-      : albumImages;
+    // Count images that need enhancement (based on skipAlreadyEnhanced flag)
+    const imagesToEnhanceCount = skipAlreadyEnhanced
+      ? await prisma.albumImage.count({
+        where: {
+          albumId,
+          image: {
+            enhancementJobs: {
+              none: {
+                status: "COMPLETED",
+                tier,
+              },
+            },
+          },
+        },
+      })
+      : totalAlbumImagesCount;
 
-    const skippedCount = albumImages.length - imagesToEnhance.length;
+    const skippedCount = totalAlbumImagesCount - imagesToEnhanceCount;
 
-    if (imagesToEnhance.length === 0) {
+    // Early return if nothing to enhance
+    if (imagesToEnhanceCount === 0) {
       return NextResponse.json({
         success: true,
-        totalImages: albumImages.length,
+        totalImages: totalAlbumImagesCount,
         skipped: skippedCount,
         queued: 0,
         totalCost: 0,
@@ -96,16 +120,48 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
     }
 
-    // Check batch size limit
-    if (imagesToEnhance.length > MAX_BATCH_SIZE) {
+    // Check batch size limit BEFORE fetching data (optimization for large albums)
+    if (imagesToEnhanceCount > MAX_BATCH_SIZE) {
       return NextResponse.json(
         {
           error:
-            `Maximum ${MAX_BATCH_SIZE} images allowed per batch enhancement. This album has ${imagesToEnhance.length} images to enhance.`,
+            `Maximum ${MAX_BATCH_SIZE} images allowed per batch enhancement. This album has ${imagesToEnhanceCount} images to enhance. Please enhance in smaller batches.`,
+          totalImages: totalAlbumImagesCount,
+          toEnhance: imagesToEnhanceCount,
+          maxBatchSize: MAX_BATCH_SIZE,
         },
         { status: 400 },
       );
     }
+
+    // Now fetch only the images we need with minimal fields (optimized query)
+    const albumImages = await prisma.albumImage.findMany({
+      where: skipAlreadyEnhanced
+        ? {
+          albumId,
+          image: {
+            enhancementJobs: {
+              none: {
+                status: "COMPLETED",
+                tier,
+              },
+            },
+          },
+        }
+        : { albumId },
+      select: {
+        image: {
+          select: {
+            id: true,
+            originalR2Key: true,
+          },
+        },
+      },
+      orderBy: { sortOrder: "asc" },
+      take: MAX_BATCH_SIZE,
+    });
+
+    const imagesToEnhance = albumImages;
 
     // Calculate total cost
     const tokenCost = ENHANCEMENT_COSTS[tier];
@@ -145,6 +201,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    /**
+     * Refund Policy:
+     * - If workflow fails to start: Full refund immediately
+     * - If individual jobs fail: Refunded per-job after batch completes
+     * - Successful jobs: No refund (tokens consumed as expected)
+     */
+
     // Prepare images data for the workflow
     const imagesData = imagesToEnhance.map((ai) => ({
       imageId: ai.image.id,
@@ -158,31 +221,49 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       tier,
     };
 
-    if (isVercelEnvironment()) {
-      // Production: Use Vercel's durable workflow infrastructure
-      await start(batchEnhanceImages, [batchInput]);
+    // Wrap workflow startup in try-catch to handle startup failures
+    try {
+      if (isVercelEnvironment()) {
+        // Production: Use Vercel's durable workflow infrastructure
+        await start(batchEnhanceImages, [batchInput]);
 
-      console.log("Album batch enhancement workflow started (production)", {
-        batchId,
-        albumId,
-        imageCount: imagesToEnhance.length,
-      });
-    } else {
-      // Development: Run enhancement directly (fire-and-forget)
-      console.log("Running album batch enhancement directly (dev mode)", {
-        batchId,
-        albumId,
-      });
+        console.log("Album batch enhancement workflow started (production)", {
+          batchId,
+          albumId,
+          imageCount: imagesToEnhance.length,
+        });
+      } else {
+        // Development: Run enhancement directly (fire-and-forget)
+        console.log("Running album batch enhancement directly (dev mode)", {
+          batchId,
+          albumId,
+        });
 
-      // Fire and forget - don't await, let it run in the background
-      batchEnhanceImagesDirect(batchInput).catch((error) => {
-        console.error("Direct album batch enhancement failed:", error);
-      });
+        // Fire and forget - don't await, let it run in the background
+        batchEnhanceImagesDirect(batchInput).catch((error) => {
+          console.error("Direct album batch enhancement failed:", error);
+        });
+      }
+    } catch (error) {
+      console.error("[Album Enhance] Workflow failed to start:", error);
+
+      // Refund tokens since workflow didn't start
+      await TokenBalanceManager.refundTokens(
+        session.user.id,
+        totalCost,
+        batchId,
+        "Workflow failed to start",
+      );
+
+      return NextResponse.json(
+        { error: "Failed to start enhancement workflow. Tokens have been refunded." },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
       success: true,
-      totalImages: albumImages.length,
+      totalImages: totalAlbumImagesCount,
       skipped: skippedCount,
       queued: imagesToEnhance.length,
       totalCost,

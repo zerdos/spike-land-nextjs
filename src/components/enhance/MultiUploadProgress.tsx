@@ -7,7 +7,7 @@ import { Check, Loader2, RefreshCw, Upload, X } from "lucide-react";
 
 interface FileStatus {
   file: File;
-  status: "pending" | "uploading" | "completed" | "failed";
+  status: "pending" | "uploading" | "completed" | "failed" | "cancelled";
   progress: number;
   error?: string;
 }
@@ -49,6 +49,8 @@ function StatusIcon({ status }: { status: FileStatus["status"]; }) {
       return <Check className="h-4 w-4 text-green-500" aria-label="Completed" />;
     case "failed":
       return <X className="h-4 w-4 text-destructive" aria-label="Failed" />;
+    case "cancelled":
+      return <X className="h-4 w-4 text-muted-foreground" aria-label="Cancelled" />;
     default:
       return null;
   }

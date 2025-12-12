@@ -26,10 +26,10 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
 describe("/api/images/move-to-album", () => {
-  const mockUserId = "user-123";
-  const mockImageIds = ["image-1", "image-2"];
-  const mockTargetAlbumId = "album-target";
-  const mockSourceAlbumId = "album-source";
+  const mockUserId = "clq1234567890userabcdefgh";
+  const mockImageIds = ["clq1234567890img1abcdefgh", "clq1234567890img2abcdefgh"];
+  const mockTargetAlbumId = "clq1234567890albmtgtabcde";
+  const mockSourceAlbumId = "clq1234567890albmsrcabcde";
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -92,6 +92,121 @@ describe("/api/images/move-to-album", () => {
 
       expect(response.status).toBe(400);
       expect(data).toEqual({ error: "Image IDs are required" });
+    });
+
+    it("should return 400 if imageIds array has more than 100 items", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: mockUserId },
+      } as any);
+
+      // Create array with 101 items
+      const tooManyIds = Array.from({ length: 101 }, (_, i) => `image-${i}`);
+
+      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
+        method: "POST",
+        body: JSON.stringify({
+          imageIds: tooManyIds,
+          targetAlbumId: mockTargetAlbumId,
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data).toEqual({ error: "Cannot move more than 100 images at once" });
+    });
+
+    it("should return 400 if imageIds contain invalid CUID format", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: mockUserId },
+      } as any);
+
+      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
+        method: "POST",
+        body: JSON.stringify({
+          imageIds: ["invalid-id", "123", ""],
+          targetAlbumId: mockTargetAlbumId,
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid image ID format");
+      expect(data.invalidIds).toEqual(["invalid-id", "123", ""]);
+    });
+
+    it("should return 400 if imageIds contain non-string values", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: mockUserId },
+      } as any);
+
+      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
+        method: "POST",
+        body: JSON.stringify({
+          imageIds: [123, null, undefined, {}],
+          targetAlbumId: mockTargetAlbumId,
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid image ID format");
+      expect(data.invalidIds).toHaveLength(4);
+    });
+
+    it("should deduplicate imageIds before processing", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: mockUserId },
+      } as any);
+
+      (prisma.album.findUnique as Mock).mockResolvedValue({
+        userId: mockUserId,
+      } as any);
+
+      // Return only unique images
+      (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
+        { id: "clq1234567890abcdefghijkl" },
+      ] as any);
+
+      (prisma.albumImage.aggregate as Mock).mockResolvedValue({
+        _max: { sortOrder: 5 },
+      } as any);
+
+      const now = new Date();
+      (prisma.albumImage.upsert as Mock).mockResolvedValue({
+        id: "album-image-1",
+        albumId: mockTargetAlbumId,
+        imageId: "clq1234567890abcdefghijkl",
+        sortOrder: 6,
+        addedAt: now,
+      } as any);
+
+      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
+        method: "POST",
+        body: JSON.stringify({
+          // Duplicate the same ID 3 times
+          imageIds: [
+            "clq1234567890abcdefghijkl",
+            "clq1234567890abcdefghijkl",
+            "clq1234567890abcdefghijkl",
+          ],
+          targetAlbumId: mockTargetAlbumId,
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      // Should only process once due to deduplication
+      expect(data.results).toHaveLength(1);
+      expect(prisma.albumImage.upsert).toHaveBeenCalledTimes(1);
     });
 
     it("should return 400 if targetAlbumId is missing", async () => {
@@ -192,7 +307,7 @@ describe("/api/images/move-to-album", () => {
 
       // Only return one image instead of two
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
+        { id: "clq1234567890img1abcdefgh" },
       ] as any);
 
       const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
@@ -222,8 +337,8 @@ describe("/api/images/move-to-album", () => {
         .mockResolvedValueOnce(null); // Source album
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
-        { id: "image-2" },
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
       const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
@@ -252,8 +367,8 @@ describe("/api/images/move-to-album", () => {
         .mockResolvedValueOnce({ userId: "other-user" } as any); // Source album
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
-        { id: "image-2" },
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
       const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
@@ -284,8 +399,8 @@ describe("/api/images/move-to-album", () => {
       } as any);
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
-        { id: "image-2" },
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
       (prisma.albumImage.aggregate as Mock).mockResolvedValue({
@@ -295,16 +410,16 @@ describe("/api/images/move-to-album", () => {
       const now = new Date();
       (prisma.albumImage.upsert as Mock)
         .mockResolvedValueOnce({
-          id: "album-image-1",
+          id: "clq1234567890albimg1abcde",
           albumId: mockTargetAlbumId,
-          imageId: "image-1",
+          imageId: "clq1234567890img1abcdefgh",
           sortOrder: 6,
           addedAt: now,
         } as any)
         .mockResolvedValueOnce({
-          id: "album-image-2",
+          id: "clq1234567890albimg2abcde",
           albumId: mockTargetAlbumId,
-          imageId: "image-2",
+          imageId: "clq1234567890img2abcdefgh",
           sortOrder: 7,
           addedAt: now,
         } as any);
@@ -326,14 +441,14 @@ describe("/api/images/move-to-album", () => {
       expect(data.failed).toBe(0);
       expect(data.results).toHaveLength(2);
       expect(data.results[0]).toMatchObject({
-        imageId: "image-1",
+        imageId: "clq1234567890img1abcdefgh",
         success: true,
-        albumImageId: "album-image-1",
+        albumImageId: "clq1234567890albimg1abcde",
       });
       expect(data.results[1]).toMatchObject({
-        imageId: "image-2",
+        imageId: "clq1234567890img2abcdefgh",
         success: true,
-        albumImageId: "album-image-2",
+        albumImageId: "clq1234567890albimg2abcde",
       });
     });
 
@@ -347,8 +462,8 @@ describe("/api/images/move-to-album", () => {
         .mockResolvedValueOnce({ userId: mockUserId } as any); // Source album
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
-        { id: "image-2" },
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
       (prisma.albumImage.aggregate as Mock).mockResolvedValue({
@@ -358,16 +473,16 @@ describe("/api/images/move-to-album", () => {
       const now = new Date();
       (prisma.albumImage.upsert as Mock)
         .mockResolvedValueOnce({
-          id: "album-image-1",
+          id: "clq1234567890albimg1abcde",
           albumId: mockTargetAlbumId,
-          imageId: "image-1",
+          imageId: "clq1234567890img1abcdefgh",
           sortOrder: 0,
           addedAt: now,
         } as any)
         .mockResolvedValueOnce({
-          id: "album-image-2",
+          id: "clq1234567890albimg2abcde",
           albumId: mockTargetAlbumId,
-          imageId: "image-2",
+          imageId: "clq1234567890img2abcdefgh",
           sortOrder: 1,
           addedAt: now,
         } as any);
@@ -394,7 +509,7 @@ describe("/api/images/move-to-album", () => {
       expect(prisma.albumImage.deleteMany).toHaveBeenCalledWith({
         where: {
           albumId: mockSourceAlbumId,
-          imageId: "image-1",
+          imageId: "clq1234567890img1abcdefgh",
         },
       });
     });
@@ -409,7 +524,7 @@ describe("/api/images/move-to-album", () => {
       } as any);
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
+        { id: "clq1234567890img1abcdefgh" },
       ] as any);
 
       (prisma.albumImage.aggregate as Mock).mockResolvedValue({
@@ -419,9 +534,9 @@ describe("/api/images/move-to-album", () => {
       // Simulate already existing image (addedAt is more than 1 second ago)
       const oldDate = new Date(Date.now() - 5000);
       (prisma.albumImage.upsert as Mock).mockResolvedValue({
-        id: "album-image-1",
+        id: "clq1234567890albimg1abcde",
         albumId: mockTargetAlbumId,
-        imageId: "image-1",
+        imageId: "clq1234567890img1abcdefgh",
         sortOrder: 6,
         addedAt: oldDate,
       } as any);
@@ -429,7 +544,7 @@ describe("/api/images/move-to-album", () => {
       const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
         method: "POST",
         body: JSON.stringify({
-          imageIds: ["image-1"],
+          imageIds: ["clq1234567890img1abcdefgh"],
           targetAlbumId: mockTargetAlbumId,
         }),
       });
@@ -452,8 +567,8 @@ describe("/api/images/move-to-album", () => {
       } as any);
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
-        { id: "image-2" },
+        { id: "clq1234567890img1abcdefgh" },
+        { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
       (prisma.albumImage.aggregate as Mock).mockResolvedValue({
@@ -463,9 +578,9 @@ describe("/api/images/move-to-album", () => {
       const now = new Date();
       (prisma.albumImage.upsert as Mock)
         .mockResolvedValueOnce({
-          id: "album-image-1",
+          id: "clq1234567890albimg1abcde",
           albumId: mockTargetAlbumId,
-          imageId: "image-1",
+          imageId: "clq1234567890img1abcdefgh",
           sortOrder: 6,
           addedAt: now,
         } as any)
@@ -502,7 +617,7 @@ describe("/api/images/move-to-album", () => {
       } as any);
 
       (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
-        { id: "image-1" },
+        { id: "clq1234567890img1abcdefgh" },
       ] as any);
 
       (prisma.albumImage.aggregate as Mock).mockResolvedValue({
@@ -514,7 +629,7 @@ describe("/api/images/move-to-album", () => {
       const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
         method: "POST",
         body: JSON.stringify({
-          imageIds: ["image-1"],
+          imageIds: ["clq1234567890img1abcdefgh"],
           targetAlbumId: mockTargetAlbumId,
         }),
       });

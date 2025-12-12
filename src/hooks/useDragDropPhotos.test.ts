@@ -420,7 +420,7 @@ describe("useDragDropPhotos", () => {
       await act(async () => {
         try {
           await result.current.handleDrop("album-1");
-        } catch (error) {
+        } catch (_error) {
           // Error expected
         }
       });

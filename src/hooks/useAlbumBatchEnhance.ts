@@ -84,6 +84,8 @@ export function useAlbumBatchEnhance({
       clearTimeout(pollTimeoutRef.current);
       pollTimeoutRef.current = null;
     }
+    jobsRef.current = []; // Clear jobs ref to prevent stale data
+    setJobs([]);
     setIsProcessing(false);
   }, []);
 
@@ -119,7 +121,7 @@ export function useAlbumBatchEnhance({
           data.jobs.map((j) => [j.id, { status: j.status, error: j.errorMessage }]),
         );
 
-        // Update job statuses using ref to ensure we have the latest data
+        // Compute updated jobs from ref to avoid race conditions with state batching
         const updatedJobs: BatchJobStatus[] = jobsRef.current.map((job) => {
           const statusUpdate = statusMap.get(job.jobId);
           if (statusUpdate) {
@@ -132,7 +134,7 @@ export function useAlbumBatchEnhance({
           return job;
         });
 
-        // Update both state and ref
+        // Update both ref and state atomically
         jobsRef.current = updatedJobs;
         setJobs(updatedJobs);
 
@@ -155,6 +157,10 @@ export function useAlbumBatchEnhance({
             MAX_POLL_INTERVAL,
           );
 
+          // Clear any existing timeout before scheduling new one to prevent phantom timeouts
+          if (pollTimeoutRef.current) {
+            clearTimeout(pollTimeoutRef.current);
+          }
           // Schedule next poll
           pollTimeoutRef.current = setTimeout(() => {
             pollJobStatuses(jobIds);

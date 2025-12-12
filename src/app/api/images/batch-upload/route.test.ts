@@ -189,6 +189,40 @@ describe("POST /api/images/batch-upload", () => {
     expect(data.suggestion).toContain("maximum of 20 files");
   });
 
+  it("should return 400 if batch contains invalid filenames", async () => {
+    const files = [
+      createMockFile("valid.jpg"),
+      createMockFile("../malicious.jpg"), // Path traversal attempt
+      createMockFile("another-valid.png"),
+    ];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid filenames detected");
+    expect(data.invalidFilenames).toEqual(["../malicious.jpg"]);
+  });
+
+  it("should return all invalid filenames in the response", async () => {
+    const files = [
+      createMockFile("../traversal.jpg"), // Path traversal
+      createMockFile(".hidden.jpg"), // Hidden file
+      createMockFile("valid.jpg"), // Valid
+      createMockFile("path/slash.jpg"), // Contains slash
+    ];
+    const req = createMockRequest(files);
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid filenames detected");
+    expect(data.invalidFilenames).toHaveLength(3);
+    expect(data.invalidFilenames).toContain("../traversal.jpg");
+    expect(data.invalidFilenames).toContain(".hidden.jpg");
+    expect(data.invalidFilenames).toContain("path/slash.jpg");
+    // valid.jpg should not be in the invalid list
+    expect(data.invalidFilenames).not.toContain("valid.jpg");
+  });
+
   it("should return 400 if any file exceeds 10MB", async () => {
     const files = [
       createMockFile("test1.jpg", "image/jpeg", 5 * 1024 * 1024),

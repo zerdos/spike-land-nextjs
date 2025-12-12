@@ -7,7 +7,7 @@ import { AlertCircle, CheckCircle, RefreshCw, Upload, X } from "lucide-react";
 
 export interface FileUploadItemProps {
   file: File;
-  status: "pending" | "uploading" | "completed" | "failed";
+  status: "pending" | "uploading" | "completed" | "failed" | "cancelled";
   progress: number;
   error?: string;
   onCancel?: () => void;

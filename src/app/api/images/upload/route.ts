@@ -4,6 +4,7 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { isSecureFilename } from "@/lib/upload/validation";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -70,6 +71,18 @@ export async function POST(request: NextRequest) {
           error: errorMessage.message,
           title: errorMessage.title,
           suggestion: "Please provide a file to upload.",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Validate filename for security (path traversal, hidden files)
+    if (!isSecureFilename(file.name)) {
+      requestLogger.warn("Insecure filename rejected", { filename: file.name });
+      return NextResponse.json(
+        {
+          error:
+            "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
         },
         { status: 400, headers: { "X-Request-ID": requestId } },
       );

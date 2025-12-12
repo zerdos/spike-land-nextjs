@@ -65,6 +65,15 @@ export function useParallelEnhancement({
   const reconnectTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const reconnectAttemptsRef = useRef<Map<string, number>>(new Map());
   const hasCalledOnAllCompleteRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  // Track mounted state for cleanup
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const maxReconnectAttempts = 5;
 
@@ -172,8 +181,10 @@ export function useParallelEnhancement({
           reconnectAttemptsRef.current.set(jobId, attempts + 1);
 
           const timeout = setTimeout(() => {
+            if (!isMountedRef.current) return; // Don't reconnect after unmount
             eventSource.close();
             eventSourcesRef.current.delete(jobId);
+            reconnectTimeoutsRef.current.delete(jobId); // Clean up timeout ref
             connectToJob(jobId);
           }, delay);
 
@@ -290,12 +301,21 @@ export function useParallelEnhancement({
         eventSource.close();
       });
       eventSourcesRef.current.clear();
+
+      // Clear all pending reconnect timeouts
+      reconnectTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      reconnectTimeoutsRef.current.clear();
+
+      // Clear reconnect attempts
+      reconnectAttemptsRef.current.clear();
     }
   }, [jobs, jobsArray, onAllComplete]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
+
       eventSourcesRef.current.forEach((eventSource) => {
         eventSource.close();
       });

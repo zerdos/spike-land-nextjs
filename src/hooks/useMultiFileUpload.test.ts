@@ -6,9 +6,16 @@ import { useMultiFileUpload } from "./useMultiFileUpload";
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+// Mock crypto.randomUUID for consistent test results
+let uuidCounter = 0;
+vi.stubGlobal("crypto", {
+  randomUUID: () => `test-uuid-${++uuidCounter}`,
+});
+
 describe("useMultiFileUpload", () => {
   beforeEach(() => {
     mockFetch.mockClear();
+    uuidCounter = 0;
   });
 
   afterEach(() => {
@@ -34,6 +41,7 @@ describe("useMultiFileUpload", () => {
       expect(result.current.progress).toBe(0);
       expect(result.current.completedCount).toBe(0);
       expect(result.current.failedCount).toBe(0);
+      expect(result.current.cancelledCount).toBe(0);
     });
 
     it("should accept custom options", () => {
@@ -51,6 +59,42 @@ describe("useMultiFileUpload", () => {
       );
 
       expect(result.current.files).toEqual([]);
+    });
+  });
+
+  describe("file identification", () => {
+    it("should assign unique IDs to each file", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ imageId: "img-123" }),
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [
+        createMockFile("file1.jpg"),
+        createMockFile("file2.jpg"),
+        createMockFile("file3.jpg"),
+      ];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.files.length).toBe(3);
+      });
+
+      // Each file should have a unique ID
+      const ids = result.current.files.map((f) => f.id);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(3);
+
+      // IDs should be defined strings
+      result.current.files.forEach((f) => {
+        expect(typeof f.id).toBe("string");
+        expect(f.id.length).toBeGreaterThan(0);
+      });
     });
   });
 
@@ -234,6 +278,114 @@ describe("useMultiFileUpload", () => {
       const times = Object.values(startTimes);
       const maxDiff = Math.max(...times) - Math.min(...times);
       expect(maxDiff).toBeLessThan(100);
+    });
+
+    it("should update correct files in parallel mode (no race condition)", async () => {
+      // This test verifies that ID-based updates work correctly when files complete
+      // in different order than they were started
+      const fileCompletionOrder: string[] = [];
+
+      mockFetch.mockImplementation(async (url, options) => {
+        const formData = options.body as FormData;
+        const file = formData.get("file") as File;
+
+        // Different delays to ensure files complete in different order
+        const delay = file.name === "file1.jpg" ? 100 : file.name === "file2.jpg" ? 10 : 50;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        fileCompletionOrder.push(file.name);
+
+        return {
+          ok: true,
+          json: async () => ({ imageId: `img-${file.name}` }),
+        };
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload({ parallel: true }));
+
+      const files = [
+        createMockFile("file1.jpg"), // Slowest
+        createMockFile("file2.jpg"), // Fastest
+        createMockFile("file3.jpg"), // Medium
+      ];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(3);
+      });
+
+      // Files completed in different order (file2 first, then file3, then file1)
+      expect(fileCompletionOrder).toEqual(["file2.jpg", "file3.jpg", "file1.jpg"]);
+
+      // But each file should have its correct imageId matching its name
+      const file1Status = result.current.files.find((f) => f.file.name === "file1.jpg");
+      const file2Status = result.current.files.find((f) => f.file.name === "file2.jpg");
+      const file3Status = result.current.files.find((f) => f.file.name === "file3.jpg");
+
+      expect(file1Status?.imageId).toBe("img-file1.jpg");
+      expect(file2Status?.imageId).toBe("img-file2.jpg");
+      expect(file3Status?.imageId).toBe("img-file3.jpg");
+
+      // All should be completed
+      expect(file1Status?.status).toBe("completed");
+      expect(file2Status?.status).toBe("completed");
+      expect(file3Status?.status).toBe("completed");
+    });
+
+    it("should handle mixed success and failure in parallel mode", async () => {
+      mockFetch.mockImplementation(async (url, options) => {
+        const formData = options.body as FormData;
+        const file = formData.get("file") as File;
+
+        // Different delays and outcomes
+        if (file.name === "file1.jpg") {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          throw new Error("Upload failed for file1");
+        } else if (file.name === "file2.jpg") {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          return {
+            ok: true,
+            json: async () => ({ imageId: "img-file2" }),
+          };
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 30));
+          return {
+            ok: true,
+            json: async () => ({ imageId: "img-file3" }),
+          };
+        }
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload({ parallel: true }));
+
+      const files = [
+        createMockFile("file1.jpg"),
+        createMockFile("file2.jpg"),
+        createMockFile("file3.jpg"),
+      ];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount + result.current.failedCount).toBe(3);
+      });
+
+      // Verify each file has the correct status
+      const file1Status = result.current.files.find((f) => f.file.name === "file1.jpg");
+      const file2Status = result.current.files.find((f) => f.file.name === "file2.jpg");
+      const file3Status = result.current.files.find((f) => f.file.name === "file3.jpg");
+
+      expect(file1Status?.status).toBe("failed");
+      expect(file1Status?.error).toBe("Upload failed for file1");
+      expect(file2Status?.status).toBe("completed");
+      expect(file2Status?.imageId).toBe("img-file2");
+      expect(file3Status?.status).toBe("completed");
+      expect(file3Status?.imageId).toBe("img-file3");
     });
   });
 
@@ -496,9 +648,103 @@ describe("useMultiFileUpload", () => {
         await result.current.upload(files);
       });
 
-      // File should not be marked as failed for abort
+      // File should be marked as cancelled for abort (not failed)
       await waitFor(() => {
         expect(result.current.isUploading).toBe(false);
+        expect(result.current.files[0].status).toBe("cancelled");
+        expect(result.current.failedCount).toBe(0);
+        expect(result.current.cancelledCount).toBe(1);
+      });
+    });
+
+    it("should mark all in-progress and pending files as cancelled when cancel is called", async () => {
+      let resolveFirstUpload: ((value: unknown) => void) | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        const formData = options.body as FormData;
+        const file = formData.get("file") as File;
+
+        if (file.name === "file1.jpg") {
+          // First file: wait for manual resolution
+          await new Promise((resolve) => {
+            resolveFirstUpload = resolve;
+          });
+          return {
+            ok: true,
+            json: async () => ({ imageId: "img-file1" }),
+          };
+        }
+        // Other files: simulate slow upload
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        return {
+          ok: true,
+          json: async () => ({ imageId: `img-${file.name}` }),
+        };
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload({ parallel: true }));
+
+      const files = [
+        createMockFile("file1.jpg"),
+        createMockFile("file2.jpg"),
+        createMockFile("file3.jpg"),
+      ];
+
+      act(() => {
+        void result.current.upload(files);
+      });
+
+      // Wait for upload to start
+      await waitFor(() => {
+        expect(result.current.isUploading).toBe(true);
+      });
+
+      // Cancel while files are uploading
+      act(() => {
+        result.current.cancel();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isUploading).toBe(false);
+      });
+
+      // All files should be marked as cancelled
+      expect(result.current.cancelledCount).toBe(3);
+      result.current.files.forEach((f) => {
+        expect(f.status).toBe("cancelled");
+      });
+
+      // Clean up the pending promise
+      if (resolveFirstUpload) {
+        resolveFirstUpload({
+          ok: true,
+          json: async () => ({ imageId: "img-file1" }),
+        });
+      }
+    });
+
+    it("should track cancelledCount correctly", async () => {
+      mockFetch.mockImplementation(() => {
+        const error = new Error("Aborted");
+        error.name = "AbortError";
+        throw error;
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [
+        createMockFile("file1.jpg"),
+        createMockFile("file2.jpg"),
+      ];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.cancelledCount).toBe(2);
+        expect(result.current.failedCount).toBe(0);
+        expect(result.current.completedCount).toBe(0);
       });
     });
   });

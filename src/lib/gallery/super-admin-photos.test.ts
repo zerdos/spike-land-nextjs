@@ -591,7 +591,7 @@ describe("getSuperAdminPublicPhotos", () => {
   it("should use most recent enhancement job when multiple exist", async () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
-    const olderDate = new Date("2024-01-01T10:00:00Z");
+    const _olderDate = new Date("2024-01-01T10:00:00Z");
     const newerDate = new Date("2024-01-01T12:00:00Z");
 
     vi.mocked(prisma.user.findUnique).mockResolvedValue({

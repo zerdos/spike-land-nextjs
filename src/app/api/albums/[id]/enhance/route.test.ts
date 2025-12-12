@@ -32,6 +32,21 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   },
 }));
 
+// Mock rate limiter
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    isLimited: false,
+    remaining: 4,
+    resetAt: Date.now() + 60000,
+  }),
+  rateLimitConfigs: {
+    albumBatchEnhancement: {
+      maxRequests: 5,
+      windowMs: 60 * 1000,
+    },
+  },
+}));
+
 // Mock the workflow start function
 vi.mock("workflow/api", () => ({
   start: vi.fn().mockResolvedValue({ runId: "batch-workflow-run-123" }),
@@ -59,6 +74,7 @@ const { mockPrisma } = vi.hoisted(() => {
       },
       albumImage: {
         findMany: vi.fn(),
+        count: vi.fn(),
       },
     },
   };
@@ -100,55 +116,28 @@ describe("POST /api/albums/[id]/enhance", () => {
     });
 
     // Default: 2 images, none enhanced
+    // Set up count mocks for optimized query
+    mockPrisma.albumImage.count.mockImplementation((args) => {
+      // First call: total count
+      if (!args.where?.image) {
+        return Promise.resolve(2);
+      }
+      // Second call: images to enhance count
+      return Promise.resolve(2);
+    });
+
+    // Optimized query returns only id and originalR2Key
     mockPrisma.albumImage.findMany.mockResolvedValue([
       {
-        id: "album-image-1",
-        albumId: "album-123",
-        imageId: "img-1",
-        sortOrder: 0,
-        addedAt: new Date(),
         image: {
           id: "img-1",
-          userId: "user-123",
-          name: "Image 1",
-          description: null,
-          originalUrl: "https://example.com/image1.jpg",
           originalR2Key: "images/image1.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [],
         },
       },
       {
-        id: "album-image-2",
-        albumId: "album-123",
-        imageId: "img-2",
-        sortOrder: 1,
-        addedAt: new Date(),
         image: {
           id: "img-2",
-          userId: "user-123",
-          name: "Image 2",
-          description: null,
-          originalUrl: "https://example.com/image2.jpg",
           originalR2Key: "images/image2.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [],
         },
       },
     ]);
@@ -224,7 +213,7 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return 404 if album has no images", async () => {
-    mockPrisma.albumImage.findMany.mockResolvedValueOnce([]);
+    mockPrisma.albumImage.count.mockResolvedValueOnce(0);
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
@@ -234,91 +223,34 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return 400 if too many images to enhance", async () => {
-    const manyImages = Array.from({ length: 21 }, (_, i) => ({
-      id: `album-image-${i}`,
-      albumId: "album-123",
-      imageId: `img-${i}`,
-      sortOrder: i,
-      addedAt: new Date(),
-      image: {
-        id: `img-${i}`,
-        userId: "user-123",
-        name: `Image ${i}`,
-        description: null,
-        originalUrl: `https://example.com/image-${i}.jpg`,
-        originalR2Key: `images/image-${i}.jpg`,
-        originalWidth: 1024,
-        originalHeight: 768,
-        originalSizeBytes: 100000,
-        originalFormat: "JPEG",
-        isPublic: false,
-        viewCount: 0,
-        shareToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        enhancementJobs: [],
-      },
-    }));
-
-    mockPrisma.albumImage.findMany.mockResolvedValueOnce(manyImages);
+    // Mock count to return 21 for both total and to-enhance count
+    mockPrisma.albumImage.count.mockResolvedValue(21);
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("Maximum 20 images allowed");
+    expect(data.totalImages).toBe(21);
+    expect(data.toEnhance).toBe(21);
+    expect(data.maxBatchSize).toBe(20);
   });
 
   it("should skip already enhanced images by default", async () => {
+    // Mock counts: 2 total images, 1 needs enhancement
+    mockPrisma.albumImage.count.mockImplementation((args) => {
+      if (!args.where?.image) {
+        return Promise.resolve(2); // Total count
+      }
+      return Promise.resolve(1); // Images to enhance (1 not enhanced)
+    });
+
+    // Return only the image that needs enhancement
     mockPrisma.albumImage.findMany.mockResolvedValueOnce([
       {
-        id: "album-image-1",
-        albumId: "album-123",
-        imageId: "img-1",
-        sortOrder: 0,
-        addedAt: new Date(),
-        image: {
-          id: "img-1",
-          userId: "user-123",
-          name: "Image 1",
-          description: null,
-          originalUrl: "https://example.com/image1.jpg",
-          originalR2Key: "images/image1.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [{ id: "job-1" }], // Already enhanced
-        },
-      },
-      {
-        id: "album-image-2",
-        albumId: "album-123",
-        imageId: "img-2",
-        sortOrder: 1,
-        addedAt: new Date(),
         image: {
           id: "img-2",
-          userId: "user-123",
-          name: "Image 2",
-          description: null,
-          originalUrl: "https://example.com/image2.jpg",
           originalR2Key: "images/image2.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [], // Not enhanced
         },
       },
     ]);
@@ -336,30 +268,14 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should enhance all images when skipAlreadyEnhanced is false", async () => {
+    // Mock counts: 1 total image, 1 to enhance (because skipAlreadyEnhanced=false)
+    mockPrisma.albumImage.count.mockResolvedValue(1);
+
     mockPrisma.albumImage.findMany.mockResolvedValueOnce([
       {
-        id: "album-image-1",
-        albumId: "album-123",
-        imageId: "img-1",
-        sortOrder: 0,
-        addedAt: new Date(),
         image: {
           id: "img-1",
-          userId: "user-123",
-          name: "Image 1",
-          description: null,
-          originalUrl: "https://example.com/image1.jpg",
           originalR2Key: "images/image1.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [{ id: "job-1" }], // Already enhanced
         },
       },
     ]);
@@ -379,33 +295,13 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return success with no jobs if all images already enhanced", async () => {
-    mockPrisma.albumImage.findMany.mockResolvedValueOnce([
-      {
-        id: "album-image-1",
-        albumId: "album-123",
-        imageId: "img-1",
-        sortOrder: 0,
-        addedAt: new Date(),
-        image: {
-          id: "img-1",
-          userId: "user-123",
-          name: "Image 1",
-          description: null,
-          originalUrl: "https://example.com/image1.jpg",
-          originalR2Key: "images/image1.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [{ id: "job-1" }], // Already enhanced
-        },
-      },
-    ]);
+    // Mock counts: 1 total image, 0 to enhance (all already enhanced)
+    mockPrisma.albumImage.count.mockImplementation((args) => {
+      if (!args.where?.image) {
+        return Promise.resolve(1); // Total count
+      }
+      return Promise.resolve(0); // Images to enhance (all already enhanced)
+    });
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
@@ -546,30 +442,13 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should handle single image album", async () => {
+    mockPrisma.albumImage.count.mockResolvedValue(1);
+
     mockPrisma.albumImage.findMany.mockResolvedValueOnce([
       {
-        id: "album-image-1",
-        albumId: "album-123",
-        imageId: "img-1",
-        sortOrder: 0,
-        addedAt: new Date(),
         image: {
           id: "img-1",
-          userId: "user-123",
-          name: "Image 1",
-          description: null,
-          originalUrl: "https://example.com/image1.jpg",
           originalR2Key: "images/image1.jpg",
-          originalWidth: 1024,
-          originalHeight: 768,
-          originalSizeBytes: 100000,
-          originalFormat: "JPEG",
-          isPublic: false,
-          viewCount: 0,
-          shareToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          enhancementJobs: [],
         },
       },
     ]);
@@ -585,29 +464,12 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should handle large album (20 images max)", async () => {
+    mockPrisma.albumImage.count.mockResolvedValue(20);
+
     const imageIds = Array.from({ length: 20 }, (_, i) => ({
-      id: `album-image-${i}`,
-      albumId: "album-123",
-      imageId: `img-${i}`,
-      sortOrder: i,
-      addedAt: new Date(),
       image: {
         id: `img-${i}`,
-        userId: "user-123",
-        name: `Image ${i}`,
-        description: null,
-        originalUrl: `https://example.com/image-${i}.jpg`,
         originalR2Key: `images/image-${i}.jpg`,
-        originalWidth: 1024,
-        originalHeight: 768,
-        originalSizeBytes: 100000,
-        originalFormat: "JPEG",
-        isPublic: false,
-        viewCount: 0,
-        shareToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        enhancementJobs: [],
       },
     }));
 
@@ -623,6 +485,23 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.totalCost).toBe(100); // 20 * 5
   });
 
+  it("should optimize query for large albums by checking count before fetching data", async () => {
+    // Mock count to return 100 images (over the limit)
+    mockPrisma.albumImage.count.mockResolvedValue(100);
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    const res = await POST(req, mockRouteParams);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toContain("Maximum 20 images allowed");
+    expect(data.totalImages).toBe(100);
+    expect(data.toEnhance).toBe(100);
+
+    // Verify findMany was NEVER called (optimization: we don't fetch if count exceeds limit)
+    expect(mockPrisma.albumImage.findMany).not.toHaveBeenCalled();
+  });
+
   it("should handle unexpected errors", async () => {
     mockPrisma.album.findUnique.mockRejectedValueOnce(new Error("Database connection lost"));
 
@@ -631,5 +510,145 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe("Database connection lost");
+  });
+
+  it("should refund tokens if workflow fails to start in production", async () => {
+    process.env.VERCEL = "1";
+    const { start } = await import("workflow/api");
+    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+
+    // Mock workflow start to fail
+    vi.mocked(start).mockRejectedValueOnce(new Error("Workflow service unavailable"));
+
+    const req = createMockRequest({ tier: "TIER_2K" });
+    const res = await POST(req, mockRouteParams);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("Failed to start enhancement workflow. Tokens have been refunded.");
+
+    // Verify refund was called with correct parameters
+    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      "user-123",
+      10, // 2 images * 5 tokens (TIER_2K)
+      expect.stringContaining("album-"),
+      "Workflow failed to start",
+    );
+  });
+
+  it("should refund tokens if direct enhancement throws in dev mode", async () => {
+    const { batchEnhanceImagesDirect } = await import("@/workflows/batch-enhance.direct");
+    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+
+    // Mock direct enhancement to throw immediately (not in catch block)
+    vi.mocked(batchEnhanceImagesDirect).mockImplementation(() => {
+      throw new Error("Direct enhancement initialization failed");
+    });
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    const res = await POST(req, mockRouteParams);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("Failed to start enhancement workflow. Tokens have been refunded.");
+
+    // Verify refund was called
+    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      "user-123",
+      4, // 2 images * 2 tokens (TIER_1K)
+      expect.stringContaining("album-"),
+      "Workflow failed to start",
+    );
+  });
+
+  it("should not refund tokens if workflow starts successfully", async () => {
+    process.env.VERCEL = "1";
+    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    const res = await POST(req, mockRouteParams);
+
+    expect(res.status).toBe(200);
+
+    // Verify refund was NOT called (only consume was called)
+    expect(TokenBalanceManager.consumeTokens).toHaveBeenCalled();
+    expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+  });
+
+  it("should return 429 when rate limit is exceeded", async () => {
+    const { checkRateLimit } = await import("@/lib/rate-limiter");
+    const resetAt = Date.now() + 120000; // 2 minutes from now
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      isLimited: true,
+      remaining: 0,
+      resetAt,
+    });
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    const res = await POST(req, mockRouteParams);
+    const data = await res.json();
+
+    expect(res.status).toBe(429);
+    expect(data.error).toBe("Rate limit exceeded for batch enhancement");
+    expect(data.retryAfter).toBeDefined();
+    expect(res.headers.get("X-RateLimit-Remaining")).toBe("0");
+    expect(res.headers.get("X-RateLimit-Reset")).toBe(String(resetAt));
+    expect(res.headers.get("Retry-After")).toBeDefined();
+  });
+
+  it("should include correct rate limit headers when rate limited", async () => {
+    const { checkRateLimit } = await import("@/lib/rate-limiter");
+    const resetAt = Date.now() + 60000; // 1 minute from now
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      isLimited: true,
+      remaining: 0,
+      resetAt,
+    });
+
+    const req = createMockRequest({ tier: "TIER_2K" });
+    const res = await POST(req, mockRouteParams);
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("X-RateLimit-Remaining")).toBe("0");
+    expect(res.headers.get("X-RateLimit-Reset")).toBe(String(resetAt));
+
+    const retryAfter = res.headers.get("Retry-After");
+    expect(retryAfter).toBeDefined();
+    expect(Number(retryAfter)).toBeGreaterThan(0);
+    expect(Number(retryAfter)).toBeLessThanOrEqual(60);
+  });
+
+  it("should check rate limit with correct identifier", async () => {
+    const { checkRateLimit } = await import("@/lib/rate-limiter");
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    await POST(req, mockRouteParams);
+
+    expect(checkRateLimit).toHaveBeenCalledWith(
+      "album-batch-enhance:user-123",
+      expect.objectContaining({
+        maxRequests: 5,
+        windowMs: 60 * 1000,
+      }),
+    );
+  });
+
+  it("should not consume tokens when rate limited", async () => {
+    const { checkRateLimit } = await import("@/lib/rate-limiter");
+    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      isLimited: true,
+      remaining: 0,
+      resetAt: Date.now() + 60000,
+    });
+
+    const req = createMockRequest({ tier: "TIER_1K" });
+    const res = await POST(req, mockRouteParams);
+
+    expect(res.status).toBe(429);
+    expect(TokenBalanceManager.consumeTokens).not.toHaveBeenCalled();
   });
 });
