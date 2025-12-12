@@ -44,19 +44,21 @@ export function FeaturedAppCard({
       data-testid={featured ? "featured-app-card" : "app-card"}
     >
       <CardHeader className={featured ? "pb-4" : "pb-3"}>
-        {usePixelLogo ? (
-          <div className="mb-3">
-            <PixelLogo size="lg" variant="horizontal" />
-          </div>
-        ) : (
-          <div
-            className={`mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-lg transition-transform group-hover:scale-110 ${
-              featured ? "h-16 w-16" : "h-14 w-14"
-            }`}
-          >
-            {icon}
-          </div>
-        )}
+        {usePixelLogo
+          ? (
+            <div className="mb-3">
+              <PixelLogo size="lg" variant="horizontal" />
+            </div>
+          )
+          : (
+            <div
+              className={`mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-lg transition-transform group-hover:scale-110 ${
+                featured ? "h-16 w-16" : "h-14 w-14"
+              }`}
+            >
+              {icon}
+            </div>
+          )}
         {!usePixelLogo && (
           <CardTitle className={featured ? "text-2xl" : "text-lg"}>
             {name}
