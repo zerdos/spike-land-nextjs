@@ -1,7 +1,7 @@
 module.exports = {
   default: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -14,7 +14,7 @@ module.exports = {
   // Fast tests - unit tests and quick integration tests
   fast: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-fast.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -27,7 +27,7 @@ module.exports = {
   // Slow tests - comprehensive integration tests
   slow: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-slow.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -40,7 +40,7 @@ module.exports = {
   // Flaky tests - tests known to be flaky, run with retries
   flaky: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-flaky.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -53,7 +53,7 @@ module.exports = {
   // CI profile - all tests except flaky and database-dependent tests
   ci: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress",
