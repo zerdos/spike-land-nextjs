@@ -233,11 +233,11 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       try {
         const data = await makeApiRequest(`/api/mcp/jobs/${jobId}`);
 
-        if (data.job.status === "COMPLETED") {
-          setResult(data.job);
+        if (data.status === "COMPLETED") {
+          setResult(data);
           return;
-        } else if (data.job.status === "FAILED" || data.job.status === "REFUNDED") {
-          setError(data.job.errorMessage || "Job failed");
+        } else if (data.status === "FAILED" || data.status === "REFUNDED") {
+          setError(data.errorMessage || "Job failed");
           return;
         }
 
@@ -262,7 +262,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
 
     try {
       const data = await makeApiRequest(`/api/mcp/jobs/${jobId}`);
-      setJobResult(data.job);
+      setJobResult(data);
     } catch (error) {
       setJobError(error instanceof Error ? error.message : "Failed to fetch job");
     } finally {
