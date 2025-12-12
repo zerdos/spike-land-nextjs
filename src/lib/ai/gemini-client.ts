@@ -242,3 +242,241 @@ export async function enhanceImageWithGemini(
 export function isGeminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
 }
+
+// MCP Generation types and functions
+
+export interface GenerateImageParams {
+  prompt: string;
+  tier: "1K" | "2K" | "4K";
+  negativePrompt?: string;
+}
+
+export interface ModifyImageParams {
+  prompt: string;
+  imageData: string;
+  mimeType: string;
+  tier: "1K" | "2K" | "4K";
+}
+
+const GENERATION_BASE_PROMPT =
+  `You are a professional photographer creating high-quality images. Generate the following image with perfect composition, lighting, and detail. Make it look like a professional photograph taken with a modern camera in 2025.`;
+
+const MODIFICATION_BASE_PROMPT =
+  `Modify this image according to the following instructions while maintaining high quality, proper lighting, and professional appearance.`;
+
+/**
+ * Generates a new image from a text prompt using Gemini's image generation API.
+ *
+ * @param params - Generation parameters including prompt and tier
+ * @returns Buffer containing the generated image data
+ * @throws Error if API times out, no API key is configured, or no image data is received
+ */
+export async function generateImageWithGemini(
+  params: GenerateImageParams,
+): Promise<Buffer> {
+  const ai = getGeminiClient();
+
+  const resolutionMap = {
+    "1K": "1024x1024",
+    "2K": "2048x2048",
+    "4K": "4096x4096",
+  };
+
+  const config = {
+    responseModalities: ["IMAGE"],
+    imageConfig: {
+      imageSize: params.tier,
+    },
+  };
+
+  let fullPrompt =
+    `${GENERATION_BASE_PROMPT}\n\nImage to generate: ${params.prompt}\n\nGenerate at ${
+      resolutionMap[params.tier]
+    } resolution.`;
+
+  if (params.negativePrompt) {
+    fullPrompt += `\n\nAvoid: ${params.negativePrompt}`;
+  }
+
+  const contents = [
+    {
+      role: "user" as const,
+      parts: [
+        {
+          text: fullPrompt,
+        },
+      ],
+    },
+  ];
+
+  console.log(`Generating image with Gemini API using model: ${DEFAULT_MODEL}`);
+  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
+  console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
+
+  return processGeminiStream(ai, config, contents);
+}
+
+/**
+ * Modifies an existing image based on a text prompt using Gemini's image generation API.
+ *
+ * @param params - Modification parameters including prompt, image data, and tier
+ * @returns Buffer containing the modified image data
+ * @throws Error if API times out, no API key is configured, or no image data is received
+ */
+export async function modifyImageWithGemini(
+  params: ModifyImageParams,
+): Promise<Buffer> {
+  const ai = getGeminiClient();
+
+  const resolutionMap = {
+    "1K": "1024x1024",
+    "2K": "2048x2048",
+    "4K": "4096x4096",
+  };
+
+  const config = {
+    responseModalities: ["IMAGE"],
+    imageConfig: {
+      imageSize: params.tier,
+    },
+  };
+
+  const fullPrompt =
+    `${MODIFICATION_BASE_PROMPT}\n\nModification instructions: ${params.prompt}\n\nGenerate at ${
+      resolutionMap[params.tier]
+    } resolution.`;
+
+  const contents = [
+    {
+      role: "user" as const,
+      parts: [
+        {
+          inlineData: {
+            mimeType: params.mimeType,
+            data: params.imageData,
+          },
+        },
+        {
+          text: fullPrompt,
+        },
+      ],
+    },
+  ];
+
+  console.log(`Modifying image with Gemini API using model: ${DEFAULT_MODEL}`);
+  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
+  console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
+
+  return processGeminiStream(ai, config, contents);
+}
+
+/**
+ * Helper function to process Gemini streaming response with timeout
+ */
+async function processGeminiStream(
+  ai: GoogleGenAI,
+  config: { responseModalities: string[]; imageConfig: { imageSize: string; }; },
+  contents: {
+    role: "user";
+    parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string; }; }>;
+  }[],
+): Promise<Buffer> {
+  let response;
+  try {
+    response = await ai.models.generateContentStream({
+      model: DEFAULT_MODEL,
+      config,
+      contents,
+    });
+  } catch (error) {
+    console.error("Failed to initiate Gemini API stream:", error);
+    throw new Error(
+      `Failed to start image generation: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    );
+  }
+
+  const imageChunks: Buffer[] = [];
+  let chunkCount = 0;
+  let timedOut = false;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const startTime = Date.now();
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      reject(
+        new Error(
+          `Gemini API request timed out after ${GEMINI_TIMEOUT_MS / 1000} seconds. ` +
+            `Processed ${chunkCount} chunks before timeout.`,
+        ),
+      );
+    }, GEMINI_TIMEOUT_MS);
+  });
+
+  const processChunks = async (): Promise<Buffer> => {
+    try {
+      for await (const chunk of response) {
+        if (timedOut) {
+          throw new Error("Stream processing aborted due to timeout");
+        }
+
+        chunkCount++;
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+
+        if (
+          !chunk.candidates ||
+          !chunk.candidates[0]?.content ||
+          !chunk.candidates[0]?.content.parts
+        ) {
+          console.log(
+            `Skipping chunk ${chunkCount}: no valid candidates (${elapsed}s elapsed)`,
+          );
+          continue;
+        }
+
+        if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+          const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+          const buffer = Buffer.from(inlineData.data || "", "base64");
+          imageChunks.push(buffer);
+          console.log(
+            `Received chunk ${chunkCount}: ${buffer.length} bytes (total: ${imageChunks.length} chunks, ${elapsed}s elapsed)`,
+          );
+        }
+      }
+    } catch (error) {
+      if (timedOut) {
+        throw error;
+      }
+      console.error(`Error processing stream at chunk ${chunkCount}:`, error);
+      throw new Error(
+        `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+
+    if (imageChunks.length === 0) {
+      console.error(`No image data received after processing ${chunkCount} chunks`);
+      throw new Error("No image data received from Gemini API");
+    }
+
+    const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    const totalTime = Math.round((Date.now() - startTime) / 1000);
+    console.log(
+      `Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes in ${totalTime}s`,
+    );
+
+    return Buffer.concat(imageChunks);
+  };
+
+  try {
+    const result = await Promise.race([processChunks(), timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
+    return result;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+    throw error;
+  }
+}

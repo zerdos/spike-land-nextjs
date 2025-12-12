@@ -1,0 +1,103 @@
+import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { getJob } from "@/lib/mcp/generation-service";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
+import { NextRequest, NextResponse } from "next/server";
+
+interface RouteParams {
+  params: Promise<{ jobId: string; }>;
+}
+
+/**
+ * GET /api/mcp/jobs/[jobId]
+ *
+ * Get the status of a generation/modification job
+ *
+ * Headers:
+ *   Authorization: Bearer <api_key>
+ *
+ * Response:
+ *   {
+ *     id: string,
+ *     type: "GENERATE" | "MODIFY",
+ *     tier: string,
+ *     tokensCost: number,
+ *     status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "REFUNDED",
+ *     prompt: string,
+ *     inputImageUrl?: string,
+ *     outputImageUrl?: string,
+ *     outputWidth?: number,
+ *     outputHeight?: number,
+ *     errorMessage?: string,
+ *     createdAt: string,
+ *     processingStartedAt?: string,
+ *     processingCompletedAt?: string
+ *   }
+ */
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  // Authenticate via API key
+  const authResult = await authenticateMcpRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json({ error: authResult.error }, { status: 401 });
+  }
+
+  const { userId } = authResult;
+
+  // Rate limiting (more lenient for status polling)
+  const rateLimitResult = await checkRateLimit(
+    `mcp:jobs:${userId}`,
+    rateLimitConfigs.mcpJobStatus,
+  );
+
+  if (rateLimitResult.isLimited) {
+    const retryAfter = Math.ceil(
+      (rateLimitResult.resetAt - Date.now()) / 1000,
+    );
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded",
+        retryAfter,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      },
+    );
+  }
+
+  try {
+    const { jobId } = await params;
+
+    // Get job - only for the authenticated user
+    const job = await getJob(jobId, userId);
+
+    if (!job) {
+      return NextResponse.json(
+        { error: "Job not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      id: job.id,
+      type: job.type,
+      tier: job.tier,
+      tokensCost: job.tokensCost,
+      status: job.status,
+      prompt: job.prompt,
+      inputImageUrl: job.inputImageUrl || null,
+      outputImageUrl: job.outputImageUrl || null,
+      outputWidth: job.outputWidth || null,
+      outputHeight: job.outputHeight || null,
+      errorMessage: job.errorMessage || null,
+      createdAt: job.createdAt.toISOString(),
+      processingStartedAt: job.processingStartedAt?.toISOString() || null,
+      processingCompletedAt: job.processingCompletedAt?.toISOString() || null,
+    });
+  } catch (error) {
+    console.error("Failed to fetch job:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch job status" },
+      { status: 500 },
+    );
+  }
+}
