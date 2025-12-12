@@ -348,7 +348,7 @@ ImageEnhancementJob {
 gh project item-list 2 --owner zerdos --format json
 
 # Check for existing issues matching keywords
-gh issue list --repo zerdos/spike-land --search "<feature keywords>" --json number,title,body,state
+gh issue list --repo zerdos/spike-land-nextjs --search "<feature keywords>" --json number,title,body,state
 ```
 
 #### Step 2: For Each Feature Request
@@ -356,8 +356,12 @@ gh issue list --repo zerdos/spike-land --search "<feature keywords>" --json numb
 **IF related ticket exists:**
 
 ```bash
-# Review and append new requirements
-gh issue edit <number> --body-file updated-spec.md
+# Review and append new requirements (using heredoc)
+gh issue edit <number> --body "$(cat <<'EOF'
+## Updated Requirements
+<updated content here>
+EOF
+)"
 
 # Or add comment with new requirements
 gh issue comment <number> --body "## Additional Requirements (Sprint X)
@@ -368,7 +372,7 @@ gh issue comment <number> --body "## Additional Requirements (Sprint X)
 **IF no ticket exists:**
 
 ```bash
-gh issue create --repo zerdos/spike-land \
+gh issue create --repo zerdos/spike-land-nextjs \
   --title "Feature: <clear title>" \
   --body "## User Request
 <original user request verbatim>
@@ -459,8 +463,12 @@ gh pr diff <PR_NUMBER>
 # Add issue to project board
 gh project item-add 2 --owner zerdos --url <issue-url>
 
-# Update issue body
-gh issue edit <number> --body-file updated-spec.md
+# Update issue body (using heredoc)
+gh issue edit <number> --body "$(cat <<'EOF'
+## Updated Content
+<new body content>
+EOF
+)"
 
 # Create PR linked to issue (REQUIRED FORMAT)
 gh pr create --title "feat: <title> (#<number>)" --body "Resolves #<number>"
@@ -1050,7 +1058,7 @@ gh project create --title "Spike Land Roadmap" --owner @me
 
 ```bash
 # List projects
-gh project list
+gh project list --owner zerdos
 
 # View project items
 gh project item-list 2 --owner zerdos --format json
