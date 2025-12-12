@@ -621,7 +621,7 @@ const res = await fetch(`/api/albums/${albumId}`, {
 });
 
 const { album } = await res.json();
-const shareUrl = `https://spike.land/albums/${albumId}?token=${album.shareToken}`;
+const shareUrl = `https://spike.land/apps/pixel/albums/${albumId}?token=${album.shareToken}`;
 console.log(`Share this link: ${shareUrl}`);
 ```
 

@@ -25,7 +25,7 @@ const MockCTASection = () => (
     <h2>Ready to Transform Your Images?</h2>
     <p>Join thousands of creators using AI to enhance their photos.</p>
     {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-    <a role="link" href="/pixel">Start Enhancing Free</a>
+    <a role="link" href="/apps/pixel">Start Enhancing Free</a>
     <a role="link" href="/pricing">View Pricing</a>
   </section>
 );

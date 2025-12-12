@@ -61,7 +61,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
           </p>
         </div>
         <Button asChild>
-          <Link href="/pixel">
+          <Link href="/apps/pixel">
             <Upload className="mr-2 h-4 w-4" />
             Upload Image
           </Link>
@@ -78,7 +78,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
                 Upload your first image to get started with AI enhancement
               </p>
               <Button asChild>
-                <Link href="/pixel">
+                <Link href="/apps/pixel">
                   <Upload className="mr-2 h-4 w-4" />
                   Upload Image
                 </Link>

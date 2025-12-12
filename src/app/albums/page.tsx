@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 /**
- * Redirects /albums to /pixel
- * Albums are now managed directly on the /pixel page
+ * Redirect /albums to /apps/pixel/albums
+ * This provides a shorter URL for easy access to the albums feature.
  */
-export default function AlbumsPage() {
-  redirect("/pixel");
+export default function AlbumsRedirect() {
+  redirect("/apps/pixel/albums");
 }

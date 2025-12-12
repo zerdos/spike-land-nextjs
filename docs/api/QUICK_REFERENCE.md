@@ -187,7 +187,7 @@ const res = await fetch(`/api/albums/${id}`, {
   body: JSON.stringify({ privacy: "UNLISTED" }),
 });
 const { album } = await res.json();
-const shareUrl = `https://spike.land/albums/${id}?token=${album.shareToken}`;
+const shareUrl = `https://spike.land/apps/pixel/albums/${id}?token=${album.shareToken}`;
 ```
 
 ### Check Token Balance Before Enhance

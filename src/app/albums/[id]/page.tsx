@@ -1,18 +1,14 @@
-import { AlbumDetailClient } from "./AlbumDetailClient";
+import { redirect } from "next/navigation";
 
-interface PageProps {
+interface AlbumRedirectProps {
   params: Promise<{ id: string; }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+/**
+ * Redirect /albums/[id] to /apps/pixel/albums/[id]
+ * This provides a shorter URL for easy access to individual albums.
+ */
+export default async function AlbumRedirect({ params }: AlbumRedirectProps) {
   const { id } = await params;
-  return {
-    title: `Album - Spike Land`,
-    description: `View album ${id}`,
-  };
-}
-
-export default async function AlbumDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  return <AlbumDetailClient albumId={id} />;
+  redirect(`/apps/pixel/albums/${id}`);
 }

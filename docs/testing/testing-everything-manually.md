@@ -155,7 +155,7 @@ Before testing, ensure you have:
 
 ### D.1 Create Album
 
-1. Navigate to https://spike.land/albums
+1. Navigate to https://spike.land/apps/pixel/albums
 2. Click "New Album" button
 3. Enter album name (e.g., "My Test Album")
 4. Select privacy setting (Private or Unlisted)
@@ -171,7 +171,7 @@ Before testing, ensure you have:
 
 ### D.3 View Album
 
-1. Navigate to https://spike.land/albums
+1. Navigate to https://spike.land/apps/pixel/albums
 2. Click "View Album" on any album
 3. **Expected:** Album detail page shows all images in album
 
@@ -469,7 +469,7 @@ Before testing, ensure you have:
 - **Production:** https://spike.land
 - **Pricing:** https://spike.land/pricing
 - **Enhance:** https://spike.land/apps/pixel
-- **Albums:** https://spike.land/albums
+- **Albums:** https://spike.land/apps/pixel/albums
 - **Referrals:** https://spike.land/referrals
 - **Admin:** https://spike.land/admin
 - **Settings:** https://spike.land/settings

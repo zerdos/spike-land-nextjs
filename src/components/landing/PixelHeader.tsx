@@ -38,7 +38,7 @@ export function PixelHeader() {
               </Link>
             ))}
             <Button asChild className="shadow-glow-cyan-sm">
-              <Link href="/pixel">Get Started</Link>
+              <Link href="/apps/pixel">Get Started</Link>
             </Button>
           </nav>
 
@@ -65,7 +65,7 @@ export function PixelHeader() {
                   </Link>
                 ))}
                 <Button asChild className="mt-4 shadow-glow-cyan-sm">
-                  <Link href="/pixel" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/apps/pixel" onClick={() => setMobileMenuOpen(false)}>
                     Get Started
                   </Link>
                 </Button>
