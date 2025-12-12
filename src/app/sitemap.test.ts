@@ -26,7 +26,7 @@ describe("sitemap", () => {
     expect(urls).toContain("https://spike.land/");
     expect(urls).toContain("https://spike.land/pricing");
     expect(urls).toContain("https://spike.land/apps");
-    expect(urls).toContain("https://spike.land/apps/images");
+    expect(urls).toContain("https://spike.land/apps/pixel");
     expect(urls).toContain("https://spike.land/apps/display");
     expect(urls).toContain("https://spike.land/auth/signin");
     expect(urls).toContain("https://spike.land/terms");

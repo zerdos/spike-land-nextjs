@@ -14,7 +14,7 @@ const SITEMAP_PATHS = [
   "/",
   "/pricing",
   "/apps",
-  "/apps/images",
+  "/apps/pixel",
   "/apps/display",
   "/auth/signin",
   "/terms",

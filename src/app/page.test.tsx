@@ -13,7 +13,7 @@ const MockFeaturedAppsSection = () => (
     <div data-testid="featured-app-card">
       <span>Pixel</span>
       <span>AI-powered image enhancement</span>
-      <a role="link" href="/apps/images">Get Started</a>
+      <a role="link" href="/apps/pixel">Get Started</a>
     </div>
   </section>
 );
@@ -97,7 +97,7 @@ describe("Home Page", () => {
     it("should link to Pixel app", () => {
       render(<TestableHome />);
       const pixelLink = screen.getByRole("link", { name: /Get Started/i });
-      expect(pixelLink).toHaveAttribute("href", "/apps/images");
+      expect(pixelLink).toHaveAttribute("href", "/apps/pixel");
     });
   });
 

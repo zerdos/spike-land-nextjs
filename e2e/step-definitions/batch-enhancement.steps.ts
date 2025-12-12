@@ -349,7 +349,7 @@ Given(
   "I start batch enhancement",
   async function(this: CustomWorld) {
     await mockBatchEnhancement(this);
-    await this.page.goto(`${this.baseUrl}/apps/images/albums/${mockAlbumId}`);
+    await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
     const enhanceButton = this.page.getByRole("button", {
       name: /Enhance All/i,
@@ -376,7 +376,7 @@ Given("another user has an album", async function(this: CustomWorld) {
 
 // When steps
 When("I navigate to my album", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/apps/images/albums/${mockAlbumId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -448,14 +448,14 @@ When(
 );
 
 When("I return to my album", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/apps/images/albums/${mockAlbumId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
 When(
   "I try to enhance that album",
   async function(this: CustomWorld) {
-    await this.page.goto(`${this.baseUrl}/apps/images/albums/${mockAlbumId}`);
+    await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
     const enhanceButton = this.page.getByRole("button", {
       name: /Enhance All/i,

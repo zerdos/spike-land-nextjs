@@ -26,7 +26,7 @@ describe("PlatformHero Component", () => {
     render(<PlatformHero />);
     const ctaLink = screen.getByRole("link", { name: /Try Pixel Free/i });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute("href", "/apps/images");
+    expect(ctaLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should render secondary CTA button linking to apps", () => {

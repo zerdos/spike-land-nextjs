@@ -4,11 +4,11 @@ This guide explains how to configure custom domains for the Spike Land platform 
 
 ## Domain Structure
 
-| Domain             | Purpose       | Redirect                    |
-| ------------------ | ------------- | --------------------------- |
-| `spike.land`       | Main platform | Production domain           |
-| `pixel.spike.land` | Pixel app     | Redirects to `/apps/images` |
-| `next.spike.land`  | Legacy        | Redirects to `spike.land`   |
+| Domain             | Purpose       | Redirect                   |
+| ------------------ | ------------- | -------------------------- |
+| `spike.land`       | Main platform | Production domain          |
+| `pixel.spike.land` | Pixel app     | Redirects to `/apps/pixel` |
+| `next.spike.land`  | Legacy        | Redirects to `spike.land`  |
 
 ## Vercel Configuration
 
@@ -31,7 +31,7 @@ This guide explains how to configure custom domains for the Spike Land platform 
 
 Redirects are configured in `vercel.json` at the project root:
 
-- `pixel.spike.land/*` → `spike.land/apps/images/*` (301 permanent)
+- `pixel.spike.land/*` → `spike.land/apps/pixel/*` (301 permanent)
 - `next.spike.land/*` → `spike.land/*` (301 permanent)
 
 ## Important Notes
@@ -49,7 +49,7 @@ After adding the DNS records in Cloudflare (see CLOUDFLARE_DNS_SETUP.md):
 2. Vercel will automatically verify the domains
 3. Once verified, you'll see a green checkmark next to each domain
 4. Test the redirects:
-   - `https://pixel.spike.land` → should redirect to `https://spike.land/apps/images`
+   - `https://pixel.spike.land` → should redirect to `https://spike.land/apps/pixel`
    - `https://spike.land` → should redirect to `https://spike.land`
 
 ## Troubleshooting

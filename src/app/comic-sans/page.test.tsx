@@ -62,7 +62,7 @@ describe("ComicSansPage", () => {
     const pixelLink = screen.getByRole("link", { name: /try pixel app/i });
 
     expect(homepageLink).toHaveAttribute("href", "/");
-    expect(pixelLink).toHaveAttribute("href", "/apps/images");
+    expect(pixelLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("applies Comic Sans font family to the main element", () => {

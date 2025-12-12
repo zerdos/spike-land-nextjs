@@ -797,7 +797,7 @@ Then("I should be redirected to {string}", async function(this: CustomWorld, pat
 
 Then("the images should still exist in my library", async function(this: CustomWorld) {
   // Navigate to main images page
-  await this.page.goto("/apps/images");
+  await this.page.goto("/apps/pixel");
   await this.page.waitForLoadState("networkidle");
 
   // Check that images are still visible

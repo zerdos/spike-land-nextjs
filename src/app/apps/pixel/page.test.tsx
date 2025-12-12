@@ -48,7 +48,7 @@ const expectedMetadata = {
   },
 };
 
-describe("Pixel Landing Page (/apps/images)", () => {
+describe("Pixel Landing Page (/apps/pixel)", () => {
   describe("Metadata Contract", () => {
     it("should expect title to be 'Pixel - AI Image Enhancement | Spike Land'", () => {
       expect(expectedMetadata.title).toBe("Pixel - AI Image Enhancement | Spike Land");

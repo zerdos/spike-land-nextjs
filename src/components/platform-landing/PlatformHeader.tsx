@@ -38,7 +38,7 @@ export function PlatformHeader() {
               </Link>
             ))}
             <Button asChild>
-              <Link href="/apps/images">Get Started</Link>
+              <Link href="/apps/pixel">Get Started</Link>
             </Button>
           </nav>
 
@@ -65,7 +65,7 @@ export function PlatformHeader() {
                   </Link>
                 ))}
                 <Button asChild className="mt-4">
-                  <Link href="/apps/images" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/apps/pixel" onClick={() => setMobileMenuOpen(false)}>
                     Get Started
                   </Link>
                 </Button>

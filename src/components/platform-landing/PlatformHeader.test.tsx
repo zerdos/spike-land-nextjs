@@ -53,7 +53,7 @@ describe("PlatformHeader Component", () => {
     render(<PlatformHeader />);
     const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-    expect(ctaButtons[0]).toHaveAttribute("href", "/apps/images");
+    expect(ctaButtons[0]).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have fixed positioning", () => {

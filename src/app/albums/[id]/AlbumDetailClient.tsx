@@ -792,7 +792,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     Add images from your enhanced images collection
                   </p>
                   <Button asChild>
-                    <Link href="/apps/images">Browse Images</Link>
+                    <Link href="/apps/pixel">Browse Images</Link>
                   </Button>
                 </CardContent>
               </Card>

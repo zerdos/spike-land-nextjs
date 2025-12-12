@@ -27,7 +27,7 @@ export function PlatformHero() {
               size="lg"
               className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
             >
-              <Link href="/apps/images">
+              <Link href="/apps/pixel">
                 <Sparkles className="mr-2 h-5 w-5" />
                 Try Pixel Free
               </Link>

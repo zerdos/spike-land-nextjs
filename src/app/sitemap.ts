@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/apps/images`,
+      url: `${BASE_URL}/apps/pixel`,
       lastModified: currentDate,
       changeFrequency: "weekly",
       priority: 0.7,

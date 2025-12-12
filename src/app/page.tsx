@@ -32,7 +32,7 @@ export default function Home() {
             name="Pixel"
             description="AI-powered image enhancement. Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
             icon={<ImageIcon className="h-8 w-8" />}
-            href="/apps/images"
+            href="/apps/pixel"
             featured
           />
           {/* More apps coming soon */}
