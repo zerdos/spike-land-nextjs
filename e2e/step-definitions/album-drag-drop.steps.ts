@@ -234,22 +234,25 @@ Given("I have token balance of {int}", async function(this: CustomWorld, balance
   await mockTokenBalance(this, balance);
 });
 
-Given("I have an album with {int} images", async function(this: CustomWorld, imageCount: number) {
-  // Clear previous data
-  albumImages.length = 0;
+Given(
+  "I have an album with {int} images for drag-drop testing",
+  async function(this: CustomWorld, imageCount: number) {
+    // Clear previous data
+    albumImages.length = 0;
 
-  // Create mock images
-  for (let i = 1; i <= imageCount; i++) {
-    albumImages.push(createMockImage(i, "album-1"));
-  }
+    // Create mock images
+    for (let i = 1; i <= imageCount; i++) {
+      albumImages.push(createMockImage(i, "album-1"));
+    }
 
-  // Create mock album
-  mockAlbum = createMockAlbum("album-1", "Test Album", albumImages);
-  originalImageOrder = albumImages.map(img => img.id);
+    // Create mock album
+    mockAlbum = createMockAlbum("album-1", "Test Album", albumImages);
+    originalImageOrder = albumImages.map(img => img.id);
 
-  // Setup API mocks
-  await mockAlbumDetailAPI(this);
-});
+    // Setup API mocks
+    await mockAlbumDetailAPI(this);
+  },
+);
 
 Given("I have two albums named {string} and {string}", async function(
   this: CustomWorld,
@@ -325,7 +328,7 @@ Given("I am viewing a shared album that I do not own", async function(this: Cust
 });
 
 // When steps
-When("I navigate to my album detail page", async function(this: CustomWorld) {
+When("I navigate to my album detail page for drag-drop testing", async function(this: CustomWorld) {
   if (!mockAlbum) throw new Error("No album created");
   await this.page.goto(`/albums/${mockAlbum.id}`);
   await this.page.waitForLoadState("networkidle");
