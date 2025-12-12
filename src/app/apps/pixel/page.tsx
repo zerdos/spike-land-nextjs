@@ -1,8 +1,26 @@
 import { auth } from "@/auth";
+import { BeforeAfterGallery } from "@/components/landing/BeforeAfterGallery";
+import { CTASection } from "@/components/landing/CTASection";
+import { FAQ } from "@/components/landing/FAQ";
+import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
+import { HeroSectionWithData } from "@/components/landing/HeroSectionWithData";
+import { PixelHeader } from "@/components/landing/PixelHeader";
 import prisma from "@/lib/prisma";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { EnhancePageClient } from "./EnhancePageClient";
+
+export const metadata: Metadata = {
+  title: "Pixel - AI Image Enhancement | Spike Land",
+  description:
+    "Enhance your photos in seconds with AI. Transform low-resolution images into stunning high-quality photos with Pixel's advanced AI enhancement technology.",
+  openGraph: {
+    title: "Pixel - AI Image Enhancement | Spike Land",
+    description:
+      "Enhance your photos in seconds with AI. Transform low-resolution images into stunning high-quality photos.",
+    type: "website",
+  },
+};
 
 export default async function PixelPage() {
   // Check for E2E bypass (middleware already validated the header)
@@ -25,11 +43,21 @@ export default async function PixelPage() {
     return <EnhancePageClient images={[]} />;
   }
 
+  // For non-authenticated users, show the landing page
   if (!session) {
-    redirect("/auth/signin");
+    return (
+      <main className="min-h-screen bg-grid-pattern">
+        <PixelHeader />
+        <HeroSectionWithData />
+        <BeforeAfterGallery />
+        <FeatureShowcase />
+        <FAQ />
+        <CTASection />
+      </main>
+    );
   }
 
-  // Fetch user's images (filter out CANCELLED jobs - users don't see cancelled)
+  // For authenticated users, fetch their images and show the app
   const images = await prisma.enhancedImage.findMany({
     where: {
       userId: session.user.id,
