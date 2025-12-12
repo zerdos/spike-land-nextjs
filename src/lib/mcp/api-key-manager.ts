@@ -7,6 +7,12 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 const KEY_PREFIX_PROD = "sk_live_";
 const KEY_PREFIX_DEV = "sk_test_";
 
+// Security: Only reveal 7 characters of the key for display (e.g., "sk_live...****")
+const VISIBLE_KEY_CHARS = 7;
+
+// Performance: Only update lastUsedAt if more than 5 minutes have passed
+const LAST_USED_UPDATE_THRESHOLD_MS = 5 * 60 * 1000;
+
 export interface ApiKeyCreateResult {
   id: string;
   name: string;
@@ -40,8 +46,8 @@ function generateApiKey(): { key: string; hash: string; prefix: string; } {
   const keyBody = randomBytes(32).toString("base64url");
   const fullKey = prefix + keyBody;
   const hash = createHash("sha256").update(fullKey).digest("hex");
-  // Show first 12 chars + **** for display
-  const maskedPrefix = fullKey.slice(0, 12) + "****";
+  // Security: Only reveal VISIBLE_KEY_CHARS characters for display
+  const maskedPrefix = fullKey.slice(0, VISIBLE_KEY_CHARS) + "...****";
 
   return { key: fullKey, hash, prefix: maskedPrefix };
 }
@@ -106,6 +112,7 @@ export async function validateApiKey(
       userId: true,
       isActive: true,
       keyHash: true,
+      lastUsedAt: true,
     },
   });
 
@@ -126,14 +133,19 @@ export async function validateApiKey(
   }
 
   // Update lastUsedAt in the background (fire-and-forget)
-  prisma.apiKey
-    .update({
-      where: { id: apiKey.id },
-      data: { lastUsedAt: new Date() },
-    })
-    .catch(() => {
-      // Ignore errors for non-critical update
-    });
+  // Performance: Only update if more than 5 minutes have passed
+  const now = Date.now();
+  const lastUsed = apiKey.lastUsedAt?.getTime() ?? 0;
+  if (now - lastUsed > LAST_USED_UPDATE_THRESHOLD_MS) {
+    prisma.apiKey
+      .update({
+        where: { id: apiKey.id },
+        data: { lastUsedAt: new Date() },
+      })
+      .catch(() => {
+        // Ignore errors for non-critical update
+      });
+  }
 
   return {
     isValid: true,

@@ -52,7 +52,11 @@ interface JobResult {
   processingCompletedAt?: string;
 }
 
-export function McpToolsClient() {
+interface McpToolsClientProps {
+  isLoggedIn?: boolean;
+}
+
+export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [selectedApiKey, setSelectedApiKey] = useState<string>("");
   const [manualApiKey, setManualApiKey] = useState<string>("");
@@ -105,8 +109,8 @@ export function McpToolsClient() {
   }, []);
 
   const getApiKey = useCallback(() => {
-    return manualApiKey || selectedApiKey;
-  }, [manualApiKey, selectedApiKey]);
+    return manualApiKey || "";
+  }, [manualApiKey]);
 
   const makeApiRequest = useCallback(async (
     endpoint: string,
@@ -114,17 +118,24 @@ export function McpToolsClient() {
     body?: Record<string, unknown> | FormData,
   ) => {
     const apiKey = getApiKey();
-    if (!apiKey) {
-      throw new Error("Please enter an API key or select one from your account");
+
+    // If not logged in and no API key provided, show error
+    if (!isLoggedIn && !apiKey) {
+      throw new Error("Please enter an API key to test the API");
     }
 
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${apiKey}`,
-    };
+    const headers: Record<string, string> = {};
+
+    // Only add Authorization header if API key is explicitly provided
+    // Otherwise, session cookies will be sent automatically for logged-in users
+    if (apiKey) {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    }
 
     const options: RequestInit = {
       method,
       headers,
+      credentials: "include", // Ensure cookies are sent for session auth
     };
 
     if (body) {
@@ -144,7 +155,7 @@ export function McpToolsClient() {
     }
 
     return data;
-  }, [getApiKey]);
+  }, [getApiKey, isLoggedIn]);
 
   const handleGenerate = async () => {
     if (!generatePrompt.trim()) return;
@@ -329,50 +340,76 @@ export function McpToolsClient() {
         </p>
       </div>
 
-      {/* API Key Selection */}
+      {/* Authentication Info */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg">API Key</CardTitle>
+          <CardTitle className="text-lg">
+            {isLoggedIn ? "Authentication" : "API Key Required"}
+          </CardTitle>
           <CardDescription>
-            Enter your API key or select one from your account.{" "}
-            <Link href="/settings" className="text-primary hover:underline">
-              Manage API keys
-            </Link>
+            {isLoggedIn
+              ? (
+                <>
+                  You&apos;re signed in and can use the tools directly with your session.
+                  Optionally, enter an API key to test Bearer token authentication.{" "}
+                  <Link href="/settings" className="text-primary hover:underline">
+                    Manage API keys
+                  </Link>
+                </>
+              )
+              : (
+                <>
+                  Enter an API key to test the MCP API.{" "}
+                  <Link href="/auth/signin" className="text-primary hover:underline">
+                    Sign in
+                  </Link>{" "}
+                  to use your session instead.
+                </>
+              )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="manual-key">Enter API Key</Label>
-            <Input
-              id="manual-key"
-              type="password"
-              placeholder="sk_live_..."
-              value={manualApiKey}
-              onChange={(e) => setManualApiKey(e.target.value)}
-            />
-          </div>
-
-          {!isLoadingKeys && apiKeys.length > 0 && (
-            <div className="space-y-2">
-              <Label>Or select from your keys</Label>
-              <Select value={selectedApiKey} onValueChange={setSelectedApiKey}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an API key" />
-                </SelectTrigger>
-                <SelectContent>
-                  {apiKeys.map((key) => (
-                    <SelectItem key={key.id} value={key.id}>
-                      {key.name} ({key.keyPrefix})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Note: Selecting a key here will use your session for authentication. Enter the full
-                key above to test Bearer token auth.
-              </p>
-            </div>
-          )}
+          {isLoggedIn
+            ? (
+              <>
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Using session authentication (no API key needed)</span>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="manual-key">Optional: Test with API Key</Label>
+                  <Input
+                    id="manual-key"
+                    type="password"
+                    placeholder="sk_live_... (leave empty to use session)"
+                    value={manualApiKey}
+                    onChange={(e) => setManualApiKey(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter a full API key here to test Bearer token authentication instead of session
+                    auth.
+                  </p>
+                </div>
+              </>
+            )
+            : (
+              <div className="space-y-2">
+                <Label htmlFor="manual-key">API Key</Label>
+                <Input
+                  id="manual-key"
+                  type="password"
+                  placeholder="sk_live_..."
+                  value={manualApiKey}
+                  onChange={(e) => setManualApiKey(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Get your API key from the{" "}
+                  <Link href="/settings" className="text-primary hover:underline">
+                    Settings page
+                  </Link>
+                </p>
+              </div>
+            )}
         </CardContent>
       </Card>
 
@@ -438,7 +475,8 @@ export function McpToolsClient() {
                   </span>
                   <Button
                     onClick={handleGenerate}
-                    disabled={!generatePrompt.trim() || isGenerating || !getApiKey()}
+                    disabled={!generatePrompt.trim() || isGenerating ||
+                      (!isLoggedIn && !getApiKey())}
                   >
                     {isGenerating
                       ? (
@@ -570,7 +608,8 @@ export function McpToolsClient() {
                   </span>
                   <Button
                     onClick={handleModify}
-                    disabled={!modifyPrompt.trim() || !modifyImage || isModifying || !getApiKey()}
+                    disabled={!modifyPrompt.trim() || !modifyImage || isModifying ||
+                      (!isLoggedIn && !getApiKey())}
                   >
                     {isModifying
                       ? (
@@ -663,7 +702,7 @@ export function McpToolsClient() {
 
                 <Button
                   onClick={handleCheckJob}
-                  disabled={!jobId.trim() || isCheckingJob || !getApiKey()}
+                  disabled={!jobId.trim() || isCheckingJob || (!isLoggedIn && !getApiKey())}
                   className="w-full"
                 >
                   {isCheckingJob
@@ -765,7 +804,7 @@ export function McpToolsClient() {
               <CardContent className="space-y-4">
                 <Button
                   onClick={handleCheckBalance}
-                  disabled={isLoadingBalance || !getApiKey()}
+                  disabled={isLoadingBalance || (!isLoggedIn && !getApiKey())}
                   className="w-full"
                 >
                   {isLoadingBalance

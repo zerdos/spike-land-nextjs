@@ -10,6 +10,9 @@ import { EnhancementTier, getMcpGenerationCost } from "@/lib/tokens/costs";
 import { JobStatus, McpJobType } from "@prisma/client";
 import sharp from "sharp";
 
+// Security: Maximum concurrent PROCESSING jobs per user to prevent burst attacks
+const MAX_CONCURRENT_JOBS_PER_USER = 3;
+
 export interface CreateGenerationJobParams {
   userId: string;
   apiKeyId?: string;
@@ -35,7 +38,21 @@ export interface JobResult {
 }
 
 /**
+ * Check if user has too many concurrent processing jobs
+ */
+async function checkConcurrentJobLimit(userId: string): Promise<boolean> {
+  const processingCount = await prisma.mcpGenerationJob.count({
+    where: {
+      userId,
+      status: JobStatus.PROCESSING,
+    },
+  });
+  return processingCount < MAX_CONCURRENT_JOBS_PER_USER;
+}
+
+/**
  * Creates and processes a new image generation job
+ * Uses atomic token consumption to prevent race conditions
  */
 export async function createGenerationJob(
   params: CreateGenerationJobParams,
@@ -43,17 +60,18 @@ export async function createGenerationJob(
   const { userId, apiKeyId, prompt, tier, negativePrompt } = params;
   const tokensCost = getMcpGenerationCost(tier);
 
-  // Check token balance
-  const hasTokens = await TokenBalanceManager.hasEnoughTokens(userId, tokensCost);
-
-  if (!hasTokens) {
+  // Security: Check concurrent job limit to prevent burst attacks
+  const canCreateJob = await checkConcurrentJobLimit(userId);
+  if (!canCreateJob) {
     return {
       success: false,
-      error: `Insufficient token balance. Required: ${tokensCost} tokens`,
+      error:
+        `Too many concurrent jobs. Maximum ${MAX_CONCURRENT_JOBS_PER_USER} jobs can be processed at once. Please wait for existing jobs to complete.`,
     };
   }
 
-  // Consume tokens
+  // Atomic token consumption - handles balance check within transaction
+  // This prevents race conditions where two requests could both pass a separate balance check
   const consumeResult = await TokenBalanceManager.consumeTokens({
     userId,
     amount: tokensCost,
@@ -65,7 +83,7 @@ export async function createGenerationJob(
   if (!consumeResult.success) {
     return {
       success: false,
-      error: consumeResult.error || "Failed to consume tokens",
+      error: consumeResult.error || `Insufficient token balance. Required: ${tokensCost} tokens`,
     };
   }
 
@@ -103,6 +121,7 @@ export async function createGenerationJob(
 
 /**
  * Creates and processes a new image modification job
+ * Uses atomic token consumption to prevent race conditions
  */
 export async function createModificationJob(
   params: CreateModificationJobParams,
@@ -110,17 +129,18 @@ export async function createModificationJob(
   const { userId, apiKeyId, prompt, tier, imageData, mimeType } = params;
   const tokensCost = getMcpGenerationCost(tier);
 
-  // Check token balance
-  const hasTokens = await TokenBalanceManager.hasEnoughTokens(userId, tokensCost);
-
-  if (!hasTokens) {
+  // Security: Check concurrent job limit to prevent burst attacks
+  const canCreateJob = await checkConcurrentJobLimit(userId);
+  if (!canCreateJob) {
     return {
       success: false,
-      error: `Insufficient token balance. Required: ${tokensCost} tokens`,
+      error:
+        `Too many concurrent jobs. Maximum ${MAX_CONCURRENT_JOBS_PER_USER} jobs can be processed at once. Please wait for existing jobs to complete.`,
     };
   }
 
-  // Consume tokens
+  // Atomic token consumption - handles balance check within transaction
+  // This prevents race conditions where two requests could both pass a separate balance check
   const consumeResult = await TokenBalanceManager.consumeTokens({
     userId,
     amount: tokensCost,
@@ -132,7 +152,7 @@ export async function createModificationJob(
   if (!consumeResult.success) {
     return {
       success: false,
-      error: consumeResult.error || "Failed to consume tokens",
+      error: consumeResult.error || `Insufficient token balance. Required: ${tokensCost} tokens`,
     };
   }
 

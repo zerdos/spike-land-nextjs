@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { McpToolsClient } from "./McpToolsClient";
 
 export const metadata = {
@@ -9,10 +8,7 @@ export const metadata = {
 
 export default async function McpToolsPage() {
   const session = await auth();
+  const isLoggedIn = !!session?.user?.id;
 
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  return <McpToolsClient />;
+  return <McpToolsClient isLoggedIn={isLoggedIn} />;
 }
