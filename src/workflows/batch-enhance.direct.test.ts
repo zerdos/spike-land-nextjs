@@ -2,11 +2,14 @@ import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted to define mocks before vi.mock is called
-const { mockEnhanceImageDirect, mockRefundTokens, mockPrismaCreate } = vi.hoisted(() => ({
-  mockEnhanceImageDirect: vi.fn(),
-  mockRefundTokens: vi.fn(),
-  mockPrismaCreate: vi.fn(),
-}));
+const { mockEnhanceImageDirect, mockRefundTokens, mockPrismaCreate, mockPrismaUpdate } = vi.hoisted(
+  () => ({
+    mockEnhanceImageDirect: vi.fn(),
+    mockRefundTokens: vi.fn(),
+    mockPrismaCreate: vi.fn(),
+    mockPrismaUpdate: vi.fn(),
+  }),
+);
 
 vi.mock("./enhance-image.direct", () => ({
   enhanceImageDirect: mockEnhanceImageDirect,
@@ -30,6 +33,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     imageEnhancementJob: {
       create: mockPrismaCreate,
+      update: mockPrismaUpdate,
     },
   },
 }));
@@ -60,6 +64,7 @@ describe("batch-enhance.direct", () => {
     });
     mockRefundTokens.mockResolvedValue({ success: true });
     mockPrismaCreate.mockResolvedValue({ id: "job-new" });
+    mockPrismaUpdate.mockResolvedValue({ id: "job-new" });
   });
 
   describe("input validation", () => {
@@ -238,7 +243,7 @@ describe("batch-enhance.direct", () => {
       });
     });
 
-    it("should refund tokens for failed jobs", async () => {
+    it("should not refund tokens at batch level (refunds happen per-job)", async () => {
       mockEnhanceImageDirect
         .mockResolvedValueOnce({ success: true })
         .mockResolvedValueOnce({ success: false, error: "Failed" });
@@ -248,15 +253,42 @@ describe("batch-enhance.direct", () => {
         images: validInput.images.slice(0, 2),
       });
 
-      expect(mockRefundTokens).toHaveBeenCalledWith(
-        "user-789",
-        10, // 1 failed * 10 tokens
-        "batch-123",
-        expect.stringContaining("1 of 2 jobs failed"),
+      // TokenBalanceManager.refundTokens should NOT be called at batch level
+      // It's called inside enhanceImageDirect for each failed job
+      expect(mockRefundTokens).not.toHaveBeenCalled();
+    });
+
+    it("should track refunded jobs in results", async () => {
+      mockEnhanceImageDirect
+        .mockResolvedValueOnce({ success: true })
+        .mockResolvedValueOnce({ success: false, error: "Failed" })
+        .mockResolvedValueOnce({ success: true });
+
+      const result = await batchEnhanceImagesDirect(validInput);
+
+      expect(result.results[0]).toEqual(
+        expect.objectContaining({
+          success: true,
+          refunded: false,
+        }),
+      );
+
+      expect(result.results[1]).toEqual(
+        expect.objectContaining({
+          success: false,
+          refunded: true, // Failed jobs are refunded
+        }),
+      );
+
+      expect(result.results[2]).toEqual(
+        expect.objectContaining({
+          success: true,
+          refunded: false,
+        }),
       );
     });
 
-    it("should handle multiple failures", async () => {
+    it("should handle multiple failures without batch-level refund", async () => {
       mockEnhanceImageDirect.mockResolvedValue({
         success: false,
         error: "All failed",
@@ -270,12 +302,11 @@ describe("batch-enhance.direct", () => {
         failed: 3,
       });
 
-      expect(mockRefundTokens).toHaveBeenCalledWith(
-        "user-789",
-        30, // 3 failed * 10 tokens
-        "batch-123",
-        expect.stringContaining("3 of 3 jobs failed"),
-      );
+      // No batch-level refund call
+      expect(mockRefundTokens).not.toHaveBeenCalled();
+
+      // All results should be marked as refunded
+      expect(result.results.every((r) => r.refunded)).toBe(true);
     });
 
     it("should log error with stack trace on individual failure", async () => {
@@ -293,26 +324,23 @@ describe("batch-enhance.direct", () => {
       );
     });
 
-    it("should handle refund failure gracefully", async () => {
-      mockEnhanceImageDirect.mockResolvedValue({
-        success: false,
-        error: "Failed",
-      });
-      mockRefundTokens.mockResolvedValue({
-        success: false,
-        error: "Refund failed",
-      });
+    it("should mark job as not refunded if job creation fails", async () => {
+      mockPrismaCreate.mockRejectedValueOnce(new Error("DB error"));
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
         images: [validInput.images[0]],
       });
 
-      expect(result.summary.failed).toBe(1);
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to refund tokens"),
-        "Refund failed",
-      );
+      expect(result.results[0]).toEqual({
+        imageId: "img-1",
+        success: false,
+        refunded: false, // No job created, so no refund
+        error: "DB error",
+      });
+
+      // No refund should be called since job wasn't created
+      expect(mockRefundTokens).not.toHaveBeenCalled();
     });
   });
 
@@ -328,6 +356,7 @@ describe("batch-enhance.direct", () => {
       expect(result.results[0]).toEqual({
         imageId: "img-1",
         success: false,
+        refunded: false,
         error: "DB error",
       });
     });
@@ -343,6 +372,7 @@ describe("batch-enhance.direct", () => {
       expect(result.results[0]).toEqual({
         imageId: "img-1",
         success: false,
+        refunded: false,
         error: "String error",
       });
     });
@@ -375,24 +405,28 @@ describe("batch-enhance.direct", () => {
       });
     });
 
-    it("should refund correct amount for TIER_2K failures", async () => {
+    it("should mark TIER_2K failures as refunded", async () => {
       mockEnhanceImageDirect.mockResolvedValue({
         success: false,
         error: "Failed",
       });
 
-      await batchEnhanceImagesDirect({
+      const result = await batchEnhanceImagesDirect({
         ...validInput,
         tier: "TIER_2K",
         images: [validInput.images[0]],
       });
 
-      expect(mockRefundTokens).toHaveBeenCalledWith(
-        "user-789",
-        20, // 1 failed * 20 tokens
-        "batch-123",
-        expect.any(String),
+      // Verify the job is marked as refunded
+      expect(result.results[0]).toEqual(
+        expect.objectContaining({
+          success: false,
+          refunded: true,
+        }),
       );
+
+      // No batch-level refund
+      expect(mockRefundTokens).not.toHaveBeenCalled();
     });
   });
 
@@ -409,10 +443,11 @@ describe("batch-enhance.direct", () => {
         imageId: "img-1",
         jobId: "job-xyz",
         success: true,
+        refunded: false,
       });
     });
 
-    it("should not include jobId in failed results", async () => {
+    it("should not include jobId in failed results when job creation fails", async () => {
       mockPrismaCreate.mockRejectedValue(new Error("Failed to create job"));
 
       const result = await batchEnhanceImagesDirect({
@@ -423,12 +458,13 @@ describe("batch-enhance.direct", () => {
       expect(result.results[0]).toEqual({
         imageId: "img-1",
         success: false,
+        refunded: false,
         error: "Failed to create job",
       });
       expect(result.results[0].jobId).toBeUndefined();
     });
 
-    it("should include error message in failed results", async () => {
+    it("should include error message and refunded flag in failed results", async () => {
       mockEnhanceImageDirect.mockResolvedValue({
         success: false,
         error: "Specific error message",
@@ -440,6 +476,7 @@ describe("batch-enhance.direct", () => {
       });
 
       expect(result.results[0].error).toBe("Specific error message");
+      expect(result.results[0].refunded).toBe(true);
     });
   });
 });

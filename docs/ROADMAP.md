@@ -69,7 +69,7 @@ See [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) for full analysis.
 
 ### Pixel App - Demonstration of Platform Capabilities
 
-The Pixel AI image enhancement app (https://spike.land/apps/images) demonstrates the complete platform functionality:
+The Pixel AI image enhancement app (https://spike.land/apps/pixel) demonstrates the complete platform functionality:
 
 **Phase 1: MVP** ✅ Complete
 

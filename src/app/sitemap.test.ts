@@ -26,7 +26,7 @@ describe("sitemap", () => {
     expect(urls).toContain("https://spike.land/");
     expect(urls).toContain("https://spike.land/pricing");
     expect(urls).toContain("https://spike.land/apps");
-    expect(urls).toContain("https://spike.land/apps/images");
+    expect(urls).toContain("https://spike.land/apps/pixel");
     expect(urls).toContain("https://spike.land/apps/display");
     expect(urls).toContain("https://spike.land/auth/signin");
     expect(urls).toContain("https://spike.land/terms");
@@ -38,8 +38,6 @@ describe("sitemap", () => {
     const result = sitemap();
     const urls = result.map((entry) => entry.url);
 
-    expect(urls).toContain("https://spike.land/pixel");
-    expect(urls).toContain("https://spike.land/albums");
     expect(urls).toContain("https://spike.land/my-apps");
     expect(urls).toContain("https://spike.land/my-apps/new");
     expect(urls).toContain("https://spike.land/profile");
@@ -126,7 +124,7 @@ describe("sitemap", () => {
 
   it("has expected total number of pages", () => {
     const result = sitemap();
-    // 9 public + 7 protected + 6 admin = 22 total
-    expect(result.length).toBe(22);
+    // 9 public + 5 protected + 6 admin = 20 total
+    expect(result.length).toBe(20);
   });
 });

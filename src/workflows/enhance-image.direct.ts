@@ -177,11 +177,11 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
       console.error("[Dev Enhancement] Failed to refund tokens:", refundResult.error);
     }
 
-    // Update job as failed
+    // Update job as failed and refunded
     await prisma.imageEnhancementJob.update({
       where: { id: jobId },
       data: {
-        status: JobStatus.FAILED,
+        status: JobStatus.REFUNDED,
         errorMessage,
       },
     });

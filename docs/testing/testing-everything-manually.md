@@ -37,10 +37,10 @@ Before testing, ensure you have:
 
 ### A.3 Protected Route Access
 
-1. While logged out, navigate to https://spike.land/apps/images
+1. While logged out, navigate to https://spike.land/apps/pixel
 2. **Expected:** Redirected to sign-in page
 3. After signing in, try accessing:
-   - `/apps/images` - Should load image enhancement page
+   - `/apps/pixel` - Should load image enhancement page
    - `/settings` - Should load settings page
    - `/albums` - Should load albums page
    - `/referrals` - Should load referral dashboard
@@ -56,7 +56,7 @@ Before testing, ensure you have:
 
 1. Sign in to the app
 2. Close the browser tab
-3. Open a new tab and navigate to https://spike.land/apps/images
+3. Open a new tab and navigate to https://spike.land/apps/pixel
 4. **Expected:** Still logged in, no re-authentication needed
 
 ---
@@ -65,7 +65,7 @@ Before testing, ensure you have:
 
 ### B.1 Upload Image
 
-1. Navigate to https://spike.land/apps/images
+1. Navigate to https://spike.land/apps/pixel
 2. Drag and drop an image onto the upload area (or click to select)
 3. **Supported formats:** JPEG, PNG, WebP
 4. **Max size:** 50MB
@@ -113,7 +113,7 @@ Before testing, ensure you have:
 
 ### C.1 Check Token Balance
 
-1. Navigate to https://spike.land/apps/images
+1. Navigate to https://spike.land/apps/pixel
 2. Look at the token balance display (top right area)
 3. **Expected:** Shows current token count and "Available balance"
 
@@ -135,7 +135,7 @@ Before testing, ensure you have:
    - Your email pre-filled
    - Payment options available
 2. You can use Stripe test cards for testing (if in test mode)
-3. **Expected:** After purchase, redirected to /apps/images with updated balance
+3. **Expected:** After purchase, redirected to /apps/pixel with updated balance
 
 ### C.4 Verify Low Balance Warnings
 
@@ -155,7 +155,7 @@ Before testing, ensure you have:
 
 ### D.1 Create Album
 
-1. Navigate to https://spike.land/albums
+1. Navigate to https://spike.land/apps/pixel/albums
 2. Click "New Album" button
 3. Enter album name (e.g., "My Test Album")
 4. Select privacy setting (Private or Unlisted)
@@ -164,14 +164,14 @@ Before testing, ensure you have:
 
 ### D.2 Add Images to Album
 
-1. Navigate to https://spike.land/apps/images
+1. Navigate to https://spike.land/apps/pixel
 2. On any image, click "Add to Album" button
 3. Select target album from dropdown
 4. **Expected:** Image added to album, confirmation shown
 
 ### D.3 View Album
 
-1. Navigate to https://spike.land/albums
+1. Navigate to https://spike.land/apps/pixel/albums
 2. Click "View Album" on any album
 3. **Expected:** Album detail page shows all images in album
 
@@ -201,7 +201,7 @@ Before testing, ensure you have:
 
 ### E.1 Batch Upload
 
-1. Navigate to https://spike.land/apps/images
+1. Navigate to https://spike.land/apps/pixel
 2. Select multiple images at once (drag multiple or Shift+click)
 3. **Expected:** All images upload and appear in gallery
 
@@ -468,8 +468,8 @@ Before testing, ensure you have:
 
 - **Production:** https://spike.land
 - **Pricing:** https://spike.land/pricing
-- **Enhance:** https://spike.land/apps/images
-- **Albums:** https://spike.land/albums
+- **Enhance:** https://spike.land/apps/pixel
+- **Albums:** https://spike.land/apps/pixel/albums
 - **Referrals:** https://spike.land/referrals
 - **Admin:** https://spike.land/admin
 - **Settings:** https://spike.land/settings

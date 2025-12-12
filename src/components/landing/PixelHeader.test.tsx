@@ -20,10 +20,10 @@ describe("PixelHeader Component", () => {
     expect(logo).toHaveAttribute("data-variant", "horizontal");
   });
 
-  it("should have a link to home on the logo", () => {
+  it("should have a link to Pixel landing page on the logo", () => {
     render(<PixelHeader />);
-    const homeLink = screen.getByRole("link", { name: /pixellogo/i });
-    expect(homeLink).toHaveAttribute("href", "/");
+    const logoLink = screen.getByRole("link", { name: /pixellogo/i });
+    expect(logoLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should render desktop navigation links", () => {
@@ -53,7 +53,7 @@ describe("PixelHeader Component", () => {
     render(<PixelHeader />);
     const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-    expect(ctaButtons[0]).toHaveAttribute("href", "/pixel");
+    expect(ctaButtons[0]).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have fixed positioning", () => {

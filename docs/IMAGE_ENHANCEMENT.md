@@ -660,7 +660,7 @@ Comprehensive job management interface at `/admin/jobs`:
 
 **Image Enhancement Pages**:
 
-- Main app: `src/app/apps/images/` (formerly `/enhance`, then `/pixel`)
+- Main app: `src/app/apps/pixel/` (formerly `/enhance`, then `/pixel`)
 - Album management: `src/app/albums/`
 - Pricing page: `src/app/pricing/`
 

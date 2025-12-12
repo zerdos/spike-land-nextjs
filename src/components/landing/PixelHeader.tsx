@@ -22,7 +22,7 @@ export function PixelHeader() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/apps/pixel" className="flex items-center">
             <PixelLogo size="sm" variant="horizontal" />
           </Link>
 
@@ -38,7 +38,7 @@ export function PixelHeader() {
               </Link>
             ))}
             <Button asChild className="shadow-glow-cyan-sm">
-              <Link href="/pixel">Get Started</Link>
+              <Link href="/apps/pixel">Get Started</Link>
             </Button>
           </nav>
 
@@ -65,7 +65,7 @@ export function PixelHeader() {
                   </Link>
                 ))}
                 <Button asChild className="mt-4 shadow-glow-cyan-sm">
-                  <Link href="/pixel" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/apps/pixel" onClick={() => setMobileMenuOpen(false)}>
                     Get Started
                   </Link>
                 </Button>

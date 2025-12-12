@@ -313,4 +313,63 @@ describe("POST /api/images/upload", () => {
       },
     });
   });
+
+  describe("filename security validation", () => {
+    it("should reject filename with path traversal (..) characters", async () => {
+      const req = createMockRequest(createMockFile("../../../etc/passwd.jpg"));
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBe(
+        "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
+      );
+      expect(res.headers.get("X-Request-ID")).toBeDefined();
+    });
+
+    it("should reject filename starting with dot (hidden file)", async () => {
+      const req = createMockRequest(createMockFile(".hidden-file.jpg"));
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBe(
+        "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
+      );
+      expect(res.headers.get("X-Request-ID")).toBeDefined();
+    });
+
+    it("should reject filename with forward slash", async () => {
+      const req = createMockRequest(createMockFile("path/to/file.jpg"));
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBe(
+        "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
+      );
+      expect(res.headers.get("X-Request-ID")).toBeDefined();
+    });
+
+    it("should reject filename with backslash", async () => {
+      const req = createMockRequest(createMockFile("path\\to\\file.jpg"));
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBe(
+        "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
+      );
+      expect(res.headers.get("X-Request-ID")).toBeDefined();
+    });
+
+    it("should accept valid filename without path traversal characters", async () => {
+      const req = createMockRequest(createMockFile("valid-image-file.jpg"));
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+    });
+  });
 });

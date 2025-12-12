@@ -1,21 +1,15 @@
-import prisma from "@/lib/prisma";
+import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { unstable_cache } from "next/cache";
 import { HeroSection } from "./HeroSection";
 
-// Cache the top featured item for 1 hour to reduce database queries
-const getTopFeaturedItem = unstable_cache(
+// Cache the super admin's top public photo for 1 hour to reduce database queries
+const getTopPublicPhoto = unstable_cache(
   async () => {
-    return await prisma.featuredGalleryItem.findFirst({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        originalUrl: true,
-        enhancedUrl: true,
-      },
-    });
+    const photos = await getSuperAdminPublicPhotos(1);
+    return photos[0] || null;
   },
-  ["top-featured-item"],
-  { revalidate: 3600, tags: ["featured-gallery"] },
+  ["super-admin-top-photo"],
+  { revalidate: 3600, tags: ["super-admin-gallery"] },
 );
 
 export async function HeroSectionWithData() {
@@ -23,16 +17,16 @@ export async function HeroSectionWithData() {
   let enhancedUrl: string | undefined;
 
   try {
-    const topItem = await getTopFeaturedItem();
+    const topPhoto = await getTopPublicPhoto();
 
-    if (topItem) {
-      originalUrl = topItem.originalUrl;
-      enhancedUrl = topItem.enhancedUrl;
+    if (topPhoto) {
+      originalUrl = topPhoto.originalUrl;
+      enhancedUrl = topPhoto.enhancedUrl;
     }
   } catch (error) {
     // Fall back to defaults if database unavailable
     if (process.env.NODE_ENV !== "production") {
-      console.error("Failed to fetch featured gallery item:", error);
+      console.error("Failed to fetch super admin public photo:", error);
     }
   }
 

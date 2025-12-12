@@ -334,6 +334,7 @@ model AlbumImage {
   @@unique([albumId, imageId])
   @@index([albumId, sortOrder])
   @@index([imageId])
+  @@index([albumId, addedAt])
   @@map("album_images")
 }
 

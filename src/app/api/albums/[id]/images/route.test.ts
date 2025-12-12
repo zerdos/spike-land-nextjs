@@ -176,6 +176,70 @@ describe("Album Images API", () => {
       expect(data.success).toBe(true);
       expect(data.added).toBe(2);
     });
+
+    it("assigns unique sequential sort orders to multiple images", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: "user_123" },
+      });
+      (prisma.album.findUnique as Mock).mockResolvedValue({
+        userId: "user_123",
+      });
+
+      const threeImageIds = ["img_1", "img_2", "img_3"];
+
+      (prisma.enhancedImage.findMany as Mock).mockResolvedValue([
+        { id: "img_1" },
+        { id: "img_2" },
+        { id: "img_3" },
+      ]);
+
+      // Existing album has max sort order of 9
+      (prisma.albumImage.aggregate as Mock).mockResolvedValue({
+        _max: { sortOrder: 9 },
+      });
+
+      const createMock = prisma.albumImage.create as Mock;
+
+      // Mock create to return albumImage with the sort order it was called with
+      createMock.mockImplementation(async ({ data }: any) => ({
+        id: `album-image-${data.imageId}`,
+        albumId: "abc",
+        imageId: data.imageId,
+        sortOrder: data.sortOrder,
+      }));
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/abc/images",
+        {
+          method: "POST",
+          body: JSON.stringify({ imageIds: threeImageIds }),
+        },
+      );
+
+      const response = await POST(request, createParams("abc"));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.added).toBe(3);
+
+      // Verify each image got a unique sequential sort order starting from 10
+      const sortOrders = new Set<number>();
+      expect(createMock).toHaveBeenCalledTimes(3);
+
+      // Extract sort orders from mock calls
+      for (let i = 0; i < 3; i++) {
+        const call = createMock.mock.calls[i][0];
+        const sortOrder = call.data.sortOrder;
+        sortOrders.add(sortOrder);
+      }
+
+      // All sort orders should be unique
+      expect(sortOrders.size).toBe(3);
+
+      // Sort orders should be 10, 11, 12 (sequential from baseSortOrder)
+      expect(Array.from(sortOrders).sort()).toEqual([10, 11, 12]);
+    });
   });
 
   describe("DELETE /api/albums/[id]/images", () => {

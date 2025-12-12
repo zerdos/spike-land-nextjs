@@ -139,7 +139,7 @@ export function AddToAlbumModal({
                   You don&apos;t have any albums yet
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/albums">
+                  <Link href="/apps/pixel">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Album
                   </Link>

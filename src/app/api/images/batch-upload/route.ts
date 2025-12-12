@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { isSecureFilename } from "@/lib/upload/validation";
 import { NextRequest, NextResponse } from "next/server";
 
 const MAX_BATCH_SIZE = 20;
@@ -114,6 +115,16 @@ export async function POST(request: NextRequest) {
           title: errorMessage.title,
           suggestion: `Please upload a maximum of ${MAX_BATCH_SIZE} files per batch.`,
         },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Validate filenames for security (prevent path traversal, hidden files, etc.)
+    const invalidFilenames = files.filter((f) => !isSecureFilename(f.name)).map((f) => f.name);
+    if (invalidFilenames.length > 0) {
+      requestLogger.warn("Invalid filenames detected", { invalidFilenames });
+      return NextResponse.json(
+        { error: "Invalid filenames detected", invalidFilenames },
         { status: 400, headers: { "X-Request-ID": requestId } },
       );
     }

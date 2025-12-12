@@ -76,7 +76,7 @@ describe("Admin Feedback API", () => {
           email: null,
           type: FeedbackType.BUG,
           message: "Test bug report",
-          page: "/apps/images",
+          page: "/apps/pixel",
           userAgent: "Mozilla/5.0",
           status: FeedbackStatus.NEW,
           adminNote: null,

@@ -6,7 +6,7 @@
 
 **Status**: Fixed in codebase, will be applied on next deployment
 **Issue**: The EnhancedImage and ImageEnhancementJob tables don't exist in production database
-**Error**: Server Component 500 error on `/apps/images`
+**Error**: Server Component 500 error on `/apps/pixel`
 
 **Solution Applied**:
 
@@ -48,7 +48,7 @@ After deployment:
 - [ ] Visit https://spike.land/apps - should see Images app
 - [ ] Click "Launch App" on Images - should redirect to sign-in
 - [ ] Try GitHub OAuth - should work after redirect URI is configured
-- [ ] After sign-in, visit https://spike.land/apps/images - should show empty state (no server error)
+- [ ] After sign-in, visit https://spike.land/apps/pixel - should show empty state (no server error)
 - [ ] Upload an image - should work
 - [ ] View enhancement page - should work
 

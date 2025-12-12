@@ -14,7 +14,6 @@
  */
 
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { enhanceImageDirect } from "./enhance-image.direct";
@@ -33,6 +32,7 @@ interface BatchResult {
   imageId: string;
   jobId?: string;
   success: boolean;
+  refunded?: boolean;
   error?: string;
 }
 
@@ -124,6 +124,7 @@ export async function batchEnhanceImagesDirect(
         imageId: image.imageId,
         jobId: job.id,
         success: result.success,
+        refunded: !result.success, // Refund happens immediately in enhanceImageDirect on failure
         error: result.error,
       });
     } catch (error) {
@@ -136,6 +137,7 @@ export async function batchEnhanceImagesDirect(
       results.push({
         imageId: image.imageId,
         success: false,
+        refunded: false, // No job was created, no refund needed
         error: errorMessage,
       });
     }
@@ -144,27 +146,14 @@ export async function batchEnhanceImagesDirect(
   // Calculate summary
   const successful = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
+  const refunded = results.filter((r) => r.refunded).length;
 
   console.log(
-    `[Dev Batch Enhancement] Batch ${batchId} completed: ${successful} successful, ${failed} failed`,
+    `[Dev Batch Enhancement] Batch ${batchId} completed: ${successful} successful, ${failed} failed, ${refunded} refunded`,
   );
 
-  // Refund tokens for any failed jobs
-  if (failed > 0) {
-    const refundAmount = failed * tokenCost;
-    const reason = `${failed} of ${images.length} jobs failed in batch`;
-
-    const refundResult = await TokenBalanceManager.refundTokens(
-      userId,
-      refundAmount,
-      batchId,
-      reason,
-    );
-
-    if (!refundResult.success) {
-      console.error("[Dev Batch Enhancement] Failed to refund tokens:", refundResult.error);
-    }
-  }
+  // Note: Individual job refunds are handled immediately in enhanceImageDirect when jobs fail
+  // No batch-level refund needed here to avoid double-refunds
 
   return {
     batchId,

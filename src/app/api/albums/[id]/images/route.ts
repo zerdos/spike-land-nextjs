@@ -60,17 +60,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       _max: { sortOrder: true },
     });
 
-    let currentSortOrder = (maxSortOrder._max.sortOrder ?? -1) + 1;
+    // Pre-calculate sort orders to avoid race condition in Promise.all
+    const baseSortOrder = (maxSortOrder._max.sortOrder ?? -1) + 1;
+    const sortOrders = Object.fromEntries(
+      imageIds.map((id, idx) => [id, baseSortOrder + idx]),
+    );
 
     // Add images to album (skip duplicates)
     const results = await Promise.all(
       imageIds.map(async (imageId: string) => {
+        const sortOrder = sortOrders[imageId]; // Pre-calculated, immutable
         try {
           const albumImage = await prisma.albumImage.create({
             data: {
               albumId,
               imageId,
-              sortOrder: currentSortOrder++,
+              sortOrder,
             },
           });
           return { imageId, success: true, albumImageId: albumImage.id };

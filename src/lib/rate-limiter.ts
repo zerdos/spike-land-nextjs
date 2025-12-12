@@ -295,6 +295,11 @@ export const rateLimitConfigs = {
     maxRequests: 10,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Album batch enhancement: 5 requests per minute per user (more restrictive for batch operations) */
+  albumBatchEnhancement: {
+    maxRequests: 5,
+    windowMs: 60 * 1000, // 1 minute
+  },
   /** Image upload: 30 requests per minute per user */
   imageUpload: {
     maxRequests: 30,

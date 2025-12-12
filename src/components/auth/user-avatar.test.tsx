@@ -207,7 +207,7 @@ describe("UserAvatar Component", () => {
     expect(screen.getByText("No email")).toBeInTheDocument();
   });
 
-  it("should have Pixel link pointing to /pixel", async () => {
+  it("should have Pixel link pointing to /apps/pixel", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
@@ -225,7 +225,7 @@ describe("UserAvatar Component", () => {
 
     await user.click(screen.getByTestId("user-avatar"));
     const pixelLink = screen.getByRole("menuitem", { name: /pixel - ai photo enhance/i });
-    expect(pixelLink).toHaveAttribute("href", "/pixel");
+    expect(pixelLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have Token Management link pointing to /tokens", async () => {

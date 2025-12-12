@@ -70,7 +70,7 @@ Tokens are Spike Land's universal currency. Your token balance works across all 
 
 ### Current Apps
 
-**Pixel** - AI Image Enhancement ([spike.land/apps/images](https://spike.land/apps/images))
+**Pixel** - AI Image Enhancement ([spike.land/apps/pixel](https://spike.land/apps/pixel))
 
 - Upload images (JPEG, PNG, WebP, GIF, BMP)
 - Choose from 3 quality tiers (1K, 2K, 4K)
