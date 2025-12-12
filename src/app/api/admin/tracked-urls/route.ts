@@ -157,6 +157,69 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await requireAdminByUserId(session.user.id);
+
+    const body = await request.json();
+    const { path, isActive } = body;
+
+    if (!path || typeof isActive !== "boolean") {
+      return NextResponse.json(
+        { error: "Missing required fields: path, isActive" },
+        { status: 400 },
+      );
+    }
+
+    // Check if tracked path already exists
+    const existing = await prisma.trackedUrl.findUnique({
+      where: { path },
+    });
+
+    let trackedPath;
+
+    if (existing) {
+      // Update existing entry
+      trackedPath = await prisma.trackedUrl.update({
+        where: { path },
+        data: { isActive },
+      });
+    } else {
+      // Create new entry (for built-in sitemap paths being hidden for first time)
+      trackedPath = await prisma.trackedUrl.create({
+        data: {
+          path,
+          isActive,
+          createdById: session.user.id,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      trackedPath: {
+        id: trackedPath.id,
+        path: trackedPath.path,
+        isActive: trackedPath.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to toggle visibility:", error);
+    if (error instanceof Error && error.message.includes("Forbidden")) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
