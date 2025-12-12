@@ -85,7 +85,7 @@ describe("SitemapPreviewPage", () => {
     render(result);
 
     const sitemapCount = screen.getByTestId("sitemap-paths-count");
-    expect(parseInt(sitemapCount.textContent || "0")).toBe(22);
+    expect(parseInt(sitemapCount.textContent || "0")).toBe(20);
   });
 
   it("should pass tracked paths from database to client component", async () => {

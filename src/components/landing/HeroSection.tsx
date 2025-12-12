@@ -50,7 +50,7 @@ export function HeroSection({
             size="lg"
             className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
           >
-            <Link href="/pixel">Try it Free</Link>
+            <Link href="/apps/pixel">Try it Free</Link>
           </Button>
         </div>
       </div>

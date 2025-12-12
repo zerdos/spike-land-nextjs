@@ -38,7 +38,7 @@ describe("AdminFeedbackPage", () => {
         email: null,
         type: "BUG",
         message: "Test bug report",
-        page: "/apps/images",
+        page: "/apps/pixel",
         userAgent: "Mozilla/5.0",
         status: "NEW",
         adminNote: null,

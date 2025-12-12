@@ -132,7 +132,7 @@ export default function ComicSansPage() {
               className="border-4 border-white bg-transparent text-xl text-white hover:bg-white/20"
               style={{ fontFamily: '"Comic Sans MS", "Comic Sans", cursive' }}
             >
-              <Link href="/apps/images">Try Pixel App</Link>
+              <Link href="/apps/pixel">Try Pixel App</Link>
             </Button>
           </div>
         </div>

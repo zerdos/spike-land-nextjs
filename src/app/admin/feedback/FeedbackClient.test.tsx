@@ -21,7 +21,7 @@ const mockFeedback = [
     type: "BUG" as const,
     message:
       "This is a test bug report with a very long message that should definitely be truncated in the table view because it exceeds one hundred characters.",
-    page: "/apps/images",
+    page: "/apps/pixel",
     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
     status: "NEW" as const,
     adminNote: null,
@@ -91,7 +91,7 @@ describe("FeedbackClient", () => {
     expect(screen.getByText("BUG")).toBeInTheDocument();
     expect(screen.getByText("IDEA")).toBeInTheDocument();
     expect(screen.getByText("Test User")).toBeInTheDocument();
-    expect(screen.getByText("/apps/images")).toBeInTheDocument();
+    expect(screen.getByText("/apps/pixel")).toBeInTheDocument();
     expect(screen.getByText("NEW")).toBeInTheDocument();
     expect(screen.getByText("REVIEWED")).toBeInTheDocument();
   });

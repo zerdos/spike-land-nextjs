@@ -2,17 +2,6 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageUpload } from "./ImageUpload";
 
-// Mock next/navigation
-const mockPush = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
-// Mock fetch
-global.fetch = vi.fn();
-
 describe("ImageUpload Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -20,14 +9,14 @@ describe("ImageUpload Component", () => {
 
   it("should render upload button", () => {
     render(<ImageUpload />);
-    expect(screen.getByText("Upload an Image")).toBeInTheDocument();
-    expect(screen.getByText("Select Image")).toBeInTheDocument();
+    expect(screen.getByText("Upload Images")).toBeInTheDocument();
+    expect(screen.getByText("Select Images")).toBeInTheDocument();
   });
 
   it("should show upload icon when not uploading", () => {
     render(<ImageUpload />);
     // SVG icon should be present (Lucide icon)
-    const container = screen.getByText("Upload an Image").parentElement;
+    const container = screen.getByText("Upload Images").parentElement;
     expect(container?.querySelector("svg")).toBeInTheDocument();
   });
 
@@ -38,62 +27,16 @@ describe("ImageUpload Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("should reject files larger than 50MB", async () => {
-    render(<ImageUpload />);
-
-    const file = new File(["a".repeat(51 * 1024 * 1024)], "large.png", {
-      type: "image/png",
-    });
-
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-
-    Object.defineProperty(input, "files", {
-      value: [file],
-      writable: false,
-    });
-
-    fireEvent.change(input);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("File size must be less than 50MB"),
-      ).toBeInTheDocument();
-    });
+  it("should show uploading state when isUploading is true", () => {
+    render(<ImageUpload isUploading={true} />);
+    expect(screen.getByText("Uploading...")).toBeInTheDocument();
+    const button = screen.getByRole("button");
+    expect(button).toBeDisabled();
   });
 
-  it("should reject non-image files", async () => {
-    render(<ImageUpload />);
-
-    const file = new File(["test"], "document.pdf", { type: "application/pdf" });
-
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-
-    Object.defineProperty(input, "files", {
-      value: [file],
-      writable: false,
-    });
-
-    fireEvent.change(input);
-
-    await waitFor(() => {
-      expect(screen.getByText("Please select an image file")).toBeInTheDocument();
-    });
-  });
-
-  it("should upload valid image file", async () => {
-    const mockResponse = {
-      success: true,
-      image: {
-        id: "test-image-id",
-        name: "test.png",
-      },
-    };
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    });
-
-    render(<ImageUpload />);
+  it("should call onFilesSelected when files are selected", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -106,66 +49,33 @@ describe("ImageUpload Component", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/pixel/test-image-id");
+      expect(mockOnFilesSelected).toHaveBeenCalledWith([file]);
     });
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/images/upload",
-      expect.objectContaining({
-        method: "POST",
-      }),
-    );
   });
 
-  it("should show loading state during upload", async () => {
-    // Mock a delayed response
-    (global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: async () => ({
-                  success: true,
-                  image: { id: "test-id", name: "test.png" },
-                }),
-              }),
-            100,
-          )
-        ),
-    );
+  it("should call onFilesSelected with multiple files", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
-    render(<ImageUpload />);
-
-    const file = new File(["test"], "test.png", { type: "image/png" });
+    const file1 = new File(["test1"], "test1.png", { type: "image/png" });
+    const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
-      value: [file],
+      value: [file1, file2],
       writable: false,
     });
 
     fireEvent.change(input);
 
-    // Should show uploading state
     await waitFor(() => {
-      expect(screen.getByText("Uploading...")).toBeInTheDocument();
-    });
-
-    // Wait for upload to complete
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalled();
+      expect(mockOnFilesSelected).toHaveBeenCalledWith([file1, file2]);
     });
   });
 
-  it("should handle upload error", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Upload failed" }),
-    });
-
-    render(<ImageUpload />);
+  it("should show error when onFilesSelected throws", async () => {
+    const mockOnFilesSelected = vi.fn().mockRejectedValue(new Error("Upload failed"));
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -180,112 +90,150 @@ describe("ImageUpload Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Upload failed")).toBeInTheDocument();
     });
-
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("should handle network error", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error("Network error"),
-    );
+  it("should not call onFilesSelected when no files are selected", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
-    render(<ImageUpload />);
-
-    const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
-      value: [file],
+      value: [],
       writable: false,
     });
 
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(screen.getByText("Network error")).toBeInTheDocument();
+      expect(mockOnFilesSelected).not.toHaveBeenCalled();
     });
   });
 
-  it("should disable input during upload", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: async () => ({
-                  success: true,
-                  image: { id: "test-id", name: "test.png" },
-                }),
-              }),
-            100,
-          )
-        ),
-    );
+  it("should disable input during upload", () => {
+    render(<ImageUpload isUploading={true} />);
 
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input).toBeDisabled();
+  });
+
+  it("should have multiple attribute on file input", () => {
     render(<ImageUpload />);
 
-    const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input).toHaveAttribute("multiple");
+  });
 
-    Object.defineProperty(input, "files", {
-      value: [file],
-      writable: false,
-    });
+  it("should accept image files", () => {
+    render(<ImageUpload />);
 
-    fireEvent.change(input);
-
-    // Input should be disabled during upload
-    await waitFor(() => {
-      expect(input).toBeDisabled();
-    });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input).toHaveAttribute("accept", "image/*");
   });
 
   it("should clear error when new file is selected", async () => {
-    render(<ImageUpload />);
+    const mockOnFilesSelected = vi.fn()
+      .mockRejectedValueOnce(new Error("First error"))
+      .mockResolvedValueOnce(undefined);
+
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     // First upload - trigger error
-    const largeFile = new File(["a".repeat(51 * 1024 * 1024)], "large.png", {
-      type: "image/png",
+    const file1 = new File(["test1"], "test1.png", { type: "image/png" });
+    Object.defineProperty(input, "files", {
+      value: [file1],
+      writable: false,
+      configurable: true,
     });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("First error")).toBeInTheDocument();
+    });
+
+    // Second upload - should clear error
+    const file2 = new File(["test2"], "test2.png", { type: "image/png" });
+    Object.defineProperty(input, "files", {
+      value: [file2],
+      writable: false,
+      configurable: true,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.queryByText("First error")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should show dragging state when dragging over", () => {
+    const { container } = render(<ImageUpload />);
+    const card = container.querySelector(".border-dashed");
+
+    fireEvent.dragOver(card!);
+
+    expect(card).toHaveClass("border-primary");
+  });
+
+  it("should remove dragging state when drag leaves", () => {
+    const { container } = render(<ImageUpload />);
+    const card = container.querySelector(".border-dashed");
+
+    fireEvent.dragOver(card!);
+    fireEvent.dragLeave(card!);
+
+    expect(card).not.toHaveClass("border-primary");
+  });
+
+  it("should call onFilesSelected when files are dropped", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    const { container } = render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+    const card = container.querySelector(".border-dashed");
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const dataTransfer = {
+      files: [file],
+    };
+
+    fireEvent.drop(card!, { dataTransfer });
+
+    await waitFor(() => {
+      expect(mockOnFilesSelected).toHaveBeenCalledWith([file]);
+    });
+  });
+
+  it("should trigger file input when button is clicked", () => {
+    render(<ImageUpload />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, "click");
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it("should work without onFilesSelected callback", async () => {
+    render(<ImageUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
-      value: [largeFile],
+      value: [file],
       writable: false,
-      configurable: true,
     });
 
+    // Should not throw
     fireEvent.change(input);
 
+    // Wait a tick to ensure no errors
     await waitFor(() => {
-      expect(
-        screen.getByText("File size must be less than 50MB"),
-      ).toBeInTheDocument();
-    }); // Second upload - should clear error and succeed
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        image: { id: "test-id", name: "test.png" },
-      }),
-    });
-
-    const validFile = new File(["test"], "test.png", { type: "image/png" });
-
-    Object.defineProperty(input, "files", {
-      value: [validFile],
-      writable: false,
-      configurable: true,
-    });
-
-    fireEvent.change(input);
-
-    await waitFor(() => {
-      expect(
-        screen.queryByText("File size must be less than 50MB"),
-      ).not.toBeInTheDocument();
+      expect(input).toBeInTheDocument();
     });
   });
 });

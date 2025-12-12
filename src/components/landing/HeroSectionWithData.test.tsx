@@ -6,13 +6,9 @@ vi.mock("next/cache", () => ({
   unstable_cache: vi.fn((fn) => fn),
 }));
 
-// Mock prisma
-vi.mock("@/lib/prisma", () => ({
-  default: {
-    featuredGalleryItem: {
-      findFirst: vi.fn(),
-    },
-  },
+// Mock getSuperAdminPublicPhotos
+vi.mock("@/lib/gallery/super-admin-photos", () => ({
+  getSuperAdminPublicPhotos: vi.fn(),
 }));
 
 // Mock HeroSection
@@ -34,7 +30,7 @@ vi.mock("./HeroSection", () => ({
   ),
 }));
 
-import prisma from "@/lib/prisma";
+import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 
 // Need to import after mocks are set up
 const { HeroSectionWithData } = await import("./HeroSectionWithData");
@@ -45,11 +41,17 @@ describe("HeroSectionWithData Component", () => {
   });
 
   it("should render HeroSection with database URLs when available", async () => {
-    const mockItem = {
+    const mockPhoto = {
+      id: "photo-1",
+      title: "Test Photo",
       originalUrl: "https://example.com/db-original.jpg",
       enhancedUrl: "https://example.com/db-enhanced.jpg",
+      width: 2000,
+      height: 1500,
+      albumName: "Test Album",
+      tier: "TIER_2K",
     };
-    vi.mocked(prisma.featuredGalleryItem.findFirst).mockResolvedValue(mockItem);
+    vi.mocked(getSuperAdminPublicPhotos).mockResolvedValue([mockPhoto]);
 
     const Component = await HeroSectionWithData();
     render(Component);
@@ -65,8 +67,8 @@ describe("HeroSectionWithData Component", () => {
     );
   });
 
-  it("should render HeroSection with undefined URLs when no items exist", async () => {
-    vi.mocked(prisma.featuredGalleryItem.findFirst).mockResolvedValue(null);
+  it("should render HeroSection with undefined URLs when no photos exist", async () => {
+    vi.mocked(getSuperAdminPublicPhotos).mockResolvedValue([]);
 
     const Component = await HeroSectionWithData();
     render(Component);
@@ -77,7 +79,7 @@ describe("HeroSectionWithData Component", () => {
   });
 
   it("should render HeroSection with undefined URLs when database fails", async () => {
-    vi.mocked(prisma.featuredGalleryItem.findFirst).mockRejectedValue(
+    vi.mocked(getSuperAdminPublicPhotos).mockRejectedValue(
       new Error("Database error"),
     );
 
@@ -89,18 +91,11 @@ describe("HeroSectionWithData Component", () => {
     expect(heroSection).not.toHaveAttribute("data-enhanced");
   });
 
-  it("should query for active items sorted by sortOrder", async () => {
-    vi.mocked(prisma.featuredGalleryItem.findFirst).mockResolvedValue(null);
+  it("should request only 1 photo from getSuperAdminPublicPhotos", async () => {
+    vi.mocked(getSuperAdminPublicPhotos).mockResolvedValue([]);
 
     await HeroSectionWithData();
 
-    expect(prisma.featuredGalleryItem.findFirst).toHaveBeenCalledWith({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        originalUrl: true,
-        enhancedUrl: true,
-      },
-    });
+    expect(getSuperAdminPublicPhotos).toHaveBeenCalledWith(1);
   });
 });

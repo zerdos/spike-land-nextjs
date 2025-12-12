@@ -24,7 +24,7 @@
 
 ### Creating Your Account
 
-1. Visit [spike.land/apps/images](https://spike.land/apps/images)
+1. Visit [spike.land/apps/pixel](https://spike.land/apps/pixel)
 2. Click "Sign Up" in the header
 3. Choose your preferred authentication method:
    - **GitHub OAuth**: Fast login via GitHub account

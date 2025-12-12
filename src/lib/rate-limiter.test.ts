@@ -201,6 +201,22 @@ describe("rate-limiter", () => {
       });
     });
 
+    it("should have albumBatchEnhancement config", () => {
+      expect(rateLimitConfigs.albumBatchEnhancement).toEqual({
+        maxRequests: 5,
+        windowMs: 60000,
+      });
+    });
+
+    it("should have albumBatchEnhancement more restrictive than imageEnhancement", () => {
+      expect(rateLimitConfigs.albumBatchEnhancement.maxRequests).toBeLessThan(
+        rateLimitConfigs.imageEnhancement.maxRequests,
+      );
+      expect(rateLimitConfigs.albumBatchEnhancement.windowMs).toBe(
+        rateLimitConfigs.imageEnhancement.windowMs,
+      );
+    });
+
     it("should have imageUpload config", () => {
       expect(rateLimitConfigs.imageUpload).toEqual({
         maxRequests: 30,

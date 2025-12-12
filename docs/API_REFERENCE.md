@@ -636,7 +636,7 @@ Content-Type: application/json
     "description": "Summer vacation photos",
     "isPublic": false,
     "imageCount": 0,
-    "shareLink": "https://spike.land/albums/album_abc123/share/token_xyz",
+    "shareLink": "https://spike.land/apps/pixel/albums/album_abc123/share/token_xyz",
     "createdAt": "2025-12-02T10:00:00Z"
   }
 }

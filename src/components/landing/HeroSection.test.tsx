@@ -85,7 +85,7 @@ describe("HeroSection Component", () => {
     render(<HeroSection />);
     const ctaLink = screen.getByRole("link", { name: /Try it Free/i });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute("href", "/pixel");
+    expect(ctaLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have overflow hidden class", () => {

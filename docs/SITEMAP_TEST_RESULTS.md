@@ -88,7 +88,7 @@ Failed to load resource: the server responded with a status of 500 ()
 | Homepage        | /                | PASS     | Loads correctly with all content             |
 | Pricing         | /pricing         | PASS     | Token packs and subscription plans displayed |
 | Apps            | /apps            | PASS     | Featured apps listed                         |
-| Apps/Images     | /apps/images     | PASS     | Image enhancement app gallery displayed      |
+| Apps/Images     | /apps/pixel      | PASS     | Image enhancement app gallery displayed      |
 | Apps/Display    | /apps/display    | PASS     | Redirects to /apps/display/run (expected)    |
 | Auth/Signin     | /auth/signin     | PASS     | OAuth login options displayed                |
 | Terms           | /terms           | PASS     | Full terms of service content                |

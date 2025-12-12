@@ -194,7 +194,7 @@ describe("enhance-image.direct", () => {
       expect(mockPrismaUpdate).toHaveBeenCalledWith({
         where: { id: "job-123" },
         data: expect.objectContaining({
-          status: JobStatus.FAILED,
+          status: JobStatus.REFUNDED,
         }),
       });
     });
@@ -245,7 +245,7 @@ describe("enhance-image.direct", () => {
       );
     });
 
-    it("should update job status to FAILED on error", async () => {
+    it("should update job status to REFUNDED on error", async () => {
       mockDownloadFromR2.mockRejectedValue(new Error("Download failed"));
 
       await enhanceImageDirect(validInput);
@@ -253,7 +253,7 @@ describe("enhance-image.direct", () => {
       expect(mockPrismaUpdate).toHaveBeenCalledWith({
         where: { id: "job-123" },
         data: {
-          status: JobStatus.FAILED,
+          status: JobStatus.REFUNDED,
           errorMessage: "Download failed",
         },
       });

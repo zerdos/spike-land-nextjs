@@ -4,6 +4,7 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { isSecureFilename } from "@/lib/upload/validation";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const albumId = formData.get("albumId") as string | null;
 
     if (!file) {
       requestLogger.warn("No file provided");
@@ -72,6 +74,40 @@ export async function POST(request: NextRequest) {
         },
         { status: 400, headers: { "X-Request-ID": requestId } },
       );
+    }
+
+    // Validate filename for security (path traversal, hidden files)
+    if (!isSecureFilename(file.name)) {
+      requestLogger.warn("Insecure filename rejected", { filename: file.name });
+      return NextResponse.json(
+        {
+          error:
+            "Invalid filename. Filenames cannot contain path traversal characters or be hidden files.",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Validate albumId if provided
+    if (albumId) {
+      const album = await prisma.album.findFirst({
+        where: {
+          id: albumId,
+          userId: session.user.id,
+        },
+      });
+      if (!album) {
+        requestLogger.warn("Invalid album ID", { albumId, userId: session.user.id });
+        const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+        return NextResponse.json(
+          {
+            error: errorMessage.message,
+            title: errorMessage.title,
+            suggestion: "Album not found or you don't have access to it.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
     }
 
     requestLogger.info("Processing file upload", {
@@ -138,6 +174,7 @@ export async function POST(request: NextRequest) {
         originalSizeBytes: result.sizeBytes,
         originalFormat: result.format,
         isPublic: false,
+        ...(albumId && { albumId }),
       },
     });
 

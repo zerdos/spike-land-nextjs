@@ -36,7 +36,7 @@ Feature: Smoke Tests
   @fast @requires-db
   Scenario: Enhance page loads for authenticated user
     Given I am logged in as "Test User" with email "test@example.com"
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     Then the page should load successfully
     And I should see "AI Image Enhancement" heading
 
@@ -122,7 +122,7 @@ Feature: Smoke Tests
   @fast
   Scenario: Unauthenticated user redirected from enhance page
     Given I am not logged in
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     Then I should be redirected to sign-in page
 
   @fast

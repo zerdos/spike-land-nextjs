@@ -9,14 +9,14 @@ Feature: Album Photo Addition
   @flaky @requires-db
   Scenario: View Add to Album button on enhance page
     Given I have uploaded images with enhancement jobs
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     Then I should see the Add to Album button for each image
 
   @flaky @requires-db
   Scenario: Open Add to Album modal
     Given I have uploaded images with enhancement jobs
     And I have albums
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     And I click the Add to Album button on an image
     Then I should see the Add to Album modal
     And I should see the album selection dropdown
@@ -26,7 +26,7 @@ Feature: Album Photo Addition
     Given I have uploaded images with enhancement jobs
     And I have albums
     And I mock successful album image addition
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     And I click the Add to Album button on an image
     And I select an album from the dropdown
     And I click the Add to Album confirm button
@@ -36,7 +36,7 @@ Feature: Album Photo Addition
   Scenario: Cancel Add to Album modal
     Given I have uploaded images with enhancement jobs
     And I have albums
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     And I click the Add to Album button on an image
     And I click the Cancel button in the modal
     Then the modal should close
@@ -45,7 +45,7 @@ Feature: Album Photo Addition
   Scenario: Empty albums state shows create album link
     Given I have uploaded images with enhancement jobs
     And I have no albums
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     And I click the Add to Album button on an image
     Then I should see the empty albums message
     And I should see a link to create an album
@@ -55,7 +55,7 @@ Feature: Album Photo Addition
     Given I have uploaded images with enhancement jobs
     And I have albums
     And I mock album addition returns already exists
-    When I visit "/apps/images"
+    When I visit "/apps/pixel"
     And I click the Add to Album button on an image
     And I select an album from the dropdown
     And I click the Add to Album confirm button

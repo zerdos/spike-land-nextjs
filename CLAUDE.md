@@ -172,7 +172,7 @@ We are building a platform where:
 
 ### **Pixel - AI Image Enhancement App (Completed Implementation)**
 
-Pixel is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. Access it at https://spike.land/apps/images. All 5 implementation phases are complete.
+Pixel is the AI-powered image enhancement app that serves as the showcase application for the Spike Land platform. Access it at https://spike.land/apps/pixel. All 5 implementation phases are complete.
 
 **Note:** Pixel consumes platform tokens for image enhancements. The token system itself is platform infrastructure (see "Token Economy" above).
 

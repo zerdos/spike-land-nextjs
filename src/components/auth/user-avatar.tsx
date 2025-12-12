@@ -51,7 +51,7 @@ export function UserAvatar({ className }: UserAvatarProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/pixel" className="flex items-center">
+          <Link href="/apps/pixel" className="flex items-center">
             <PixelLogo
               size="sm"
               variant="icon"
