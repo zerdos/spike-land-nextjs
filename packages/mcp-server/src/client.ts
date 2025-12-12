@@ -50,6 +50,15 @@ export interface BalanceResponse {
   lastRegeneration: string;
 }
 
+/**
+ * API error response structure
+ */
+export interface ApiErrorResponse {
+  error?: string;
+  message?: string;
+  statusCode?: number;
+}
+
 export class SpikeLandClient {
   private baseUrl: string;
   private apiKey: string;
@@ -84,13 +93,15 @@ export class SpikeLandClient {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json() as { error?: string; };
+    const data = (await response.json()) as T & ApiErrorResponse;
 
     if (!response.ok) {
-      throw new Error(data.error || `Request failed with status ${response.status}`);
+      throw new Error(
+        data.error || data.message || `Request failed with status ${response.status}`,
+      );
     }
 
-    return data as T;
+    return data;
   }
 
   /**

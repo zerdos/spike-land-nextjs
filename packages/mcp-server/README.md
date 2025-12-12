@@ -1,17 +1,17 @@
-# @spike-land/mcp-server
+# @spike-npm-land/mcp-server
 
 MCP (Model Context Protocol) server for Spike Land image generation and modification. Use this server to generate and modify images with AI directly from Claude Desktop or Claude Code.
 
 ## Installation
 
 ```bash
-npx @spike-land/mcp-server
+npx @spike-npm-land/mcp-server
 ```
 
 Or install globally:
 
 ```bash
-npm install -g @spike-land/mcp-server
+npm install -g @spike-npm-land/mcp-server
 ```
 
 ## Setup
@@ -35,7 +35,7 @@ Edit your Claude Desktop configuration file:
   "mcpServers": {
     "spike-land": {
       "command": "npx",
-      "args": ["@spike-land/mcp-server"],
+      "args": ["@spike-npm-land/mcp-server"],
       "env": {
         "SPIKE_LAND_API_KEY": "sk_live_your_key_here"
       }
@@ -53,7 +53,7 @@ Add to your project's `.claude/settings.json` or global `~/.claude/settings.json
   "mcpServers": {
     "spike-land": {
       "command": "npx",
-      "args": ["@spike-land/mcp-server"],
+      "args": ["@spike-npm-land/mcp-server"],
       "env": {
         "SPIKE_LAND_API_KEY": "sk_live_your_key_here"
       }
@@ -65,7 +65,7 @@ Add to your project's `.claude/settings.json` or global `~/.claude/settings.json
 Or via CLI:
 
 ```bash
-claude mcp add spike-land -- npx @spike-land/mcp-server
+claude mcp add spike-land -- npx @spike-npm-land/mcp-server
 ```
 
 ## Available Tools
@@ -153,7 +153,21 @@ Use the MCP tools in your development workflow:
 
 > "Create a logo concept for my project - minimalist, uses geometric shapes"
 
-## Testing
+## Development
+
+### Building from Source
+
+```bash
+cd packages/mcp-server
+npm install
+npm run build
+
+# Verify build output
+ls -la dist/
+# Should contain: index.js, index.d.ts, client.js, client.d.ts
+```
+
+### Testing
 
 You can test the API directly in your browser at [spike.land/apps/pixel/mcp-tools](https://spike.land/apps/pixel/mcp-tools).
 

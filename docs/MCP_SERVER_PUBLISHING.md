@@ -1,36 +1,44 @@
 # MCP Server Package Publishing Guide
 
-This document describes how to publish the `@spike-land/mcp-server` package to npm.
+This document describes how to publish the `@spike-npm-land/mcp-server` package to npm.
 
 ## Package Information
 
-- **Package Name**: `@spike-land/mcp-server`
+- **Package Name**: `@spike-npm-land/mcp-server`
 - **Current Version**: 0.1.0
-- **Registry**: https://www.npmjs.com/package/@spike-land/mcp-server
+- **Registry**: https://www.npmjs.com/package/@spike-npm-land/mcp-server
 - **Source**: `packages/mcp-server/`
 
 ## Prerequisites
 
 ### npm Account Setup
 
-You need an npm account with access to the `@spike-land` organization scope:
+You need an npm account with access to the `@spike-npm-land` scope:
 
 1. Create an npm account at https://www.npmjs.com/signup
-2. Request access to the `@spike-land` organization (or create it)
+2. Ensure you have publish access to the `@spike-npm-land` scope
 
-**Note**: As of December 2024, npm classic tokens have been permanently revoked. This project uses **OIDC Trusted Publishing** which requires no tokens - authentication happens automatically via GitHub Actions.
+**Note**: As of December 2024, npm classic tokens have been permanently revoked. This project uses a **granular access token** with "Bypass 2FA" enabled for CI publishing. Optionally, OIDC Trusted Publishing can be configured on npmjs.com for token-free CI.
 
 ## Publishing Methods
 
 ### Method 1: Automated Publishing via GitHub Actions (Recommended)
 
-This project uses **OIDC Trusted Publishing** - no npm tokens needed! The GitHub Actions workflow authenticates directly with npm using OpenID Connect.
+The GitHub Actions workflow uses a granular access token stored in the `NPM_TOKEN` secret. Optionally, OIDC Trusted Publishing can be configured on npmjs.com for token-free authentication.
 
-#### One-Time Setup: Configure Trusted Publisher on npmjs.com
+#### Setup: NPM_TOKEN Secret
 
-Before the first publish, you must configure the trusted publisher on npm:
+Ensure the `NPM_TOKEN` secret is configured in GitHub:
 
-1. Go to your package settings: https://www.npmjs.com/package/@spike-land/mcp-server/access
+1. Create a granular access token at https://www.npmjs.com/settings/spike-npm-land/tokens
+2. Enable "Bypass 2FA" and set "Read and write" for packages
+3. Add the token as `NPM_TOKEN` secret in GitHub repository settings
+
+#### Optional: Configure OIDC Trusted Publisher on npmjs.com
+
+For token-free CI publishing, configure trusted publisher on npm:
+
+1. Go to your package settings: https://www.npmjs.com/package/@spike-npm-land/mcp-server/access
 2. Find the **"Trusted Publisher"** section
 3. Click **"GitHub Actions"** under "Select your publisher"
 4. Configure the following fields:
@@ -58,7 +66,7 @@ git push origin mcp-server-v0.1.1
 
 # 4. GitHub Actions will automatically:
 #    - Build the package
-#    - Authenticate via OIDC (no token needed!)
+#    - Authenticate via NPM_TOKEN (or OIDC if configured)
 #    - Publish to npm with provenance
 #    - Create a GitHub release
 ```
@@ -111,7 +119,7 @@ npm login
 npm publish --access public
 
 # 8. Verify publication
-npm view @spike-land/mcp-server
+npm view @spike-npm-land/mcp-server
 ```
 
 ## Post-Publishing Verification
@@ -120,17 +128,17 @@ After publishing, verify the package works correctly:
 
 ```bash
 # 1. Test npx installation
-SPIKE_LAND_API_KEY=sk_test_... npx @spike-land/mcp-server
+SPIKE_LAND_API_KEY=sk_test_... npx @spike-npm-land/mcp-server
 
 # 2. Test npm installation
-npm install -g @spike-land/mcp-server
+npm install -g @spike-npm-land/mcp-server
 SPIKE_LAND_API_KEY=sk_test_... spike-mcp
 
 # 3. Check npm registry
-npm view @spike-land/mcp-server
+npm view @spike-npm-land/mcp-server
 
 # 4. Verify package contents
-npm view @spike-land/mcp-server dist.tarball
+npm view @spike-npm-land/mcp-server dist.tarball
 ```
 
 ## Version Management
@@ -156,15 +164,15 @@ Follow semantic versioning (semver):
 
 ### Error: "You do not have permission to publish"
 
-**Solution**: Ensure you have access to the `@spike-land` organization on npm:
+**Solution**: Ensure you have access to the `@spike-npm-land` scope on npm:
 
 ```bash
-npm owner add YOUR_USERNAME @spike-land/mcp-server
+npm owner add YOUR_USERNAME @spike-npm-land/mcp-server
 ```
 
 ### Error: "Package name too similar to existing package"
 
-**Solution**: The `@spike-land` scope prevents naming conflicts. Ensure you're logged into the correct npm account.
+**Solution**: The `@spike-npm-land` scope prevents naming conflicts. Ensure you're logged into the correct npm account.
 
 ### Error: "dist/ directory not found"
 
@@ -201,13 +209,13 @@ Once published, users can install the package:
 ### Via npx (Recommended)
 
 ```bash
-SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server
+SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server
 ```
 
 ### Via npm install
 
 ```bash
-npm install -g @spike-land/mcp-server
+npm install -g @spike-npm-land/mcp-server
 SPIKE_LAND_API_KEY=sk_live_... spike-mcp
 ```
 
@@ -220,7 +228,7 @@ Users add to `~/.config/claude/claude_desktop_config.json`:
   "mcpServers": {
     "spike-land": {
       "command": "npx",
-      "args": ["@spike-land/mcp-server"],
+      "args": ["@spike-npm-land/mcp-server"],
       "env": {
         "SPIKE_LAND_API_KEY": "sk_live_..."
       }
@@ -231,11 +239,12 @@ Users add to `~/.config/claude/claude_desktop_config.json`:
 
 ## Security Considerations
 
-1. **OIDC Trusted Publishing**: No long-lived tokens to manage or rotate - authentication uses short-lived OIDC credentials.
-2. **Provenance**: Automatically generated with OIDC publishing for supply chain security.
-3. **Access Control**: Limit npm organization access to trusted maintainers.
-4. **Version Tags**: Use git tags to track published versions.
-5. **Trusted Publisher Config**: Regularly audit your trusted publisher configuration on npmjs.com.
+1. **Granular Access Tokens**: Use npm granular tokens with minimal permissions and short expiration (90 days max).
+2. **Bypass 2FA**: Only enable for CI tokens; keep 2FA enabled for interactive use.
+3. **Provenance**: Automatically generated with `--provenance` flag for supply chain security.
+4. **Access Control**: Limit npm scope access to trusted maintainers.
+5. **Version Tags**: Use git tags to track published versions.
+6. **Optional OIDC**: Configure trusted publisher on npmjs.com for token-free CI (recommended for enhanced security).
 
 ## Related Documentation
 
