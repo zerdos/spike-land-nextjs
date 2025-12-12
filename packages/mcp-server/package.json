@@ -1,0 +1,49 @@
+{
+  "name": "@spike-land/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Spike Land image generation and modification",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "ai",
+    "image-generation"
+  ],
+  "author": "Spike Land Ltd",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zerdos/spike-land-nextjs.git",
+    "directory": "packages/mcp-server"
+  },
+  "homepage": "https://spike.land/apps/pixel/mcp-tools",
+  "bugs": {
+    "url": "https://github.com/zerdos/spike-land-nextjs/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "spike-mcp": "./bin/spike-mcp.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

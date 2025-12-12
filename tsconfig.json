@@ -55,6 +55,7 @@
     "cucumber.js",
     "prisma.config.ts",
     "fix-r2-versioning-cache/**/*",
-    "scripts/**/*"
+    "scripts/**/*",
+    "packages/**/*"
   ]
 }

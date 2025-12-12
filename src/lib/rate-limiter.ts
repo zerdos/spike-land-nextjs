@@ -315,4 +315,19 @@ export const rateLimitConfigs = {
     maxRequests: 100,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** MCP Generate: 10 requests per minute per user */
+  mcpGenerate: {
+    maxRequests: 10,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** MCP Modify: 10 requests per minute per user */
+  mcpModify: {
+    maxRequests: 10,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** MCP Job Status: 60 requests per minute (for polling) */
+  mcpJobStatus: {
+    maxRequests: 60,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;
