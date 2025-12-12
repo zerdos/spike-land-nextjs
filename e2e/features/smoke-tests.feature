@@ -124,7 +124,7 @@ Feature: Smoke Tests
     Given I am not logged in
     When I visit "/apps/pixel"
     Then the page should load successfully
-    And I should see "Pixel" heading
+    And I should see "Enhance Your Photos" text
 
   @fast
   Scenario: Unauthenticated user redirected from settings page
