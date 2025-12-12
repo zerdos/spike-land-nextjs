@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma migrate deploy && prisma generate && next build",
+  "buildCommand": "(prisma migrate resolve --rolled-back 20241208_add_password_hash || true) && prisma migrate deploy && prisma generate && next build",
   "redirects": [
     {
       "source": "/:path*",
