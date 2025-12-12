@@ -84,6 +84,7 @@ describe("AdminLayout", () => {
     expect(screen.getByText("Vouchers")).toBeInTheDocument();
     expect(screen.getByText("User Management")).toBeInTheDocument();
     expect(screen.getByText("Photos")).toBeInTheDocument();
+    expect(screen.getByText("Email Logs")).toBeInTheDocument();
     expect(screen.getByText("Sitemap Preview")).toBeInTheDocument();
   });
 
