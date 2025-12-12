@@ -26,7 +26,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  ToolSchema,
+  Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { SpikeLandClient } from "./client.js";
@@ -84,7 +84,7 @@ const CheckJobSchema = z.object({
 });
 
 // Tool definitions
-const tools: ToolSchema[] = [
+const tools: Tool[] = [
   {
     name: "generate_image",
     description: `Generate a new image from a text prompt using Spike Land's AI.
