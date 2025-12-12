@@ -40,6 +40,8 @@ model User {
   createdGalleryItems FeaturedGalleryItem[] @relation("GalleryItemCreator")
   emailLogs          EmailLog[]
   trackedUrls        TrackedUrl[]
+  apiKeys            ApiKey[]
+  mcpGenerationJobs  McpGenerationJob[]
 
   @@map("users")
 }
@@ -489,7 +491,13 @@ enum TokenTransactionType {
   EARN_PURCHASE
   EARN_BONUS
   SPEND_ENHANCEMENT
+  SPEND_MCP_GENERATION
   REFUND
+}
+
+enum McpJobType {
+  GENERATE
+  MODIFY
 }
 
 enum StripePaymentStatus {
@@ -634,4 +642,56 @@ model TrackedUrl {
 
   @@index([isActive])
   @@map("tracked_urls")
+}
+
+// MCP Asset Generator Models
+
+model ApiKey {
+  id                String             @id @default(cuid())
+  userId            String
+  name              String
+  keyHash           String             @unique
+  keyPrefix         String
+  lastUsedAt        DateTime?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mcpGenerationJobs McpGenerationJob[]
+
+  @@index([userId, isActive])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model McpGenerationJob {
+  id                    String          @id @default(cuid())
+  userId                String
+  apiKeyId              String?
+  type                  McpJobType
+  tier                  EnhancementTier
+  tokensCost            Int
+  status                JobStatus
+  prompt                String
+  inputImageUrl         String?
+  inputImageR2Key       String?
+  outputImageUrl        String?
+  outputImageR2Key      String?
+  outputWidth           Int?
+  outputHeight          Int?
+  outputSizeBytes       Int?
+  errorMessage          String?
+  geminiModel           String?
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status, createdAt])
+  @@index([apiKeyId])
+  @@index([status, updatedAt])
+  @@map("mcp_generation_jobs")
 }
