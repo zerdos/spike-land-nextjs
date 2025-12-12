@@ -44,10 +44,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(screen.getByText(/0 \/ 3 loaded/)).toBeInTheDocument();
+    expect(screen.getByText(/3 visible/)).toBeInTheDocument();
   });
 
-  it("should render Add Path button", () => {
+  it("should render Add Custom Path button", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -57,11 +57,11 @@ describe("SitemapPreviewClient", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: "Add Path" }),
+      screen.getByRole("button", { name: "Add Custom Path" }),
     ).toBeInTheDocument();
   });
 
-  it("should open dialog when Add Path button is clicked", async () => {
+  it("should open dialog when Add Custom Path button is clicked", async () => {
     const user = userEvent.setup();
 
     render(
@@ -72,7 +72,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
@@ -95,16 +95,15 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
     });
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -123,7 +122,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -133,10 +132,9 @@ describe("SitemapPreviewClient", () => {
 
     await user.type(screen.getByPlaceholderText("/custom-page"), "/");
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -168,7 +166,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -181,10 +179,9 @@ describe("SitemapPreviewClient", () => {
       "/new-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -196,7 +193,7 @@ describe("SitemapPreviewClient", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+      expect(screen.getByText(/4 visible/)).toBeInTheDocument();
     });
   });
 
@@ -222,7 +219,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -235,10 +232,9 @@ describe("SitemapPreviewClient", () => {
       "https://example.com/extracted-path",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -272,7 +268,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -285,10 +281,9 @@ describe("SitemapPreviewClient", () => {
       "no-slash-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -316,7 +311,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -329,10 +324,9 @@ describe("SitemapPreviewClient", () => {
       "/some-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -351,7 +345,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
@@ -406,7 +400,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+    expect(screen.getByText(/4 visible/)).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: "Remove /custom-page" }),
@@ -422,7 +416,7 @@ describe("SitemapPreviewClient", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/0 \/ 3 loaded/)).toBeInTheDocument();
+      expect(screen.getByText(/3 visible/)).toBeInTheDocument();
     });
   });
 
@@ -453,7 +447,7 @@ describe("SitemapPreviewClient", () => {
     );
 
     // 3 sitemap + 1 custom (/ is duplicate so not counted)
-    expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+    expect(screen.getByText(/4 visible/)).toBeInTheDocument();
   });
 
   it("should show Queued status for paths not yet loading", () => {
@@ -468,7 +462,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const queuedElements = screen.getAllByText("Queued");
+    const queuedElements = screen.getAllByText("Queued...");
     expect(queuedElements.length).toBeGreaterThan(0);
   });
 
@@ -502,7 +496,7 @@ describe("SitemapPreviewClient", () => {
     fireEvent.load(iframe);
 
     await waitFor(() => {
-      expect(screen.getByText(/1 \/ 1 loaded/)).toBeInTheDocument();
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
     });
   });
 
@@ -528,7 +522,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -556,7 +550,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -564,10 +558,9 @@ describe("SitemapPreviewClient", () => {
       ).toBeInTheDocument();
     });
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -736,7 +729,7 @@ describe("SitemapPreviewClient", () => {
     fireEvent.load(iframe);
 
     await waitFor(() => {
-      expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
     });
 
     const refreshAllButton = screen.getByRole("button", {
@@ -745,7 +738,7 @@ describe("SitemapPreviewClient", () => {
     await user.click(refreshAllButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/0 \/ 1 loaded/)).toBeInTheDocument();
+      expect(screen.queryByText(/1 Healthy/)).not.toBeInTheDocument();
     });
   });
 
@@ -828,7 +821,7 @@ describe("SitemapPreviewClient", () => {
     fireEvent.load(iframe);
 
     await waitFor(() => {
-      expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
     });
 
     // Find the refresh button for the specific path
@@ -842,7 +835,7 @@ describe("SitemapPreviewClient", () => {
       await user.click(refreshButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/0 \/ 1 loaded/)).toBeInTheDocument();
+        expect(screen.queryByText(/1 Healthy/)).not.toBeInTheDocument();
       });
     }
   });
