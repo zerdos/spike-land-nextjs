@@ -248,9 +248,7 @@ export function SitemapPreviewClient({
         setTrackedPaths((prev) => {
           const existing = prev.find((t) => t.path === path);
           if (existing) {
-            return prev.map((t) =>
-              t.path === path ? { ...t, isActive: newIsActive } : t
-            );
+            return prev.map((t) => t.path === path ? { ...t, isActive: newIsActive } : t);
           } else {
             return [
               ...prev,
@@ -313,7 +311,10 @@ export function SitemapPreviewClient({
             {stats.healthy} Healthy
           </Badge>
           {stats.loading > 0 && (
-            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+            <Badge
+              variant="outline"
+              className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+            >
               <div className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
               {stats.loading} Loading
             </Badge>
@@ -446,10 +447,10 @@ export function SitemapPreviewClient({
                       state.status === "loaded"
                         ? "bg-green-500"
                         : state.status === "loading"
-                          ? "bg-yellow-500 animate-pulse"
-                          : state.status === "error"
-                            ? "bg-red-500"
-                            : "bg-zinc-500"
+                        ? "bg-yellow-500 animate-pulse"
+                        : state.status === "error"
+                        ? "bg-red-500"
+                        : "bg-zinc-500"
                     }`}
                     title={state.status}
                   />
@@ -520,37 +521,39 @@ export function SitemapPreviewClient({
                     onClick={() => handleToggleVisibility(path)}
                     title={state.isHidden ? "Show this path" : "Hide this path"}
                   >
-                    {state.isHidden ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
+                    {state.isHidden
+                      ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )
+                      : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
                   </Button>
 
                   {/* Delete Button (Custom Paths Only) */}
