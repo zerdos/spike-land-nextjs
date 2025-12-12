@@ -116,7 +116,7 @@ describe("McpToolsClient", () => {
 
     it("includes MCP server installation instructions", () => {
       render(<McpToolsClient isLoggedIn={true} />);
-      expect(screen.getByText(/MCP Server/i)).toBeDefined();
+      expect(screen.getAllByText(/MCP Server/i).length).toBeGreaterThan(0);
     });
   });
 });
