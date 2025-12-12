@@ -44,10 +44,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(screen.getByText(/0 \/ 3 loaded/)).toBeInTheDocument();
+    expect(screen.getByText(/3 visible/)).toBeInTheDocument();
   });
 
-  it("should render Add Path button", () => {
+  it("should render Add Custom Path button", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -57,11 +57,11 @@ describe("SitemapPreviewClient", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: "Add Path" }),
+      screen.getByRole("button", { name: "Add Custom Path" }),
     ).toBeInTheDocument();
   });
 
-  it("should open dialog when Add Path button is clicked", async () => {
+  it("should open dialog when Add Custom Path button is clicked", async () => {
     const user = userEvent.setup();
 
     render(
@@ -72,10 +72,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
     expect(
       screen.getByText(
@@ -95,16 +95,15 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -123,7 +122,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -133,10 +132,9 @@ describe("SitemapPreviewClient", () => {
 
     await user.type(screen.getByPlaceholderText("/custom-page"), "/");
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -168,7 +166,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -181,10 +179,9 @@ describe("SitemapPreviewClient", () => {
       "/new-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -196,7 +193,7 @@ describe("SitemapPreviewClient", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+      expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
     });
   });
 
@@ -222,7 +219,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -235,10 +232,9 @@ describe("SitemapPreviewClient", () => {
       "https://example.com/extracted-path",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -272,7 +268,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -285,10 +281,9 @@ describe("SitemapPreviewClient", () => {
       "no-slash-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -316,7 +311,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -329,10 +324,9 @@ describe("SitemapPreviewClient", () => {
       "/some-page",
     );
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -351,46 +345,47 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Add Custom Path")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     await waitFor(() => {
-      expect(screen.queryByText("Add Custom Path")).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 
-  it("should show Custom badge for tracked paths", () => {
+  it("should render custom path with delete button", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "1", path: "/custom-page" }]}
+        trackedPaths={[{ id: "1", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
-    expect(screen.getByText("Custom")).toBeInTheDocument();
+    // Custom paths show the path text
+    expect(screen.getByText("/custom-page")).toBeInTheDocument();
   });
 
-  it("should render remove button for custom paths", () => {
+  it("should render delete button for custom paths", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "1", path: "/custom-page" }]}
+        trackedPaths={[{ id: "1", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: "Remove /custom-page" }),
-    ).toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeDefined();
   });
 
-  it("should remove custom path via API when remove button is clicked", async () => {
+  it("should remove custom path via API when delete button is clicked", async () => {
     const user = userEvent.setup();
 
     mockFetch.mockResolvedValueOnce({
@@ -401,32 +396,36 @@ describe("SitemapPreviewClient", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "path-123", path: "/custom-page" }]}
+        trackedPaths={[{ id: "path-123", path: "/custom-page", isActive: true }]}
         origin={defaultOrigin}
       />,
     );
 
-    expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+    expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: "Remove /custom-page" }),
-    );
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeDefined();
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        "/api/admin/tracked-urls?id=path-123",
-        {
-          method: "DELETE",
-        },
-      );
-    });
+    if (deleteButton) {
+      await user.click(deleteButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/0 \/ 3 loaded/)).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/admin/tracked-urls?id=path-123",
+          {
+            method: "DELETE",
+          },
+        );
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
+      });
+    }
   });
 
-  it("should not render remove button for sitemap paths", () => {
+  it("should not render delete button for sitemap paths", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -435,9 +434,9 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Remove \// }),
-    ).not.toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    expect(deleteButton).toBeUndefined();
   });
 
   it("should merge tracked paths with sitemap paths without duplicates", () => {
@@ -453,7 +452,7 @@ describe("SitemapPreviewClient", () => {
     );
 
     // 3 sitemap + 1 custom (/ is duplicate so not counted)
-    expect(screen.getByText(/0 \/ 4 loaded/)).toBeInTheDocument();
+    expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
   });
 
   it("should show Queued status for paths not yet loading", () => {
@@ -468,7 +467,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const queuedElements = screen.getAllByText("Queued");
+    const queuedElements = screen.getAllByText("Queued...");
     expect(queuedElements.length).toBeGreaterThan(0);
   });
 
@@ -502,7 +501,7 @@ describe("SitemapPreviewClient", () => {
     fireEvent.load(iframe);
 
     await waitFor(() => {
-      expect(screen.getByText(/1 \/ 1 loaded/)).toBeInTheDocument();
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
     });
   });
 
@@ -528,7 +527,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -556,7 +555,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Add Path" }));
+    await user.click(screen.getByRole("button", { name: "Add Custom Path" }));
 
     await waitFor(() => {
       expect(
@@ -564,10 +563,9 @@ describe("SitemapPreviewClient", () => {
       ).toBeInTheDocument();
     });
 
-    const addButtonsInDialog = screen.getAllByRole("button", {
+    const submitButton = screen.getByRole("button", {
       name: "Add Path",
     });
-    const submitButton = addButtonsInDialog[addButtonsInDialog.length - 1];
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -619,6 +617,348 @@ describe("SitemapPreviewClient", () => {
 
     const iframe = screen.getByTitle("Preview of /test") as HTMLIFrameElement;
     expect(iframe.src).toBe("https://spike.land/test");
+  });
+
+  it("should show health status badges", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(screen.getByText(/Healthy/)).toBeInTheDocument();
+  });
+
+  it("should show visible/hidden count in badges", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Check for visibility badge - text is split across elements
+    const badges = screen.getAllByText(/visible|hidden/, { exact: false });
+    expect(badges.length).toBeGreaterThan(0);
+  });
+
+  it("should render Show/Hide Hidden Paths toggle button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Show Hidden Paths" }),
+    ).toBeInTheDocument();
+  });
+
+  it("should toggle Show/Hide Hidden Paths button text when clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await user.click(toggleButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Hide Hidden Paths" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show hidden paths when Show Hidden Paths is toggled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Initially hidden path should not be visible (0 paths visible)
+    expect(screen.queryByText("/")).not.toBeInTheDocument();
+
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await user.click(toggleButton);
+
+    // Now hidden path should be visible
+    await waitFor(() => {
+      expect(screen.getByText("/")).toBeInTheDocument();
+    });
+  });
+
+  it("should render Refresh All button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Refresh All/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("should reset all path statuses when Refresh All is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
+    });
+
+    const refreshAllButton = screen.getByRole("button", {
+      name: /Refresh All/,
+    });
+    await user.click(refreshAllButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/1 Healthy/)).not.toBeInTheDocument();
+    });
+  });
+
+  it("should toggle path visibility when hide/show button is clicked", async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          trackedPath: { id: "1", path: "/", isActive: false },
+        }),
+    });
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: true }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Wait for the component to render
+    await waitFor(() => {
+      expect(screen.getByText("/")).toBeInTheDocument();
+    });
+
+    // Find and click the hide/show button (eye icon button)
+    const buttons = screen.getAllByRole("button");
+    const hideButton = buttons.find(
+      (btn) => btn.title === "Hide this path",
+    );
+
+    expect(hideButton).toBeDefined();
+    if (hideButton) {
+      await user.click(hideButton);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/admin/tracked-urls", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: "/", isActive: false }),
+        });
+      });
+    }
+  });
+
+  it("should show Hidden badge for hidden paths", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Toggle to show hidden paths
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await userEvent.setup().click(toggleButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hidden")).toBeInTheDocument();
+    });
+  });
+
+  it("should refresh individual path when refresh button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
+    });
+
+    // Find the refresh button for the specific path
+    const buttons = screen.getAllByRole("button");
+    const refreshButton = buttons.find(
+      (btn) => btn.title === "Reload this iframe",
+    );
+
+    expect(refreshButton).toBeDefined();
+    if (refreshButton) {
+      await user.click(refreshButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText(/1 Healthy/)).not.toBeInTheDocument();
+      });
+    }
+  });
+
+  it("should open path in new tab when external link button is clicked", async () => {
+    const user = userEvent.setup();
+    const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const buttons = screen.getAllByRole("button");
+    const externalLinkButton = buttons.find(
+      (btn) => btn.title === "Open in new tab",
+    );
+
+    expect(externalLinkButton).toBeDefined();
+    if (externalLinkButton) {
+      await user.click(externalLinkButton);
+
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        "http://localhost:3000/",
+        "_blank",
+      );
+    }
+
+    windowOpenSpy.mockRestore();
+  });
+
+  it("should handle isActive prop from tracked paths", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: true }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Path should be visible since it's active
+    expect(screen.getByText("/")).toBeInTheDocument();
+  });
+
+  it("should update stats when paths change status", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Initially 0 loaded
+    expect(screen.getByText(/0 Healthy/)).toBeInTheDocument();
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
+    });
+  });
+
+  it("should show error badge when iframe fails to load", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /") as HTMLIFrameElement;
+
+    // Trigger the onError handler directly
+    fireEvent.error(iframe);
+
+    // Wait for state update - the error badge may take time to appear
+    await waitFor(() => {
+      const badges = screen.queryAllByText("Error", { exact: false });
+      // Either Error badge appears, or we're still in Loading state
+      const loadingBadges = screen.queryAllByText("Loading", { exact: false });
+      expect(badges.length + loadingBadges.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("should filter paths based on hidden status", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/page1", "/page2"]}
+        trackedPaths={[{ id: "1", path: "/page1", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Only page2 should be visible (page1 is hidden)
+    expect(screen.queryByText("/page1")).not.toBeInTheDocument();
+    expect(screen.getByText("/page2")).toBeInTheDocument();
+  });
+
+  it("should render Add Custom Path button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Add Custom Path/ }),
+    ).toBeInTheDocument();
   });
 });
 

@@ -4,7 +4,7 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DELETE, GET, POST } from "./route";
+import { DELETE, GET, PATCH, POST } from "./route";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -15,6 +15,7 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
       delete: vi.fn(),
     },
   },
@@ -404,6 +405,234 @@ describe("Tracked Paths Management API", () => {
       expect(data.error).toBe("Internal server error");
       expect(console.error).toHaveBeenCalledWith(
         "Failed to create tracked path:",
+        expect.any(Error),
+      );
+    });
+  });
+
+  describe("PATCH", () => {
+    it("should update existing tracked path isActive status", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      vi.mocked(prisma.trackedUrl.findUnique).mockResolvedValue({
+        id: "path1",
+        path: "/existing-page",
+        isActive: true,
+      } as any);
+
+      vi.mocked(prisma.trackedUrl.update).mockResolvedValue({
+        id: "path1",
+        path: "/existing-page",
+        isActive: false,
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/existing-page",
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.trackedPath.path).toBe("/existing-page");
+      expect(data.trackedPath.isActive).toBe(false);
+      expect(prisma.trackedUrl.update).toHaveBeenCalledWith({
+        where: { path: "/existing-page" },
+        data: { isActive: false },
+      });
+    });
+
+    it("should create new tracked path when path does not exist (for sitemap paths)", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      vi.mocked(prisma.trackedUrl.findUnique).mockResolvedValue(null);
+
+      vi.mocked(prisma.trackedUrl.create).mockResolvedValue({
+        id: "new-path-id",
+        path: "/sitemap-page",
+        isActive: false,
+        createdById: "admin_123",
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/sitemap-page",
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.trackedPath.path).toBe("/sitemap-page");
+      expect(data.trackedPath.isActive).toBe(false);
+      expect(prisma.trackedUrl.create).toHaveBeenCalledWith({
+        data: {
+          path: "/sitemap-page",
+          isActive: false,
+          createdById: "admin_123",
+        },
+      });
+    });
+
+    it("should return 400 if path is missing", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Missing required fields");
+    });
+
+    it("should return 400 if isActive is missing", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/test-page",
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Missing required fields");
+    });
+
+    it("should return 400 if isActive is not a boolean", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/test-page",
+            isActive: "true",
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Missing required fields");
+    });
+
+    it("should return 401 if not authenticated", async () => {
+      vi.mocked(auth).mockResolvedValue(null);
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/test-page",
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+    });
+
+    it("should return 403 if admin check fails", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user_123" },
+      } as any);
+
+      vi.mocked(requireAdminByUserId).mockRejectedValue(
+        new Error("Forbidden: Admin access required"),
+      );
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/test-page",
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toContain("Forbidden");
+    });
+
+    it("should handle database errors", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "admin_123" },
+      } as any);
+
+      vi.mocked(prisma.trackedUrl.findUnique).mockRejectedValue(
+        new Error("Database error"),
+      );
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/tracked-urls",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            path: "/test-page",
+            isActive: false,
+          }),
+        },
+      );
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(console.error).toHaveBeenCalledWith(
+        "Failed to toggle visibility:",
         expect.any(Error),
       );
     });

@@ -34,9 +34,8 @@ const SITEMAP_PATHS = [
 ];
 
 export default async function SitemapPreviewPage() {
-  // Fetch tracked paths from database
+  // Fetch ALL tracked paths from database (including hidden ones)
   const trackedPaths = await prisma.trackedUrl.findMany({
-    where: { isActive: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -48,13 +47,17 @@ export default async function SitemapPreviewPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Sitemap Preview</h1>
+      <h1 className="text-2xl font-bold mb-2">Application Monitor</h1>
       <p className="text-muted-foreground mb-8">
-        Preview all pages in the sitemap with staggered iframe loading.
+        Visual site monitor. Staggered loading active. Spot-check page rendering and JS errors.
       </p>
       <SitemapPreviewClient
         sitemapPaths={SITEMAP_PATHS}
-        trackedPaths={trackedPaths.map((t) => ({ id: t.id, path: t.path }))}
+        trackedPaths={trackedPaths.map((t) => ({
+          id: t.id,
+          path: t.path,
+          isActive: t.isActive
+        }))}
         origin={origin}
       />
     </div>
