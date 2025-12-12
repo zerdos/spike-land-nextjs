@@ -1,4 +1,4 @@
-import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { EnhancementTier, MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
@@ -38,8 +38,8 @@ const MAX_PROMPT_LENGTH = 4000;
  *   }
  */
 export async function POST(request: NextRequest) {
-  // Authenticate via API key
-  const authResult = await authenticateMcpRequest(request);
+  // Authenticate via API key or session
+  const authResult = await authenticateMcpOrSession(request);
   if (!authResult.success) {
     return NextResponse.json({ error: authResult.error }, { status: 401 });
   }

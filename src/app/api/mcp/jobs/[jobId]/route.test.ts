@@ -2,14 +2,14 @@ import { JobStatus, McpJobType } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies using vi.hoisted
-const { mockAuthenticateMcpRequest, mockCheckRateLimit, mockGetJob } = vi.hoisted(() => ({
-  mockAuthenticateMcpRequest: vi.fn(),
+const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockGetJob } = vi.hoisted(() => ({
+  mockAuthenticateMcpOrSession: vi.fn(),
   mockCheckRateLimit: vi.fn(),
   mockGetJob: vi.fn(),
 }));
 
 vi.mock("@/lib/mcp/auth", () => ({
-  authenticateMcpRequest: mockAuthenticateMcpRequest,
+  authenticateMcpOrSession: mockAuthenticateMcpOrSession,
 }));
 
 vi.mock("@/lib/rate-limiter", () => ({
@@ -50,7 +50,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default successful auth
-    mockAuthenticateMcpRequest.mockResolvedValue({
+    mockAuthenticateMcpOrSession.mockResolvedValue({
       success: true,
       userId: testUserId,
     });
@@ -66,7 +66,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
 
   describe("authentication", () => {
     it("should return 401 when authentication fails", async () => {
-      mockAuthenticateMcpRequest.mockResolvedValue({
+      mockAuthenticateMcpOrSession.mockResolvedValue({
         success: false,
         error: "Invalid API key",
       });
