@@ -1,4 +1,4 @@
-import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,8 +18,8 @@ import { NextRequest, NextResponse } from "next/server";
  *   }
  */
 export async function GET(request: NextRequest) {
-  // Authenticate via API key
-  const authResult = await authenticateMcpRequest(request);
+  // Authenticate via API key or session
+  const authResult = await authenticateMcpOrSession(request);
   if (!authResult.success) {
     return NextResponse.json(
       { error: authResult.error },
