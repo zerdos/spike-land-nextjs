@@ -335,24 +335,168 @@ ImageEnhancementJob {
 
 ---
 
-## Feature Implementation System Guidelines
+## 🎫 Ticket-Driven Development (BLOCKING REQUIREMENT)
+
+**CRITICAL**: No code changes without a ticket. Every PR must trace back to documented requirements.
+
+### Phase 0: Ticket Governance (BLOCKING - Nothing proceeds without this)
+
+#### Step 1: Investigate Project Board
+
+```bash
+# List all items in the project board
+gh project item-list 2 --owner zerdos --format json
+
+# Check for existing issues matching keywords
+gh issue list --repo zerdos/spike-land --search "<feature keywords>" --json number,title,body,state
+```
+
+#### Step 2: For Each Feature Request
+
+**IF related ticket exists:**
+
+```bash
+# Review and append new requirements
+gh issue edit <number> --body-file updated-spec.md
+
+# Or add comment with new requirements
+gh issue comment <number> --body "## Additional Requirements (Sprint X)
+- [ ] New requirement 1
+- [ ] New requirement 2"
+```
+
+**IF no ticket exists:**
+
+```bash
+gh issue create --repo zerdos/spike-land \
+  --title "Feature: <clear title>" \
+  --body "## User Request
+<original user request verbatim>
+
+## Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+## Technical Approach
+<planned implementation>
+
+## Files Expected to Change
+- path/to/file1.ts
+- path/to/file2.ts
+
+## Out of Scope
+- Explicitly list what this ticket does NOT cover" \
+  --label "feature" \
+  --project "zerdos/2"
+```
+
+#### Step 3: Link & Confirm
+
+- Output ticket URLs to user for approval before proceeding
+- **WAIT** for user confirmation: "Tickets approved, proceed"
+
+### Phase 1: Discovery (Sequential)
+
+- Read relevant docs ONLY after tickets exist
+- Update tickets with technical findings if scope changes discovered
+- Each subagent receives their ticket number as mandatory context
+
+### Phase 2: Parallel Implementation
+
+**Subagent Spawn Template:**
+
+```
+You are working on ticket #<NUMBER>: <TITLE>
+Your ONLY job is to implement the acceptance criteria listed.
+Branch name: feature/<NUMBER>-<short-kebab-name>
+
+RULES:
+- DO NOT implement anything not in the acceptance criteria
+- If you discover additional work needed, STOP and report back
+- When complete, create PR linking to #<NUMBER>
+```
+
+**Coordination Protocol:**
+
+- Before modifying shared files → check with orchestrator
+- Report blockers immediately: `BLOCKED: [reason]`
+- On completion report: `DONE: [summary] | FILES: [list]`
+
+### Phase 3: PR Review Protocol
+
+**Reviewer subagent MUST verify traceability:**
+
+```bash
+# Fetch the linked issue
+gh issue view <NUMBER> --json body,title
+
+# Get PR diff
+gh pr diff <PR_NUMBER>
+```
+
+**Review Checklist:**
+
+```markdown
+## PR Review: #<PR_NUMBER> → Issue #<NUMBER>
+
+### Traceability Check
+
+- [ ] Every changed file is listed in "Files Expected to Change"
+- [ ] Every code change maps to an acceptance criterion
+- [ ] No undocumented changes exist
+
+### Verdict
+
+- ✅ APPROVED: All changes trace to ticket #<NUMBER>
+- ❌ BLOCKED: Undocumented changes found:
+  - `<file>`: <change description> - NOT in acceptance criteria
+  - **Action Required**: Update ticket OR revert change
+```
+
+### Useful gh Commands Reference
+
+```bash
+# Add issue to project board
+gh project item-add 2 --owner zerdos --url <issue-url>
+
+# Update issue body
+gh issue edit <number> --body-file updated-spec.md
+
+# Create PR linked to issue (REQUIRED FORMAT)
+gh pr create --title "feat: <title> (#<number>)" --body "Resolves #<number>"
+
+# Check what changed in PR
+gh pr diff <pr-number>
+
+# View project board
+gh project item-list 2 --owner zerdos --format json
+```
 
 ### Feature Implementation Priority Rules
 
-- IMMEDIATE EXECUTION: Launch parallel Tasks immediately upon feature requests
-- NO CLARIFICATION: Skip asking what type of implementation unless absolutely critical
-- PARALLEL BY DEFAULT: Always use 7-parallel-Task method for efficiency
+- **TICKET FIRST**: Create/update GitHub issue BEFORE any code changes
+- **USER APPROVAL**: Wait for user to confirm tickets before implementation
+- **PARALLEL EXECUTION**: Launch parallel subagents after ticket approval
+- **TRACEABILITY**: Every PR change must map to acceptance criteria
+- **NO SCOPE CREEP**: Undocumented changes = blocked PR
 
 ### Parallel Feature Implementation Workflow
 
-1. **Component**: Create main component file
-2. **Styles**: Create component styles/CSS
-3. **Tests**: Create test files
-4. **Types**: Create type definitions
-5. **Hooks**: Create custom hooks/utilities
-6. **Integration**: Update routing, imports, exports
-7. **Remaining**: Update package.json, documentation, configuration files
-8. **Review and Validation**: Coordinate integration, run tests, verify build, check for conflicts
+**Pre-requisite**: Ticket exists and is approved by user
+
+1. **Orchestrator**: Assigns ticket numbers to subagents
+2. **Component Dev** (×2 per feature): Implementation per ticket AC
+3. **Integration Dev** (×1): Shared utilities, types, contracts
+4. **QA Engineer** (×2): E2E tests via Playwright MCP (always as subagent)
+5. **Code Reviewer** (×1): Verify PR matches ticket exactly
+6. **Remaining**: Config/doc updates referencing ticket
+7. **Review & Validation**: Traceability check before merge
+
+Each subagent MUST:
+
+- Reference ticket number in all commits
+- Only implement what's in acceptance criteria
+- Report discoveries back to orchestrator (not self-implement)
 
 ### Context Optimization Rules
 
@@ -889,6 +1033,8 @@ gh issue edit <number> --add-label "blocked"
 
 #### Projects (Kanban Board)
 
+**Project Board**: https://github.com/users/zerdos/projects/2
+
 **Initial Setup** (if no project exists):
 
 ```bash
@@ -907,10 +1053,10 @@ gh project create --title "Spike Land Roadmap" --owner @me
 gh project list
 
 # View project items
-gh project item-list <project-number> --format json
+gh project item-list 2 --owner zerdos --format json
 
 # Add issue to project
-gh project item-add <project-number> --url <issue-url>
+gh project item-add 2 --owner zerdos --url <issue-url>
 
 # Update item status (move between columns)
 gh project item-edit --id <item-id> --field-id <status-field-id> --single-select-option-id <option-id>
@@ -945,7 +1091,7 @@ cd wiki-repo && git add . && git commit -m "Update docs" && git push
 **When starting a session:**
 
 1. Check open issues: `gh issue list --state open`
-2. Check project board status: `gh project item-list <n>`
+2. Check project board status: `gh project item-list 2 --owner zerdos`
 3. Report status to user before asking what to work on
 
 **When discovering work/bugs (AUTO-CREATE - no need to ask):**
