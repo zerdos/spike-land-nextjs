@@ -6,10 +6,14 @@
     "mcp",
     "model-context-protocol",
     "claude",
+    "claude-desktop",
+    "claude-code",
     "ai",
-    "image-generation"
+    "image-generation",
+    "image-modification",
+    "spike-land"
   ],
-  "author": "Spike Land Ltd",
+  "author": "Spike Land Ltd <hello@spike.land>",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,12 +32,16 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -45,5 +53,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

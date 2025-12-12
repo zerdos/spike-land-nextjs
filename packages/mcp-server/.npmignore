@@ -1,0 +1,30 @@
+# Source files (published files defined in package.json "files" field)
+src/
+tsconfig.json
+
+# Development files
+node_modules/
+*.log
+.DS_Store
+
+# Test files
+*.test.ts
+*.test.js
+__tests__/
+coverage/
+
+# Build artifacts (except dist/)
+*.tgz
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CI/CD
+.github/
