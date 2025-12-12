@@ -7,6 +7,15 @@ import { NextRequest, NextResponse } from "next/server";
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 
 /**
+ * Maximum prompt length in characters
+ * Rationale:
+ * - Gemini API accepts much longer prompts, but 4000 chars is ample for image descriptions
+ * - Prevents abuse (very long prompts could cause processing delays)
+ * - Encourages concise, effective prompts for better generation results
+ */
+const MAX_PROMPT_LENGTH = 4000;
+
+/**
  * POST /api/mcp/generate
  *
  * Generate a new image from a text prompt
@@ -80,9 +89,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (prompt.length > 4000) {
+  if (prompt.length > MAX_PROMPT_LENGTH) {
     return NextResponse.json(
-      { error: "Prompt must be 4000 characters or less" },
+      { error: `Prompt must be ${MAX_PROMPT_LENGTH} characters or less` },
       { status: 400 },
     );
   }

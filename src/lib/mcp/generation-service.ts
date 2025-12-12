@@ -13,6 +13,74 @@ import sharp from "sharp";
 // Security: Maximum concurrent PROCESSING jobs per user to prevent burst attacks
 const MAX_CONCURRENT_JOBS_PER_USER = 3;
 
+/**
+ * Classifies errors into user-friendly messages with error codes
+ * Helps users understand what went wrong and how to fix it
+ * @internal Exported for testing purposes
+ */
+export function classifyError(error: unknown): { message: string; code: string; } {
+  if (error instanceof Error) {
+    const errorMessage = error.message.toLowerCase();
+
+    // Timeout errors
+    if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
+      return {
+        message: "Generation took too long. Try a lower quality tier.",
+        code: "TIMEOUT",
+      };
+    }
+
+    // Content policy violations
+    if (
+      errorMessage.includes("content") &&
+      (errorMessage.includes("policy") || errorMessage.includes("blocked"))
+    ) {
+      return {
+        message: "Your prompt may violate content policies. Please revise.",
+        code: "CONTENT_POLICY",
+      };
+    }
+
+    // Rate limiting
+    if (
+      errorMessage.includes("rate") || errorMessage.includes("quota") ||
+      errorMessage.includes("429")
+    ) {
+      return {
+        message: "Service temporarily unavailable. Please try again later.",
+        code: "RATE_LIMITED",
+      };
+    }
+
+    // API key or authentication errors
+    if (
+      errorMessage.includes("api key") || errorMessage.includes("unauthorized") ||
+      errorMessage.includes("401")
+    ) {
+      return {
+        message: "API configuration error. Please contact support.",
+        code: "AUTH_ERROR",
+      };
+    }
+
+    // Image processing errors
+    if (
+      errorMessage.includes("image") &&
+      (errorMessage.includes("invalid") || errorMessage.includes("corrupt"))
+    ) {
+      return {
+        message: "Unable to process the image. Please try a different format.",
+        code: "INVALID_IMAGE",
+      };
+    }
+
+    // Return original message for other errors
+    return { message: error.message, code: "GENERATION_ERROR" };
+  }
+
+  return { message: "An unexpected error occurred", code: "UNKNOWN" };
+}
+
 export interface CreateGenerationJobParams {
   userId: string;
   apiKeyId?: string;
@@ -238,12 +306,16 @@ async function processGenerationJob(
   } catch (error) {
     console.error(`Generation job ${jobId} failed:`, error);
 
+    // Classify error for user-friendly message
+    const classifiedError = classifyError(error);
+    console.log(`Generation job ${jobId} error classified as: ${classifiedError.code}`);
+
     // Update job with failure
     await prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.FAILED,
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: classifiedError.message,
         processingCompletedAt: new Date(),
       },
     });
@@ -258,7 +330,7 @@ async function processGenerationJob(
         job.userId,
         job.tokensCost,
         jobId,
-        "Generation job failed",
+        `Generation job failed: ${classifiedError.code}`,
       );
 
       await prisma.mcpGenerationJob.update({
@@ -283,6 +355,25 @@ async function processModificationJob(
   },
 ): Promise<void> {
   try {
+    // Store input image in R2 for before/after comparison and retry capability
+    const inputBuffer = Buffer.from(params.imageData, "base64");
+    const inputExtension = params.mimeType.split("/")[1] || "jpg";
+    const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
+    const inputUploadResult = await uploadToR2({
+      key: inputR2Key,
+      buffer: inputBuffer,
+      contentType: params.mimeType,
+    });
+
+    // Update job with input image URL
+    await prisma.mcpGenerationJob.update({
+      where: { id: jobId },
+      data: {
+        inputImageUrl: inputUploadResult.url,
+        inputImageR2Key: inputR2Key,
+      },
+    });
+
     // Modify image
     const imageBuffer = await modifyImageWithGemini({
       prompt: params.prompt,
@@ -320,12 +411,16 @@ async function processModificationJob(
   } catch (error) {
     console.error(`Modification job ${jobId} failed:`, error);
 
+    // Classify error for user-friendly message
+    const classifiedError = classifyError(error);
+    console.log(`Modification job ${jobId} error classified as: ${classifiedError.code}`);
+
     // Update job with failure
     await prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.FAILED,
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: classifiedError.message,
         processingCompletedAt: new Date(),
       },
     });
@@ -340,7 +435,7 @@ async function processModificationJob(
         job.userId,
         job.tokensCost,
         jobId,
-        "Modification job failed",
+        `Modification job failed: ${classifiedError.code}`,
       );
 
       await prisma.mcpGenerationJob.update({

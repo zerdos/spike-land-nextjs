@@ -91,13 +91,14 @@ export function extractApiKey(request: NextRequest): string | null {
 
 /**
  * Creates a masked version of an API key for logging
- * @example sk_live_abc123... -> sk_live_abc***
+ * Security: Only reveal 7 characters to match api-key-manager.ts
+ * @example sk_live_abc123... -> sk_live...****
  */
 export function maskApiKey(apiKey: string): string {
-  if (!apiKey || apiKey.length < 12) {
+  if (!apiKey || apiKey.length < 7) {
     return "***";
   }
-  return apiKey.slice(0, 12) + "***";
+  return apiKey.slice(0, 7) + "...****";
 }
 
 /**

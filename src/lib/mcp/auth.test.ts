@@ -195,13 +195,13 @@ describe("auth", () => {
   });
 
   describe("maskApiKey", () => {
-    it("should mask API key showing first 12 chars", () => {
+    it("should mask API key showing first 7 chars (matches api-key-manager)", () => {
       const result = maskApiKey("sk_test_abcdefghijklmnop");
 
-      expect(result).toBe("sk_test_abcd***");
+      expect(result).toBe("sk_test...****");
     });
 
-    it("should return *** for short API keys", () => {
+    it("should return *** for short API keys (less than 7 chars)", () => {
       const result = maskApiKey("short");
 
       expect(result).toBe("***");
@@ -213,16 +213,22 @@ describe("auth", () => {
       expect(result).toBe("***");
     });
 
-    it("should handle exactly 12 character key", () => {
-      const result = maskApiKey("123456789012");
+    it("should handle exactly 7 character key", () => {
+      const result = maskApiKey("1234567");
 
-      expect(result).toBe("123456789012***");
+      expect(result).toBe("1234567...****");
     });
 
-    it("should handle keys just under 12 chars", () => {
-      const result = maskApiKey("12345678901");
+    it("should handle keys just under 7 chars", () => {
+      const result = maskApiKey("123456");
 
       expect(result).toBe("***");
+    });
+
+    it("should mask production keys correctly", () => {
+      const result = maskApiKey("sk_live_abc123xyz789fullkey");
+
+      expect(result).toBe("sk_live...****");
     });
   });
 

@@ -54,6 +54,7 @@ vi.mock("sharp", () => ({
 }));
 
 import {
+  classifyError,
   createGenerationJob,
   createModificationJob,
   getJob,
@@ -407,6 +408,93 @@ describe("generation-service", () => {
       // Verify the mock Gemini functions are available
       expect(mockGeminiClient.generateImageWithGemini).toBeDefined();
       expect(mockGeminiClient.modifyImageWithGemini).toBeDefined();
+    });
+  });
+
+  describe("classifyError", () => {
+    it("should classify timeout errors", () => {
+      const result = classifyError(new Error("Request timed out"));
+
+      expect(result.code).toBe("TIMEOUT");
+      expect(result.message).toContain("took too long");
+    });
+
+    it("should classify timeout errors with 'timeout' keyword", () => {
+      const result = classifyError(new Error("Connection timeout after 60s"));
+
+      expect(result.code).toBe("TIMEOUT");
+    });
+
+    it("should classify content policy errors", () => {
+      const result = classifyError(new Error("Content blocked by policy"));
+
+      expect(result.code).toBe("CONTENT_POLICY");
+      expect(result.message).toContain("content policies");
+    });
+
+    it("should classify rate limit errors", () => {
+      const result = classifyError(new Error("Rate limit exceeded"));
+
+      expect(result.code).toBe("RATE_LIMITED");
+      expect(result.message).toContain("temporarily unavailable");
+    });
+
+    it("should classify quota errors as rate limited", () => {
+      const result = classifyError(new Error("Quota exceeded for the day"));
+
+      expect(result.code).toBe("RATE_LIMITED");
+    });
+
+    it("should classify 429 errors as rate limited", () => {
+      const result = classifyError(new Error("HTTP 429: Too Many Requests"));
+
+      expect(result.code).toBe("RATE_LIMITED");
+    });
+
+    it("should classify auth errors", () => {
+      const result = classifyError(new Error("API key invalid"));
+
+      expect(result.code).toBe("AUTH_ERROR");
+      expect(result.message).toContain("configuration error");
+    });
+
+    it("should classify 401 errors as auth errors", () => {
+      const result = classifyError(new Error("HTTP 401 Unauthorized"));
+
+      expect(result.code).toBe("AUTH_ERROR");
+    });
+
+    it("should classify invalid image errors", () => {
+      const result = classifyError(new Error("Image is invalid or corrupt"));
+
+      expect(result.code).toBe("INVALID_IMAGE");
+      expect(result.message).toContain("different format");
+    });
+
+    it("should return original message for other errors", () => {
+      const result = classifyError(new Error("Some unexpected error"));
+
+      expect(result.code).toBe("GENERATION_ERROR");
+      expect(result.message).toBe("Some unexpected error");
+    });
+
+    it("should handle non-Error objects", () => {
+      const result = classifyError("string error");
+
+      expect(result.code).toBe("UNKNOWN");
+      expect(result.message).toContain("unexpected error");
+    });
+
+    it("should handle null", () => {
+      const result = classifyError(null);
+
+      expect(result.code).toBe("UNKNOWN");
+    });
+
+    it("should handle undefined", () => {
+      const result = classifyError(undefined);
+
+      expect(result.code).toBe("UNKNOWN");
     });
   });
 });

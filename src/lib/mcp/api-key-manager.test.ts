@@ -105,6 +105,38 @@ describe("api-key-manager", () => {
       expect(result.error).toBe("Invalid API key format");
     });
 
+    it("should reject development keys in production environment", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+
+      try {
+        const result = await validateApiKey("sk_test_validkey123456789012345678");
+
+        expect(result.isValid).toBe(false);
+        expect(result.error).toBe("Development keys not allowed in production");
+        // Should not even attempt to query the database
+        expect(mockApiKey.findUnique).not.toHaveBeenCalled();
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
+    });
+
+    it("should allow production keys in production environment", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+      mockApiKey.findUnique.mockResolvedValue(null);
+
+      try {
+        const result = await validateApiKey("sk_live_validkey123456789012345678");
+
+        // Should continue to database lookup (key not found is fine for this test)
+        expect(mockApiKey.findUnique).toHaveBeenCalled();
+        expect(result.error).toBe("Invalid API key");
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
+    });
+
     it("should call database with hashed key", async () => {
       // Just verify the database is queried with a hash
       mockApiKey.findUnique.mockResolvedValue(null);

@@ -6,8 +6,25 @@ import { NextRequest, NextResponse } from "next/server";
 
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 const VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+/**
+ * Maximum image upload size in MB
+ * Rationale:
+ * - Gemini API accepts up to 20MB inline data
+ * - 20MB allows high-res images (4K+) while preventing abuse
+ * - Memory: 10 concurrent uploads × 20MB = 200MB worst case, acceptable
+ */
 const MAX_IMAGE_SIZE_MB = 20;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+/**
+ * Maximum prompt length in characters
+ * Rationale:
+ * - Gemini API accepts much longer prompts, but 4000 chars is ample for modification instructions
+ * - Prevents abuse (very long prompts could cause processing delays)
+ * - Keeps modification instructions focused and effective
+ */
+const MAX_PROMPT_LENGTH = 4000;
 
 /**
  * POST /api/mcp/modify
@@ -86,9 +103,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (prompt.length > 4000) {
+  if (prompt.length > MAX_PROMPT_LENGTH) {
     return NextResponse.json(
-      { error: "Prompt must be 4000 characters or less" },
+      { error: `Prompt must be ${MAX_PROMPT_LENGTH} characters or less` },
       { status: 400 },
     );
   }

@@ -101,6 +101,11 @@ export async function validateApiKey(
     return { isValid: false, error: "Invalid API key format" };
   }
 
+  // Security: Reject development keys in production environment
+  if (process.env.NODE_ENV === "production" && providedKey.startsWith(KEY_PREFIX_DEV)) {
+    return { isValid: false, error: "Development keys not allowed in production" };
+  }
+
   // Hash the provided key
   const providedHash = hashApiKey(providedKey);
 

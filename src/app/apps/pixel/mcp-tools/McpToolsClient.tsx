@@ -57,10 +57,11 @@ interface McpToolsClientProps {
 }
 
 export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [selectedApiKey, setSelectedApiKey] = useState<string>("");
+  // API keys state - unused for now but kept for future API key selection feature
+  const [_apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [_selectedApiKey, _setSelectedApiKey] = useState<string>("");
   const [manualApiKey, setManualApiKey] = useState<string>("");
-  const [isLoadingKeys, setIsLoadingKeys] = useState(true);
+  const [_isLoadingKeys, setIsLoadingKeys] = useState(true);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   // Generate form state
