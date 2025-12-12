@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Globe, Images, Link as LinkIcon, Lock } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 interface PreviewImage {
   id: string;
@@ -197,22 +196,14 @@ export function AlbumsGrid({
           />
         );
 
-        if (onAlbumClick) {
-          return (
-            <div
-              key={album.id}
-              className="block"
-              onClick={(e) => handleClick(album.id, e)}
-            >
-              {cardContent}
-            </div>
-          );
-        }
-
         return (
-          <Link key={album.id} href={`/albums/${album.id}`} className="block">
+          <div
+            key={album.id}
+            className={cn("block", onAlbumClick && "cursor-pointer")}
+            onClick={onAlbumClick ? (e) => handleClick(album.id, e) : undefined}
+          >
             {cardContent}
-          </Link>
+          </div>
         );
       })}
     </div>

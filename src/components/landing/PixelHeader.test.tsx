@@ -53,7 +53,7 @@ describe("PixelHeader Component", () => {
     render(<PixelHeader />);
     const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-    expect(ctaButtons[0]).toHaveAttribute("href", "/pixel");
+    expect(ctaButtons[0]).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have fixed positioning", () => {

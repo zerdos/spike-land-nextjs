@@ -120,7 +120,7 @@ export function ImagesAppClient({ images: initialImages }: ImagesAppClientProps)
                   <CardContent className="space-y-2">
                     <div className="flex gap-2">
                       <Button asChild className="flex-1">
-                        <Link href={`/pixel/${image.id}`}>
+                        <Link href={`/apps/pixel/${image.id}`}>
                           <Sparkles className="mr-2 h-4 w-4" />
                           {hasEnhancement ? "View" : "Enhance"}
                         </Link>

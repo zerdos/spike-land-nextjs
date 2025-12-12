@@ -128,14 +128,16 @@ describe("AlbumsGrid", () => {
     expect(screen.queryByTestId("next-image")).not.toBeInTheDocument();
   });
 
-  it("renders links to album pages when no onAlbumClick", () => {
-    render(<AlbumsGrid albums={mockAlbums} />);
+  it("renders albums as non-clickable divs when no onAlbumClick", () => {
+    const { container } = render(<AlbumsGrid albums={mockAlbums} />);
 
-    const links = screen.getAllByTestId("next-link");
-    expect(links).toHaveLength(3);
-    expect(links[0]).toHaveAttribute("href", "/albums/album-1");
-    expect(links[1]).toHaveAttribute("href", "/albums/album-2");
-    expect(links[2]).toHaveAttribute("href", "/albums/album-3");
+    // Albums are display-only without onAlbumClick - verify they render as divs not links
+    const links = screen.queryAllByTestId("next-link");
+    expect(links).toHaveLength(0);
+
+    // Should have 3 album cards rendered as divs
+    const albumCards = container.querySelectorAll("[class*='block']");
+    expect(albumCards.length).toBe(3);
   });
 
   it("calls onAlbumClick when provided and album is clicked", () => {

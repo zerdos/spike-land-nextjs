@@ -64,18 +64,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Protected Pages (visible to search engines, auth required to use)
     {
-      url: `${BASE_URL}/pixel`,
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/albums`,
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
       url: `${BASE_URL}/my-apps`,
       lastModified: currentDate,
       changeFrequency: "weekly",

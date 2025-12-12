@@ -20,8 +20,6 @@ const SITEMAP_PATHS = [
   "/terms",
   "/privacy",
   "/cookies",
-  "/pixel",
-  "/albums",
   "/my-apps",
   "/my-apps/new",
   "/profile",

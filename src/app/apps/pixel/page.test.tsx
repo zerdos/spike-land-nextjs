@@ -115,11 +115,11 @@ describe("Pixel Landing Page (/apps/pixel)", () => {
   });
 
   describe("CTA Section Links", () => {
-    it("should have Start Enhancing Free link pointing to /pixel", () => {
+    it("should have Start Enhancing Free link pointing to /apps/pixel", () => {
       render(<TestableLandingPage />);
       const button = screen.getByRole("link", { name: /Start Enhancing Free/i });
       expect(button).toBeInTheDocument();
-      expect(button).toHaveAttribute("href", "/pixel");
+      expect(button).toHaveAttribute("href", "/apps/pixel");
     });
 
     it("should have View Pricing link", () => {

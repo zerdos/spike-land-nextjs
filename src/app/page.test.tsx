@@ -13,6 +13,7 @@ const MockFeaturedAppsSection = () => (
     <div data-testid="featured-app-card">
       <span>Pixel</span>
       <span>AI-powered image enhancement</span>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a role="link" href="/apps/pixel">Get Started</a>
     </div>
   </section>
@@ -116,7 +117,7 @@ describe("Home Page", () => {
       render(<TestableHome />);
       const button = screen.getByRole("link", { name: /Start Enhancing Free/i });
       expect(button).toBeInTheDocument();
-      expect(button).toHaveAttribute("href", "/pixel");
+      expect(button).toHaveAttribute("href", "/apps/pixel");
     });
 
     it("should render View Pricing button", () => {

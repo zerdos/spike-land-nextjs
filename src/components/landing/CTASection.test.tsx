@@ -26,7 +26,7 @@ describe("CTASection Component", () => {
   it("should have correct href for enhance button", () => {
     render(<CTASection />);
     const enhanceLink = screen.getByRole("link", { name: /Start Enhancing Free/i });
-    expect(enhanceLink).toHaveAttribute("href", "/pixel");
+    expect(enhanceLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have correct href for pricing button", () => {

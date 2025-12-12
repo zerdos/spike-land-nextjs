@@ -375,7 +375,7 @@ describe("AddToAlbumModal", () => {
         const createAlbumLink = screen.getByRole("link", {
           name: /Create Album/i,
         });
-        expect(createAlbumLink).toHaveAttribute("href", "/albums");
+        expect(createAlbumLink).toHaveAttribute("href", "/apps/pixel");
       });
     });
 
