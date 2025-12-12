@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const albumId = formData.get("albumId") as string | null;
 
     if (!file) {
       requestLogger.warn("No file provided");
@@ -72,6 +73,28 @@ export async function POST(request: NextRequest) {
         },
         { status: 400, headers: { "X-Request-ID": requestId } },
       );
+    }
+
+    // Validate albumId if provided
+    if (albumId) {
+      const album = await prisma.album.findFirst({
+        where: {
+          id: albumId,
+          userId: session.user.id,
+        },
+      });
+      if (!album) {
+        requestLogger.warn("Invalid album ID", { albumId, userId: session.user.id });
+        const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+        return NextResponse.json(
+          {
+            error: errorMessage.message,
+            title: errorMessage.title,
+            suggestion: "Album not found or you don't have access to it.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
     }
 
     requestLogger.info("Processing file upload", {
@@ -138,6 +161,7 @@ export async function POST(request: NextRequest) {
         originalSizeBytes: result.sizeBytes,
         originalFormat: result.format,
         isPublic: false,
+        ...(albumId && { albumId }),
       },
     });
 

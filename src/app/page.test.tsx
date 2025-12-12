@@ -2,16 +2,24 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 // Mock components for testing Home page structure
-// Since the actual Home page is an async server component that fetches from the database,
-// we test the expected page structure using mock components
+// Since the actual Home page uses client components, we test the expected page structure using mock components
 
-const MockPixelHeader = () => <header data-testid="pixel-header">Pixel Header</header>;
-const MockHeroSection = () => <section data-testid="hero-section">Hero Section</section>;
-const MockBeforeAfterGallery = () => (
-  <section data-testid="gallery-section">Gallery Section</section>
+const MockPlatformHeader = () => <header data-testid="platform-header">Platform Header</header>;
+const MockPlatformHero = () => <section data-testid="hero-section">Platform Hero Section</section>;
+const MockFeaturedAppsSection = () => (
+  <section data-testid="featured-apps-section" id="apps" className="container mx-auto py-16 px-4">
+    <h2>Featured Applications</h2>
+    <p>Discover AI-powered apps built on Spike Land</p>
+    <div data-testid="featured-app-card">
+      <span>Pixel</span>
+      <span>AI-powered image enhancement</span>
+      <a role="link" href="/apps/images">Get Started</a>
+    </div>
+  </section>
 );
-const MockFeatureShowcase = () => <section data-testid="feature-section">Feature Section</section>;
-const MockFAQ = () => <section data-testid="faq-section">FAQ Section</section>;
+const MockPlatformFeatures = () => (
+  <section data-testid="platform-features-section">Platform Features</section>
+);
 const MockCTASection = () => (
   <section data-testid="cta-section" className="bg-gradient-primary">
     <h2>Ready to Transform Your Images?</h2>
@@ -26,11 +34,10 @@ const MockCTASection = () => (
 function TestableHome() {
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <MockPixelHeader />
-      <MockHeroSection />
-      <MockBeforeAfterGallery />
-      <MockFeatureShowcase />
-      <MockFAQ />
+      <MockPlatformHeader />
+      <MockPlatformHero />
+      <MockFeaturedAppsSection />
+      <MockPlatformFeatures />
       <MockCTASection />
     </div>
   );
@@ -38,36 +45,59 @@ function TestableHome() {
 
 describe("Home Page", () => {
   describe("Page Structure", () => {
-    it("should render HeroSection component", () => {
+    it("should render PlatformHeader component", () => {
+      render(<TestableHome />);
+      expect(screen.getByTestId("platform-header")).toBeInTheDocument();
+    });
+
+    it("should render PlatformHero component", () => {
       render(<TestableHome />);
       expect(screen.getByTestId("hero-section")).toBeInTheDocument();
     });
 
-    it("should render BeforeAfterGallery component", () => {
+    it("should render Featured Apps section", () => {
       render(<TestableHome />);
-      expect(screen.getByTestId("gallery-section")).toBeInTheDocument();
+      expect(screen.getByTestId("featured-apps-section")).toBeInTheDocument();
     });
 
-    it("should render FeatureShowcase component", () => {
+    it("should render PlatformFeatures component", () => {
       render(<TestableHome />);
-      expect(screen.getByTestId("feature-section")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-features-section")).toBeInTheDocument();
     });
 
-    it("should render FAQ component", () => {
+    it("should render CTA section", () => {
       render(<TestableHome />);
-      expect(screen.getByTestId("faq-section")).toBeInTheDocument();
-    });
-
-    it("should render PixelHeader component", () => {
-      render(<TestableHome />);
-      expect(screen.getByTestId("pixel-header")).toBeInTheDocument();
+      expect(screen.getByTestId("cta-section")).toBeInTheDocument();
     });
 
     it("should have proper semantic structure with sections", () => {
       render(<TestableHome />);
       const sections = document.querySelectorAll("section");
-      // 4 mocked sections (hero, gallery, feature, faq) + 1 CTA section
-      expect(sections.length).toBe(5);
+      // 4 sections: hero, featured-apps, platform-features, cta
+      expect(sections.length).toBe(4);
+    });
+  });
+
+  describe("Featured Apps Section", () => {
+    it("should render the Featured Applications heading", () => {
+      render(<TestableHome />);
+      expect(screen.getByText("Featured Applications")).toBeInTheDocument();
+    });
+
+    it("should render the Featured Apps description", () => {
+      render(<TestableHome />);
+      expect(screen.getByText(/Discover AI-powered apps/)).toBeInTheDocument();
+    });
+
+    it("should render Pixel app card", () => {
+      render(<TestableHome />);
+      expect(screen.getByText("Pixel")).toBeInTheDocument();
+    });
+
+    it("should link to Pixel app", () => {
+      render(<TestableHome />);
+      const pixelLink = screen.getByRole("link", { name: /Get Started/i });
+      expect(pixelLink).toHaveAttribute("href", "/apps/images");
     });
   });
 
@@ -106,9 +136,8 @@ describe("Home Page", () => {
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
       const { container } = render(<TestableHome />);
-      const h2 = container.querySelector("h2");
-      expect(h2).toBeInTheDocument();
-      expect(h2).toHaveTextContent("Ready to Transform Your Images?");
+      const h2Elements = container.querySelectorAll("h2");
+      expect(h2Elements.length).toBeGreaterThanOrEqual(2);
     });
 
     it("should have min-h-screen wrapper", () => {

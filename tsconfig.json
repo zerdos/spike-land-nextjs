@@ -50,6 +50,7 @@
     "vitest.setup.ts",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.example.tsx",
     "e2e/**/*",
     "cucumber.js",
     "prisma.config.ts",

@@ -1,18 +1,9 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { AlbumsClient } from "./AlbumsClient";
 
-export const metadata = {
-  title: "Albums - Spike Land",
-  description: "Organize your enhanced images into albums",
-};
-
-export default async function AlbumsPage() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/?callbackUrl=/albums");
-  }
-
-  return <AlbumsClient />;
+/**
+ * Redirects /albums to /pixel
+ * Albums are now managed directly on the /pixel page
+ */
+export default function AlbumsPage() {
+  redirect("/pixel");
 }

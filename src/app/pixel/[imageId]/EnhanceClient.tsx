@@ -13,12 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Coins } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-
-type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K";
 
 interface EnhanceClientProps {
   image: EnhancedImage & {

@@ -1,6 +1,8 @@
 "use client";
 
 import { QRCodePanel } from "@/components/canvas";
+import { BatchEnhanceProgress } from "@/components/enhance/BatchEnhanceProgress";
+import { EnhanceAllDialog } from "@/components/enhance/EnhanceAllDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { useAlbumBatchEnhance } from "@/hooks/useAlbumBatchEnhance";
 import {
   ArrowLeft,
   Check,
@@ -122,6 +125,25 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const [isSettingCover, setIsSettingCover] = useState(false);
   const [showQRSheet, setShowQRSheet] = useState(false);
 
+  // Batch enhancement state
+  const [showEnhanceAllDialog, setShowEnhanceAllDialog] = useState(false);
+  const [userBalance, setUserBalance] = useState(0);
+  const [currentEnhancementTier, setCurrentEnhancementTier] = useState<
+    "TIER_1K" | "TIER_2K" | "TIER_4K"
+  >("TIER_2K");
+  const {
+    startBatchEnhance,
+    jobs,
+    isProcessing: isEnhancing,
+    cancel: cancelBatchEnhance,
+  } = useAlbumBatchEnhance({
+    albumId,
+    onComplete: () => {
+      // Refresh album to show updated images
+      fetchAlbum();
+    },
+  });
+
   // Ref for tracking original order
   const originalOrderRef = useRef<string[]>([]);
 
@@ -147,6 +169,18 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     }
   }, [albumId]);
 
+  const fetchUserBalance = useCallback(async () => {
+    try {
+      const response = await fetch("/api/tokens");
+      if (response.ok) {
+        const data = await response.json();
+        setUserBalance(data.balance || 0);
+      }
+    } catch (err) {
+      console.error("Error fetching user balance:", err);
+    }
+  }, []);
+
   const fetchAllAlbums = useCallback(async () => {
     setIsLoadingAlbums(true);
     try {
@@ -167,7 +201,8 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   useEffect(() => {
     fetchAlbum();
-  }, [fetchAlbum]);
+    fetchUserBalance();
+  }, [fetchAlbum, fetchUserBalance]);
 
   const handleSaveSettings = async () => {
     if (!editName.trim()) return;
@@ -518,6 +553,23 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     }
   };
 
+  // Batch enhancement handler
+  const handleEnhanceAll = async (
+    tier: "TIER_1K" | "TIER_2K" | "TIER_4K",
+    skipAlreadyEnhanced: boolean,
+  ) => {
+    setCurrentEnhancementTier(tier);
+    await startBatchEnhance(tier, skipAlreadyEnhanced);
+    setShowEnhanceAllDialog(false);
+  };
+
+  // Calculate already enhanced counts per tier
+  const alreadyEnhancedCount = {
+    TIER_1K: album?.images.filter(img => img.enhancementTier === "TIER_1K").length || 0,
+    TIER_2K: album?.images.filter(img => img.enhancementTier === "TIER_2K").length || 0,
+    TIER_4K: album?.images.filter(img => img.enhancementTier === "TIER_4K").length || 0,
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -592,6 +644,28 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               </div>
               {album.isOwner && (
                 <div className="flex gap-2">
+                  {album.images.length > 0 && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setShowEnhanceAllDialog(true)}
+                      disabled={isEnhancing}
+                    >
+                      {isEnhancing
+                        ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Enhancing...
+                          </>
+                        )
+                        : (
+                          <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Enhance All
+                          </>
+                        )}
+                    </Button>
+                  )}
                   {album.shareToken && album.privacy !== "PRIVATE" && (
                     <>
                       <Button variant="outline" size="sm" onClick={copyShareLink}>
@@ -687,6 +761,26 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               )}
             </div>
           </div>
+
+          {/* Batch Enhancement Progress */}
+          {isEnhancing && jobs.length > 0 && (
+            <div className="mb-6">
+              <BatchEnhanceProgress
+                images={jobs.map((job) => {
+                  const image = album.images.find(img => img.id === job.imageId);
+                  return {
+                    imageId: job.imageId,
+                    thumbnailUrl: image?.originalUrl || "",
+                    status: job.status,
+                    enhancedUrl: job.enhancedUrl,
+                    error: job.error,
+                  };
+                })}
+                tier={currentEnhancementTier}
+                onCancel={cancelBatchEnhance}
+              />
+            </div>
+          )}
 
           {album.images.length === 0
             ? (
@@ -965,6 +1059,20 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             </div>
           </SheetContent>
         </Sheet>
+      )}
+
+      {/* Enhance All Dialog */}
+      {album && (
+        <EnhanceAllDialog
+          open={showEnhanceAllDialog}
+          onOpenChange={setShowEnhanceAllDialog}
+          albumName={album.name}
+          imageCount={album.images.length}
+          alreadyEnhancedCount={alreadyEnhancedCount}
+          userBalance={userBalance}
+          onConfirm={handleEnhanceAll}
+          isLoading={isEnhancing}
+        />
       )}
     </div>
   );

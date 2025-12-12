@@ -1,44 +1,46 @@
-import prisma from "@/lib/prisma";
+import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
 import { FALLBACK_GALLERY_ITEMS, type GalleryItem } from "./gallery-fallback-data";
 
-// Type-safe category mapping from database enum to frontend type
-const CATEGORY_MAP: Record<string, GalleryItem["category"]> = {
-  PORTRAIT: "portrait",
-  LANDSCAPE: "landscape",
-  PRODUCT: "product",
-  ARCHITECTURE: "architecture",
-};
+// Helper function to infer category from aspect ratio and image dimensions
+function inferCategory(width: number, height: number): GalleryItem["category"] {
+  const aspectRatio = width / height;
+
+  // Portrait orientation (taller than wide)
+  if (aspectRatio < 0.9) {
+    return "portrait";
+  }
+
+  // Square-ish (1:1 ratio) - likely product photos
+  if (aspectRatio >= 0.9 && aspectRatio <= 1.1) {
+    return "product";
+  }
+
+  // Wide landscape
+  if (aspectRatio > 1.5) {
+    return "landscape";
+  }
+
+  // Default for other ratios
+  return "architecture";
+}
 
 export async function BeforeAfterGallery() {
   let galleryItems: GalleryItem[];
 
   try {
-    const dbItems = await prisma.featuredGalleryItem.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        originalUrl: true,
-        enhancedUrl: true,
-        width: true,
-        height: true,
-      },
-    });
+    const photos = await getSuperAdminPublicPhotos();
 
-    if (dbItems.length > 0) {
-      galleryItems = dbItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || "",
-        category: CATEGORY_MAP[item.category] || "portrait",
-        originalUrl: item.originalUrl,
-        enhancedUrl: item.enhancedUrl,
-        width: item.width,
-        height: item.height,
+    if (photos.length > 0) {
+      galleryItems = photos.map(photo => ({
+        id: photo.id,
+        title: photo.title,
+        description: `Enhanced with ${photo.tier} from ${photo.albumName}`,
+        category: inferCategory(photo.width, photo.height),
+        originalUrl: photo.originalUrl,
+        enhancedUrl: photo.enhancedUrl,
+        width: photo.width,
+        height: photo.height,
       }));
     } else {
       galleryItems = FALLBACK_GALLERY_ITEMS;

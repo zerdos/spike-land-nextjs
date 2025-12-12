@@ -1,8 +1,10 @@
 "use client";
 
 import { AddToAlbumModal } from "@/components/enhance/AddToAlbumModal";
+import { DraggablePhotoCard } from "@/components/enhance/DraggablePhotoCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getBestThumbnail } from "@/lib/images/get-best-thumbnail";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { FolderPlus } from "lucide-react";
 import Image from "next/image";
@@ -15,6 +17,9 @@ interface EnhancedImagesListProps {
   })[];
   onDelete?: (imageId: string) => void;
   deletingImageId?: string | null;
+  showEnhanced?: boolean;
+  onDragStart?: (imageIds: string[]) => void;
+  onDragEnd?: () => void;
 }
 
 function formatDate(date: Date | string): string {
@@ -41,6 +46,9 @@ export function EnhancedImagesList({
   images,
   onDelete,
   deletingImageId,
+  showEnhanced = false,
+  onDragStart,
+  onDragEnd,
 }: EnhancedImagesListProps) {
   const [isClient, setIsClient] = useState(false);
   const [addToAlbumImageId, setAddToAlbumImageId] = useState<string | null>(
@@ -108,12 +116,12 @@ export function EnhancedImagesList({
           const statusBadge = getStatusBadge(image.enhancementJobs);
           const isDeleting = deletingImageId === image.id;
 
-          return (
-            <div key={image.id} className="group relative">
+          const imageCard = (
+            <div className="group relative">
               <Link href={`/pixel/${image.id}`}>
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted/50 cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-primary/30">
                   <Image
-                    src={image.originalUrl}
+                    src={getBestThumbnail(image, showEnhanced)}
                     alt="Uploaded image"
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -175,6 +183,21 @@ export function EnhancedImagesList({
               </div>
             </div>
           );
+
+          if (onDragStart && onDragEnd) {
+            return (
+              <DraggablePhotoCard
+                key={image.id}
+                imageId={image.id}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+              >
+                {imageCard}
+              </DraggablePhotoCard>
+            );
+          }
+
+          return <div key={image.id}>{imageCard}</div>;
         })}
       </div>
 

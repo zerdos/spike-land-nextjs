@@ -1,30 +1,34 @@
-import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { ImagesAppClient } from "./ImagesAppClient";
+import {
+  BeforeAfterGallery,
+  FAQ,
+  FeatureShowcase,
+  HeroSectionWithData,
+  PixelHeader,
+} from "@/components/landing";
+import { CTASection } from "@/components/landing/CTASection";
+import { Metadata } from "next";
 
-export default async function ImagesAppPage() {
-  const session = await auth();
+export const metadata: Metadata = {
+  title: "Pixel - AI Image Enhancement | Spike Land",
+  description:
+    "Enhance your photos in seconds with AI. Transform low-resolution images into stunning high-quality photos with Pixel's advanced AI enhancement technology.",
+  openGraph: {
+    title: "Pixel - AI Image Enhancement | Spike Land",
+    description:
+      "Enhance your photos in seconds with AI. Transform low-resolution images into stunning high-quality photos.",
+    type: "website",
+  },
+};
 
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  const images = await prisma.enhancedImage.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      enhancementJobs: {
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return <ImagesAppClient images={images} />;
+export default async function PixelLandingPage() {
+  return (
+    <main className="min-h-screen bg-grid-pattern">
+      <PixelHeader />
+      <HeroSectionWithData />
+      <BeforeAfterGallery />
+      <FeatureShowcase />
+      <FAQ />
+      <CTASection />
+    </main>
+  );
 }

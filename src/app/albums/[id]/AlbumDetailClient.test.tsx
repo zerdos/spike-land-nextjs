@@ -32,6 +32,22 @@ const mockClipboard = {
 };
 Object.assign(navigator, { clipboard: mockClipboard });
 
+// Helper to setup fetch mocks for album + tokens endpoint
+const setupFetchMocks = (albumResponse: unknown, tokensResponse = { balance: 100 }) => {
+  mockFetch.mockImplementation((url: string) => {
+    if (url.includes("/api/tokens")) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(tokensResponse),
+      });
+    }
+    if (typeof albumResponse === "function") {
+      return albumResponse();
+    }
+    return albumResponse;
+  });
+};
+
 const createMockAlbum = (overrides = {}) => ({
   id: "album_1",
   name: "Test Album",
@@ -67,7 +83,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Loading and Error States", () => {
     it("shows loading state initially", () => {
-      mockFetch.mockImplementation(() => new Promise(() => {}));
+      setupFetchMocks(() => new Promise(() => {}));
 
       render(<AlbumDetailClient albumId="test-id" />);
 
@@ -75,7 +91,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows error state when album not found", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: false,
         status: 404,
       });
@@ -88,7 +104,15 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows error state when fetch fails", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes("/api/tokens")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ balance: 100 }),
+          });
+        }
+        return Promise.reject(new Error("Network error"));
+      });
 
       render(<AlbumDetailClient albumId="test-id" />);
 
@@ -100,7 +124,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Album Display", () => {
     it("renders album details when loaded", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () => Promise.resolve({ album: createMockAlbum() }),
       });
@@ -115,7 +139,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("displays images in album", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -135,7 +159,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows empty state when no images", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () => Promise.resolve({ album: createMockAlbum({ name: "Empty Album" }) }),
       });
@@ -148,7 +172,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows enhanced badge for enhanced images", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -174,7 +198,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Privacy and Share", () => {
     it("shows copy link button for public albums", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -194,7 +218,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("copies share link to clipboard", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -218,7 +242,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does not show copy link for private albums", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -241,7 +265,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Settings Dialog", () => {
     it("opens settings dialog when clicking settings button", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -266,7 +290,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does not show settings for non-owner", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -291,7 +315,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Selection Mode", () => {
     it("shows select button when album has images and is owner", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -310,7 +334,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does not show select button when not owner", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -332,7 +356,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("enters selection mode when clicking select button", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -358,7 +382,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("exits selection mode when clicking cancel", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -389,7 +413,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows select all and deselect all buttons in selection mode", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -420,7 +444,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows move and remove buttons when images are selected", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -454,7 +478,7 @@ describe("AlbumDetailClient", () => {
     it("removes selected images when clicking remove button", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -483,10 +507,12 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText(/Remove/)).toBeDefined();
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        })
+      );
 
       const removeButton = screen.getAllByText(/Remove/)[0];
       fireEvent.click(removeButton);
@@ -506,7 +532,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Move Dialog", () => {
     it("opens move dialog when clicking move button", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -535,15 +561,17 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText(/Move/)).toBeDefined();
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            albums: [
-              { id: "album_2", name: "Other Album", imageCount: 5 },
-            ],
-          }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              albums: [
+                { id: "album_2", name: "Other Album", imageCount: 5 },
+              ],
+            }),
+        })
+      );
 
       const moveButton = screen.getAllByText(/Move/)[0];
       fireEvent.click(moveButton);
@@ -554,7 +582,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("shows no albums message when no other albums exist", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -583,13 +611,15 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText(/Move/)).toBeDefined();
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            albums: [{ id: "album_1", name: "Current Album", imageCount: 1 }],
-          }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              albums: [{ id: "album_1", name: "Current Album", imageCount: 1 }],
+            }),
+        })
+      );
 
       const moveButton = screen.getAllByText(/Move/)[0];
       fireEvent.click(moveButton);
@@ -600,7 +630,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("closes move dialog when clicking cancel", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -625,15 +655,17 @@ describe("AlbumDetailClient", () => {
 
       fireEvent.click(screen.getByText("Select All"));
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            albums: [
-              { id: "album_2", name: "Other Album", imageCount: 5 },
-            ],
-          }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              albums: [
+                { id: "album_2", name: "Other Album", imageCount: 5 },
+              ],
+            }),
+        })
+      );
 
       const moveButton = screen.getAllByText(/Move/)[0];
       fireEvent.click(moveButton);
@@ -653,7 +685,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Cover Image Selection", () => {
     it("shows cover badge on cover image", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -673,7 +705,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("calls API to set cover when clicking star icon", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -696,13 +728,15 @@ describe("AlbumDetailClient", () => {
         fireEvent.mouseEnter(card);
       }
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            album: { coverImageId: "img_1" },
-          }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              album: { coverImageId: "img_1" },
+            }),
+        })
+      );
 
       const starButton = document.querySelector('button[title="Set as cover"]');
       if (starButton) {
@@ -723,7 +757,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Drag and Drop", () => {
     it("makes cards draggable when owner and not in selection mode", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -748,7 +782,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does not make cards draggable in selection mode", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -779,7 +813,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does not make cards draggable when not owner", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -805,7 +839,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("handles drag start event", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -834,7 +868,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("handles drag and drop to reorder images", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -863,10 +897,12 @@ describe("AlbumDetailClient", () => {
         fireEvent.dragStart(firstCard, { dataTransfer });
         fireEvent.dragOver(secondCard, { preventDefault: () => {} });
 
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve({ success: true }),
-        });
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ success: true }),
+          })
+        );
 
         fireEvent.drop(secondCard, { preventDefault: () => {} });
         fireEvent.dragEnd(firstCard);
@@ -887,7 +923,7 @@ describe("AlbumDetailClient", () => {
     it("removes single image when clicking remove button", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -909,10 +945,12 @@ describe("AlbumDetailClient", () => {
         fireEvent.mouseEnter(card);
       }
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        })
+      );
 
       const deleteButton = document.querySelector("button.h-8.w-8:last-child");
       if (deleteButton) {
@@ -933,9 +971,8 @@ describe("AlbumDetailClient", () => {
 
     it("does not remove image when confirmation is cancelled", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
-      const initialFetchCalls = mockFetch.mock.calls.length;
 
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -962,8 +999,13 @@ describe("AlbumDetailClient", () => {
         fireEvent.click(deleteButton);
       }
 
-      const fetchCallsAfterClick = mockFetch.mock.calls.length;
-      expect(fetchCallsAfterClick).toBe(initialFetchCalls + 1);
+      // Should not make a DELETE request when cancelled
+      expect(mockFetch).not.toHaveBeenCalledWith(
+        "/api/albums/album_1/images",
+        expect.objectContaining({
+          method: "DELETE",
+        }),
+      );
 
       confirmSpy.mockRestore();
     });
@@ -973,7 +1015,7 @@ describe("AlbumDetailClient", () => {
     it("deletes album and redirects when confirmed", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () => Promise.resolve({ album: createMockAlbum() }),
       });
@@ -993,10 +1035,12 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("Album Settings")).toBeDefined();
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        })
+      );
 
       fireEvent.click(screen.getByText("Delete Album"));
 
@@ -1010,7 +1054,7 @@ describe("AlbumDetailClient", () => {
 
   describe("Album Update", () => {
     it("saves album settings when clicking save button", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () => Promise.resolve({ album: createMockAlbum() }),
       });
@@ -1033,18 +1077,20 @@ describe("AlbumDetailClient", () => {
       const nameInput = screen.getByLabelText("Album Name");
       fireEvent.change(nameInput, { target: { value: "Updated Name" } });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            album: {
-              name: "Updated Name",
-              description: "Test description",
-              privacy: "PRIVATE",
-              shareToken: null,
-            },
-          }),
-      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              album: {
+                name: "Updated Name",
+                description: "Test description",
+                privacy: "PRIVATE",
+                shareToken: null,
+              },
+            }),
+        })
+      );
 
       fireEvent.click(screen.getByText("Save Changes"));
 
@@ -1061,7 +1107,7 @@ describe("AlbumDetailClient", () => {
 
   describe("QR Panel Sidebar", () => {
     it("renders QR panel for UNLISTED album owned by user", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -1087,7 +1133,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("renders QR panel for PUBLIC album owned by user", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -1112,7 +1158,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does NOT render QR panel for PRIVATE album", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -1135,7 +1181,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does NOT render QR panel when user is not owner", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -1158,7 +1204,7 @@ describe("AlbumDetailClient", () => {
     });
 
     it("does NOT render QR panel when no shareToken", async () => {
-      mockFetch.mockResolvedValueOnce({
+      setupFetchMocks({
         ok: true,
         json: () =>
           Promise.resolve({
