@@ -620,6 +620,340 @@ describe("SitemapPreviewClient", () => {
     const iframe = screen.getByTitle("Preview of /test") as HTMLIFrameElement;
     expect(iframe.src).toBe("https://spike.land/test");
   });
+
+  it("should show health status badges", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(screen.getByText(/Healthy/)).toBeInTheDocument();
+  });
+
+  it("should show visible/hidden count in badges", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(screen.getByText(/0 visible \/ 1 hidden/)).toBeInTheDocument();
+  });
+
+  it("should render Show/Hide Hidden Paths toggle button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Show Hidden Paths" }),
+    ).toBeInTheDocument();
+  });
+
+  it("should toggle Show/Hide Hidden Paths button text when clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await user.click(toggleButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Hide Hidden Paths" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show hidden paths when Show Hidden Paths is toggled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Initially hidden path should not be visible (0 paths visible)
+    expect(screen.queryByText("/")).not.toBeInTheDocument();
+
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await user.click(toggleButton);
+
+    // Now hidden path should be visible
+    await waitFor(() => {
+      expect(screen.getByText("/")).toBeInTheDocument();
+    });
+  });
+
+  it("should render Refresh All button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Refresh All/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("should reset all path statuses when Refresh All is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+    });
+
+    const refreshAllButton = screen.getByRole("button", {
+      name: /Refresh All/,
+    });
+    await user.click(refreshAllButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/0 \/ 1 loaded/)).toBeInTheDocument();
+    });
+  });
+
+  it("should toggle path visibility when hide/show button is clicked", async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          trackedPath: { id: "1", path: "/", isActive: false },
+        }),
+    });
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: true }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Wait for the component to render
+    await waitFor(() => {
+      expect(screen.getByText("/")).toBeInTheDocument();
+    });
+
+    // Find and click the hide/show button (eye icon button)
+    const buttons = screen.getAllByRole("button");
+    const hideButton = buttons.find(
+      (btn) => btn.title === "Hide this path",
+    );
+
+    expect(hideButton).toBeDefined();
+    if (hideButton) {
+      await user.click(hideButton);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/admin/tracked-urls", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: "/", isActive: false }),
+        });
+      });
+    }
+  });
+
+  it("should show Hidden badge for hidden paths", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Toggle to show hidden paths
+    const toggleButton = screen.getByRole("button", {
+      name: "Show Hidden Paths",
+    });
+    await userEvent.setup().click(toggleButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hidden")).toBeInTheDocument();
+    });
+  });
+
+  it("should refresh individual path when refresh button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+    });
+
+    // Find the refresh button for the specific path
+    const buttons = screen.getAllByRole("button");
+    const refreshButton = buttons.find(
+      (btn) => btn.title === "Reload this iframe",
+    );
+
+    expect(refreshButton).toBeDefined();
+    if (refreshButton) {
+      await user.click(refreshButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/0 \/ 1 loaded/)).toBeInTheDocument();
+      });
+    }
+  });
+
+  it("should open path in new tab when external link button is clicked", async () => {
+    const user = userEvent.setup();
+    const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const buttons = screen.getAllByRole("button");
+    const externalLinkButton = buttons.find(
+      (btn) => btn.title === "Open in new tab",
+    );
+
+    expect(externalLinkButton).toBeDefined();
+    if (externalLinkButton) {
+      await user.click(externalLinkButton);
+
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        "http://localhost:3000/",
+        "_blank",
+      );
+    }
+
+    windowOpenSpy.mockRestore();
+  });
+
+  it("should handle isActive prop from tracked paths", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[{ id: "1", path: "/", isActive: true }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Path should be visible since it's active
+    expect(screen.getByText("/")).toBeInTheDocument();
+  });
+
+  it("should update stats when paths change status", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Initially 0 loaded
+    expect(screen.getByText(/0 Healthy/)).toBeInTheDocument();
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.load(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 Healthy/)).toBeInTheDocument();
+    });
+  });
+
+  it("should show error badge when iframe fails to load", async () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Preview of /");
+    fireEvent.error(iframe);
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 Error/)).toBeInTheDocument();
+    });
+  });
+
+  it("should filter paths based on hidden status", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/page1", "/page2"]}
+        trackedPaths={[{ id: "1", path: "/page1", isActive: false }]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    // Only page2 should be visible (page1 is hidden)
+    expect(screen.queryByText("/page1")).not.toBeInTheDocument();
+    expect(screen.getByText("/page2")).toBeInTheDocument();
+  });
+
+  it("should render Add Custom Path button", () => {
+    render(
+      <SitemapPreviewClient
+        sitemapPaths={["/"]}
+        trackedPaths={[]}
+        origin={defaultOrigin}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Add Custom Path/ }),
+    ).toBeInTheDocument();
+  });
 });
 
 const MAX_CONCURRENT_LOADS = 4;

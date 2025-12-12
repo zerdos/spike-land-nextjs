@@ -53,7 +53,7 @@ describe("SitemapPreviewPage", () => {
     const result = await SitemapPreviewPage();
     render(result);
 
-    expect(screen.getByText("Sitemap Preview")).toBeInTheDocument();
+    expect(screen.getByText("Application Monitor")).toBeInTheDocument();
   });
 
   it("should render the page description", async () => {
@@ -64,7 +64,7 @@ describe("SitemapPreviewPage", () => {
 
     expect(
       screen.getByText(
-        "Preview all pages in the sitemap with staggered iframe loading.",
+        /Visual site monitor\. Staggered loading active\. Spot-check page rendering and JS errors\./,
       ),
     ).toBeInTheDocument();
   });
@@ -117,13 +117,12 @@ describe("SitemapPreviewPage", () => {
     expect(parseInt(trackedCount.textContent || "0")).toBe(2);
   });
 
-  it("should query only active tracked paths ordered by creation date", async () => {
+  it("should query all tracked paths ordered by creation date", async () => {
     vi.mocked(prisma.trackedUrl.findMany).mockResolvedValueOnce([]);
 
     await SitemapPreviewPage();
 
     expect(prisma.trackedUrl.findMany).toHaveBeenCalledWith({
-      where: { isActive: true },
       orderBy: { createdAt: "desc" },
     });
   });
