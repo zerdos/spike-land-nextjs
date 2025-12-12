@@ -13,7 +13,10 @@ const MockFeaturedAppsSection = () => (
     <div data-testid="featured-app-card">
       <div role="img" aria-label="Pixel logo">pixel</div>
       <span>AI Image Enhancement</span>
-      <span>Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly.</span>
+      <span>
+        Bring old, blurry photos back to life with advanced machine learning that restores details
+        and clarity instantly.
+      </span>
       <div data-testid="comparison-slider">Before/After</div>
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a role="link" href="/apps/pixel">Get Started</a>

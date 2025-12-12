@@ -84,7 +84,7 @@ export class SpikeLandClient {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json();
+    const data = await response.json() as { error?: string; };
 
     if (!response.ok) {
       throw new Error(data.error || `Request failed with status ${response.status}`);
