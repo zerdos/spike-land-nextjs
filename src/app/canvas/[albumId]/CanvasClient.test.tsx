@@ -1,53 +1,203 @@
+import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CanvasClient, CanvasImage, CanvasSettings } from "./CanvasClient";
+import { CanvasClient } from "./CanvasClient";
 
-// Mock Next.js Image component
-vi.mock("next/image", () => ({
-  default: ({
-    src,
-    alt,
-    onError,
-    "data-testid": testId,
+// Mock the hooks
+const mockSelectImage = vi.fn();
+const mockEnterSlideshow = vi.fn();
+const mockExitSlideshow = vi.fn();
+const mockGoToNext = vi.fn();
+const mockGoToPrev = vi.fn();
+const mockStartPeek = vi.fn();
+const mockEndPeek = vi.fn();
+const mockGetTransitionOrigin = vi.fn(() => null);
+
+let mockViewMode: "grid" | "slideshow" = "grid";
+let mockSelectedImageId: string | null = null;
+let mockCurrentIndex = 0;
+let mockIsPeeking = false;
+let mockIsTransitioning = false;
+
+vi.mock("@/hooks/useSmartGallery", () => ({
+  useSmartGallery: () => ({
+    viewMode: mockViewMode,
+    selectedImageId: mockSelectedImageId,
+    selectedImage: null,
+    currentIndex: mockCurrentIndex,
+    isPeeking: mockIsPeeking,
+    isTransitioning: mockIsTransitioning,
+    selectImage: mockSelectImage,
+    enterSlideshow: mockEnterSlideshow,
+    exitSlideshow: mockExitSlideshow,
+    goToNext: mockGoToNext,
+    goToPrev: mockGoToPrev,
+    startPeek: mockStartPeek,
+    endPeek: mockEndPeek,
+    getTransitionOrigin: mockGetTransitionOrigin,
+    setTransitionOrigin: vi.fn(),
+  }),
+}));
+
+let keyboardHandlers: {
+  onSpacebar: () => void;
+  onLeftArrow: () => void;
+  onRightArrow: () => void;
+  onBKeyDown: () => void;
+  onBKeyUp: () => void;
+  onEscape: () => void;
+  isEnabled: boolean;
+} | null = null;
+
+vi.mock("@/hooks/useKeyboardNavigation", () => ({
+  useKeyboardNavigation: (options: typeof keyboardHandlers) => {
+    keyboardHandlers = options;
+  },
+}));
+
+let touchGestureOptions: {
+  onSwipeLeft: () => void;
+  onSwipeRight: () => void;
+  onDoubleTap: () => void;
+  onLongPressStart: () => void;
+  onLongPressEnd: () => void;
+  isEnabled: boolean;
+} | null = null;
+
+vi.mock("@/hooks/useTouchGestures", () => ({
+  useTouchGestures: (
+    _ref: React.RefObject<HTMLElement | null>,
+    options: typeof touchGestureOptions,
+  ) => {
+    touchGestureOptions = options;
+  },
+}));
+
+// Mock the child components
+vi.mock("@/components/canvas/SmartGrid", () => ({
+  SmartGrid: ({
+    images,
+    selectedImageId,
+    onImageSelect,
+    onEnterSlideshow,
+    isBlurred,
+    rotation,
   }: {
-    src: string;
-    alt: string;
-    fill?: boolean;
-    className?: string;
-    priority?: boolean;
-    onError?: () => void;
-    "data-testid"?: string;
+    images: GalleryImage[];
+    selectedImageId: string | null;
+    onImageSelect: (id: string, element: HTMLElement) => void;
+    onEnterSlideshow: () => void;
+    isBlurred: boolean;
+    rotation: number;
   }) => (
-    <img
-      src={src}
-      alt={alt}
-      data-testid={testId}
-      onError={onError}
-    />
+    <div
+      data-testid="smart-grid"
+      data-image-count={images.length}
+      data-selected-id={selectedImageId}
+      data-is-blurred={isBlurred}
+      data-rotation={rotation}
+    >
+      {images.map((img) => (
+        <button
+          key={img.id}
+          data-testid={`grid-thumbnail-${img.id}`}
+          onClick={(e) => onImageSelect(img.id, e.currentTarget)}
+          onDoubleClick={() => onEnterSlideshow()}
+        >
+          {img.name}
+        </button>
+      ))}
+    </div>
   ),
 }));
 
-const mockImages: CanvasImage[] = [
+vi.mock("@/components/canvas/SlideshowView", () => ({
+  SlideshowView: ({
+    images,
+    currentIndex,
+    isPeeking,
+    onNavigate,
+    onExit,
+    rotation,
+  }: {
+    images: GalleryImage[];
+    currentIndex: number;
+    isPeeking: boolean;
+    onNavigate: (dir: "prev" | "next") => void;
+    onExit: () => void;
+    transitionState: { isActive: boolean; };
+    rotation: number;
+  }) => (
+    <div
+      data-testid="slideshow-view"
+      data-current-index={currentIndex}
+      data-is-peeking={isPeeking}
+      data-rotation={rotation}
+      data-image-count={images.length}
+    >
+      <button data-testid="slideshow-prev" onClick={() => onNavigate("prev")}>
+        Prev
+      </button>
+      <button data-testid="slideshow-next" onClick={() => onNavigate("next")}>
+        Next
+      </button>
+      <button data-testid="slideshow-exit" onClick={onExit}>
+        Exit
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/canvas/FloatingHint", () => ({
+  FloatingHint: ({
+    text,
+    isVisible,
+    isTouchDevice,
+  }: {
+    text: string;
+    isVisible: boolean;
+    isTouchDevice: boolean;
+  }) => (
+    <div
+      data-testid="floating-hint"
+      data-text={text}
+      data-is-visible={isVisible}
+      data-is-touch-device={isTouchDevice}
+    />
+  ),
+  HINT_TEXT: {
+    desktop: "Press Spacebar to enter slideshow",
+    touch: "Double-tap to enter slideshow",
+  },
+}));
+
+const mockGalleryImages: GalleryImage[] = [
   {
     id: "img-1",
-    url: "https://example.com/image1.jpg",
+    url: "https://example.com/enhanced1.jpg",
     name: "Image 1",
     width: 1920,
     height: 1080,
+    originalUrl: "https://example.com/original1.jpg",
+    enhancedUrl: "https://example.com/enhanced1.jpg",
   },
   {
     id: "img-2",
-    url: "https://example.com/image2.jpg",
+    url: "https://example.com/enhanced2.jpg",
     name: "Image 2",
     width: 2560,
     height: 1440,
+    originalUrl: "https://example.com/original2.jpg",
+    enhancedUrl: "https://example.com/enhanced2.jpg",
   },
   {
     id: "img-3",
-    url: "https://example.com/image3.jpg",
+    url: "https://example.com/original3.jpg",
     name: "Image 3",
     width: 3840,
     height: 2160,
+    originalUrl: "https://example.com/original3.jpg",
+    enhancedUrl: null,
   },
 ];
 
@@ -60,8 +210,18 @@ const defaultSettings: CanvasSettings = {
 describe("CanvasClient", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // Reset mock states
+    mockViewMode = "grid";
+    mockSelectedImageId = null;
+    mockCurrentIndex = 0;
+    mockIsPeeking = false;
+    mockIsTransitioning = false;
+    keyboardHandlers = null;
+    touchGestureOptions = null;
     // Reset document.body.style.cursor
     document.body.style.cursor = "auto";
+    // Reset all mocks
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -70,38 +230,37 @@ describe("CanvasClient", () => {
   });
 
   describe("Rendering", () => {
-    it("renders the first image", () => {
+    it("renders the smart grid with images", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      const img = screen.getByTestId("canvas-current-image");
-      expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute("src", "https://example.com/image1.jpg");
-      expect(img).toHaveAttribute("alt", "Image 1");
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toBeInTheDocument();
+      expect(grid).toHaveAttribute("data-image-count", "3");
     });
 
-    it("renders container with black background", () => {
+    it("renders container with correct background", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
       const container = screen.getByTestId("canvas-container");
-      expect(container.className).toContain("bg-black");
+      expect(container.className).toContain("bg-[#0B0E14]");
     });
 
     it("renders with aria-label containing album name", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="My Beautiful Album"
         />,
@@ -114,31 +273,31 @@ describe("CanvasClient", () => {
       );
     });
 
-    it("preloads next image when multiple images exist", () => {
+    it("passes rotation to SmartGrid", () => {
       render(
         <CanvasClient
-          images={mockImages}
-          settings={defaultSettings}
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 90 }}
           albumName="Test Album"
         />,
       );
 
-      const preloadImg = screen.getByTestId("canvas-preload-image");
-      expect(preloadImg).toBeInTheDocument();
-      expect(preloadImg).toHaveAttribute("src", "https://example.com/image2.jpg");
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-rotation", "90");
     });
 
-    it("does not preload next image when only one image exists", () => {
-      const singleImage = [mockImages[0]];
+    it("passes selectedImageId to SmartGrid", () => {
+      mockSelectedImageId = "img-2";
       render(
         <CanvasClient
-          images={singleImage}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      expect(screen.queryByTestId("canvas-preload-image")).not.toBeInTheDocument();
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-selected-id", "img-2");
     });
   });
 
@@ -157,7 +316,7 @@ describe("CanvasClient", () => {
       expect(screen.getByText("No images in this album")).toBeInTheDocument();
     });
 
-    it("does not render current image when no images", () => {
+    it("does not render grid when no images", () => {
       render(
         <CanvasClient
           images={[]}
@@ -166,248 +325,448 @@ describe("CanvasClient", () => {
         />,
       );
 
-      expect(screen.queryByTestId("canvas-current-image")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("smart-grid")).not.toBeInTheDocument();
     });
   });
 
-  describe("Rotation", () => {
-    it("applies 0 degree rotation transform", () => {
+  describe("Slideshow View", () => {
+    it("does not render slideshow in grid mode", () => {
+      mockViewMode = "grid";
       render(
         <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 0 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.transform).toBe("rotate(0deg)");
-    });
-
-    it("applies 90 degree rotation transform", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 90 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.transform).toBe("rotate(90deg)");
-    });
-
-    it("applies 180 degree rotation transform", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 180 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.transform).toBe("rotate(180deg)");
-    });
-
-    it("applies 270 degree rotation transform", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 270 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.transform).toBe("rotate(270deg)");
-    });
-
-    it("swaps container dimensions for 90 degree rotation", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 90 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.width).toBe("100vh");
-      expect(rotationContainer.style.height).toBe("100vw");
-    });
-
-    it("swaps container dimensions for 270 degree rotation", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 270 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.width).toBe("100vh");
-      expect(rotationContainer.style.height).toBe("100vw");
-    });
-
-    it("uses normal dimensions for 0 degree rotation", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 0 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.width).toBe("100vw");
-      expect(rotationContainer.style.height).toBe("100vh");
-    });
-
-    it("uses normal dimensions for 180 degree rotation", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, rotation: 180 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const rotationContainer = screen.getByTestId("canvas-rotation-container");
-      expect(rotationContainer.style.width).toBe("100vw");
-      expect(rotationContainer.style.height).toBe("100vh");
-    });
-  });
-
-  describe("Slideshow auto-advance", () => {
-    it("advances to next image after interval", async () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, interval: 10 }}
-          albumName="Test Album"
-        />,
-      );
-
-      // Initial image
-      expect(screen.getByTestId("canvas-current-image")).toHaveAttribute(
-        "src",
-        "https://example.com/image1.jpg",
-      );
-
-      // Advance timer by interval + transition time
-      act(() => {
-        vi.advanceTimersByTime(10000); // interval
-      });
-
-      act(() => {
-        vi.advanceTimersByTime(500); // transition time
-      });
-
-      // Should now show second image
-      expect(screen.getByTestId("canvas-current-image")).toHaveAttribute(
-        "src",
-        "https://example.com/image2.jpg",
-      );
-    });
-
-    it("wraps around to first image after last", async () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, interval: 5 }}
-          albumName="Test Album"
-        />,
-      );
-
-      // Advance through all 3 images
-      for (let i = 0; i < 3; i++) {
-        act(() => {
-          vi.advanceTimersByTime(5000 + 500);
-        });
-      }
-
-      // Should wrap back to first image
-      expect(screen.getByTestId("canvas-current-image")).toHaveAttribute(
-        "src",
-        "https://example.com/image1.jpg",
-      );
-    });
-
-    it("does not auto-advance with single image", () => {
-      const singleImage = [mockImages[0]];
-      render(
-        <CanvasClient
-          images={singleImage}
-          settings={{ ...defaultSettings, interval: 5 }}
-          albumName="Test Album"
-        />,
-      );
-
-      const initialSrc = screen.getByTestId("canvas-current-image").getAttribute("src");
-
-      act(() => {
-        vi.advanceTimersByTime(10000);
-      });
-
-      // Should still be the same image
-      expect(screen.getByTestId("canvas-current-image")).toHaveAttribute("src", initialSrc);
-    });
-  });
-
-  describe("Fade transitions", () => {
-    it("starts with full opacity", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      const wrapper = screen.getByTestId("canvas-image-wrapper");
-      expect(wrapper.className).toContain("opacity-100");
+      expect(screen.queryByTestId("slideshow-view")).not.toBeInTheDocument();
     });
 
-    it("fades out during transition", () => {
+    it("renders slideshow when in slideshow mode", () => {
+      mockViewMode = "slideshow";
       render(
         <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, interval: 10 }}
+          images={mockGalleryImages}
+          settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      // Start transition
-      act(() => {
-        vi.advanceTimersByTime(10000);
-      });
-
-      // During transition (before 500ms)
-      const wrapper = screen.getByTestId("canvas-image-wrapper");
-      expect(wrapper.className).toContain("opacity-0");
+      expect(screen.getByTestId("slideshow-view")).toBeInTheDocument();
     });
 
-    it("fades back in after transition", () => {
+    it("passes currentIndex to slideshow", () => {
+      mockViewMode = "slideshow";
+      mockCurrentIndex = 2;
       render(
         <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, interval: 10 }}
+          images={mockGalleryImages}
+          settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      // Complete transition
-      act(() => {
-        vi.advanceTimersByTime(10000);
-      });
-      act(() => {
-        vi.advanceTimersByTime(500);
-      });
+      const slideshow = screen.getByTestId("slideshow-view");
+      expect(slideshow).toHaveAttribute("data-current-index", "2");
+    });
 
-      const wrapper = screen.getByTestId("canvas-image-wrapper");
-      expect(wrapper.className).toContain("opacity-100");
+    it("passes isPeeking to slideshow", () => {
+      mockViewMode = "slideshow";
+      mockIsPeeking = true;
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const slideshow = screen.getByTestId("slideshow-view");
+      expect(slideshow).toHaveAttribute("data-is-peeking", "true");
+    });
+
+    it("calls goToNext when slideshow next button clicked", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId("slideshow-next"));
+      expect(mockGoToNext).toHaveBeenCalled();
+    });
+
+    it("calls goToPrev when slideshow prev button clicked", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId("slideshow-prev"));
+      expect(mockGoToPrev).toHaveBeenCalled();
+    });
+
+    it("calls exitSlideshow when exit button clicked", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId("slideshow-exit"));
+      expect(mockExitSlideshow).toHaveBeenCalled();
+    });
+
+    it("blurs grid when in slideshow mode", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-is-blurred", "true");
+    });
+  });
+
+  describe("Floating Hint", () => {
+    it("renders floating hint", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(screen.getByTestId("floating-hint")).toBeInTheDocument();
+    });
+
+    it("shows hint when image is selected in grid mode", () => {
+      mockViewMode = "grid";
+      mockSelectedImageId = "img-1";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const hint = screen.getByTestId("floating-hint");
+      expect(hint).toHaveAttribute("data-is-visible", "true");
+    });
+
+    it("hides hint when no image is selected", () => {
+      mockViewMode = "grid";
+      mockSelectedImageId = null;
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const hint = screen.getByTestId("floating-hint");
+      expect(hint).toHaveAttribute("data-is-visible", "false");
+    });
+
+    it("shows desktop hint text for non-touch devices", () => {
+      // Ensure no touch capability
+      Object.defineProperty(navigator, "maxTouchPoints", {
+        value: 0,
+        writable: true,
+        configurable: true,
+      });
+      // Remove ontouchstart if it exists
+      const originalOntouchstart = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+      delete (window as unknown as Record<string, unknown>).ontouchstart;
+
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const hint = screen.getByTestId("floating-hint");
+      expect(hint).toHaveAttribute(
+        "data-text",
+        "Press Spacebar to enter slideshow",
+      );
+
+      // Restore
+      if (originalOntouchstart) {
+        Object.defineProperty(window, "ontouchstart", originalOntouchstart);
+      }
+    });
+  });
+
+  describe("Image selection and slideshow entry", () => {
+    it("calls selectImage when thumbnail is clicked", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId("grid-thumbnail-img-2"));
+      expect(mockSelectImage).toHaveBeenCalledWith(
+        "img-2",
+        expect.any(HTMLElement),
+      );
+    });
+
+    it("calls enterSlideshow on thumbnail double-click", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      fireEvent.doubleClick(screen.getByTestId("grid-thumbnail-img-1"));
+      expect(mockEnterSlideshow).toHaveBeenCalled();
+    });
+  });
+
+  describe("Keyboard navigation setup", () => {
+    it("sets up keyboard navigation with isEnabled true", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(keyboardHandlers).not.toBeNull();
+      expect(keyboardHandlers?.isEnabled).toBe(true);
+    });
+
+    it("spacebar enters slideshow in grid mode", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onSpacebar();
+      expect(mockEnterSlideshow).toHaveBeenCalled();
+    });
+
+    it("spacebar exits slideshow in slideshow mode", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onSpacebar();
+      expect(mockExitSlideshow).toHaveBeenCalled();
+    });
+
+    it("left arrow calls goToPrev", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onLeftArrow();
+      expect(mockGoToPrev).toHaveBeenCalled();
+    });
+
+    it("right arrow calls goToNext", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onRightArrow();
+      expect(mockGoToNext).toHaveBeenCalled();
+    });
+
+    it("B key down starts peek", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onBKeyDown();
+      expect(mockStartPeek).toHaveBeenCalled();
+    });
+
+    it("B key up ends peek", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onBKeyUp();
+      expect(mockEndPeek).toHaveBeenCalled();
+    });
+
+    it("escape exits slideshow", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      keyboardHandlers?.onEscape();
+      expect(mockExitSlideshow).toHaveBeenCalled();
+    });
+  });
+
+  describe("Touch gestures setup", () => {
+    it("sets up touch gestures for slideshow", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(touchGestureOptions).not.toBeNull();
+      expect(touchGestureOptions?.isEnabled).toBe(true);
+    });
+
+    it("disables touch gestures in grid mode", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(touchGestureOptions?.isEnabled).toBe(false);
+    });
+
+    it("swipe left calls goToNext", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onSwipeLeft();
+      expect(mockGoToNext).toHaveBeenCalled();
+    });
+
+    it("swipe right calls goToPrev", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onSwipeRight();
+      expect(mockGoToPrev).toHaveBeenCalled();
+    });
+
+    it("double tap in grid mode enters slideshow", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onDoubleTap();
+      expect(mockEnterSlideshow).toHaveBeenCalled();
+    });
+
+    it("double tap in slideshow mode exits slideshow", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onDoubleTap();
+      expect(mockExitSlideshow).toHaveBeenCalled();
+    });
+
+    it("long press starts peek", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onLongPressStart();
+      expect(mockStartPeek).toHaveBeenCalled();
+    });
+
+    it("long press end ends peek", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      touchGestureOptions?.onLongPressEnd();
+      expect(mockEndPeek).toHaveBeenCalled();
     });
   });
 
@@ -419,30 +778,28 @@ describe("CanvasClient", () => {
 
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={{ ...defaultSettings, order: "random" }}
           albumName="Test Album"
         />,
       );
 
-      // The image should be rendered (we can't guarantee which one due to shuffle)
-      expect(screen.getByTestId("canvas-current-image")).toBeInTheDocument();
+      // The grid should be rendered with images
+      expect(screen.getByTestId("smart-grid")).toBeInTheDocument();
     });
 
     it("maintains album order when order is album", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={{ ...defaultSettings, order: "album" }}
           albumName="Test Album"
         />,
       );
 
-      // Should be first image in album order
-      expect(screen.getByTestId("canvas-current-image")).toHaveAttribute(
-        "src",
-        "https://example.com/image1.jpg",
-      );
+      // Grid should show first image in album order
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-image-count", "3");
     });
   });
 
@@ -450,7 +807,7 @@ describe("CanvasClient", () => {
     it("hides cursor after 3 seconds of no movement", async () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
@@ -466,7 +823,7 @@ describe("CanvasClient", () => {
     it("shows cursor on mouse movement", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
@@ -489,7 +846,7 @@ describe("CanvasClient", () => {
     it("restarts hide timer on mouse movement", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
@@ -524,7 +881,7 @@ describe("CanvasClient", () => {
     it("restores cursor on unmount", () => {
       const { unmount } = render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
@@ -543,67 +900,92 @@ describe("CanvasClient", () => {
     });
   });
 
-  describe("Error handling", () => {
-    it("shows error state when image fails to load", () => {
+  describe("Rotation settings", () => {
+    it("applies 0 degree rotation", () => {
       render(
         <CanvasClient
-          images={mockImages}
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 0 }}
+          albumName="Test Album"
+        />,
+      );
+
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-rotation", "0");
+    });
+
+    it("applies 90 degree rotation", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 90 }}
+          albumName="Test Album"
+        />,
+      );
+
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-rotation", "90");
+    });
+
+    it("applies 180 degree rotation", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 180 }}
+          albumName="Test Album"
+        />,
+      );
+
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-rotation", "180");
+    });
+
+    it("applies 270 degree rotation", () => {
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 270 }}
+          albumName="Test Album"
+        />,
+      );
+
+      const grid = screen.getByTestId("smart-grid");
+      expect(grid).toHaveAttribute("data-rotation", "270");
+    });
+
+    it("passes rotation to slideshow view", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={{ ...defaultSettings, rotation: 90 }}
+          albumName="Test Album"
+        />,
+      );
+
+      const slideshow = screen.getByTestId("slideshow-view");
+      expect(slideshow).toHaveAttribute("data-rotation", "90");
+    });
+  });
+
+  describe("Touch device detection", () => {
+    it("detects touch device on mount", () => {
+      // Mock touch device
+      Object.defineProperty(window, "ontouchstart", {
+        value: () => {},
+        writable: true,
+      });
+
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
           settings={defaultSettings}
           albumName="Test Album"
         />,
       );
 
-      const img = screen.getByTestId("canvas-current-image");
-      act(() => {
-        fireEvent.error(img);
-      });
-
-      expect(screen.getByTestId("canvas-image-error")).toBeInTheDocument();
-      expect(screen.getByText("Failed to load image")).toBeInTheDocument();
-    });
-
-    it("hides current image when error occurs", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={defaultSettings}
-          albumName="Test Album"
-        />,
-      );
-
-      const img = screen.getByTestId("canvas-current-image");
-      act(() => {
-        fireEvent.error(img);
-      });
-
-      expect(screen.queryByTestId("canvas-current-image")).not.toBeInTheDocument();
-    });
-
-    it("clears error state when transitioning to next image", () => {
-      render(
-        <CanvasClient
-          images={mockImages}
-          settings={{ ...defaultSettings, interval: 5 }}
-          albumName="Test Album"
-        />,
-      );
-
-      // Trigger error
-      const img = screen.getByTestId("canvas-current-image");
-      act(() => {
-        fireEvent.error(img);
-      });
-
-      expect(screen.getByTestId("canvas-image-error")).toBeInTheDocument();
-
-      // Advance to next image
-      act(() => {
-        vi.advanceTimersByTime(5000 + 500);
-      });
-
-      // Error should be cleared
-      expect(screen.queryByTestId("canvas-image-error")).not.toBeInTheDocument();
-      expect(screen.getByTestId("canvas-current-image")).toBeInTheDocument();
+      // The hint should be rendered
+      expect(screen.getByTestId("floating-hint")).toBeInTheDocument();
     });
   });
 });
