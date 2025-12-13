@@ -112,8 +112,9 @@ export function ApiKeysTab() {
       setCopiedKeyId(keyId);
       setTimeout(() => setCopiedKeyId(null), 2000);
     } catch (err) {
-      /* istanbul ignore next -- @preserve Defensive error handling for clipboard API failures */ console
-        .error("Failed to copy to clipboard:", err);
+      // istanbul ignore next -- @preserve Defensive error handling for clipboard API failures
+      console.error("Failed to copy to clipboard:", err);
+      // istanbul ignore next
       setError("Failed to copy to clipboard. Please copy manually.");
     }
   };
