@@ -28,7 +28,7 @@ The Analytics and SpeedInsights components are properly integrated in the root l
 
 ```tsx
 // src/app/layout.tsx
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({ children }) {

@@ -65,7 +65,7 @@ module.exports = {
     failFast: false, // In CI, run all tests to get full report
     retry: 1, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @requires-db", // Skip db-dependent tests (no seeded test data in CI)
-    timeout: 30000, // 30 second timeout for CI
-    parallel: 4, // Run 4 scenarios in parallel
+    timeout: 10000, // 30 second timeout for CI
+    parallel: 8, // Run 4 scenarios in parallel
   },
 };
