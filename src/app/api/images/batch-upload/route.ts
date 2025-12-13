@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate cost
-    const costPerImage = ENHANCEMENT_COSTS[(album as any).defaultTier as EnhancementTier];
+    const costPerImage = ENHANCEMENT_COSTS[album.defaultTier as EnhancementTier];
     const totalCost = files.length * costPerImage;
 
     // Check balance
@@ -397,7 +397,7 @@ export async function POST(request: NextRequest) {
             data: {
               userId: session.user.id,
               imageId: img.id,
-              tier: (album as any).defaultTier,
+              tier: album.defaultTier,
               status: "PENDING",
               tokensCost: costPerImage,
             },
