@@ -374,4 +374,216 @@ describe("api-key-manager", () => {
       expect(result.keyPrefix).toMatch(/^.{7}\.{3}\*{4}$/);
     });
   });
+
+  describe("validateApiKey - constant-time comparison and lastUsedAt update", () => {
+    it("should validate key with matching hash using constant-time comparison", async () => {
+      // Create an actual API key to get the real hash
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Test Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      // Create a key and capture what would be stored
+      const createdKey = await createApiKey(testUserId, "Test Key");
+      const fullKey = createdKey.key;
+
+      // Get the hash that should match
+      const createCall = mockApiKey.create.mock.calls[0][0];
+      const expectedHash = createCall.data.keyHash;
+
+      // Now set up the validation mock with matching hash
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: expectedHash,
+        lastUsedAt: null,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+      mockApiKey.update.mockResolvedValue({});
+
+      const result = await validateApiKey(fullKey);
+
+      expect(result.isValid).toBe(true);
+      expect(result.userId).toBe(testUserId);
+      expect(result.apiKeyId).toBe(testApiKeyId);
+    });
+
+    it("should update lastUsedAt when more than 5 minutes have passed", async () => {
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Test Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      const createdKey = await createApiKey(testUserId, "Test Key");
+      const fullKey = createdKey.key;
+      const createCall = mockApiKey.create.mock.calls[0][0];
+      const expectedHash = createCall.data.keyHash;
+
+      // Set lastUsedAt to 10 minutes ago
+      const tenMinutesAgo = new Date(mockDate.getTime() - 10 * 60 * 1000);
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: expectedHash,
+        lastUsedAt: tenMinutesAgo,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+      mockApiKey.update.mockResolvedValue({});
+
+      await validateApiKey(fullKey);
+
+      // Wait for the fire-and-forget update using fake timer advancement
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockApiKey.update).toHaveBeenCalledWith({
+        where: { id: testApiKeyId },
+        data: { lastUsedAt: expect.any(Date) },
+      });
+    });
+
+    it("should NOT update lastUsedAt when less than 5 minutes have passed", async () => {
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Test Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      const createdKey = await createApiKey(testUserId, "Test Key");
+      const fullKey = createdKey.key;
+      const createCall = mockApiKey.create.mock.calls[0][0];
+      const expectedHash = createCall.data.keyHash;
+
+      // Set lastUsedAt to 2 minutes ago (within threshold)
+      const twoMinutesAgo = new Date(mockDate.getTime() - 2 * 60 * 1000);
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: expectedHash,
+        lastUsedAt: twoMinutesAgo,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+
+      await validateApiKey(fullKey);
+
+      // Wait a tick using fake timer advancement
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Should not have called update because lastUsedAt is within threshold
+      expect(mockApiKey.update).not.toHaveBeenCalled();
+    });
+
+    it("should update lastUsedAt when lastUsedAt is null", async () => {
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Test Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      const createdKey = await createApiKey(testUserId, "Test Key");
+      const fullKey = createdKey.key;
+      const createCall = mockApiKey.create.mock.calls[0][0];
+      const expectedHash = createCall.data.keyHash;
+
+      // lastUsedAt is null (never used before)
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: expectedHash,
+        lastUsedAt: null,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+      mockApiKey.update.mockResolvedValue({});
+
+      await validateApiKey(fullKey);
+
+      // Wait for the fire-and-forget update using fake timer advancement
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockApiKey.update).toHaveBeenCalledWith({
+        where: { id: testApiKeyId },
+        data: { lastUsedAt: expect.any(Date) },
+      });
+    });
+
+    it("should silently handle errors when updating lastUsedAt", async () => {
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Test Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      const createdKey = await createApiKey(testUserId, "Test Key");
+      const fullKey = createdKey.key;
+      const createCall = mockApiKey.create.mock.calls[0][0];
+      const expectedHash = createCall.data.keyHash;
+
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: expectedHash,
+        lastUsedAt: null,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+      // Simulate an error during the lastUsedAt update
+      mockApiKey.update.mockRejectedValue(new Error("Database connection lost"));
+
+      // Should not throw - the error is caught silently
+      const result = await validateApiKey(fullKey);
+
+      expect(result.isValid).toBe(true);
+
+      // Wait for the fire-and-forget update to complete using fake timer advancement
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    it("should reject when timingSafeEqual returns false due to hash mismatch", async () => {
+      // This tests the case where the database returns a record but
+      // the hash comparison fails - although this shouldn't happen in practice
+      // if the database lookup is by hash, we still need to test the branch
+
+      // Use a valid prefix so format check passes
+      const testKey = "sk_test_fakekey1234567890abcdefgh";
+
+      // Mock a record with a different hash than what the key would produce
+      // This is an edge case that shouldn't normally happen, but tests the code path
+      const differentHash = "a".repeat(64); // Valid hex but different from actual hash
+      const mockKeyRecord = {
+        id: testApiKeyId,
+        userId: testUserId,
+        isActive: true,
+        keyHash: differentHash,
+        lastUsedAt: null,
+      };
+
+      mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
+
+      const result = await validateApiKey(testKey);
+
+      // The timingSafeEqual should fail because hashes don't match
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe("Invalid API key");
+    });
+  });
 });

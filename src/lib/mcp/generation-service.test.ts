@@ -411,6 +411,534 @@ describe("generation-service", () => {
     });
   });
 
+  describe("background job processing - generation", () => {
+    it("should process generation job successfully and update job status", async () => {
+      const mockImageBuffer = Buffer.from("fake-image-data");
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      mockGeminiClient.generateImageWithGemini.mockResolvedValue(mockImageBuffer);
+      mockUploadToR2.mockResolvedValue({ url: "https://r2.example.com/image.jpg" });
+      mockMcpGenerationJob.update.mockResolvedValue({});
+
+      await createGenerationJob({
+        userId: testUserId,
+        apiKeyId: testApiKeyId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+        negativePrompt: "ugly",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify Gemini was called with correct params
+      expect(mockGeminiClient.generateImageWithGemini).toHaveBeenCalledWith({
+        prompt: "A beautiful sunset",
+        tier: "1K",
+        negativePrompt: "ugly",
+      });
+
+      // Verify R2 upload was called
+      expect(mockUploadToR2).toHaveBeenCalledWith({
+        key: expect.stringContaining(`mcp-generated/${testUserId}/${testJobId}`),
+        buffer: mockImageBuffer,
+        contentType: "image/jpeg",
+      });
+
+      // Verify job was updated with success
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.COMPLETED,
+          outputImageUrl: "https://r2.example.com/image.jpg",
+        }),
+      });
+    });
+
+    it("should handle generation job failure and refund tokens", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      // Simulate Gemini failure
+      mockGeminiClient.generateImageWithGemini.mockRejectedValue(
+        new Error("Request timed out"),
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        tokensCost: 2,
+      });
+      mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true });
+
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was updated with failure
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+          errorMessage: expect.stringContaining("took too long"),
+        }),
+      });
+
+      // Verify tokens were refunded
+      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+        testUserId,
+        2,
+        testJobId,
+        expect.stringContaining("TIMEOUT"),
+      );
+
+      // Verify job was updated to REFUNDED status
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: { status: JobStatus.REFUNDED },
+      });
+    });
+
+    it("should not refund when job not found after failure", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      mockGeminiClient.generateImageWithGemini.mockRejectedValue(
+        new Error("API key invalid"),
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      // Job not found when trying to refund
+      mockMcpGenerationJob.findUnique.mockResolvedValue(null);
+
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was updated with failure
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+        }),
+      });
+
+      // Verify refund was NOT called since job not found
+      expect(mockTokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("background job processing - modification", () => {
+    it("should process modification job successfully", async () => {
+      const mockImageBuffer = Buffer.from("fake-modified-image-data");
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        tokensCost: 5,
+        status: JobStatus.PROCESSING,
+      });
+      // First upload call is for input image, second for output
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" })
+        .mockResolvedValueOnce({ url: "https://r2.example.com/output.jpg" });
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(mockImageBuffer);
+      mockMcpGenerationJob.update.mockResolvedValue({});
+
+      await createModificationJob({
+        userId: testUserId,
+        apiKeyId: testApiKeyId,
+        prompt: "Add a rainbow",
+        tier: "TIER_2K",
+        imageData: inputBase64,
+        mimeType: "image/png",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify input image was uploaded to R2
+      expect(mockUploadToR2).toHaveBeenCalledWith({
+        key: expect.stringContaining(`mcp-input/${testUserId}/${testJobId}.png`),
+        buffer: expect.any(Buffer),
+        contentType: "image/png",
+      });
+
+      // Verify job was updated with input image URL
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: {
+          inputImageUrl: "https://r2.example.com/input.jpg",
+          inputImageR2Key: expect.stringContaining("mcp-input"),
+        },
+      });
+
+      // Verify Gemini modify was called
+      expect(mockGeminiClient.modifyImageWithGemini).toHaveBeenCalledWith({
+        prompt: "Add a rainbow",
+        tier: "2K",
+        imageData: inputBase64,
+        mimeType: "image/png",
+      });
+
+      // Verify output was uploaded
+      expect(mockUploadToR2).toHaveBeenCalledWith({
+        key: expect.stringContaining(`mcp-modified/${testUserId}/${testJobId}.jpg`),
+        buffer: mockImageBuffer,
+        contentType: "image/jpeg",
+      });
+
+      // Verify job was updated with success
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.COMPLETED,
+          outputImageUrl: "https://r2.example.com/output.jpg",
+        }),
+      });
+    });
+
+    it("should handle modification job failure and refund tokens", async () => {
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        tokensCost: 5,
+        status: JobStatus.PROCESSING,
+      });
+      // Input upload succeeds
+      mockUploadToR2.mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" });
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      // Modification fails with content policy error
+      mockGeminiClient.modifyImageWithGemini.mockRejectedValue(
+        new Error("Content blocked by policy"),
+      );
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        tokensCost: 5,
+      });
+      mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true });
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Inappropriate content",
+        tier: "TIER_2K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was updated with failure
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+          errorMessage: expect.stringContaining("content policies"),
+        }),
+      });
+
+      // Verify tokens were refunded
+      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+        testUserId,
+        5,
+        testJobId,
+        expect.stringContaining("CONTENT_POLICY"),
+      );
+
+      // Verify job was updated to REFUNDED status
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: { status: JobStatus.REFUNDED },
+      });
+    });
+
+    it("should use jpg extension when mimeType has no slash", async () => {
+      const mockImageBuffer = Buffer.from("fake-modified-image-data");
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" })
+        .mockResolvedValueOnce({ url: "https://r2.example.com/output.jpg" });
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(mockImageBuffer);
+      mockMcpGenerationJob.update.mockResolvedValue({});
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Add effect",
+        tier: "TIER_1K",
+        imageData: inputBase64,
+        mimeType: "jpeg", // No slash - should fall back to "jpg"
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify input image upload used fallback extension
+      expect(mockUploadToR2).toHaveBeenCalledWith({
+        key: expect.stringContaining(".jpg"),
+        buffer: expect.any(Buffer),
+        contentType: "jpeg",
+      });
+    });
+  });
+
+  describe("outer catch handlers for background processing", () => {
+    it("should log error when generation job throws unexpected error", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Make generateImageWithGemini throw, then make the subsequent update throw
+      // to trigger the outer catch handler
+      mockGeminiClient.generateImageWithGemini.mockRejectedValue(
+        new Error("Generation failed"),
+      );
+      // Make the job update in the catch block throw an error
+      mockMcpGenerationJob.update.mockRejectedValue(
+        new Error("Database error during failure update"),
+      );
+
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "test",
+        tier: "TIER_1K",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify the outer catch handler logged the error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`Generation job ${testJobId} failed:`),
+        expect.any(Error),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should log error when modification job throws unexpected error", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Make the first upload throw to trigger the outer catch
+      mockUploadToR2.mockRejectedValue(new Error("R2 upload failed"));
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "test",
+        tier: "TIER_1K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify the outer catch handler logged the error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`Modification job ${testJobId} failed:`),
+        expect.any(Error),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe("getJob without userId", () => {
+    it("should return job when userId is not provided", async () => {
+      const mockJob = {
+        id: testJobId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.COMPLETED,
+        prompt: "A beautiful sunset",
+        outputImageUrl: "https://example.com/image.jpg",
+        createdAt: mockDate,
+      };
+
+      mockMcpGenerationJob.findFirst.mockResolvedValue(mockJob);
+
+      // Call getJob without userId
+      const result = await getJob(testJobId);
+
+      expect(result).toEqual(mockJob);
+      // Verify where clause doesn't include userId
+      expect(mockMcpGenerationJob.findFirst).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        select: expect.any(Object),
+      });
+    });
+  });
+
+  describe("token consumption edge cases", () => {
+    it("should use default error message when consumeTokens returns no error", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: false,
+        // No error property
+      });
+
+      const result = await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_2K",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Insufficient token balance. Required: 5 tokens");
+    });
+
+    it("should use default error for modification when consumeTokens returns no error", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: false,
+        // No error property
+      });
+
+      const result = await createModificationJob({
+        userId: testUserId,
+        prompt: "Add a rainbow",
+        tier: "TIER_4K",
+        imageData: "base64imagedata",
+        mimeType: "image/jpeg",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Insufficient token balance. Required: 10 tokens");
+    });
+  });
+
+  describe("job creation without apiKeyId", () => {
+    it("should create generation job with null apiKeyId when not provided", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Call without apiKeyId
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+      });
+
+      expect(mockMcpGenerationJob.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          apiKeyId: null,
+        }),
+      });
+    });
+
+    it("should create modification job with null apiKeyId when not provided", async () => {
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        tokensCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Call without apiKeyId
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Add a rainbow",
+        tier: "TIER_1K",
+        imageData: "base64imagedata",
+        mimeType: "image/jpeg",
+      });
+
+      expect(mockMcpGenerationJob.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          apiKeyId: null,
+        }),
+      });
+    });
+  });
+
   describe("classifyError", () => {
     it("should classify timeout errors", () => {
       const result = classifyError(new Error("Request timed out"));

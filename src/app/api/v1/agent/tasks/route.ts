@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, task: updatedTask });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid request body", details: error.errors }, {
+      return NextResponse.json({ error: "Invalid request body", details: error.flatten() }, {
         status: 400,
       });
     }

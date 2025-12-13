@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { BoxMessageRole, BoxStatus } from "@prisma/client";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { BoxStatus, BoxMessageRole } from "@prisma/client";
 
 interface BoxMessage {
   id: string;
@@ -134,8 +134,13 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
     }
   };
 
-  const handleAction = async (action: "STOP" | "RESTART") => {
+  const handleAction = async (action: "STOP" | "RESTART" | "DEBUG") => {
     try {
+      if (action === "DEBUG") {
+        toast.info("Debug mode is not yet implemented");
+        return;
+      }
+
       toast.info(`${action === "STOP" ? "Pausing" : "Restarting"} agent...`);
 
       const response = await fetch(`/api/boxes/${box.id}/action`, {
@@ -149,7 +154,7 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
       }
 
       toast.success(
-        `Agent ${action === "STOP" ? "paused" : "restarted"} successfully`
+        `Agent ${action === "STOP" ? "paused" : "restarted"} successfully`,
       );
       // In a real app, you might want to refresh the page or update the status
       window.location.reload();
@@ -266,17 +271,19 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
           </div>
 
           <div className="flex-1 relative bg-black/20">
-            {box.connectionUrl ? (
-              <iframe
-                src={box.connectionUrl}
-                className="w-full h-full absolute inset-0"
-                title="Live Session"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <p>Connecting to session...</p>
-              </div>
-            )}
+            {box.connectionUrl
+              ? (
+                <iframe
+                  src={box.connectionUrl}
+                  className="w-full h-full absolute inset-0"
+                  title="Live Session"
+                />
+              )
+              : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <p>Connecting to session...</p>
+                </div>
+              )}
           </div>
         </Card>
       </div>
