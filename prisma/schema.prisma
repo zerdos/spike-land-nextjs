@@ -663,6 +663,7 @@ model Box {
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   tier            BoxTier     @relation(fields: [tierId], references: [id])
   actions         BoxAction[]
+  tasks           AgentTask[]
 
   @@index([userId])
   @@index([status])
@@ -683,6 +684,23 @@ model BoxAction {
 
   @@index([boxId, createdAt])
   @@map("box_actions")
+}
+
+model AgentTask {
+  id        String      @id @default(cuid())
+  boxId     String
+  type      String      // e.g. "NAVIGATE", "CLICK", "TYPE"
+  payload   Json?       // e.g. { url: "https://google.com" }
+  status    JobStatus   @default(PENDING)
+  result    Json?
+  error     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  box       Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+
+  @@index([boxId, status])
+  @@map("agent_tasks")
 }
 
 model EmailLog {
