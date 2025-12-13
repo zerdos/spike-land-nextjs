@@ -297,12 +297,16 @@ jobs:
 
   # E2E tests run against localhost with yarn dev, not against Vercel preview.
   # This speeds up CI by not waiting for Vercel deployment.
-  # Preview URLs are still created for manual testing.
+  # Tests are sharded across 4 runners for faster execution.
   e2e:
-    name: E2E Tests (localhost)
+    name: E2E Tests [${{ matrix.shard }}/4]
     runs-on: ubuntu-latest
     # NO DEPENDENCIES - runs in parallel with other jobs
     timeout-minutes: 30
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -348,6 +352,27 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
 
+      - name: Select feature files for shard
+        id: shard-files
+        run: |
+          # Get all feature files sorted alphabetically for consistent sharding
+          ALL_FILES=$(find e2e/features -name "*.feature" | sort)
+          TOTAL_FILES=$(echo "$ALL_FILES" | wc -l)
+          SHARD=${{ matrix.shard }}
+          TOTAL_SHARDS=4
+
+          # Calculate which files belong to this shard
+          FILES_PER_SHARD=$(( (TOTAL_FILES + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
+          START_IDX=$(( (SHARD - 1) * FILES_PER_SHARD + 1 ))
+          END_IDX=$(( SHARD * FILES_PER_SHARD ))
+
+          # Get files for this shard
+          SHARD_FILES=$(echo "$ALL_FILES" | sed -n "${START_IDX},${END_IDX}p" | tr '\n' ' ')
+
+          echo "Shard $SHARD/$TOTAL_SHARDS: Running $(echo "$SHARD_FILES" | wc -w) feature files"
+          echo "Files: $SHARD_FILES"
+          echo "files=$SHARD_FILES" >> $GITHUB_OUTPUT
+
       - name: Start dev server
         run: |
           yarn dev &
@@ -376,17 +401,19 @@ jobs:
           # Disable external services for E2E tests
           SKIP_ENV_VALIDATION: "true"
 
-      - name: Run E2E tests
+      - name: Run E2E tests (shard ${{ matrix.shard }}/4)
         env:
           BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: yarn test:e2e:ci
+        run: |
+          # Run cucumber with only the shard's feature files
+          npx cucumber-js --profile ci ${{ steps.shard-files.outputs.files }}
 
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-reports
+          name: e2e-reports-shard-${{ matrix.shard }}
           path: e2e/reports
           retention-days: 7
 
