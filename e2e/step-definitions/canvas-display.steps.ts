@@ -15,97 +15,88 @@ const testContext: CanvasTestContext = {
   albumPrivacy: "UNLISTED",
 };
 
+// E2E seeded test data - must match prisma/seed-e2e.ts
+const E2E_TEST_ALBUMS = {
+  unlisted: {
+    id: "e2e-unlisted-album",
+    shareToken: "e2e-share-token-123",
+  },
+  private: {
+    id: "e2e-private-album",
+    shareToken: null,
+  },
+};
+
 // Skip flag for tests when no albums exist in test environment
 let shouldSkipCanvasTests = false;
+
+// Helper function to mock NextAuth session for canvas tests
+async function mockCanvasSession(world: CustomWorld) {
+  const sessionData = {
+    user: {
+      id: "test-user-id",
+      name: "Test User",
+      email: "test@example.com",
+      image: null,
+    },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+
+  // Mock the NextAuth session endpoint
+  await world.page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(sessionData),
+    });
+  });
+
+  // Set mock session cookie for middleware authentication bypass
+  await world.page.context().addCookies([{
+    name: "authjs.session-token",
+    value: "mock-session-token",
+    domain: "localhost",
+    path: "/",
+    httpOnly: true,
+    sameSite: "Lax",
+    expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+  }]);
+}
 
 // Background step - ensure authenticated user with albums
 Given("I am authenticated as a user with albums", async function(this: CustomWorld) {
   // Reset skip flag for each scenario
   shouldSkipCanvasTests = false;
 
-  // Navigation to authenticated state
-  // The E2E_BYPASS_SECRET header is automatically added in world.ts
-  await this.page.goto(`${this.baseUrl}/albums`);
-  await this.page.waitForLoadState("networkidle");
+  // Set up authentication
+  await mockCanvasSession(this);
+
+  // Use seeded test album data
+  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+  testContext.albumPrivacy = "UNLISTED";
 });
 
 // Album setup steps
 Given("I have an UNLISTED album with images", async function(this: CustomWorld) {
-  // Navigate to albums page to find/create an unlisted album
-  await this.page.goto(`${this.baseUrl}/albums`);
-  await this.page.waitForLoadState("networkidle");
-
-  // Check if we have any albums - look for View Album links
-  const albumLinks = this.page.locator('a[href^="/albums/"]');
-  const count = await albumLinks.count();
-
-  if (count > 0) {
-    // Get the first album link
-    const firstAlbumLink = albumLinks.first();
-    const href = await firstAlbumLink.getAttribute("href");
-    if (href) {
-      testContext.albumId = href.replace("/albums/", "");
-      testContext.albumPrivacy = "UNLISTED";
-      // For testing, we'll use a placeholder token
-      testContext.shareToken = "test-share-token";
-    }
-  }
-
-  // If no albums found, skip the test gracefully
-  if (!testContext.albumId) {
-    console.log("No albums found - skipping canvas tests");
-    shouldSkipCanvasTests = true;
-    return "skipped";
-  }
+  // Use seeded E2E test data - no need to navigate and search
+  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+  testContext.albumPrivacy = "UNLISTED";
 });
 
 Given("I have a PRIVATE album with images", async function(this: CustomWorld) {
-  testContext.albumPrivacy = "PRIVATE";
+  // Use seeded E2E test data
+  testContext.albumId = E2E_TEST_ALBUMS.private.id;
   testContext.shareToken = "";
-
-  await this.page.goto(`${this.baseUrl}/albums`);
-  await this.page.waitForLoadState("networkidle");
-
-  // Find a private album (look for Private badge)
-  const privateAlbum = this.page.locator("div").filter({ hasText: "Private" }).first();
-  const albumLink = privateAlbum.locator('a[href^="/albums/"]').first();
-
-  if (await albumLink.isVisible()) {
-    const href = await albumLink.getAttribute("href");
-    if (href) {
-      testContext.albumId = href.replace("/albums/", "");
-    }
-  }
-
-  // If no private album found, skip the test gracefully
-  if (!testContext.albumId) {
-    console.log("No private albums found - skipping canvas tests");
-    shouldSkipCanvasTests = true;
-    return "skipped";
-  }
+  testContext.albumPrivacy = "PRIVATE";
 });
 
 Given("I have an UNLISTED album with multiple images", async function(this: CustomWorld) {
-  // Same as single image setup, but we need at least 2 images
-  await this.page.goto(`${this.baseUrl}/albums`);
-  await this.page.waitForLoadState("networkidle");
-
-  const albumLinks = this.page.locator('a[href^="/albums/"]');
-  if (await albumLinks.count() > 0) {
-    const href = await albumLinks.first().getAttribute("href");
-    if (href) {
-      testContext.albumId = href.replace("/albums/", "");
-      testContext.albumPrivacy = "UNLISTED";
-      testContext.shareToken = "test-share-token";
-    }
-  }
-
-  // If no albums found, skip the test gracefully
-  if (!testContext.albumId) {
-    console.log("No albums with multiple images found - skipping canvas tests");
-    shouldSkipCanvasTests = true;
-    return "skipped";
-  }
+  // Use seeded E2E test data - the unlisted album has 5 images
+  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+  testContext.albumPrivacy = "UNLISTED";
 });
 
 // Canvas page navigation steps
@@ -432,13 +423,7 @@ Then("a new tab should open with the canvas URL", async function(this: CustomWor
 });
 
 // Slideshow behavior steps
-When("I wait for {int} seconds", async function(this: CustomWorld, seconds: number) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
-
-  await this.page.waitForTimeout(seconds * 1000);
-});
+// Note: "I wait for {int} seconds" step is defined in smart-gallery.steps.ts
 
 Then("the displayed image should have changed", async function(this: CustomWorld) {
   if (shouldSkipCanvasTests) {
@@ -473,16 +458,7 @@ Then("the images should be displayed in album order", async function(this: Custo
 });
 
 // Accessibility steps
-When("I do not move the mouse for {int} seconds", async function(
-  this: CustomWorld,
-  seconds: number,
-) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
-
-  await this.page.waitForTimeout(seconds * 1000);
-});
+// Note: "I do not move the mouse for {int} seconds" step is defined in smart-gallery.steps.ts
 
 Then("the cursor should be hidden", async function(this: CustomWorld) {
   if (shouldSkipCanvasTests) {
