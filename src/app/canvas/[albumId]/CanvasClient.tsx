@@ -1,12 +1,16 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
 import { FloatingHint, HINT_TEXT } from "@/components/canvas/FloatingHint";
 import { SlideshowView } from "@/components/canvas/SlideshowView";
 import { SmartGrid } from "@/components/canvas/SmartGrid";
+import { Button } from "@/components/ui/button";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { useSmartGallery } from "@/hooks/useSmartGallery";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
+import { Play } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // Re-export types for backward compatibility
@@ -155,6 +159,30 @@ export function CanvasClient({
       data-testid="canvas-container"
       aria-label={`Canvas display: ${albumName}`}
     >
+      {/* Header with Pixel Logo and CTA */}
+      {viewMode === "grid" && (
+        <header className="sticky top-0 z-40 bg-[#0B0E14]/90 backdrop-blur-sm border-b border-white/10">
+          <div className="flex items-center justify-between px-4 py-3">
+            <Link
+              href="/apps/pixel"
+              className="transition-opacity hover:opacity-80"
+              data-testid="pixel-logo-link"
+            >
+              <PixelLogo size="sm" variant="horizontal" />
+            </Link>
+            <Button
+              onClick={enterSlideshow}
+              disabled={!selectedImageId}
+              className="bg-[#00E5FF] hover:bg-[#00E5FF]/80 text-[#0B0E14] font-semibold shadow-[0_0_20px_rgba(0,229,255,0.3)] disabled:opacity-50 disabled:shadow-none"
+              data-testid="start-slideshow-button"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Slideshow
+            </Button>
+          </div>
+        </header>
+      )}
+
       {/* Grid View */}
       <SmartGrid
         images={displayImages}

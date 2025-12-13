@@ -3,6 +3,60 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CanvasClient } from "./CanvasClient";
 
+// Mock the brand components
+vi.mock("@/components/brand", () => ({
+  PixelLogo: ({ size, variant }: { size: string; variant: string; }) => (
+    <div data-testid="pixel-logo" data-size={size} data-variant={variant}>
+      Pixel Logo
+    </div>
+  ),
+}));
+
+// Mock the UI components
+vi.mock("@/components/ui/button", () => ({
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    className,
+    ...props
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    className?: string;
+    [key: string]: unknown;
+  }) => (
+    <button onClick={onClick} disabled={disabled} className={className} {...props}>
+      {children}
+    </button>
+  ),
+}));
+
+// Mock lucide-react icons
+vi.mock("lucide-react", () => ({
+  Play: () => <span data-testid="play-icon">▶</span>,
+}));
+
+// Mock next/link
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    className,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    className?: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} className={className} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 // Mock the hooks
 const mockSelectImage = vi.fn();
 const mockEnterSlideshow = vi.fn();
@@ -986,6 +1040,127 @@ describe("CanvasClient", () => {
 
       // The hint should be rendered
       expect(screen.getByTestId("floating-hint")).toBeInTheDocument();
+    });
+  });
+
+  describe("Header with Pixel Logo and CTA", () => {
+    it("renders header with Pixel logo in grid mode", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const logo = screen.getByTestId("pixel-logo");
+      expect(logo).toBeInTheDocument();
+      expect(logo).toHaveAttribute("data-size", "sm");
+      expect(logo).toHaveAttribute("data-variant", "horizontal");
+    });
+
+    it("renders Pixel logo link with correct href", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const logoLink = screen.getByTestId("pixel-logo-link");
+      expect(logoLink).toHaveAttribute("href", "/apps/pixel");
+    });
+
+    it("renders Start Slideshow button in grid mode", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const button = screen.getByTestId("start-slideshow-button");
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveTextContent("Start Slideshow");
+    });
+
+    it("Start Slideshow button is disabled when no image is selected", () => {
+      mockViewMode = "grid";
+      mockSelectedImageId = null;
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const button = screen.getByTestId("start-slideshow-button");
+      expect(button).toBeDisabled();
+    });
+
+    it("Start Slideshow button is enabled when an image is selected", () => {
+      mockViewMode = "grid";
+      mockSelectedImageId = "img-1";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const button = screen.getByTestId("start-slideshow-button");
+      expect(button).not.toBeDisabled();
+    });
+
+    it("clicking Start Slideshow button calls enterSlideshow", () => {
+      mockViewMode = "grid";
+      mockSelectedImageId = "img-1";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      const button = screen.getByTestId("start-slideshow-button");
+      fireEvent.click(button);
+
+      expect(mockEnterSlideshow).toHaveBeenCalled();
+    });
+
+    it("does not render header in slideshow mode", () => {
+      mockViewMode = "slideshow";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(screen.queryByTestId("pixel-logo")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("start-slideshow-button")).not.toBeInTheDocument();
+    });
+
+    it("renders play icon in Start Slideshow button", () => {
+      mockViewMode = "grid";
+      render(
+        <CanvasClient
+          images={mockGalleryImages}
+          settings={defaultSettings}
+          albumName="Test Album"
+        />,
+      );
+
+      expect(screen.getByTestId("play-icon")).toBeInTheDocument();
     });
   });
 });
