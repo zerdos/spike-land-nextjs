@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { z } from "zod";
 
 vi.mock("@/lib/prisma", () => ({
   default: {

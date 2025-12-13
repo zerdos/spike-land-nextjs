@@ -59,6 +59,17 @@ Feature: MCP API Key Management
     And I should see a warning to copy the key now
 
   @requires-db
+  Scenario: Copy newly created API key to clipboard
+    When I navigate to the settings page
+    And I click the "API Keys" tab
+    And I click the "Create API Key" button
+    And I enter "Copy Test Key" in the key name field
+    And I click the "Create Key" button
+    Then I should see the API key created dialog
+    When I click the copy button for the new API key
+    Then I should see a checkmark indicating the key was copied
+
+  @requires-db
   Scenario: Created API key appears in list
     Given I have created an API key named "Test Key"
     When I navigate to the settings page
