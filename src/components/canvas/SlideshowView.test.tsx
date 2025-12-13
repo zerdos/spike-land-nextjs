@@ -575,7 +575,7 @@ describe("SlideshowView", () => {
 
       // clearHeroTransformStyles should not be called since component is unmounted
       // (containerRef.current will be null)
-      // The test passes if no error is thrown
+      expect(clearHeroTransformStyles).not.toHaveBeenCalled();
     });
   });
 });
