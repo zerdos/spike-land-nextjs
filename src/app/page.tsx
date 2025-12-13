@@ -44,7 +44,7 @@ export default async function Home() {
             name="Pixel"
             description="Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
             icon={<ImageIcon className="h-8 w-8" />}
-            href="/apps/pixel"
+            href="/auth/signin?callbackUrl=/apps/pixel"
             featured
             usePixelLogo
             tagline="AI Image Enhancement"

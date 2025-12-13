@@ -64,6 +64,22 @@ export function AuthButtons({ className }: AuthButtonsProps) {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getCallbackUrl = (): string => {
+    if (typeof window === "undefined") return "/apps/pixel";
+    const params = new URLSearchParams(window.location.search);
+    const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
+    // Validate URL to prevent open redirect attacks
+    try {
+      const url = new URL(callbackUrl, window.location.origin);
+      if (url.origin === window.location.origin) {
+        return url.pathname + url.search;
+      }
+    } catch {
+      // Malformed URL; use default
+    }
+    return "/apps/pixel";
+  };
+
   const checkEmail = async (): Promise<EmailCheckResponse | null> => {
     try {
       const response = await fetch("/api/auth/check-email", {
@@ -413,7 +429,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       {/* Social Buttons - Primary Position */}
       <div className="flex flex-col gap-3">
         <Button
-          onClick={() => signIn("google")}
+          onClick={() => signIn("google", { callbackUrl: getCallbackUrl() })}
           variant="outline"
           className="w-full h-12 bg-card hover:bg-card/80 border-border"
           size="lg"
@@ -423,7 +439,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         </Button>
 
         <Button
-          onClick={() => signIn("github")}
+          onClick={() => signIn("github", { callbackUrl: getCallbackUrl() })}
           variant="outline"
           className="w-full h-12 bg-card hover:bg-card/80 border-border"
           size="lg"

@@ -94,22 +94,89 @@ describe("AuthButtons Component", () => {
   });
 
   describe("Social Auth Buttons", () => {
-    it("should call signIn with google when Google button is clicked", async () => {
+    it("should call signIn with google and default callbackUrl when Google button is clicked", async () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
       await user.click(screen.getByRole("button", { name: /continue with google/i }));
-      expect(signIn).toHaveBeenCalledWith("google");
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
 
-    it("should call signIn with github when GitHub button is clicked", async () => {
+    it("should call signIn with github and default callbackUrl when GitHub button is clicked", async () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
       await user.click(screen.getByRole("button", { name: /continue with github/i }));
-      expect(signIn).toHaveBeenCalledWith("github");
+      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/apps/pixel" });
       expect(signIn).toHaveBeenCalledTimes(1);
+    });
+
+    it("should use callbackUrl from URL params for Google sign in", async () => {
+      const user = userEvent.setup();
+      // Mock window.location.search
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=/my-dashboard",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/my-dashboard" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
+    it("should use callbackUrl from URL params for GitHub sign in", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "?callbackUrl=/settings", origin: "http://localhost" },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with github/i }));
+
+      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/settings" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
+    it("should reject external URLs in callbackUrl to prevent open redirect", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=https://evil.com/steal",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+
+      // Should use default /apps/pixel instead of external URL
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
     });
 
     it("should have full width buttons", () => {
