@@ -171,16 +171,14 @@ jobs:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
   # ============================================================================
-  # TIER 2: Deploy Preview - starts immediately after build (doesn't wait for tests)
+  # TIER 2: Deploy Preview - starts immediately in parallel (no dependencies)
   # ============================================================================
 
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
-    needs: build # Only waits for build, NOT for tests or lint
-    # Run preview deployment for ALL events (push to main, PRs, workflow_dispatch)
-    # This ensures E2E tests always run against the new code, not stale production
-    if: needs.build.result == 'success'
+    # NO DEPENDENCIES - starts immediately in parallel with tests and build!
+    # Vercel builds independently, so we don't need to wait for our build job
     outputs:
       deployment-url: ${{ steps.deploy.outputs.url }}
 
@@ -294,23 +292,16 @@ jobs:
           exit 1
 
   # ============================================================================
-  # TIER 3: E2E Tests - runs after deploy-preview is ready
+  # TIER 3: E2E Tests - runs against localhost (parallel with deploy-preview)
   # ============================================================================
 
-  # E2E tests may complete before unit tests. This is intentional - preview URLs
-  # are useful for manual testing even if automated tests later fail.
-  # Production deploy still gates on ALL checks passing.
+  # E2E tests run against localhost with yarn dev, not against Vercel preview.
+  # This speeds up CI by not waiting for Vercel deployment.
+  # Preview URLs are still created for manual testing.
   e2e:
-    name: E2E Tests
+    name: E2E Tests (localhost)
     runs-on: ubuntu-latest
-    needs: [deploy-preview, build] # Explicit build dependency for clarity
-    # Run if deploy-preview succeeded OR was skipped (for main branch push)
-    # AND build must have succeeded
-    # Note: always() is required to evaluate conditions when deploy-preview is skipped
-    if: |
-      always() &&
-      needs.build.result == 'success' &&
-      (needs.deploy-preview.result == 'success' || needs.deploy-preview.result == 'skipped')
+    # NO DEPENDENCIES - runs in parallel with other jobs
     timeout-minutes: 30
 
     steps:
@@ -337,6 +328,9 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' package.json | tr -d '^~')" >> $GITHUB_OUTPUT
@@ -354,20 +348,37 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
 
-      - name: Determine test URL
-        id: test-url
+      - name: Start dev server
         run: |
-          if [ -n "${{ needs.deploy-preview.outputs.deployment-url }}" ]; then
-            echo "url=${{ needs.deploy-preview.outputs.deployment-url }}" >> $GITHUB_OUTPUT
-            echo "Running E2E tests against preview deployment: ${{ needs.deploy-preview.outputs.deployment-url }}"
-          else
-            echo "url=https://spike.land" >> $GITHUB_OUTPUT
-            echo "No preview URL available, running against production"
-          fi
+          yarn dev &
+          DEV_PID=$!
+          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
+
+          # Wait for server to be ready (up to 120 seconds)
+          echo "Waiting for dev server to be ready..."
+          for i in {1..120}; do
+            if curl -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "✓ Dev server is ready! (took ${i}s)"
+              exit 0
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Still waiting... (${i}s)"
+            fi
+            sleep 1
+          done
+          echo "✗ Dev server failed to start after 120 seconds"
+          exit 1
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          # Disable external services for E2E tests
+          SKIP_ENV_VALIDATION: "true"
 
       - name: Run E2E tests
         env:
-          BASE_URL: ${{ steps.test-url.outputs.url }}
+          BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
         run: yarn test:e2e:ci
 
@@ -383,7 +394,7 @@ jobs:
   # TIER 4: Final gates - require ALL checks to pass before production deploy
   # ============================================================================
 
-  # Post-E2E notification (uses the preview URL from deploy-preview)
+  # Post-test notification (uses the preview URL from deploy-preview if available)
   notify-pr:
     name: Notify PR
     runs-on: ubuntu-latest
@@ -399,7 +410,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run smoke tests
+      - name: Run smoke tests on preview
+        if: needs.deploy-preview.result == 'success' && needs.deploy-preview.outputs.deployment-url != ''
         continue-on-error: true
         run: chmod +x scripts/smoke-test.sh && ./scripts/smoke-test.sh "${{ needs.deploy-preview.outputs.deployment-url }}" "${{ secrets.E2E_BYPASS_SECRET }}"
 
@@ -408,20 +420,36 @@ jobs:
         uses: actions/github-script@v7
         env:
           DEPLOYMENT_URL: ${{ needs.deploy-preview.outputs.deployment-url }}
+          DEPLOY_SUCCESS: ${{ needs.deploy-preview.result == 'success' }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const deploymentUrl = process.env.DEPLOYMENT_URL;
+            const deploySuccess = process.env.DEPLOY_SUCCESS === 'true';
             const sha = context.payload.pull_request?.head.sha.substring(0, 7) || 'unknown';
-            const comment = [
-              '## 🚀 Test Deployment Ready',
-              '',
-              `**URL:** [${deploymentUrl}](${deploymentUrl})`,
-              '',
-              '✅ E2E tests passed',
+
+            const statusLines = [
+              '✅ E2E tests passed (tested on localhost)',
               '✅ Unit tests passed',
               '✅ Lint & security checks passed',
-              '✅ Smoke tests passed',
+            ];
+
+            if (deploySuccess && deploymentUrl) {
+              statusLines.push('✅ Preview deployment ready');
+            } else {
+              statusLines.push('⚠️ Preview deployment pending or failed (tests ran independently)');
+            }
+
+            const urlSection = deploySuccess && deploymentUrl
+              ? `**Preview URL:** [${deploymentUrl}](${deploymentUrl})`
+              : '**Preview URL:** Not available yet';
+
+            const comment = [
+              '## 🚀 All Checks Passed',
+              '',
+              urlSection,
+              '',
+              ...statusLines,
               '',
               `**Commit:** ${sha}`,
               `**Workflow:** [#${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
@@ -434,7 +462,7 @@ jobs:
             });
 
             const botComment = existingComments.data.find(c =>
-              c.body.includes('Test Deployment Ready')
+              c.body.includes('All Checks Passed') || c.body.includes('Test Deployment Ready')
             );
 
             if (botComment) {
