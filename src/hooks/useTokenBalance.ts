@@ -63,7 +63,7 @@ export function calculateEstimatedEnhancements(
 export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [balance, setBalance] = useState<number>(0);
   const [lastRegeneration, setLastRegeneration] = useState<Date | null>(null);
-  const [nextRegenTime, setNextRegenTime] = useState<Date | null>(null);
+  const [_nextRegenTime, setNextRegenTime] = useState<Date | null>(null);
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
