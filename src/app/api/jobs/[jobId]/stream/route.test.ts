@@ -795,10 +795,10 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
       user: { id: mockUserId },
     } as never);
 
-    let pollCount = 0;
+    let _pollCount = 0;
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockImplementation(
       async () => {
-        pollCount++;
+        _pollCount++;
         // Always return PENDING to keep polling
         return {
           id: mockJobId,
@@ -847,10 +847,10 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
       user: { id: mockUserId },
     } as never);
 
-    let pollCount = 0;
+    let _pollCount = 0;
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockImplementation(
       async () => {
-        pollCount++;
+        _pollCount++;
         // First call for validation, then polling
         return {
           id: mockJobId,

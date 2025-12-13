@@ -407,7 +407,7 @@ describe("AddToAlbumModal", () => {
         json: async () => ({ albums: mockAlbums }),
       });
 
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
 
       render(
         <AddToAlbumModal

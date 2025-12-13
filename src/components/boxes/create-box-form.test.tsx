@@ -528,7 +528,7 @@ describe("CreateBoxForm", () => {
 
   describe("Form Validation", () => {
     it("does not submit when name is empty", async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<CreateBoxForm tiers={mockTiers} />);
 
       // Try to submit with empty name via form submission

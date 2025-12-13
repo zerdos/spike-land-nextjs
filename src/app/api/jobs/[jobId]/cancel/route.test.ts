@@ -32,7 +32,7 @@ vi.mock("workflow/api", () => ({
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
 const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
-const { Run } = await import("workflow/api");
+const { Run: _Run } = await import("workflow/api");
 const { POST } = await import("./route");
 
 describe("/api/jobs/[jobId]/cancel", () => {
