@@ -10,6 +10,7 @@ global.fetch = mockFetch as unknown as typeof fetch;
 describe("useAlbumBatchEnhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetch.mockReset(); // Reset mock implementation and queued responses
     vi.useFakeTimers();
   });
 
@@ -672,7 +673,15 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock network error during polling
+    // First poll succeeds (called immediately after startBatchEnhance)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+      }),
+    });
+
+    // Second poll - network error
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
     const { result } = renderHook(() =>
@@ -686,11 +695,12 @@ describe("useAlbumBatchEnhance", () => {
       await result.current.startBatchEnhance("TIER_2K");
     });
 
+    // After startBatchEnhance, first poll has completed, so still processing
     expect(result.current.isProcessing).toBe(true);
 
-    // Advance time to trigger polling which will throw
+    // Advance time to trigger second poll which will throw
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
+      await vi.advanceTimersByTimeAsync(3000);
     });
 
     expect(result.current.isProcessing).toBe(false);
@@ -716,7 +726,15 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock a non-Error thrown during polling
+    // First poll succeeds (called immediately after startBatchEnhance)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+      }),
+    });
+
+    // Second poll - throw a non-Error value
     mockFetch.mockRejectedValueOnce("String error");
 
     const { result } = renderHook(() =>
@@ -730,11 +748,12 @@ describe("useAlbumBatchEnhance", () => {
       await result.current.startBatchEnhance("TIER_2K");
     });
 
+    // After startBatchEnhance, first poll has completed, so still processing
     expect(result.current.isProcessing).toBe(true);
 
-    // Advance time to trigger polling which will throw non-Error
+    // Advance time to trigger second poll which will throw non-Error
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
+      await vi.advanceTimersByTimeAsync(3000);
     });
 
     expect(result.current.isProcessing).toBe(false);
@@ -760,7 +779,15 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock error during polling
+    // First poll succeeds (called immediately after startBatchEnhance)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+      }),
+    });
+
+    // Second poll would throw error, but should not be called since cancelled
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
     const { result } = renderHook(() =>
@@ -774,12 +801,12 @@ describe("useAlbumBatchEnhance", () => {
       await result.current.startBatchEnhance("TIER_2K");
     });
 
-    // Cancel before the poll occurs
+    // Cancel after first poll but before the second
     act(() => {
       result.current.cancel();
     });
 
-    // Advance time - polling should not fire onError since cancelled
+    // Advance time - second poll should not fire onError since cancelled
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5000);
     });
@@ -805,8 +832,9 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock 60+ polling responses all showing PROCESSING
-    for (let i = 0; i < 65; i++) {
+    // Mock 65+ polling responses all showing PROCESSING
+    // First poll happens immediately after startBatchEnhance, rest are scheduled via setTimeout
+    for (let i = 0; i < 70; i++) {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -826,11 +854,16 @@ describe("useAlbumBatchEnhance", () => {
       await result.current.startBatchEnhance("TIER_2K");
     });
 
+    // First poll already happened during startBatchEnhance, but job is still PROCESSING
     expect(result.current.isProcessing).toBe(true);
 
-    // Simulate many poll cycles - enough to hit max attempts
-    // MAX_POLL_ATTEMPTS = 60, with exponential backoff
-    for (let i = 0; i < 61; i++) {
+    // Simulate many poll cycles - enough to hit max attempts (MAX_POLL_ATTEMPTS = 60)
+    // First poll already consumed, so we need 59 more to reach MAX_POLL_ATTEMPTS
+    // With exponential backoff, intervals grow: 2000, 3000, 4500, 6750, 10000, 10000...
+    // After ~5 polls, interval caps at 10000ms
+    // Total time needed: ~5 polls at shorter intervals + 55 polls at 10000ms
+    // Using 15000ms per iteration ensures we trigger at least one poll per iteration
+    for (let i = 0; i < 65; i++) {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(15000);
       });

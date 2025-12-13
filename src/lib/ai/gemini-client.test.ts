@@ -1184,12 +1184,22 @@ describe("gemini-client", () => {
         tier: "1K",
       });
 
+      // Attach a catch handler immediately to prevent unhandled rejection warning
+      // The actual assertion will happen below
+      let caughtError: Error | null = null;
+      promise.catch((e) => {
+        caughtError = e;
+      });
+
       // Advance past the timeout
       await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
 
-      await expect(promise).rejects.toThrow(
-        /Gemini API request timed out after \d+ seconds/,
-      );
+      // Give the microtask queue a chance to process
+      await vi.runAllTimersAsync();
+
+      // Verify the error was thrown
+      expect(caughtError).not.toBeNull();
+      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
     });
 
     it("should timeout and reject for generateImageWithGemini when stream takes too long", async () => {
@@ -1207,12 +1217,21 @@ describe("gemini-client", () => {
         tier: "1K",
       });
 
+      // Attach a catch handler immediately to prevent unhandled rejection warning
+      let caughtError: Error | null = null;
+      promise.catch((e) => {
+        caughtError = e;
+      });
+
       // Advance past the timeout
       await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
 
-      await expect(promise).rejects.toThrow(
-        /Gemini API request timed out after \d+ seconds/,
-      );
+      // Give the microtask queue a chance to process
+      await vi.runAllTimersAsync();
+
+      // Verify the error was thrown
+      expect(caughtError).not.toBeNull();
+      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
     });
 
     it("should timeout and reject for modifyImageWithGemini when stream takes too long", async () => {
@@ -1232,12 +1251,21 @@ describe("gemini-client", () => {
         tier: "1K",
       });
 
+      // Attach a catch handler immediately to prevent unhandled rejection warning
+      let caughtError: Error | null = null;
+      promise.catch((e) => {
+        caughtError = e;
+      });
+
       // Advance past the timeout
       await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
 
-      await expect(promise).rejects.toThrow(
-        /Gemini API request timed out after \d+ seconds/,
-      );
+      // Give the microtask queue a chance to process
+      await vi.runAllTimersAsync();
+
+      // Verify the error was thrown
+      expect(caughtError).not.toBeNull();
+      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
     });
   });
 

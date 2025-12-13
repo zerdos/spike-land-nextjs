@@ -11,8 +11,8 @@ global.fetch = mockFetch;
 const mockAlert = vi.fn();
 global.alert = mockAlert;
 
-// Mock console.error
-const mockConsoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+// Mock console.error - will be set up in beforeEach
+let mockConsoleError: ReturnType<typeof vi.spyOn>;
 
 // Mock FileReader
 const mockFileReaderResult = "data:image/png;base64,test123";
@@ -51,7 +51,11 @@ describe("TestEnhancementPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset mockFetch to clear any leftover mock implementations from previous tests
+    mockFetch.mockReset();
     vi.useFakeTimers({ shouldAdvanceTime: true });
+    // Set up console.error spy fresh for each test
+    mockConsoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     // Each test sets up its own mocks
   });
 
@@ -164,6 +168,11 @@ describe("TestEnhancementPage", () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       render(<TestEnhancementPage />);
+
+      // Allow the rejected promise to be processed
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10);
+      });
 
       await waitFor(() => {
         expect(mockConsoleError).toHaveBeenCalledWith(
@@ -464,15 +473,44 @@ describe("TestEnhancementPage", () => {
 
   describe("Tier Selection", () => {
     it("should allow changing tier selection", async () => {
-      setupDefaultBalanceMock();
+      const uploadedImage = {
+        id: "img123",
+        name: "test.png",
+        url: "http://example.com/test.png",
+        width: 800,
+        height: 600,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ image: uploadedImage }),
+        })
+        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<TestEnhancementPage />);
 
-      // Wait for initial render
-      await waitFor(() => {
-        expect(screen.getByText("Image Enhancement Demo")).toBeInTheDocument();
+      // First, upload an image to enable tier selection
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const testFile = new File(["test"], "test.png", { type: "image/png" });
+
+      await act(async () => {
+        fireEvent.change(fileInput, { target: { files: [testFile] } });
+        await vi.advanceTimersByTimeAsync(10);
       });
 
+      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      await act(async () => {
+        fireEvent.click(uploadButton);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/Uploaded Successfully/)).toBeInTheDocument();
+      });
+
+      // Now tier selection should be enabled
       const tier1kRadio = screen.getByDisplayValue("TIER_1K");
       await user.click(tier1kRadio);
 
@@ -777,6 +815,11 @@ describe("TestEnhancementPage", () => {
 
       render(<TestEnhancementPage />);
 
+      // Wait for initial balance fetch to complete
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10);
+      });
+
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
@@ -788,6 +831,8 @@ describe("TestEnhancementPage", () => {
       const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
       await act(async () => {
         fireEvent.click(uploadButton);
+        // Allow upload promise and subsequent balance fetch to resolve
+        await vi.advanceTimersByTimeAsync(10);
       });
 
       await waitFor(() => {

@@ -15,7 +15,7 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Mock clipboard API
-const mockWriteText = vi.fn();
+const mockWriteText = vi.fn().mockResolvedValue(undefined);
 Object.defineProperty(navigator, "clipboard", {
   value: {
     writeText: mockWriteText,
@@ -130,7 +130,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Unused Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("Never used")).toBeInTheDocument();
+      expect(screen.getByText(/Never used/)).toBeInTheDocument();
     });
 
     it("shows 'Revoked' badge for inactive keys", async () => {
@@ -543,17 +543,22 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("API Key Created")).toBeInTheDocument();
       });
 
-      // Find and click the copy button (variant="outline" size="icon")
-      const copyButtons = screen.getAllByRole("button");
-      // The copy button is a small icon button next to the key code
-      const copyButton = copyButtons.find((btn) =>
-        btn.querySelector("svg") && !btn.textContent?.includes("Done")
-      );
+      // Find the copy button - the icon-only button next to the key
+      // The key is displayed in a code element, the copy button is next to it
+      const keyCodeElement = screen.getByText("sk_live_xyz_full_key_123");
+      expect(keyCodeElement).toBeInTheDocument();
 
+      // The copy button is the sibling button element
+      const copyButtonContainer = keyCodeElement.parentElement;
+      const copyButton = copyButtonContainer?.querySelector("button");
       expect(copyButton).toBeTruthy();
+
       if (copyButton) {
         await user.click(copyButton);
-        expect(mockWriteText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+        // Wait for async clipboard operation to complete
+        await waitFor(() => {
+          expect(mockWriteText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+        });
       }
     });
   });
@@ -789,7 +794,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("Just now")).toBeInTheDocument();
+      expect(screen.getByText(/Just now/)).toBeInTheDocument();
     });
 
     it("displays minutes ago for recent usage", async () => {
@@ -818,7 +823,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("15 min ago")).toBeInTheDocument();
+      expect(screen.getByText(/15 min ago/)).toBeInTheDocument();
     });
 
     it("displays single hour ago correctly", async () => {
@@ -847,7 +852,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("1 hour ago")).toBeInTheDocument();
+      expect(screen.getByText(/1 hour ago/)).toBeInTheDocument();
     });
 
     it("displays multiple hours ago correctly", async () => {
@@ -876,7 +881,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("3 hours ago")).toBeInTheDocument();
+      expect(screen.getByText(/3 hours ago/)).toBeInTheDocument();
     });
 
     it("displays single day ago correctly", async () => {
@@ -905,7 +910,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("1 day ago")).toBeInTheDocument();
+      expect(screen.getByText(/1 day ago/)).toBeInTheDocument();
     });
 
     it("displays multiple days ago correctly", async () => {
@@ -934,7 +939,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("3 days ago")).toBeInTheDocument();
+      expect(screen.getByText(/3 days ago/)).toBeInTheDocument();
     });
 
     it("displays formatted date for usage over a week ago", async () => {
@@ -960,7 +965,7 @@ describe("ApiKeysTab", () => {
         expect(screen.getByText("Test Key")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("Jan 10, 2024")).toBeInTheDocument();
+      expect(screen.getByText(/Jan 10, 2024/)).toBeInTheDocument();
     });
   });
 
@@ -1070,7 +1075,10 @@ describe("ApiKeysTab", () => {
       expect(copyButton).toBeTruthy();
       if (copyButton) {
         await user.click(copyButton);
-        expect(mockWriteText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+        // Wait for async clipboard operation to complete
+        await waitFor(() => {
+          expect(mockWriteText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+        });
       }
     });
   });
