@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthButtons } from "@/components/auth/auth-buttons";
+import { PixelLogo } from "@/components/brand/PixelLogo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
@@ -29,11 +30,16 @@ function SignInContentInner() {
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome to Spike Land</CardTitle>
-            <CardDescription>
-              Sign in to access your apps and create new ones
-            </CardDescription>
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <PixelLogo size="lg" variant="stacked" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Welcome to Pixel</CardTitle>
+              <CardDescription>
+                Sign in or create an account to continue.
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             {error && (
@@ -46,18 +52,24 @@ function SignInContentInner() {
             )}
 
             <AuthButtons className="w-full" />
-
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              <Link href="/" className="hover:underline">
-                Back to home
-              </Link>
-            </div>
           </CardContent>
         </Card>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
+        <div className="mt-4 flex justify-center gap-4 text-xs text-muted-foreground">
+          <Link
+            href="/terms"
+            className="hover:underline hover:text-foreground transition-colors"
+          >
+            Terms of Service
+          </Link>
+          <span>·</span>
+          <Link
+            href="/privacy"
+            className="hover:underline hover:text-foreground transition-colors"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </div>
   );
