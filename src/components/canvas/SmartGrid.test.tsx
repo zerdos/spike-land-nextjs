@@ -127,10 +127,10 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("grid-cols-3");
+      expect(grid).toHaveClass("grid-cols-2");
     });
 
-    it("has 4 column grid class for tablet (md breakpoint)", () => {
+    it("has 3 column grid class for tablet (md breakpoint)", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -141,10 +141,10 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("md:grid-cols-4");
+      expect(grid).toHaveClass("md:grid-cols-3");
     });
 
-    it("has 6 column grid class for desktop (lg breakpoint)", () => {
+    it("has 4 column grid class for desktop (lg breakpoint)", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -155,10 +155,10 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("lg:grid-cols-6");
+      expect(grid).toHaveClass("lg:grid-cols-4");
     });
 
-    it("has gap-2 class for spacing", () => {
+    it("has gap-3 class for spacing", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -169,7 +169,7 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("gap-2");
+      expect(grid).toHaveClass("gap-3");
     });
 
     it("has p-4 class for padding", () => {
@@ -533,7 +533,7 @@ describe("SmartGrid", () => {
 
       const grid = screen.getByTestId("smart-grid");
       expect(grid).toHaveClass("grid");
-      expect(grid).toHaveClass("grid-cols-3");
+      expect(grid).toHaveClass("grid-cols-2");
       expect(grid).toHaveClass("custom-class");
     });
   });
