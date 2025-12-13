@@ -24,17 +24,7 @@ Then("I should see a link to test API keys", async function(this: CustomWorld) {
 });
 
 // Create API Key button and dialog
-Then("I should see the {string} button", async function(this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-  await expect(button).toBeVisible({ timeout: 10000 });
-});
-
-When("I click the {string} button", async function(this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-  await expect(button).toBeVisible();
-  await button.click();
-  await this.page.waitForTimeout(500);
-});
+// Note: Generic button steps are defined in authentication.steps.ts
 
 Then("I should see the create API key dialog", async function(this: CustomWorld) {
   const dialog = this.page.getByRole("dialog");
