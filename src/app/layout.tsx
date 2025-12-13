@@ -6,7 +6,7 @@ import { SessionProvider } from "@/components/auth/session-provider";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
