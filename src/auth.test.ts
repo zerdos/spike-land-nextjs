@@ -3,11 +3,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock prisma before importing auth
 const mockUpsert = vi.fn().mockResolvedValue({ id: "user_123" });
 const mockFindUnique = vi.fn().mockResolvedValue(null);
+const mockUserCount = vi.fn().mockResolvedValue(0);
+const mockUserUpdate = vi.fn().mockResolvedValue({ id: "user_123", role: "ADMIN" });
+const mockAlbumCreate = vi.fn().mockResolvedValue({ id: "album_123" });
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: {
       upsert: mockUpsert,
       findUnique: mockFindUnique,
+      count: mockUserCount,
+      update: mockUserUpdate,
+    },
+    album: {
+      create: mockAlbumCreate,
     },
   },
 }));

@@ -505,16 +505,18 @@ describe("TokenBalanceManager", () => {
     });
 
     it("should cap balance at MAX_TOKEN_BALANCE for regeneration", async () => {
+      // MAX_TOKEN_BALANCE is 10, so test with balance of 8, adding 5
+      // 8 + 5 = 13, but capped to 10
       const mockTx = {
         userTokenBalance: {
           findUnique: vi.fn().mockResolvedValue({
             userId: testUserId,
-            balance: 95,
+            balance: 8,
             lastRegeneration: mockDate,
           }),
           update: vi.fn().mockResolvedValue({
             userId: testUserId,
-            balance: 100,
+            balance: 10,
             lastRegeneration: mockDate,
           }),
           create: vi.fn(),
@@ -526,9 +528,9 @@ describe("TokenBalanceManager", () => {
           create: vi.fn().mockResolvedValue({
             id: "tx-123",
             userId: testUserId,
-            amount: 10,
+            amount: 5,
             type: TokenTransactionType.EARN_REGENERATION,
-            balanceAfter: 100,
+            balanceAfter: 10,
           }),
         },
       };
@@ -536,15 +538,15 @@ describe("TokenBalanceManager", () => {
 
       await TokenBalanceManager.addTokens({
         userId: testUserId,
-        amount: 10,
+        amount: 5,
         type: TokenTransactionType.EARN_REGENERATION,
       });
 
-      // Verify balance is capped at 100 (MAX_TOKEN_BALANCE)
+      // Verify balance is capped at 10 (MAX_TOKEN_BALANCE)
       expect(mockTx.userTokenBalance.update).toHaveBeenCalledWith({
         where: { userId: testUserId },
         data: expect.objectContaining({
-          balance: 100, // 95 + 10 would be 105, but capped at 100
+          balance: 10, // 8 + 5 would be 13, but capped at 10
         }),
       });
     });
@@ -734,7 +736,7 @@ describe("TokenBalanceManager", () => {
           userTokenBalance: {
             findUnique: vi.fn().mockResolvedValue({
               userId: testUserId,
-              balance: 100, // MAX_TOKEN_BALANCE
+              balance: 10, // MAX_TOKEN_BALANCE
               lastRegeneration: oldRegen,
             }),
             create: vi.fn(),
@@ -753,6 +755,7 @@ describe("TokenBalanceManager", () => {
       const oldRegen = new Date(mockDate.getTime() - 30 * 60 * 1000); // 30 minutes ago
       let callCount = 0;
 
+      // MAX_TOKEN_BALANCE is 10, so balance must be < 10 to allow regeneration
       mockTransaction.mockImplementation(async (callback) => {
         callCount++;
         if (callCount === 1) {
@@ -761,7 +764,7 @@ describe("TokenBalanceManager", () => {
             userTokenBalance: {
               findUnique: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 50,
+                balance: 5, // Less than MAX_TOKEN_BALANCE (10)
                 lastRegeneration: oldRegen,
               }),
               create: vi.fn(),
@@ -775,12 +778,12 @@ describe("TokenBalanceManager", () => {
             userTokenBalance: {
               findUnique: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 50,
+                balance: 5,
                 lastRegeneration: oldRegen,
               }),
               update: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 52,
+                balance: 7, // 5 + 2 = 7
                 lastRegeneration: mockDate,
               }),
               create: vi.fn(),
@@ -792,7 +795,7 @@ describe("TokenBalanceManager", () => {
                 userId: testUserId,
                 amount: 2,
                 type: TokenTransactionType.EARN_REGENERATION,
-                balanceAfter: 52,
+                balanceAfter: 7,
               }),
             },
           };
@@ -803,39 +806,26 @@ describe("TokenBalanceManager", () => {
       const result = await TokenBalanceManager.processRegeneration(testUserId);
 
       // 30 minutes / 15 minutes = 2 intervals, 2 * 1 token = 2 tokens
+      // tokensToAdd = min(2 * 1, 10 - 5) = min(2, 5) = 2
       expect(result).toBe(2);
     });
 
-    it("should return 0 when tokensToAdd calculation results in 0", async () => {
-      // This tests the edge case where intervalsElapsed * TOKENS_PER_REGENERATION
-      // results in 0 due to integer math. Since TOKENS_PER_REGENERATION = 1 and
-      // intervalsElapsed must be >= 1 to pass the time check, this case is actually
-      // unreachable in normal operation. However, we test it by mocking a scenario
-      // where balance is exactly at MAX - 1 (99) and exactly one interval has passed,
-      // but the math somehow produces 0 (which can only happen through mocking).
-      //
-      // In practice, this covers line 392 where tokensToAdd === 0 after calculation.
-      // We simulate this by having balance = 100 but passing the time check
-      // (which shouldn't happen in real code, but we force it via mocking).
+    it("should regenerate only 1 token when at MAX - 1 balance", async () => {
+      // MAX_TOKEN_BALANCE is 10, so balance = 9 (MAX - 1)
+      // With 30 minutes elapsed (2 intervals), tokensToAdd = min(2 * 1, 10 - 9) = min(2, 1) = 1
+      // This tests the capping behavior when close to max balance
       const oldRegen = new Date(mockDate.getTime() - 30 * 60 * 1000); // 30 minutes ago
 
-      // Return balance of 99 first time (for getBalance check)
-      // This will pass the balance >= MAX check (99 < 100)
-      // But tokensToAdd = Math.min(2 * 1, 100 - 99) = Math.min(2, 1) = 1
-      // So we need a different approach - we need balance exactly at 100 but still pass time check
-
-      // Actually, let's just verify the existing edge case behavior:
-      // Balance = 99, 15+ minutes elapsed -> should regenerate 1 token
       let callCount = 0;
       mockTransaction.mockImplementation(async (callback) => {
         callCount++;
         if (callCount === 1) {
-          // First call is from getBalance - return balance of 99
+          // First call is from getBalance - return balance of 9 (MAX - 1)
           const mockTx = {
             userTokenBalance: {
               findUnique: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 99,
+                balance: 9, // MAX_TOKEN_BALANCE - 1
                 lastRegeneration: oldRegen,
               }),
               create: vi.fn(),
@@ -844,17 +834,17 @@ describe("TokenBalanceManager", () => {
           };
           return callback(mockTx);
         } else {
-          // Second call is from addTokens - balance goes from 99 to 100
+          // Second call is from addTokens - balance goes from 9 to 10
           const mockTx = {
             userTokenBalance: {
               findUnique: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 99,
+                balance: 9,
                 lastRegeneration: oldRegen,
               }),
               update: vi.fn().mockResolvedValue({
                 userId: testUserId,
-                balance: 100,
+                balance: 10, // MAX_TOKEN_BALANCE
                 lastRegeneration: mockDate,
               }),
               create: vi.fn(),
@@ -866,7 +856,7 @@ describe("TokenBalanceManager", () => {
                 userId: testUserId,
                 amount: 1,
                 type: TokenTransactionType.EARN_REGENERATION,
-                balanceAfter: 100,
+                balanceAfter: 10,
               }),
             },
           };
@@ -876,7 +866,7 @@ describe("TokenBalanceManager", () => {
 
       const result = await TokenBalanceManager.processRegeneration(testUserId);
 
-      // Should regenerate only 1 token (capped by MAX_TOKEN_BALANCE - balance)
+      // Should regenerate only 1 token (capped by MAX_TOKEN_BALANCE - balance = 10 - 9 = 1)
       expect(result).toBe(1);
     });
 

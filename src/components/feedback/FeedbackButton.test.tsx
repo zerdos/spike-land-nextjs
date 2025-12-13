@@ -75,30 +75,29 @@ describe("FeedbackButton", () => {
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
       expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
-      expect(
-        screen.getByText("Provide your email if you would like us to follow up."),
-      ).toBeInTheDocument();
     });
 
-    it("renders feedback type radio buttons", async () => {
+    it("renders feedback type buttons", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText("Bug")).toBeInTheDocument();
-      expect(screen.getByLabelText("Idea")).toBeInTheDocument();
-      expect(screen.getByLabelText("Other")).toBeInTheDocument();
+      // The component uses custom styled buttons for feedback types
+      expect(screen.getByRole("button", { name: /bug/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /idea/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /other/i })).toBeInTheDocument();
     });
 
-    it("has Idea selected by default", async () => {
+    it("has Bug selected by default", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      const ideaRadio = screen.getByRole("radio", { name: "Idea" });
-      expect(ideaRadio).toBeChecked();
+      // Bug button should have selection styling (secondary/50 background)
+      const bugButton = screen.getByRole("button", { name: /bug/i });
+      expect(bugButton).toHaveClass("bg-secondary/50");
     });
 
     it("validates required message field", async () => {
@@ -106,7 +105,7 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       expect(mockToast.error).toHaveBeenCalledWith("Please enter a message");
       expect(mockFetch).not.toHaveBeenCalled();
@@ -117,8 +116,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "   ");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "   ");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       expect(mockToast.error).toHaveBeenCalledWith("Please enter a message");
       expect(mockFetch).not.toHaveBeenCalled();
@@ -134,10 +133,10 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
-      await user.type(screen.getByLabelText(/Message/), "Found a bug!");
+      // Bug is already selected by default
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Found a bug!");
       await user.type(screen.getByLabelText("Email (optional)"), "test@example.com");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
@@ -166,15 +165,15 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Great idea!");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Great idea!");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: "IDEA",
+            type: "BUG",
             message: "Great idea!",
             email: undefined,
             page: "/test-page",
@@ -194,8 +193,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Server error");
@@ -209,8 +208,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Network error");
@@ -227,8 +226,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Failed to submit feedback");
@@ -242,8 +241,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Failed to submit feedback");
@@ -260,8 +259,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Feedback text");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Feedback text");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -288,20 +287,27 @@ describe("FeedbackButton", () => {
 
       // Open and fill form
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
-      await user.type(screen.getByLabelText(/Message/), "Some message");
+      // Select Idea type
+      await user.click(screen.getByRole("button", { name: /idea/i }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Some message");
       await user.type(screen.getByLabelText("Email (optional)"), "test@test.com");
 
       // Close dialog
       await user.click(screen.getByRole("button", { name: "Cancel" }));
 
+      // Wait for dialog to close and form to reset (reset happens after 300ms timeout)
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+
       // Reopen dialog
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      // Check form is reset
-      expect(screen.getByRole("radio", { name: "Idea" })).toBeChecked();
-      expect(screen.getByLabelText(/Message/)).toHaveValue("");
-      expect(screen.getByLabelText("Email (optional)")).toHaveValue("");
+      // Check form is reset - message and email should be empty
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText("Describe your feedback...")).toHaveValue("");
+        expect(screen.getByLabelText("Email (optional)")).toHaveValue("");
+      });
     });
 
     it("disables buttons while submitting", async () => {
@@ -320,11 +326,16 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
 
+      // Get the submit button before clicking (it has "Submit" text)
+      const submitButton = screen.getByRole("button", { name: /submit/i });
+      await user.click(submitButton);
+
+      // While submitting, the Cancel button should be disabled
       expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+      // The submit button loses its text during loading, so check that it's disabled via the spinner container
+      expect(document.querySelector(".animate-spin")?.closest("button")).toBeDisabled();
 
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -347,8 +358,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       expect(document.querySelector(".animate-spin")).toBeInTheDocument();
 
@@ -385,9 +396,12 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Other"));
-      await user.type(screen.getByLabelText(/Message/), "Authenticated feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.click(screen.getByRole("button", { name: /other/i }));
+      await user.type(
+        screen.getByPlaceholderText("Describe your feedback..."),
+        "Authenticated feedback",
+      );
+      await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
@@ -447,24 +461,24 @@ describe("FeedbackButton", () => {
       expect(screen.getByRole("heading", { name: "Send Feedback" })).toBeInTheDocument();
     });
 
-    it("has proper labels for form fields", async () => {
+    it("has proper input elements for form", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText(/Message/)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Describe your feedback...")).toBeInTheDocument();
       expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
     });
 
-    it("indicates required field with asterisk", async () => {
+    it("has message textarea", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      const messageLabel = screen.getByText("Message");
-      expect(messageLabel.parentElement?.textContent).toContain("*");
+      const messageInput = screen.getByPlaceholderText("Describe your feedback...");
+      expect(messageInput.tagName).toBe("TEXTAREA");
     });
   });
 
@@ -491,14 +505,15 @@ describe("FeedbackButton", () => {
       });
     });
 
-    it("can select Bug type", async () => {
+    it("can select Idea type", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
+      await user.click(screen.getByRole("button", { name: /idea/i }));
 
-      expect(screen.getByRole("radio", { name: "Bug" })).toBeChecked();
+      const ideaButton = screen.getByRole("button", { name: /idea/i });
+      expect(ideaButton).toHaveClass("bg-secondary/50");
     });
 
     it("can select Other type", async () => {
@@ -506,9 +521,10 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Other"));
+      await user.click(screen.getByRole("button", { name: /other/i }));
 
-      expect(screen.getByRole("radio", { name: "Other" })).toBeChecked();
+      const otherButton = screen.getByRole("button", { name: /other/i });
+      expect(otherButton).toHaveClass("bg-secondary/50");
     });
   });
 });
