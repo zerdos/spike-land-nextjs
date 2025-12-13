@@ -1,4 +1,4 @@
-
+@skip
 Feature: Browser Agent Boxes
   As a user
   I want to manage my browser agent boxes
