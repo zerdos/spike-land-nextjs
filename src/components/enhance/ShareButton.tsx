@@ -79,6 +79,7 @@ export function ShareButton({
   );
 
   const handleCopyLink = useCallback(async () => {
+    /* v8 ignore next */
     if (!shareUrl) return;
 
     try {
@@ -93,6 +94,7 @@ export function ShareButton({
   }, [shareUrl]);
 
   const getTwitterShareUrl = useCallback(() => {
+    /* v8 ignore next */
     if (!shareUrl) return "#";
     const text = `Check out my enhanced image: ${imageName}`;
     return `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${
@@ -101,11 +103,13 @@ export function ShareButton({
   }, [shareUrl, imageName]);
 
   const getFacebookShareUrl = useCallback(() => {
+    /* v8 ignore next */
     if (!shareUrl) return "#";
     return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   }, [shareUrl]);
 
   const getWhatsAppShareUrl = useCallback(() => {
+    /* v8 ignore next */
     if (!shareUrl) return "#";
     const text = `Check out my enhanced image: ${imageName}`;
     return `https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`;

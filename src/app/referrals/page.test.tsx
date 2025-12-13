@@ -244,4 +244,48 @@ describe("ReferralsPage", () => {
       expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
   });
+
+  it("should display error when fetching referral link fails", async () => {
+    vi.resetAllMocks();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Unauthorized" }),
+    } as Response);
+
+    render(<ReferralsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch referral link")).toBeTruthy();
+    });
+  });
+
+  it("should display error when fetching referral stats fails", async () => {
+    vi.resetAllMocks();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockLinkData,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: "Stats error" }),
+      } as Response);
+
+    render(<ReferralsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch referral stats")).toBeTruthy();
+    });
+  });
+
+  it("should display fallback error message for non-Error exceptions", async () => {
+    vi.resetAllMocks();
+    vi.mocked(fetch).mockRejectedValueOnce("string error");
+
+    render(<ReferralsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to load referral data")).toBeTruthy();
+    });
+  });
 });

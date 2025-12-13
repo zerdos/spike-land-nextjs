@@ -228,4 +228,206 @@ describe("withErrorBoundary", () => {
 
     expect(WrappedComponent.displayName).toBe("withErrorBoundary(TestComponent)");
   });
+
+  it("should fallback to 'Component' when displayName and name are not available", () => {
+    // Create an anonymous component without displayName or name
+    const AnonymousComponent = (() => <div>Anonymous</div>) as React.ComponentType;
+    // Remove name property by creating a fresh object
+    Object.defineProperty(AnonymousComponent, "name", { value: "", writable: true });
+    Object.defineProperty(AnonymousComponent, "displayName", { value: undefined, writable: true });
+
+    const WrappedComponent = withErrorBoundary(AnonymousComponent);
+
+    expect(WrappedComponent.displayName).toBe("withErrorBoundary(Component)");
+  });
+});
+
+describe("ErrorBoundary - Additional Edge Cases", () => {
+  it("should handle Go home button click", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const user = userEvent.setup();
+
+    // Mock window.location
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+    });
+
+    render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    const goHomeButton = screen.getByText("Go home");
+    await user.click(goHomeButton);
+
+    expect(window.location.href).toBe("/");
+
+    // Restore window.location
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      writable: true,
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should reset when resetKeys length changes", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { rerender } = render(
+      <ErrorBoundary resetKeys={["key1", "key2"]}>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    // Change resetKeys to different length to trigger reset
+    rerender(
+      <ErrorBoundary resetKeys={["key1"]}>
+        <ThrowError shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    // Should reset and show children since keys length changed
+    expect(screen.getByText("No error")).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should not reset when hasError is false even if resetKeys change", () => {
+    // Start without error
+    const { rerender } = render(
+      <ErrorBoundary resetKeys={["key1"]}>
+        <ThrowError shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText("No error")).toBeInTheDocument();
+
+    // Change resetKeys but no error occurred
+    rerender(
+      <ErrorBoundary resetKeys={["key2"]}>
+        <ThrowError shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    // Should still render children without issue
+    expect(screen.getByText("No error")).toBeInTheDocument();
+  });
+
+  it("should not reset when resetKeys are not provided in componentDidUpdate", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { rerender } = render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    // Rerender without resetKeys - should not try to reset
+    rerender(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    // Should still show error since no resetKeys to trigger reset
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should not reset when previous resetKeys are undefined", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { rerender } = render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    // Add resetKeys on rerender (prevProps.resetKeys was undefined)
+    rerender(
+      <ErrorBoundary resetKeys={["key1"]}>
+        <ThrowError shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    // Should still show error since prevProps.resetKeys was undefined
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should display error without suggestion", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Use a basic error that won't have a suggestion
+    function ThrowBasicError() {
+      throw new Error("Basic error message");
+    }
+
+    render(
+      <ErrorBoundary>
+        <ThrowBasicError />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText("Something Went Wrong")).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should handle error without stack trace in development mode", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    // Create component that throws error without stack
+    function ThrowErrorNoStack() {
+      const error = new Error("Error without stack");
+      error.stack = undefined;
+      throw error;
+    }
+
+    render(
+      <ErrorBoundary showDetails={true}>
+        <ThrowErrorNoStack />
+      </ErrorBoundary>,
+    );
+
+    if (process.env.NODE_ENV === "development") {
+      expect(screen.getByText(/Technical Details/)).toBeInTheDocument();
+      // Should not have pre element with stack trace
+      const preElements = screen.queryAllByText((_, element) => element?.tagName === "PRE");
+      expect(preElements.length).toBe(0);
+    }
+
+    process.env.NODE_ENV = originalEnv;
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("should handle componentStack being null in componentDidCatch", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onError = vi.fn();
+
+    render(
+      <ErrorBoundary onError={onError}>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    // The onError callback should still be called
+    expect(onError).toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
 });

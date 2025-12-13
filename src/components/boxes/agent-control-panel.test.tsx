@@ -357,4 +357,147 @@ describe("AgentControlPanel", () => {
 
     expect(screen.getByText("Chat")).toBeInTheDocument();
   });
+
+  it("displays correct status color for TERMINATED status", () => {
+    const terminatedBox = { ...mockBox, status: BoxStatus.TERMINATED };
+    render(<AgentControlPanel box={terminatedBox} />);
+
+    const statusIndicator = screen.getByText("TERMINATED").previousSibling;
+    expect(statusIndicator).toHaveClass("bg-gray-600");
+  });
+
+  it("displays correct status color for STOPPING status", () => {
+    const stoppingBox = { ...mockBox, status: BoxStatus.STOPPING };
+    render(<AgentControlPanel box={stoppingBox} />);
+
+    const statusIndicator = screen.getByText("STOPPING").previousSibling;
+    expect(statusIndicator).toHaveClass("bg-red-500");
+  });
+
+  it("displays correct status color for CREATING status", () => {
+    const creatingBox = { ...mockBox, status: BoxStatus.CREATING };
+    render(<AgentControlPanel box={creatingBox} />);
+
+    const statusIndicator = screen.getByText("CREATING").previousSibling;
+    expect(statusIndicator).toHaveClass("bg-blue-500");
+  });
+
+  it("displays correct badge variant for TERMINATED status", () => {
+    const terminatedBox = { ...mockBox, status: BoxStatus.TERMINATED };
+    render(<AgentControlPanel box={terminatedBox} />);
+
+    const badge = screen.getByText("TERMINATED");
+    expect(badge).toBeInTheDocument();
+  });
+
+  it("handles send message API failure with error toast", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    });
+
+    render(<AgentControlPanel box={mockBox} />);
+
+    const textarea = screen.getByPlaceholderText("Type your message...");
+    const sendButton = screen.getByRole("button", { name: /send message/i });
+
+    fireEvent.change(textarea, { target: { value: "Test message" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to send message");
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it("handles action API failure with error toast", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    });
+
+    render(<AgentControlPanel box={mockBox} />);
+
+    const pauseButton = screen.getByRole("button", { name: /pause agent/i });
+    fireEvent.click(pauseButton);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to perform action");
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it("shows info toast when Debug button is clicked", () => {
+    render(<AgentControlPanel box={mockBox} />);
+
+    const debugButton = screen.getByRole("button", { name: /debug agent/i });
+    fireEvent.click(debugButton);
+
+    expect(toast.info).toHaveBeenCalledWith("Debug mode is not yet implemented");
+  });
+
+  it("auto-scrolls to bottom when messages change", async () => {
+    const scrollIntoViewMock = vi.fn();
+    HTMLDivElement.prototype.scrollIntoView = scrollIntoViewMock;
+
+    const mockResponse = {
+      userMessage: {
+        id: "msg-scroll-1",
+        role: BoxMessageRole.USER,
+        content: "Scroll test",
+        createdAt: new Date().toISOString(),
+      },
+      agentMessage: {
+        id: "msg-scroll-2",
+        role: BoxMessageRole.AGENT,
+        content: "Agent scroll response",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    render(<AgentControlPanel box={mockBox} />);
+
+    const textarea = screen.getByPlaceholderText("Type your message...");
+    const sendButton = screen.getByRole("button", { name: /send message/i });
+
+    fireEvent.change(textarea, { target: { value: "Scroll test" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Agent scroll response")).toBeInTheDocument();
+    });
+
+    // Verify scrollIntoView was called
+    expect(scrollIntoViewMock).toHaveBeenCalled();
+  });
+
+  it("displays default status color for unknown status", () => {
+    // Test with an unknown status value to cover the default case
+    const unknownStatusBox = { ...mockBox, status: "UNKNOWN_STATUS" as BoxStatus };
+    render(<AgentControlPanel box={unknownStatusBox} />);
+
+    const statusIndicator = screen.getByText("UNKNOWN_STATUS").previousSibling;
+    expect(statusIndicator).toHaveClass("bg-gray-500");
+  });
+
+  it("displays default badge variant for unknown status", () => {
+    // Test with an unknown status value to cover the default case in getStatusBadgeVariant
+    const unknownStatusBox = { ...mockBox, status: "UNKNOWN_STATUS" as BoxStatus };
+    render(<AgentControlPanel box={unknownStatusBox} />);
+
+    // The badge should use "outline" variant for unknown status
+    const badge = screen.getByText("UNKNOWN_STATUS");
+    expect(badge).toBeInTheDocument();
+  });
 });

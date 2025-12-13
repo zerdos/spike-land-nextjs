@@ -236,4 +236,87 @@ describe("ImageUpload Component", () => {
       expect(input).toBeInTheDocument();
     });
   });
+
+  it("should show generic error message when onFilesSelected throws non-Error", async () => {
+    const mockOnFilesSelected = vi.fn().mockRejectedValue("string error");
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("Upload failed")).toBeInTheDocument();
+    });
+  });
+
+  it("should not call onFilesSelected when input files is null", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: null,
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(mockOnFilesSelected).not.toHaveBeenCalled();
+    });
+  });
+
+  it("should not call onFilesSelected when drop has null files", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    const { container } = render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+    const card = container.querySelector(".border-dashed");
+
+    const dataTransfer = {
+      files: null,
+    };
+
+    fireEvent.drop(card!, { dataTransfer });
+
+    await waitFor(() => {
+      expect(mockOnFilesSelected).not.toHaveBeenCalled();
+    });
+  });
+
+  it("should reset file input value after successful upload", async () => {
+    const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
+    render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Set initial value to simulate a file selection
+    Object.defineProperty(input, "value", {
+      value: "C:\\fakepath\\test.png",
+      writable: true,
+      configurable: true,
+    });
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+      configurable: true,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(mockOnFilesSelected).toHaveBeenCalledWith([file]);
+    });
+
+    // The input value should be reset to empty
+    expect(input.value).toBe("");
+  });
 });

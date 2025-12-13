@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
 import { FALLBACK_GALLERY_ITEMS } from "./gallery-fallback-data";
 
@@ -141,5 +141,301 @@ describe("BeforeAfterGalleryClient Component", () => {
     render(<BeforeAfterGalleryClient items={customItems} />);
     expect(screen.getByText("Custom Title")).toBeInTheDocument();
     expect(screen.getByText("Custom Description")).toBeInTheDocument();
+  });
+});
+
+// Tests for the BeforeAfterGallery server component
+describe("BeforeAfterGallery Server Component", () => {
+  // Mock getSuperAdminPublicPhotos
+  const mockGetSuperAdminPublicPhotos = vi.fn();
+
+  // Mock BeforeAfterGalleryClient for server component tests
+  const mockBeforeAfterGalleryClient = vi.fn(({ items }: { items: unknown[]; }) => (
+    <div data-testid="gallery-client" data-items-count={items.length}>
+      Gallery Client Mock
+    </div>
+  ));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
+
+    // Setup mocks before importing the module
+    vi.doMock("@/lib/gallery/super-admin-photos", () => ({
+      getSuperAdminPublicPhotos: mockGetSuperAdminPublicPhotos,
+    }));
+
+    vi.doMock("./BeforeAfterGalleryClient", () => ({
+      BeforeAfterGalleryClient: mockBeforeAfterGalleryClient,
+    }));
+  });
+
+  it("should render with database photos when available", async () => {
+    const mockPhotos = [
+      {
+        id: "photo-1",
+        title: "Test Photo",
+        originalUrl: "https://example.com/original.jpg",
+        enhancedUrl: "https://example.com/enhanced.jpg",
+        width: 800,
+        height: 1200,
+        albumName: "Test Album",
+        tier: "TIER_2K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(screen.getByTestId("gallery-client")).toBeInTheDocument();
+    expect(mockGetSuperAdminPublicPhotos).toHaveBeenCalled();
+  });
+
+  it("should use fallback items when database returns empty array", async () => {
+    mockGetSuperAdminPublicPhotos.mockResolvedValue([]);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(screen.getByTestId("gallery-client")).toBeInTheDocument();
+    // FALLBACK_GALLERY_ITEMS has 6 items
+    expect(screen.getByTestId("gallery-client")).toHaveAttribute("data-items-count", "6");
+  });
+
+  it("should use fallback items when database throws error", async () => {
+    mockGetSuperAdminPublicPhotos.mockRejectedValue(new Error("Database error"));
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(screen.getByTestId("gallery-client")).toBeInTheDocument();
+    expect(screen.getByTestId("gallery-client")).toHaveAttribute("data-items-count", "6");
+  });
+
+  it("should infer portrait category for tall images", async () => {
+    const mockPhotos = [
+      {
+        id: "portrait-1",
+        title: "Portrait Photo",
+        originalUrl: "https://example.com/portrait.jpg",
+        enhancedUrl: "https://example.com/portrait-enhanced.jpg",
+        width: 600,
+        height: 800, // aspectRatio = 0.75 < 0.9 = portrait
+        albumName: "Portraits",
+        tier: "TIER_1K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "portrait",
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should infer product category for square images", async () => {
+    const mockPhotos = [
+      {
+        id: "product-1",
+        title: "Product Photo",
+        originalUrl: "https://example.com/product.jpg",
+        enhancedUrl: "https://example.com/product-enhanced.jpg",
+        width: 1000,
+        height: 1000, // aspectRatio = 1.0, between 0.9 and 1.1 = product
+        albumName: "Products",
+        tier: "TIER_2K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "product",
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should infer landscape category for wide images", async () => {
+    const mockPhotos = [
+      {
+        id: "landscape-1",
+        title: "Landscape Photo",
+        originalUrl: "https://example.com/landscape.jpg",
+        enhancedUrl: "https://example.com/landscape-enhanced.jpg",
+        width: 1920,
+        height: 1080, // aspectRatio = 1.78 > 1.5 = landscape
+        albumName: "Landscapes",
+        tier: "TIER_4K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "landscape",
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should infer architecture category for moderate aspect ratio images", async () => {
+    const mockPhotos = [
+      {
+        id: "arch-1",
+        title: "Architecture Photo",
+        originalUrl: "https://example.com/arch.jpg",
+        enhancedUrl: "https://example.com/arch-enhanced.jpg",
+        width: 1200,
+        height: 1000, // aspectRatio = 1.2, between 1.1 and 1.5 = architecture (default)
+        albumName: "Architecture",
+        tier: "TIER_2K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "architecture",
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should correctly map photo data to gallery items", async () => {
+    const mockPhotos = [
+      {
+        id: "mapped-1",
+        title: "Mapped Photo Title",
+        originalUrl: "https://example.com/mapped-original.jpg",
+        enhancedUrl: "https://example.com/mapped-enhanced.jpg",
+        width: 1920,
+        height: 1080,
+        albumName: "Test Album",
+        tier: "TIER_4K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            id: "mapped-1",
+            title: "Mapped Photo Title",
+            description: "Enhanced with TIER_4K from Test Album",
+            originalUrl: "https://example.com/mapped-original.jpg",
+            enhancedUrl: "https://example.com/mapped-enhanced.jpg",
+            width: 1920,
+            height: 1080,
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should handle product category edge case at 0.9 aspect ratio", async () => {
+    const mockPhotos = [
+      {
+        id: "edge-1",
+        title: "Edge Case Photo",
+        originalUrl: "https://example.com/edge.jpg",
+        enhancedUrl: "https://example.com/edge-enhanced.jpg",
+        width: 900,
+        height: 1000, // aspectRatio = 0.9 = product (not portrait)
+        albumName: "Edge Cases",
+        tier: "TIER_1K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "product",
+          }),
+        ]),
+      }),
+      undefined,
+    );
+  });
+
+  it("should handle product category edge case at 1.1 aspect ratio", async () => {
+    const mockPhotos = [
+      {
+        id: "edge-2",
+        title: "Edge Case Photo 2",
+        originalUrl: "https://example.com/edge2.jpg",
+        enhancedUrl: "https://example.com/edge2-enhanced.jpg",
+        width: 1100,
+        height: 1000, // aspectRatio = 1.1 = product (not architecture)
+        albumName: "Edge Cases",
+        tier: "TIER_1K",
+      },
+    ];
+    mockGetSuperAdminPublicPhotos.mockResolvedValue(mockPhotos);
+
+    const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
+    const Component = await BeforeAfterGallery();
+    render(Component);
+
+    expect(mockBeforeAfterGalleryClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            category: "product",
+          }),
+        ]),
+      }),
+      undefined,
+    );
   });
 });

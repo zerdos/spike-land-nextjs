@@ -246,6 +246,65 @@ describe("AuditLogger", () => {
     });
   });
 
+  describe("logUserDelete", () => {
+    it("should log user deletion with all data", async () => {
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
+
+      await AuditLogger.logUserDelete(
+        "admin-1",
+        "user-1",
+        "user@example.com",
+        "Test User",
+        {
+          albums: 5,
+          images: 25,
+          enhancementJobs: 10,
+          tokenBalance: 100,
+        },
+        "192.168.1.1",
+      );
+
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
+        data: {
+          userId: "admin-1",
+          action: AuditAction.USER_DELETE,
+          targetId: "user-1",
+          metadata: {
+            userEmail: "user@example.com",
+            userName: "Test User",
+            deletedData: {
+              albums: 5,
+              images: 25,
+              enhancementJobs: 10,
+              tokenBalance: 100,
+            },
+          },
+          ipAddress: "192.168.1.1",
+        },
+      });
+    });
+
+    it("should log user deletion with null email and name", async () => {
+      mockPrisma.auditLog.create.mockResolvedValue({ id: "log-1" });
+
+      await AuditLogger.logUserDelete("admin-1", "user-1", null, null);
+
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
+        data: {
+          userId: "admin-1",
+          action: AuditAction.USER_DELETE,
+          targetId: "user-1",
+          metadata: {
+            userEmail: null,
+            userName: null,
+            deletedData: undefined,
+          },
+          ipAddress: undefined,
+        },
+      });
+    });
+  });
+
   describe("getLogsByUser", () => {
     it("should return logs for a specific user", async () => {
       const mockLogs = [

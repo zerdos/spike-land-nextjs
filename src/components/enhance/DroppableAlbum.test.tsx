@@ -318,4 +318,145 @@ describe("DroppableAlbum Component", () => {
       expect(screen.getByTestId("droppable-album-special-album")).toBeInTheDocument();
     });
   });
+
+  describe("edge cases for drag events", () => {
+    it("should handle dragLeave when relatedTarget is null", () => {
+      const onDragLeave = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDragLeave={onDragLeave} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+      fireEvent.dragOver(element);
+
+      // Simulate dragLeave with null relatedTarget
+      fireEvent.dragLeave(element, {
+        relatedTarget: null,
+      });
+
+      expect(onDragLeave).toHaveBeenCalled();
+    });
+
+    it("should not call onDrop when dataTransfer is null", async () => {
+      const onDrop = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDrop={onDrop} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      await act(async () => {
+        const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+        // dataTransfer is not defined, so it will be undefined/null
+        element.dispatchEvent(dropEvent);
+      });
+
+      expect(onDrop).not.toHaveBeenCalled();
+    });
+
+    it("should set dropEffect on dragEnter when dataTransfer exists", () => {
+      const onDragOver = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDragOver={onDragOver} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      const dragEnterEvent = new Event("dragenter", { bubbles: true }) as unknown as DragEvent;
+      const mockDataTransfer = { dropEffect: "" };
+      Object.defineProperty(dragEnterEvent, "dataTransfer", {
+        value: mockDataTransfer,
+      });
+      element.dispatchEvent(dragEnterEvent);
+
+      expect(mockDataTransfer.dropEffect).toBe("move");
+    });
+
+    it("should set dropEffect on dragOver when dataTransfer exists", () => {
+      render(<DroppableAlbum {...defaultProps} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      const dragOverEvent = new Event("dragover", { bubbles: true }) as unknown as DragEvent;
+      const mockDataTransfer = { dropEffect: "" };
+      Object.defineProperty(dragOverEvent, "dataTransfer", {
+        value: mockDataTransfer,
+      });
+      element.dispatchEvent(dragOverEvent);
+
+      expect(mockDataTransfer.dropEffect).toBe("move");
+    });
+
+    it("should handle dragEnter without dataTransfer", () => {
+      const onDragOver = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDragOver={onDragOver} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      const dragEnterEvent = new Event("dragenter", { bubbles: true }) as unknown as DragEvent;
+      // No dataTransfer property defined
+      element.dispatchEvent(dragEnterEvent);
+
+      expect(onDragOver).toHaveBeenCalled();
+    });
+
+    it("should handle dragOver without dataTransfer", () => {
+      const onDragOver = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDragOver={onDragOver} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      // First reset state
+      fireEvent.dragLeave(element, { relatedTarget: document.body });
+
+      const dragOverEvent = new Event("dragover", { bubbles: true }) as unknown as DragEvent;
+      // No dataTransfer property defined
+      element.dispatchEvent(dragOverEvent);
+
+      expect(onDragOver).toHaveBeenCalled();
+    });
+
+    it("should not call onDragOver again during dragEnter if already dragging over", () => {
+      const onDragOver = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDragOver={onDragOver} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      // First dragEnter sets the state
+      fireEvent.dragEnter(element);
+      expect(onDragOver).toHaveBeenCalledTimes(1);
+
+      // Second dragEnter should not call onDragOver again
+      fireEvent.dragEnter(element);
+      expect(onDragOver).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle drop with null data value from isDragData check", () => {
+      const onDrop = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDrop={onDrop} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      Object.defineProperty(dropEvent, "dataTransfer", {
+        value: {
+          getData: vi.fn().mockReturnValue(JSON.stringify(null)),
+        },
+      });
+      element.dispatchEvent(dropEvent);
+
+      expect(onDrop).not.toHaveBeenCalled();
+    });
+
+    it("should handle drop with primitive data value from isDragData check", () => {
+      const onDrop = vi.fn();
+      render(<DroppableAlbum {...defaultProps} onDrop={onDrop} />);
+
+      const element = screen.getByTestId("droppable-album-album-1");
+
+      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      Object.defineProperty(dropEvent, "dataTransfer", {
+        value: {
+          getData: vi.fn().mockReturnValue(JSON.stringify("string-value")),
+        },
+      });
+      element.dispatchEvent(dropEvent);
+
+      expect(onDrop).not.toHaveBeenCalled();
+    });
+  });
 });

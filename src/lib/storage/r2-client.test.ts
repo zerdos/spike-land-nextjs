@@ -657,6 +657,26 @@ describe("r2-client", () => {
       // Verify the bucket name was cached
       expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
     });
+
+    it("should set bucket name from config when client exists but bucket name is not cached in production", async () => {
+      process.env.NODE_ENV = "production";
+      mockSend.mockResolvedValue({});
+
+      // Set up a scenario where client exists but bucket name is not cached
+      // First, create a client by calling an R2 function
+      const { deleteFromR2 } = await importModule();
+      await deleteFromR2("key1.jpg");
+
+      // Now simulate the scenario where client is cached but bucket name is cleared
+      // This can happen in edge cases
+      (global as Record<string, unknown>).__r2BucketName = undefined;
+
+      // Second call should re-cache the bucket name via getBucketName() line 68
+      await deleteFromR2("key2.jpg");
+
+      // Verify the bucket name was cached from config
+      expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
+    });
   });
 
   describe("environment variable trimming", () => {

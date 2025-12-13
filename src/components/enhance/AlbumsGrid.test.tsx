@@ -322,4 +322,175 @@ describe("AlbumsGrid", () => {
     const image = screen.getByTestId("next-image");
     expect(image.getAttribute("alt")).toBe("Album image");
   });
+
+  it("does not call onDragOver when handler is not provided", () => {
+    render(<AlbumsGrid albums={mockAlbums} />);
+
+    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    // Should not throw when dragging without handler
+    expect(() => fireEvent.dragOver(card!)).not.toThrow();
+  });
+
+  it("does not call onDragLeave when handler is not provided", () => {
+    render(<AlbumsGrid albums={mockAlbums} />);
+
+    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    // Should not throw when leaving without handler
+    expect(() => fireEvent.dragLeave(card!)).not.toThrow();
+  });
+
+  it("does not call onDrop when handler is not provided", () => {
+    render(<AlbumsGrid albums={mockAlbums} />);
+
+    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    // Should not throw when dropping without handler
+    expect(() => fireEvent.drop(card!)).not.toThrow();
+  });
+
+  it("does not call onClick when onAlbumClick is not provided", () => {
+    render(<AlbumsGrid albums={mockAlbums} />);
+
+    const albumCard = screen.getByText("Vacation Photos").closest("div[class*='block']");
+    // Should not throw when clicking without handler
+    expect(() => fireEvent.click(albumCard!)).not.toThrow();
+  });
+
+  it("does not apply cursor-pointer class when onAlbumClick is not provided", () => {
+    const { container } = render(<AlbumsGrid albums={mockAlbums} />);
+
+    const albumCards = container.querySelectorAll(".block");
+    albumCards.forEach((card) => {
+      expect(card.classList.contains("cursor-pointer")).toBe(false);
+    });
+  });
+
+  it("applies cursor-pointer class when onAlbumClick is provided", () => {
+    const mockOnAlbumClick = vi.fn();
+    const { container } = render(
+      <AlbumsGrid albums={mockAlbums} onAlbumClick={mockOnAlbumClick} />,
+    );
+
+    const albumCards = container.querySelectorAll(".cursor-pointer");
+    expect(albumCards.length).toBeGreaterThan(0);
+  });
+
+  it("does not apply drag-over styles when dragOverAlbumId is null", () => {
+    const { container } = render(<AlbumsGrid albums={mockAlbums} dragOverAlbumId={null} />);
+
+    // Check that no Card elements have the ring-primary class (drag-over style)
+    const cardsWithRing = container.querySelectorAll(".ring-primary");
+    expect(cardsWithRing.length).toBe(0);
+  });
+
+  it("does not apply drag-over styles when dragOverAlbumId does not match any album", () => {
+    const { container } = render(
+      <AlbumsGrid albums={mockAlbums} dragOverAlbumId="non-existent-id" />,
+    );
+
+    // Check that no Card elements have the ring-primary class (drag-over style)
+    const cardsWithRing = container.querySelectorAll(".ring-primary");
+    expect(cardsWithRing.length).toBe(0);
+  });
+
+  it("renders mosaic with 4 images without special layout classes", () => {
+    const fourImageAlbum = {
+      ...mockAlbums[0],
+      id: "four-img-album",
+      previewImages: mockAlbums[0].previewImages.slice(0, 4),
+    };
+
+    const { container } = render(<AlbumsGrid albums={[fourImageAlbum]} />);
+
+    // With 4 images, no special classes like col-span-2 or row-span-2 should be applied
+    const images = screen.getAllByTestId("next-image");
+    expect(images).toHaveLength(4);
+
+    // Get the mosaic grid container and check its direct children
+    const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
+    expect(mosaicGrid).toBeTruthy();
+
+    // For 4 images, none should have col-span-2 or row-span-2
+    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
+    expect(imageContainers.length).toBe(4);
+    imageContainers.forEach((imgContainer) => {
+      expect(imgContainer.classList.contains("col-span-2")).toBe(false);
+      expect(imgContainer.classList.contains("row-span-2")).toBe(false);
+    });
+  });
+
+  it("renders first image with row-span-2 when album has exactly 3 images", () => {
+    const threeImageAlbum = {
+      ...mockAlbums[0],
+      id: "three-img-album",
+      previewImages: mockAlbums[0].previewImages.slice(0, 3),
+    };
+
+    const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);
+
+    // Find the mosaic grid (grid-cols-2 with gap-0.5)
+    const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
+    expect(mosaicGrid).toBeTruthy();
+
+    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
+    expect(imageContainers.length).toBe(3);
+    // First container should have row-span-2
+    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
+  });
+
+  it("renders images with row-span-2 when album has exactly 2 images", () => {
+    const twoImageAlbum = {
+      ...mockAlbums[0],
+      id: "two-img-album",
+      previewImages: mockAlbums[0].previewImages.slice(0, 2),
+    };
+
+    const { container } = render(<AlbumsGrid albums={[twoImageAlbum]} />);
+
+    const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
+    expect(mosaicGrid).toBeTruthy();
+
+    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
+    expect(imageContainers.length).toBe(2);
+    // Both containers should have row-span-2
+    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
+    expect(imageContainers[1].classList.contains("row-span-2")).toBe(true);
+  });
+
+  it("renders single image with col-span-2 and row-span-2", () => {
+    const singleImageAlbum = {
+      ...mockAlbums[0],
+      id: "single-img-album",
+      previewImages: [mockAlbums[0].previewImages[0]],
+    };
+
+    const { container } = render(<AlbumsGrid albums={[singleImageAlbum]} />);
+
+    const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
+    expect(mosaicGrid).toBeTruthy();
+
+    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
+    expect(imageContainers.length).toBe(1);
+    // Single image container should have both col-span-2 and row-span-2
+    expect(imageContainers[0].classList.contains("col-span-2")).toBe(true);
+    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
+  });
+
+  it("verifies non-first images in 3-image mosaic do not have row-span-2", () => {
+    const threeImageAlbum = {
+      ...mockAlbums[0],
+      id: "three-img-album",
+      previewImages: mockAlbums[0].previewImages.slice(0, 3),
+    };
+
+    const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);
+
+    const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
+    expect(mosaicGrid).toBeTruthy();
+
+    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
+    expect(imageContainers.length).toBe(3);
+    // Second and third containers should NOT have row-span-2 (only first does for 3 images)
+    expect(imageContainers[1].classList.contains("row-span-2")).toBe(false);
+    expect(imageContainers[2].classList.contains("row-span-2")).toBe(false);
+  });
 });

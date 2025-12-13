@@ -5,7 +5,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AdminDashboardClient } from "./AdminDashboardClient";
+import { AdminDashboardClient, QuickLinkIcon } from "./AdminDashboardClient";
 
 global.fetch = vi.fn();
 
@@ -431,6 +431,13 @@ describe("AdminDashboardClient", () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith("/api/admin/dashboard");
+    });
+  });
+
+  describe("QuickLinkIcon", () => {
+    it("should return null for unknown icon type", () => {
+      const { container } = render(<QuickLinkIcon icon="unknown-icon" />);
+      expect(container.firstChild).toBeNull();
     });
   });
 });

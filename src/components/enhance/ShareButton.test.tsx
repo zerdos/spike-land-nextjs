@@ -496,4 +496,93 @@ describe("ShareButton Component", () => {
       expect(input).toHaveAttribute("readonly");
     });
   });
+
+  it("handles API error without error property gracefully", async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: false,
+      json: async () => ({}),
+    } as Response);
+
+    render(
+      <ShareButton
+        imageId="img-1"
+        shareToken={null}
+        imageName="Test Image"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Share/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to generate share link");
+    });
+  });
+
+  it("handles non-Error exception gracefully", async () => {
+    vi.mocked(global.fetch).mockRejectedValue("string error");
+
+    render(
+      <ShareButton
+        imageId="img-1"
+        shareToken={null}
+        imageName="Test Image"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Share/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to generate share link");
+    });
+  });
+
+  it("returns # for social links when shareUrl is null", async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Image not found" }),
+    } as Response);
+
+    render(
+      <ShareButton
+        imageId="img-1"
+        shareToken={null}
+        imageName="Test Image"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Share/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to generate share link. Please try again."))
+        .toBeInTheDocument();
+    });
+  });
+
+  it("does not copy when shareUrl is null", async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Failed" }),
+    } as Response);
+
+    render(
+      <ShareButton
+        imageId="img-1"
+        shareToken={null}
+        imageName="Test Image"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Share/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to generate share link. Please try again."))
+        .toBeInTheDocument();
+    });
+
+    expect(mockWriteText).not.toHaveBeenCalled();
+  });
 });

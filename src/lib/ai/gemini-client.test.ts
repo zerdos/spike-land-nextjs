@@ -1107,14 +1107,17 @@ describe("gemini-client", () => {
       MockGoogleGenAI.mock.instances = [];
       resetGeminiClient();
       process.env.GEMINI_API_KEY = "test-api-key";
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
       delete process.env.GEMINI_API_KEY;
       resetGeminiClient();
+      vi.useRealTimers();
     });
 
     it("should clear timeout on successful completion", async () => {
+      vi.useRealTimers();
       const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
       const imageBase64 = Buffer.from("success").toString("base64");
 
@@ -1142,6 +1145,7 @@ describe("gemini-client", () => {
     });
 
     it("should clear timeout on error during processing", async () => {
+      vi.useRealTimers();
       const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 
       async function* errorStream() {
@@ -1162,6 +1166,78 @@ describe("gemini-client", () => {
       // Verify the timeout is set to 5 minutes (300 seconds)
       expect(GEMINI_TIMEOUT_MS).toBe(5 * 60 * 1000);
       expect(GEMINI_TIMEOUT_MS).toBe(300000);
+    });
+
+    it("should timeout and reject for enhanceImageWithGemini when stream takes too long", async () => {
+      // Create a slow stream that never completes
+      const slowStreamIterator = {
+        [Symbol.asyncIterator]: () => ({
+          next: () => new Promise(() => {}), // Never resolves
+        }),
+      };
+
+      mockGenerateContentStream.mockResolvedValueOnce(slowStreamIterator);
+
+      const promise = enhanceImageWithGemini({
+        imageData: "base64data",
+        mimeType: "image/jpeg",
+        tier: "1K",
+      });
+
+      // Advance past the timeout
+      await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
+
+      await expect(promise).rejects.toThrow(
+        /Gemini API request timed out after \d+ seconds/,
+      );
+    });
+
+    it("should timeout and reject for generateImageWithGemini when stream takes too long", async () => {
+      // Create a slow stream that never completes
+      const slowStreamIterator = {
+        [Symbol.asyncIterator]: () => ({
+          next: () => new Promise(() => {}), // Never resolves
+        }),
+      };
+
+      mockGenerateContentStream.mockResolvedValueOnce(slowStreamIterator);
+
+      const promise = generateImageWithGemini({
+        prompt: "A sunset",
+        tier: "1K",
+      });
+
+      // Advance past the timeout
+      await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
+
+      await expect(promise).rejects.toThrow(
+        /Gemini API request timed out after \d+ seconds/,
+      );
+    });
+
+    it("should timeout and reject for modifyImageWithGemini when stream takes too long", async () => {
+      // Create a slow stream that never completes
+      const slowStreamIterator = {
+        [Symbol.asyncIterator]: () => ({
+          next: () => new Promise(() => {}), // Never resolves
+        }),
+      };
+
+      mockGenerateContentStream.mockResolvedValueOnce(slowStreamIterator);
+
+      const promise = modifyImageWithGemini({
+        prompt: "Make it blue",
+        imageData: "base64data",
+        mimeType: "image/jpeg",
+        tier: "1K",
+      });
+
+      // Advance past the timeout
+      await vi.advanceTimersByTimeAsync(GEMINI_TIMEOUT_MS + 1000);
+
+      await expect(promise).rejects.toThrow(
+        /Gemini API request timed out after \d+ seconds/,
+      );
     });
   });
 

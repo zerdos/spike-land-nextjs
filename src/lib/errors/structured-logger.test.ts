@@ -195,4 +195,166 @@ describe("structured-logger", () => {
       expect(consoleInfoSpy).toHaveBeenCalledOnce();
     });
   });
+
+  describe("production environment", () => {
+    let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+    let originalEnv: string | undefined;
+
+    beforeEach(() => {
+      originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+      consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.NODE_ENV = originalEnv;
+      }
+      vi.restoreAllMocks();
+    });
+
+    it("should output JSON in production", () => {
+      const testLogger = new StructuredLogger();
+      testLogger.info("Production log message");
+
+      expect(consoleLogSpy).toHaveBeenCalledOnce();
+      const loggedOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(loggedOutput);
+      expect(parsed.message).toBe("Production log message");
+      expect(parsed.level).toBe("info");
+    });
+
+    it("should not output debug messages in production", () => {
+      const testLogger = new StructuredLogger();
+      testLogger.debug("Debug message in production");
+
+      // Debug messages should not be output in production
+      expect(consoleLogSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("ChildLogger full coverage", () => {
+    let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    let consoleDebugSpy: ReturnType<typeof vi.spyOn>;
+    let originalEnv: string | undefined;
+
+    beforeEach(() => {
+      originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "development";
+      vi.spyOn(console, "log").mockImplementation(() => {});
+      vi.spyOn(console, "info").mockImplementation(() => {});
+      consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      consoleDebugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.NODE_ENV = originalEnv;
+      }
+      vi.restoreAllMocks();
+    });
+
+    it("should log warnings through child logger", () => {
+      const testLogger = new StructuredLogger();
+      const child = testLogger.child({ requestId: "req123" });
+      child.warn("Child warning message");
+
+      expect(consoleWarnSpy).toHaveBeenCalledOnce();
+    });
+
+    it("should log errors through child logger", () => {
+      const testLogger = new StructuredLogger();
+      const child = testLogger.child({ requestId: "req123" });
+      const error = new Error("Child error");
+      child.error("Child error message", error);
+
+      expect(consoleErrorSpy).toHaveBeenCalledOnce();
+    });
+
+    it("should log debug through child logger", () => {
+      const testLogger = new StructuredLogger();
+      const child = testLogger.child({ requestId: "req123" });
+      child.debug("Child debug message");
+
+      expect(consoleDebugSpy).toHaveBeenCalledOnce();
+    });
+
+    it("should log errors through child logger with additional context", () => {
+      const testLogger = new StructuredLogger();
+      const child = testLogger.child({ requestId: "req123" });
+      const error = new Error("Child error with context");
+      child.error("Child error message", error, { userId: "user456" });
+
+      expect(consoleErrorSpy).toHaveBeenCalledOnce();
+      const loggedMessage = consoleErrorSpy.mock.calls[0][0];
+      expect(loggedMessage).toContain("Child error message");
+    });
+  });
+
+  describe("error without stack trace", () => {
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    let originalEnv: string | undefined;
+
+    beforeEach(() => {
+      originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "development";
+      vi.spyOn(console, "log").mockImplementation(() => {});
+      consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.NODE_ENV = originalEnv;
+      }
+      vi.restoreAllMocks();
+    });
+
+    it("should handle error without stack trace", () => {
+      const testLogger = new StructuredLogger();
+      const error = new Error("Error without stack");
+      // Remove the stack property
+      delete error.stack;
+      testLogger.error("Error occurred", error);
+
+      expect(consoleErrorSpy).toHaveBeenCalledOnce();
+      const loggedMessage = consoleErrorSpy.mock.calls[0][0];
+      expect(loggedMessage).toContain("Error occurred");
+      expect(loggedMessage).toContain("Error without stack");
+      // Should not include "Stack:" when there is no stack
+      expect(loggedMessage).not.toContain("Stack:");
+    });
+  });
+
+  describe("context formatting edge cases", () => {
+    let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+    let originalEnv: string | undefined;
+
+    beforeEach(() => {
+      originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "development";
+      vi.spyOn(console, "log").mockImplementation(() => {});
+      consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.NODE_ENV = originalEnv;
+      }
+      vi.restoreAllMocks();
+    });
+
+    it("should handle context with only requestId (filtered out)", () => {
+      const testLogger = new StructuredLogger();
+      // Context with only requestId should result in empty contextStr
+      testLogger.info("Test message", { requestId: "req123" });
+
+      expect(consoleInfoSpy).toHaveBeenCalledOnce();
+      const loggedMessage = consoleInfoSpy.mock.calls[0][0];
+      expect(loggedMessage).toContain("Test message");
+      // Should not have the context separator when all context is filtered
+      expect(loggedMessage).not.toContain("|");
+    });
+  });
 });

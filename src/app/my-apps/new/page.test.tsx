@@ -1084,6 +1084,134 @@ describe("NewAppPage", () => {
     });
   });
 
+  describe("API Error Handling", () => {
+    it("should handle API error response and not navigate", async () => {
+      const user = userEvent.setup();
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      // Mock fetch to return an error response
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ message: "App name already exists" }),
+      } as Response);
+
+      render(<NewAppPage />);
+
+      // Complete the form
+      await user.type(screen.getByTestId("app-name-input"), "Duplicate App");
+      await user.type(
+        screen.getByTestId("app-description-textarea"),
+        "This is a test description",
+      );
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+      });
+
+      await user.type(
+        screen.getByTestId("requirements-textarea"),
+        "The app needs authentication and user profile management",
+      );
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 3 of 4: Monetization/)).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId("monetization-select"));
+      await waitFor(() => {
+        const options = screen.getAllByText("Free - No charge for users");
+        expect(options.length).toBeGreaterThan(0);
+      });
+      const options = screen.getAllByText("Free - No charge for users");
+      await user.click(options[options.length - 1]);
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 4 of 4: Review/)).toBeInTheDocument();
+      });
+
+      // Submit the form
+      await user.click(screen.getByTestId("wizard-submit-button"));
+
+      // Wait for the API call and error logging
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to create app:",
+          { message: "App name already exists" },
+        );
+      });
+
+      // Should NOT navigate on error
+      expect(mockPush).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should handle network error and log it", async () => {
+      const user = userEvent.setup();
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      // Mock fetch to throw a network error
+      const networkError = new Error("Network error");
+      fetchMock.mockRejectedValueOnce(networkError);
+
+      render(<NewAppPage />);
+
+      // Complete the form
+      await user.type(screen.getByTestId("app-name-input"), "Test App");
+      await user.type(
+        screen.getByTestId("app-description-textarea"),
+        "This is a test description",
+      );
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+      });
+
+      await user.type(
+        screen.getByTestId("requirements-textarea"),
+        "The app needs authentication and user profile management",
+      );
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 3 of 4: Monetization/)).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId("monetization-select"));
+      await waitFor(() => {
+        const options = screen.getAllByText("Free - No charge for users");
+        expect(options.length).toBeGreaterThan(0);
+      });
+      const options = screen.getAllByText("Free - No charge for users");
+      await user.click(options[options.length - 1]);
+      await user.click(screen.getByTestId("wizard-next-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Step 4 of 4: Review/)).toBeInTheDocument();
+      });
+
+      // Submit the form
+      await user.click(screen.getByTestId("wizard-submit-button"));
+
+      // Wait for the error to be logged
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error creating app:",
+          networkError,
+        );
+      });
+
+      // Should NOT navigate on error
+      expect(mockPush).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
   describe("Integration - All Features Together", () => {
     it("should show all validation enhancements working together", async () => {
       const user = userEvent.setup();

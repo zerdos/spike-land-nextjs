@@ -463,6 +463,71 @@ describe("VersionHistory", () => {
     expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
   });
 
+  it("should handle unknown tier in getTierLabel and getTierColor", () => {
+    const versionsWithUnknownTier: Version[] = [
+      {
+        ...mockVersions[0],
+        tier: "UNKNOWN_TIER" as "TIER_1K" | "TIER_2K" | "TIER_4K",
+      },
+    ];
+
+    render(
+      <VersionHistory
+        imageId="img-1"
+        imageName="Test Image"
+        originalUrl="https://example.com/original.jpg"
+        versions={versionsWithUnknownTier}
+      />,
+    );
+
+    expect(screen.getByText("UNKNOWN_TIER")).toBeInTheDocument();
+  });
+
+  it("should display sizeBytes only when width is null", () => {
+    const versionsWithSizeOnly: Version[] = [
+      {
+        ...mockVersions[0],
+        width: null,
+        height: null,
+        sizeBytes: 500000,
+      },
+    ];
+
+    render(
+      <VersionHistory
+        imageId="img-1"
+        imageName="Test Image"
+        originalUrl="https://example.com/original.jpg"
+        versions={versionsWithSizeOnly}
+      />,
+    );
+
+    expect(screen.getByText("488.3 KB")).toBeInTheDocument();
+    expect(screen.queryByText(/x/)).not.toBeInTheDocument();
+  });
+
+  it("should not display dimensions when only width is present without height", () => {
+    const versionsWithWidthOnly: Version[] = [
+      {
+        ...mockVersions[0],
+        width: 1000,
+        height: null,
+        sizeBytes: null,
+      },
+    ];
+
+    render(
+      <VersionHistory
+        imageId="img-1"
+        imageName="Test Image"
+        originalUrl="https://example.com/original.jpg"
+        versions={versionsWithWidthOnly}
+      />,
+    );
+
+    expect(screen.queryByText(/1000 x/)).not.toBeInTheDocument();
+  });
+
   it("should not trigger download when resultUrl is null", () => {
     const clickSpy = vi.fn();
     const mockAnchor = {

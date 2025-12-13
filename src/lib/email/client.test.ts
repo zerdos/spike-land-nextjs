@@ -402,6 +402,39 @@ describe("Email Client", () => {
       expect(status.remaining).toBe(50);
       expect(status.resetIn).toBeGreaterThan(0);
     });
+
+    it("should reset rate limit window when expired", async () => {
+      vi.resetModules();
+      mockSend.mockResolvedValue({
+        data: { id: "test-email-id" },
+        error: null,
+      });
+      const { sendEmail, setRateLimitCount, getRateLimitStatus } = await import("./client");
+
+      // Set a high count
+      setRateLimitCount(99);
+
+      // Mock Date.now to simulate expired window (> 24 hours later)
+      const originalDateNow = Date.now;
+      const futureTime = originalDateNow() + 25 * 60 * 60 * 1000; // 25 hours later
+      vi.spyOn(Date, "now").mockReturnValue(futureTime);
+
+      // Send email - should reset the window and allow the email
+      const result = await sendEmail({
+        to: "user@example.com",
+        subject: "Test Email",
+        react: mockReactElement,
+      });
+
+      expect(result.success).toBe(true);
+
+      // Verify window was reset (count should be 1 after the successful send)
+      const status = getRateLimitStatus();
+      expect(status.count).toBe(1);
+
+      // Restore Date.now
+      vi.spyOn(Date, "now").mockRestore();
+    });
   });
 
   describe("retry logic", () => {
@@ -466,6 +499,85 @@ describe("Email Client", () => {
 
       expect(result.success).toBe(true);
       expect(result.retriesUsed).toBe(0);
+    });
+
+    it("should retry on non-validation API errors and eventually succeed", async () => {
+      vi.resetModules();
+      vi.useFakeTimers();
+
+      // First call returns error, second call succeeds
+      mockSend
+        .mockResolvedValueOnce({
+          data: null,
+          error: { message: "temporary server error" },
+        })
+        .mockResolvedValueOnce({
+          data: { id: "test-email-id" },
+          error: null,
+        });
+
+      const { sendEmail, resetRateLimitState } = await import("./client");
+      resetRateLimitState();
+
+      const resultPromise = sendEmail({
+        to: "user@example.com",
+        subject: "Test Email",
+        react: mockReactElement,
+      });
+
+      // Advance timers to handle the retry delay
+      await vi.advanceTimersByTimeAsync(1000); // First retry delay
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(true);
+      expect(result.retriesUsed).toBe(1);
+      expect(mockSend).toHaveBeenCalledTimes(2);
+
+      vi.useRealTimers();
+    });
+
+    it("should retry on non-validation API errors and fail after max retries", async () => {
+      vi.resetModules();
+      vi.useFakeTimers();
+
+      // All calls return non-validation errors - use mockResolvedValueOnce for each call
+      mockSend
+        .mockResolvedValueOnce({
+          data: null,
+          error: { message: "temporary server error" },
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { message: "temporary server error" },
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { message: "temporary server error" },
+        });
+
+      const { sendEmail, resetRateLimitState } = await import("./client");
+      resetRateLimitState();
+
+      const resultPromise = sendEmail({
+        to: "user@example.com",
+        subject: "Test Email",
+        react: mockReactElement,
+      });
+
+      // Advance timers to handle all retry delays (1s, 2s for attempts 0 and 1)
+      await vi.advanceTimersByTimeAsync(1000); // First retry delay
+      await vi.advanceTimersByTimeAsync(2000); // Second retry delay
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      // When an API error occurs on the final attempt, it falls through to the "no ID returned" error
+      expect(result.error).toBe("Failed to send email - no ID returned");
+      expect(result.retriesUsed).toBe(2);
+      expect(mockSend).toHaveBeenCalledTimes(3); // Initial + 2 retries
+
+      vi.useRealTimers();
     });
   });
 });

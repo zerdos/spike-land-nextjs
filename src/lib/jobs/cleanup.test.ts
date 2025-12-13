@@ -184,6 +184,33 @@ describe("Job Cleanup Utilities", () => {
       expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
     });
 
+    it("should perform dry run with null processingStartedAt (uses updatedAt fallback)", async () => {
+      const now = new Date();
+      const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
+
+      const mockJobs = [
+        {
+          id: "job1",
+          userId: "user1",
+          tokensCost: 10,
+          processingStartedAt: null, // null to trigger updatedAt fallback
+          updatedAt: stuckTime,
+        },
+      ];
+
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+
+      const result = await cleanupStuckJobs({ dryRun: true });
+
+      expect(result.totalFound).toBe(1);
+      expect(result.cleanedUp).toBe(0);
+      expect(result.tokensRefunded).toBe(0);
+      expect(result.jobs).toHaveLength(1);
+      expect(result.jobs[0].processingDuration).toBeGreaterThan(0);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+    });
+
     it("should clean up stuck jobs and refund tokens", async () => {
       const now = new Date();
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
@@ -509,6 +536,89 @@ describe("Job Cleanup Utilities", () => {
       expect(result.failed).toBe(1);
       expect(result.cleanedUp).toBe(0);
       expect(result.errors).toHaveLength(1);
+    });
+
+    it("should rethrow error when findStuckJobs fails", async () => {
+      const dbError = new Error("Database connection lost");
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(dbError);
+
+      await expect(cleanupStuckJobs()).rejects.toThrow("Database connection lost");
+    });
+
+    it("should rethrow non-Error types when findStuckJobs fails", async () => {
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue("String error");
+
+      await expect(cleanupStuckJobs()).rejects.toBe("String error");
+    });
+
+    it("should handle non-Error types in single job cleanup", async () => {
+      const now = new Date();
+      const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
+
+      const mockJobs = [
+        {
+          id: "job1",
+          userId: "user1",
+          tokensCost: 10,
+          processingStartedAt: stuckTime,
+          updatedAt: stuckTime,
+        },
+      ];
+
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+
+      // Mock transaction to throw a non-Error type
+      vi.mocked(prisma.$transaction).mockRejectedValue("Non-Error string thrown");
+
+      const result = await cleanupStuckJobs();
+
+      expect(result.failed).toBe(1);
+      expect(result.cleanedUp).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].error).toBe("Non-Error string thrown");
+    });
+
+    it("should throw error when result is missing for a job (defensive check)", async () => {
+      const now = new Date();
+      const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
+
+      const mockJobs = [
+        {
+          id: "job1",
+          userId: "user1",
+          tokensCost: 10,
+          processingStartedAt: stuckTime,
+          updatedAt: stuckTime,
+        },
+        {
+          id: "job2",
+          userId: "user2",
+          tokensCost: 5,
+          processingStartedAt: stuckTime,
+          updatedAt: stuckTime,
+        },
+      ];
+
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+
+      // Mock Promise.all to return fewer results than jobs
+      // This simulates the defensive check scenario
+      const originalPromiseAll = Promise.all.bind(Promise);
+      const promiseAllSpy = vi.spyOn(Promise, "all").mockImplementationOnce(async () => {
+        // Return only one result for two jobs to trigger the defensive check
+        return [
+          {
+            success: true,
+            tokensRefunded: 10,
+            processingDuration: 1000,
+          },
+          // Second result is undefined to trigger the check
+        ] as never;
+      });
+
+      await expect(cleanupStuckJobs()).rejects.toThrow("Missing result for job job2");
+
+      promiseAllSpy.mockRestore();
     });
   });
 });

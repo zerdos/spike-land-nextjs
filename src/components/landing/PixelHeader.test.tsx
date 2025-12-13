@@ -91,4 +91,47 @@ describe("PixelHeader Component", () => {
     const ctaButton = container.querySelector(".shadow-glow-cyan-sm");
     expect(ctaButton).toBeInTheDocument();
   });
+
+  it("should close mobile menu when clicking a navigation link", () => {
+    render(<PixelHeader />);
+
+    // Open the mobile menu
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
+    fireEvent.click(menuButton);
+
+    // Verify the dialog is open
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+
+    // Find the Features link inside the dialog and click it
+    const featuresLinks = screen.getAllByRole("link", { name: "Features" });
+    // The second one should be inside the mobile menu (dialog)
+    const mobileMenuFeaturesLink = featuresLinks.find((link) => dialog.contains(link));
+    expect(mobileMenuFeaturesLink).toBeDefined();
+    fireEvent.click(mobileMenuFeaturesLink!);
+
+    // The dialog should no longer be in the document (menu closed)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("should close mobile menu when clicking Get Started button in mobile menu", () => {
+    render(<PixelHeader />);
+
+    // Open the mobile menu
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
+    fireEvent.click(menuButton);
+
+    // Verify the dialog is open
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+
+    // Find the Get Started button inside the dialog
+    const getStartedLinks = screen.getAllByRole("link", { name: /get started/i });
+    const mobileMenuGetStarted = getStartedLinks.find((link) => dialog.contains(link));
+    expect(mobileMenuGetStarted).toBeDefined();
+    fireEvent.click(mobileMenuGetStarted!);
+
+    // The dialog should no longer be in the document (menu closed)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });

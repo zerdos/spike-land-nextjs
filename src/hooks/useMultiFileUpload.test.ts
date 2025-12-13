@@ -602,6 +602,72 @@ describe("useMultiFileUpload", () => {
   });
 
   describe("cancellation", () => {
+    it("should stop sequential uploads when cancelled mid-way", async () => {
+      const uploadedFiles: string[] = [];
+      let resolveFirstUpload: ((value: unknown) => void) | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        const formData = options.body as FormData;
+        const file = formData.get("file") as File;
+
+        if (file.name === "file1.jpg") {
+          // First file: wait for manual resolution
+          await new Promise((resolve) => {
+            resolveFirstUpload = resolve;
+          });
+        }
+
+        // Check if aborted before completing
+        if (options.signal?.aborted) {
+          const abortError = new Error("Aborted");
+          abortError.name = "AbortError";
+          throw abortError;
+        }
+
+        uploadedFiles.push(file.name);
+        return {
+          ok: true,
+          json: async () => ({ imageId: `img-${file.name}` }),
+        };
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload({ parallel: false }));
+
+      const files = [
+        createMockFile("file1.jpg"),
+        createMockFile("file2.jpg"),
+        createMockFile("file3.jpg"),
+      ];
+
+      // Start upload
+      act(() => {
+        void result.current.upload(files);
+      });
+
+      // Wait for upload to start
+      await waitFor(() => {
+        expect(result.current.isUploading).toBe(true);
+      });
+
+      // Cancel while first file is still uploading
+      act(() => {
+        result.current.cancel();
+      });
+
+      // Resolve the first upload (it will still complete since it was in progress)
+      if (resolveFirstUpload) {
+        resolveFirstUpload({});
+      }
+
+      await waitFor(() => {
+        expect(result.current.isUploading).toBe(false);
+      });
+
+      // Only file1 should have been attempted (since sequential upload stops after cancel)
+      // file2 and file3 should never have started uploading due to the signal.aborted check
+      expect(uploadedFiles.length).toBeLessThanOrEqual(1);
+    });
+
     it("should cancel uploads", async () => {
       mockFetch.mockImplementation(
         () =>
@@ -807,6 +873,105 @@ describe("useMultiFileUpload", () => {
 
       expect(result.current.isUploading).toBe(false);
       expect(result.current.files).toEqual([]);
+    });
+  });
+
+  describe("albumId option", () => {
+    it("should include albumId in form data when provided", async () => {
+      let capturedFormData: FormData | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        capturedFormData = options.body as FormData;
+        return {
+          ok: true,
+          json: async () => ({ imageId: "img-123" }),
+        };
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload({ albumId: "album-456" }));
+
+      const files = [createMockFile("file.jpg")];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(1);
+      });
+
+      expect(capturedFormData).not.toBeNull();
+      expect(capturedFormData?.get("albumId")).toBe("album-456");
+      expect(capturedFormData?.get("file")).toBeInstanceOf(File);
+    });
+
+    it("should not include albumId in form data when not provided", async () => {
+      let capturedFormData: FormData | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        capturedFormData = options.body as FormData;
+        return {
+          ok: true,
+          json: async () => ({ imageId: "img-123" }),
+        };
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [createMockFile("file.jpg")];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(1);
+      });
+
+      expect(capturedFormData).not.toBeNull();
+      expect(capturedFormData?.get("albumId")).toBeNull();
+    });
+  });
+
+  describe("error handling edge cases", () => {
+    it("should use default error message when response text is empty", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        text: async () => "",
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [createMockFile("file.jpg")];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.files[0].status).toBe("failed");
+        expect(result.current.files[0].error).toBe("Upload failed");
+      });
+    });
+
+    it("should handle non-Error exceptions gracefully", async () => {
+      mockFetch.mockImplementation(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw "string error";
+      });
+
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [createMockFile("file.jpg")];
+
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.files[0].status).toBe("failed");
+        expect(result.current.files[0].error).toBe("Upload failed");
+      });
     });
   });
 

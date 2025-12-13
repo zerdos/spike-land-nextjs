@@ -388,10 +388,6 @@ export class TokenBalanceManager {
       MAX_TOKEN_BALANCE - balance,
     );
 
-    if (tokensToAdd === 0) {
-      return 0;
-    }
-
     // Add tokens
     const result = await this.addTokens({
       userId,

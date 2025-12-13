@@ -25,6 +25,41 @@ describe("Fraud Detection", () => {
     vi.restoreAllMocks();
   });
 
+  describe("getBlockedEmailDomains", () => {
+    const originalEnv = process.env.BLOCKED_EMAIL_DOMAINS;
+
+    afterEach(() => {
+      if (originalEnv === undefined) {
+        delete process.env.BLOCKED_EMAIL_DOMAINS;
+      } else {
+        process.env.BLOCKED_EMAIL_DOMAINS = originalEnv;
+      }
+    });
+
+    it("should return default disposable domains when no env var set", () => {
+      delete process.env.BLOCKED_EMAIL_DOMAINS;
+      const domains = fraudDetection.getBlockedEmailDomains();
+      expect(domains).toContain("tempmail.com");
+      expect(domains).toContain("mailinator.com");
+    });
+
+    it("should include custom domains from BLOCKED_EMAIL_DOMAINS env var", () => {
+      process.env.BLOCKED_EMAIL_DOMAINS = "custom-spam.com, another-bad.org";
+      const domains = fraudDetection.getBlockedEmailDomains();
+      expect(domains).toContain("tempmail.com"); // Original list
+      expect(domains).toContain("custom-spam.com"); // Custom domain
+      expect(domains).toContain("another-bad.org"); // Custom domain
+    });
+
+    it("should filter out empty strings from custom domains", () => {
+      process.env.BLOCKED_EMAIL_DOMAINS = "custom-spam.com,,  ,valid.com";
+      const domains = fraudDetection.getBlockedEmailDomains();
+      expect(domains).toContain("custom-spam.com");
+      expect(domains).toContain("valid.com");
+      expect(domains).not.toContain("");
+    });
+  });
+
   describe("isDisposableEmail", () => {
     it("should detect disposable email addresses", () => {
       expect(fraudDetection.isDisposableEmail("test@tempmail.com")).toBe(true);
@@ -289,6 +324,19 @@ describe("Fraud Detection", () => {
       expect(result.passed).toBe(false);
       expect(result.reasons.length).toBeGreaterThan(1);
     });
+
+    it("should fail when referee user is not found", async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      const result = await fraudDetection.performFraudChecks(
+        "nonexistent-user",
+        "referrer-123",
+        "192.168.1.1",
+      );
+
+      expect(result.passed).toBe(false);
+      expect(result.reasons).toContain("Referee user not found");
+    });
   });
 
   describe("validateReferralAfterVerification", () => {
@@ -363,6 +411,33 @@ describe("Fraud Detection", () => {
       expect(result.success).toBe(false);
       expect(result.shouldGrantRewards).toBe(false);
       expect(result.error).toBe("No pending referral found");
+    });
+
+    it("should handle database errors gracefully", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(prisma.referral.findFirst).mockRejectedValue(
+        new Error("Database connection failed"),
+      );
+
+      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+
+      expect(result.success).toBe(false);
+      expect(result.shouldGrantRewards).toBe(false);
+      expect(result.error).toBe("Database connection failed");
+      expect(consoleSpy).toHaveBeenCalledWith("Failed to validate referral:", expect.any(Error));
+      consoleSpy.mockRestore();
+    });
+
+    it("should handle unknown errors gracefully", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(prisma.referral.findFirst).mockRejectedValue("Unknown error type");
+
+      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+
+      expect(result.success).toBe(false);
+      expect(result.shouldGrantRewards).toBe(false);
+      expect(result.error).toBe("Unknown error");
+      consoleSpy.mockRestore();
     });
   });
 

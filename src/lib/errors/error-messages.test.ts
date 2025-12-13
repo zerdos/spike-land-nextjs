@@ -109,6 +109,30 @@ describe("error-messages", () => {
       expect(detectErrorCode(new Error("transaction failed"))).toBe("DATABASE_ERROR");
     });
 
+    it("should detect UNAUTHORIZED from error message", () => {
+      expect(detectErrorCode(new Error("unauthorized access"))).toBe("UNAUTHORIZED");
+      expect(detectErrorCode(new Error("unauthenticated request"))).toBe("UNAUTHORIZED");
+    });
+
+    it("should detect FORBIDDEN from error message", () => {
+      expect(detectErrorCode(new Error("forbidden resource"))).toBe("FORBIDDEN");
+      expect(detectErrorCode(new Error("access denied to resource"))).toBe("FORBIDDEN");
+    });
+
+    it("should detect NOT_FOUND from error message", () => {
+      expect(detectErrorCode(new Error("resource not found"))).toBe("NOT_FOUND");
+    });
+
+    it("should detect UPLOAD_FAILED from error message", () => {
+      expect(detectErrorCode(new Error("upload failed"))).toBe("UPLOAD_FAILED");
+      expect(detectErrorCode(new Error("upload error occurred"))).toBe("UPLOAD_FAILED");
+    });
+
+    it("should detect DOWNLOAD_FAILED from error message", () => {
+      expect(detectErrorCode(new Error("download failed"))).toBe("DOWNLOAD_FAILED");
+      expect(detectErrorCode(new Error("failed to download file"))).toBe("DOWNLOAD_FAILED");
+    });
+
     it("should detect PROCESSING_FAILED from error message", () => {
       expect(detectErrorCode(new Error("enhancement failed"))).toBe(
         "PROCESSING_FAILED",

@@ -37,9 +37,15 @@ vi.mock("@/lib/rate-limiter", () => ({
 }));
 
 // Helper to create mock request
-function createMockRequest(body: object): NextRequest {
+function createMockRequest(body: object, options?: { contentLength?: string; }): NextRequest {
+  const headers = new Headers();
+  if (options?.contentLength) {
+    headers.set("content-length", options.contentLength);
+  }
+
   const req = new NextRequest("http://localhost/api/vouchers/redeem", {
     method: "POST",
+    headers,
   });
 
   req.json = vi.fn().mockResolvedValue(body);
@@ -376,5 +382,42 @@ describe("POST /api/vouchers/redeem", () => {
 
     expect(res.status).toBe(429);
     expect(res.headers.get("Retry-After")).toBeDefined();
+  });
+
+  it("should return 413 when content-length exceeds maximum", async () => {
+    const req = createMockRequest({ code: "TEST2024" }, { contentLength: "2048" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(413);
+    expect(data.error).toBe("Request too large");
+  });
+
+  it("should return 400 when code exceeds maximum length", async () => {
+    const longCode = "A".repeat(51); // 51 characters, exceeds MAX_VOUCHER_CODE_LENGTH of 50
+    const req = createMockRequest({ code: longCode });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
+  });
+
+  it("should return 400 when code contains invalid characters", async () => {
+    const req = createMockRequest({ code: "TEST-2024!" }); // Contains hyphen and exclamation mark
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
+  });
+
+  it("should return 400 when code is only whitespace", async () => {
+    const req = createMockRequest({ code: "   " }); // Only whitespace, trims to empty
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
   });
 });
