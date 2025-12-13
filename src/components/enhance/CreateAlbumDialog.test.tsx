@@ -130,7 +130,7 @@ describe("CreateAlbumDialog", () => {
         expect(mockFetch).toHaveBeenCalledWith("/api/albums", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "Test Album", privacy: "PRIVATE" }),
+          body: JSON.stringify({ name: "Test Album", privacy: "PRIVATE", defaultTier: "TIER_1K" }),
         });
       });
     });
@@ -277,8 +277,10 @@ describe("CreateAlbumDialog", () => {
       await user.click(screen.getByRole("button", { name: /new album/i }));
       await user.type(screen.getByLabelText(/album name/i), "Test");
 
-      // Open privacy select
-      await user.click(screen.getByRole("combobox"));
+      // Open privacy select using the specific trigger element by id
+      const privacyTrigger = document.getElementById("album-privacy");
+      expect(privacyTrigger).toBeInTheDocument();
+      await user.click(privacyTrigger!);
       await user.click(screen.getByRole("option", { name: /public/i }));
 
       await user.click(screen.getByRole("button", { name: /create album/i }));
@@ -305,8 +307,10 @@ describe("CreateAlbumDialog", () => {
       await user.click(screen.getByRole("button", { name: /new album/i }));
       await user.type(screen.getByLabelText(/album name/i), "Test");
 
-      // Open privacy select
-      await user.click(screen.getByRole("combobox"));
+      // Open privacy select using the specific trigger element by id
+      const privacyTrigger = document.getElementById("album-privacy");
+      expect(privacyTrigger).toBeInTheDocument();
+      await user.click(privacyTrigger!);
       await user.click(screen.getByRole("option", { name: /unlisted/i }));
 
       await user.click(screen.getByRole("button", { name: /create album/i }));

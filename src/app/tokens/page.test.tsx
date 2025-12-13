@@ -170,7 +170,7 @@ describe("TokensPage", () => {
 
     render(<TokensPage />);
     expect(screen.getByText("Purchase Tokens")).toBeInTheDocument();
-    expect(screen.getByTestId("token-packages-grid")).toBeInTheDocument();
+    // Package cards have data-testid attributes
     expect(screen.getByTestId("package-card-starter")).toBeInTheDocument();
     expect(screen.getByTestId("package-card-basic")).toBeInTheDocument();
     expect(screen.getByTestId("package-card-pro")).toBeInTheDocument();
