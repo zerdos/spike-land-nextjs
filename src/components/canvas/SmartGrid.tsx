@@ -19,7 +19,7 @@ export interface SmartGridProps {
  * SmartGrid component displays a responsive grid of gallery images.
  *
  * Features:
- * - Responsive grid layout (3 cols mobile, 4 cols tablet, 6 cols desktop)
+ * - Responsive grid layout (2 cols mobile, 3 cols tablet, 4 cols desktop)
  * - Fade in/out animation when transitioning to/from slideshow
  * - CSS rotation support
  * - Accessible with proper ARIA attributes
@@ -89,7 +89,7 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
           transform: rotationTransform,
         }}
         className={cn(
-          "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 p-4",
+          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4",
           isBlurred && "animate-grid-fade-out",
           !isBlurred && "animate-grid-fade-in",
           className,
