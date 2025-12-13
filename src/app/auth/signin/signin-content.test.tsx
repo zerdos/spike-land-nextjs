@@ -18,6 +18,15 @@ vi.mock("@/components/auth/auth-buttons", () => ({
   ),
 }));
 
+// Mock PixelLogo component
+vi.mock("@/components/brand/PixelLogo", () => ({
+  PixelLogo: ({ size, variant }: { size?: string; variant?: string; }) => (
+    <div data-testid="pixel-logo" data-size={size} data-variant={variant}>
+      Pixel Logo
+    </div>
+  ),
+}));
+
 describe("SignInContent", () => {
   beforeEach(() => {
     vi.mocked(useSearchParams).mockReturnValue({
@@ -26,16 +35,24 @@ describe("SignInContent", () => {
   });
 
   describe("Page Structure", () => {
-    it("should render the sign in page", () => {
+    it("should render the sign in page with Pixel branding", () => {
       render(<SignInContent />);
-      expect(screen.getByText("Welcome to Spike Land")).toBeInTheDocument();
+      expect(screen.getByText("Welcome to Pixel")).toBeInTheDocument();
     });
 
     it("should display the page description", () => {
       render(<SignInContent />);
       expect(
-        screen.getByText("Sign in to access your apps and create new ones"),
+        screen.getByText("Sign in or create an account to continue."),
       ).toBeInTheDocument();
+    });
+
+    it("should render PixelLogo component", () => {
+      render(<SignInContent />);
+      const logo = screen.getByTestId("pixel-logo");
+      expect(logo).toBeInTheDocument();
+      expect(logo).toHaveAttribute("data-size", "lg");
+      expect(logo).toHaveAttribute("data-variant", "horizontal");
     });
 
     it("should render AuthButtons component", () => {
@@ -43,18 +60,18 @@ describe("SignInContent", () => {
       expect(screen.getByTestId("auth-buttons")).toBeInTheDocument();
     });
 
-    it("should have a link back to home", () => {
+    it("should have Terms of Service link", () => {
       render(<SignInContent />);
-      const homeLink = screen.getByRole("link", { name: /back to home/i });
-      expect(homeLink).toBeInTheDocument();
-      expect(homeLink).toHaveAttribute("href", "/");
+      const termsLink = screen.getByRole("link", { name: /terms of service/i });
+      expect(termsLink).toBeInTheDocument();
+      expect(termsLink).toHaveAttribute("href", "/terms");
     });
 
-    it("should display terms and privacy policy notice", () => {
+    it("should have Privacy Policy link", () => {
       render(<SignInContent />);
-      expect(
-        screen.getByText(/by signing in, you agree to our terms of service/i),
-      ).toBeInTheDocument();
+      const privacyLink = screen.getByRole("link", { name: /privacy policy/i });
+      expect(privacyLink).toBeInTheDocument();
+      expect(privacyLink).toHaveAttribute("href", "/privacy");
     });
   });
 
@@ -182,22 +199,28 @@ describe("SignInContent", () => {
 
       render(<SignInContent />);
       // Component renders without errors when callbackUrl is present
-      expect(screen.getByText("Welcome to Spike Land")).toBeInTheDocument();
+      expect(screen.getByText("Welcome to Pixel")).toBeInTheDocument();
     });
   });
 
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
       render(<SignInContent />);
-      const title = screen.getByText("Welcome to Spike Land", { selector: ".text-2xl" });
+      const title = screen.getByText("Welcome to Pixel", { selector: ".text-2xl" });
       expect(title).toBeInTheDocument();
       expect(title).toHaveClass("text-2xl");
     });
 
-    it("should have descriptive link text", () => {
+    it("should have descriptive link text for Terms", () => {
       render(<SignInContent />);
-      const homeLink = screen.getByRole("link", { name: /back to home/i });
-      expect(homeLink).toHaveAccessibleName();
+      const termsLink = screen.getByRole("link", { name: /terms of service/i });
+      expect(termsLink).toHaveAccessibleName();
+    });
+
+    it("should have descriptive link text for Privacy", () => {
+      render(<SignInContent />);
+      const privacyLink = screen.getByRole("link", { name: /privacy policy/i });
+      expect(privacyLink).toHaveAccessibleName();
     });
   });
 });

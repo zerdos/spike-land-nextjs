@@ -1001,7 +1001,7 @@ describe("AlbumDetailClient", () => {
       fireEvent.click(screen.getByText("Delete Album"));
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith("/albums");
+        expect(mockPush).toHaveBeenCalledWith("/apps/pixel");
       });
 
       confirmSpy.mockRestore();
