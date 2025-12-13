@@ -18,13 +18,12 @@ export default defineConfig({
     // Use forks pool for better memory isolation in CI
     // Each test file runs in separate process with fresh memory
     pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: false,
-        isolate: true,
-        execArgv: ["--max-old-space-size=4096"],
-      },
-    },
+    // poolOptions: {
+    //   forks: {
+    //     singleFork: false,
+    //     isolate: true,
+    //   },
+    // },
     // Enable file parallelism for faster execution
     fileParallelism: true,
     // Use reporter optimized for CI
@@ -49,7 +48,7 @@ export default defineConfig({
         "src/hooks/useSlideshow.ts", // Hook has infinite loop bug with empty images - covered at 80.85% branches
         "node_modules/**",
       ],
-      all: true,
+      // all: true,
       thresholds: {
         lines: 80,
         functions: 84,
