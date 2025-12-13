@@ -407,8 +407,6 @@ describe("AddToAlbumModal", () => {
         json: async () => ({ albums: mockAlbums }),
       });
 
-      const _user = userEvent.setup();
-
       render(
         <AddToAlbumModal
           imageId="test-image-1"

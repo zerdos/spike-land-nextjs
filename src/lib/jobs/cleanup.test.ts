@@ -603,7 +603,6 @@ describe("Job Cleanup Utilities", () => {
 
       // Mock Promise.all to return fewer results than jobs
       // This simulates the defensive check scenario
-      const _originalPromiseAll = Promise.all.bind(Promise);
       const promiseAllSpy = vi.spyOn(Promise, "all").mockImplementationOnce(async () => {
         // Return only one result for two jobs to trigger the defensive check
         return [
