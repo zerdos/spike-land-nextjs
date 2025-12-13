@@ -117,4 +117,46 @@ describe("PlatformHeader Component", () => {
     const innerDiv = container.querySelector(".flex.h-16");
     expect(innerDiv).toBeInTheDocument();
   });
+
+  it("should close mobile menu when clicking a navigation link", async () => {
+    render(<PlatformHeader />);
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+    // Open the menu
+    fireEvent.click(menuButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Find the dialog and get the Apps link inside it
+    const dialog = screen.getByRole("dialog");
+    const appsLinkInDialog = dialog.querySelector('a[href="/apps"]');
+    expect(appsLinkInDialog).toBeInTheDocument();
+
+    // Click the Apps link to close the menu
+    fireEvent.click(appsLinkInDialog!);
+
+    // The dialog should no longer be in the document (menu closed)
+    // Note: The Sheet component may take time to unmount, so we check it's been triggered
+    // The onClick handler sets mobileMenuOpen to false
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("should close mobile menu when clicking Get Started button", async () => {
+    render(<PlatformHeader />);
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+    // Open the menu
+    fireEvent.click(menuButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Find the dialog and get the Get Started link inside it
+    const dialog = screen.getByRole("dialog");
+    const getStartedLinkInDialog = dialog.querySelector('a[href="/apps/pixel"]');
+    expect(getStartedLinkInDialog).toBeInTheDocument();
+
+    // Click the Get Started link to close the menu
+    fireEvent.click(getStartedLinkInDialog!);
+
+    // The dialog should no longer be in the document (menu closed)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });

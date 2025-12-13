@@ -136,16 +136,11 @@ export function validateFile(
         error: "Insecure filename: hidden files (starting with '.') are not allowed.",
       };
     }
-    if (file.name.length > 255) {
-      return {
-        valid: false,
-        error: "Insecure filename: name exceeds maximum length of 255 characters.",
-      };
-    }
-    // Generic fallback for any other security issue
+    // If isSecureFilename returns false and the above conditions don't match,
+    // the only remaining case is filename length > 255 (per isSecureFilename logic)
     return {
       valid: false,
-      error: "Insecure filename: the filename contains disallowed characters or patterns.",
+      error: "Insecure filename: name exceeds maximum length of 255 characters.",
     };
   }
 

@@ -397,6 +397,32 @@ describe("useTokenBalance", () => {
     // Since it was 30 minutes ago, we have ~23h 30m left
     expect(result.current.timeUntilNextRegeneration).toMatch(/\d+h \d+m/);
   });
+
+  it("returns minutes only when less than 1 hour until regeneration", async () => {
+    // Set lastRegeneration to 23 hours and 30 minutes ago
+    // This means next regeneration is in ~30 minutes (0 hours, ~30 minutes)
+    const pastDate = new Date();
+    pastDate.setHours(pastDate.getHours() - 23);
+    pastDate.setMinutes(pastDate.getMinutes() - 30);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          balance: 10,
+          lastRegeneration: pastDate.toISOString(),
+        }),
+    });
+
+    const { result } = renderHook(() => useTokenBalance());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Should show only minutes (e.g., "30m") when less than 1 hour remaining
+    expect(result.current.timeUntilNextRegeneration).toMatch(/^\d+m$/);
+  });
 });
 
 // Separate describe block for focus debounce tests that require fake timers

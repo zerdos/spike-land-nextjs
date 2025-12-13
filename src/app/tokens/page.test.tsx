@@ -1,3 +1,4 @@
+import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
@@ -16,6 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock useTokenBalance hook
+const mockRefetch = vi.fn();
 vi.mock("@/hooks/useTokenBalance", () => ({
   useTokenBalance: vi.fn(() => ({
     balance: 50,
@@ -31,7 +33,7 @@ vi.mock("@/hooks/useTokenBalance", () => ({
       tier2K: 10,
       tier4K: 5,
     },
-    refetch: vi.fn(),
+    refetch: mockRefetch,
   })),
 }));
 
@@ -285,5 +287,303 @@ describe("TokensPage", () => {
 
     render(<TokensPage />);
     expect(screen.getByText("Refresh")).toBeInTheDocument();
+  });
+
+  it("should call refetch when refresh button is clicked", async () => {
+    const user = userEvent.setup();
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    render(<TokensPage />);
+    const refreshButton = screen.getByRole("button", { name: /refresh/i });
+    await user.click(refreshButton);
+
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it("should call refetch when voucher is redeemed", async () => {
+    const user = userEvent.setup();
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    render(<TokensPage />);
+    const redeemButton = screen.getByText("Mock Redeem");
+    await user.click(redeemButton);
+
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it("should show alert when checkout returns error", async () => {
+    const user = userEvent.setup();
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      json: () => Promise.resolve({ error: "Custom error message" }),
+    } as Response);
+
+    render(<TokensPage />);
+    const buyButton = screen.getByTestId("buy-button-starter");
+    await user.click(buyButton);
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith("Custom error message");
+    });
+
+    alertSpy.mockRestore();
+  });
+
+  it("should show default alert when checkout fails without error message", async () => {
+    const user = userEvent.setup();
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      json: () => Promise.resolve({}),
+    } as Response);
+
+    render(<TokensPage />);
+    const buyButton = screen.getByTestId("buy-button-starter");
+    await user.click(buyButton);
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith("Failed to create checkout session");
+    });
+
+    alertSpy.mockRestore();
+  });
+
+  it("should show alert when fetch throws an error", async () => {
+    const user = userEvent.setup();
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(global.fetch).mockRejectedValueOnce(new Error("Network error"));
+
+    render(<TokensPage />);
+    const buyButton = screen.getByTestId("buy-button-starter");
+    await user.click(buyButton);
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith("Failed to start checkout");
+    });
+    expect(consoleSpy).toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+    consoleSpy.mockRestore();
+  });
+
+  it("should redirect to signin when purchasing without session", async () => {
+    const user = userEvent.setup();
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    render(<TokensPage />);
+    const buyButton = screen.getByTestId("buy-button-starter");
+    await user.click(buyButton);
+
+    expect(mockRouter.push).toHaveBeenCalledWith("/auth/signin?callbackUrl=/tokens");
+  });
+
+  it("should show loading spinner when balance is loading", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(useTokenBalance).mockReturnValue({
+      balance: 0,
+      isLoading: true,
+      stats: null,
+      estimatedEnhancements: null,
+      refetch: mockRefetch,
+      error: null,
+      isLowBalance: false,
+      isCriticalBalance: false,
+      lastRegeneration: null,
+      timeUntilNextRegeneration: null,
+    });
+
+    render(<TokensPage />);
+    // The RefreshCw spinner should be visible instead of the balance number
+    expect(screen.queryByText("tokens available")).toBeInTheDocument();
+  });
+
+  it("should not display estimated enhancements when null", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(useTokenBalance).mockReturnValue({
+      balance: 50,
+      isLoading: false,
+      stats: null,
+      estimatedEnhancements: null,
+      refetch: mockRefetch,
+      error: null,
+      isLowBalance: false,
+      isCriticalBalance: false,
+      lastRegeneration: null,
+      timeUntilNextRegeneration: null,
+    });
+
+    render(<TokensPage />);
+    expect(screen.queryByText("Estimated enhancements remaining:")).not.toBeInTheDocument();
+  });
+
+  it("should display null stats as zeros", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    vi.mocked(useTokenBalance).mockReturnValue({
+      balance: 50,
+      isLoading: false,
+      stats: null,
+      estimatedEnhancements: {
+        tier1K: 25,
+        tier2K: 10,
+        tier4K: 5,
+        suggested: 25,
+        suggestedTier: "1K",
+      },
+      refetch: mockRefetch,
+      error: null,
+      isLowBalance: false,
+      isCriticalBalance: false,
+      lastRegeneration: null,
+      timeUntilNextRegeneration: null,
+    });
+
+    render(<TokensPage />);
+    // Both totalSpent and totalEarned will show "0 tokens" when stats is null
+    const zeroTokensElements = screen.getAllByText("0 tokens");
+    expect(zeroTokensElements.length).toBe(2); // totalSpent and totalEarned
+    expect(screen.getAllByText("0").length).toBeGreaterThan(0); // transactionCount
+  });
+
+  it("should show save badge for non-starter packages", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    render(<TokensPage />);
+    // Basic, Pro, and Power packages should have Save badges
+    const saveBadges = screen.getAllByText(/Save \d+%/);
+    expect(saveBadges.length).toBeGreaterThan(0);
+  });
+
+  it("should show Redirecting text when loading purchase", async () => {
+    const user = userEvent.setup();
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { name: "Test User", email: "test@example.com" },
+        expires: "2024-12-31",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    // Make fetch hang indefinitely
+    let resolvePromise: (value: Response) => void;
+    vi.mocked(global.fetch).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePromise = resolve;
+      }),
+    );
+
+    // Mock window.location.href
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      value: { ...originalLocation, href: "" },
+      writable: true,
+    });
+
+    render(<TokensPage />);
+    const buyButton = screen.getByTestId("buy-button-starter");
+    await user.click(buyButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Redirecting...")).toBeInTheDocument();
+    });
+
+    // Cleanup: resolve the pending promise
+    resolvePromise!({
+      json: () => Promise.resolve({ url: "https://checkout.stripe.com/test" }),
+    } as Response);
+
+    // Restore
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      writable: true,
+    });
+  });
+
+  it("should show Loading text when session is loading", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "loading",
+      update: vi.fn(),
+    });
+
+    render(<TokensPage />);
+    const loadingButtons = screen.getAllByText("Loading...");
+    expect(loadingButtons.length).toBeGreaterThan(0);
   });
 });

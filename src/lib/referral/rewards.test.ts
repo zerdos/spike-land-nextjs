@@ -102,7 +102,7 @@ describe("Referral Rewards", () => {
       expect(result.error).toBe("Referral marked as invalid");
     });
 
-    it("should handle token grant failures", async () => {
+    it("should handle token grant failures for referrer", async () => {
       const mockReferral = {
         id: "ref-123",
         referrerId: "referrer-123",
@@ -133,7 +133,55 @@ describe("Referral Rewards", () => {
       const result = await rewards.completeReferralAndGrantRewards("ref-123");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to grant tokens");
+      expect(result.error).toContain("Failed to grant tokens to referrer");
+    });
+
+    it("should handle token grant failures for referee", async () => {
+      const mockReferral = {
+        id: "ref-123",
+        referrerId: "referrer-123",
+        refereeId: "referee-456",
+        status: "PENDING",
+        referrer: { id: "referrer-123", email: "referrer@example.com" },
+        referee: { id: "referee-456", email: "referee@example.com" },
+      };
+
+      vi.mocked(prisma.referral.findUnique).mockResolvedValue(
+        mockReferral as any,
+      );
+
+      vi.mocked(prisma.$transaction).mockImplementation(
+        async (callback: any) => {
+          // First call for referrer succeeds, second call for referee fails
+          vi.mocked(TokenBalanceManager.addTokens)
+            .mockResolvedValueOnce({ success: true, balance: 50 } as any)
+            .mockResolvedValueOnce({
+              success: false,
+              error: "Referee database error",
+            } as any);
+
+          return callback({
+            referral: { update: vi.fn() },
+            user: { update: vi.fn() },
+          });
+        },
+      );
+
+      const result = await rewards.completeReferralAndGrantRewards("ref-123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Failed to grant tokens to referee");
+    });
+
+    it("should handle non-Error exceptions", async () => {
+      vi.mocked(prisma.referral.findUnique).mockRejectedValue(
+        "Unexpected string error",
+      );
+
+      const result = await rewards.completeReferralAndGrantRewards("ref-123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Unknown error");
     });
   });
 
@@ -165,6 +213,17 @@ describe("Referral Rewards", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Database error");
+    });
+
+    it("should handle non-Error exceptions", async () => {
+      vi.mocked(prisma.referral.update).mockRejectedValue(
+        "Unexpected string error",
+      );
+
+      const result = await rewards.markReferralAsInvalid("ref-123", "Fraud");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Unknown error");
     });
   });
 

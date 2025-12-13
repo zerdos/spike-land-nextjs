@@ -485,4 +485,540 @@ describe("BatchUpload Component", () => {
       expect(screen.getByText("test3.webp")).toBeInTheDocument();
     });
   });
+
+  it("should handle dragOver event", async () => {
+    render(<BatchUpload />);
+
+    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+
+    if (!dropZone) {
+      throw new Error("Drop zone not found");
+    }
+
+    fireEvent.dragOver(dropZone, {
+      dataTransfer: { files: [] },
+    });
+
+    // dragOver should prevent default - component should still be functional
+    expect(screen.getByText("Drag and drop files here")).toBeInTheDocument();
+  });
+
+  it("should handle dragLeave event", async () => {
+    render(<BatchUpload />);
+
+    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+
+    if (!dropZone) {
+      throw new Error("Drop zone not found");
+    }
+
+    // First trigger dragEnter to set isDragging to true
+    fireEvent.dragEnter(dropZone, {
+      dataTransfer: { files: [] },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Drop files here")).toBeInTheDocument();
+    });
+
+    // Now trigger dragLeave
+    fireEvent.dragLeave(dropZone, {
+      dataTransfer: { files: [] },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Drag and drop files here")).toBeInTheDocument();
+    });
+  });
+
+  it("should not upload when there are no pending files", async () => {
+    render(<BatchUpload />);
+
+    // Add a file with error (invalid type) - this file won't be pending
+    const invalidFile = new File(["test"], "document.pdf", { type: "application/pdf" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [invalidFile],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("document.pdf")).toBeInTheDocument();
+      expect(screen.getByText(/Invalid file type/i)).toBeInTheDocument();
+    });
+
+    // The upload button should be disabled because there are no pending files
+    const uploadButton = screen.getByRole("button", { name: /Upload 0 files/i });
+    expect(uploadButton).toBeDisabled();
+
+    // Try clicking anyway - should not call fetch
+    fireEvent.click(uploadButton);
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("should exit early from uploadBatch when all files are already uploaded", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Upload the file successfully
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+      }),
+    });
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 completed")).toBeInTheDocument();
+    });
+
+    // Now the upload button should show "Upload 0 files" and be disabled
+    const disabledButton = screen.getByRole("button", { name: /Upload 0 files/i });
+    expect(disabledButton).toBeDisabled();
+
+    // Clear the mock call history
+    (global.fetch as ReturnType<typeof vi.fn>).mockClear();
+
+    // Verify fetch was not called again (button is disabled so uploadBatch won't be triggered)
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("should handle rapid double-click on upload button", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Create a slow fetch that allows us to click twice
+    let resolveFirst: (value: unknown) => void;
+    const firstPromise = new Promise((resolve) => {
+      resolveFirst = resolve;
+    });
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(() => firstPromise);
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+
+    // First click starts the upload
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Uploading...")).toBeInTheDocument();
+    });
+
+    // Button should be disabled during upload
+    expect(uploadButton).toBeDisabled();
+
+    // Resolve the first upload
+    resolveFirst!({
+      ok: true,
+      json: async () => ({
+        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+      }),
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("1 completed")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle files not found in upload results", async () => {
+    const mockOnUploadComplete = vi.fn();
+    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+
+    const files = [
+      new File(["test1"], "test1.png", { type: "image/png" }),
+      new File(["test2"], "test2.png", { type: "image/png" }),
+    ];
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: files,
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test1.png")).toBeInTheDocument();
+      expect(screen.getByText("test2.png")).toBeInTheDocument();
+    });
+
+    // Mock response where one file is not in results at all
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        results: [
+          { success: true, filename: "test1.png", imageId: "id1", url: "url1" },
+          // test2.png is missing from results
+        ],
+      }),
+    });
+
+    const uploadButton = screen.getByText(/Upload 2 files/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      // test1.png should show completed
+      expect(mockOnUploadComplete).toHaveBeenCalledWith(["id1"]);
+    });
+
+    // test2.png should still be visible (unchanged since not in results)
+    expect(screen.getByText("test2.png")).toBeInTheDocument();
+  });
+
+  it("should prevent click on drop zone when at max batch size", async () => {
+    render(<BatchUpload />);
+
+    // Add 20 files (max batch size)
+    const files = Array.from(
+      { length: 20 },
+      (_, i) => new File(["test"], `test${i}.png`, { type: "image/png" }),
+    );
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: files,
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("20 files")).toBeInTheDocument();
+    });
+
+    // The drop zone should have cursor-not-allowed class
+    const dropZone = screen.getByText(/Drag and drop files here|Drop files here/).closest(
+      "div.border-dashed",
+    );
+    expect(dropZone).toHaveClass("cursor-not-allowed");
+
+    // Click on the drop zone - should not trigger file input
+    const inputAfterMax = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(inputAfterMax).toBeDisabled();
+  });
+
+  it("should handle network error during upload", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Mock a network error (fetch throws)
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network error"));
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Network error")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle non-Error exception during upload", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Mock a non-Error exception
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce("String error");
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Upload failed")).toBeInTheDocument();
+    });
+  });
+
+  it("should show singular file text for single file", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 file")).toBeInTheDocument();
+      expect(screen.getByText("1 pending")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle drop with zero files", async () => {
+    render(<BatchUpload />);
+
+    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+
+    if (!dropZone) {
+      throw new Error("Drop zone not found");
+    }
+
+    // Simulate drop with empty files array
+    fireEvent.drop(dropZone, {
+      dataTransfer: { files: [] },
+    });
+
+    // Should not add any files - the badge with file count should not appear
+    // (Note: "0/20 files" is always shown in the drop zone text, but the badge only appears when files are added)
+    expect(screen.queryByText("1 pending")).not.toBeInTheDocument();
+    expect(screen.queryByText("1 file")).not.toBeInTheDocument();
+  });
+
+  it("should not call onUploadComplete when no successful uploads", async () => {
+    const mockOnUploadComplete = vi.fn();
+    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Mock response where all uploads fail
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        results: [
+          { success: false, filename: "test.png", error: "Processing failed" },
+        ],
+      }),
+    });
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Processing failed")).toBeInTheDocument();
+    });
+
+    // onUploadComplete should not be called with empty array
+    expect(mockOnUploadComplete).not.toHaveBeenCalled();
+  });
+
+  it("should show completed badge when files are completed", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+      }),
+    });
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 completed")).toBeInTheDocument();
+    });
+  });
+
+  it("should show failed badge when files have errors", async () => {
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "document.pdf", { type: "application/pdf" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 failed")).toBeInTheDocument();
+    });
+  });
+
+  it("should show ImageIcon fallback when no thumbnail", async () => {
+    // Override FileReader to not provide thumbnail
+    const OriginalFileReader = global.FileReader;
+    class NoThumbnailFileReader {
+      onload: ((e: { target: { result: string | null; }; }) => void) | null = null;
+      readAsDataURL() {
+        if (this.onload) {
+          this.onload({ target: { result: null } });
+        }
+      }
+    }
+    global.FileReader = NoThumbnailFileReader as unknown as typeof FileReader;
+
+    render(<BatchUpload />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Should not find an img tag with alt text
+    expect(screen.queryByAltText("test.png")).not.toBeInTheDocument();
+
+    // Restore original FileReader
+    global.FileReader = OriginalFileReader;
+  });
+
+  it("should handle click on drop zone to open file picker", async () => {
+    render(<BatchUpload />);
+
+    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+
+    if (!dropZone) {
+      throw new Error("Drop zone not found");
+    }
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, "click");
+
+    fireEvent.click(dropZone);
+
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it("should handle file input change with no files", async () => {
+    render(<BatchUpload />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Simulate change event with null files
+    Object.defineProperty(input, "files", {
+      value: null,
+      writable: true,
+      configurable: true,
+    });
+
+    fireEvent.change(input);
+
+    // Should not add any files - the badge with file count should not appear
+    expect(screen.queryByText("1 pending")).not.toBeInTheDocument();
+    expect(screen.queryByText("1 file")).not.toBeInTheDocument();
+  });
+
+  it("should handle upload with undefined results", async () => {
+    const mockOnUploadComplete = vi.fn();
+    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      writable: false,
+    });
+
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // Mock response with undefined results
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}), // No results field
+    });
+
+    const uploadButton = screen.getByText(/Upload 1 file/i);
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      // File should still be shown but unchanged
+      expect(screen.getByText("test.png")).toBeInTheDocument();
+    });
+
+    // onUploadComplete should not be called
+    expect(mockOnUploadComplete).not.toHaveBeenCalled();
+  });
 });

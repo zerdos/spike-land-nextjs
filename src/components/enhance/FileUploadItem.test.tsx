@@ -286,6 +286,16 @@ describe("FileUploadItem", () => {
       const filenameElement = screen.getByTitle(longName);
       expect(filenameElement).toBeInTheDocument();
     });
+
+    it("should truncate long filename without extension", () => {
+      const longNameNoExt = "this-is-a-very-long-filename-without-any-extension-at-all";
+      const file = createMockFile(longNameNoExt, 1024);
+      render(<FileUploadItem file={file} status="pending" progress={0} />);
+
+      const filenameElement = screen.getByTitle(longNameNoExt);
+      expect(filenameElement).toBeInTheDocument();
+      expect(filenameElement.textContent).toContain("...");
+    });
   });
 
   describe("file size formatting", () => {

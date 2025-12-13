@@ -286,4 +286,33 @@ describe("POST /api/vouchers/validate", () => {
     expect(res.status).toBe(400);
     expect(data.error).toBe("Voucher code is required");
   });
+
+  it("should return 400 for whitespace-only code", async () => {
+    const req = createMockRequest({ code: "   " });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
+  });
+
+  it("should return 400 for code exceeding max length", async () => {
+    // MAX_VOUCHER_CODE_LENGTH is 50, so 51 chars should fail
+    const longCode = "A".repeat(51);
+    const req = createMockRequest({ code: longCode });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
+  });
+
+  it("should return 400 for code with non-alphanumeric characters", async () => {
+    const req = createMockRequest({ code: "TEST-2024!" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid voucher code format");
+  });
 });

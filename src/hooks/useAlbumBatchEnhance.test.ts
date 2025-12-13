@@ -604,4 +604,240 @@ describe("useAlbumBatchEnhance", () => {
 
     expect(onComplete).not.toHaveBeenCalled();
   });
+
+  it("should handle batch status API error during polling", async () => {
+    const albumId = "album-1";
+    const onError = vi.fn();
+
+    // Mock successful enhance API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        batchId: "batch-123",
+        jobs: [{ imageId: "img-1", jobId: "job-1", success: true }],
+        summary: { total: 1, totalCost: 5, newBalance: 95 },
+      }),
+    });
+
+    // First poll - succeeds (happens immediately after startBatchEnhance)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+      }),
+    });
+
+    // Second poll - batch-status API failure
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Internal Server Error" }),
+    });
+
+    const { result } = renderHook(() =>
+      useAlbumBatchEnhance({
+        albumId,
+        onError,
+      })
+    );
+
+    await act(async () => {
+      await result.current.startBatchEnhance("TIER_2K");
+    });
+
+    expect(result.current.isProcessing).toBe(true);
+
+    // Advance time to trigger the second poll which will fail
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+
+    expect(result.current.isProcessing).toBe(false);
+    expect(onError).toHaveBeenCalledWith("Failed to fetch batch status");
+  });
+
+  it("should handle network error during polling", async () => {
+    const albumId = "album-1";
+    const onError = vi.fn();
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Mock successful enhance API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        batchId: "batch-123",
+        jobs: [{ imageId: "img-1", jobId: "job-1", success: true }],
+        summary: { total: 1, totalCost: 5, newBalance: 95 },
+      }),
+    });
+
+    // Mock network error during polling
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    const { result } = renderHook(() =>
+      useAlbumBatchEnhance({
+        albumId,
+        onError,
+      })
+    );
+
+    await act(async () => {
+      await result.current.startBatchEnhance("TIER_2K");
+    });
+
+    expect(result.current.isProcessing).toBe(true);
+
+    // Advance time to trigger polling which will throw
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+
+    expect(result.current.isProcessing).toBe(false);
+    expect(onError).toHaveBeenCalledWith("Network error");
+    expect(consoleSpy).toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle non-Error instance thrown during polling", async () => {
+    const albumId = "album-1";
+    const onError = vi.fn();
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Mock successful enhance API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        batchId: "batch-123",
+        jobs: [{ imageId: "img-1", jobId: "job-1", success: true }],
+        summary: { total: 1, totalCost: 5, newBalance: 95 },
+      }),
+    });
+
+    // Mock a non-Error thrown during polling
+    mockFetch.mockRejectedValueOnce("String error");
+
+    const { result } = renderHook(() =>
+      useAlbumBatchEnhance({
+        albumId,
+        onError,
+      })
+    );
+
+    await act(async () => {
+      await result.current.startBatchEnhance("TIER_2K");
+    });
+
+    expect(result.current.isProcessing).toBe(true);
+
+    // Advance time to trigger polling which will throw non-Error
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+
+    expect(result.current.isProcessing).toBe(false);
+    expect(onError).toHaveBeenCalledWith("Failed to poll job statuses");
+    expect(consoleSpy).toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should not call onError during polling when cancelled", async () => {
+    const albumId = "album-1";
+    const onError = vi.fn();
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Mock successful enhance API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        batchId: "batch-123",
+        jobs: [{ imageId: "img-1", jobId: "job-1", success: true }],
+        summary: { total: 1, totalCost: 5, newBalance: 95 },
+      }),
+    });
+
+    // Mock error during polling
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    const { result } = renderHook(() =>
+      useAlbumBatchEnhance({
+        albumId,
+        onError,
+      })
+    );
+
+    await act(async () => {
+      await result.current.startBatchEnhance("TIER_2K");
+    });
+
+    // Cancel before the poll occurs
+    act(() => {
+      result.current.cancel();
+    });
+
+    // Advance time - polling should not fire onError since cancelled
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    // onError should not be called since we cancelled
+    expect(onError).not.toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should stop polling when max attempts reached", async () => {
+    const albumId = "album-1";
+    const onComplete = vi.fn();
+
+    // Mock successful enhance API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        batchId: "batch-123",
+        jobs: [{ imageId: "img-1", jobId: "job-1", success: true }],
+        summary: { total: 1, totalCost: 5, newBalance: 95 },
+      }),
+    });
+
+    // Mock 60+ polling responses all showing PROCESSING
+    for (let i = 0; i < 65; i++) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+        }),
+      });
+    }
+
+    const { result } = renderHook(() =>
+      useAlbumBatchEnhance({
+        albumId,
+        onComplete,
+      })
+    );
+
+    await act(async () => {
+      await result.current.startBatchEnhance("TIER_2K");
+    });
+
+    expect(result.current.isProcessing).toBe(true);
+
+    // Simulate many poll cycles - enough to hit max attempts
+    // MAX_POLL_ATTEMPTS = 60, with exponential backoff
+    for (let i = 0; i < 61; i++) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15000);
+      });
+    }
+
+    // After max attempts, processing should stop and onComplete should be called
+    expect(result.current.isProcessing).toBe(false);
+    expect(onComplete).toHaveBeenCalled();
+  });
 });

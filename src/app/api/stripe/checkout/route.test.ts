@@ -53,6 +53,22 @@ describe("POST /api/stripe/checkout", () => {
     vi.clearAllMocks();
   });
 
+  it("returns 413 when request body is too large", async () => {
+    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
+      method: "POST",
+      headers: {
+        "content-length": "20000", // Larger than MAX_BODY_SIZE (10KB)
+      },
+      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(data.error).toBe("Request too large");
+  });
+
   it("returns 401 when user is not authenticated", async () => {
     (auth as Mock).mockResolvedValue(null);
 
@@ -189,6 +205,26 @@ describe("POST /api/stripe/checkout", () => {
     });
   });
 
+  it("creates Stripe customer without name when user has no name", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com", name: null },
+    });
+    (prisma.user.findUnique as Mock).mockResolvedValue({
+      stripeCustomerId: null,
+    });
+
+    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+  });
+
   it("creates checkout session for valid subscription request", async () => {
     (auth as Mock).mockResolvedValue({
       user: { id: "123", email: "test@test.com", name: "Test User" },
@@ -252,5 +288,163 @@ describe("POST /api/stripe/checkout", () => {
 
     expect(response.status).toBe(400);
     expect(data.error).toBe("Invalid request");
+  });
+
+  it("returns 500 when package has invalid price configuration", async () => {
+    // Reset mocks and reconfigure with invalid price for package
+    vi.resetModules();
+
+    vi.doMock("@/lib/stripe/client", () => ({
+      getStripe: vi.fn(() => ({
+        customers: {
+          create: vi.fn().mockResolvedValue({ id: "cus_123" }),
+        },
+        checkout: {
+          sessions: {
+            create: vi.fn().mockResolvedValue({
+              id: "cs_123",
+              url: "https://checkout.stripe.com/session",
+            }),
+          },
+        },
+      })),
+      TOKEN_PACKAGES: {
+        starter: { tokens: 10, price: -1, name: "Starter Pack" }, // Invalid negative price
+      },
+      SUBSCRIPTION_PLANS: {
+        hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: "Hobby" },
+      },
+    }));
+
+    vi.doMock("@/auth", () => ({
+      auth: vi.fn().mockResolvedValue({
+        user: { id: "123", email: "test@test.com", name: "Test User" },
+      }),
+    }));
+
+    vi.doMock("@/lib/prisma", () => ({
+      default: {
+        user: {
+          findUnique: vi.fn().mockResolvedValue({ stripeCustomerId: "cus_existing" }),
+          update: vi.fn(),
+        },
+        subscription: {
+          findUnique: vi.fn().mockResolvedValue(null),
+        },
+      },
+    }));
+
+    const { POST: POSTWithInvalidPackagePrice } = await import("./route");
+
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+    });
+
+    const response = await POSTWithInvalidPackagePrice(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Invalid package configuration");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Invalid price configuration for package starter"),
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("returns 500 when plan has invalid price configuration", async () => {
+    // Reset mocks and reconfigure with invalid price
+    vi.resetModules();
+
+    // Re-mock with invalid price for plan
+    vi.doMock("@/lib/stripe/client", () => ({
+      getStripe: vi.fn(() => ({
+        customers: {
+          create: vi.fn().mockResolvedValue({ id: "cus_123" }),
+        },
+        checkout: {
+          sessions: {
+            create: vi.fn().mockResolvedValue({
+              id: "cs_123",
+              url: "https://checkout.stripe.com/session",
+            }),
+          },
+        },
+      })),
+      TOKEN_PACKAGES: {
+        starter: { tokens: 10, price: 2.99, name: "Starter Pack" },
+      },
+      SUBSCRIPTION_PLANS: {
+        hobby: { tokensPerMonth: 30, priceGBP: -1, maxRollover: 30, name: "Hobby" }, // Invalid negative price
+      },
+    }));
+
+    vi.doMock("@/auth", () => ({
+      auth: vi.fn().mockResolvedValue({
+        user: { id: "123", email: "test@test.com", name: "Test User" },
+      }),
+    }));
+
+    vi.doMock("@/lib/prisma", () => ({
+      default: {
+        user: {
+          findUnique: vi.fn().mockResolvedValue({ stripeCustomerId: "cus_existing" }),
+          update: vi.fn(),
+        },
+        subscription: {
+          findUnique: vi.fn().mockResolvedValue(null),
+        },
+      },
+    }));
+
+    const { POST: POSTWithInvalidPrice } = await import("./route");
+
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
+    });
+
+    const response = await POSTWithInvalidPrice(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Invalid plan configuration");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Invalid price configuration for plan hobby"),
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("returns 500 when an unexpected error occurs", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com" },
+    });
+    // Simulate an error by making prisma.user.findUnique throw
+    (prisma.user.findUnique as Mock).mockRejectedValue(new Error("Database connection failed"));
+
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Failed to create checkout session");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Error creating checkout session:",
+      expect.any(Error),
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });

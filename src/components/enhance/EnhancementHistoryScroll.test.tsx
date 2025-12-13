@@ -292,4 +292,442 @@ describe("EnhancementHistoryScroll", () => {
     const dateElements = screen.getAllByText(/Jan|15/i);
     expect(dateElements.length).toBeGreaterThan(0);
   });
+
+  it("should handle image load error and show failed to load message", () => {
+    render(
+      <EnhancementHistoryScroll
+        versions={[mockVersions[0]]}
+        onVersionSelect={mockOnVersionSelect}
+      />,
+    );
+
+    // Find the image and trigger an error
+    const img = screen.getByAltText("Enhanced version 1K");
+    fireEvent.error(img);
+
+    // After error, should show "Failed to load" message
+    expect(screen.getByText("Failed to load")).toBeInTheDocument();
+  });
+
+  it("should not call onJobCancel when confirm is declined", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    const processingVersion: EnhancementVersion = {
+      id: "version-processing",
+      tier: "TIER_2K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PROCESSING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[processingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobCancel={mockOnJobCancel}
+      />,
+    );
+
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    expect(mockOnJobCancel).not.toHaveBeenCalled();
+  });
+
+  it("should not trigger cancel when onJobCancel is not provided", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const processingVersion: EnhancementVersion = {
+      id: "version-processing",
+      tier: "TIER_2K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PROCESSING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[processingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        // No onJobCancel provided
+      />,
+    );
+
+    // Cancel button should not be shown when onJobCancel is not provided
+    expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+  });
+
+  it("should show cancel button for pending jobs", () => {
+    const pendingVersion: EnhancementVersion = {
+      id: "version-pending",
+      tier: "TIER_1K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PENDING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[pendingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobCancel={mockOnJobCancel}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  it("should handle cancel error with Error instance", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockCancelError = vi.fn().mockRejectedValue(new Error("Cancel failed"));
+
+    const processingVersion: EnhancementVersion = {
+      id: "version-processing",
+      tier: "TIER_2K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PROCESSING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[processingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobCancel={mockCancelError}
+      />,
+    );
+
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    // Wait for the async error handling
+    await vi.waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Cancel failed");
+    });
+    expect(console.error).toHaveBeenCalledWith("Failed to cancel job:", expect.any(Error));
+  });
+
+  it("should handle cancel error with non-Error instance", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockCancelError = vi.fn().mockRejectedValue("String error");
+
+    const processingVersion: EnhancementVersion = {
+      id: "version-processing",
+      tier: "TIER_2K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PROCESSING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[processingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobCancel={mockCancelError}
+      />,
+    );
+
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    // Wait for the async error handling
+    await vi.waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Failed to cancel job");
+    });
+  });
+
+  it("should handle delete error with Error instance", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockDeleteError = vi.fn().mockRejectedValue(new Error("Delete failed"));
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[mockVersions[0]]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobDelete={mockDeleteError}
+      />,
+    );
+
+    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    fireEvent.click(deleteButton);
+
+    // Wait for the async error handling
+    await vi.waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Delete failed");
+    });
+    expect(console.error).toHaveBeenCalledWith("Failed to delete job:", expect.any(Error));
+  });
+
+  it("should handle delete error with non-Error instance", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockDeleteError = vi.fn().mockRejectedValue("String error");
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[mockVersions[0]]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobDelete={mockDeleteError}
+      />,
+    );
+
+    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    fireEvent.click(deleteButton);
+
+    // Wait for the async error handling
+    await vi.waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Failed to delete job");
+    });
+  });
+
+  it("should not show delete button when onJobDelete is not provided for completed versions", () => {
+    render(
+      <EnhancementHistoryScroll
+        versions={[mockVersions[0]]}
+        onVersionSelect={mockOnVersionSelect}
+        // No onJobDelete provided
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
+  });
+
+  it("should not show remove button when onJobDelete is not provided for failed versions", () => {
+    const failedVersion: EnhancementVersion = {
+      id: "version-failed",
+      tier: "TIER_1K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "FAILED",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[failedVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        // No onJobDelete provided
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /remove/i })).not.toBeInTheDocument();
+  });
+
+  it("should not display dimensions when width is 0", () => {
+    const zeroWidthVersion: EnhancementVersion = {
+      id: "version-zero-width",
+      tier: "TIER_1K",
+      enhancedUrl: "https://example.com/enhanced.jpg",
+      width: 0,
+      height: 768,
+      createdAt: new Date(),
+      status: "COMPLETED",
+      sizeBytes: 256000,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[zeroWidthVersion]}
+        onVersionSelect={mockOnVersionSelect}
+      />,
+    );
+
+    // Should not display "0 x 768"
+    expect(screen.queryByText(/0 x 768/)).not.toBeInTheDocument();
+  });
+
+  it("should not display dimensions when height is 0", () => {
+    const zeroHeightVersion: EnhancementVersion = {
+      id: "version-zero-height",
+      tier: "TIER_1K",
+      enhancedUrl: "https://example.com/enhanced.jpg",
+      width: 1024,
+      height: 0,
+      createdAt: new Date(),
+      status: "COMPLETED",
+      sizeBytes: 256000,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[zeroHeightVersion]}
+        onVersionSelect={mockOnVersionSelect}
+      />,
+    );
+
+    // Should not display "1024 x 0"
+    expect(screen.queryByText(/1024 x 0/)).not.toBeInTheDocument();
+  });
+
+  it("should not display file size when sizeBytes is null", () => {
+    const noSizeVersion: EnhancementVersion = {
+      id: "version-no-size",
+      tier: "TIER_1K",
+      enhancedUrl: "https://example.com/enhanced.jpg",
+      width: 1024,
+      height: 768,
+      createdAt: new Date(),
+      status: "COMPLETED",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[noSizeVersion]}
+        onVersionSelect={mockOnVersionSelect}
+      />,
+    );
+
+    // The HardDrive icon indicates file size, check it's not present
+    // We look for text that would be file size - but since there's no sizeBytes, no size shown
+    const versionCard = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    // Verify no KB/MB text is shown for this version
+    expect(versionCard?.textContent).not.toMatch(/\d+\.\d+ [KMG]B/);
+  });
+
+  it("should work without onVersionSelect callback", () => {
+    render(
+      <EnhancementHistoryScroll
+        versions={mockVersions}
+        // No onVersionSelect provided
+      />,
+    );
+
+    // Should still render versions
+    expect(screen.getByText("1K")).toBeInTheDocument();
+
+    // Clicking should not cause error
+    const firstVersion = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    if (firstVersion) {
+      fireEvent.click(firstVersion);
+      // No error should occur
+    }
+  });
+
+  it("should delete failed job when remove is confirmed", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const failedVersion: EnhancementVersion = {
+      id: "version-failed",
+      tier: "TIER_1K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "FAILED",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[failedVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobDelete={mockOnJobDelete}
+      />,
+    );
+
+    const removeButton = screen.getByRole("button", { name: /remove/i });
+    fireEvent.click(removeButton);
+
+    expect(mockOnJobDelete).toHaveBeenCalledWith("version-failed");
+  });
+
+  it("should show loading state on button during cancel processing", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    // Create a promise that we can control
+    let resolveCancel: () => void = () => {};
+    const controlledCancelPromise = new Promise<void>((resolve) => {
+      resolveCancel = resolve;
+    });
+    const mockCancelDelayed = vi.fn().mockReturnValue(controlledCancelPromise);
+
+    const processingVersion: EnhancementVersion = {
+      id: "version-processing",
+      tier: "TIER_2K",
+      enhancedUrl: "",
+      width: 0,
+      height: 0,
+      createdAt: new Date(),
+      status: "PROCESSING",
+      sizeBytes: null,
+    };
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[processingVersion]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobCancel={mockCancelDelayed}
+      />,
+    );
+
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    // Button should show "..." while processing
+    await vi.waitFor(() => {
+      expect(screen.getByText("...")).toBeInTheDocument();
+    });
+
+    // Button should be disabled
+    expect(cancelButton).toBeDisabled();
+
+    // Resolve the promise to complete
+    resolveCancel();
+  });
+
+  it("should show loading state on button during delete processing", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    // Create a promise that we can control
+    let resolveDelete: () => void = () => {};
+    const controlledDeletePromise = new Promise<void>((resolve) => {
+      resolveDelete = resolve;
+    });
+    const mockDeleteDelayed = vi.fn().mockReturnValue(controlledDeletePromise);
+
+    render(
+      <EnhancementHistoryScroll
+        versions={[mockVersions[0]]}
+        onVersionSelect={mockOnVersionSelect}
+        onJobDelete={mockDeleteDelayed}
+      />,
+    );
+
+    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    fireEvent.click(deleteButton);
+
+    // Button should show "..." while processing
+    await vi.waitFor(() => {
+      expect(screen.getByText("...")).toBeInTheDocument();
+    });
+
+    // Button should be disabled
+    expect(deleteButton).toBeDisabled();
+
+    // Resolve the promise to complete
+    resolveDelete();
+  });
 });

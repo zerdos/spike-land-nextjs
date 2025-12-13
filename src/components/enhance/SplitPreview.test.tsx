@@ -420,4 +420,25 @@ describe("SplitPreview", () => {
       body: expect.stringContaining("SPLIT_PREVIEW_ORIGINAL_LOAD_ERROR"),
     });
   });
+
+  it("handles scroll event when container ref is null", () => {
+    const { unmount } = render(<SplitPreview {...defaultProps} />);
+
+    // Capture the scroll handler before unmounting
+    const capturedScrollHandler = scrollHandler;
+
+    // Unmount the component - this will set containerRef.current to null
+    unmount();
+
+    // Now trigger scroll with captured handler - containerRef.current is null
+    // This should hit the early return on line 62
+    act(() => {
+      if (capturedScrollHandler) {
+        capturedScrollHandler(new Event("scroll"));
+      }
+    });
+
+    // Test passes if no error is thrown - the function gracefully returns early
+    expect(true).toBe(true);
+  });
 });

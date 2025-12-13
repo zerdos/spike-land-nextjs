@@ -453,4 +453,69 @@ describe("MultiUploadProgress Component", () => {
       expect(screen.getByText("50%")).toBeInTheDocument();
     });
   });
+
+  describe("Cancelled Status", () => {
+    it("should show cancelled icon for cancelled files", () => {
+      const files = [
+        { file: createMockFile("test1.png"), status: "cancelled" as const, progress: 0 },
+      ];
+      render(<MultiUploadProgress files={files} />);
+      expect(screen.getByLabelText("Cancelled")).toBeInTheDocument();
+    });
+
+    it("should not show cancel button when all files are cancelled", () => {
+      const onCancel = vi.fn();
+      const files = [
+        { file: createMockFile("test1.png"), status: "cancelled" as const, progress: 0 },
+      ];
+      render(<MultiUploadProgress files={files} onCancel={onCancel} />);
+      expect(screen.queryByTestId("cancel-button")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Filename Truncation Edge Cases", () => {
+    it("should handle very long filename without extension that exceeds maxLength", () => {
+      const files = [
+        {
+          file: createMockFile("averylongfilenamethatdefinitelyexceedsthemaxlength"),
+          status: "pending" as const,
+          progress: 0,
+        },
+      ];
+      render(<MultiUploadProgress files={files} />);
+      const fileName = screen.getByTestId("file-name-0");
+      expect(fileName.textContent?.length).toBeLessThanOrEqual(30);
+      expect(fileName.textContent).toContain("...");
+    });
+
+    it("should handle filename with very long extension", () => {
+      // When extension is so long that availableLength <= 0
+      const files = [
+        {
+          file: createMockFile("ab.verylongextensionname1234567890"),
+          status: "pending" as const,
+          progress: 0,
+        },
+      ];
+      render(<MultiUploadProgress files={files} />);
+      const fileName = screen.getByTestId("file-name-0");
+      // Should still truncate properly
+      expect(fileName.textContent?.length).toBeLessThanOrEqual(30);
+    });
+
+    it("should truncate filename when extension makes total exceed maxLength", () => {
+      const files = [
+        {
+          file: createMockFile("thisisaverylongfilename.png"),
+          status: "pending" as const,
+          progress: 0,
+        },
+      ];
+      render(<MultiUploadProgress files={files} />);
+      const fileName = screen.getByTestId("file-name-0");
+      expect(fileName.textContent?.length).toBeLessThanOrEqual(30);
+      expect(fileName.textContent).toContain("...");
+      expect(fileName.textContent).toContain(".png");
+    });
+  });
 });

@@ -35,7 +35,7 @@ vi.mock("./BulkDeleteDialog", () => ({
   BulkDeleteDialog: ({
     selectedVersions,
     onDelete,
-    onCancel: _onCancel,
+    onCancel,
     disabled,
   }: {
     selectedVersions: Array<{ id: string; tier: string; sizeBytes?: number | null; }>;
@@ -54,11 +54,17 @@ vi.mock("./BulkDeleteDialog", () => ({
               <button data-testid="confirm-delete">Delete ${selectedVersions.length} version${
               selectedVersions.length !== 1 ? "s" : ""
             }</button>
+              <button data-testid="cancel-delete">Cancel</button>
             `;
             document.body.appendChild(dialog);
             const confirmBtn = dialog.querySelector("[data-testid='confirm-delete']");
             confirmBtn?.addEventListener("click", () => {
               onDelete(selectedVersions.map((v) => v.id));
+              document.body.removeChild(dialog);
+            });
+            const cancelBtn = dialog.querySelector("[data-testid='cancel-delete']");
+            cancelBtn?.addEventListener("click", () => {
+              onCancel();
               document.body.removeChild(dialog);
             });
           }}
@@ -904,5 +910,168 @@ describe("VersionGrid Component", () => {
     await waitFor(() => {
       expect(checkbox).toHaveAttribute("data-state", "unchecked");
     });
+  });
+
+  it("toggles selection from checked to unchecked when clicking checkbox twice", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox");
+
+    // First click - select
+    fireEvent.click(checkbox);
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "checked");
+    });
+
+    // Second click - deselect (covers the delete from set path in toggleSelection)
+    fireEvent.click(checkbox);
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "unchecked");
+    });
+  });
+
+  it("calls onJobDelete for completed job when delete button is clicked", async () => {
+    const onJobDelete = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ id: "completed-1", status: "COMPLETED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    // Find the delete button (it's a ghost button with Trash2 icon for COMPLETED status)
+    const buttons = screen.getAllByRole("button");
+    const deleteBtn = buttons.find(btn => btn.querySelector("svg"));
+    expect(deleteBtn).toBeInTheDocument();
+
+    if (deleteBtn) {
+      fireEvent.click(deleteBtn);
+    }
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalledWith(
+        "Are you sure you want to delete this job? This action cannot be undone.",
+      );
+      expect(onJobDelete).toHaveBeenCalledWith("completed-1");
+    });
+  });
+
+  it("handles non-Error exception in cancel gracefully", async () => {
+    const onJobCancel = vi.fn().mockRejectedValue("String error");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    render(<VersionGrid versions={versions} onJobCancel={onJobCancel} />);
+
+    const cancelButton = screen.getByText("Cancel");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Failed to cancel job");
+    });
+  });
+
+  it("handles non-Error exception in delete gracefully", async () => {
+    const onJobDelete = vi.fn().mockRejectedValue("String error");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
+
+    const deleteButton = screen.getByText("Delete");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Failed to delete job");
+    });
+  });
+
+  it("clears selection when cancel is clicked in bulk delete dialog", async () => {
+    const versions = [createMockVersion()];
+    const onBulkDelete = vi.fn();
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        onBulkDelete={onBulkDelete}
+      />,
+    );
+
+    // Select a version
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "checked");
+    });
+
+    // Open the bulk delete dialog
+    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    // Click cancel button
+    const cancelButton = screen.getByTestId("cancel-delete");
+    fireEvent.click(cancelButton);
+
+    // Selection should be cleared
+    await waitFor(() => {
+      expect(checkbox).toHaveAttribute("data-state", "unchecked");
+    });
+
+    // onBulkDelete should not have been called
+    expect(onBulkDelete).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when cancel button clicked but onJobCancel is not provided", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "PENDING" })];
+
+    // Render without onJobCancel callback - cancel button should still appear
+    // but do nothing when clicked
+    render(<VersionGrid versions={versions} />);
+
+    // The cancel button won't appear without onJobCancel, so we test that it doesn't render
+    expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
+  });
+
+  it("does nothing when delete button clicked but onJobDelete is not provided", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const versions = [createMockVersion({ status: "FAILED" })];
+
+    // Render without onJobDelete callback - delete button should not appear
+    render(<VersionGrid versions={versions} />);
+
+    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+  });
+
+  it("does not show bulk select UI when onBulkDelete is not provided", () => {
+    const versions = [createMockVersion()];
+
+    render(
+      <VersionGrid
+        versions={versions}
+        enableBulkSelect={true}
+        // onBulkDelete not provided
+      />,
+    );
+
+    // Select All button should not appear
+    expect(screen.queryByRole("button", { name: /select all/i })).not.toBeInTheDocument();
+    // Checkboxes should not appear
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 });

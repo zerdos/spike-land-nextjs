@@ -507,6 +507,35 @@ describe("EnhancementHistoryGrid", () => {
     );
   });
 
+  it("handles fetch error when logging broken image", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    render(
+      <EnhancementHistoryGrid
+        versions={mockVersions}
+        onVersionSelect={mockOnVersionSelect}
+        onJobDelete={mockOnJobDelete}
+      />,
+    );
+
+    const images = screen.getAllByTestId("next-image");
+    fireEvent.error(images[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Image failed to load")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[Image Error Logging Failed]",
+        expect.any(Error),
+      );
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it("renders dash for missing dimensions", () => {
     const versionWithoutDimensions: EnhancementVersion = {
       id: "no-dims-1",
