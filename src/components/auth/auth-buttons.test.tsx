@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { signIn } from "next-auth/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,202 +8,365 @@ vi.mock("next-auth/react", () => ({
   signIn: vi.fn(),
 }));
 
-vi.mock("./sign-in-button", () => ({
-  SignInButton: ({ className }: { className?: string; }) => (
-    <button className={className}>Sign In Button</button>
-  ),
-}));
+// Mock fetch for email check API
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 describe("AuthButtons Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetch.mockReset();
   });
 
-  it("should render all authentication buttons", () => {
-    render(<AuthButtons />);
-    expect(screen.getByRole("button", { name: /continue with github/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sign in button/i })).toBeInTheDocument();
-  });
-
-  it("should render GitHub button with icon", () => {
-    render(<AuthButtons />);
-    const githubButton = screen.getByRole("button", { name: /continue with github/i });
-    const icon = githubButton.querySelector("svg");
-    expect(icon).toBeInTheDocument();
-  });
-
-  it("should render Google button with icon", () => {
-    render(<AuthButtons />);
-    const googleButton = screen.getByRole("button", { name: /continue with google/i });
-    const icon = googleButton.querySelector("svg");
-    expect(icon).toBeInTheDocument();
-  });
-
-  it("should render separator with text", () => {
-    render(<AuthButtons />);
-    expect(screen.getByText(/or continue with/i)).toBeInTheDocument();
-  });
-
-  it("should apply custom className to container", () => {
-    const { container } = render(<AuthButtons className="custom-class" />);
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass("custom-class");
-  });
-
-  it("should apply default classes when no className provided", () => {
-    const { container } = render(<AuthButtons />);
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass("flex", "flex-col", "gap-3", "w-full", "max-w-sm");
-  });
-
-  it("should call signIn with github when GitHub button is clicked", async () => {
-    const user = userEvent.setup();
-    render(<AuthButtons />);
-
-    await user.click(screen.getByRole("button", { name: /continue with github/i }));
-    expect(signIn).toHaveBeenCalledWith("github");
-    expect(signIn).toHaveBeenCalledTimes(1);
-  });
-
-  it("should call signIn with google when Google button is clicked", async () => {
-    const user = userEvent.setup();
-    render(<AuthButtons />);
-
-    await user.click(screen.getByRole("button", { name: /continue with google/i }));
-    expect(signIn).toHaveBeenCalledWith("google");
-    expect(signIn).toHaveBeenCalledTimes(1);
-  });
-
-  it("should have correct button variants", () => {
-    render(<AuthButtons />);
-    const githubButton = screen.getByRole("button", { name: /continue with github/i });
-    const googleButton = screen.getByRole("button", { name: /continue with google/i });
-
-    expect(githubButton).toHaveClass("bg-gradient-primary");
-    expect(googleButton).toHaveClass("border");
-  });
-
-  it("should have correct button sizes", () => {
-    render(<AuthButtons />);
-    const githubButton = screen.getByRole("button", { name: /continue with github/i });
-    const googleButton = screen.getByRole("button", { name: /continue with google/i });
-
-    expect(githubButton).toHaveClass("h-12");
-    expect(googleButton).toHaveClass("h-12");
-  });
-
-  it("should have full width buttons", () => {
-    render(<AuthButtons />);
-    const githubButton = screen.getByRole("button", { name: /continue with github/i });
-    const googleButton = screen.getByRole("button", { name: /continue with google/i });
-
-    expect(githubButton).toHaveClass("w-full");
-    expect(googleButton).toHaveClass("w-full");
-  });
-
-  it("should pass correct className to SignInButton", () => {
-    render(<AuthButtons />);
-    const signInButton = screen.getByRole("button", { name: /sign in button/i });
-    expect(signInButton).toHaveClass("w-full");
-  });
-
-  it("should handle multiple button clicks", async () => {
-    const user = userEvent.setup();
-    render(<AuthButtons />);
-
-    await user.click(screen.getByRole("button", { name: /continue with github/i }));
-    await user.click(screen.getByRole("button", { name: /continue with google/i }));
-
-    expect(signIn).toHaveBeenCalledTimes(2);
-    expect(signIn).toHaveBeenNthCalledWith(1, "github");
-    expect(signIn).toHaveBeenNthCalledWith(2, "google");
-  });
-
-  it("should render separator with correct styling", () => {
-    const { container } = render(<AuthButtons />);
-    const separator = container.querySelector(".border-t");
-    expect(separator).toBeInTheDocument();
-  });
-
-  it("should render separator text with correct styling", () => {
-    render(<AuthButtons />);
-    const separatorText = screen.getByText(/or continue with/i);
-    expect(separatorText).toHaveClass("bg-background", "px-2", "text-muted-foreground");
-  });
-
-  describe("Email/Password Form", () => {
-    it("should show email button initially, not the form", () => {
+  describe("Initial Email Step", () => {
+    it("should render email input and continue button initially", () => {
       render(<AuthButtons />);
-      expect(screen.getByRole("button", { name: /continue with email/i })).toBeInTheDocument();
-      expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
-      expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/name@example.com/i)).toBeInTheDocument();
+      // Use exact match to avoid matching "Continue with Google/GitHub"
+      expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
     });
 
-    it("should show email form when Continue with Email is clicked", async () => {
+    it("should render Google and GitHub social buttons", () => {
+      render(<AuthButtons />);
+      expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue with github/i })).toBeInTheDocument();
+    });
+
+    it("should render Google button before GitHub button", () => {
+      render(<AuthButtons />);
+      const buttons = screen.getAllByRole("button");
+      const googleIndex = buttons.findIndex((b) => b.textContent?.includes("Google"));
+      const githubIndex = buttons.findIndex((b) => b.textContent?.includes("GitHub"));
+      expect(googleIndex).toBeLessThan(githubIndex);
+    });
+
+    it("should render separator with text", () => {
+      render(<AuthButtons />);
+      expect(screen.getByText(/^or$/i)).toBeInTheDocument();
+    });
+
+    it("should apply custom className to container", () => {
+      const { container } = render(<AuthButtons className="custom-class" />);
+      const wrapper = container.firstChild;
+      expect(wrapper).toHaveClass("custom-class");
+    });
+
+    it("should apply default classes when no className provided", () => {
+      const { container } = render(<AuthButtons />);
+      const wrapper = container.firstChild;
+      expect(wrapper).toHaveClass("flex", "flex-col", "gap-4", "w-full", "max-w-sm");
+    });
+
+    it("should have correct button variants - social buttons neutral styling", () => {
+      render(<AuthButtons />);
+      const googleButton = screen.getByRole("button", { name: /continue with google/i });
+      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+
+      // Social buttons should have neutral bg-card styling
+      expect(googleButton).toHaveClass("bg-card");
+      expect(githubButton).toHaveClass("bg-card");
+    });
+
+    it("should have correct button sizes", () => {
+      render(<AuthButtons />);
+      const googleButton = screen.getByRole("button", { name: /continue with google/i });
+      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+
+      expect(googleButton).toHaveClass("h-12");
+      expect(githubButton).toHaveClass("h-12");
+    });
+
+    it("should disable continue button when email is empty", () => {
+      render(<AuthButtons />);
+      const continueButton = screen.getByRole("button", { name: /^continue$/i });
+      expect(continueButton).toBeDisabled();
+    });
+
+    it("should enable continue button when email is entered", async () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
 
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /sign in with email/i })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /continue with email/i })).not
-        .toBeInTheDocument();
+      const continueButton = screen.getByRole("button", { name: /^continue$/i });
+      expect(continueButton).not.toBeDisabled();
     });
+  });
 
-    it("should hide form and show email button when Back is clicked", async () => {
+  describe("Social Auth Buttons", () => {
+    it("should call signIn with google and default callbackUrl when Google button is clicked", async () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
-      // Open form
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-
-      // Click back
-      await user.click(screen.getByRole("button", { name: /back to other options/i }));
-
-      expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /continue with email/i })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
+      expect(signIn).toHaveBeenCalledTimes(1);
     });
 
-    it("should clear form and error when Back is clicked", async () => {
+    it("should call signIn with github and default callbackUrl when GitHub button is clicked", async () => {
       const user = userEvent.setup();
-      vi.mocked(signIn).mockResolvedValue({
-        error: "CredentialsSignin",
-        status: 401,
-        ok: false,
-        url: null,
+      render(<AuthButtons />);
+
+      await user.click(screen.getByRole("button", { name: /continue with github/i }));
+      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/apps/pixel" });
+      expect(signIn).toHaveBeenCalledTimes(1);
+    });
+
+    it("should use callbackUrl from URL params for Google sign in", async () => {
+      const user = userEvent.setup();
+      // Mock window.location.search
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=/my-dashboard",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/my-dashboard" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
+    it("should use callbackUrl from URL params for GitHub sign in", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "?callbackUrl=/settings", origin: "http://localhost" },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with github/i }));
+
+      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/settings" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
+    it("should reject external URLs in callbackUrl to prevent open redirect", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=https://evil.com/steal",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+
+      // Should use default /apps/pixel instead of external URL
+      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
+    it("should have full width buttons", () => {
+      render(<AuthButtons />);
+      const googleButton = screen.getByRole("button", { name: /continue with google/i });
+      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+
+      expect(googleButton).toHaveClass("w-full");
+      expect(githubButton).toHaveClass("w-full");
+    });
+
+    it("should render Google button with icon", () => {
+      render(<AuthButtons />);
+      const googleButton = screen.getByRole("button", { name: /continue with google/i });
+      const icon = googleButton.querySelector("svg");
+      expect(icon).toBeInTheDocument();
+    });
+
+    it("should render GitHub button with icon", () => {
+      render(<AuthButtons />);
+      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+      const icon = githubButton.querySelector("svg");
+      expect(icon).toBeInTheDocument();
+    });
+  });
+
+  describe("Email Check Flow", () => {
+    it("should show loading state when checking email", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: () => Promise.resolve({ exists: false, hasPassword: false }),
+                }),
+              100,
+            )
+          ),
+      );
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      expect(screen.getByText(/checking/i)).toBeInTheDocument();
+    });
+
+    it("should call check-email API with correct email", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
       });
 
       render(<AuthButtons />);
 
-      // Open form and fill it
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password123");
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "TEST@EXAMPLE.COM");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
-      // Submit to trigger error
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
-
-      // Click back
-      await user.click(screen.getByRole("button", { name: /back to other options/i }));
-
-      // Re-open form
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-
-      // Form should be cleared
-      expect(screen.getByLabelText(/email/i)).toHaveValue("");
-      expect(screen.getByLabelText(/password/i)).toHaveValue("");
-      expect(screen.queryByText(/invalid email or password/i)).not.toBeInTheDocument();
+      expect(mockFetch).toHaveBeenCalledWith("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "test@example.com" }),
+      });
     });
 
-    it("should call signIn with credentials on form submission", async () => {
+    it("should show error message when API fails", async () => {
       const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ error: "Too many requests" }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/too many requests/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should show error message when fetch throws", async () => {
+      const user = userEvent.setup();
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/an error occurred/i)).toBeInTheDocument();
+      });
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("Password Step - Existing User with Password", () => {
+    it("should show password field for existing user with password", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
+      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+    });
+
+    it("should show disabled email field with entered email", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        const emailDisplay = screen.getByDisplayValue("existing@example.com");
+        expect(emailDisplay).toBeDisabled();
+      });
+    });
+
+    it("should show 'Use different email' button in password step", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+      });
+    });
+
+    it("should go back to email step when 'Use different email' is clicked", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole("button", { name: /use different email/i }));
+
+      expect(screen.getByPlaceholderText(/name@example.com/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
+    });
+
+    it("should call signIn with credentials on password form submission", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
-      // Mock window.location with origin for URL validation
+      // Mock window.location
       const originalLocation = window.location;
       Object.defineProperty(window, "location", {
         writable: true,
@@ -212,18 +375,22 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "testpassword");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       expect(signIn).toHaveBeenCalledWith("credentials", {
-        email: "test@example.com",
+        email: "existing@example.com",
         password: "testpassword",
         redirect: false,
       });
 
-      // Restore window.location
       Object.defineProperty(window, "location", {
         writable: true,
         value: originalLocation,
@@ -232,6 +399,10 @@ describe("AuthButtons Component", () => {
 
     it("should display error message on invalid credentials", async () => {
       const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
       vi.mocked(signIn).mockResolvedValue({
         error: "CredentialsSignin",
         status: 401,
@@ -241,93 +412,61 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
-      expect(await screen.findByText(/invalid email or password/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "wrongpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument();
+      });
     });
 
-    it("should display generic error on unexpected error", async () => {
+    it("should show loading spinner during sign in", async () => {
       const user = userEvent.setup();
-      vi.mocked(signIn).mockRejectedValue(new Error("Network error"));
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
 
-      // Mock console.error to avoid noise in test output
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
-
-      expect(await screen.findByText(/an error occurred during sign in/i)).toBeInTheDocument();
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    it("should disable inputs during loading", async () => {
-      const user = userEvent.setup();
-      // Create a promise that doesn't resolve immediately
       let resolveSignIn: (value: unknown) => void;
-      vi.mocked(signIn).mockImplementation(() =>
-        new Promise((resolve) => {
-          resolveSignIn = resolve;
-        })
+      vi.mocked(signIn).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveSignIn = resolve;
+          }),
       );
 
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
-      // Click submit (don't await)
-      const submitButton = screen.getByRole("button", { name: /sign in with email/i });
-      await user.click(submitButton);
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
 
-      // Check that inputs are disabled during loading
-      expect(screen.getByLabelText(/email/i)).toBeDisabled();
-      expect(screen.getByLabelText(/password/i)).toBeDisabled();
-      expect(screen.getByRole("button", { name: /signing in/i })).toBeDisabled();
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-      // Resolve the promise to clean up
-      resolveSignIn!({ ok: false, error: "test" });
-    });
-
-    it("should show loading spinner during submission", async () => {
-      const user = userEvent.setup();
-      let resolveSignIn: (value: unknown) => void;
-      vi.mocked(signIn).mockImplementation(() =>
-        new Promise((resolve) => {
-          resolveSignIn = resolve;
-        })
-      );
-
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
-
-      const submitButton = screen.getByRole("button", { name: /sign in with email/i });
-      await user.click(submitButton);
-
-      // Check for loading state text
       expect(screen.getByText(/signing in/i)).toBeInTheDocument();
 
-      // Resolve to clean up
       resolveSignIn!({ ok: false, error: "test" });
     });
 
     it("should redirect to callback URL on successful sign in", async () => {
       const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
-      // Mock window.location with callbackUrl
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
       Object.defineProperty(window, "location", {
@@ -342,112 +481,34 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
-      // Wait for async operations - URL validation returns full URL
-      await vi.waitFor(() => {
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+      await waitFor(() => {
         expect(window.location.href).toBe(`${mockOrigin}/dashboard`);
       });
 
-      // Restore window.location
       Object.defineProperty(window, "location", {
         writable: true,
         value: originalLocation,
       });
     });
 
-    it("should redirect to home if no callback URL", async () => {
+    it("should block external URLs and redirect to Pixel app (security)", async () => {
       const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
-      // Mock window.location without callbackUrl
-      const originalLocation = window.location;
-      const mockOrigin = "http://localhost:3000";
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { ...originalLocation, href: "", search: "", origin: mockOrigin },
-      });
-
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
-
-      // Wait for async operations - URL validation returns full URL
-      await vi.waitFor(() => {
-        expect(window.location.href).toBe(`${mockOrigin}/`);
-      });
-
-      // Restore window.location
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: originalLocation,
-      });
-    });
-
-    it("should have required email field", async () => {
-      const user = userEvent.setup();
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-
-      const emailInput = screen.getByLabelText(/email/i);
-      expect(emailInput).toHaveAttribute("required");
-      expect(emailInput).toHaveAttribute("type", "email");
-    });
-
-    it("should have required password field with minLength", async () => {
-      const user = userEvent.setup();
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-
-      const passwordInput = screen.getByLabelText(/password/i);
-      expect(passwordInput).toHaveAttribute("required");
-      expect(passwordInput).toHaveAttribute("type", "password");
-      expect(passwordInput).toHaveAttribute("minLength", "1");
-    });
-
-    it("should render email button with mail icon", async () => {
-      render(<AuthButtons />);
-
-      const emailButton = screen.getByRole("button", { name: /continue with email/i });
-      const icon = emailButton.querySelector("svg");
-      expect(icon).toBeInTheDocument();
-    });
-
-    it("should update email input on change", async () => {
-      const user = userEvent.setup();
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-
-      const emailInput = screen.getByLabelText(/email/i);
-      await user.type(emailInput, "newuser@test.com");
-      expect(emailInput).toHaveValue("newuser@test.com");
-    });
-
-    it("should update password input on change", async () => {
-      const user = userEvent.setup();
-      render(<AuthButtons />);
-
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-
-      const passwordInput = screen.getByLabelText(/password/i);
-      await user.type(passwordInput, "secretpass");
-      expect(passwordInput).toHaveValue("secretpass");
-    });
-
-    it("should block external URLs and redirect to home (security)", async () => {
-      const user = userEvent.setup();
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
-
-      // Mock window.location with malicious external callback URL
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
       Object.defineProperty(window, "location", {
@@ -462,20 +523,329 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
-      await user.type(screen.getByLabelText(/email/i), "test@example.com");
-      await user.type(screen.getByLabelText(/password/i), "password");
-      await user.click(screen.getByRole("button", { name: /sign in with email/i }));
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
-      // Wait for async operations - external URL should be blocked, redirect to home
-      await vi.waitFor(() => {
-        expect(window.location.href).toBe("/");
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
       });
 
-      // Restore window.location
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+      await waitFor(() => {
+        expect(window.location.href).toBe("/apps/pixel");
+      });
+
       Object.defineProperty(window, "location", {
         writable: true,
         value: originalLocation,
+      });
+    });
+  });
+
+  describe("Signup Step - New User", () => {
+    it("should show signup form for new user", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+      expect(screen.getByText(/create a password to set up your account/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /create account/i })).toBeInTheDocument();
+    });
+
+    it("should require minimum 8 character password for signup", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "short");
+
+      const createButton = screen.getByRole("button", { name: /create account/i });
+      expect(createButton).toBeDisabled();
+
+      await user.clear(screen.getByPlaceholderText(/create a password/i));
+      await user.type(screen.getByPlaceholderText(/create a password/i), "longenoughpassword");
+
+      expect(createButton).not.toBeDisabled();
+    });
+
+    it("should show loading state during account creation", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+
+      let resolveSignIn: (value: unknown) => void;
+      vi.mocked(signIn).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveSignIn = resolve;
+          }),
+      );
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      expect(screen.getByText(/creating account/i)).toBeInTheDocument();
+
+      resolveSignIn!({ ok: false, error: "test" });
+    });
+
+    it("should redirect to callback URL on successful signup", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+
+      const originalLocation = window.location;
+      const mockOrigin = "http://localhost:3000";
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "?callbackUrl=/dashboard",
+          origin: mockOrigin,
+        },
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(window.location.href).toBe(`${mockOrigin}/dashboard`);
+      });
+
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: originalLocation,
+      });
+    });
+
+    it("should block external callback URLs on signup (security)", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+
+      const originalLocation = window.location;
+      const mockOrigin = "http://localhost:3000";
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "?callbackUrl=https://evil.com",
+          origin: mockOrigin,
+        },
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(window.location.href).toBe("/apps/pixel");
+      });
+
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: originalLocation,
+      });
+    });
+
+    it("should display error on signup exception", async () => {
+      const user = userEvent.setup();
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+      vi.mocked(signIn).mockRejectedValue(new Error("Network error"));
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/an error occurred during sign up/i)).toBeInTheDocument();
+      });
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("OAuth Only Step", () => {
+    it("should show OAuth message for user without password", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: false }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "oauth@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/this account was created with google or github/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should show 'Use different email' button in OAuth step", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: false }),
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "oauth@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Separator Styling", () => {
+    it("should render separator with correct styling", () => {
+      const { container } = render(<AuthButtons />);
+      const separator = container.querySelector(".border-t");
+      expect(separator).toBeInTheDocument();
+    });
+
+    it("should render separator text with correct styling", () => {
+      render(<AuthButtons />);
+      const separatorText = screen.getByText(/^or$/i);
+      expect(separatorText).toHaveClass("bg-background", "px-4", "text-muted-foreground");
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should display generic error on sign in exception", async () => {
+      const user = userEvent.setup();
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true, hasPassword: true }),
+      });
+      vi.mocked(signIn).mockRejectedValue(new Error("Network error"));
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/an error occurred during sign in/i)).toBeInTheDocument();
+      });
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should display error on signup failure", async () => {
+      const user = userEvent.setup();
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      });
+      vi.mocked(signIn).mockResolvedValue({
+        error: "CredentialsSignin",
+        status: 401,
+        ok: false,
+        url: null,
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/unable to create account.*google or github/i),
+        ).toBeInTheDocument();
       });
     });
   });

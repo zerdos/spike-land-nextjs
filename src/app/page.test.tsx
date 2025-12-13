@@ -1,5 +1,67 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { redirect } from "next/navigation";
+import { describe, expect, it, Mock, vi } from "vitest";
+import Home from "./page";
+
+// Mock auth module
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
+}));
+
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
+// Mock all the landing page components
+vi.mock("@/components/landing/CTASection", () => ({
+  CTASection: () => (
+    <section data-testid="cta-section" className="bg-gradient-primary">CTA</section>
+  ),
+}));
+
+vi.mock("@/components/platform-landing", () => ({
+  FeaturedAppCard: () => <div data-testid="featured-app-card">Featured App</div>,
+  PlatformFeatures: () => (
+    <section data-testid="platform-features-section">Platform Features</section>
+  ),
+  PlatformHeader: () => <header data-testid="platform-header">Platform Header</header>,
+  PlatformHero: () => <section data-testid="hero-section">Platform Hero</section>,
+}));
+
+import { auth } from "@/auth";
+
+describe("Home Page - Authentication Redirect", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should redirect authenticated users to /apps/pixel", async () => {
+    (auth as Mock).mockResolvedValue({ user: { id: "user-123" } });
+
+    await Home();
+
+    expect(redirect).toHaveBeenCalledWith("/apps/pixel");
+  });
+
+  it("should not redirect unauthenticated users", async () => {
+    (auth as Mock).mockResolvedValue(null);
+
+    const result = await Home();
+
+    expect(redirect).not.toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+
+  it("should not redirect when session has no user id", async () => {
+    (auth as Mock).mockResolvedValue({ user: {} });
+
+    const result = await Home();
+
+    expect(redirect).not.toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+});
 
 // Mock components for testing Home page structure
 // Since the actual Home page uses client components, we test the expected page structure using mock components

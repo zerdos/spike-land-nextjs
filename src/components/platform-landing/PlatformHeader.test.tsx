@@ -53,7 +53,7 @@ describe("PlatformHeader Component", () => {
     render(<PlatformHeader />);
     const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-    expect(ctaButtons[0]).toHaveAttribute("href", "/apps/pixel");
+    expect(ctaButtons[0]).toHaveAttribute("href", "/auth/signin?callbackUrl=/apps/pixel");
   });
 
   it("should have fixed positioning", () => {
@@ -150,7 +150,9 @@ describe("PlatformHeader Component", () => {
 
     // Find the dialog and get the Get Started link inside it
     const dialog = screen.getByRole("dialog");
-    const getStartedLinkInDialog = dialog.querySelector('a[href="/apps/pixel"]');
+    const getStartedLinkInDialog = dialog.querySelector(
+      'a[href="/auth/signin?callbackUrl=/apps/pixel"]',
+    );
     expect(getStartedLinkInDialog).toBeInTheDocument();
 
     // Click the Get Started link to close the menu
