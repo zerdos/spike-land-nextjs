@@ -2,31 +2,36 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AgentControlPanel } from "./agent-control-panel";
 import { toast } from "sonner";
+import { BoxStatus, BoxMessageRole } from "@prisma/client";
 
 vi.mock("sonner", () => ({
   toast: {
     info: vi.fn(),
+    success: vi.fn(),
     error: vi.fn(),
   },
 }));
+
+// Mock fetch
+global.fetch = vi.fn();
 
 describe("AgentControlPanel", () => {
   const mockBox = {
     id: "box-1",
     name: "Test Box",
     description: "Test description",
-    status: "RUNNING" as const,
+    status: BoxStatus.RUNNING,
     connectionUrl: "https://example.com/vnc",
     messages: [
       {
         id: "msg-1",
-        role: "USER" as const,
+        role: BoxMessageRole.USER,
         content: "Hello",
         createdAt: new Date("2025-01-01"),
       },
       {
         id: "msg-2",
-        role: "AGENT" as const,
+        role: BoxMessageRole.AGENT,
         content: "Hi there!",
         createdAt: new Date("2025-01-01"),
       },
@@ -35,6 +40,7 @@ describe("AgentControlPanel", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (global.fetch as ReturnType<typeof vi.fn>).mockReset();
   });
 
   it("renders the component with chat and live session panels", () => {
@@ -73,21 +79,64 @@ describe("AgentControlPanel", () => {
   });
 
   it("allows user to type and send a message", async () => {
+    const mockResponse = {
+      userMessage: {
+        id: "msg-3",
+        role: BoxMessageRole.USER,
+        content: "New message",
+        createdAt: new Date().toISOString(),
+      },
+      agentMessage: {
+        id: "msg-4",
+        role: BoxMessageRole.AGENT,
+        content: "Message received. This is a placeholder response.",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
     const textarea = screen.getByPlaceholderText("Type your message...");
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const sendButton = screen.getByRole("button", { name: /send message/i });
 
     fireEvent.change(textarea, { target: { value: "New message" } });
     expect(textarea).toHaveValue("New message");
 
     fireEvent.click(sendButton);
 
-    expect(screen.getByText("New message")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("New message")).toBeInTheDocument();
+    });
+
     expect(textarea).toHaveValue("");
   });
 
   it("sends message on Enter key press", async () => {
+    const mockResponse = {
+      userMessage: {
+        id: "msg-5",
+        role: BoxMessageRole.USER,
+        content: "Enter message",
+        createdAt: new Date().toISOString(),
+      },
+      agentMessage: {
+        id: "msg-6",
+        role: BoxMessageRole.AGENT,
+        content: "Message received. This is a placeholder response.",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
     const textarea = screen.getByPlaceholderText("Type your message...");
@@ -95,7 +144,9 @@ describe("AgentControlPanel", () => {
     fireEvent.change(textarea, { target: { value: "Enter message" } });
     fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
 
-    expect(screen.getByText("Enter message")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Enter message")).toBeInTheDocument();
+    });
   });
 
   it("does not send message on Shift+Enter", () => {
@@ -112,7 +163,7 @@ describe("AgentControlPanel", () => {
   it("does not send empty messages", () => {
     render(<AgentControlPanel box={mockBox} />);
 
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const sendButton = screen.getByRole("button", { name: /send message/i });
     const initialMessageCount = screen.getAllByText(/Hello|Hi there!/).length;
 
     fireEvent.click(sendButton);
@@ -122,67 +173,135 @@ describe("AgentControlPanel", () => {
   });
 
   it("shows typing indicator after sending a message", async () => {
+    const mockResponse = {
+      userMessage: {
+        id: "msg-7",
+        role: BoxMessageRole.USER,
+        content: "Test",
+        createdAt: new Date().toISOString(),
+      },
+      agentMessage: {
+        id: "msg-8",
+        role: BoxMessageRole.AGENT,
+        content: "Message received. This is a placeholder response.",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
     const textarea = screen.getByPlaceholderText("Type your message...");
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const sendButton = screen.getByRole("button", { name: /send message/i });
 
     fireEvent.change(textarea, { target: { value: "Test" } });
     fireEvent.click(sendButton);
 
     expect(screen.getByText("Typing...")).toBeInTheDocument();
 
-    await waitFor(
-      () => {
-        expect(screen.queryByText("Typing...")).not.toBeInTheDocument();
-      },
-      { timeout: 1500 },
-    );
+    await waitFor(() => {
+      expect(screen.queryByText("Typing...")).not.toBeInTheDocument();
+    });
   });
 
   it("shows agent response after typing", async () => {
+    const mockResponse = {
+      userMessage: {
+        id: "msg-9",
+        role: BoxMessageRole.USER,
+        content: "Test",
+        createdAt: new Date().toISOString(),
+      },
+      agentMessage: {
+        id: "msg-10",
+        role: BoxMessageRole.AGENT,
+        content: "Message received. This is a placeholder response.",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
     const textarea = screen.getByPlaceholderText("Type your message...");
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const sendButton = screen.getByRole("button", { name: /send message/i });
 
     fireEvent.change(textarea, { target: { value: "Test" } });
     fireEvent.click(sendButton);
 
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText("Message received. This is a placeholder response."),
-        ).toBeInTheDocument();
-      },
-      { timeout: 1500 },
-    );
+    await waitFor(() => {
+      expect(
+        screen.getByText("Message received. This is a placeholder response.")
+      ).toBeInTheDocument();
+    });
   });
 
   it("renders control buttons", () => {
     render(<AgentControlPanel box={mockBox} />);
 
-    expect(screen.getByRole("button", { name: /pause/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /restart/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /debug/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /pause agent/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /restart agent/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /debug agent/i })
+    ).toBeInTheDocument();
   });
 
-  it("calls toast when Pause button is clicked", () => {
+  it("calls toast and API when Pause button is clicked", async () => {
+    // Mock window.location.reload
+    delete (window as any).location;
+    window.location = { reload: vi.fn() } as any;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, box: mockBox }),
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
-    const pauseButton = screen.getByRole("button", { name: /pause/i });
+    const pauseButton = screen.getByRole("button", { name: /pause agent/i });
     fireEvent.click(pauseButton);
 
     expect(toast.info).toHaveBeenCalledWith("Pausing agent...");
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Agent paused successfully");
+    });
   });
 
-  it("calls toast when Restart button is clicked", () => {
+  it("calls toast and API when Restart button is clicked", async () => {
+    // Mock window.location.reload
+    delete (window as any).location;
+    window.location = { reload: vi.fn() } as any;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, box: mockBox }),
+    });
+
     render(<AgentControlPanel box={mockBox} />);
 
-    const restartButton = screen.getByRole("button", { name: /restart/i });
+    const restartButton = screen.getByRole("button", { name: /restart agent/i });
     fireEvent.click(restartButton);
 
     expect(toast.info).toHaveBeenCalledWith("Restarting agent...");
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(
+        "Agent restarted successfully"
+      );
+    });
   });
 
   it("displays correct status color for RUNNING status", () => {
@@ -193,7 +312,7 @@ describe("AgentControlPanel", () => {
   });
 
   it("displays correct status color for STOPPED status", () => {
-    const stoppedBox = { ...mockBox, status: "STOPPED" as const };
+    const stoppedBox = { ...mockBox, status: BoxStatus.STOPPED };
     render(<AgentControlPanel box={stoppedBox} />);
 
     const statusIndicator = screen.getByText("STOPPED").previousSibling;
@@ -201,15 +320,15 @@ describe("AgentControlPanel", () => {
   });
 
   it("displays correct status color for STARTING status", () => {
-    const startingBox = { ...mockBox, status: "STARTING" as const };
+    const startingBox = { ...mockBox, status: BoxStatus.STARTING };
     render(<AgentControlPanel box={startingBox} />);
 
     const statusIndicator = screen.getByText("STARTING").previousSibling;
-    expect(statusIndicator).toHaveClass("bg-yellow-500");
+    expect(statusIndicator).toHaveClass("bg-blue-500");
   });
 
   it("displays correct status color for ERROR status", () => {
-    const errorBox = { ...mockBox, status: "ERROR" as const };
+    const errorBox = { ...mockBox, status: BoxStatus.ERROR };
     render(<AgentControlPanel box={errorBox} />);
 
     const statusIndicator = screen.getByText("ERROR").previousSibling;

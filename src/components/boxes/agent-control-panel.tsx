@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-type BoxStatus = "STOPPED" | "STARTING" | "RUNNING" | "PAUSED" | "ERROR";
-
-type BoxMessageRole = "USER" | "AGENT" | "SYSTEM";
+import { BoxStatus, BoxMessageRole } from "@prisma/client";
 
 interface BoxMessage {
   id: string;
@@ -22,9 +19,9 @@ interface BoxMessage {
 interface Box {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   status: BoxStatus;
-  connectionUrl?: string;
+  connectionUrl?: string | null;
   messages?: BoxMessage[];
 }
 
@@ -32,22 +29,46 @@ interface AgentControlPanelProps {
   box: Box;
 }
 
+/**
+ * Agent Control Panel component that provides a split-view interface
+ * for chatting with an agent and viewing its live desktop session.
+ *
+ * Features:
+ * - Real-time chat with agent
+ * - Auto-scrolling message list
+ * - Live VNC/NoVNC session viewer
+ * - Agent control actions (pause, restart, debug)
+ * - Status indicator with color-coded badges
+ *
+ * @param box - The Box object containing agent details, status, and message history
+ */
 export function AgentControlPanel({ box }: AgentControlPanelProps) {
   const [messages, setMessages] = useState<BoxMessage[]>(box.messages || []);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const getStatusColor = (status: BoxStatus) => {
     switch (status) {
-      case "RUNNING":
+      case BoxStatus.RUNNING:
         return "bg-green-500";
-      case "STOPPED":
-      case "PAUSED":
-        return "bg-red-500";
-      case "STARTING":
+      case BoxStatus.PAUSED:
         return "bg-yellow-500";
-      case "ERROR":
+      case BoxStatus.STOPPED:
+      case BoxStatus.STOPPING:
+        return "bg-red-500";
+      case BoxStatus.CREATING:
+      case BoxStatus.STARTING:
+        return "bg-blue-500";
+      case BoxStatus.ERROR:
         return "bg-red-600";
+      case BoxStatus.TERMINATED:
+        return "bg-gray-600";
       default:
         return "bg-gray-500";
     }
@@ -55,13 +76,19 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
 
   const getStatusBadgeVariant = (status: BoxStatus) => {
     switch (status) {
-      case "RUNNING":
+      case BoxStatus.RUNNING:
         return "default";
-      case "STOPPED":
-      case "PAUSED":
-        return "destructive";
-      case "STARTING":
+      case BoxStatus.PAUSED:
         return "secondary";
+      case BoxStatus.STOPPED:
+      case BoxStatus.STOPPING:
+      case BoxStatus.TERMINATED:
+        return "destructive";
+      case BoxStatus.CREATING:
+      case BoxStatus.STARTING:
+        return "secondary";
+      case BoxStatus.ERROR:
+        return "destructive";
       default:
         return "outline";
     }
@@ -70,34 +97,65 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    const newMessage: BoxMessage = {
-      id: `temp-${Date.now()}`,
-      role: "USER",
-      content: inputValue,
-      createdAt: new Date(),
-    };
-
-    setMessages([...messages, newMessage]);
+    const content = inputValue;
     setInputValue("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const agentResponse: BoxMessage = {
-        id: `temp-agent-${Date.now()}`,
-        role: "AGENT",
-        content: "Message received. This is a placeholder response.",
-        createdAt: new Date(),
-      };
-      setMessages((prev) => [...prev, agentResponse]);
+    try {
+      const response = await fetch(`/api/boxes/${box.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+
+      // Add both user message and agent response
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...data.userMessage,
+          createdAt: new Date(data.userMessage.createdAt),
+        },
+        {
+          ...data.agentMessage,
+          createdAt: new Date(data.agentMessage.createdAt),
+        },
+      ]);
+    } catch (error) {
+      toast.error("Failed to send message");
+      console.error(error);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const handleAction = async (action: "STOP" | "RESTART") => {
     try {
       toast.info(`${action === "STOP" ? "Pausing" : "Restarting"} agent...`);
+
+      const response = await fetch(`/api/boxes/${box.id}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Action failed");
+      }
+
+      toast.success(
+        `Agent ${action === "STOP" ? "paused" : "restarted"} successfully`
+      );
+      // In a real app, you might want to refresh the page or update the status
+      window.location.reload();
     } catch (error) {
       toast.error("Failed to perform action");
+      console.error(error);
     }
   };
 
@@ -137,6 +195,7 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="p-4 border-t border-white/10">
@@ -146,6 +205,7 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
                 className="min-h-[60px] resize-none"
+                aria-label="Message input"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -153,7 +213,12 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
                   }
                 }}
               />
-              <Button onClick={handleSendMessage} size="default" className="self-end">
+              <Button
+                onClick={handleSendMessage}
+                size="default"
+                className="self-end"
+                aria-label="Send message"
+              >
                 Send
               </Button>
             </div>
@@ -173,13 +238,28 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleAction("STOP")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAction("STOP")}
+                aria-label="Pause agent"
+              >
                 Pause
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleAction("RESTART")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAction("RESTART")}
+                aria-label="Restart agent"
+              >
                 Restart
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAction("DEBUG")}
+                aria-label="Debug agent"
+              >
                 Debug
               </Button>
             </div>

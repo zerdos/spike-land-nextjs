@@ -587,6 +587,7 @@ enum BoxStatus {
   CREATING
   STARTING
   RUNNING
+  PAUSED
   STOPPING
   STOPPED
   TERMINATED
@@ -649,23 +650,25 @@ model BoxTier {
 }
 
 model Box {
-  id              String      @id @default(cuid())
+  id              String       @id @default(cuid())
   name            String
+  description     String?
   userId          String
-  tierId          String
-  status          BoxStatus   @default(STOPPED)
-  connectionUrl   String?     // URL to access the VNC/NoVNC interface
-  storageVolumeId String?     // ID of the persistent storage volume (R2/S3)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  tierId          String?
+  status          BoxStatus    @default(STOPPED)
+  connectionUrl   String?      // URL to access the VNC/NoVNC interface
+  storageVolumeId String?      // ID of the persistent storage volume (R2/S3)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   deletedAt       DateTime?
 
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier            BoxTier     @relation(fields: [tierId], references: [id])
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            BoxTier?     @relation(fields: [tierId], references: [id])
   actions         BoxAction[]
   tasks           AgentTask[]
+  messages        BoxMessage[]
 
-  @@index([userId])
+  @@index([userId, createdAt])
   @@index([status])
   @@map("boxes")
 }
@@ -791,41 +794,16 @@ model McpGenerationJob {
   @@map("mcp_generation_jobs")
 }
 
-model Box {
-  id             String     @id @default(cuid())
-  userId         String
-  name           String
-  description    String?
-  status         BoxStatus  @default(STOPPED)
-  connectionUrl  String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages       BoxMessage[]
-
-  @@index([userId, createdAt])
-  @@index([status])
-  @@map("boxes")
-}
-
 model BoxMessage {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   boxId     String
   role      BoxMessageRole
   content   String
-  createdAt DateTime @default(now())
-  box       Box      @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+  box       Box            @relation(fields: [boxId], references: [id], onDelete: Cascade)
 
   @@index([boxId, createdAt])
   @@map("box_messages")
-}
-
-enum BoxStatus {
-  STOPPED
-  STARTING
-  RUNNING
-  PAUSED
-  ERROR
 }
 
 enum BoxMessageRole {

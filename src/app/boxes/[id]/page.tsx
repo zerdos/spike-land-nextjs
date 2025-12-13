@@ -1,4 +1,7 @@
+import { auth } from "@/auth";
 import { AgentControlPanel } from "@/components/boxes/agent-control-panel";
+import prisma from "@/lib/prisma";
+import { notFound, redirect } from "next/navigation";
 
 interface PageProps {
   params: Promise<{
@@ -7,33 +10,40 @@ interface PageProps {
 }
 
 export default async function BoxDetailPage({ params }: PageProps) {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
   const { id } = await params;
 
-  const mockBox = {
-    id,
-    name: `Agent Box ${id}`,
-    description: "Browser Agent Environment",
-    status: "RUNNING" as const,
-    connectionUrl: "https://example.com/vnc",
-    messages: [
-      {
-        id: "1",
-        role: "SYSTEM" as const,
-        content: "Agent initialized and ready.",
-        createdAt: new Date(),
+  const box = await prisma.box.findUnique({
+    where: { id },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
       },
-    ],
-  };
+    },
+  });
+
+  if (!box) {
+    notFound();
+  }
+
+  // Verify user owns the box
+  if (box.userId !== session.user.id) {
+    notFound();
+  }
 
   return (
     <div className="container mx-auto py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">{mockBox.name}</h1>
-        {mockBox.description && (
-          <p className="text-muted-foreground mt-2">{mockBox.description}</p>
+        <h1 className="text-3xl font-bold">{box.name}</h1>
+        {box.description && (
+          <p className="text-muted-foreground mt-2">{box.description}</p>
         )}
       </div>
-      <AgentControlPanel box={mockBox} />
+      <AgentControlPanel box={box} />
     </div>
   );
 }

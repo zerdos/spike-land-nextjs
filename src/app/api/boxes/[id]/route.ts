@@ -22,6 +22,9 @@ export async function GET(
       },
       include: {
         tier: true,
+        messages: {
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
 
