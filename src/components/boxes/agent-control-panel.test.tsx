@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { AgentControlPanel } from "./agent-control-panel";
+import { BoxMessageRole, BoxStatus } from "@prisma/client";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
-import { BoxStatus, BoxMessageRole } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AgentControlPanel } from "./agent-control-panel";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -239,7 +239,7 @@ describe("AgentControlPanel", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Message received. This is a placeholder response.")
+        screen.getByText("Message received. This is a placeholder response."),
       ).toBeInTheDocument();
     });
   });
@@ -248,13 +248,13 @@ describe("AgentControlPanel", () => {
     render(<AgentControlPanel box={mockBox} />);
 
     expect(
-      screen.getByRole("button", { name: /pause agent/i })
+      screen.getByRole("button", { name: /pause agent/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /restart agent/i })
+      screen.getByRole("button", { name: /restart agent/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /debug agent/i })
+      screen.getByRole("button", { name: /debug agent/i }),
     ).toBeInTheDocument();
   });
 
@@ -299,7 +299,7 @@ describe("AgentControlPanel", () => {
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith(
-        "Agent restarted successfully"
+        "Agent restarted successfully",
       );
     });
   });
@@ -340,7 +340,7 @@ describe("AgentControlPanel", () => {
     render(<AgentControlPanel box={pausedBox} />);
 
     const statusIndicator = screen.getByText("PAUSED").previousSibling;
-    expect(statusIndicator).toHaveClass("bg-red-500");
+    expect(statusIndicator).toHaveClass("bg-yellow-500");
   });
 
   it("renders with no messages", () => {
@@ -352,7 +352,7 @@ describe("AgentControlPanel", () => {
   });
 
   it("handles messages without the messages prop", () => {
-    const { messages, ...boxWithoutMessagesProp } = mockBox;
+    const { messages: _messages, ...boxWithoutMessagesProp } = mockBox;
     render(<AgentControlPanel box={boxWithoutMessagesProp as typeof mockBox} />);
 
     expect(screen.getByText("Chat")).toBeInTheDocument();

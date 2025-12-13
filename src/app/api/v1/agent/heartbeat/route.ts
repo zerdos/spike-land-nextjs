@@ -11,7 +11,7 @@ const heartbeatSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { boxId, status, load } = heartbeatSchema.parse(body);
+    const { boxId, status: _status, load: _load } = heartbeatSchema.parse(body);
 
     // Verify box exists
     const box = await prisma.box.findUnique({
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid request body", details: error.errors }, {
+      return NextResponse.json({ error: "Invalid request body", details: error.flatten() }, {
         status: 400,
       });
     }

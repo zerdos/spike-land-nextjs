@@ -60,7 +60,7 @@ export async function POST(
     return NextResponse.json(updatedBox);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return new NextResponse(JSON.stringify(error.errors), { status: 400 });
+      return new NextResponse(JSON.stringify(error.flatten()), { status: 400 });
     }
     console.error("[BOX_ACTION]", error);
     return new NextResponse("Internal Error", { status: 500 });

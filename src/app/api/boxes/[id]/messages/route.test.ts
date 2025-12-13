@@ -1,12 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { POST } from "./route";
-import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
 import { BoxMessageRole, BoxStatus } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/auth");
-vi.mock("@/lib/prisma", () => ({
-  default: {
+// Use vi.hoisted to define mocks before they are hoisted
+const { mockAuth, mockPrisma } = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+  mockPrisma: {
     box: {
       findUnique: vi.fn(),
     },
@@ -16,13 +14,23 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/auth", () => ({
+  auth: mockAuth,
+}));
+vi.mock("@/lib/prisma", () => ({
+  default: mockPrisma,
+}));
+
+// Import after mocks are set up
+import { POST } from "./route";
+
 describe("/api/boxes/[id]/messages POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("returns 401 if user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
 
     const req = new Request("http://localhost/api/boxes/box-123/messages", {
       method: "POST",
@@ -36,10 +44,10 @@ describe("/api/boxes/[id]/messages POST", () => {
   });
 
   it("returns 404 if box is not found", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    mockAuth.mockResolvedValue({
       user: { id: "user-123" },
     } as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue(null);
+    mockPrisma.box.findUnique.mockResolvedValue(null);
 
     const req = new Request("http://localhost/api/boxes/box-123/messages", {
       method: "POST",
@@ -53,10 +61,10 @@ describe("/api/boxes/[id]/messages POST", () => {
   });
 
   it("returns 400 if content is empty", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    mockAuth.mockResolvedValue({
       user: { id: "user-123" },
     } as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+    mockPrisma.box.findUnique.mockResolvedValue({
       id: "box-123",
       userId: "user-123",
       name: "Test Box",
@@ -75,11 +83,11 @@ describe("/api/boxes/[id]/messages POST", () => {
   });
 
   it("creates user and agent messages successfully", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    mockAuth.mockResolvedValue({
       user: { id: "user-123" },
     } as any);
 
-    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+    mockPrisma.box.findUnique.mockResolvedValue({
       id: "box-123",
       userId: "user-123",
       name: "Test Box",
@@ -102,7 +110,7 @@ describe("/api/boxes/[id]/messages POST", () => {
       createdAt: new Date(),
     };
 
-    vi.mocked(prisma.boxMessage.create)
+    mockPrisma.boxMessage.create
       .mockResolvedValueOnce(userMessage)
       .mockResolvedValueOnce(agentMessage);
 
@@ -116,7 +124,14 @@ describe("/api/boxes/[id]/messages POST", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.userMessage).toEqual(userMessage);
-    expect(data.agentMessage).toEqual(agentMessage);
+    // Compare with date strings since JSON serializes Date objects to strings
+    expect(data.userMessage).toEqual({
+      ...userMessage,
+      createdAt: userMessage.createdAt.toISOString(),
+    });
+    expect(data.agentMessage).toEqual({
+      ...agentMessage,
+      createdAt: agentMessage.createdAt.toISOString(),
+    });
   });
 });

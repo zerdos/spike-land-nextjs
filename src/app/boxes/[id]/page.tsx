@@ -39,9 +39,7 @@ export default async function BoxDetailPage({ params }: PageProps) {
     <div className="container mx-auto py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{box.name}</h1>
-        {box.description && (
-          <p className="text-muted-foreground mt-2">{box.description}</p>
-        )}
+        {box.description && <p className="text-muted-foreground mt-2">{box.description}</p>}
       </div>
       <AgentControlPanel box={box} />
     </div>
