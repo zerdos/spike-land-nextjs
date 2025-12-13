@@ -89,7 +89,7 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
           transform: rotationTransform,
         }}
         className={cn(
-          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4",
+          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4",
           isBlurred && "animate-grid-fade-out",
           !isBlurred && "animate-grid-fade-in",
           className,

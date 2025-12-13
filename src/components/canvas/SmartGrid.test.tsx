@@ -158,7 +158,7 @@ describe("SmartGrid", () => {
       expect(grid).toHaveClass("lg:grid-cols-4");
     });
 
-    it("has gap-3 class for spacing", () => {
+    it("has gap-4 class for spacing", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -169,7 +169,7 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("gap-3");
+      expect(grid).toHaveClass("gap-4");
     });
 
     it("has p-4 class for padding", () => {
