@@ -1,4 +1,4 @@
-@smart-gallery
+@requires-db @smart-gallery
 Feature: Pixel Smart Gallery
   As a user viewing a shared album
   I want to browse images in a grid and slideshow view
