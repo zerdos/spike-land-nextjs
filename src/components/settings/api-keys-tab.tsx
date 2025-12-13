@@ -107,9 +107,15 @@ export function ApiKeysTab() {
   };
 
   const copyToClipboard = async (text: string, keyId: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedKeyId(keyId);
-    setTimeout(() => setCopiedKeyId(null), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKeyId(keyId);
+      setTimeout(() => setCopiedKeyId(null), 2000);
+    } catch (err) {
+      /* istanbul ignore next -- @preserve Defensive error handling for clipboard API failures */ console
+        .error("Failed to copy to clipboard:", err);
+      setError("Failed to copy to clipboard. Please copy manually.");
+    }
   };
 
   const closeCreateDialog = () => {

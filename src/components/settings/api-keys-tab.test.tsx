@@ -503,9 +503,7 @@ describe("ApiKeysTab", () => {
       });
     });
 
-    // Skip clipboard tests - browser clipboard API is difficult to mock reliably in jsdom
-    // The copy functionality is tested manually and works in real browsers
-    it.skip("copies the new API key to clipboard", async () => {
+    it("shows visual feedback when copy button is clicked", async () => {
       const user = userEvent.setup();
 
       const newApiKey = {
@@ -546,20 +544,22 @@ describe("ApiKeysTab", () => {
       });
 
       // Find the copy button - the icon-only button next to the key
-      // The key is displayed in a code element, the copy button is next to it
       const keyCodeElement = screen.getByText("sk_live_xyz_full_key_123");
       expect(keyCodeElement).toBeInTheDocument();
 
-      // The copy button is the sibling button element
       const copyButtonContainer = keyCodeElement.parentElement;
       const copyButton = copyButtonContainer?.querySelector("button");
       expect(copyButton).toBeTruthy();
 
+      // Before clicking, the button should have the Copy icon (no green checkmark)
+      expect(copyButton?.querySelector(".text-green-500")).toBeNull();
+
       if (copyButton) {
         await user.click(copyButton);
-        // Wait for async clipboard operation to complete
+
+        // After clicking, visual feedback shows checkmark icon with green color
         await waitFor(() => {
-          expect(mockClipboard.writeText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+          expect(copyButton.querySelector(".text-green-500")).toBeInTheDocument();
         });
       }
     });
@@ -1023,9 +1023,7 @@ describe("ApiKeysTab", () => {
   });
 
   describe("Copy functionality", () => {
-    // Skip clipboard tests - browser clipboard API is difficult to mock reliably in jsdom
-    // The copy functionality is tested manually and works in real browsers
-    it.skip("copy button calls clipboard writeText", async () => {
+    it("copy button shows checkmark after clicking", async () => {
       const user = userEvent.setup();
 
       const newApiKey = {
@@ -1078,10 +1076,14 @@ describe("ApiKeysTab", () => {
 
       expect(copyButton).toBeTruthy();
       if (copyButton) {
+        // Verify no green checkmark before click
+        expect(copyButton.querySelector(".text-green-500")).toBeNull();
+
         await user.click(copyButton);
-        // Wait for async clipboard operation to complete
+
+        // After clicking, should show green checkmark as visual feedback
         await waitFor(() => {
-          expect(mockClipboard.writeText).toHaveBeenCalledWith("sk_live_xyz_full_key_123");
+          expect(copyButton.querySelector(".text-green-500")).toBeInTheDocument();
         });
       }
     });
