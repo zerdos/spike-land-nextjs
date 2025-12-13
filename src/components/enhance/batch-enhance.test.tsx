@@ -16,9 +16,11 @@ describe("BatchEnhance Component", () => {
   ];
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     vi.useFakeTimers();
     console.error = vi.fn();
+    // Re-initialize fetch mock after reset
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
