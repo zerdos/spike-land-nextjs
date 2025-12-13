@@ -52,7 +52,7 @@ describe("SignInContent", () => {
       const logo = screen.getByTestId("pixel-logo");
       expect(logo).toBeInTheDocument();
       expect(logo).toHaveAttribute("data-size", "lg");
-      expect(logo).toHaveAttribute("data-variant", "stacked");
+      expect(logo).toHaveAttribute("data-variant", "horizontal");
     });
 
     it("should render AuthButtons component", () => {

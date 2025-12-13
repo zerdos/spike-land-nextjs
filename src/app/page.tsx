@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { CTASection } from "@/components/landing/CTASection";
 import {
   FeaturedAppCard,
@@ -6,13 +7,19 @@ import {
   PlatformHero,
 } from "@/components/platform-landing";
 import { Image as ImageIcon } from "lucide-react";
+import { redirect } from "next/navigation";
 
 const DEMO_COMPARISON_IMAGES = {
   originalUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
   enhancedUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=95",
 };
 
-export default function Home() {
+export default async function Home() {
+  // Redirect authenticated users to Pixel app
+  const session = await auth();
+  if (session?.user?.id) {
+    redirect("/apps/pixel");
+  }
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Fixed Header */}

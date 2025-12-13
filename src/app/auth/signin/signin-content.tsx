@@ -32,7 +32,7 @@ function SignInContentInner() {
         <Card>
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center">
-              <PixelLogo size="lg" variant="stacked" />
+              <PixelLogo size="lg" variant="horizontal" />
             </div>
             <div>
               <CardTitle className="text-2xl">Welcome to Pixel</CardTitle>

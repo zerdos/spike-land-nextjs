@@ -42,7 +42,7 @@ describe("AuthButtons Component", () => {
 
     it("should render separator with text", () => {
       render(<AuthButtons />);
-      expect(screen.getByText(/or continue with/i)).toBeInTheDocument();
+      expect(screen.getByText(/^or$/i)).toBeInTheDocument();
     });
 
     it("should apply custom className to container", () => {
@@ -716,8 +716,8 @@ describe("AuthButtons Component", () => {
 
     it("should render separator text with correct styling", () => {
       render(<AuthButtons />);
-      const separatorText = screen.getByText(/or continue with/i);
-      expect(separatorText).toHaveClass("bg-background", "px-2", "text-muted-foreground");
+      const separatorText = screen.getByText(/^or$/i);
+      expect(separatorText).toHaveClass("bg-background", "px-4", "text-muted-foreground");
     });
   });
 
