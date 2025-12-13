@@ -30,7 +30,7 @@ vi.mock("@/components/theme/theme-provider", () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode; }) => <div>{children}</div>,
 }));
 
-vi.mock("@vercel/analytics/react", () => ({
+vi.mock("@vercel/analytics/next", () => ({
   Analytics: () => <div data-testid="analytics">Analytics</div>,
 }));
 

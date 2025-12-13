@@ -978,13 +978,6 @@ Then(
   },
 );
 
-Then("I should see {string} text", async function(this: CustomWorld, text: string) {
-  if (shouldSkipGalleryTests) return "skipped";
-
-  const element = this.page.getByText(text);
-  await expect(element).toBeVisible();
-});
-
 // =====================================
 // ACCESSIBILITY STEPS
 // =====================================
