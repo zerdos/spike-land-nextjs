@@ -5,17 +5,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, MessageSquare } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Bug, Lightbulb, List, Loader2, MessageSquare, Send } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,22 +21,23 @@ interface FeedbackButtonProps {
   className?: string;
 }
 
+const feedbackTypes = [
+  { type: "BUG" as const, label: "Bug", icon: Bug, color: "text-red-400" },
+  { type: "IDEA" as const, label: "Idea", icon: Lightbulb, color: "text-yellow-400" },
+  { type: "OTHER" as const, label: "Other", icon: List, color: "text-blue-400" },
+];
+
 export function FeedbackButton({ className }: FeedbackButtonProps) {
   const [open, setOpen] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<FeedbackType>("IDEA");
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>("BUG");
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: session, status } = useSession();
   const pathname = usePathname();
 
-  const isAuthenticated = status === "authenticated" && session?.user;
-
   const resetForm = () => {
-    setFeedbackType("IDEA");
+    setFeedbackType("BUG");
     setMessage("");
-    setEmail("");
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -66,7 +62,6 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
         body: JSON.stringify({
           type: feedbackType,
           message: message.trim(),
-          email: !isAuthenticated ? email.trim() || undefined : undefined,
           page: pathname,
           userAgent: navigator.userAgent,
         }),
@@ -107,84 +102,63 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Send Feedback</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-semibold">Send Feedback</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Share your thoughts, report bugs, or suggest new ideas.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <RadioGroup
-                value={feedbackType}
-                onValueChange={(value) => setFeedbackType(value as FeedbackType)}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="BUG" id="bug" />
-                  <Label htmlFor="bug" className="cursor-pointer font-normal">
-                    Bug
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="IDEA" id="idea" />
-                  <Label htmlFor="idea" className="cursor-pointer font-normal">
-                    Idea
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="OTHER" id="other" />
-                  <Label htmlFor="other" className="cursor-pointer font-normal">
-                    Other
-                  </Label>
-                </div>
-              </RadioGroup>
+          <div className="grid gap-5 py-2">
+            {/* Toggle Button Group */}
+            <div className="flex gap-2">
+              {feedbackTypes.map(({ type, label, icon: Icon, color }) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setFeedbackType(type)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all",
+                    feedbackType === type
+                      ? "bg-secondary/80 border-border text-foreground"
+                      : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4", feedbackType === type && color)} />
+                  {label}
+                </button>
+              ))}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="message">
-                Message <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="message"
-                placeholder="Describe your feedback..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[100px]"
-              />
-            </div>
-
-            {!isAuthenticated && (
-              <div className="space-y-2">
-                <Label htmlFor="email">Email (optional)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Provide your email if you would like us to follow up.
-                </p>
-              </div>
-            )}
+            {/* Message Textarea */}
+            <Textarea
+              placeholder="Describe your feedback..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[120px] resize-none bg-muted/30 border-transparent focus:border-border"
+            />
           </div>
 
-          <DialogFooter>
+          {/* Footer Buttons */}
+          <div className="flex justify-center gap-3 pt-2">
             <Button
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={isSubmitting}
+              className="px-6"
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-6 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
+            >
+              {isSubmitting
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <Send className="mr-2 h-4 w-4" />}
               Submit
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -1,14 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FeedbackButton } from "./FeedbackButton";
-
-// Mock next-auth/react
-vi.mock("next-auth/react", () => ({
-  useSession: vi.fn(),
-}));
-import { useSession } from "next-auth/react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -40,14 +33,7 @@ describe("FeedbackButton", () => {
     mockFetch.mockReset();
   });
 
-  describe("when not authenticated", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: null,
-        status: "unauthenticated",
-      });
-    });
-
+  describe("rendering", () => {
     it("renders the floating button", () => {
       render(<FeedbackButton />);
       const button = screen.getByRole("button", { name: "Send feedback" });
@@ -68,45 +54,35 @@ describe("FeedbackButton", () => {
       ).toBeInTheDocument();
     });
 
-    it("shows email field when not authenticated", async () => {
+    it("renders feedback type toggle buttons", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
-      expect(
-        screen.getByText("Provide your email if you would like us to follow up."),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Bug/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Idea/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Other/i })).toBeInTheDocument();
     });
 
-    it("renders feedback type radio buttons", async () => {
+    it("has Bug selected by default", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText("Bug")).toBeInTheDocument();
-      expect(screen.getByLabelText("Idea")).toBeInTheDocument();
-      expect(screen.getByLabelText("Other")).toBeInTheDocument();
+      const bugButton = screen.getByRole("button", { name: /Bug/i });
+      expect(bugButton).toHaveClass("bg-secondary/80");
     });
+  });
 
-    it("has Idea selected by default", async () => {
-      const user = userEvent.setup();
-      render(<FeedbackButton />);
-
-      await user.click(screen.getByRole("button", { name: "Send feedback" }));
-
-      const ideaRadio = screen.getByRole("radio", { name: "Idea" });
-      expect(ideaRadio).toBeChecked();
-    });
-
+  describe("form validation", () => {
     it("validates required message field", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       expect(mockToast.error).toHaveBeenCalledWith("Please enter a message");
       expect(mockFetch).not.toHaveBeenCalled();
@@ -117,14 +93,16 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "   ");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "   ");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       expect(mockToast.error).toHaveBeenCalledWith("Please enter a message");
       expect(mockFetch).not.toHaveBeenCalled();
     });
+  });
 
-    it("submits feedback successfully with email", async () => {
+  describe("form submission", () => {
+    it("submits feedback successfully", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true }),
@@ -134,10 +112,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
-      await user.type(screen.getByLabelText(/Message/), "Found a bug!");
-      await user.type(screen.getByLabelText("Email (optional)"), "test@example.com");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Found a bug!");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
@@ -146,7 +122,6 @@ describe("FeedbackButton", () => {
           body: JSON.stringify({
             type: "BUG",
             message: "Found a bug!",
-            email: "test@example.com",
             page: "/test-page",
             userAgent: "test-user-agent",
           }),
@@ -156,7 +131,7 @@ describe("FeedbackButton", () => {
       expect(mockToast.success).toHaveBeenCalledWith("Thank you for your feedback!");
     });
 
-    it("submits feedback without email when not provided", async () => {
+    it("submits with different feedback type", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true }),
@@ -166,8 +141,9 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Great idea!");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.click(screen.getByRole("button", { name: /Idea/i }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Great idea!");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
@@ -176,7 +152,6 @@ describe("FeedbackButton", () => {
           body: JSON.stringify({
             type: "IDEA",
             message: "Great idea!",
-            email: undefined,
             page: "/test-page",
             userAgent: "test-user-agent",
           }),
@@ -194,8 +169,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Server error");
@@ -209,8 +184,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Network error");
@@ -227,8 +202,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Failed to submit feedback");
@@ -242,14 +217,16 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Failed to submit feedback");
       });
     });
+  });
 
+  describe("dialog behavior", () => {
     it("closes dialog on successful submission", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -260,8 +237,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Feedback text");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Feedback text");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -288,9 +265,8 @@ describe("FeedbackButton", () => {
 
       // Open and fill form
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
-      await user.type(screen.getByLabelText(/Message/), "Some message");
-      await user.type(screen.getByLabelText("Email (optional)"), "test@test.com");
+      await user.click(screen.getByRole("button", { name: /Idea/i }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Some message");
 
       // Close dialog
       await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -298,10 +274,10 @@ describe("FeedbackButton", () => {
       // Reopen dialog
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      // Check form is reset
-      expect(screen.getByRole("radio", { name: "Idea" })).toBeChecked();
-      expect(screen.getByLabelText(/Message/)).toHaveValue("");
-      expect(screen.getByLabelText("Email (optional)")).toHaveValue("");
+      // Check form is reset - Bug should be selected by default
+      const bugButton = screen.getByRole("button", { name: /Bug/i });
+      expect(bugButton).toHaveClass("bg-secondary/80");
+      expect(screen.getByPlaceholderText("Describe your feedback...")).toHaveValue("");
     });
 
     it("disables buttons while submitting", async () => {
@@ -320,11 +296,11 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /Submit/i })).toBeDisabled();
 
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -347,8 +323,8 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.type(screen.getByLabelText(/Message/), "Test feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Test feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
 
       expect(document.querySelector(".animate-spin")).toBeInTheDocument();
 
@@ -358,79 +334,7 @@ describe("FeedbackButton", () => {
     });
   });
 
-  describe("when authenticated", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: { user: { name: "Test User", email: "user@example.com" } },
-        status: "authenticated",
-      });
-    });
-
-    it("hides email field when authenticated", async () => {
-      const user = userEvent.setup();
-      render(<FeedbackButton />);
-
-      await user.click(screen.getByRole("button", { name: "Send feedback" }));
-
-      expect(screen.queryByLabelText("Email (optional)")).not.toBeInTheDocument();
-    });
-
-    it("submits feedback without email field for authenticated users", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true }),
-      });
-
-      const user = userEvent.setup();
-      render(<FeedbackButton />);
-
-      await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Other"));
-      await user.type(screen.getByLabelText(/Message/), "Authenticated feedback");
-      await user.click(screen.getByRole("button", { name: "Submit" }));
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "OTHER",
-            message: "Authenticated feedback",
-            email: undefined,
-            page: "/test-page",
-            userAgent: "test-user-agent",
-          }),
-        });
-      });
-    });
-  });
-
-  describe("when session is loading", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: null,
-        status: "loading",
-      });
-    });
-
-    it("shows email field during loading state", async () => {
-      const user = userEvent.setup();
-      render(<FeedbackButton />);
-
-      await user.click(screen.getByRole("button", { name: "Send feedback" }));
-
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
-    });
-  });
-
   describe("accessibility", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: null,
-        status: "unauthenticated",
-      });
-    });
-
     it("has proper aria-label on floating button", () => {
       render(<FeedbackButton />);
       const button = screen.getByRole("button", { name: "Send feedback" });
@@ -447,35 +351,17 @@ describe("FeedbackButton", () => {
       expect(screen.getByRole("heading", { name: "Send Feedback" })).toBeInTheDocument();
     });
 
-    it("has proper labels for form fields", async () => {
+    it("has textarea with placeholder", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText(/Message/)).toBeInTheDocument();
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
-    });
-
-    it("indicates required field with asterisk", async () => {
-      const user = userEvent.setup();
-      render(<FeedbackButton />);
-
-      await user.click(screen.getByRole("button", { name: "Send feedback" }));
-
-      const messageLabel = screen.getByText("Message");
-      expect(messageLabel.parentElement?.textContent).toContain("*");
+      expect(screen.getByPlaceholderText("Describe your feedback...")).toBeInTheDocument();
     });
   });
 
   describe("custom className", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: null,
-        status: "unauthenticated",
-      });
-    });
-
     it("applies custom className to the button", () => {
       render(<FeedbackButton className="custom-class" />);
       const button = screen.getByRole("button", { name: "Send feedback" });
@@ -484,21 +370,15 @@ describe("FeedbackButton", () => {
   });
 
   describe("feedback type selection", () => {
-    beforeEach(() => {
-      (useSession as Mock).mockReturnValue({
-        data: null,
-        status: "unauthenticated",
-      });
-    });
-
-    it("can select Bug type", async () => {
+    it("can select Idea type", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Bug"));
+      await user.click(screen.getByRole("button", { name: /Idea/i }));
 
-      expect(screen.getByRole("radio", { name: "Bug" })).toBeChecked();
+      const ideaButton = screen.getByRole("button", { name: /Idea/i });
+      expect(ideaButton).toHaveClass("bg-secondary/80");
     });
 
     it("can select Other type", async () => {
@@ -506,9 +386,38 @@ describe("FeedbackButton", () => {
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      await user.click(screen.getByLabelText("Other"));
+      await user.click(screen.getByRole("button", { name: /Other/i }));
 
-      expect(screen.getByRole("radio", { name: "Other" })).toBeChecked();
+      const otherButton = screen.getByRole("button", { name: /Other/i });
+      expect(otherButton).toHaveClass("bg-secondary/80");
+    });
+
+    it("submits with Other type", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+      await user.click(screen.getByRole("button", { name: /Other/i }));
+      await user.type(screen.getByPlaceholderText("Describe your feedback..."), "Other feedback");
+      await user.click(screen.getByRole("button", { name: /Submit/i }));
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "OTHER",
+            message: "Other feedback",
+            page: "/test-page",
+            userAgent: "test-user-agent",
+          }),
+        });
+      });
     });
   });
 });
