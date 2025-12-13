@@ -34,11 +34,13 @@ export function CreateAlbumDialog({ onAlbumCreated, trigger }: CreateAlbumDialog
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState("");
   const [privacy, setPrivacy] = useState<AlbumPrivacy>("PRIVATE");
+  const [defaultTier, setDefaultTier] = useState<string>("TIER_1K");
   const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
     setName("");
     setPrivacy("PRIVATE");
+    setDefaultTier("TIER_1K");
     setError(null);
   };
 
@@ -62,7 +64,7 @@ export function CreateAlbumDialog({ onAlbumCreated, trigger }: CreateAlbumDialog
       const response = await fetch("/api/albums", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), privacy }),
+        body: JSON.stringify({ name: name.trim(), privacy, defaultTier }),
       });
 
       if (!response.ok) {
@@ -145,6 +147,35 @@ export function CreateAlbumDialog({ onAlbumCreated, trigger }: CreateAlbumDialog
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4" />
                     Public - Visible to everyone
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="album-tier">Default Upload Tier</Label>
+            <Select
+              value={defaultTier}
+              onValueChange={(value) => setDefaultTier(value)}
+              disabled={isCreating}
+            >
+              <SelectTrigger id="album-tier">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TIER_1K">
+                  <div className="flex items-center gap-2">
+                    <span>1K (1024px) - 2 tokens</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="TIER_2K">
+                  <div className="flex items-center gap-2">
+                    <span>2K (2048px) - 5 tokens</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="TIER_4K">
+                  <div className="flex items-center gap-2">
+                    <span>4K (4096px) - 10 tokens</span>
                   </div>
                 </SelectItem>
               </SelectContent>

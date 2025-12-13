@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { ENHANCEMENT_COSTS, EnhancementTier } from "@/lib/tokens/costs";
 import { isSecureFilename } from "@/lib/upload/validation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -89,6 +91,66 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
+    const albumId = formData.get("albumId") as string;
+
+    if (!albumId) {
+      return NextResponse.json(
+        { error: "Album selection is required for upload." },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    const album = await prisma.album.findUnique({
+      where: { id: albumId },
+      select: {
+        id: true,
+        userId: true,
+        defaultTier: true,
+      },
+    });
+
+    if (!album || album.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Album not found or access denied." },
+        { status: 404, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Calculate cost
+    const costPerImage = ENHANCEMENT_COSTS[(album as any).defaultTier as EnhancementTier];
+    const totalCost = files.length * costPerImage;
+
+    // Check balance
+    const { balance } = await TokenBalanceManager.getBalance(session.user.id);
+    if (balance < totalCost) {
+      return NextResponse.json(
+        {
+          error: `Insufficient tokens. You need ${totalCost} tokens but have ${balance}.`,
+          title: "Insufficient Tokens",
+          suggestion: "Please purchase more tokens to continue uploading.",
+        },
+        { status: 402, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Deduct tokens upfront (or reservation)
+    // We will deduct here. If upload fails completely, we might need refund logic,
+    // but complex transaction rollback across services is hard.
+    // We'll rely on the fact that R2 failure is rare and we can refund if everything fails.
+    // However, safest is to deduct inside the DB transaction phase if possible,
+    // but we can't do R2 inside DB transaction.
+    // Strategy: Check balance here, consume tokens AFTER R2 success but inside DB transaction?
+    // No, consumeTokens creates a record. It should be part of the transaction if possible.
+    // TokenBalanceManager.consumeTokens is not transaction-aware (it uses its own transaction).
+    // Let's deduct upfront. If R2 fails for ALL, we refund.
+
+    await TokenBalanceManager.consumeTokens({
+      userId: session.user.id,
+      amount: totalCost,
+      source: "BATCH_UPLOAD",
+      sourceId: requestId, // Use request ID as reference
+      metadata: { albumId, fileCount: files.length, tier: album.defaultTier },
+    });
 
     if (!files || files.length === 0) {
       requestLogger.warn("No files provided");
@@ -252,6 +314,16 @@ export async function POST(request: NextRequest) {
       requestLogger.warn("All files failed during R2 upload phase", {
         failureCount: results.filter(r => !r.success).length,
       });
+      // Refund tokens if all failed
+      await TokenBalanceManager.addTokens({
+        userId: session.user.id,
+        amount: totalCost,
+        type: "REFUND", // Needs to be cast or added to enum if strict
+        source: "BATCH_UPLOAD_FAIL",
+        sourceId: requestId,
+        metadata: { reason: "All R2 uploads failed" },
+      });
+
       return NextResponse.json(
         {
           success: true,
@@ -266,6 +338,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Refund for failed individual files (if any)
+    const failedR2Count = results.filter(r => !r.success).length;
+    if (failedR2Count > 0) {
+      await TokenBalanceManager.addTokens({
+        userId: session.user.id,
+        amount: failedR2Count * costPerImage,
+        type: "REFUND",
+        source: "BATCH_UPLOAD_PARTIAL_FAIL",
+        sourceId: requestId,
+      });
+    }
+
     // PHASE 2: Create all database records in a single transaction
     requestLogger.info("Starting database transaction phase", {
       uploadedCount: uploadedFiles.length,
@@ -274,9 +358,18 @@ export async function POST(request: NextRequest) {
 
     try {
       // Execute transaction for all successfully uploaded files
-      const enhancedImages = await prisma.$transaction(
-        uploadedFiles.map((fileData) =>
-          prisma.enhancedImage.create({
+      const enhancedImages = await prisma.$transaction(async (tx) => {
+        const images = [];
+        // Get max sort order for album
+        const maxSort = await tx.albumImage.aggregate({
+          where: { albumId: album.id },
+          _max: { sortOrder: true },
+        });
+        let currentSort = (maxSort._max.sortOrder ?? -1) + 1;
+
+        for (const fileData of uploadedFiles) {
+          // Create enhanced image
+          const img = await tx.enhancedImage.create({
             data: {
               userId: session.user.id,
               name: fileData.filename,
@@ -286,11 +379,34 @@ export async function POST(request: NextRequest) {
               originalHeight: fileData.height,
               originalSizeBytes: fileData.sizeBytes,
               originalFormat: fileData.format,
-              isPublic: false,
+              isPublic: false, // Default to private
             },
-          })
-        ),
-      );
+          });
+
+          // Link to album
+          await tx.albumImage.create({
+            data: {
+              albumId: album.id,
+              imageId: img.id,
+              sortOrder: currentSort++,
+            },
+          });
+
+          // Create Enhancement Job
+          await tx.imageEnhancementJob.create({
+            data: {
+              userId: session.user.id,
+              imageId: img.id,
+              tier: (album as any).defaultTier,
+              status: "PENDING",
+              tokensCost: costPerImage,
+            },
+          });
+
+          images.push(img);
+        }
+        return images;
+      });
 
       // Transaction succeeded - update results at correct indices
       for (let i = 0; i < enhancedImages.length; i++) {

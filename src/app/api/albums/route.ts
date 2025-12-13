@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, description, privacy = "PRIVATE" } = body;
+    const { name, description, privacy = "PRIVATE", defaultTier = "TIER_1K" } = body;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
@@ -109,6 +109,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const validTiers = ["TIER_1K", "TIER_2K", "TIER_4K"];
+    if (!validTiers.includes(defaultTier)) {
+      return NextResponse.json(
+        { error: "Invalid default tier" },
+        { status: 400 },
+      );
+    }
+
     // Get current max sort order
     const maxSortOrder = await prisma.album.aggregate({
       where: { userId: session.user.id },
@@ -121,6 +129,7 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         description: description?.trim() || null,
         privacy,
+        defaultTier: defaultTier as "TIER_1K" | "TIER_2K" | "TIER_4K",
         sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1,
         shareToken: privacy !== "PRIVATE" ? nanoid(12) : null,
       },
