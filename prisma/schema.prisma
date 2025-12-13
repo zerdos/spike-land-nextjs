@@ -583,6 +583,25 @@ enum EmailStatus {
   FAILED
 }
 
+enum BoxStatus {
+  CREATING
+  STARTING
+  RUNNING
+  STOPPING
+  STOPPED
+  TERMINATED
+  ERROR
+}
+
+enum BoxActionType {
+  CREATE
+  START
+  STOP
+  RESTART
+  DELETE
+  CLONE
+}
+
 model FeaturedGalleryItem {
   id            String          @id @default(cuid())
   title         String
@@ -607,6 +626,81 @@ model FeaturedGalleryItem {
   @@index([isActive, sortOrder])
   @@index([isActive, category, sortOrder])
   @@map("featured_gallery_items")
+}
+
+// Browser Agent Service Models
+
+model BoxTier {
+  id             String   @id @default(cuid())
+  name           String   // e.g. "Standard", "Pro", "Ultra"
+  description    String?
+  cpu            Int      // vCPU count
+  ram            Int      // RAM in MB
+  storage        Int      // Storage in GB
+  pricePerHour   Int      // Token cost per hour
+  pricePerMonth  Int      // Token cost per month (if subscription)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  boxes          Box[]
+
+  @@map("box_tiers")
+}
+
+model Box {
+  id              String      @id @default(cuid())
+  name            String
+  userId          String
+  tierId          String
+  status          BoxStatus   @default(STOPPED)
+  connectionUrl   String?     // URL to access the VNC/NoVNC interface
+  storageVolumeId String?     // ID of the persistent storage volume (R2/S3)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            BoxTier     @relation(fields: [tierId], references: [id])
+  actions         BoxAction[]
+  tasks           AgentTask[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("boxes")
+}
+
+model BoxAction {
+  id        String      @id @default(cuid())
+  boxId     String
+  action    BoxActionType
+  status    JobStatus   @default(PENDING)
+  metadata  Json?
+  error     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  box       Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+
+  @@index([boxId, createdAt])
+  @@map("box_actions")
+}
+
+model AgentTask {
+  id        String      @id @default(cuid())
+  boxId     String
+  type      String      // e.g. "NAVIGATE", "CLICK", "TYPE"
+  payload   Json?       // e.g. { url: "https://google.com" }
+  status    JobStatus   @default(PENDING)
+  result    Json?
+  error     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  box       Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+
+  @@index([boxId, status])
+  @@map("agent_tasks")
 }
 
 model EmailLog {
