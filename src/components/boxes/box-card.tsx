@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import type { Box, BoxTier } from "@prisma/client";
 import { BoxActionType, BoxStatus } from "@prisma/client";
-import { Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";
+import { Copy, Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -62,6 +62,33 @@ export function BoxCard({ box }: BoxCardProps) {
       router.refresh();
     } catch (error) {
       toast.error("Failed to delete box");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClone = async () => {
+    const newName = prompt(`Enter name for clone of ${box.name}:`, `Clone of ${box.name}`);
+    if (newName === null) return; // Cancelled
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/boxes/${box.id}/clone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Clone failed");
+      }
+
+      toast.success("Box cloned successfully");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to clone box");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -147,6 +174,16 @@ export function BoxCard({ box }: BoxCardProps) {
 
         <Button
           size="sm"
+          variant="outline"
+          onClick={handleClone}
+          disabled={isLoading}
+          title="Clone Box"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+
+        <Button
+          size="sm"
           variant="ghost"
           className="text-destructive hover:text-destructive/90"
           onClick={handleDelete}
@@ -157,4 +194,8 @@ export function BoxCard({ box }: BoxCardProps) {
       </CardFooter>
     </Card>
   );
+}
+
+function LoadingSpinner() {
+  return <RefreshCw className="mr-2 h-4 w-4 animate-spin" />;
 }
