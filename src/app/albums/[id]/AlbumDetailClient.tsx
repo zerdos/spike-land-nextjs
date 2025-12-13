@@ -223,7 +223,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
       if (!response.ok) throw new Error("Failed to delete album");
 
-      router.push("/albums");
+      router.push("/apps/pixel");
     } catch (err) {
       console.error("Error deleting album:", err);
       alert("Failed to delete album. Please try again.");
@@ -538,9 +538,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               {error || "Album not found"}
             </h3>
             <Button asChild>
-              <Link href="/albums">
+              <Link href="/apps/pixel">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Albums
+                Back to Pixel
               </Link>
             </Button>
           </CardContent>
@@ -570,7 +570,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <Button variant="ghost" size="icon" asChild>
-                <Link href="/albums">
+                <Link href="/apps/pixel">
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>

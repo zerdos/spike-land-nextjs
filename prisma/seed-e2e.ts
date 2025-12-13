@@ -119,17 +119,19 @@ async function main() {
   // 6. Link images to albums
   // Add all images to unlisted album
   for (let i = 0; i < testImages.length; i++) {
+    const image = testImages[i];
+    if (!image) continue;
     await prisma.albumImage.upsert({
       where: {
         albumId_imageId: {
           albumId: unlistedAlbum.id,
-          imageId: testImages[i].id,
+          imageId: image.id,
         },
       },
       update: { sortOrder: i },
       create: {
         albumId: unlistedAlbum.id,
-        imageId: testImages[i].id,
+        imageId: image.id,
         sortOrder: i,
       },
     });
@@ -138,17 +140,19 @@ async function main() {
 
   // Add first 2 images to private album
   for (let i = 0; i < 2; i++) {
+    const image = testImages[i];
+    if (!image) continue;
     await prisma.albumImage.upsert({
       where: {
         albumId_imageId: {
           albumId: privateAlbum.id,
-          imageId: testImages[i].id,
+          imageId: image.id,
         },
       },
       update: { sortOrder: i },
       create: {
         albumId: privateAlbum.id,
-        imageId: testImages[i].id,
+        imageId: image.id,
         sortOrder: i,
       },
     });
