@@ -1,28 +1,29 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FloatingHint, HINT_TEXT } from "@/components/canvas/FloatingHint";
+import { SlideshowView } from "@/components/canvas/SlideshowView";
+import { SmartGrid } from "@/components/canvas/SmartGrid";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
+import { useSmartGallery } from "@/hooks/useSmartGallery";
+import { useTouchGestures } from "@/hooks/useTouchGestures";
+import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-export interface CanvasImage {
-  id: string;
-  url: string;
-  name: string;
-  width: number;
-  height: number;
-}
+// Re-export types for backward compatibility
+export type { CanvasSettings, GalleryImage };
 
-export interface CanvasSettings {
-  rotation: 0 | 90 | 180 | 270;
-  order: "album" | "random";
-  interval: number;
-}
+// Legacy type alias for backward compatibility
+export type CanvasImage = GalleryImage;
 
 export interface CanvasClientProps {
-  images: CanvasImage[];
+  images: GalleryImage[];
   settings: CanvasSettings;
   albumName: string;
 }
 
+/**
+ * Shuffles an array using Fisher-Yates algorithm.
+ */
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -34,10 +35,25 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export function CanvasClient({ images, settings, albumName }: CanvasClientProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [imageError, setImageError] = useState(false);
+/**
+ * CanvasClient orchestrates the Smart Gallery experience.
+ *
+ * Features:
+ * - Grid view with thumbnail selection and neon glow effect
+ * - Fullscreen slideshow with navigation
+ * - Keyboard navigation (Spacebar, Arrow keys, B for peek, Escape)
+ * - Touch gestures (swipe, double-tap, long-press)
+ * - Before/After peek to compare original and enhanced images
+ * - CSS rotation support for display orientation
+ * - Auto-cycling in grid mode
+ */
+export function CanvasClient({
+  images,
+  settings,
+  albumName,
+}: CanvasClientProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // Shuffle images if order is random (only on mount)
   const displayImages = useMemo(() => {
@@ -47,30 +63,56 @@ export function CanvasClient({ images, settings, albumName }: CanvasClientProps)
     return images;
   }, [images, settings.order]);
 
-  // Current image to display
-  const currentImage = displayImages[currentIndex];
-  const nextIndex = (currentIndex + 1) % displayImages.length;
-  const nextImage = displayImages[nextIndex];
-
-  // Auto-advance slideshow
+  // Detect touch device on mount
   useEffect(() => {
-    if (displayImages.length <= 1) return;
+    setIsTouchDevice(
+      "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    );
+  }, []);
 
-    const intervalMs = settings.interval * 1000;
-    const timer = setInterval(() => {
-      setIsTransitioning(true);
-      // After fade out, change image
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % displayImages.length);
-        setImageError(false);
-        setIsTransitioning(false);
-      }, 500); // 500ms for fade transition
-    }, intervalMs);
+  // Core gallery state management
+  // Note: autoSelectInterval is always passed; the hook ignores it when not in grid mode
+  const {
+    viewMode,
+    selectedImageId,
+    currentIndex,
+    isPeeking,
+    isTransitioning,
+    selectImage,
+    enterSlideshow,
+    exitSlideshow,
+    goToNext,
+    goToPrev,
+    startPeek,
+    endPeek,
+    getTransitionOrigin,
+  } = useSmartGallery({
+    images: displayImages,
+    autoSelectInterval: settings.interval * 1000,
+  });
 
-    return () => clearInterval(timer);
-  }, [displayImages.length, settings.interval]);
+  // Keyboard navigation
+  useKeyboardNavigation({
+    onSpacebar: () => viewMode === "grid" ? enterSlideshow() : exitSlideshow(),
+    onLeftArrow: goToPrev,
+    onRightArrow: goToNext,
+    onBKeyDown: startPeek,
+    onBKeyUp: endPeek,
+    onEscape: exitSlideshow,
+    isEnabled: true,
+  });
 
-  // Hide cursor after 3s idle
+  // Touch gestures for slideshow navigation
+  useTouchGestures(containerRef, {
+    onSwipeLeft: goToNext,
+    onSwipeRight: goToPrev,
+    onDoubleTap: () => viewMode === "grid" ? enterSlideshow() : exitSlideshow(),
+    onLongPressStart: startPeek,
+    onLongPressEnd: endPeek,
+    isEnabled: viewMode === "slideshow",
+  });
+
+  // Hide cursor after 3s idle (for fullscreen display)
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
@@ -94,15 +136,11 @@ export function CanvasClient({ images, settings, albumName }: CanvasClientProps)
     };
   }, []);
 
-  const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
-
-  // Handle empty images array gracefully
+  // Empty state
   if (displayImages.length === 0) {
     return (
       <div
-        className="min-h-screen bg-black flex items-center justify-center"
+        className="min-h-screen bg-[#0B0E14] flex items-center justify-center"
         data-testid="canvas-empty"
       >
         <p className="text-white/50 text-lg">No images in this album</p>
@@ -110,75 +148,46 @@ export function CanvasClient({ images, settings, albumName }: CanvasClientProps)
     );
   }
 
-  // Calculate container dimensions for rotation
-  // For 90 and 270 degree rotation, we need to swap width/height
-  const needsSwap = settings.rotation === 90 || settings.rotation === 270;
-  const containerStyle: React.CSSProperties = needsSwap
-    ? {
-      width: "100vh",
-      height: "100vw",
-    }
-    : {
-      width: "100vw",
-      height: "100vh",
-    };
-
   return (
     <div
-      className="min-h-screen bg-black overflow-hidden"
+      ref={containerRef}
+      className="min-h-screen bg-[#0B0E14] overflow-hidden"
       data-testid="canvas-container"
       aria-label={`Canvas display: ${albumName}`}
     >
-      {/* Main image container */}
-      <div
-        className="fixed inset-0 flex items-center justify-center"
-        style={{
-          transform: `rotate(${settings.rotation}deg)`,
-          ...containerStyle,
-        }}
-        data-testid="canvas-rotation-container"
-      >
-        {/* Current image with fade transition */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-500 ${
-            isTransitioning ? "opacity-0" : "opacity-100"
-          }`}
-          data-testid="canvas-image-wrapper"
-        >
-          {currentImage && !imageError && (
-            <Image
-              src={currentImage.url}
-              alt={currentImage.name}
-              fill
-              className="object-contain"
-              priority
-              onError={handleImageError}
-              data-testid="canvas-current-image"
-            />
-          )}
-          {imageError && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              data-testid="canvas-image-error"
-            >
-              <p className="text-white/50">Failed to load image</p>
-            </div>
-          )}
-        </div>
+      {/* Grid View */}
+      <SmartGrid
+        images={displayImages}
+        selectedImageId={selectedImageId}
+        onImageSelect={selectImage}
+        onEnterSlideshow={enterSlideshow}
+        isBlurred={viewMode === "slideshow"}
+        rotation={settings.rotation}
+      />
 
-        {/* Preload next image (hidden) */}
-        {nextImage && displayImages.length > 1 && (
-          <div className="absolute inset-0 opacity-0 pointer-events-none" aria-hidden="true">
-            <Image
-              src={nextImage.url}
-              alt={nextImage.name}
-              fill
-              className="object-contain"
-              data-testid="canvas-preload-image"
-            />
-          </div>
-        )}
-      </div>
+      {/* Slideshow View */}
+      {viewMode === "slideshow" && (
+        <SlideshowView
+          images={displayImages}
+          currentIndex={currentIndex}
+          isPeeking={isPeeking}
+          onNavigate={(dir) => (dir === "next" ? goToNext() : goToPrev())}
+          onExit={exitSlideshow}
+          transitionState={{
+            isActive: isTransitioning,
+            originRect: getTransitionOrigin(),
+            direction: "expand",
+          }}
+          rotation={settings.rotation}
+        />
+      )}
+
+      {/* Floating Hint */}
+      <FloatingHint
+        text={isTouchDevice ? HINT_TEXT.touch : HINT_TEXT.desktop}
+        isVisible={viewMode === "grid" && selectedImageId !== null}
+        isTouchDevice={isTouchDevice}
+      />
     </div>
   );
 }

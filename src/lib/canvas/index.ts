@@ -1,5 +1,13 @@
 // Types
-export type { CanvasImage, CanvasOrder, CanvasRotation, CanvasSettings } from "./types";
+export type {
+  CanvasImage,
+  CanvasOrder,
+  CanvasRotation,
+  CanvasSettings,
+  GalleryImage,
+  GalleryTransition,
+  GalleryViewMode,
+} from "./types";
 
 // Constants
 export {
@@ -11,5 +19,16 @@ export {
   ROTATION_OPTIONS,
 } from "./constants";
 
-// Utilities
+// Animation constants and utilities
+export {
+  ANIMATION_DURATIONS,
+  ANIMATION_EASINGS,
+  applyHeroTransformStyles,
+  calculateHeroTransform,
+  clearHeroTransformStyles,
+  HERO_TRANSFORM_CSS_VARS,
+} from "./animations";
+export type { HeroTransform } from "./animations";
+
+// URL utilities
 export { buildCanvasUrl } from "./url-builder";

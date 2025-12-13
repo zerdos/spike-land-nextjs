@@ -14,3 +14,25 @@ export interface CanvasImage {
   width: number;
   height: number;
 }
+
+/**
+ * Extended image type for gallery view with original and enhanced versions.
+ */
+export interface GalleryImage extends CanvasImage {
+  originalUrl: string;
+  enhancedUrl: string | null;
+}
+
+/**
+ * Available view modes for the gallery component.
+ */
+export type GalleryViewMode = "grid" | "slideshow";
+
+/**
+ * State for gallery transition animations between grid and slideshow views.
+ */
+export interface GalleryTransition {
+  isActive: boolean;
+  originRect: DOMRect | null;
+  direction: "expand" | "collapse";
+}
