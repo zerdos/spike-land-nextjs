@@ -127,9 +127,6 @@ export function useSmartGallery({
 
   // Enter slideshow action
   const enterSlideshow = useCallback(() => {
-    // Pause auto-cycle when entering slideshow
-    clearAutoCycleTimer();
-
     setIsTransitioning(true);
     setViewMode("slideshow");
 
@@ -142,7 +139,7 @@ export function useSmartGallery({
       setIsTransitioning(false);
       transitionTimeoutRef.current = null;
     }, 300);
-  }, [clearAutoCycleTimer]);
+  }, []);
 
   // Exit slideshow action
   const exitSlideshow = useCallback(() => {
@@ -157,13 +154,8 @@ export function useSmartGallery({
     transitionTimeoutRef.current = setTimeout(() => {
       setIsTransitioning(false);
       transitionTimeoutRef.current = null;
-
-      // Resume auto-cycle when exiting slideshow (if configured)
-      if (autoSelectInterval && autoSelectInterval > 0) {
-        startAutoCycleTimer();
-      }
     }, 300);
-  }, [autoSelectInterval, startAutoCycleTimer]);
+  }, []);
 
   // Go to next image
   const goToNext = useCallback(() => {
@@ -223,16 +215,16 @@ export function useSmartGallery({
     transitionOriginRef.current = rect;
   }, []);
 
-  // Initialize auto-cycle in grid mode
+  // Initialize auto-cycle in both grid and slideshow modes
   useEffect(() => {
-    if (viewMode === "grid" && autoSelectInterval && autoSelectInterval > 0) {
+    if (autoSelectInterval && autoSelectInterval > 0 && images.length > 1) {
       startAutoCycleTimer();
     } else {
       clearAutoCycleTimer();
     }
 
     return clearAutoCycleTimer;
-  }, [viewMode, autoSelectInterval, startAutoCycleTimer, clearAutoCycleTimer]);
+  }, [viewMode, autoSelectInterval, images.length, startAutoCycleTimer, clearAutoCycleTimer]);
 
   // Handle images prop changes
   useEffect(() => {
