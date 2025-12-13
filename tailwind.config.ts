@@ -27,11 +27,47 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-4px)" },
         },
+        "grid-fade-out": {
+          from: { opacity: "1", filter: "blur(0px)" },
+          to: { opacity: "0.3", filter: "blur(4px)" },
+        },
+        "grid-fade-in": {
+          from: { opacity: "0.3", filter: "blur(4px)" },
+          to: { opacity: "1", filter: "blur(0px)" },
+        },
+        "hero-expand": {
+          "0%": {
+            transform: "translate(var(--hero-x), var(--hero-y)) scale(var(--hero-scale))",
+            borderRadius: "0.75rem",
+          },
+          "100%": { transform: "translate(0, 0) scale(1)", borderRadius: "0" },
+        },
+        "hero-collapse": {
+          "0%": { transform: "translate(0, 0) scale(1)", borderRadius: "0" },
+          "100%": {
+            transform: "translate(var(--hero-x), var(--hero-y)) scale(var(--hero-scale))",
+            borderRadius: "0.75rem",
+          },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(34, 197, 94, 0.4)" },
+          "50%": { boxShadow: "0 0 30px rgba(34, 197, 94, 0.6)" },
+        },
+        "float-up": {
+          "0%": { transform: "translateY(100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "drop-zone-bounce": "drop-zone-bounce 1s ease-in-out infinite",
+        "grid-fade-out": "grid-fade-out 0.3s ease-out forwards",
+        "grid-fade-in": "grid-fade-in 0.3s ease-out forwards",
+        "hero-expand": "hero-expand 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "hero-collapse": "hero-collapse 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "float-up": "float-up 0.3s ease-out forwards",
       },
       borderRadius: {
         lg: "var(--radius)",

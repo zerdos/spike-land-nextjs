@@ -1,3 +1,4 @@
+import type { GalleryImage } from "@/lib/canvas/types";
 import prisma from "@/lib/prisma";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -114,20 +115,27 @@ export default async function CanvasPage({ params, searchParams }: PageProps) {
     interval: parseInterval(interval),
   };
 
-  // Transform album images to the format expected by CanvasClient
-  const images = album.albumImages.map((ai) => {
-    const enhancedJob = ai.image.enhancementJobs[0];
-    // Use enhanced URL if available, otherwise fall back to original
-    const url = enhancedJob?.enhancedUrl || ai.image.originalUrl;
+  // Transform album images to GalleryImage format with both URLs
+  const images: GalleryImage[] = album.albumImages.map((ai) => {
+    // Get the best completed enhancement job
+    const enhancedJob = ai.image.enhancementJobs.find(
+      (job) => job.status === "COMPLETED" && job.enhancedUrl,
+    );
+
+    // Use enhanced dimensions if available, otherwise original
     const width = enhancedJob?.enhancedWidth || ai.image.originalWidth;
     const height = enhancedJob?.enhancedHeight || ai.image.originalHeight;
 
     return {
       id: ai.image.id,
-      url,
+      // url field for backward compatibility (uses enhanced if available)
+      url: enhancedJob?.enhancedUrl || ai.image.originalUrl,
       name: ai.image.name,
       width,
       height,
+      // New fields for Smart Gallery
+      originalUrl: ai.image.originalUrl,
+      enhancedUrl: enhancedJob?.enhancedUrl || null,
     };
   });
 
