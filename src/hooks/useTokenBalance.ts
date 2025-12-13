@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 interface TokenBalanceResponse {
   balance: number;
   lastRegeneration: string | null;
+  timeUntilNextRegenMs?: number;
   stats?: {
     totalSpent: number;
     totalEarned: number;
@@ -62,6 +63,7 @@ export function calculateEstimatedEnhancements(
 export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [balance, setBalance] = useState<number>(0);
   const [lastRegeneration, setLastRegeneration] = useState<Date | null>(null);
+  const [nextRegenTime, setNextRegenTime] = useState<Date | null>(null);
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -78,6 +80,13 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
       const data: TokenBalanceResponse = await response.json();
       setBalance(data.balance);
       setLastRegeneration(data.lastRegeneration ? new Date(data.lastRegeneration) : null);
+
+      // Calculate next regen time based on "timeUntilNextRegenMs" which is relative to "now" on server
+      // We'll use client "now" + delay
+      if (typeof data.timeUntilNextRegenMs === "number") {
+        setNextRegenTime(new Date(Date.now() + data.timeUntilNextRegenMs));
+      }
+
       if (data.stats) {
         setStats(data.stats);
       }

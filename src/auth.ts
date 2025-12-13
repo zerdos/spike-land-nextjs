@@ -95,6 +95,19 @@ export async function handleSignIn(user: {
         await linkReferralOnSignup(upsertedUser.id).catch((error) => {
           console.error("Failed to link referral on signup:", error);
         });
+
+        // Create default public album
+        await prisma.album.create({
+          data: {
+            userId: upsertedUser.id,
+            name: "Public Gallery",
+            privacy: "PUBLIC",
+            defaultTier: "TIER_1K",
+            description: "My public enhancements",
+          },
+        }).catch((error) => {
+          console.error("Failed to create default album:", error);
+        });
       }
 
       // Process referral rewards if email is verified (for OAuth, it's auto-verified)

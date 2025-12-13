@@ -52,6 +52,7 @@ export default function TokensPage() {
     isLoading: balanceLoading,
     stats,
     estimatedEnhancements,
+    timeUntilNextRegeneration,
     refetch,
   } = useTokenBalance({ autoRefreshOnFocus: true });
 
@@ -129,6 +130,12 @@ export default function TokensPage() {
                   {balanceLoading ? <RefreshCw className="h-10 w-10 animate-spin" /> : balance}
                 </div>
                 <p className="text-muted-foreground mt-1">tokens available</p>
+                {timeUntilNextRegeneration && (
+                  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Next free token: {timeUntilNextRegeneration}
+                  </p>
+                )}
               </div>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -203,15 +210,6 @@ export default function TokensPage() {
       <div className="mb-12">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold mb-2">Purchase Tokens</h2>
-          <p className="text-muted-foreground">
-            One-time purchase. No subscription required. Tokens never expire!
-          </p>
-        </div>
-
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
-          data-testid="token-packages-grid"
-        >
           {(Object.entries(TOKEN_PACKAGES) as [
             TokenPackageId,
             typeof TOKEN_PACKAGES[TokenPackageId],

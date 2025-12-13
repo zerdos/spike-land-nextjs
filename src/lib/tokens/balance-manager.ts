@@ -33,7 +33,7 @@ export interface TokenTransactionResult {
 }
 
 const TOKEN_REGENERATION_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_TOKEN_BALANCE = 100;
+const MAX_TOKEN_BALANCE = 10;
 const TOKENS_PER_REGENERATION = 1;
 
 export class TokenBalanceManager {
@@ -72,7 +72,7 @@ export class TokenBalanceManager {
         balance = await tx.userTokenBalance.create({
           data: {
             userId,
-            balance: 0,
+            balance: MAX_TOKEN_BALANCE,
             lastRegeneration: new Date(),
           },
         });
@@ -146,7 +146,7 @@ export class TokenBalanceManager {
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
-              balance: 0,
+              balance: MAX_TOKEN_BALANCE,
               lastRegeneration: new Date(),
             },
           });
@@ -263,7 +263,7 @@ export class TokenBalanceManager {
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
-              balance: 0,
+              balance: MAX_TOKEN_BALANCE,
               lastRegeneration: new Date(),
             },
           });

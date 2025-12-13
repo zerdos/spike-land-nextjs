@@ -23,10 +23,11 @@ interface FileUploadStatus {
 }
 
 interface BatchUploadProps {
+  albumId: string;
   onUploadComplete?: (imageIds: string[]) => void;
 }
 
-export function BatchUpload({ onUploadComplete }: BatchUploadProps) {
+export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
   const [files, setFiles] = useState<FileUploadStatus[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -131,6 +132,7 @@ export function BatchUpload({ onUploadComplete }: BatchUploadProps) {
     try {
       // Create FormData with all files
       const formData = new FormData();
+      formData.append("albumId", albumId);
       filesToUpload.forEach((fileStatus) => {
         formData.append("files", fileStatus.file);
       });
@@ -209,7 +211,7 @@ export function BatchUpload({ onUploadComplete }: BatchUploadProps) {
     } finally {
       setIsUploading(false);
     }
-  }, [files, onUploadComplete]);
+  }, [files, onUploadComplete, albumId]);
 
   const clearCompleted = useCallback(() => {
     setFiles((prev) => prev.filter((f) => f.status !== "completed"));

@@ -312,6 +312,7 @@ model Album {
   description  String?
   coverImageId String?
   privacy      AlbumPrivacy @default(PRIVATE)
+  defaultTier  EnhancementTier @default(TIER_1K)
   shareToken   String?      @unique
   sortOrder    Int          @default(0)
   createdAt    DateTime     @default(now())
