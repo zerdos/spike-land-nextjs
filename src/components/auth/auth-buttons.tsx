@@ -91,12 +91,12 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        // Redirect to callback URL or home on success
+        // Redirect to callback URL or Pixel app on success
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/";
+        const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
 
         // Validate URL to prevent open redirect attacks
-        let safeUrl = "/";
+        let safeUrl = "/apps/pixel";
         try {
           // Only allow same-origin absolute URLs or relative paths
           const url = new URL(callbackUrl, window.location.origin);
@@ -135,9 +135,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         setError("Unable to create account. Please try signing in with Google or GitHub.");
       } else if (result?.ok) {
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/";
+        const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
 
-        let safeUrl = "/";
+        let safeUrl = "/apps/pixel";
         try {
           const url = new URL(callbackUrl, window.location.origin);
           if (url.origin === window.location.origin) {

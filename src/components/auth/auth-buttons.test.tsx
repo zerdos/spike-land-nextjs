@@ -434,7 +434,7 @@ describe("AuthButtons Component", () => {
       });
     });
 
-    it("should block external URLs and redirect to home (security)", async () => {
+    it("should block external URLs and redirect to Pixel app (security)", async () => {
       const user = userEvent.setup();
       mockFetch.mockResolvedValue({
         ok: true,
@@ -467,7 +467,7 @@ describe("AuthButtons Component", () => {
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(window.location.href).toBe("/");
+        expect(window.location.href).toBe("/apps/pixel");
       });
 
       Object.defineProperty(window, "location", {
@@ -631,7 +631,7 @@ describe("AuthButtons Component", () => {
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
-        expect(window.location.href).toBe("/");
+        expect(window.location.href).toBe("/apps/pixel");
       });
 
       Object.defineProperty(window, "location", {
