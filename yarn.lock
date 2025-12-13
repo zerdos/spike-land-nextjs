@@ -1164,9 +1164,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cucumber/cucumber@npm:^12.3.0":
-  version: 12.3.0
-  resolution: "@cucumber/cucumber@npm:12.3.0"
+"@cucumber/cucumber@npm:^12.4.0":
+  version: 12.4.0
+  resolution: "@cucumber/cucumber@npm:12.4.0"
   dependencies:
     "@cucumber/ci-environment": "npm:12.0.0"
     "@cucumber/cucumber-expressions": "npm:18.0.1"
@@ -1210,7 +1210,7 @@ __metadata:
     yup: "npm:1.7.1"
   bin:
     cucumber-js: bin/cucumber.js
-  checksum: 10c0/fab4f82cc70c33b2df800c459d76d52b61f614f2ff381a25db4cfa5c6177ad880bc901cff27fae7ef700358ce9cd8e46631a85c905c198b26807e0dc567a2f20
+  checksum: 10c0/a5425ec30c4879868728cf85a8ba0b8c2dbf2e3af007c2b56e869d73cbc0fc85d81e737029701c1800e3bbcffc0c12d719779be1ff045b17b7a3945349020c28
   languageName: node
   linkType: hard
 
@@ -16866,7 +16866,7 @@ __metadata:
     "@aws-sdk/client-s3": "npm:^3.948.0"
     "@aws-sdk/lib-storage": "npm:^3.948.0"
     "@axe-core/react": "npm:^4.11.0"
-    "@cucumber/cucumber": "npm:^12.3.0"
+    "@cucumber/cucumber": "npm:^12.4.0"
     "@cucumber/pretty-formatter": "npm:^2.4.1"
     "@eslint/eslintrc": "npm:^3.3.3"
     "@google/genai": "npm:^1.33.0"
