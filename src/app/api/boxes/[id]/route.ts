@@ -4,7 +4,7 @@ import { BoxStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();
@@ -40,7 +40,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();

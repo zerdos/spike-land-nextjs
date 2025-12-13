@@ -10,7 +10,7 @@ const messageSchema = z.object({
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -60,7 +60,7 @@ export async function POST(
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return new NextResponse(JSON.stringify(error.errors), { status: 400 });
+      return new NextResponse(JSON.stringify(error.flatten()), { status: 400 });
     }
     console.error("[BOX_MESSAGE]", error);
     return new NextResponse("Internal Error", { status: 500 });

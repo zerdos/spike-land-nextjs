@@ -8,7 +8,7 @@ const cloneBoxSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name is too long").optional(),
 });
 
-export async function POST(req: Request, { params }: { params: { id: string; }; }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string; }>; }) {
   const session = await auth();
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
@@ -17,7 +17,7 @@ export async function POST(req: Request, { params }: { params: { id: string; }; 
   try {
     const json = await req.json();
     const body = cloneBoxSchema.parse(json);
-    const boxId = params.id;
+    const { id: boxId } = await params;
 
     // Fetch source box
     const sourceBox = await prisma.box.findUnique({
@@ -27,6 +27,10 @@ export async function POST(req: Request, { params }: { params: { id: string; }; 
 
     if (!sourceBox || sourceBox.userId !== session.user.id) {
       return new NextResponse("Box not found", { status: 404 });
+    }
+
+    if (!sourceBox.tier) {
+      return new NextResponse("Box tier not found", { status: 500 });
     }
 
     if (sourceBox.deletedAt) {

@@ -60,7 +60,7 @@ export function BoxCard({ box }: BoxCardProps) {
 
       toast.success("Box deleted");
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete box");
     } finally {
       setIsLoading(false);
@@ -194,8 +194,4 @@ export function BoxCard({ box }: BoxCardProps) {
       </CardFooter>
     </Card>
   );
-}
-
-function LoadingSpinner() {
-  return <RefreshCw className="mr-2 h-4 w-4 animate-spin" />;
 }

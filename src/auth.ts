@@ -322,6 +322,7 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
   secret: process.env.AUTH_SECRET,
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const auth = async (...args: any[]) => {
   if (process.env.E2E_BYPASS_AUTH === "true") {
     try {
@@ -339,10 +340,11 @@ export const auth = async (...args: any[]) => {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };
       }
-    } catch (e) {
+    } catch (_e) {
       // Ignore if cookies cannot be read
     }
   }
+  // @ts-expect-error - auth accepts variable arguments
   return originalAuth(...args);
 };
 

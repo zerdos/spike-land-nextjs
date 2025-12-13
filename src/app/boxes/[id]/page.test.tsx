@@ -1,23 +1,37 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { BoxMessageRole, BoxStatus } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
-import BoxDetailPage from "./page";
-import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
-import { redirect, notFound } from "next/navigation";
-import { BoxStatus, BoxMessageRole } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/auth");
-vi.mock("@/lib/prisma", () => ({
-  default: {
+// Use vi.hoisted to define mocks before they are hoisted
+const { mockAuth, mockPrisma, mockRedirect, mockNotFound } = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+  mockPrisma: {
     box: {
       findUnique: vi.fn(),
     },
   },
+  // These functions throw to stop execution like the real Next.js functions
+  mockRedirect: vi.fn().mockImplementation(() => {
+    throw new Error("NEXT_REDIRECT");
+  }),
+  mockNotFound: vi.fn().mockImplementation(() => {
+    throw new Error("NEXT_NOT_FOUND");
+  }),
+}));
+
+vi.mock("@/auth", () => ({
+  auth: mockAuth,
+}));
+vi.mock("@/lib/prisma", () => ({
+  default: mockPrisma,
 }));
 vi.mock("next/navigation", () => ({
-  redirect: vi.fn(),
-  notFound: vi.fn(),
+  redirect: mockRedirect,
+  notFound: mockNotFound,
 }));
+
+// Import after mocks are set up
+import BoxDetailPage from "./page";
 
 describe("BoxDetailPage", () => {
   const mockSession = {
@@ -56,17 +70,17 @@ describe("BoxDetailPage", () => {
   });
 
   it("redirects to signin if user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
 
     const params = Promise.resolve({ id: "box-123" });
-    await BoxDetailPage({ params });
+    await expect(BoxDetailPage({ params })).rejects.toThrow("NEXT_REDIRECT");
 
-    expect(redirect).toHaveBeenCalledWith("/auth/signin");
+    expect(mockRedirect).toHaveBeenCalledWith("/auth/signin");
   });
 
   it("renders the page with box details", async () => {
-    vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue(mockBox as any);
+    mockAuth.mockResolvedValue(mockSession as any);
+    mockPrisma.box.findUnique.mockResolvedValue(mockBox as any);
 
     const params = Promise.resolve({ id: "box-123" });
     render(await BoxDetailPage({ params }));
@@ -76,8 +90,8 @@ describe("BoxDetailPage", () => {
   });
 
   it("renders the AgentControlPanel component", async () => {
-    vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue(mockBox as any);
+    mockAuth.mockResolvedValue(mockSession as any);
+    mockPrisma.box.findUnique.mockResolvedValue(mockBox as any);
 
     const params = Promise.resolve({ id: "box-123" });
     render(await BoxDetailPage({ params }));
@@ -87,31 +101,31 @@ describe("BoxDetailPage", () => {
   });
 
   it("returns notFound if box does not exist", async () => {
-    vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(mockSession as any);
+    mockPrisma.box.findUnique.mockResolvedValue(null);
 
     const params = Promise.resolve({ id: "nonexistent" });
-    await BoxDetailPage({ params });
+    await expect(BoxDetailPage({ params })).rejects.toThrow("NEXT_NOT_FOUND");
 
-    expect(notFound).toHaveBeenCalled();
+    expect(mockNotFound).toHaveBeenCalled();
   });
 
   it("returns notFound if user does not own the box", async () => {
-    vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+    mockAuth.mockResolvedValue(mockSession as any);
+    mockPrisma.box.findUnique.mockResolvedValue({
       ...mockBox,
       userId: "different-user",
     } as any);
 
     const params = Promise.resolve({ id: "box-123" });
-    await BoxDetailPage({ params });
+    await expect(BoxDetailPage({ params })).rejects.toThrow("NEXT_NOT_FOUND");
 
-    expect(notFound).toHaveBeenCalled();
+    expect(mockNotFound).toHaveBeenCalled();
   });
 
   it("displays box description only if provided", async () => {
-    vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+    mockAuth.mockResolvedValue(mockSession as any);
+    mockPrisma.box.findUnique.mockResolvedValue({
       ...mockBox,
       description: null,
     } as any);
