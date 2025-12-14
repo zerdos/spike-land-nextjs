@@ -107,7 +107,7 @@ export function validateAnalysisConfig(
   }
   return {
     success: false,
-    errors: result.error.errors.map(
+    errors: result.error.issues.map(
       (e) => `${e.path.join(".")}: ${e.message}`,
     ),
   };
@@ -125,7 +125,7 @@ export function validateAutoCropConfig(
   }
   return {
     success: false,
-    errors: result.error.errors.map(
+    errors: result.error.issues.map(
       (e) => `${e.path.join(".")}: ${e.message}`,
     ),
   };
@@ -143,7 +143,7 @@ export function validatePromptConfig(
   }
   return {
     success: false,
-    errors: result.error.errors.map(
+    errors: result.error.issues.map(
       (e) => `${e.path.join(".")}: ${e.message}`,
     ),
   };
@@ -161,7 +161,7 @@ export function validateGenerationConfig(
   }
   return {
     success: false,
-    errors: result.error.errors.map(
+    errors: result.error.issues.map(
       (e) => `${e.path.join(".")}: ${e.message}`,
     ),
   };
