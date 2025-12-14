@@ -33,7 +33,11 @@
     "db:validate": "prisma validate",
     "db:format": "prisma format",
     "dprint": "./node_modules/.bin/dprint fmt",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dead-code": "knip",
+    "dead-code:files": "knip --include files",
+    "dead-code:exports": "knip --include exports",
+    "dead-code:deps": "knip --include dependencies"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
@@ -60,6 +64,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@radix-ui/react-visually-hidden": "^1.2.4",
     "@react-email/components": "^1.0.1",
     "@types/qrcode": "^1.5.6",
     "@vercel/analytics": "^1.6.1",
@@ -69,7 +74,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.561.0",
-    "mime": "^4.1.0",
     "nanoid": "^5.1.6",
     "next": "16.0.10",
     "next-auth": "^5.0.0-beta.30",
@@ -92,10 +96,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@axe-core/react": "^4.11.0",
     "@cucumber/cucumber": "^12.4.0",
-    "@cucumber/pretty-formatter": "^2.4.1",
-    "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/dom": "^10.4.1",
@@ -110,7 +111,6 @@
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
     "autoprefixer": "^10.4.22",
-    "axe-core": "^4.11.0",
     "dotenv": "^17.2.3",
     "dprint": "^0.50.2",
     "eslint": "^9.39.2",
@@ -118,10 +118,10 @@
     "happy-dom": "^20.0.11",
     "husky": "^9.1.7",
     "jsdom": "^27.3.0",
+    "knip": "^5.73.4",
     "postcss": "^8.5.6",
     "prisma": "^7.1.0",
     "tailwindcss": "^4.1.18",
-    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "5.9.3",
     "vitest": "^4.0.15"
