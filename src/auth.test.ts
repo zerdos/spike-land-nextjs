@@ -59,6 +59,10 @@ vi.mock("@/lib/referral/rewards", () => ({
   completeReferralAndGrantRewards: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("next-auth/providers/credentials", () => ({
+  default: vi.fn(() => ({ id: "credentials" })),
+}));
+
 describe("NextAuth Full Configuration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -333,5 +337,66 @@ describe("handleSignIn", () => {
     expect(consoleSpy).toHaveBeenCalledWith("Failed to assign referral code:", expect.any(Error));
 
     consoleSpy.mockRestore();
+  });
+});
+
+describe("signIn callback", () => {
+  it("should skip handleSignIn for credentials provider", async () => {
+    // Import NextAuth to access the config
+    const NextAuth = await import("next-auth");
+    const mockNextAuth = vi.mocked(NextAuth.default);
+    const config = mockNextAuth.mock.calls[0]?.[0];
+
+    expect(config).toBeDefined();
+    expect(config.callbacks?.signIn).toBeDefined();
+
+    // Test credentials provider - should return true without calling handleSignIn
+    const result = await config.callbacks?.signIn({
+      user: { id: "test-id", email: "test@example.com" },
+      account: { provider: "credentials" },
+      profile: undefined,
+    });
+
+    expect(result).toBe(true);
+    // handleSignIn should not have been called (upsert not called)
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it("should call handleSignIn for OAuth providers", async () => {
+    const NextAuth = await import("next-auth");
+    const mockNextAuth = vi.mocked(NextAuth.default);
+    const config = mockNextAuth.mock.calls[0]?.[0];
+
+    mockFindUnique.mockResolvedValueOnce(null);
+
+    // Test OAuth provider (google) - should call handleSignIn
+    const result = await config.callbacks?.signIn({
+      user: { id: "test-id", email: "oauth@example.com", name: "OAuth User" },
+      account: { provider: "google" },
+      profile: undefined,
+    });
+
+    expect(result).toBe(true);
+    // handleSignIn should have been called (upsert called)
+    expect(mockUpsert).toHaveBeenCalled();
+  });
+
+  it("should call handleSignIn for GitHub provider", async () => {
+    const NextAuth = await import("next-auth");
+    const mockNextAuth = vi.mocked(NextAuth.default);
+    const config = mockNextAuth.mock.calls[0]?.[0];
+
+    mockFindUnique.mockResolvedValueOnce(null);
+
+    // Test OAuth provider (github) - should call handleSignIn
+    const result = await config.callbacks?.signIn({
+      user: { id: "test-id", email: "github@example.com", name: "GitHub User" },
+      account: { provider: "github" },
+      profile: undefined,
+    });
+
+    expect(result).toBe(true);
+    // handleSignIn should have been called (upsert called)
+    expect(mockUpsert).toHaveBeenCalled();
   });
 });
