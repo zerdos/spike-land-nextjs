@@ -189,7 +189,10 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       const signupData = await signupResponse.json();
 
       if (!signupResponse.ok) {
-        setError(signupData.error || "Unable to create account. Please try signing in with Google or GitHub.");
+        setError(
+          signupData.error ||
+            "Unable to create account. Please try signing in with Google or GitHub.",
+        );
         return;
       }
 

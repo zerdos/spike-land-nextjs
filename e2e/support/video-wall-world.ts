@@ -1,5 +1,6 @@
 import { IWorldOptions, setWorldConstructor, World } from "@cucumber/cucumber";
 import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 export interface ClientContext {
   context: BrowserContext;
@@ -32,6 +33,9 @@ export class VideoWallWorld extends World {
     });
     this.displayPage = await this.displayContext.newPage();
 
+    // Start coverage collection if enabled
+    await startCoverage(this.displayPage);
+
     // Mock getUserMedia for all contexts
     await this.mockMediaDevices(this.displayPage);
   }
@@ -47,6 +51,9 @@ export class VideoWallWorld extends World {
       // Screen sharing will be mocked via mockMediaDevices instead
     });
     const page = await context.newPage();
+
+    // Start coverage collection if enabled
+    await startCoverage(page);
 
     // Mock getUserMedia for client
     await this.mockMediaDevices(page);
@@ -347,6 +354,16 @@ export class VideoWallWorld extends World {
   }
 
   async destroy() {
+    // Stop coverage collection on all pages before closing
+    if (this.displayPage) {
+      await stopCoverage(this.displayPage);
+    }
+    for (const client of this.clientContexts.values()) {
+      if (client.page) {
+        await stopCoverage(client.page);
+      }
+    }
+
     await this.closeAllClientContexts();
     await this.displayPage?.close();
     await this.displayContext?.close();

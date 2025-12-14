@@ -609,7 +609,11 @@ describe("AuthButtons Component", () => {
             () =>
               resolve({
                 ok: true,
-                json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+                json: () =>
+                  Promise.resolve({
+                    success: true,
+                    user: { id: "123", email: "newuser@example.com" },
+                  }),
               }),
             100,
           )
@@ -648,7 +652,8 @@ describe("AuthButtons Component", () => {
         // Signup call
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+          json: () =>
+            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
         });
       });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
@@ -702,7 +707,8 @@ describe("AuthButtons Component", () => {
         // Signup call
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+          json: () =>
+            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
         });
       });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
@@ -792,7 +798,8 @@ describe("AuthButtons Component", () => {
         // Signup call
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+          json: () =>
+            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
         });
       });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
@@ -964,7 +971,8 @@ describe("AuthButtons Component", () => {
         // Signup call succeeds
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+          json: () =>
+            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
         });
       });
       vi.mocked(signIn).mockResolvedValue({
