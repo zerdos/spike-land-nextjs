@@ -1,9 +1,10 @@
-import type { JobStatus } from "@prisma/client";
+import type { JobStatus, PipelineStage } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
 interface JobStreamData {
   type: "status" | "error" | "connected";
   status?: JobStatus;
+  currentStage?: PipelineStage | null;
   enhancedUrl?: string | null;
   enhancedWidth?: number | null;
   enhancedHeight?: number | null;
@@ -14,6 +15,7 @@ interface JobStreamData {
 interface Job {
   id: string;
   status: JobStatus;
+  currentStage: PipelineStage | null;
   enhancedUrl: string | null;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
@@ -64,6 +66,7 @@ export function useJobStream({
           const jobData: Job = {
             id: jobId,
             status: data.status,
+            currentStage: data.currentStage || null,
             enhancedUrl: data.enhancedUrl || null,
             enhancedWidth: data.enhancedWidth || null,
             enhancedHeight: data.enhancedHeight || null,

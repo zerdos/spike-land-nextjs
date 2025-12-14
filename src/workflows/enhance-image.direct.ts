@@ -23,7 +23,7 @@ import {
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { JobStatus } from "@prisma/client";
+import { JobStatus, PipelineStage } from "@prisma/client";
 import sharp from "sharp";
 import {
   calculateCropRegion,
@@ -78,6 +78,10 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     // Step 3: STAGE 1 - Analyze image with vision model
     console.log(`[Dev Enhancement] Stage 1: Analyzing image with vision model`);
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: { currentStage: PipelineStage.ANALYZING },
+    });
     const imageBase64ForAnalysis = imageBuffer.toString("base64");
     const analysisResult = await analyzeImageV2(imageBase64ForAnalysis, mimeType);
 
@@ -98,6 +102,11 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     // Step 4: STAGE 2 - Auto-crop if needed
     let wasCropped = false;
     let cropDimensionsUsed = null;
+
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: { currentStage: PipelineStage.CROPPING },
+    });
 
     if (
       analysisResult.structuredAnalysis.cropping.isCroppingNeeded &&
@@ -163,6 +172,10 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     // Step 5: STAGE 3 - Build dynamic enhancement prompt
     console.log(`[Dev Enhancement] Stage 3: Building dynamic enhancement prompt`);
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: { currentStage: PipelineStage.PROMPTING },
+    });
     const dynamicPrompt = buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
     // Step 6: Prepare image for Gemini (pad to square)
@@ -181,6 +194,10 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     console.log(
       `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement`,
     );
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: { currentStage: PipelineStage.GENERATING },
+    });
     const enhancedBuffer = await enhanceImageWithGemini({
       imageData: paddedBase64,
       mimeType,
@@ -250,6 +267,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
       where: { id: jobId },
       data: {
         status: JobStatus.COMPLETED,
+        currentStage: null, // Clear stage on completion
         enhancedUrl: uploadResult.url,
         enhancedR2Key: enhancedR2Key,
         enhancedWidth: finalMetadata.width || targetWidth,

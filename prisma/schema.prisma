@@ -240,6 +240,7 @@ model ImageEnhancementJob {
   tier                  EnhancementTier
   tokensCost            Int
   status                JobStatus
+  currentStage          PipelineStage?  // Current pipeline stage for progress tracking
   enhancedUrl           String?
   enhancedR2Key         String?
   enhancedWidth         Int?
@@ -542,6 +543,13 @@ enum JobStatus {
   FAILED
   REFUNDED
   CANCELLED
+}
+
+enum PipelineStage {
+  ANALYZING   // Image analysis with vision model
+  CROPPING    // Auto-crop based on analysis
+  PROMPTING   // Build dynamic enhancement prompt
+  GENERATING  // Gemini API image generation
 }
 
 enum SubscriptionStatus {

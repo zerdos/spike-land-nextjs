@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 interface JobStreamData {
   type: "status" | "error" | "connected";
   status?: string;
+  currentStage?: string | null;
   enhancedUrl?: string | null;
   enhancedWidth?: number | null;
   enhancedHeight?: number | null;
@@ -115,6 +116,7 @@ export async function GET(
           sendEvent({
             type: "status",
             status: currentJob.status,
+            currentStage: currentJob.currentStage,
             enhancedUrl: currentJob.enhancedUrl,
             enhancedWidth: currentJob.enhancedWidth,
             enhancedHeight: currentJob.enhancedHeight,
