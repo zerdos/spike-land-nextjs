@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 // Use vi.hoisted to define mocks before they are used
-const { mockPrisma, mockCheckRateLimit, mockBcrypt, mockCreateStableUserId, mockReferralFunctions, mockBootstrapAdmin } = vi.hoisted(() => ({
+const {
+  mockPrisma,
+  mockCheckRateLimit,
+  mockBcrypt,
+  mockCreateStableUserId,
+  mockReferralFunctions,
+  mockBootstrapAdmin,
+} = vi.hoisted(() => ({
   mockPrisma: {
     user: {
       findUnique: vi.fn(),
@@ -66,7 +73,7 @@ vi.mock("@/lib/referral/rewards", () => ({
 // Helper to create mock request
 function createMockRequest(
   body: object,
-  options?: { contentLength?: string; ip?: string },
+  options?: { contentLength?: string; ip?: string; },
 ): NextRequest {
   const headers = new Headers();
   if (options?.contentLength) {
@@ -391,7 +398,9 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.assignReferralCodeToUser).toHaveBeenCalledWith("stable-user-id-123");
+      expect(mockReferralFunctions.assignReferralCodeToUser).toHaveBeenCalledWith(
+        "stable-user-id-123",
+      );
     });
 
     it("should link referral on signup", async () => {
@@ -434,7 +443,9 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.completeReferralAndGrantRewards).toHaveBeenCalledWith("referral-123");
+      expect(mockReferralFunctions.completeReferralAndGrantRewards).toHaveBeenCalledWith(
+        "referral-123",
+      );
     });
 
     it("should not process referral rewards if validation fails", async () => {
@@ -454,7 +465,9 @@ describe("POST /api/auth/signup", () => {
 
     it("should continue signup even if post-signup tasks fail", async () => {
       mockBootstrapAdmin.mockRejectedValue(new Error("Bootstrap failed"));
-      mockReferralFunctions.assignReferralCodeToUser.mockRejectedValue(new Error("Referral failed"));
+      mockReferralFunctions.assignReferralCodeToUser.mockRejectedValue(
+        new Error("Referral failed"),
+      );
       mockPrisma.album.create.mockRejectedValue(new Error("Album failed"));
 
       const req = createMockRequest({

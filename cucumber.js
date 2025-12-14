@@ -68,4 +68,18 @@ module.exports = {
     timeout: 10000, // 30 second timeout for CI
     parallel: 8, // Run 4 scenarios in parallel
   },
+  // Coverage profile - collect V8 coverage during E2E tests
+  coverage: {
+    paths: ["e2e/features/**/*.feature"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    requireModule: ["tsx/cjs"],
+    format: ["progress-bar", "html:e2e/reports/cucumber-report-coverage.html"],
+    formatOptions: { snippetInterface: "async-await" },
+    publishQuiet: true,
+    failFast: false, // Run all tests to get full coverage
+    retry: 0, // No retries for coverage - each run should be deterministic
+    tags: "not @skip and not @flaky and not @requires-db",
+    timeout: 15000,
+    parallel: 1, // Disable parallelism for accurate coverage collection
+  },
 };

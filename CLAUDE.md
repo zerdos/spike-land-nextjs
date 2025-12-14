@@ -595,6 +595,7 @@ cd n  # Jumps to /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
 - **Code coverage**: `yarn test:coverage` (requires 100% coverage)
 - **E2E tests (local)**: `yarn test:e2e:local` (requires dev server running)
 - **E2E tests (CI)**: `yarn test:e2e:ci` (uses BASE_URL env var)
+- **E2E coverage**: `yarn test:e2e:coverage` (requires dev server running)
 
 ## Architecture
 
@@ -685,6 +686,50 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 - **Environment-aware**: Tests run against localhost locally, deployed URL in CI
 - **Screenshots**: Automatic screenshot capture on test failures
 - **Reports**: HTML reports generated in `e2e/reports/`
+
+### E2E Code Coverage
+
+The project supports V8 code coverage collection during E2E test runs to measure which parts of the application are exercised by end-to-end tests.
+
+**Running E2E Coverage:**
+
+```bash
+# Start the dev server first
+yarn dev
+
+# In another terminal, run E2E tests with coverage
+yarn test:e2e:coverage
+```
+
+**How It Works:**
+
+1. Uses Playwright's V8 coverage API to track JavaScript execution
+2. Filters to only include app source code (excludes Next.js internals, node_modules)
+3. Aggregates coverage data across all test scenarios
+4. Generates reports after all tests complete
+
+**Generated Reports** (in `e2e/reports/coverage/`):
+
+| File                   | Description                             |
+| ---------------------- | --------------------------------------- |
+| `coverage-summary.txt` | Human-readable summary with percentages |
+| `coverage-final.json`  | Istanbul format for tooling integration |
+| `v8-coverage.json`     | Raw V8 coverage data                    |
+
+**Configuration:**
+
+- Coverage profile defined in `cucumber.js` (uses `parallel: 1` for accurate collection)
+- Coverage helper module: `e2e/support/helpers/coverage-helper.ts`
+- Enabled via `E2E_COVERAGE=true` environment variable
+
+**Sample Output:**
+
+```
+TOTALS:
+Files: 16
+Statements: 4755/7837 (60.7%)
+Functions:  4560/6659 (68.5%)
+```
 
 ## CI/CD Pipeline
 
