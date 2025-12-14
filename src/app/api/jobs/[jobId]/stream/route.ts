@@ -62,6 +62,7 @@ export async function GET(
   let isStreamClosed = false;
   let timeoutId: NodeJS.Timeout | null = null;
   let pollCount = 0;
+  let lastSentStage: string | null = null; // Track stage for transition logging
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -111,6 +112,16 @@ export async function GET(
             controller.close();
             isStreamClosed = true;
             return;
+          }
+
+          // Log stage transitions for debugging
+          if (currentJob.currentStage !== lastSentStage) {
+            console.log(
+              `[JobStream ${jobId}] Stage transition: ${lastSentStage || "none"} → ${
+                currentJob.currentStage || "none"
+              }`,
+            );
+            lastSentStage = currentJob.currentStage;
           }
 
           sendEvent({

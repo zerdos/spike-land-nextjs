@@ -5,14 +5,20 @@ import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
-// Timeout for Gemini API requests (5 minutes)
+// Timeout for Gemini API requests (configurable via env, default 5 minutes)
 // 4K images can take up to 2 minutes based on observed successful jobs,
 // so 5 minutes provides a safe buffer while preventing indefinite hangs
-export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000;
+export const GEMINI_TIMEOUT_MS = parseInt(
+  process.env.GEMINI_TIMEOUT_MS || String(5 * 60 * 1000),
+  10,
+);
 
-// Timeout for vision analysis stage (30 seconds)
+// Timeout for vision analysis stage (configurable via env, default 30 seconds)
 // Analysis should be fast - if it times out, we fall back to default prompt
-export const ANALYSIS_TIMEOUT_MS = 30 * 1000;
+export const ANALYSIS_TIMEOUT_MS = parseInt(
+  process.env.ANALYSIS_TIMEOUT_MS || String(30 * 1000),
+  10,
+);
 
 // Analysis prompt schema for structured JSON output from vision model
 const ANALYSIS_PROMPT_SCHEMA =

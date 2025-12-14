@@ -46,10 +46,15 @@ export function PipelineProgress({ currentStage, isComplete, className }: Pipeli
               )}
             >
               {isPast
-                ? <Check className="h-3 w-3" />
+                ? <Check className="h-3 w-3" aria-label={`${stage.label} completed`} />
                 : isCurrent
-                ? <Loader2 className="h-3 w-3 animate-spin" />
-                : <Icon className="h-3 w-3" />}
+                ? (
+                  <Loader2
+                    className="h-3 w-3 animate-spin"
+                    aria-label={`${stage.label} in progress`}
+                  />
+                )
+                : <Icon className="h-3 w-3" aria-label={`${stage.label} pending`} />}
               <span className="hidden sm:inline">{stage.label}</span>
             </div>
             {index < STAGES.length - 1 && (
@@ -84,7 +89,7 @@ export function PipelineStageLabel({
 
   return (
     <span className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground", className)}>
-      <Loader2 className="h-3 w-3 animate-spin" />
+      <Loader2 className="h-3 w-3 animate-spin" aria-label={`${stage.label} in progress`} />
       <span>{stage.label}...</span>
     </span>
   );

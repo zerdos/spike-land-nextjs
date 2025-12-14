@@ -42,6 +42,25 @@ import {
 export type { EnhanceImageInput };
 
 /**
+ * Safely update the job's current stage with error handling.
+ * Stage updates are non-critical - failures are logged but don't block processing.
+ */
+async function updateJobStage(jobId: string, stage: PipelineStage): Promise<void> {
+  try {
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: { currentStage: stage },
+    });
+  } catch (error) {
+    console.warn(
+      `[Dev Enhancement] Failed to update stage to ${stage} for job ${jobId}:`,
+      error instanceof Error ? error.message : error,
+    );
+    // Continue processing - stage update is non-critical for functionality
+  }
+}
+
+/**
  * Direct enhancement execution for dev mode.
  * This runs the enhancement synchronously without workflow infrastructure.
  */
@@ -78,10 +97,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     // Step 3: STAGE 1 - Analyze image with vision model
     console.log(`[Dev Enhancement] Stage 1: Analyzing image with vision model`);
-    await prisma.imageEnhancementJob.update({
-      where: { id: jobId },
-      data: { currentStage: PipelineStage.ANALYZING },
-    });
+    await updateJobStage(jobId, PipelineStage.ANALYZING);
     const imageBase64ForAnalysis = imageBuffer.toString("base64");
     const analysisResult = await analyzeImageV2(imageBase64ForAnalysis, mimeType);
 
@@ -103,10 +119,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     let wasCropped = false;
     let cropDimensionsUsed = null;
 
-    await prisma.imageEnhancementJob.update({
-      where: { id: jobId },
-      data: { currentStage: PipelineStage.CROPPING },
-    });
+    await updateJobStage(jobId, PipelineStage.CROPPING);
 
     if (
       analysisResult.structuredAnalysis.cropping.isCroppingNeeded &&
@@ -172,10 +185,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     // Step 5: STAGE 3 - Build dynamic enhancement prompt
     console.log(`[Dev Enhancement] Stage 3: Building dynamic enhancement prompt`);
-    await prisma.imageEnhancementJob.update({
-      where: { id: jobId },
-      data: { currentStage: PipelineStage.PROMPTING },
-    });
+    await updateJobStage(jobId, PipelineStage.PROMPTING);
     const dynamicPrompt = buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
     // Step 6: Prepare image for Gemini (pad to square)
@@ -194,10 +204,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     console.log(
       `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement`,
     );
-    await prisma.imageEnhancementJob.update({
-      where: { id: jobId },
-      data: { currentStage: PipelineStage.GENERATING },
-    });
+    await updateJobStage(jobId, PipelineStage.GENERATING);
     const enhancedBuffer = await enhanceImageWithGemini({
       imageData: paddedBase64,
       mimeType,

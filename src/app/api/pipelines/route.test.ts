@@ -11,6 +11,7 @@ vi.mock("@/lib/prisma", () => ({
     enhancementPipeline: {
       findMany: vi.fn(),
       create: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -22,16 +23,26 @@ vi.stubGlobal("crypto", { randomUUID: mockRandomUUID });
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
+// Helper to create GET request with pagination params
+function createGetRequest(params?: { page?: number; limit?: number; }): Request {
+  const url = new URL("http://localhost/api/pipelines");
+  if (params?.page !== undefined) url.searchParams.set("page", String(params.page));
+  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
+  return new Request(url.toString());
+}
+
 describe("Pipelines API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default count to 0 for tests (no rate limiting hit)
+    (prisma.enhancementPipeline.count as Mock).mockResolvedValue(0);
   });
 
   describe("GET /api/pipelines", () => {
     it("returns 401 when user is not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -44,11 +55,13 @@ describe("Pipelines API", () => {
       });
       (prisma.enhancementPipeline.findMany as Mock).mockResolvedValue([]);
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.pipelines).toEqual([]);
+      expect(data.pagination).toBeDefined();
+      expect(data.pagination.totalCount).toBe(0);
     });
 
     it("returns user's own pipelines with isOwner flag", async () => {
@@ -73,7 +86,7 @@ describe("Pipelines API", () => {
         },
       ]);
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -105,7 +118,7 @@ describe("Pipelines API", () => {
         },
       ]);
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -135,7 +148,7 @@ describe("Pipelines API", () => {
         },
       ]);
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -147,15 +160,35 @@ describe("Pipelines API", () => {
       (auth as Mock).mockResolvedValue({
         user: { id: "user_123" },
       });
-      (prisma.enhancementPipeline.findMany as Mock).mockRejectedValue(
+      (prisma.enhancementPipeline.count as Mock).mockRejectedValue(
         new Error("Database connection failed"),
       );
 
-      const response = await GET();
+      const response = await GET(createGetRequest());
       const data = await response.json();
 
       expect(response.status).toBe(500);
       expect(data.error).toBe("Failed to list pipelines");
+    });
+
+    it("returns pagination metadata", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: "user_123" },
+      });
+      (prisma.enhancementPipeline.count as Mock).mockResolvedValue(100);
+      (prisma.enhancementPipeline.findMany as Mock).mockResolvedValue([]);
+
+      const response = await GET(createGetRequest({ page: 1, limit: 10 }));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        totalCount: 100,
+        totalPages: 10,
+        hasMore: true,
+      });
     });
   });
 
@@ -173,6 +206,25 @@ describe("Pipelines API", () => {
 
       expect(response.status).toBe(401);
       expect(data.error).toBe("Unauthorized");
+    });
+
+    it("returns 429 when user exceeds pipeline limit", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: "user_123" },
+      });
+      // Simulate user already having max pipelines
+      (prisma.enhancementPipeline.count as Mock).mockResolvedValue(50);
+
+      const request = new NextRequest("http://localhost:3000/api/pipelines", {
+        method: "POST",
+        body: JSON.stringify({ name: "Test Pipeline" }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(429);
+      expect(data.error).toContain("Pipeline limit exceeded");
     });
 
     it("returns 400 when name is missing", async () => {
