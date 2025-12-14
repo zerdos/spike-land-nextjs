@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🏢 Business Context
 
-| Field | Value |
-|-------|-------|
+| Field       | Value               |
+| ----------- | ------------------- |
 | **Company** | Spike Land Ltd (UK) |
-| **Domain** | spike.land |
-| **Owner** | Zoltan Erdos |
+| **Domain**  | spike.land          |
+| **Owner**   | Zoltan Erdos        |
 
 See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company documentation.
 
@@ -20,14 +20,14 @@ See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company 
 
 **DO NOT duplicate content from these docs in this file. Link to them instead.**
 
-| Topic | Document |
-|-------|----------|
-| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md) |
-| API Reference | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md) |
-| Token System | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md) |
-| Database Schema | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) |
-| Database Setup | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md) |
-| Development Setup | [README.md](./README.md) |
+| Topic                      | Document                                             |
+| -------------------------- | ---------------------------------------------------- |
+| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)               |
+| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)     |
+| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)       |
+| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) |
+| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)   |
+| Development Setup          | [README.md](./README.md)                             |
 
 ---
 
@@ -135,6 +135,7 @@ gh run view <RUN-ID> --log-failed
 ```
 
 **DO NOT mark a task as complete if:**
+
 - CI is still running (status: IN_PROGRESS, PENDING)
 - Any check has failed (conclusion: FAILURE)
 - You haven't verified the status after pushing
@@ -180,16 +181,19 @@ gh pr checks <PR-NUMBER>
 ### Agent Workflow
 
 **When starting a session:**
+
 1. Check open issues: `gh issue list --state open`
 2. Check project board: `gh project item-list 2 --owner zerdos`
 3. Report status to user before asking what to work on
 
 **When discovering work/bugs:**
+
 1. Create an issue immediately: `gh issue create --label "agent-created"`
 2. Add appropriate labels (bug, feature, tech-debt, p0, p1, p2)
 3. Continue with current work - don't block on the discovery
 
 **When completing work:**
+
 1. Close issue: `gh issue close <n> --comment "✅ Done: <summary>"`
 2. Link PR to issue: Include "Resolves #<n>" in PR description
 
@@ -317,15 +321,18 @@ See [README.md](./README.md) for full development setup.
 ## 🚨 Troubleshooting
 
 ### Coverage Not 100%
+
 - Run `yarn test:coverage` to see uncovered lines
 - Check `coverage/` for detailed HTML report
 
 ### E2E Tests Failing
+
 - Ensure dev server is running: `yarn dev`
 - Use `yarn test:e2e:local`
 - Install browser: `yarn dlx playwright install chromium`
 
 ### CI/CD Failing
+
 - Check Actions tab for logs
 - Verify secrets are configured
 - Ensure tests pass locally first

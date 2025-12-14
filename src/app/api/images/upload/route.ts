@@ -174,9 +174,18 @@ export async function POST(request: NextRequest) {
         originalSizeBytes: result.sizeBytes,
         originalFormat: result.format,
         isPublic: false,
-        ...(albumId && { albumId }),
       },
     });
+
+    // If albumId provided, create junction record to link image to album
+    if (albumId) {
+      await prisma.albumImage.create({
+        data: {
+          albumId,
+          imageId: enhancedImage.id,
+        },
+      });
+    }
 
     requestLogger.info("Upload completed successfully", {
       imageId: enhancedImage.id,
