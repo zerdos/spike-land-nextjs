@@ -1,9 +1,10 @@
-import type { JobStatus } from "@prisma/client";
-import { useCallback, useEffect, useState } from "react";
+import type { JobStatus, PipelineStage } from "@prisma/client";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface JobStreamData {
   type: "status" | "error" | "connected";
   status?: JobStatus;
+  currentStage?: PipelineStage | null;
   enhancedUrl?: string | null;
   enhancedWidth?: number | null;
   enhancedHeight?: number | null;
@@ -14,6 +15,7 @@ interface JobStreamData {
 interface Job {
   id: string;
   status: JobStatus;
+  currentStage: PipelineStage | null;
   enhancedUrl: string | null;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
@@ -43,6 +45,19 @@ export function useJobStream({
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
+  // Use refs for stable callback references to prevent memory pressure
+  // from frequent callback recreations in long-running sessions
+  const onCompleteRef = useRef(onComplete);
+  const onErrorRef = useRef(onError);
+  const onStatusChangeRef = useRef(onStatusChange);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onErrorRef.current = onError;
+    onStatusChangeRef.current = onStatusChange;
+  }, [onComplete, onError, onStatusChange]);
+
   const handleMessage = useCallback(
     (event: MessageEvent) => {
       try {
@@ -56,7 +71,7 @@ export function useJobStream({
 
         if (data.type === "error") {
           setConnectionError(data.message || "Unknown error");
-          onError?.(data.message || "Unknown error");
+          onErrorRef.current?.(data.message || "Unknown error");
           return;
         }
 
@@ -64,6 +79,7 @@ export function useJobStream({
           const jobData: Job = {
             id: jobId,
             status: data.status,
+            currentStage: data.currentStage || null,
             enhancedUrl: data.enhancedUrl || null,
             enhancedWidth: data.enhancedWidth || null,
             enhancedHeight: data.enhancedHeight || null,
@@ -71,19 +87,19 @@ export function useJobStream({
           };
 
           setJob(jobData);
-          onStatusChange?.(data.status);
+          onStatusChangeRef.current?.(data.status);
 
           if (data.status === "COMPLETED") {
-            onComplete?.(jobData);
+            onCompleteRef.current?.(jobData);
           } else if (data.status === "FAILED") {
-            onError?.(data.errorMessage || "Enhancement failed");
+            onErrorRef.current?.(data.errorMessage || "Enhancement failed");
           }
         }
       } catch (error) {
         console.error("Failed to parse SSE message:", error);
       }
     },
-    [jobId, onComplete, onError, onStatusChange],
+    [jobId], // Only depends on jobId now, refs are stable
   );
 
   useEffect(() => {
@@ -127,7 +143,7 @@ export function useJobStream({
           }, delay);
         } else {
           setConnectionError("Connection lost. Please refresh the page.");
-          onError?.("Connection lost");
+          onErrorRef.current?.("Connection lost");
         }
       };
     };
@@ -141,7 +157,7 @@ export function useJobStream({
       eventSource?.close();
       setIsConnected(false);
     };
-  }, [jobId, handleMessage, onError]);
+  }, [jobId, handleMessage]); // Removed onError from deps, using ref instead
 
   return {
     job,

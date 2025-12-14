@@ -5,14 +5,20 @@ import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
-// Timeout for Gemini API requests (5 minutes)
+// Timeout for Gemini API requests (configurable via env, default 5 minutes)
 // 4K images can take up to 2 minutes based on observed successful jobs,
 // so 5 minutes provides a safe buffer while preventing indefinite hangs
-export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000;
+export const GEMINI_TIMEOUT_MS = parseInt(
+  process.env.GEMINI_TIMEOUT_MS || String(5 * 60 * 1000),
+  10,
+);
 
-// Timeout for vision analysis stage (30 seconds)
+// Timeout for vision analysis stage (configurable via env, default 30 seconds)
 // Analysis should be fast - if it times out, we fall back to default prompt
-export const ANALYSIS_TIMEOUT_MS = 30 * 1000;
+export const ANALYSIS_TIMEOUT_MS = parseInt(
+  process.env.ANALYSIS_TIMEOUT_MS || String(30 * 1000),
+  10,
+);
 
 // Analysis prompt schema for structured JSON output from vision model
 const ANALYSIS_PROMPT_SCHEMA =
@@ -143,6 +149,18 @@ export interface ImageAnalysisResultV2 {
   structuredAnalysis: AnalysisDetailedResult;
 }
 
+/**
+ * Reference image data for style guidance
+ */
+export interface ReferenceImageData {
+  /** Base64 encoded image data */
+  imageData: string;
+  /** MIME type of the image */
+  mimeType: string;
+  /** Optional description of the reference */
+  description?: string;
+}
+
 export interface EnhanceImageParams {
   imageData: string;
   mimeType: string;
@@ -151,6 +169,8 @@ export interface EnhanceImageParams {
   originalHeight?: number;
   /** Optional prompt override - when provided, skips internal analysis and uses this prompt directly */
   promptOverride?: string;
+  /** Optional reference images for style guidance - base64 encoded with mime types */
+  referenceImages?: ReferenceImageData[];
 }
 
 /**
@@ -229,6 +249,24 @@ export function buildDynamicEnhancementPrompt(
   // Add custom instructions if provided
   if (promptConfig?.customInstructions) {
     instruction += `\nAdditional Instructions:\n${promptConfig.customInstructions}\n`;
+  }
+
+  // Add reference image instructions if provided
+  if (promptConfig?.referenceImages && promptConfig.referenceImages.length > 0) {
+    instruction += `\nStyle Reference:\n`;
+    instruction +=
+      `- Match the visual style, color grading, and overall aesthetic of the provided reference image${
+        promptConfig.referenceImages.length > 1 ? "s" : ""
+      }.\n`;
+
+    // Add descriptions if available
+    const descriptionsWithContent = promptConfig.referenceImages
+      .filter((img) => img.description)
+      .map((img) => img.description);
+
+    if (descriptionsWithContent.length > 0) {
+      instruction += `- Reference image notes: ${descriptionsWithContent.join("; ")}\n`;
+    }
   }
 
   // Final instruction
@@ -531,20 +569,39 @@ export async function enhanceImageWithGemini(
     },
   };
 
+  // Build content parts - include reference images if provided
+  const parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string; }; }> = [];
+
+  // Add the original image to enhance first
+  parts.push({
+    inlineData: {
+      mimeType: params.mimeType,
+      data: params.imageData,
+    },
+  });
+
+  // Add reference images if provided (for style guidance)
+  if (params.referenceImages && params.referenceImages.length > 0) {
+    console.log(`Including ${params.referenceImages.length} reference image(s) for style guidance`);
+    for (const refImg of params.referenceImages) {
+      parts.push({
+        inlineData: {
+          mimeType: refImg.mimeType,
+          data: refImg.imageData,
+        },
+      });
+    }
+  }
+
+  // Add the text prompt
+  parts.push({
+    text: `${enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
+  });
+
   const contents = [
     {
       role: "user" as const,
-      parts: [
-        {
-          inlineData: {
-            mimeType: params.mimeType,
-            data: params.imageData,
-          },
-        },
-        {
-          text: `${enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
-        },
-      ],
+      parts,
     },
   ];
 

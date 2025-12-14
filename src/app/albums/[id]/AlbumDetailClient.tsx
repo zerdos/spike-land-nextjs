@@ -1,6 +1,7 @@
 "use client";
 
 import { QRCodePanel } from "@/components/canvas";
+import { PipelineSelector } from "@/components/enhance/PipelineSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -68,6 +69,7 @@ interface Album {
   description: string | null;
   privacy: "PRIVATE" | "UNLISTED" | "PUBLIC";
   coverImageId: string | null;
+  pipelineId: string | null;
   shareToken?: string;
   imageCount: number;
   isOwner: boolean;
@@ -101,6 +103,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const [editPrivacy, setEditPrivacy] = useState<
     "PRIVATE" | "UNLISTED" | "PUBLIC"
   >("PRIVATE");
+  const [editPipelineId, setEditPipelineId] = useState<string | null>(null);
 
   // Selection mode state
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -138,6 +141,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
       setEditName(data.album.name);
       setEditDescription(data.album.description || "");
       setEditPrivacy(data.album.privacy);
+      setEditPipelineId(data.album.pipelineId || null);
       originalOrderRef.current = data.album.images.map((img: AlbumImage) => img.id);
     } catch (err) {
       console.error("Error fetching album:", err);
@@ -181,6 +185,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
           name: editName,
           description: editDescription || null,
           privacy: editPrivacy,
+          pipelineId: editPipelineId,
         }),
       });
 
@@ -194,6 +199,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             name: data.album.name,
             description: data.album.description,
             privacy: data.album.privacy,
+            pipelineId: data.album.pipelineId,
             shareToken: data.album.shareToken,
           }
           : null
@@ -865,6 +871,17 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Enhancement Pipeline</Label>
+              <PipelineSelector
+                value={editPipelineId}
+                onChange={setEditPipelineId}
+                showManageLink
+              />
+              <p className="text-xs text-muted-foreground">
+                Select a pipeline to use for enhancing images in this album.
+              </p>
             </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">

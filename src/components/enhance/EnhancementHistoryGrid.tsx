@@ -1,9 +1,10 @@
 "use client";
 
+import { PipelineStageLabel } from "@/components/enhance/PipelineProgress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@/lib/utils";
-import type { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus, PipelineStage } from "@prisma/client";
 import { Loader2, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -34,6 +35,7 @@ export interface EnhancementVersion {
   height: number;
   createdAt: Date;
   status: JobStatus;
+  currentStage?: PipelineStage | null;
   sizeBytes?: number | null;
 }
 
@@ -163,9 +165,11 @@ export function EnhancementHistoryGrid({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto mb-1 text-primary" />
-                    <p className="text-xs text-muted-foreground">
-                      {version.status === "PENDING" ? "Queued" : "Processing"}
-                    </p>
+                    {version.status === "PENDING"
+                      ? <p className="text-xs text-muted-foreground">Queued</p>
+                      : version.currentStage
+                      ? <PipelineStageLabel currentStage={version.currentStage} />
+                      : <p className="text-xs text-muted-foreground">Processing</p>}
                   </div>
                 </div>
               )}

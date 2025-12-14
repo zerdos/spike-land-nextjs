@@ -267,6 +267,86 @@ describe("gemini-client", () => {
       expect(prompt).toContain("noise");
       expect(prompt).toContain("blue");
     });
+
+    it("should add reference image instructions when provided", () => {
+      const promptConfig = {
+        referenceImages: [
+          { url: "https://r2.example.com/ref1.jpg", r2Key: "ref1.jpg" },
+        ],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).toContain("Style Reference");
+      expect(prompt).toContain("Match the visual style");
+      expect(prompt).toContain("reference image"); // singular
+    });
+
+    it("should use plural form for multiple reference images", () => {
+      const promptConfig = {
+        referenceImages: [
+          { url: "https://r2.example.com/ref1.jpg", r2Key: "ref1.jpg" },
+          { url: "https://r2.example.com/ref2.jpg", r2Key: "ref2.jpg" },
+        ],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).toContain("reference images"); // plural
+    });
+
+    it("should include reference image descriptions when provided", () => {
+      const promptConfig = {
+        referenceImages: [
+          {
+            url: "https://r2.example.com/ref1.jpg",
+            r2Key: "ref1.jpg",
+            description: "Target vintage look",
+          },
+          {
+            url: "https://r2.example.com/ref2.jpg",
+            r2Key: "ref2.jpg",
+            description: "Color palette",
+          },
+        ],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).toContain("Reference image notes");
+      expect(prompt).toContain("Target vintage look");
+      expect(prompt).toContain("Color palette");
+    });
+
+    it("should not include description section when no descriptions provided", () => {
+      const promptConfig = {
+        referenceImages: [
+          { url: "https://r2.example.com/ref1.jpg", r2Key: "ref1.jpg" },
+        ],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).not.toContain("Reference image notes");
+    });
+
+    it("should not add reference instructions when referenceImages is empty", () => {
+      const promptConfig = {
+        referenceImages: [],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).not.toContain("Style Reference");
+    });
+
+    it("should combine custom instructions with reference images", () => {
+      const promptConfig = {
+        customInstructions: "Preserve film grain",
+        referenceImages: [
+          {
+            url: "https://r2.example.com/ref1.jpg",
+            r2Key: "ref1.jpg",
+            description: "Target style",
+          },
+        ],
+      };
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis, promptConfig);
+      expect(prompt).toContain("Additional Instructions");
+      expect(prompt).toContain("Preserve film grain");
+      expect(prompt).toContain("Style Reference");
+      expect(prompt).toContain("Target style");
+    });
   });
 
   describe("isGeminiConfigured", () => {
@@ -547,6 +627,114 @@ describe("gemini-client", () => {
           ]),
         }),
       );
+    });
+
+    it("should include reference images in content parts when provided", async () => {
+      const consoleSpy = vi.spyOn(console, "log");
+      const imageBase64 = Buffer.from("test").toString("base64");
+      const refImageBase64 = Buffer.from("reference-style").toString("base64");
+
+      async function* mockStream() {
+        yield {
+          candidates: [
+            {
+              content: {
+                parts: [{ inlineData: { data: imageBase64 } }],
+              },
+            },
+          ],
+        };
+      }
+
+      mockGenerateContentStream.mockResolvedValueOnce(mockStream());
+
+      await enhanceImageWithGemini({
+        ...defaultParams,
+        promptOverride: "Test prompt",
+        referenceImages: [
+          { imageData: refImageBase64, mimeType: "image/jpeg", description: "Style ref" },
+        ],
+      });
+
+      // Verify reference images are logged
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Including 1 reference image(s) for style guidance"),
+      );
+
+      // Verify the API was called with correct content structure
+      expect(mockGenerateContentStream).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contents: expect.arrayContaining([
+            expect.objectContaining({
+              parts: expect.arrayContaining([
+                // Original image
+                expect.objectContaining({
+                  inlineData: expect.objectContaining({
+                    mimeType: "image/jpeg",
+                    data: "base64imagedata",
+                  }),
+                }),
+                // Reference image
+                expect.objectContaining({
+                  inlineData: expect.objectContaining({
+                    mimeType: "image/jpeg",
+                    data: refImageBase64,
+                  }),
+                }),
+                // Text prompt
+                expect.objectContaining({
+                  text: expect.stringContaining("Test prompt"),
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should include multiple reference images in correct order", async () => {
+      const imageBase64 = Buffer.from("test").toString("base64");
+      const ref1Base64 = Buffer.from("ref1").toString("base64");
+      const ref2Base64 = Buffer.from("ref2").toString("base64");
+
+      async function* mockStream() {
+        yield {
+          candidates: [
+            {
+              content: {
+                parts: [{ inlineData: { data: imageBase64 } }],
+              },
+            },
+          ],
+        };
+      }
+
+      mockGenerateContentStream.mockResolvedValueOnce(mockStream());
+
+      await enhanceImageWithGemini({
+        ...defaultParams,
+        promptOverride: "Test prompt",
+        referenceImages: [
+          { imageData: ref1Base64, mimeType: "image/png" },
+          { imageData: ref2Base64, mimeType: "image/webp" },
+        ],
+      });
+
+      const calledContents = mockGenerateContentStream.mock.calls[0][0].contents[0].parts;
+
+      // First should be original image
+      expect(calledContents[0].inlineData.data).toBe("base64imagedata");
+
+      // Then reference images
+      expect(calledContents[1].inlineData.data).toBe(ref1Base64);
+      expect(calledContents[1].inlineData.mimeType).toBe("image/png");
+      expect(calledContents[2].inlineData.data).toBe(ref2Base64);
+      expect(calledContents[2].inlineData.mimeType).toBe("image/webp");
+
+      // Last should be text prompt
+      expect(calledContents[3].text).toContain("Test prompt");
     });
 
     it("should log generation message", async () => {

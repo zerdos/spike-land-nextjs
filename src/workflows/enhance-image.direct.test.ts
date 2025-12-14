@@ -278,6 +278,7 @@ describe("enhance-image.direct", () => {
         data: {
           status: JobStatus.REFUNDED,
           errorMessage: "Download failed",
+          currentStage: null,
         },
       });
     });

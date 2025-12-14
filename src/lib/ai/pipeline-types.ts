@@ -27,6 +27,18 @@ export interface AutoCropConfig {
 }
 
 /**
+ * Reference image for style guidance
+ */
+export interface ReferenceImage {
+  /** R2 public URL for the reference image */
+  url: string;
+  /** R2 storage key for cleanup */
+  r2Key: string;
+  /** Optional description of what this reference is for (e.g., "target style", "color palette") */
+  description?: string;
+}
+
+/**
  * Prompt generation configuration
  */
 export interface PromptConfig {
@@ -52,6 +64,8 @@ export interface PromptConfig {
     | "isOverexposed"
     | "hasColorCast"
   >;
+  /** Reference images for style guidance (max 3) */
+  referenceImages?: ReferenceImage[];
 }
 
 /**
