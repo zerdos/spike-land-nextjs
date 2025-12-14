@@ -1,43 +1,38 @@
-import { DEFAULT_MODEL, DEFAULT_TEMPERATURE, enhanceImageWithGemini } from "@/lib/ai/gemini-client";
+import {
+  type AnalysisDetailedResult,
+  analyzeImageV2,
+  buildDynamicEnhancementPrompt,
+  DEFAULT_MODEL,
+  DEFAULT_TEMPERATURE,
+  enhanceImageWithGemini,
+  type ImageAnalysisResultV2,
+} from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import sharp from "sharp";
 import { FatalError } from "workflow";
+import {
+  calculateCropRegion,
+  calculateTargetDimensions,
+  cropDimensionsToPixels,
+  DEFAULT_IMAGE_DIMENSION,
+  ENHANCED_JPEG_QUALITY,
+  type EnhanceImageInput,
+  generateEnhancedR2Key,
+  PADDING_BACKGROUND,
+  TIER_TO_SIZE,
+  validateCropDimensions,
+} from "./enhance-image.shared";
 
-// Resolution constants for each enhancement tier
-const TIER_RESOLUTIONS = {
-  TIER_1K: 1024,
-  TIER_2K: 2048,
-  TIER_4K: 4096,
-} as const;
-
-const TIER_TO_SIZE = {
-  TIER_1K: "1K" as const,
-  TIER_2K: "2K" as const,
-  TIER_4K: "4K" as const,
-};
-
-// Image processing constants
-const ENHANCED_JPEG_QUALITY = 95;
-const DEFAULT_IMAGE_DIMENSION = 1024;
-const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 };
-
-export interface EnhanceImageInput {
-  jobId: string;
-  imageId: string;
-  userId: string;
-  originalR2Key: string;
-  tier: EnhancementTier;
-  tokensCost: number;
-}
+export type { EnhanceImageInput };
 
 interface ImageMetadata {
   width: number;
   height: number;
   mimeType: string;
-  paddedBase64: string;
+  imageBase64: string;
 }
 
 interface EnhancedResult {
@@ -62,9 +57,9 @@ async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
 }
 
 /**
- * Step 2: Get image metadata and prepare for Gemini
+ * Step 2: Get image metadata (without padding yet - we may auto-crop first)
  */
-async function prepareImageForGemini(imageBuffer: Buffer): Promise<ImageMetadata> {
+async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
   "use step";
 
   const metadata = await sharp(imageBuffer).metadata();
@@ -77,7 +72,178 @@ async function prepareImageForGemini(imageBuffer: Buffer): Promise<ImageMetadata
     ? `image/${detectedFormat === "jpeg" ? "jpeg" : detectedFormat}`
     : "image/jpeg";
 
-  // Pad image to square for Gemini (requires square inputs)
+  return {
+    width,
+    height,
+    mimeType,
+    imageBase64: imageBuffer.toString("base64"),
+  };
+}
+
+/**
+ * Step 3: Analyze image with vision model
+ */
+async function analyzeImageStep(
+  imageBase64: string,
+  mimeType: string,
+): Promise<ImageAnalysisResultV2> {
+  "use step";
+
+  try {
+    return await analyzeImageV2(imageBase64, mimeType);
+  } catch (error) {
+    // Don't fail the job if analysis fails - return default analysis
+    console.warn("Image analysis failed, using defaults:", error);
+    return {
+      description: "Analysis failed",
+      quality: "medium" as const,
+      structuredAnalysis: {
+        mainSubject: "unknown",
+        imageStyle: "photograph" as const,
+        lightingCondition: "unknown",
+        defects: {
+          isDark: false,
+          isBlurry: false,
+          hasNoise: false,
+          hasVHSArtifacts: false,
+          isLowResolution: false,
+          isOverexposed: false,
+          hasColorCast: false,
+        },
+        cropping: { isCroppingNeeded: false },
+      },
+    };
+  }
+}
+
+/**
+ * Step 4: Save analysis results to database
+ */
+async function saveAnalysisToDb(
+  jobId: string,
+  analysisResult: ImageAnalysisResultV2,
+): Promise<void> {
+  "use step";
+
+  await prisma.imageEnhancementJob.update({
+    where: { id: jobId },
+    data: {
+      analysisResult: JSON.parse(JSON.stringify(analysisResult.structuredAnalysis)),
+      analysisSource: DEFAULT_MODEL,
+    },
+  });
+}
+
+/**
+ * Step 5: Auto-crop image if needed
+ * Returns new image buffer and dimensions, or original if no crop needed
+ */
+async function autoCropStep(
+  imageBuffer: Buffer,
+  originalWidth: number,
+  originalHeight: number,
+  analysisResult: AnalysisDetailedResult,
+  originalR2Key: string,
+  jobId: string,
+  mimeType: string,
+): Promise<{
+  buffer: Buffer;
+  width: number;
+  height: number;
+  wasCropped: boolean;
+  cropDimensions: { left: number; top: number; width: number; height: number; } | null;
+}> {
+  "use step";
+
+  // Check if cropping is needed
+  if (
+    !analysisResult.cropping.isCroppingNeeded ||
+    !analysisResult.cropping.suggestedCrop ||
+    !validateCropDimensions(analysisResult.cropping.suggestedCrop)
+  ) {
+    return {
+      buffer: imageBuffer,
+      width: originalWidth,
+      height: originalHeight,
+      wasCropped: false,
+      cropDimensions: null,
+    };
+  }
+
+  try {
+    const cropRegion = cropDimensionsToPixels(
+      analysisResult.cropping.suggestedCrop,
+      originalWidth,
+      originalHeight,
+    );
+
+    // Validate calculated region
+    if (cropRegion.width <= 0 || cropRegion.height <= 0) {
+      return {
+        buffer: imageBuffer,
+        width: originalWidth,
+        height: originalHeight,
+        wasCropped: false,
+        cropDimensions: null,
+      };
+    }
+
+    // Crop the image
+    const croppedBuffer = await sharp(imageBuffer)
+      .extract(cropRegion)
+      .toBuffer();
+
+    // Get new dimensions
+    const croppedMetadata = await sharp(croppedBuffer).metadata();
+    const newWidth = croppedMetadata.width || cropRegion.width;
+    const newHeight = croppedMetadata.height || cropRegion.height;
+
+    // Upload cropped image back to R2 (overwrite original)
+    await uploadToR2({
+      key: originalR2Key,
+      buffer: croppedBuffer,
+      contentType: mimeType,
+      metadata: { cropped: "true", jobId },
+    });
+
+    // Update job with crop info
+    await prisma.imageEnhancementJob.update({
+      where: { id: jobId },
+      data: {
+        wasCropped: true,
+        cropDimensions: JSON.parse(JSON.stringify(cropRegion)),
+      },
+    });
+
+    return {
+      buffer: croppedBuffer,
+      width: newWidth,
+      height: newHeight,
+      wasCropped: true,
+      cropDimensions: cropRegion,
+    };
+  } catch (error) {
+    console.warn("Auto-crop failed, continuing with original:", error);
+    return {
+      buffer: imageBuffer,
+      width: originalWidth,
+      height: originalHeight,
+      wasCropped: false,
+      cropDimensions: null,
+    };
+  }
+}
+
+/**
+ * Step 6: Pad image to square for Gemini
+ */
+async function padImageForGemini(
+  imageBuffer: Buffer,
+  width: number,
+  height: number,
+): Promise<string> {
+  "use step";
+
   const maxDimension = Math.max(width, height);
   const paddedBuffer = await sharp(imageBuffer)
     .resize(maxDimension, maxDimension, {
@@ -86,16 +252,11 @@ async function prepareImageForGemini(imageBuffer: Buffer): Promise<ImageMetadata
     })
     .toBuffer();
 
-  return {
-    width,
-    height,
-    mimeType,
-    paddedBase64: paddedBuffer.toString("base64"),
-  };
+  return paddedBuffer.toString("base64");
 }
 
 /**
- * Step 3: Enhance image with Gemini AI
+ * Step 7: Enhance image with Gemini AI using dynamic prompt
  */
 async function enhanceWithGemini(
   imageBase64: string,
@@ -103,6 +264,7 @@ async function enhanceWithGemini(
   tier: "1K" | "2K" | "4K",
   originalWidth: number,
   originalHeight: number,
+  promptOverride: string,
 ): Promise<Buffer> {
   "use step";
 
@@ -113,6 +275,7 @@ async function enhanceWithGemini(
       tier,
       originalWidth,
       originalHeight,
+      promptOverride,
     });
     return enhanced;
   } catch (error) {
@@ -131,7 +294,7 @@ async function enhanceWithGemini(
 }
 
 /**
- * Step 4: Post-process (crop, resize) and upload to R2
+ * Step 8: Post-process (crop, resize) and upload to R2
  */
 async function processAndUpload(
   enhancedBuffer: Buffer,
@@ -152,35 +315,18 @@ async function processAndUpload(
   }
 
   // Calculate crop region to restore original aspect ratio
-  const aspectRatio = originalWidth / originalHeight;
-
-  let extractLeft = 0;
-  let extractTop = 0;
-  let extractWidth = geminiSize;
-  let extractHeight = geminiSize;
-
-  if (aspectRatio > 1) {
-    // Landscape: content is full width, centered vertically
-    extractHeight = Math.round(geminiSize / aspectRatio);
-    extractTop = Math.round((geminiSize - extractHeight) / 2);
-  } else {
-    // Portrait/Square: content is full height, centered horizontally
-    extractWidth = Math.round(geminiSize * aspectRatio);
-    extractLeft = Math.round((geminiSize - extractWidth) / 2);
-  }
+  const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
+    geminiSize,
+    originalWidth,
+    originalHeight,
+  );
 
   // Calculate target dimensions based on tier
-  const tierResolution = TIER_RESOLUTIONS[tier];
-  let targetWidth: number;
-  let targetHeight: number;
-
-  if (aspectRatio > 1) {
-    targetWidth = tierResolution;
-    targetHeight = Math.round(tierResolution / aspectRatio);
-  } else {
-    targetHeight = tierResolution;
-    targetWidth = Math.round(tierResolution * aspectRatio);
-  }
+  const { targetWidth, targetHeight } = calculateTargetDimensions(
+    tier,
+    originalWidth,
+    originalHeight,
+  );
 
   // Crop and resize
   const finalBuffer = await sharp(enhancedBuffer)
@@ -200,9 +346,7 @@ async function processAndUpload(
   const finalMetadata = await sharp(finalBuffer).metadata();
 
   // Generate R2 key for enhanced image
-  const enhancedR2Key = originalR2Key
-    .replace("/originals/", `/enhanced/`)
-    .replace(/\.[^.]+$/, `/${jobId}.jpg`);
+  const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);
 
   // Upload to R2
   const uploadResult = await uploadToR2({
@@ -229,7 +373,7 @@ async function processAndUpload(
 }
 
 /**
- * Step 5: Update job status in database
+ * Step 9: Update job status in database
  */
 async function updateJobStatus(
   jobId: string,
@@ -269,7 +413,7 @@ async function updateJobStatus(
 }
 
 /**
- * Step 6: Refund tokens on failure
+ * Step 10: Refund tokens on failure
  */
 async function refundTokens(
   userId: string,
@@ -295,13 +439,26 @@ async function refundTokens(
 /**
  * Main Enhancement Workflow
  *
- * Orchestrates the image enhancement process with durable execution:
- * 1. Downloads original image from R2
- * 2. Prepares image for Gemini (metadata, padding)
- * 3. Enhances with Gemini AI
- * 4. Post-processes and uploads result
- * 5. Updates job status
- * 6. Refunds tokens on failure
+ * Orchestrates the 4-stage AI image enhancement pipeline with durable execution:
+ *
+ * STAGE 1 - Analysis:
+ *   1. Download original image from R2
+ *   2. Get image metadata
+ *   3. Analyze with vision model (detect defects, suggest cropping)
+ *   4. Save analysis to database
+ *
+ * STAGE 2 - Auto-Crop (conditional):
+ *   5. Auto-crop if needed, upload cropped version back to R2
+ *
+ * STAGE 3 - Dynamic Prompt & Enhancement:
+ *   6. Pad image to square for Gemini
+ *   7. Build dynamic enhancement prompt based on analysis
+ *   8. Enhance with Gemini AI using tailored prompt
+ *
+ * STAGE 4 - Post-processing:
+ *   9. Crop to original aspect ratio, resize to tier, upload to R2
+ *   10. Update job status
+ *   11. Refund tokens on failure
  */
 export async function enhanceImage(input: EnhanceImageInput): Promise<{
   success: boolean;
@@ -313,32 +470,71 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
   const { jobId, userId, originalR2Key, tier, tokensCost } = input;
 
   try {
+    // === STAGE 1: ANALYSIS ===
+
     // Step 1: Download original image
-    const imageBuffer = await downloadOriginalImage(originalR2Key);
+    let imageBuffer = await downloadOriginalImage(originalR2Key);
 
-    // Step 2: Prepare for Gemini
-    const metadata = await prepareImageForGemini(imageBuffer);
+    // Step 2: Get image metadata
+    const metadata = await getImageMetadata(imageBuffer);
+    let currentWidth = metadata.width;
+    let currentHeight = metadata.height;
 
-    // Step 3: Enhance with Gemini
-    const enhancedBuffer = await enhanceWithGemini(
-      metadata.paddedBase64,
+    // Step 3: Analyze image with vision model
+    const analysisResult = await analyzeImageStep(metadata.imageBase64, metadata.mimeType);
+
+    // Step 4: Save analysis to database
+    await saveAnalysisToDb(jobId, analysisResult);
+
+    // === STAGE 2: AUTO-CROP (Conditional) ===
+
+    // Step 5: Auto-crop if needed
+    const cropResult = await autoCropStep(
+      imageBuffer,
+      currentWidth,
+      currentHeight,
+      analysisResult.structuredAnalysis,
+      originalR2Key,
+      jobId,
       metadata.mimeType,
-      TIER_TO_SIZE[tier],
-      metadata.width,
-      metadata.height,
     );
 
-    // Step 4: Post-process and upload
+    // Update current state with crop result
+    imageBuffer = cropResult.buffer;
+    currentWidth = cropResult.width;
+    currentHeight = cropResult.height;
+
+    // === STAGE 3: DYNAMIC PROMPT & ENHANCEMENT ===
+
+    // Step 6: Pad image to square for Gemini
+    const paddedBase64 = await padImageForGemini(imageBuffer, currentWidth, currentHeight);
+
+    // Build dynamic enhancement prompt based on analysis
+    const dynamicPrompt = buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
+
+    // Step 7: Enhance with Gemini using dynamic prompt
+    const enhancedBuffer = await enhanceWithGemini(
+      paddedBase64,
+      metadata.mimeType,
+      TIER_TO_SIZE[tier],
+      currentWidth,
+      currentHeight,
+      dynamicPrompt,
+    );
+
+    // === STAGE 4: POST-PROCESSING ===
+
+    // Step 8: Post-process and upload
     const result = await processAndUpload(
       enhancedBuffer,
       tier,
-      metadata.width,
-      metadata.height,
+      currentWidth,
+      currentHeight,
       originalR2Key,
       jobId,
     );
 
-    // Step 5: Update job as completed
+    // Step 9: Update job as completed
     await updateJobStatus(jobId, "COMPLETED", {
       enhancedUrl: result.enhancedUrl,
       r2Key: result.r2Key,
@@ -351,7 +547,7 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    // Step 6: Refund tokens on failure
+    // Step 10: Refund tokens on failure
     await refundTokens(userId, tokensCost, jobId, errorMessage);
 
     // Update job as failed

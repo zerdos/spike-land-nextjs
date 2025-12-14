@@ -132,6 +132,11 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         updatedAt: new Date(),
         processingStartedAt: null,
         processingCompletedAt: null,
+        // Analysis and cropping fields (new in 4-stage pipeline)
+        analysisResult: null,
+        analysisSource: null,
+        wasCropped: false,
+        cropDimensions: null,
       };
 
       setImage((prev: ImageWithJobs) => ({

@@ -9,6 +9,35 @@ export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defau
 // so 5 minutes provides a safe buffer while preventing indefinite hangs
 export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000;
 
+// Timeout for vision analysis stage (30 seconds)
+// Analysis should be fast - if it times out, we fall back to default prompt
+export const ANALYSIS_TIMEOUT_MS = 30 * 1000;
+
+// Analysis prompt schema for structured JSON output from vision model
+const ANALYSIS_PROMPT_SCHEMA =
+  `Analyze this image and provide a JSON object describing its content, technical flaws, and potential cropping needs.
+The JSON MUST strictly adhere to this structure, with no additional text before or after:
+{
+    "mainSubject": "brief description of image content",
+    "imageStyle": "photograph" OR "sketch" OR "painting" OR "screenshot" OR "other",
+    "defects": {
+      "isDark": boolean (true if severely underexposed/pitch black),
+      "isBlurry": boolean (true if significant motion or focus blur),
+      "hasNoise": boolean (true if grainy or high ISO noise),
+      "hasVHSArtifacts": boolean (true if tracking lines, tape distortion, color bleed),
+      "isLowResolution": boolean (true if pixelated),
+      "isOverexposed": boolean (true if blown-out highlights),
+      "hasColorCast": boolean (true if unnatural tint),
+      "colorCastType": "yellow" OR "blue" OR "green" OR "red" OR "magenta" OR "cyan" (null if no cast)
+    },
+    "lightingCondition": "e.g., pitch black, dim indoors, sunny, harsh flash",
+    "cropping": {
+      "isCroppingNeeded": boolean (true if there are black bars, UI elements, or excessive empty space),
+      "suggestedCrop": { "x": number, "y": number, "width": number, "height": number } (percentages 0.0-1.0, null if no crop),
+      "cropReason": "reason for crop" (null if no crop needed)
+    }
+}`;
+
 let genAI: GoogleGenAI | null = null;
 
 function getGeminiClient(): GoogleGenAI {
@@ -39,49 +68,384 @@ export interface ImageAnalysisResult {
   enhancementPrompt: string;
 }
 
+// New types for dynamic two-stage AI pipeline
+
+/**
+ * Crop dimensions as percentages (0.0-1.0) of the original image dimensions.
+ * Used by the vision model to suggest cropping areas.
+ */
+export interface CropDimensions {
+  x: number; // Left edge as percentage (0.0-1.0)
+  y: number; // Top edge as percentage (0.0-1.0)
+  width: number; // Width as percentage (0.0-1.0)
+  height: number; // Height as percentage (0.0-1.0)
+}
+
+/**
+ * Pixel-based crop region used for Sharp image processing.
+ * Converted from CropDimensions percentages.
+ */
+export interface CropRegionPixels {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Detailed analysis result from vision model.
+ * Provides structured information about image characteristics and defects.
+ */
+export interface AnalysisDetailedResult {
+  /** Brief description of the main subject in the image */
+  mainSubject: string;
+  /** Detected style/type of the image */
+  imageStyle: "photograph" | "sketch" | "painting" | "screenshot" | "other";
+  /** Detected defects that need correction */
+  defects: {
+    /** True if severely underexposed (pitch dark) */
+    isDark: boolean;
+    /** True if image has motion blur or is out of focus */
+    isBlurry: boolean;
+    /** True if image has visible ISO/sensor noise or grain */
+    hasNoise: boolean;
+    /** True if image has VHS tracking lines, color bleed, or analog artifacts */
+    hasVHSArtifacts: boolean;
+    /** True if image is pixelated or low detail */
+    isLowResolution: boolean;
+    /** True if image has blown-out highlights */
+    isOverexposed: boolean;
+    /** True if image has unnatural color tint */
+    hasColorCast: boolean;
+    /** Type of color cast if hasColorCast is true */
+    colorCastType?: "yellow" | "blue" | "green" | "red" | "magenta" | "cyan";
+  };
+  /** Description of lighting conditions (e.g., "pitch black", "dim indoors", "sunny") */
+  lightingCondition: string;
+  /** Cropping analysis */
+  cropping: {
+    /** True if image has black bars, UI elements, or excessive empty space */
+    isCroppingNeeded: boolean;
+    /** Suggested crop dimensions as percentages (0.0-1.0) */
+    suggestedCrop?: CropDimensions;
+    /** Reason for suggested cropping */
+    cropReason?: string;
+  };
+}
+
+/**
+ * Extended ImageAnalysisResult with structured analysis from vision model.
+ */
+export interface ImageAnalysisResultV2 {
+  description: string;
+  quality: "low" | "medium" | "high";
+  structuredAnalysis: AnalysisDetailedResult;
+}
+
 export interface EnhanceImageParams {
   imageData: string;
   mimeType: string;
   tier: "1K" | "2K" | "4K";
   originalWidth?: number;
   originalHeight?: number;
+  /** Optional prompt override - when provided, skips internal analysis and uses this prompt directly */
+  promptOverride?: string;
 }
 
-const ENHANCEMENT_BASE_PROMPT =
-  `Create a high resolution version of this photo. Please generate it detailed with perfect focus, lights, and colors, make it look like if this photo was taken by a professional photographer with a modern professional camera in 2025.`;
+/**
+ * Builds a dynamic enhancement prompt based on detected image characteristics.
+ * Handles extreme cases like VHS artifacts, sketches, and pitch-dark photos.
+ *
+ * @param analysis - Structured analysis result from vision model
+ * @returns Dynamic enhancement prompt tailored to the image's specific defects
+ */
+export function buildDynamicEnhancementPrompt(analysis: AnalysisDetailedResult): string {
+  const defects = analysis.defects;
+  let instruction =
+    `You are a professional image restoration AI. Transform this input image into a stunning, high-resolution, professional photograph taken with a modern camera in ideal lighting conditions. Maintain the original subject and composition perfectly.\n\nSpecific Correction Instructions:\n`;
+
+  // Style Conversion (sketches/paintings to photorealistic)
+  if (analysis.imageStyle === "sketch") {
+    instruction +=
+      `- Convert this sketch into a photorealistic image while preserving the composition and subject. Add realistic textures, lighting, and colors.\n`;
+  } else if (analysis.imageStyle === "painting") {
+    instruction +=
+      `- Convert this painting into a photorealistic photograph while maintaining the composition. Replace painted textures with realistic details and natural lighting.\n`;
+  } else if (analysis.imageStyle === "screenshot") {
+    instruction +=
+      `- Clean up this screenshot and enhance it to photographic quality. Remove any UI elements or compression artifacts.\n`;
+  }
+
+  // Lighting & Exposure
+  if (defects.isDark || analysis.lightingCondition.includes("pitch black")) {
+    instruction +=
+      `- Dramatically relight the scene. Reveal details hidden in shadows as if illuminated by strong, natural light (e.g., bright moonlight or professional studio lighting) while maintaining a realistic atmosphere.\n`;
+  } else if (defects.isOverexposed) {
+    instruction +=
+      `- Recover details in blown-out highlight areas. Restore natural texture and color to bright spots.\n`;
+  }
+
+  // VHS/Analog Artifacts
+  if (defects.hasVHSArtifacts) {
+    instruction +=
+      `- Completely remove all analog video artifacts, including tracking lines, color bleeding, static noise, and tape distortion.\n`;
+  }
+
+  // Noise & Resolution
+  if (defects.hasNoise || defects.isLowResolution) {
+    instruction +=
+      `- Apply advanced noise reduction to eliminate grain. Sharpen fine details and textures that are currently pixelated or blurry.\n`;
+  }
+
+  // Color Correction
+  if (defects.hasColorCast && defects.colorCastType) {
+    instruction +=
+      `- Neutralize the strong ${defects.colorCastType} color cast to restore natural, accurate colors.\n`;
+  }
+
+  // Focus/Blur
+  if (defects.isBlurry) {
+    instruction += `- Bring the entire image into sharp, crisp focus.\n`;
+  }
+
+  // Final instruction
+  instruction +=
+    `\nFinal Output Requirement: A clean, sharp, highly detailed professional photograph.`;
+
+  return instruction;
+}
 
 /**
- * Analyzes an image and returns enhancement suggestions.
+ * Returns default analysis result for fallback scenarios.
+ * Used when vision model analysis fails or times out.
+ * @internal
+ */
+function getDefaultAnalysis(): AnalysisDetailedResult {
+  return {
+    mainSubject: "General image",
+    imageStyle: "photograph",
+    defects: {
+      isDark: false,
+      isBlurry: false,
+      hasNoise: false,
+      hasVHSArtifacts: false,
+      isLowResolution: true, // Assume low res since we're enhancing
+      isOverexposed: false,
+      hasColorCast: false,
+    },
+    lightingCondition: "unknown",
+    cropping: {
+      isCroppingNeeded: false,
+    },
+  };
+}
+
+/**
+ * Validates the imageStyle field from analysis response.
+ * @internal
+ */
+function validateImageStyle(style: unknown): AnalysisDetailedResult["imageStyle"] {
+  const validStyles = ["photograph", "sketch", "painting", "screenshot", "other"];
+  if (typeof style === "string" && validStyles.includes(style)) {
+    return style as AnalysisDetailedResult["imageStyle"];
+  }
+  return "photograph";
+}
+
+/**
+ * Validates the colorCastType field from analysis response.
+ * @internal
+ */
+function validateColorCastType(type: unknown): AnalysisDetailedResult["defects"]["colorCastType"] {
+  const validTypes = ["yellow", "blue", "green", "red", "magenta", "cyan"];
+  if (typeof type === "string" && validTypes.includes(type)) {
+    return type as AnalysisDetailedResult["defects"]["colorCastType"];
+  }
+  return undefined;
+}
+
+/**
+ * Parses the analysis response, handling potential markdown code blocks.
+ * @internal
+ */
+function parseAnalysisResponse(text: string): AnalysisDetailedResult {
+  // Remove markdown code blocks if present
+  let jsonText = text.trim();
+  if (jsonText.startsWith("```json")) {
+    jsonText = jsonText.slice(7);
+  } else if (jsonText.startsWith("```")) {
+    jsonText = jsonText.slice(3);
+  }
+  if (jsonText.endsWith("```")) {
+    jsonText = jsonText.slice(0, -3);
+  }
+  jsonText = jsonText.trim();
+
+  const parsed = JSON.parse(jsonText);
+
+  // Validate and sanitize the parsed response
+  return {
+    mainSubject: String(parsed.mainSubject || "Unknown subject"),
+    imageStyle: validateImageStyle(parsed.imageStyle),
+    defects: {
+      isDark: Boolean(parsed.defects?.isDark),
+      isBlurry: Boolean(parsed.defects?.isBlurry),
+      hasNoise: Boolean(parsed.defects?.hasNoise),
+      hasVHSArtifacts: Boolean(parsed.defects?.hasVHSArtifacts),
+      isLowResolution: Boolean(parsed.defects?.isLowResolution),
+      isOverexposed: Boolean(parsed.defects?.isOverexposed),
+      hasColorCast: Boolean(parsed.defects?.hasColorCast),
+      colorCastType: validateColorCastType(parsed.defects?.colorCastType),
+    },
+    lightingCondition: String(parsed.lightingCondition || "unknown"),
+    cropping: {
+      isCroppingNeeded: Boolean(parsed.cropping?.isCroppingNeeded),
+      suggestedCrop: parsed.cropping?.suggestedCrop
+        ? {
+          x: Number(parsed.cropping.suggestedCrop.x) || 0,
+          y: Number(parsed.cropping.suggestedCrop.y) || 0,
+          width: Number(parsed.cropping.suggestedCrop.width) || 1,
+          height: Number(parsed.cropping.suggestedCrop.height) || 1,
+        }
+        : undefined,
+      cropReason: parsed.cropping?.cropReason ? String(parsed.cropping.cropReason) : undefined,
+    },
+  };
+}
+
+/**
+ * Performs actual vision analysis using Gemini model.
+ * @internal
+ */
+async function performVisionAnalysis(
+  ai: GoogleGenAI,
+  imageData: string,
+  mimeType: string,
+): Promise<AnalysisDetailedResult> {
+  const response = await ai.models.generateContent({
+    model: DEFAULT_MODEL,
+    config: {
+      responseMimeType: "application/json",
+      temperature: 0.1, // Low temperature for deterministic JSON output
+    },
+    contents: [{
+      role: "user" as const,
+      parts: [
+        { text: ANALYSIS_PROMPT_SCHEMA },
+        {
+          inlineData: {
+            mimeType,
+            data: imageData,
+          },
+        },
+      ],
+    }],
+  });
+
+  // Extract text response
+  const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    throw new Error("No analysis response from vision model");
+  }
+
+  return parseAnalysisResponse(text);
+}
+
+/**
+ * Analyzes an image using Gemini vision model to detect defects and content type.
+ * Used by the orchestrator to build dynamic enhancement prompts.
  *
- * @param imageData - Base64 encoded image data (currently unused but reserved for future vision model integration)
- * @param mimeType - MIME type of the image (currently unused but reserved for future vision model integration)
- * @returns Analysis result with description, quality assessment, and enhancement prompt
+ * @param imageData - Base64 encoded image data
+ * @param mimeType - MIME type of the image
+ * @returns Structured analysis result with defects, style, and cropping suggestions
+ */
+export async function analyzeImageV2(
+  imageData: string,
+  mimeType: string,
+): Promise<ImageAnalysisResultV2> {
+  console.log(
+    `Analyzing image with vision model (format: ${mimeType}, data length: ${imageData.length} chars)`,
+  );
+
+  const ai = getGeminiClient();
+  let structuredAnalysis: AnalysisDetailedResult;
+
+  try {
+    // Create analysis promise with timeout protection
+    const analysisPromise = performVisionAnalysis(ai, imageData, mimeType);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`));
+      }, ANALYSIS_TIMEOUT_MS);
+    });
+
+    structuredAnalysis = await Promise.race([analysisPromise, timeoutPromise]);
+    console.log("Vision analysis successful:", JSON.stringify(structuredAnalysis.defects));
+  } catch (error) {
+    console.warn(
+      "Vision analysis failed, using fallback:",
+      error instanceof Error ? error.message : String(error),
+    );
+    structuredAnalysis = getDefaultAnalysis();
+  }
+
+  // Determine quality based on defect count
+  const defectCount = Object.values(structuredAnalysis.defects)
+    .filter((v) => v === true).length;
+  const quality: "low" | "medium" | "high" = defectCount >= 3
+    ? "low"
+    : defectCount >= 1
+    ? "medium"
+    : "high";
+
+  return {
+    description: structuredAnalysis.mainSubject,
+    quality,
+    structuredAnalysis,
+  };
+}
+
+/**
+ * Backward-compatible analyzeImage function.
+ * Wraps analyzeImageV2 and returns the legacy ImageAnalysisResult format.
  *
- * @remarks
- * This is currently a placeholder implementation that returns static analysis results.
- * In the future, this will integrate with Gemini's vision model to perform actual image
- * analysis, including quality assessment, content detection, and intelligent enhancement suggestions.
- * Parameters are preserved to maintain API compatibility for future implementation.
+ * @deprecated Use analyzeImageV2 for new code - it returns structured analysis
+ * @param imageData - Base64 encoded image data
+ * @param mimeType - MIME type of the image
+ * @returns Legacy analysis result format for backward compatibility
  */
 export async function analyzeImage(
   imageData: string,
   mimeType: string,
 ): Promise<ImageAnalysisResult> {
-  // Log analysis attempt with metadata (parameters logged to demonstrate they're available for future use)
-  console.log(
-    `Analyzing image with Gemini API (format: ${mimeType}, data length: ${imageData.length} chars)`,
-  );
+  const v2Result = await analyzeImageV2(imageData, mimeType);
 
-  // TODO: Implement actual vision model analysis in future iteration
-  // - Use Gemini vision to detect image content and quality
-  // - Generate dynamic enhancement suggestions based on image characteristics
-  // - Adjust enhancement prompt based on image type (portrait, landscape, etc.)
+  // Build suggested improvements from detected defects
+  const suggestedImprovements: string[] = [];
+  const defects = v2Result.structuredAnalysis.defects;
+
+  if (v2Result.structuredAnalysis.imageStyle !== "photograph") {
+    suggestedImprovements.push("photorealistic conversion");
+  }
+  if (defects.isDark) suggestedImprovements.push("exposure correction");
+  if (defects.isOverexposed) suggestedImprovements.push("highlight recovery");
+  if (defects.isBlurry) suggestedImprovements.push("sharpening");
+  if (defects.hasNoise) suggestedImprovements.push("noise reduction");
+  if (defects.hasVHSArtifacts) suggestedImprovements.push("artifact removal");
+  if (defects.isLowResolution) suggestedImprovements.push("resolution enhancement");
+  if (defects.hasColorCast) suggestedImprovements.push("color correction");
+
+  // Always add standard improvements
+  suggestedImprovements.push("color optimization", "detail enhancement");
+
+  // Build enhancement prompt using dynamic prompt builder
+  const enhancementPrompt = buildDynamicEnhancementPrompt(v2Result.structuredAnalysis);
+
   return {
-    description: "Photo ready for enhancement",
-    quality: "medium" as const,
-    suggestedImprovements: ["sharpness", "color enhancement", "detail preservation"],
-    enhancementPrompt:
-      `${ENHANCEMENT_BASE_PROMPT}\n\nFocus on improving: sharpness, color enhancement, detail preservation`,
+    description: v2Result.description,
+    quality: v2Result.quality,
+    suggestedImprovements,
+    enhancementPrompt,
   };
 }
 
@@ -97,7 +461,16 @@ export async function enhanceImageWithGemini(
 ): Promise<Buffer> {
   const ai = getGeminiClient();
 
-  const analysis = await analyzeImage(params.imageData, params.mimeType);
+  // Use promptOverride if provided, otherwise run analysis to generate prompt
+  let enhancementPrompt: string;
+  if (params.promptOverride) {
+    enhancementPrompt = params.promptOverride;
+    console.log("Using provided prompt override (skipping analysis)");
+  } else {
+    const analysis = await analyzeImage(params.imageData, params.mimeType);
+    enhancementPrompt = analysis.enhancementPrompt;
+    console.log("Using dynamically generated enhancement prompt");
+  }
 
   const resolutionMap = {
     "1K": "1024x1024",
@@ -123,10 +496,7 @@ export async function enhanceImageWithGemini(
           },
         },
         {
-          text:
-            `${analysis.enhancementPrompt}\n\The user wants you to enhance this photo - this will be a showcase what you are capable of, so we will show the result to the user with a before/after tool, with a slider, so do not change the framing or the orientation. The end result should look like, if the photo was taken with the best dslr camera - by a professional photographer - in perfect lighting conditions. Generate at ${
-              resolutionMap[params.tier]
-            } resolution.`,
+          text: `${enhancementPrompt}\n\nGenerate at ${resolutionMap[params.tier]} resolution.`,
         },
       ],
     },
