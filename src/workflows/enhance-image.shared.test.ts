@@ -1,4 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";
+import prisma from "@/lib/prisma";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock Prisma before importing modules that use it
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    album: {
+      findUnique: vi.fn(),
+    },
+    enhancementPipeline: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
+
 import {
   calculateCropRegion,
   calculateTargetDimensions,
@@ -9,6 +25,9 @@ import {
   validateCropDimensions,
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
+
+// Import pipeline resolver separately (it uses Prisma)
+import { resolvePipelineConfig } from "./pipeline-resolver";
 
 describe("enhance-image.shared", () => {
   describe("constants", () => {
@@ -453,6 +472,188 @@ describe("enhance-image.shared", () => {
         100,
       );
       expect(result.height).toBe(100);
+    });
+  });
+
+  describe("resolvePipelineConfig", () => {
+    const mockAlbumFindUnique = vi.mocked(prisma.album.findUnique);
+    const mockPipelineFindUnique = vi.mocked(prisma.enhancementPipeline.findUnique);
+    const mockPipelineUpdate = vi.mocked(prisma.enhancementPipeline.update);
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      // Mock update to return a resolved promise
+      mockPipelineUpdate.mockResolvedValue(
+        {} as ReturnType<typeof prisma.enhancementPipeline.update> extends Promise<infer T> ? T
+          : never,
+      );
+    });
+
+    it("should return system default when no pipelineId or albumId provided", async () => {
+      const result = await resolvePipelineConfig();
+
+      expect(result.pipelineId).toBeNull();
+      expect(result.config).toEqual(SYSTEM_DEFAULT_PIPELINE);
+      expect(mockAlbumFindUnique).not.toHaveBeenCalled();
+      expect(mockPipelineFindUnique).not.toHaveBeenCalled();
+    });
+
+    it("should use explicit pipelineId when provided", async () => {
+      mockPipelineFindUnique.mockResolvedValue(
+        {
+          tier: "TIER_2K",
+          analysisConfig: { enabled: false },
+          autoCropConfig: { enabled: true },
+          promptConfig: { customInstructions: "Test" },
+          generationConfig: { retryAttempts: 5 },
+        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+          : never,
+      );
+
+      const result = await resolvePipelineConfig(undefined, "pipeline-123");
+
+      expect(mockPipelineFindUnique).toHaveBeenCalledWith({
+        where: { id: "pipeline-123" },
+        select: {
+          tier: true,
+          analysisConfig: true,
+          autoCropConfig: true,
+          promptConfig: true,
+          generationConfig: true,
+        },
+      });
+      expect(result.pipelineId).toBe("pipeline-123");
+      expect(result.config.tier).toBe("TIER_2K");
+      expect(result.config.analysis.enabled).toBe(false);
+    });
+
+    it("should fetch pipeline from album when albumId provided", async () => {
+      mockAlbumFindUnique.mockResolvedValue(
+        {
+          pipelineId: "album-pipeline-456",
+        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T : never,
+      );
+      mockPipelineFindUnique.mockResolvedValue(
+        {
+          tier: "TIER_4K",
+          analysisConfig: { enabled: true },
+          autoCropConfig: { enabled: false },
+          promptConfig: null,
+          generationConfig: null,
+        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+          : never,
+      );
+
+      const result = await resolvePipelineConfig("album-789");
+
+      expect(mockAlbumFindUnique).toHaveBeenCalledWith({
+        where: { id: "album-789" },
+        select: { pipelineId: true },
+      });
+      expect(mockPipelineFindUnique).toHaveBeenCalledWith({
+        where: { id: "album-pipeline-456" },
+        select: expect.any(Object),
+      });
+      expect(result.pipelineId).toBe("album-pipeline-456");
+      expect(result.config.tier).toBe("TIER_4K");
+    });
+
+    it("should prefer explicit pipelineId over album's pipeline", async () => {
+      mockPipelineFindUnique.mockResolvedValue(
+        {
+          tier: "TIER_1K",
+          analysisConfig: null,
+          autoCropConfig: null,
+          promptConfig: null,
+          generationConfig: null,
+        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+          : never,
+      );
+
+      const result = await resolvePipelineConfig("album-123", "explicit-pipeline");
+
+      // Should not query album since explicit pipelineId was provided
+      expect(mockAlbumFindUnique).not.toHaveBeenCalled();
+      expect(mockPipelineFindUnique).toHaveBeenCalledWith({
+        where: { id: "explicit-pipeline" },
+        select: expect.any(Object),
+      });
+      expect(result.pipelineId).toBe("explicit-pipeline");
+    });
+
+    it("should return system default when album has no pipeline", async () => {
+      mockAlbumFindUnique.mockResolvedValue(
+        {
+          pipelineId: null,
+        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T : never,
+      );
+
+      const result = await resolvePipelineConfig("album-without-pipeline");
+
+      expect(result.pipelineId).toBeNull();
+      expect(result.config).toEqual(SYSTEM_DEFAULT_PIPELINE);
+    });
+
+    it("should return system default when album not found", async () => {
+      mockAlbumFindUnique.mockResolvedValue(null);
+
+      const result = await resolvePipelineConfig("nonexistent-album");
+
+      expect(result.pipelineId).toBeNull();
+      expect(result.config).toEqual(SYSTEM_DEFAULT_PIPELINE);
+    });
+
+    it("should return system default when pipeline not found", async () => {
+      mockPipelineFindUnique.mockResolvedValue(null);
+
+      const result = await resolvePipelineConfig(undefined, "nonexistent-pipeline");
+
+      expect(result.pipelineId).toBeNull();
+      expect(result.config).toEqual(SYSTEM_DEFAULT_PIPELINE);
+    });
+
+    it("should increment usage count when pipeline is found", async () => {
+      mockPipelineFindUnique.mockResolvedValue(
+        {
+          tier: "TIER_1K",
+          analysisConfig: null,
+          autoCropConfig: null,
+          promptConfig: null,
+          generationConfig: null,
+        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+          : never,
+      );
+
+      await resolvePipelineConfig(undefined, "pipeline-to-increment");
+
+      // Wait a tick for the async update
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(mockPipelineUpdate).toHaveBeenCalledWith({
+        where: { id: "pipeline-to-increment" },
+        data: { usageCount: { increment: 1 } },
+      });
+    });
+
+    it("should use system defaults for null config fields", async () => {
+      mockPipelineFindUnique.mockResolvedValue(
+        {
+          tier: "TIER_2K",
+          analysisConfig: null,
+          autoCropConfig: null,
+          promptConfig: null,
+          generationConfig: null,
+        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+          : never,
+      );
+
+      const result = await resolvePipelineConfig(undefined, "pipeline-with-nulls");
+
+      expect(result.config.tier).toBe("TIER_2K");
+      expect(result.config.analysis).toEqual(SYSTEM_DEFAULT_PIPELINE.analysis);
+      expect(result.config.autoCrop).toEqual(SYSTEM_DEFAULT_PIPELINE.autoCrop);
+      expect(result.config.prompt).toEqual(SYSTEM_DEFAULT_PIPELINE.prompt);
+      expect(result.config.generation).toEqual(SYSTEM_DEFAULT_PIPELINE.generation);
     });
   });
 });

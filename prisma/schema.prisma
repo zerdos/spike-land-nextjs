@@ -43,6 +43,7 @@ model User {
   apiKeys            ApiKey[]
   mcpGenerationJobs  McpGenerationJob[]
   boxes              Box[]
+  pipelines          EnhancementPipeline[]
 
   @@map("users")
 }
@@ -261,6 +262,11 @@ model ImageEnhancementJob {
   // Cropping fields for auto-crop feature
   wasCropped            Boolean         @default(false)
   cropDimensions        Json?           // Stores { left, top, width, height } pixel values used
+
+  // Pipeline reference for audit trail
+  pipelineId            String?
+  pipeline              EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
+
   image                 EnhancedImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   featuredGalleryItems FeaturedGalleryItem[]
@@ -269,6 +275,7 @@ model ImageEnhancementJob {
   @@index([imageId])
   @@index([status, updatedAt])
   @@index([workflowRunId])
+  @@index([pipelineId])
   @@map("image_enhancement_jobs")
 }
 
@@ -323,12 +330,18 @@ model Album {
   sortOrder    Int          @default(0)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  // Pipeline reference (optional - falls back to system default)
+  pipelineId   String?
+  pipeline     EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
+
   albumImages  AlbumImage[]
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([privacy])
   @@index([shareToken])
+  @@index([pipelineId])
   @@map("albums")
 }
 
@@ -818,4 +831,51 @@ enum BoxMessageRole {
   USER
   AGENT
   SYSTEM
+}
+
+enum PipelineVisibility {
+  PRIVATE  // Only owner can use
+  PUBLIC   // Anyone can use/fork
+  LINK     // Accessible via shareToken
+}
+
+// Pipeline Configuration System
+// Stores reusable AI enhancement pipeline configurations
+
+model EnhancementPipeline {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+
+  // Ownership (null = system default)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Sharing
+  visibility  PipelineVisibility @default(PRIVATE)
+  shareToken  String?  @unique  // For link-based sharing
+
+  // Pipeline Configuration (includes tier)
+  tier        EnhancementTier @default(TIER_1K)
+
+  // Stage Configs (JSON)
+  analysisConfig    Json?  // Analysis stage settings
+  autoCropConfig    Json?  // Auto-crop behavior
+  promptConfig      Json?  // Dynamic prompt generation
+  generationConfig  Json?  // Gemini generation settings
+
+  // Usage tracking
+  usageCount  Int      @default(0)
+
+  // Relations
+  albums      Album[]
+  jobs        ImageEnhancementJob[]
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([visibility])
+  @@map("enhancement_pipelines")
 }
