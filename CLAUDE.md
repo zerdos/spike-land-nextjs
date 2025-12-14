@@ -688,38 +688,79 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 
 ## CI/CD Pipeline
 
+### Architecture Overview
+
+The project uses a split architecture for CI/CD:
+
+1. **GitHub Actions** (`.github/workflows/ci-cd.yml`) - Testing & Quality
+2. **Vercel Native Git Integration** - Deployments
+3. **Database Migration Workflow** (`.github/workflows/db-migrate.yml`) - Schema changes
+
+```
+GitHub Push/PR
+      │
+      ├──→ GitHub Actions (Tests Only)
+      │    ├── quality-checks (lint + security)
+      │    ├── unit-tests [12 shards]
+      │    ├── build
+      │    └── e2e [4 shards]
+      │
+      └──→ Vercel (Deployments - Native Git Integration)
+           ├── Preview URL for PRs (automatic)
+           ├── PR comment with URL (automatic by Vercel)
+           └── Production deploy on main merge
+```
+
 ### GitHub Actions Workflow
 
-The project uses a multi-stage CI/CD pipeline (`.github/workflows/ci-cd.yml`):
+The CI/CD pipeline (`.github/workflows/ci-cd.yml`) focuses on **testing only**:
 
-1. **Test Job** - Runs on all pushes and PRs
-   - Linting
-   - Unit tests with 100% coverage requirement
+1. **Quality Checks** - Runs in parallel
+   - Linting (`yarn lint`)
+   - Security audit (`yarn npm audit`)
+
+2. **Unit Tests** - 12 parallel shards
+   - Vitest with 100% coverage requirement
    - Coverage reports uploaded to Codecov
 
-2. **Build Job** - Only if tests pass
-   - Next.js build
-   - Build artifacts uploaded
+3. **Build Job** - Runs in parallel
+   - Next.js build verification
+   - Catches TypeScript and build errors
 
-3. **Deploy Job** - Runs on all branches after successful build
-   - **Main branch**: Deploys to Vercel Production (https://spike.land)
-   - **Other branches**: Deploys to Vercel Preview (temporary URLs)
-   - Outputs deployment URL
+4. **E2E Tests** - 4 parallel shards
+   - Playwright/Cucumber tests against localhost
+   - Tests run independently of Vercel deployment
 
-4. **E2E Job** - Runs on all branches after successful deployment
-   - Runs Playwright/Cucumber tests against deployment URL
-   - Uploads test reports and screenshots as artifacts
+### Vercel Native Git Integration
+
+Deployments are handled **automatically by Vercel**, not GitHub Actions:
+
+- **Preview Deployments**: Created automatically for all PRs
+- **Production Deployments**: Triggered when merging to `main`
+- **PR Comments**: Vercel automatically posts deployment URLs
+- **No VERCEL_TOKEN needed in CI**: Only used for rollback workflow
+
+### Database Migrations
+
+Database migrations run via `.github/workflows/db-migrate.yml`:
+
+- **Trigger**: Changes to `prisma/migrations/**` or `prisma/schema.prisma`
+- **Environment**: Runs with production `DATABASE_URL` secret
+- **Commands**: `npx prisma migrate deploy`
 
 ### Deployment Strategy
 
-- **Production**: `main` branch automatically deploys to https://spike.land
-- **Preview**: All other branches get temporary preview URLs for testing
-- **Domain**: Custom domain `spike.land` managed via Cloudflare DNS (see `docs/archive/CLOUDFLARE_DNS_SETUP.md`)
-- **Configuration**: See `docs/archive/VERCEL_DOMAIN_SETUP.md` for Vercel domain configuration
+- **Production**: `main` branch → https://spike.land (via Vercel Git integration)
+- **Preview**: All PRs get automatic preview URLs from Vercel
+- **Domain**: Custom domain `spike.land` managed via Cloudflare DNS
+- **Rollback**: Manual via `.github/workflows/rollback.yml` (uses `VERCEL_TOKEN`)
 
 ### Required GitHub Secrets
 
-- `VERCEL_TOKEN` - Vercel deployment token (required)
+- `DATABASE_URL` - Production database connection string (required for E2E & migrations)
+- `AUTH_SECRET` - NextAuth secret (required for E2E tests)
+- `E2E_BYPASS_SECRET` - E2E test authentication bypass (required for E2E tests)
+- `VERCEL_TOKEN` - Vercel API token (only needed for rollback workflow)
 - `CODECOV_TOKEN` - Codecov upload token (optional, for coverage reports)
 
 ## Branch Protection Rules
@@ -733,8 +774,9 @@ To enforce code quality, configure branch protection for `main`:
 3. Enable:
    - ✅ **Require a pull request before merging**
    - ✅ **Require status checks to pass before merging**
-     - Required checks: `Run Tests`, `Build Application`, `E2E Tests`
-   - ✅ **Do not allow bypassing the above settings**
+     - Required checks: `Build Application`, `Quality Checks (Lint + Security)`
+   - ✅ **Require branches to be up to date before merging** (strict mode)
+   - ✅ **Require linear history** (enabled)
 
 **See `.github/BRANCH_PROTECTION_SETUP.md` for detailed instructions.**
 

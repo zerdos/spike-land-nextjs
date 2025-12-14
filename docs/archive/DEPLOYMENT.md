@@ -1,295 +1,241 @@
 # Deployment Guide
 
-**Note:** This is archived documentation. Domain references have been updated from next.spike.land to spike.land.
+**Updated:** December 2024 - Migrated to Vercel Native Git Integration
 
 This document explains the CI/CD pipeline and deployment process for Spike Land.
 
-## Pipeline Overview
+## Architecture Overview
 
-The CI/CD pipeline automatically runs on every push and pull request:
+The deployment architecture is split between GitHub Actions (testing) and Vercel (deployments):
 
 ```
-push/PR → [quality-checks, unit-tests (8 shards)] → build → e2e → deploy
-          (parallel)                                              ↓
-                                              (PRs: test, main: production)
+GitHub Push/PR
+      │
+      ├──→ GitHub Actions (Tests Only)
+      │    ├── quality-checks (lint + security)
+      │    ├── unit-tests [12 shards]
+      │    ├── build
+      │    └── e2e [4 shards]
+      │
+      └──→ Vercel (Deployments - Native Git Integration)
+           ├── Preview URL for PRs (automatic)
+           ├── PR comment with URL (automatic)
+           └── Production deploy on main merge
 ```
 
-**Key Optimizations:**
+**Key Benefits:**
 
-- ✅ Parallel execution of quality checks and test shards
-- ✅ 8-way test sharding for faster test execution
-- ✅ Content-based caching for 80%+ cache hit rates
-- ✅ Cached node_modules and Next.js builds across jobs
-- ✅ Concurrency control (cancels old runs)
-- ✅ Skip CI for documentation-only changes
+- ✅ Faster deployments (Vercel builds independently)
+- ✅ Automatic preview URLs for every PR
+- ✅ Automatic PR comments with deployment links
+- ✅ Simplified GitHub Actions workflow (testing only)
+- ✅ Database migrations handled separately
 
-## Stages
+## GitHub Actions Pipeline
 
-### 1. **Quality Checks** (Automatic, Parallel)
+The CI/CD pipeline (`.github/workflows/ci-cd.yml`) focuses on **testing only**:
 
-- Runs linting checks
-- Runs security audit (npm audit)
-- Combined in single job to reduce setup overhead
+### 1. **Quality Checks** (Parallel)
+
+- Runs linting (`yarn lint`)
+- Runs security audit (`yarn npm audit`)
 - **Time:** ~1-1.5 minutes
 
-### 2. **Unit Tests** (Automatic, Parallel with 8 shards)
+### 2. **Unit Tests** (12 Parallel Shards)
 
 - Runs unit tests with 100% coverage requirement
-- Tests split across 8 parallel runners for speed
-- Uses optimized Vitest configuration with threading
-- GitHub Actions reporter for inline annotations
-- Uploads coverage reports to Codecov from all shards
-- **Time:** ~1.5-2 minutes (with sharding)
+- Tests split across 12 parallel runners for speed
+- Uploads coverage reports to Codecov
+- **Time:** ~1.5-2 minutes
 
-### 3. **Build** (Automatic)
+### 3. **Build** (Parallel)
 
-- Builds Next.js application with `npm run build`
-- Uses content-based cache keys for Next.js (high hit rate)
-- Validates build succeeds before deployment
-- **Time:** ~2-2.5 minutes (with cache hits)
+- Builds Next.js application
+- Validates TypeScript and build configuration
+- Uses content-based caching for speed
+- **Time:** ~2-2.5 minutes
 
-### 4. **E2E Tests** (Automatic)
+### 4. **E2E Tests** (4 Parallel Shards)
 
-- Restores node_modules from cache (fast)
-- Builds production app (`npm run build`)
-- Starts production server (`npm run start`)
-- Runs E2E tests against `localhost:3000`
-- Caches Playwright browsers for speed
-- Uploads test reports
+- Runs Playwright/Cucumber tests against localhost
+- Tests run independently of Vercel deployment
+- Uploads test reports and screenshots
 - **Time:** ~3-3.5 minutes
 
-### 5a. **Deploy to Test** (Manual on PRs)
+## Vercel Native Git Integration
 
-- Pulls Vercel preview environment configuration
-- Builds with `vercel build` using preview settings
-- Deploys to Vercel preview environment
-- Runs smoke tests against deployed URL
-- **Adds comment to PR** with deployment URL
-- Requires GitHub environment approval (can be auto-approved)
-- **Time:** ~2-3 minutes
+Deployments are handled **automatically by Vercel**, not GitHub Actions.
 
-### 5b. **Deploy to Production** (Auto on main, manual elsewhere)
+### How It Works
 
-- Pulls Vercel production environment configuration
-- Builds with `vercel build --prod`
-- Deploys to Vercel production (`spike.land`)
-- Runs smoke tests against production URL
-- **Time:** ~2.5-3 minutes
+1. **When you push to a PR branch:**
+   - Vercel automatically creates a preview deployment
+   - A comment is posted to the PR with the preview URL
+   - No GitHub Actions deployment job needed
 
-## Smoke Tests
+2. **When you merge to main:**
+   - Vercel automatically deploys to production
+   - The site is live at https://spike.land within minutes
 
-Post-deployment smoke tests verify:
+### Configuration
 
-- ✓ Homepage returns 200 status
-- ✓ Favicon is accessible
-- ✓ HTML content loads
-- ✓ Health check endpoint responds
+Vercel Git Integration is configured at:
 
-Tests are run against the deployed URL to ensure real-world functionality.
+- https://vercel.com/zerdos/spike-land-nextjs/settings/git
 
-## Deployment Approval
+Settings:
 
-### For Pull Requests
-
-1. All tests must pass (unit tests, E2E tests)
-2. GitHub will show a **"Review deployments"** button
-3. Click the button and select "test" environment
-4. Click **"Approve and deploy"**
-5. Deployment proceeds to Vercel preview
-
-Once deployed:
-
-- A comment is posted to the PR with the deployment URL
-- The URL is clickable and ready for testing
-- Comment updates if you re-deploy
-
-### For Main Branch
-
-Deployments to production are **automatic**:
-
-1. Push to `main` branch
-2. All tests run automatically
-3. If all tests pass, production deployment starts automatically
-4. Smoke tests verify production environment
-
-## GitHub Environments Setup
-
-The workflow uses GitHub Environments for deployment management.
-
-### Required Setup
-
-You must create two environments in repository settings:
-
-1. **Go to:** Settings → Environments
-2. **Create "test" environment:**
-   - No protection rules needed
-   - Allows quick deployment from PR
-3. **Create "production" environment:**
-   - Enable "Required reviewers" (recommended)
-   - Add yourself as a required reviewer
-   - Restrict to "main" branch (recommended)
+- **Production Branch:** `main`
+- **Automatic Deployments:** Enabled for all branches
+- **Preview Deployments:** Enabled for all PRs
 
 ### Environment Variables
 
-Environment-specific secrets can be added:
+Environment variables are configured in Vercel dashboard:
 
-- Settings → Environments → Select environment → Environment secrets
+- https://vercel.com/zerdos/spike-land-nextjs/settings/environment-variables
 
-Current secrets used:
+Key variables (all environments):
 
-- `VERCEL_TOKEN` - Added at account level (used by all jobs)
-- `E2E_BYPASS_SECRET` - Added at account level (for test auth bypass)
+- `DATABASE_URL` - PostgreSQL connection string
+- `AUTH_SECRET` - NextAuth secret
+- `GITHUB_ID` / `GITHUB_SECRET` - OAuth credentials
+- `GOOGLE_ID` / `GOOGLE_SECRET` - OAuth credentials
+- `E2E_BYPASS_SECRET` - Test authentication (Preview only)
+
+## Database Migrations
+
+Database migrations are handled by a separate workflow (`.github/workflows/db-migrate.yml`).
+
+### Automatic Triggers
+
+Migrations run automatically when:
+
+- Changes to `prisma/migrations/**`
+- Changes to `prisma/schema.prisma`
+
+### Manual Trigger
+
+You can also run migrations manually:
+
+1. Go to Actions → Database Migration
+2. Click "Run workflow"
+3. Select branch and run
+
+### Migration Commands
+
+The workflow runs:
+
+```bash
+npx prisma migrate deploy
+```
+
+## Deployment URLs
+
+### Production
+
+- **URL:** https://spike.land
+- **Deploys from:** `main` branch (automatic)
+- **DNS:** Cloudflare
+
+### Preview
+
+- **URL:** Auto-generated by Vercel (e.g., `spike-land-nextjs-git-feature-abc123.vercel.app`)
+- **Deploys from:** Any PR branch (automatic)
+- **PR Comment:** Vercel posts URL automatically
 
 ## Rollback Procedure
 
 If a production deployment breaks something:
 
-1. **Go to:** Actions tab → "Rollback Deployment"
-2. **Click** "Run workflow"
-3. **Select:**
-   - Environment: `production`
-   - Deployment ID: (leave empty for previous, or specify)
-4. **Click** "Run workflow"
+### Via Vercel Dashboard
 
-The workflow will:
+1. Go to: https://vercel.com/zerdos/spike-land-nextjs/deployments
+2. Find the previous working deployment
+3. Click "..." → "Promote to Production"
 
-- List recent deployments
-- Promote the previous deployment
-- Verify rollback succeeded
-- Record the rollback in commit status
+### Via Workflow
 
-## Caching Strategy
+1. Go to: Actions → "Rollback Deployment"
+2. Click "Run workflow"
+3. Select environment and deployment ID
+4. Click "Run workflow"
 
-The pipeline is heavily optimized for speed through multi-layer caching:
+## Required GitHub Secrets
 
-### Multi-Layer Caching
-
-1. **node_modules cache** - 95%+ hit rate, saves ~60s per job
-2. **Next.js build cache** - Content-based keys, 80%+ hit rate, saves ~90s
-3. **Playwright browsers** - Version-based cache, saves ~45s when hit
-4. **npm setup-node cache** - Built-in npm cache, saves ~10s
-
-### Concurrency Control
-
-- Cancels outdated workflow runs for the same PR/branch
-- Main branch runs always complete (no cancellation)
-- Saves minutes by not running superseded commits
-
-## Deployment URLs
-
-### Test Environment
-
-- Vercel preview URL (changes per deployment)
-- Posted automatically in PR comments
-- Example: `https://spike-land-nextjs-git-feature-abc123-team.vercel.app`
-
-### Production Environment
-
-- Custom domain: `https://spike.land`
-- DNS managed by Cloudflare
-- Automatic deployments from `main` branch
-
-## Environment Variables
-
-### Build-time Variables
-
-- `E2E_BYPASS_SECRET` - Secret token for test authentication
-- Configured in GitHub Actions secrets
-- Passed to Vercel via workflow
-
-### Runtime Variables
-
-- Managed in Vercel project settings
-- Available to deployed application
-- Can differ per environment (preview vs. production)
+| Secret              | Purpose             | Required By            |
+| ------------------- | ------------------- | ---------------------- |
+| `DATABASE_URL`      | Database connection | E2E tests, migrations  |
+| `AUTH_SECRET`       | NextAuth secret     | E2E tests              |
+| `E2E_BYPASS_SECRET` | Test auth bypass    | E2E tests              |
+| `VERCEL_TOKEN`      | Vercel API          | Rollback workflow only |
+| `CODECOV_TOKEN`     | Coverage reports    | Optional               |
 
 ## Troubleshooting
 
-### Deployment fails with "rate limit"
+### Vercel deployment not triggering
 
-- The Vercel free tier has 100 deployments/day limit
-- Automatic preview deployments were disabled to save quota
-- Feature branches must manually trigger deployment
+1. Check Git Integration is enabled in Vercel settings
+2. Verify GitHub app has repository access
+3. Check Vercel build logs for errors
 
 ### E2E tests pass locally but fail in CI
 
-- Check `BASE_URL` environment variable
-- Ensure dev server is running before tests
-- Check Playwright browsers are installed
+1. Check `DATABASE_URL` secret is set
+2. Ensure `E2E_BYPASS_SECRET` matches Vercel config
+3. Check Playwright browsers are cached
 
-### Smoke tests fail after deployment
+### Database migration fails
 
-- Check deployment URL is live with `curl https://your-url`
-- Verify endpoints used in `scripts/smoke-test.sh` exist
-- Check network connectivity in GitHub Actions
+1. Check `DATABASE_URL` secret in production environment
+2. Verify migration SQL is idempotent
+3. Check Prisma schema matches database
 
-### PR comment not appearing
+### Preview URL not working
 
-- Ensure GitHub token has correct permissions
-- Check PR is not from a fork (limited permissions)
-- Verify workflow ran without errors
+1. Wait 2-3 minutes for build to complete
+2. Check Vercel deployment logs
+3. Verify environment variables are set for Preview
 
-## Manual Deployment Steps
+## Manual Deployment (Emergency Only)
 
-To manually test the deployment process:
+If Vercel Git Integration is broken:
 
 ```bash
 # Install Vercel CLI
-npm install -g vercel@latest
+yarn global add vercel
 
 # Login to Vercel
 vercel login
 
-# Build application
-npm run build
-
-# Pull environment config
-vercel pull --yes --environment=preview
-
 # Deploy to preview
-vercel deploy --prebuilt
+vercel deploy
 
-# Or deploy to production
-vercel pull --yes --environment=production
-vercel deploy --prebuilt --prod
+# Deploy to production
+vercel deploy --prod
 ```
 
 ## Performance
 
-### Optimized CI/CD Times (After Improvements)
+### CI Times (After Optimization)
 
-- Quality Checks: ~1.5 min (lint + security audit combined)
-- Unit Tests: ~2 min (8-way sharding, was 5+ min with 4 shards)
-- Build: ~2.5 min (content-based cache, was 4-5 min)
-- E2E: ~3.5 min (production build, was 6-7 min)
-- Deploy (test): ~2.5 min (fresh build for environment, was 5 min)
-- Deploy (production): ~2.5 min (fresh build for environment)
-- **Total (PR to test):** ~12 minutes ⚡ (was ~30 minutes)
-- **Total (main to prod):** ~12.5 minutes ⚡ (was ~30 minutes)
+| Stage          | Time     | Notes               |
+| -------------- | -------- | ------------------- |
+| Quality Checks | ~1.5 min | Lint + security     |
+| Unit Tests     | ~2 min   | 12-way sharding     |
+| Build          | ~2.5 min | Content-based cache |
+| E2E Tests      | ~3.5 min | 4-way sharding      |
+| **Total CI**   | ~5-6 min | All parallel        |
 
-**Overall speedup: 2.5x faster (60% reduction in CI time)**
+### Deployment Times
 
-### Optimizations Applied
-
-- ✅ 8-way test sharding (parallel execution)
-- ✅ Merged lint + security audit (single setup)
-- ✅ Content-based Next.js caching (80%+ hit rate)
-- ✅ node_modules caching (95%+ hit rate)
-- ✅ Playwright browser caching (version-locked)
-- ✅ Production build for E2E (consistent testing)
-- ✅ Concurrency control (cancel outdated runs)
-- ✅ Skip CI for doc-only changes
-- ✅ GitHub Actions reporter (inline test results)
-- ✅ Optimized Vitest threading configuration
-
-## CI/CD Configuration
-
-**Workflow file:** `.github/workflows/ci-cd.yml`
-**Rollback workflow:** `.github/workflows/rollback.yml`
-**Smoke test script:** `scripts/smoke-test.sh`
+| Environment | Time     | Notes               |
+| ----------- | -------- | ------------------- |
+| Preview     | ~2-3 min | Vercel native build |
+| Production  | ~2-3 min | Vercel native build |
 
 ## Related Documentation
 
 - [VERCEL_DOMAIN_SETUP.md](./VERCEL_DOMAIN_SETUP.md) - Vercel domain configuration
 - [CLOUDFLARE_DNS_SETUP.md](./CLOUDFLARE_DNS_SETUP.md) - DNS setup
-- [CLAUDE.md](./CLAUDE.md) - Branch protection and development rules
+- [../../CLAUDE.md](../../CLAUDE.md) - Main project documentation

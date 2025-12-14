@@ -1,0 +1,91 @@
+name: Database Migration
+
+# This workflow runs database migrations when schema files change.
+# It runs AFTER Vercel deploys the code to production, ensuring
+# the database schema is updated to match the new code.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prisma/migrations/**"
+      - "prisma/schema.prisma"
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: "Run database migrations manually"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Run custom migration SQL (if exists)
+        run: |
+          # Find and run any custom migration SQL files that need direct execution
+          # These are for complex migrations that Prisma can't handle
+
+          # Check for Phase 3-5 features migration (idempotent)
+          if [ -f "prisma/migrations/20241204_add_phase_3_5_features/migration.sql" ]; then
+            echo "Running Phase 3-5 migration SQL..."
+            psql "$DATABASE_URL" -f prisma/migrations/20241204_add_phase_3_5_features/migration.sql || true
+          fi
+
+          # Set initial admin user (idempotent)
+          echo "Ensuring admin user configuration..."
+          psql "$DATABASE_URL" -c "UPDATE users SET id = 'user_49d6efb916aec77949d6efb916aec779' WHERE email = 'zolika84@gmail.com' AND id != 'user_49d6efb916aec77949d6efb916aec779';" || true
+          psql "$DATABASE_URL" -c "UPDATE users SET role = 'SUPER_ADMIN' WHERE id = 'user_49d6efb916aec77949d6efb916aec779';" || true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Generate Prisma Client (verify schema)
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify database connection
+        run: |
+          echo "Verifying database connection..."
+          npx prisma db execute --stdin <<< "SELECT 1 as health_check;"
+          echo "✓ Database connection verified"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
