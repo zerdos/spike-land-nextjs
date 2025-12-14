@@ -30,10 +30,22 @@ export interface Pipeline {
 }
 
 /**
+ * Pagination metadata from API
+ */
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+/**
  * API response shape for GET /api/pipelines
  */
 interface PipelinesResponse {
   pipelines: Pipeline[];
+  pagination: PaginationInfo;
 }
 
 /**
@@ -71,15 +83,31 @@ export interface UsePipelinesReturn {
    */
   groupedPipelines: GroupedPipelines;
   /**
-   * Loading state
+   * Loading state for initial fetch
    */
   isLoading: boolean;
+  /**
+   * Loading state for pagination (loadMore)
+   */
+  isLoadingMore: boolean;
   /**
    * Error state (null if no error)
    */
   error: Error | null;
   /**
-   * Refetch pipelines from API
+   * Pagination info from the API
+   */
+  pagination: PaginationInfo | null;
+  /**
+   * Whether there are more pipelines to load
+   */
+  hasMore: boolean;
+  /**
+   * Load the next page of pipelines (for infinite scroll)
+   */
+  loadMore: () => Promise<void>;
+  /**
+   * Refetch pipelines from API (resets to first page)
    */
   refetch: () => Promise<void>;
   /**
@@ -131,14 +159,20 @@ export function usePipelines(
 
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
 
-  const fetchPipelines = useCallback(async () => {
+  const fetchPipelines = useCallback(async (page = 0, append = false) => {
     try {
-      setIsLoading(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
       setError(null);
 
-      const response = await fetch("/api/pipelines");
+      const response = await fetch(`/api/pipelines?page=${page}`);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -148,22 +182,46 @@ export function usePipelines(
       }
 
       const data: PipelinesResponse = await response.json();
-      setPipelines(data.pipelines);
+
+      if (append) {
+        setPipelines((prev) => [...prev, ...data.pipelines]);
+      } else {
+        setPipelines(data.pipelines);
+      }
+      setPagination(data.pagination);
     } catch (err) {
       const errorMessage = err instanceof Error
         ? err.message
         : "An unknown error occurred";
       setError(new Error(errorMessage));
-      setPipelines([]);
+      if (!append) {
+        setPipelines([]);
+        setPagination(null);
+      }
     } finally {
-      setIsLoading(false);
+      if (append) {
+        setIsLoadingMore(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   }, []);
+
+  // Load more (next page)
+  const loadMore = useCallback(async () => {
+    if (!pagination?.hasMore || isLoadingMore) return;
+    await fetchPipelines(pagination.page + 1, true);
+  }, [pagination, isLoadingMore, fetchPipelines]);
+
+  // Refetch from first page
+  const refetch = useCallback(async () => {
+    await fetchPipelines(0, false);
+  }, [fetchPipelines]);
 
   // Fetch on mount if enabled
   useEffect(() => {
     if (enabled) {
-      fetchPipelines();
+      fetchPipelines(0, false);
     }
   }, [enabled, fetchPipelines]);
 
@@ -196,8 +254,12 @@ export function usePipelines(
     pipelines,
     groupedPipelines,
     isLoading,
+    isLoadingMore,
     error,
-    refetch: fetchPipelines,
+    pagination,
+    hasMore: pagination?.hasMore ?? false,
+    loadMore,
+    refetch,
     getPipelineById,
   };
 }

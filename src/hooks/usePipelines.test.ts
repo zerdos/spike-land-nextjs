@@ -1,11 +1,27 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Pipeline } from "./usePipelines";
+import type { PaginationInfo, Pipeline } from "./usePipelines";
 import { usePipelines } from "./usePipelines";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+// Helper to create pagination response
+const createPaginatedResponse = (
+  pipelines: Pipeline[],
+  pagination: Partial<PaginationInfo> = {},
+) => ({
+  pipelines,
+  pagination: {
+    page: 0,
+    limit: 50,
+    totalCount: pipelines.length,
+    totalPages: 1,
+    hasMore: false,
+    ...pagination,
+  },
+});
 
 describe("usePipelines", () => {
   beforeEach(() => {
@@ -74,7 +90,7 @@ describe("usePipelines", () => {
     it("should fetch pipelines on mount", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -91,13 +107,13 @@ describe("usePipelines", () => {
 
       expect(result.current.pipelines).toEqual(mockPipelines);
       expect(result.current.error).toBeNull();
-      expect(mockFetch).toHaveBeenCalledWith("/api/pipelines");
+      expect(mockFetch).toHaveBeenCalledWith("/api/pipelines?page=0");
     });
 
     it("should group pipelines by category", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -121,7 +137,7 @@ describe("usePipelines", () => {
     it("should provide getPipelineById helper", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -135,6 +151,34 @@ describe("usePipelines", () => {
 
       const notFound = result.current.getPipelineById("nonexistent");
       expect(notFound).toBeUndefined();
+    });
+
+    it("should expose pagination info", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse(mockPipelines, {
+            page: 0,
+            totalCount: 100,
+            totalPages: 2,
+            hasMore: true,
+          }),
+      });
+
+      const { result } = renderHook(() => usePipelines());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.pagination).toEqual({
+        page: 0,
+        limit: 50,
+        totalCount: 100,
+        totalPages: 2,
+        hasMore: true,
+      });
+      expect(result.current.hasMore).toBe(true);
     });
   });
 
@@ -216,7 +260,7 @@ describe("usePipelines", () => {
     it("should fetch when enabled becomes true", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       const { result, rerender } = renderHook(
@@ -242,7 +286,7 @@ describe("usePipelines", () => {
     it("should refetch pipelines when refetch is called", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: [mockPipelines[0]] }),
+        json: async () => createPaginatedResponse([mockPipelines[0]]),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -256,7 +300,7 @@ describe("usePipelines", () => {
       // Setup new response for refetch
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       // Refetch
@@ -285,7 +329,7 @@ describe("usePipelines", () => {
       // Second call succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: mockPipelines }),
+        json: async () => createPaginatedResponse(mockPipelines),
       });
 
       await act(async () => {
@@ -301,7 +345,7 @@ describe("usePipelines", () => {
     it("should handle empty pipelines list", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: [] }),
+        json: async () => createPaginatedResponse([]),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -319,7 +363,7 @@ describe("usePipelines", () => {
       const systemOnly = mockPipelines.filter((p) => p.isSystemDefault);
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ pipelines: systemOnly }),
+        json: async () => createPaginatedResponse(systemOnly),
       });
 
       const { result } = renderHook(() => usePipelines());
@@ -331,6 +375,118 @@ describe("usePipelines", () => {
       expect(result.current.groupedPipelines.systemDefaults).toHaveLength(1);
       expect(result.current.groupedPipelines.myPipelines).toHaveLength(0);
       expect(result.current.groupedPipelines.publicPipelines).toHaveLength(0);
+    });
+  });
+
+  describe("pagination and loadMore", () => {
+    it("should load more pipelines when loadMore is called", async () => {
+      const page1Pipeline = mockPipelines[0];
+      const page2Pipeline = mockPipelines[1];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse([page1Pipeline], {
+            page: 0,
+            totalCount: 2,
+            totalPages: 2,
+            hasMore: true,
+          }),
+      });
+
+      const { result } = renderHook(() => usePipelines());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.pipelines).toHaveLength(1);
+      expect(result.current.hasMore).toBe(true);
+
+      // Setup response for page 2
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse([page2Pipeline], {
+            page: 1,
+            totalCount: 2,
+            totalPages: 2,
+            hasMore: false,
+          }),
+      });
+
+      // Load more
+      await act(async () => {
+        await result.current.loadMore();
+      });
+
+      expect(result.current.pipelines).toHaveLength(2);
+      expect(result.current.hasMore).toBe(false);
+      expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/pipelines?page=1");
+    });
+
+    it("should not load more when hasMore is false", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse(mockPipelines, {
+            hasMore: false,
+          }),
+      });
+
+      const { result } = renderHook(() => usePipelines());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.hasMore).toBe(false);
+
+      // Try to load more
+      await act(async () => {
+        await result.current.loadMore();
+      });
+
+      // Should not have made another fetch
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("should set isLoadingMore to false after loadMore completes", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse([mockPipelines[0]], {
+            page: 0,
+            hasMore: true,
+          }),
+      });
+
+      const { result } = renderHook(() => usePipelines());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isLoadingMore).toBe(false);
+
+      // Setup response for page 2
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () =>
+          createPaginatedResponse([mockPipelines[1]], {
+            page: 1,
+            hasMore: false,
+          }),
+      });
+
+      // Load more
+      await act(async () => {
+        await result.current.loadMore();
+      });
+
+      // isLoadingMore should be false after completion
+      expect(result.current.isLoadingMore).toBe(false);
+      expect(result.current.pipelines).toHaveLength(2);
     });
   });
 });

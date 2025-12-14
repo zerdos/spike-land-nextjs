@@ -19,6 +19,42 @@ const PROCESSING_POLL_INTERVAL = 3000; // 3 seconds for processing jobs
 const MAX_POLL_INTERVAL = 5000; // Maximum interval with backoff
 const BACKOFF_THRESHOLD = 5; // Start backoff after this many polls
 
+// SSE connection rate limiting per user
+const MAX_SSE_CONNECTIONS_PER_USER = 5;
+const activeConnections = new Map<string, number>();
+
+/**
+ * Get current active connection count for a user
+ */
+function getConnectionCount(userId: string): number {
+  return activeConnections.get(userId) ?? 0;
+}
+
+/**
+ * Increment connection count for a user
+ * Returns false if limit would be exceeded
+ */
+function acquireConnection(userId: string): boolean {
+  const current = getConnectionCount(userId);
+  if (current >= MAX_SSE_CONNECTIONS_PER_USER) {
+    return false;
+  }
+  activeConnections.set(userId, current + 1);
+  return true;
+}
+
+/**
+ * Decrement connection count for a user
+ */
+function releaseConnection(userId: string): void {
+  const current = getConnectionCount(userId);
+  if (current <= 1) {
+    activeConnections.delete(userId);
+  } else {
+    activeConnections.set(userId, current - 1);
+  }
+}
+
 /**
  * SSE endpoint for real-time job status updates
  *
@@ -58,6 +94,21 @@ export async function GET(
     });
   }
 
+  // Check SSE connection rate limit
+  if (!acquireConnection(session.user.id)) {
+    return new Response(
+      JSON.stringify({
+        error: "Too many active connections",
+        message: `Maximum ${MAX_SSE_CONNECTIONS_PER_USER} concurrent SSE connections allowed`,
+      }),
+      {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  const userId = session.user.id; // Capture for cleanup
   const encoder = new TextEncoder();
   let isStreamClosed = false;
   let timeoutId: NodeJS.Timeout | null = null;
@@ -111,6 +162,7 @@ export async function GET(
             sendEvent({ type: "error", message: "Job not found" });
             controller.close();
             isStreamClosed = true;
+            releaseConnection(userId);
             return;
           }
 
@@ -143,6 +195,7 @@ export async function GET(
           ) {
             controller.close();
             isStreamClosed = true;
+            releaseConnection(userId);
             return;
           }
 
@@ -170,14 +223,18 @@ export async function GET(
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      releaseConnection(userId);
     },
   });
 
   // Handle client disconnect
   request.signal.addEventListener("abort", () => {
-    isStreamClosed = true;
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (!isStreamClosed) {
+      isStreamClosed = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      releaseConnection(userId);
     }
   });
 

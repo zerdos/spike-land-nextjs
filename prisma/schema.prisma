@@ -277,6 +277,7 @@ model ImageEnhancementJob {
   @@index([status, updatedAt])
   @@index([workflowRunId])
   @@index([pipelineId])
+  @@index([status, currentStage]) // Optimize SSE stream queries filtering by status and stage
   @@map("image_enhancement_jobs")
 }
 
