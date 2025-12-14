@@ -176,8 +176,24 @@ export function AuthButtons({ className }: AuthButtonsProps) {
     setError(null);
 
     try {
-      // For signup, we use the same credentials flow
-      // The backend will create the user if they don't exist
+      // First, create the account via the signup API
+      const signupResponse = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+
+      const signupData = await signupResponse.json();
+
+      if (!signupResponse.ok) {
+        setError(signupData.error || "Unable to create account. Please try signing in with Google or GitHub.");
+        return;
+      }
+
+      // Account created successfully, now sign in with credentials
       const result = await signIn("credentials", {
         email: email.trim().toLowerCase(),
         password,
@@ -185,8 +201,8 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       });
 
       if (result?.error) {
-        // If error, the user might need to register differently
-        setError("Unable to create account. Please try signing in with Google or GitHub.");
+        // Account was created but signin failed - unusual but handle it
+        setError("Account created but sign in failed. Please try signing in again.");
       } else if (result?.ok) {
         const params = new URLSearchParams(window.location.search);
         const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
