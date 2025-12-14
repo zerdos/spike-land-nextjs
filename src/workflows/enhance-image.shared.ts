@@ -4,6 +4,10 @@
  * This module contains constants, types, and shared logic used by both
  * the workflow version (enhance-image.workflow.ts) and the direct version
  * (enhance-image.direct.ts) to eliminate code duplication.
+ *
+ * NOTE: This module must NOT import @/lib/prisma directly as it's used in
+ * workflow bundling which doesn't support Node.js modules. For pipeline
+ * resolution, use ./pipeline-resolver.ts instead.
  */
 
 import type { CropDimensions, CropRegionPixels } from "@/lib/ai/gemini-client";
@@ -205,3 +209,7 @@ export function cropDimensionsToPixels(
     height: Math.min(imageHeight, Math.round(crop.height * imageHeight)),
   };
 }
+
+// Re-export pipeline types for convenience
+// NOTE: For resolvePipelineConfig, use ./pipeline-resolver.ts instead
+export { type PipelineConfig, SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";

@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
 // Configuration constants - exported for job metadata tracking
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
@@ -157,10 +158,21 @@ export interface EnhanceImageParams {
  * Handles extreme cases like VHS artifacts, sketches, and pitch-dark photos.
  *
  * @param analysis - Structured analysis result from vision model
+ * @param promptConfig - Optional prompt configuration for overrides
  * @returns Dynamic enhancement prompt tailored to the image's specific defects
  */
-export function buildDynamicEnhancementPrompt(analysis: AnalysisDetailedResult): string {
-  const defects = analysis.defects;
+export function buildDynamicEnhancementPrompt(
+  analysis: AnalysisDetailedResult,
+  promptConfig?: PromptConfig,
+): string {
+  // Apply defect overrides if provided
+  const defects = promptConfig?.defectOverrides
+    ? { ...analysis.defects, ...promptConfig.defectOverrides }
+    : analysis.defects;
+
+  // Track which corrections to skip
+  const skipCorrections = new Set(promptConfig?.skipCorrections || []);
+
   let instruction =
     `You are a professional image restoration AI. Transform this input image into a stunning, high-resolution, professional photograph taken with a modern camera in ideal lighting conditions. Maintain the original subject and composition perfectly.\n\nSpecific Correction Instructions:\n`;
 
@@ -177,35 +189,46 @@ export function buildDynamicEnhancementPrompt(analysis: AnalysisDetailedResult):
   }
 
   // Lighting & Exposure
-  if (defects.isDark || analysis.lightingCondition.includes("pitch black")) {
+  if (
+    !skipCorrections.has("isDark") &&
+    (defects.isDark || analysis.lightingCondition.includes("pitch black"))
+  ) {
     instruction +=
       `- Dramatically relight the scene. Reveal details hidden in shadows as if illuminated by strong, natural light (e.g., bright moonlight or professional studio lighting) while maintaining a realistic atmosphere.\n`;
-  } else if (defects.isOverexposed) {
+  } else if (!skipCorrections.has("isOverexposed") && defects.isOverexposed) {
     instruction +=
       `- Recover details in blown-out highlight areas. Restore natural texture and color to bright spots.\n`;
   }
 
   // VHS/Analog Artifacts
-  if (defects.hasVHSArtifacts) {
+  if (!skipCorrections.has("hasVHSArtifacts") && defects.hasVHSArtifacts) {
     instruction +=
       `- Completely remove all analog video artifacts, including tracking lines, color bleeding, static noise, and tape distortion.\n`;
   }
 
   // Noise & Resolution
-  if (defects.hasNoise || defects.isLowResolution) {
+  if (
+    !skipCorrections.has("hasNoise") && !skipCorrections.has("isLowResolution") &&
+    (defects.hasNoise || defects.isLowResolution)
+  ) {
     instruction +=
       `- Apply advanced noise reduction to eliminate grain. Sharpen fine details and textures that are currently pixelated or blurry.\n`;
   }
 
   // Color Correction
-  if (defects.hasColorCast && defects.colorCastType) {
+  if (!skipCorrections.has("hasColorCast") && defects.hasColorCast && defects.colorCastType) {
     instruction +=
       `- Neutralize the strong ${defects.colorCastType} color cast to restore natural, accurate colors.\n`;
   }
 
   // Focus/Blur
-  if (defects.isBlurry) {
+  if (!skipCorrections.has("isBlurry") && defects.isBlurry) {
     instruction += `- Bring the entire image into sharp, crisp focus.\n`;
+  }
+
+  // Add custom instructions if provided
+  if (promptConfig?.customInstructions) {
+    instruction += `\nAdditional Instructions:\n${promptConfig.customInstructions}\n`;
   }
 
   // Final instruction
@@ -321,12 +344,17 @@ async function performVisionAnalysis(
   ai: GoogleGenAI,
   imageData: string,
   mimeType: string,
+  modelOverride?: string,
+  temperatureOverride?: number,
 ): Promise<AnalysisDetailedResult> {
+  const model = modelOverride || DEFAULT_MODEL;
+  const temperature = temperatureOverride ?? 0.1; // Low temperature for deterministic JSON output
+
   const response = await ai.models.generateContent({
-    model: DEFAULT_MODEL,
+    model,
     config: {
       responseMimeType: "application/json",
-      temperature: 0.1, // Low temperature for deterministic JSON output
+      temperature,
     },
     contents: [{
       role: "user" as const,
@@ -357,12 +385,24 @@ async function performVisionAnalysis(
  *
  * @param imageData - Base64 encoded image data
  * @param mimeType - MIME type of the image
+ * @param config - Optional analysis configuration overrides
  * @returns Structured analysis result with defects, style, and cropping suggestions
  */
 export async function analyzeImageV2(
   imageData: string,
   mimeType: string,
+  config?: AnalysisConfig,
 ): Promise<ImageAnalysisResultV2> {
+  // If analysis is disabled via config, return default analysis immediately
+  if (config?.enabled === false) {
+    console.log("Image analysis disabled by pipeline config, using defaults");
+    return {
+      description: "Analysis skipped",
+      quality: "medium",
+      structuredAnalysis: getDefaultAnalysis(),
+    };
+  }
+
   console.log(
     `Analyzing image with vision model (format: ${mimeType}, data length: ${imageData.length} chars)`,
   );
@@ -372,7 +412,13 @@ export async function analyzeImageV2(
 
   try {
     // Create analysis promise with timeout protection
-    const analysisPromise = performVisionAnalysis(ai, imageData, mimeType);
+    const analysisPromise = performVisionAnalysis(
+      ai,
+      imageData,
+      mimeType,
+      config?.model,
+      config?.temperature,
+    );
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         reject(new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`));

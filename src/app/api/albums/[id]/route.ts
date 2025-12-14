@@ -40,6 +40,13 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             },
           },
         },
+        pipeline: {
+          select: {
+            id: true,
+            name: true,
+            tier: true,
+          },
+        },
         _count: {
           select: { albumImages: true },
         },
@@ -66,6 +73,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         privacy: album.privacy,
         coverImageId: album.coverImageId,
         shareToken: isOwner ? album.shareToken : undefined,
+        pipelineId: album.pipelineId,
+        defaultTier: album.defaultTier,
+        pipeline: album.pipeline,
         imageCount: album._count.albumImages,
         isOwner,
         images: album.albumImages.map((ai: {
@@ -130,7 +140,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { name, description, privacy, coverImageId } = body;
+    const { name, description, privacy, coverImageId, pipelineId, defaultTier } = body;
 
     const updateData: Record<string, unknown> = {};
 
@@ -190,6 +200,48 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updateData.coverImageId = coverImageId;
     }
 
+    // Handle pipelineId - validate access to the pipeline
+    if (pipelineId !== undefined) {
+      if (pipelineId !== null) {
+        const pipeline = await prisma.enhancementPipeline.findUnique({
+          where: { id: pipelineId },
+          select: { userId: true, visibility: true },
+        });
+
+        if (!pipeline) {
+          return NextResponse.json(
+            { error: "Pipeline not found" },
+            { status: 400 },
+          );
+        }
+
+        // Verify access to the pipeline
+        const isOwner = pipeline.userId === session.user.id;
+        const isSystemDefault = pipeline.userId === null;
+        const isPublic = pipeline.visibility === "PUBLIC";
+
+        if (!isOwner && !isSystemDefault && !isPublic) {
+          return NextResponse.json(
+            { error: "You don't have access to this pipeline" },
+            { status: 403 },
+          );
+        }
+      }
+      updateData.pipelineId = pipelineId;
+    }
+
+    // Handle defaultTier update
+    if (defaultTier !== undefined) {
+      const validTiers = ["TIER_1K", "TIER_2K", "TIER_4K"];
+      if (!validTiers.includes(defaultTier)) {
+        return NextResponse.json(
+          { error: "Invalid tier" },
+          { status: 400 },
+        );
+      }
+      updateData.defaultTier = defaultTier;
+    }
+
     const updatedAlbum = await prisma.album.update({
       where: { id },
       data: updateData,
@@ -203,6 +255,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         privacy: updatedAlbum.privacy,
         coverImageId: updatedAlbum.coverImageId,
         shareToken: updatedAlbum.shareToken,
+        pipelineId: updatedAlbum.pipelineId,
+        defaultTier: updatedAlbum.defaultTier,
         updatedAt: updatedAlbum.updatedAt,
       },
     });
