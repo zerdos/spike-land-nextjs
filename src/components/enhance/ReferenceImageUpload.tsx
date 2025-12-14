@@ -154,7 +154,10 @@ export function ReferenceImageUpload({
     setPendingUploads((prev) => {
       const newPending = [...prev];
       // Revoke object URL to free memory
-      URL.revokeObjectURL(newPending[index].preview);
+      const item = newPending[index];
+      if (item) {
+        URL.revokeObjectURL(item.preview);
+      }
       newPending.splice(index, 1);
       return newPending;
     });

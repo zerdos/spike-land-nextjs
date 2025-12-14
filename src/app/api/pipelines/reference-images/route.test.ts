@@ -11,7 +11,7 @@ const mockPrismaFindUnique = vi.fn();
 const mockPrismaUpdate = vi.fn();
 vi.mock("@/lib/prisma", () => ({
   default: {
-    pipeline: {
+    enhancementPipeline: {
       findUnique: () => mockPrismaFindUnique(),
       update: (args: unknown) => mockPrismaUpdate(args),
     },

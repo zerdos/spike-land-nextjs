@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
+import type { ReferenceImage } from "@/lib/ai/pipeline-types";
 import prisma from "@/lib/prisma";
 import { deleteFromR2, uploadToR2 } from "@/lib/storage/r2-client";
+import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
@@ -83,7 +85,7 @@ export async function POST(
     }
 
     // Check pipeline exists and user owns it
-    const pipeline = await prisma.pipeline.findUnique({
+    const pipeline = await prisma.enhancementPipeline.findUnique({
       where: { id: pipelineId },
       select: {
         id: true,
@@ -108,7 +110,7 @@ export async function POST(
 
     // Check current reference image count
     const promptConfig = (pipeline.promptConfig as Record<string, unknown>) || {};
-    const existingRefs = (promptConfig.referenceImages as unknown[]) || [];
+    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) || [];
 
     if (existingRefs.length >= MAX_REFERENCE_IMAGES) {
       return NextResponse.json(
@@ -135,7 +137,7 @@ export async function POST(
 
     // Resize if needed (max 1024px on longest side for reference images)
     const MAX_REF_DIMENSION = 1024;
-    let processedBuffer = buffer;
+    let processedBuffer: Buffer = buffer;
 
     if (metadata.width > MAX_REF_DIMENSION || metadata.height > MAX_REF_DIMENSION) {
       processedBuffer = await sharp(buffer)
@@ -171,21 +173,21 @@ export async function POST(
     }
 
     // Update pipeline's promptConfig with new reference image
-    const newReferenceImage = {
+    const newReferenceImage: ReferenceImage = {
       url: uploadResult.url,
       r2Key,
       ...(description && { description }),
     };
 
-    const updatedReferenceImages = [...existingRefs, newReferenceImage];
+    const updatedReferenceImages: ReferenceImage[] = [...existingRefs, newReferenceImage];
 
-    await prisma.pipeline.update({
+    await prisma.enhancementPipeline.update({
       where: { id: pipelineId },
       data: {
         promptConfig: {
           ...promptConfig,
           referenceImages: updatedReferenceImages,
-        },
+        } as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -234,7 +236,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check pipeline exists and user owns it
-    const pipeline = await prisma.pipeline.findUnique({
+    const pipeline = await prisma.enhancementPipeline.findUnique({
       where: { id: pipelineId },
       select: {
         id: true,
@@ -266,16 +268,16 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     // Update pipeline's promptConfig to remove the reference image
     const promptConfig = (pipeline.promptConfig as Record<string, unknown>) || {};
-    const existingRefs = (promptConfig.referenceImages as Array<{ r2Key: string; }>) || [];
+    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) || [];
     const updatedRefs = existingRefs.filter((ref) => ref.r2Key !== r2Key);
 
-    await prisma.pipeline.update({
+    await prisma.enhancementPipeline.update({
       where: { id: pipelineId },
       data: {
         promptConfig: {
           ...promptConfig,
           referenceImages: updatedRefs,
-        },
+        } as unknown as Prisma.InputJsonValue,
       },
     });
 

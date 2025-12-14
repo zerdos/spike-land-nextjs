@@ -29,11 +29,13 @@ import type {
   AutoCropConfig,
   GenerationConfig,
   PromptConfig,
+  ReferenceImage,
 } from "@/lib/ai/pipeline-types";
 import { SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";
 import type { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { ReferenceImageUpload } from "./ReferenceImageUpload";
 
 interface PipelineFormData {
   name: string;
@@ -377,6 +379,34 @@ export function PipelineForm({
                     ))}
                   </div>
                 </div>
+
+                <Separator />
+
+                {/* Reference Images - only available when editing existing pipeline */}
+                {initialData?.id
+                  ? (
+                    <ReferenceImageUpload
+                      pipelineId={initialData.id}
+                      referenceImages={formData.promptConfig.referenceImages ?? []}
+                      onImagesChange={(images: ReferenceImage[]) =>
+                        updateField("promptConfig", {
+                          ...formData.promptConfig,
+                          referenceImages: images.length > 0 ? images : undefined,
+                        })}
+                      disabled={isSubmitting}
+                    />
+                  )
+                  : (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Reference Images
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Reference images can be added after creating the pipeline. Edit your
+                        pipeline to add style guidance images.
+                      </p>
+                    </div>
+                  )}
               </TabsContent>
 
               <TabsContent value="generation" className="space-y-4 pt-4">
