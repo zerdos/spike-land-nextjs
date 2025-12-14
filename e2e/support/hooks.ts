@@ -29,7 +29,8 @@ Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
 // Only run generic teardown for non-video-wall scenarios
 After({ tags: "not @video-wall" }, async function(this: VideoWallWorld, { result, pickle }) {
   if (result?.status === Status.FAILED) {
-    const screenshot = await this.displayPage?.screenshot({
+    // Use this.page for non-video-wall scenarios (CustomWorld uses page, not displayPage)
+    const screenshot = await this.page?.screenshot({
       path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, "_")}.png`,
       fullPage: true,
     });

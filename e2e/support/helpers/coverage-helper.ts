@@ -123,6 +123,14 @@ export async function stopCoverage(page: Page): Promise<void> {
 
 /**
  * Convert V8 coverage to Istanbul format (simplified)
+ *
+ * LIMITATIONS:
+ * - Line numbers are approximated (V8 uses byte offsets, not source map positions)
+ * - All locations use line 1 with column offsets representing byte positions
+ * - Branch coverage is not populated (V8 reports block coverage differently)
+ * - This provides statement/function coverage counts but not accurate line-level reporting
+ *
+ * For accurate line-level coverage, source map integration would be required.
  */
 function convertToIstanbul(v8Coverage: V8CoverageEntry[]): IstanbulCoverageMap {
   const istanbulCoverage: IstanbulCoverageMap = {};
@@ -313,3 +321,10 @@ export function clearCoverageData(): void {
 export function isCoverageEnabled(): boolean {
   return coverageEnabled;
 }
+
+// Export for testing only
+export const _testing = {
+  convertToIstanbul,
+  generateSummary,
+  getAllCoverageData: () => allCoverageData,
+};
