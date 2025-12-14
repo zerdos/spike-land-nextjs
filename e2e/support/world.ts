@@ -1,5 +1,6 @@
 import { IWorldOptions, World } from "@cucumber/cucumber";
 import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 export interface CucumberWorldConstructorParams {
   parameters: { [key: string]: string; };
@@ -36,9 +37,17 @@ export class CustomWorld extends World {
       extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0 ? extraHTTPHeaders : undefined,
     });
     this.page = await this.context.newPage();
+
+    // Start coverage collection if enabled
+    await startCoverage(this.page);
   }
 
   async destroy() {
+    // Stop coverage collection before closing
+    if (this.page) {
+      await stopCoverage(this.page);
+    }
+
     await this.page?.close();
     await this.context?.close();
     await this.browser?.close();

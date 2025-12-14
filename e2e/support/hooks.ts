@@ -1,4 +1,5 @@
-import { After, Before, setDefaultTimeout, Status } from "@cucumber/cucumber";
+import { After, AfterAll, Before, setDefaultTimeout, Status } from "@cucumber/cucumber";
+import { generateCoverageReport, isCoverageEnabled } from "./helpers/coverage-helper";
 import { VideoWallWorld } from "./video-wall-world";
 import { CustomWorld } from "./world";
 
@@ -28,7 +29,7 @@ Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
 // Only run generic teardown for non-video-wall scenarios
 After({ tags: "not @video-wall" }, async function(this: VideoWallWorld, { result, pickle }) {
   if (result?.status === Status.FAILED) {
-    const screenshot = await this.page?.screenshot({
+    const screenshot = await this.displayPage?.screenshot({
       path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, "_")}.png`,
       fullPage: true,
     });
@@ -38,4 +39,12 @@ After({ tags: "not @video-wall" }, async function(this: VideoWallWorld, { result
   }
   // Call the parent CustomWorld.destroy() method
   await CustomWorld.prototype.destroy.call(this);
+});
+
+// Generate coverage report after all tests complete
+AfterAll(async function() {
+  if (isCoverageEnabled()) {
+    console.log("\n[Coverage] Generating E2E coverage report...");
+    await generateCoverageReport();
+  }
 });
