@@ -783,7 +783,30 @@ Deployments are handled **automatically by Vercel**, not GitHub Actions:
 - **Preview Deployments**: Created automatically for all PRs
 - **Production Deployments**: Triggered when merging to `main`
 - **PR Comments**: Vercel automatically posts deployment URLs
+- **Deployment Status**: Vercel reports deployment status to GitHub PRs
 - **No VERCEL_TOKEN needed in CI**: Only used for rollback workflow
+
+#### Vercel Git Settings (Configured)
+
+The following settings are enabled in Vercel's Git integration:
+
+| Setting                    | Status     | Description                               |
+| -------------------------- | ---------- | ----------------------------------------- |
+| Pull Request Comments      | ✅ Enabled | Vercel posts preview URLs on PRs          |
+| Commit Comments            | ✅ Enabled | Deployment status on commits              |
+| deployment_status Events   | ✅ Enabled | Reports deployment status to GitHub       |
+| repository_dispatch Events | ✅ Enabled | Allows triggering deployments via API     |
+| Ignored Build Step         | Automatic  | All branches build (preview + production) |
+
+#### Verifying Vercel Integration
+
+```bash
+# Check recent deployments via Vercel CLI
+npx vercel ls
+
+# Check deployment status via GitHub
+gh api repos/zerdos/spike-land-nextjs/deployments --jq '.[0] | {environment, created_at, sha}'
+```
 
 ### Database Migrations
 
@@ -822,6 +845,28 @@ To enforce code quality, configure branch protection for `main`:
      - Required checks: `Build Application`, `Quality Checks (Lint + Security)`
    - ✅ **Require branches to be up to date before merging** (strict mode)
    - ✅ **Require linear history** (enabled)
+
+### Vercel Deployment Check
+
+Vercel automatically reports deployment status to GitHub PRs via the native Git integration. The deployment check ensures:
+
+- Preview deployment builds successfully
+- The preview URL is accessible
+- No build errors occurred during deployment
+
+**Note**: Vercel deployment checks are created automatically when Vercel's GitHub App processes the PR. The check name may vary (e.g., `Vercel`, `Vercel – spike-land-nextjs`).
+
+### Adding Vercel to Required Checks
+
+Once Vercel creates deployment checks on your PRs, you can add them to required status checks:
+
+```bash
+# View available status checks on a PR
+gh pr view <PR-NUMBER> --json statusCheckRollup --jq '.statusCheckRollup[].name'
+
+# Update branch protection via GitHub UI:
+# Settings → Branches → main → Edit → Add "Vercel" to required checks
+```
 
 **See `.github/BRANCH_PROTECTION_SETUP.md` for detailed instructions.**
 
@@ -876,9 +921,84 @@ git pull  # Update main with merged changes
 - ✅ **All tests must pass** - Unit tests with 100% coverage
 - ✅ **Build must succeed** - No broken builds allowed
 - ✅ **Preview deployment required** - Every PR gets tested preview
+- ✅ **Vercel deployment must succeed** - Preview deployment must be ready
 - ✅ **E2E tests required** - Must pass against preview before merge
 - ✅ **Code review recommended** - Enable PR approvals in branch protection
 - ⚠️ **CRITICAL: Always wait for CI to pass** - After pushing code, monitor the CI/CD pipeline and verify all checks pass before considering the task complete
+- ⚠️ **CRITICAL: Manual smoke test required** - See "Pre-Merge Smoke Test" section below
+
+## 🔥 Pre-Merge Smoke Test (MANDATORY)
+
+**Before merging ANY pull request**, a manual smoke test MUST be performed on the Vercel preview deployment.
+
+### Why This Is Required
+
+Automated tests catch regressions, but manual verification ensures:
+
+- UI renders correctly in a production-like environment
+- Critical user flows work end-to-end
+- No visual regressions or broken layouts
+- Environment variables and integrations work correctly
+
+### Smoke Test Checklist
+
+Before clicking "Merge", manually verify on the **Vercel preview URL**:
+
+```markdown
+## Pre-Merge Smoke Test Checklist
+
+### Basic Functionality
+
+- [ ] Home page loads without errors
+- [ ] Navigation works correctly
+- [ ] No console errors in browser dev tools
+
+### Authentication (if applicable)
+
+- [ ] Login flow works
+- [ ] Protected routes redirect correctly
+- [ ] User session persists
+
+### Feature-Specific (for the PR changes)
+
+- [ ] New/modified features work as expected
+- [ ] No visual regressions on affected pages
+- [ ] Form submissions work correctly
+- [ ] Error states display properly
+
+### Performance
+
+- [ ] Page loads within acceptable time
+- [ ] No infinite loading states
+- [ ] Images and assets load correctly
+```
+
+### How to Perform Smoke Test
+
+1. **Find the preview URL**: Vercel posts a comment on the PR with the preview URL
+2. **Open the preview**: Click the "Visit Preview" link in the Vercel comment
+3. **Run through the checklist**: Test each item relevant to the PR
+4. **Document the result**: Add a comment to the PR confirming smoke test passed
+
+Example PR comment:
+
+```
+✅ Manual smoke test completed on preview deployment
+
+Tested:
+- [x] Home page loads correctly
+- [x] Login flow works
+- [x] [Feature X] works as expected
+- [x] No console errors
+
+Ready to merge.
+```
+
+### Blocking Merges Without Smoke Test
+
+- PRs should NOT be merged until smoke test is documented in PR comments
+- If issues are found during smoke test, fix and re-test before merging
+- The person performing the smoke test should be different from the PR author when possible
 
 ## ⚠️ CRITICAL RULE: CI/CD Verification
 
