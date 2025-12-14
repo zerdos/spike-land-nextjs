@@ -245,6 +245,7 @@ describe("useJobStream", () => {
         enhancedWidth: null,
         enhancedHeight: null,
         errorMessage: null,
+        currentStage: null,
       });
       expect(onStatusChange).toHaveBeenCalledWith("PROCESSING");
     });
@@ -274,6 +275,7 @@ describe("useJobStream", () => {
         enhancedWidth: 2000,
         enhancedHeight: 1500,
         errorMessage: null,
+        currentStage: null,
       });
     });
 
@@ -303,6 +305,7 @@ describe("useJobStream", () => {
         enhancedWidth: 2000,
         enhancedHeight: 1500,
         errorMessage: null,
+        currentStage: null,
       });
     });
 
@@ -771,6 +774,7 @@ describe("useJobStream", () => {
         enhancedWidth: null,
         enhancedHeight: null,
         errorMessage: null,
+        currentStage: null,
       });
     });
 
