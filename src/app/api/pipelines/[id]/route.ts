@@ -56,7 +56,14 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const isSystemDefault = pipeline.userId === null;
     const isPublic = pipeline.visibility === PipelineVisibility.PUBLIC;
 
-    if (!isOwner && !isSystemDefault && !isPublic) {
+    // Check for share token in query string for LINK visibility
+    const url = new URL(_request.url);
+    const providedToken = url.searchParams.get("token");
+    const hasValidToken = pipeline.visibility === PipelineVisibility.LINK &&
+      pipeline.shareToken &&
+      providedToken === pipeline.shareToken;
+
+    if (!isOwner && !isSystemDefault && !isPublic && !hasValidToken) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
