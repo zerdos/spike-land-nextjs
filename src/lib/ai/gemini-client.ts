@@ -123,9 +123,10 @@ export async function enhanceImageWithGemini(
           },
         },
         {
-          text: `${analysis.enhancementPrompt}\n\nGenerate at ${
-            resolutionMap[params.tier]
-          } resolution.`,
+          text:
+            `${analysis.enhancementPrompt}\n\The user wants you to enhance this photo - this will be a showcase what you are capable of, so we will show the result to the user with a before/after tool, with a slider, so do not change the framing or the orientation. The end result should look like, if the photo was taken with the best dslr camera - by a professional photographer - in perfect lighting conditions. The resolution ${
+              resolutionMap[params.tier]
+            } resolution.`,
         },
       ],
     },
