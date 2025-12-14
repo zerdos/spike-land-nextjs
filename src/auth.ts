@@ -275,7 +275,14 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
     },
   },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
+      // Skip handleSignIn for credentials provider
+      // For credentials signin, user already exists in DB (created via /api/auth/signup)
+      // and all post-signup tasks (referral, album, etc.) were already completed
+      if (account?.provider === "credentials") {
+        return true;
+      }
+      // For OAuth providers (GitHub, Google), run normal handleSignIn flow
       return handleSignIn(user);
     },
     async jwt({ token, user, trigger }): Promise<JWT> {
