@@ -172,6 +172,7 @@ export function buildDynamicEnhancementPrompt(
 
   // Track which corrections to skip
   const skipCorrections = new Set(promptConfig?.skipCorrections || []);
+
   let instruction =
     `You are a professional image restoration AI. Transform this input image into a stunning, high-resolution, professional photograph taken with a modern camera in ideal lighting conditions. Maintain the original subject and composition perfectly.\n\nSpecific Correction Instructions:\n`;
 
@@ -229,7 +230,6 @@ export function buildDynamicEnhancementPrompt(
   if (promptConfig?.customInstructions) {
     instruction += `\nAdditional Instructions:\n${promptConfig.customInstructions}\n`;
   }
-
 
   // Final instruction
   instruction +=
