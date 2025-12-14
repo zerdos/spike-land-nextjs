@@ -10,32 +10,32 @@ Welcome to the Spike Land documentation. This is the central index for all platf
 
 ### For Users
 
-| I want to... | Document |
-|--------------|----------|
-| Understand the platform | [FEATURES.md](./FEATURES.md) |
-| Learn about image enhancement | [IMAGE_ENHANCEMENT.md](./IMAGE_ENHANCEMENT.md) |
-| Get tokens | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md) |
-| Use voucher codes | [VOUCHER_SYSTEM_UPDATED.md](./VOUCHER_SYSTEM_UPDATED.md) |
-| Read the user guide | [USER_GUIDE.md](./USER_GUIDE.md) |
+| I want to...                  | Document                                                 |
+| ----------------------------- | -------------------------------------------------------- |
+| Understand the platform       | [FEATURES.md](./FEATURES.md)                             |
+| Learn about image enhancement | [IMAGE_ENHANCEMENT.md](./IMAGE_ENHANCEMENT.md)           |
+| Get tokens                    | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)                     |
+| Use voucher codes             | [VOUCHER_SYSTEM_UPDATED.md](./VOUCHER_SYSTEM_UPDATED.md) |
+| Read the user guide           | [USER_GUIDE.md](./USER_GUIDE.md)                         |
 
 ### For Developers
 
-| I want to... | Document |
-|--------------|----------|
-| Integrate with the API | [API_REFERENCE.md](./API_REFERENCE.md) |
-| Set up the database | [DATABASE_SETUP.md](./DATABASE_SETUP.md) |
-| Understand the schema | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) |
+| I want to...           | Document                                                   |
+| ---------------------- | ---------------------------------------------------------- |
+| Integrate with the API | [API_REFERENCE.md](./API_REFERENCE.md)                     |
+| Set up the database    | [DATABASE_SETUP.md](./DATABASE_SETUP.md)                   |
+| Understand the schema  | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                 |
 | Set up Stripe payments | [STRIPE_INTEGRATION_PLAN.md](./STRIPE_INTEGRATION_PLAN.md) |
-| Run E2E tests | [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) |
+| Run E2E tests          | [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) |
 
 ### For Project Setup
 
-| I want to... | Document |
-|--------------|----------|
-| Set up development | [../README.md](../README.md) |
-| Understand CI/CD | [../README.md](../README.md#cicd-pipeline) |
-| Set up Vercel | [VERCEL_ANALYTICS_SETUP.md](./VERCEL_ANALYTICS_SETUP.md) |
-| Understand business structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) |
+| I want to...                  | Document                                                 |
+| ----------------------------- | -------------------------------------------------------- |
+| Set up development            | [../README.md](../README.md)                             |
+| Understand CI/CD              | [../README.md](../README.md#cicd-pipeline)               |
+| Set up Vercel                 | [VERCEL_ANALYTICS_SETUP.md](./VERCEL_ANALYTICS_SETUP.md) |
+| Understand business structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)         |
 
 ---
 
@@ -61,65 +61,65 @@ docs/
 
 ### Platform
 
-| Document | Description |
-|----------|-------------|
-| [FEATURES.md](./FEATURES.md) | Complete feature list, Pixel app phases, platform roadmap |
-| [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) | Company information and legal structure |
-| [ROADMAP.md](./ROADMAP.md) | Future development plans |
+| Document                                         | Description                                               |
+| ------------------------------------------------ | --------------------------------------------------------- |
+| [FEATURES.md](./FEATURES.md)                     | Complete feature list, Pixel app phases, platform roadmap |
+| [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) | Company information and legal structure                   |
+| [ROADMAP.md](./ROADMAP.md)                       | Future development plans                                  |
 
 ### API & Integration
 
-| Document | Description |
-|----------|-------------|
-| [API_REFERENCE.md](./API_REFERENCE.md) | Complete API documentation with examples |
-| [api/](./api/) | OpenAPI specifications and integration guides |
+| Document                               | Description                                   |
+| -------------------------------------- | --------------------------------------------- |
+| [API_REFERENCE.md](./API_REFERENCE.md) | Complete API documentation with examples      |
+| [api/](./api/)                         | OpenAPI specifications and integration guides |
 
 ### Token Economy
 
-| Document | Description |
-|----------|-------------|
-| [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md) | Token acquisition, pricing, subscriptions |
-| [VOUCHER_SYSTEM_UPDATED.md](./VOUCHER_SYSTEM_UPDATED.md) | Voucher codes and redemption |
+| Document                                                 | Description                               |
+| -------------------------------------------------------- | ----------------------------------------- |
+| [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)                     | Token acquisition, pricing, subscriptions |
+| [VOUCHER_SYSTEM_UPDATED.md](./VOUCHER_SYSTEM_UPDATED.md) | Voucher codes and redemption              |
 
 ### Database
 
-| Document | Description |
-|----------|-------------|
-| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) | Models, relationships, design decisions |
-| [DATABASE_SETUP.md](./DATABASE_SETUP.md) | Installation, migrations, backup |
-| [DATABASE_QUICK_START.md](./DATABASE_QUICK_START.md) | Quick setup guide |
-| [DATABASE_MIGRATION_ROLLBACK.md](./DATABASE_MIGRATION_ROLLBACK.md) | Migration procedures |
+| Document                                                           | Description                             |
+| ------------------------------------------------------------------ | --------------------------------------- |
+| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                         | Models, relationships, design decisions |
+| [DATABASE_SETUP.md](./DATABASE_SETUP.md)                           | Installation, migrations, backup        |
+| [DATABASE_QUICK_START.md](./DATABASE_QUICK_START.md)               | Quick setup guide                       |
+| [DATABASE_MIGRATION_ROLLBACK.md](./DATABASE_MIGRATION_ROLLBACK.md) | Migration procedures                    |
 
 ### Image Enhancement (Pixel App)
 
-| Document | Description |
-|----------|-------------|
-| [IMAGE_ENHANCEMENT.md](./IMAGE_ENHANCEMENT.md) | Enhancement workflow and features |
-| [IMAGE_ENHANCEMENT_ROADMAP.md](./IMAGE_ENHANCEMENT_ROADMAP.md) | Pixel app development phases |
-| [IMAGE_ENHANCEMENT_PRIVACY.md](./IMAGE_ENHANCEMENT_PRIVACY.md) | Privacy and data handling |
+| Document                                                       | Description                       |
+| -------------------------------------------------------------- | --------------------------------- |
+| [IMAGE_ENHANCEMENT.md](./IMAGE_ENHANCEMENT.md)                 | Enhancement workflow and features |
+| [IMAGE_ENHANCEMENT_ROADMAP.md](./IMAGE_ENHANCEMENT_ROADMAP.md) | Pixel app development phases      |
+| [IMAGE_ENHANCEMENT_PRIVACY.md](./IMAGE_ENHANCEMENT_PRIVACY.md) | Privacy and data handling         |
 
 ### Payments
 
-| Document | Description |
-|----------|-------------|
+| Document                                                   | Description                    |
+| ---------------------------------------------------------- | ------------------------------ |
 | [STRIPE_INTEGRATION_PLAN.md](./STRIPE_INTEGRATION_PLAN.md) | Stripe setup and configuration |
-| [STRIPE_PAYMENT_FLOW.md](./STRIPE_PAYMENT_FLOW.md) | Payment flow documentation |
-| [STRIPE_TESTING_GUIDE.md](./STRIPE_TESTING_GUIDE.md) | Testing payments |
+| [STRIPE_PAYMENT_FLOW.md](./STRIPE_PAYMENT_FLOW.md)         | Payment flow documentation     |
+| [STRIPE_TESTING_GUIDE.md](./STRIPE_TESTING_GUIDE.md)       | Testing payments               |
 
 ### Testing
 
-| Document | Description |
-|----------|-------------|
-| [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) | E2E testing setup |
-| [MANUAL_TESTING_GUIDE.md](./MANUAL_TESTING_GUIDE.md) | Manual testing procedures |
+| Document                                                   | Description               |
+| ---------------------------------------------------------- | ------------------------- |
+| [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) | E2E testing setup         |
+| [MANUAL_TESTING_GUIDE.md](./MANUAL_TESTING_GUIDE.md)       | Manual testing procedures |
 
 ### Security & Operations
 
-| Document | Description |
-|----------|-------------|
-| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md) | Security practices and audit |
-| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) | Pre-launch checklist |
-| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues |
+| Document                                                   | Description                  |
+| ---------------------------------------------------------- | ---------------------------- |
+| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit |
+| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist         |
+| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                 |
 
 ---
 
