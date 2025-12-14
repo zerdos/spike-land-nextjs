@@ -303,6 +303,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
       data: {
         status: JobStatus.REFUNDED,
         errorMessage,
+        currentStage: null, // Clear stage on failure
       },
     });
 

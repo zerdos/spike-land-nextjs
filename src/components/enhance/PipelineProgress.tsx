@@ -82,12 +82,9 @@ export function PipelineStageLabel({
   const stage = STAGES.find((s) => s.key === currentStage);
   if (!stage) return null;
 
-  const Icon = stage.icon;
-
   return (
     <span className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground", className)}>
       <Loader2 className="h-3 w-3 animate-spin" />
-      <Icon className="h-3 w-3" />
       <span>{stage.label}...</span>
     </span>
   );
