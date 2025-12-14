@@ -1,4 +1,6 @@
 name: Database Migration
+permissions:
+  contents: read
 
 # This workflow runs database migrations when schema files change.
 # It runs AFTER Vercel deploys the code to production, ensuring
