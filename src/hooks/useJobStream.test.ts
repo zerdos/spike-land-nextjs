@@ -245,6 +245,7 @@ describe("useJobStream", () => {
         enhancedWidth: null,
         enhancedHeight: null,
         errorMessage: null,
+        currentStage: null,
       });
       expect(onStatusChange).toHaveBeenCalledWith("PROCESSING");
     });
@@ -274,6 +275,7 @@ describe("useJobStream", () => {
         enhancedWidth: 2000,
         enhancedHeight: 1500,
         errorMessage: null,
+        currentStage: null,
       });
     });
 
@@ -303,6 +305,7 @@ describe("useJobStream", () => {
         enhancedWidth: 2000,
         enhancedHeight: 1500,
         errorMessage: null,
+        currentStage: null,
       });
     });
 
@@ -695,7 +698,7 @@ describe("useJobStream", () => {
       expect(onComplete2).toHaveBeenCalled();
     });
 
-    it("should create new EventSource when callbacks change due to dependency array", () => {
+    it("should NOT create new EventSource when callbacks change due to ref optimization", () => {
       const onComplete1 = vi.fn();
       const onComplete2 = vi.fn();
 
@@ -713,9 +716,9 @@ describe("useJobStream", () => {
       // Change callback
       rerender({ onComplete: onComplete2 });
 
-      // Due to the handleMessage callback being in the useEffect dependencies,
-      // changing callbacks will recreate the EventSource
-      expect(MockEventSource.getInstances().length).toBe(initialInstanceCount + 1);
+      // Due to the ref optimization, changing callbacks will NOT recreate
+      // the EventSource - callbacks are stored in refs and updated separately
+      expect(MockEventSource.getInstances().length).toBe(initialInstanceCount);
     });
   });
 
@@ -771,6 +774,7 @@ describe("useJobStream", () => {
         enhancedWidth: null,
         enhancedHeight: null,
         errorMessage: null,
+        currentStage: null,
       });
     });
 

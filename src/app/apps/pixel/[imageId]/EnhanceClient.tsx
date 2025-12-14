@@ -57,7 +57,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
 
   // Use SSE for real-time job status updates (replaces polling)
-  useJobStream({
+  const { job: streamJob } = useJobStream({
     jobId: activeJobId,
     onComplete: useCallback(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,6 +69,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               ? {
                 ...job,
                 status: "COMPLETED" as const,
+                currentStage: null,
                 enhancedUrl: completedJob.enhancedUrl,
                 enhancedWidth: completedJob.enhancedWidth,
                 enhancedHeight: completedJob.enhancedHeight,
@@ -88,6 +89,23 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       alert(`Enhancement failed: ${errorMessage || "Unknown error"}`);
     }, []),
   });
+
+  // Update image state when stream job updates (for currentStage tracking)
+  useEffect(() => {
+    if (streamJob && activeJobId) {
+      setImage((prev: ImageWithJobs) => ({
+        ...prev,
+        enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
+          job.id === activeJobId
+            ? {
+              ...job,
+              currentStage: streamJob.currentStage,
+            }
+            : job
+        ),
+      }));
+    }
+  }, [streamJob, activeJobId]);
 
   const handleEnhance = async (tier: EnhancementTier) => {
     try {
@@ -115,6 +133,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         imageId: image.id,
         tier,
         status: "PROCESSING",
+        currentStage: null,
         tokensCost: result.tokensCost || 0,
         enhancedUrl: null,
         enhancedR2Key: null,
@@ -287,6 +306,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                   height: job.enhancedHeight || 0,
                   createdAt: job.createdAt,
                   status: job.status,
+                  currentStage: job.currentStage,
                   sizeBytes: job.enhancedSizeBytes,
                 }))}
                 selectedVersionId={selectedVersionId || undefined}

@@ -12,11 +12,14 @@ import { ImageUpload } from "@/components/enhance/ImageUpload";
 import { MultiUploadProgress } from "@/components/enhance/MultiUploadProgress";
 import { ThumbnailViewToggle } from "@/components/enhance/ThumbnailViewToggle";
 import { TokenDisplay } from "@/components/tokens/TokenDisplay";
+import { Button } from "@/components/ui/button";
 import { useMultiFileUpload } from "@/hooks/useMultiFileUpload";
 import { useThumbnailPreference } from "@/hooks/useThumbnailPreference";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import { Settings2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -130,7 +133,15 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
                 AI Image Enhancement
               </span>
             </div>
-            <TokenDisplay />
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/apps/pixel/pipelines">
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Pipelines
+                </Link>
+              </Button>
+              <TokenDisplay />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
