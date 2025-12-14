@@ -6,6 +6,7 @@
  * (enhance-image.direct.ts) to eliminate code duplication.
  */
 
+import type { CropDimensions, CropRegionPixels } from "@/lib/ai/gemini-client";
 import { EnhancementTier } from "@prisma/client";
 
 // Resolution constants for each enhancement tier
@@ -153,4 +154,54 @@ export function generateEnhancedR2Key(originalR2Key: string, jobId: string): str
   }
   // No extension - just append the jobId
   return `${withEnhancedPath}/${jobId}.jpg`;
+}
+
+// Re-export types for convenience
+export type { CropDimensions, CropRegionPixels };
+
+// Types for auto-crop feature
+export interface ApplyCropResult {
+  newImageDataBase64: string;
+  newMimeType: string;
+  cropRegionPixels: CropRegionPixels;
+  newWidth: number;
+  newHeight: number;
+}
+
+/**
+ * Validates crop dimensions to ensure they are valid percentages (0.0-1.0)
+ */
+export function validateCropDimensions(crop: CropDimensions): boolean {
+  return (
+    typeof crop.x === "number" &&
+    typeof crop.y === "number" &&
+    typeof crop.width === "number" &&
+    typeof crop.height === "number" &&
+    crop.x >= 0 &&
+    crop.x <= 1 &&
+    crop.y >= 0 &&
+    crop.y <= 1 &&
+    crop.width > 0 &&
+    crop.width <= 1 &&
+    crop.height > 0 &&
+    crop.height <= 1 &&
+    crop.x + crop.width <= 1.01 && // Small tolerance for floating point
+    crop.y + crop.height <= 1.01
+  );
+}
+
+/**
+ * Converts percentage-based crop dimensions to pixel values
+ */
+export function cropDimensionsToPixels(
+  crop: CropDimensions,
+  imageWidth: number,
+  imageHeight: number,
+): CropRegionPixels {
+  return {
+    left: Math.max(0, Math.round(crop.x * imageWidth)),
+    top: Math.max(0, Math.round(crop.y * imageHeight)),
+    width: Math.min(imageWidth, Math.round(crop.width * imageWidth)),
+    height: Math.min(imageHeight, Math.round(crop.height * imageHeight)),
+  };
 }

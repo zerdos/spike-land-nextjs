@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  type AnalysisDetailedResult,
   analyzeImage,
+  buildDynamicEnhancementPrompt,
   DEFAULT_MODEL,
   type EnhanceImageParams,
   enhanceImageWithGemini,
@@ -14,20 +16,22 @@ import {
 } from "./gemini-client";
 
 // Mock the @google/genai module - Vitest 4: Use vi.hoisted for configurable mock
-const { MockGoogleGenAI, mockGenerateContentStream } = vi.hoisted(() => {
+const { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent } = vi.hoisted(() => {
   const mockGenerateContentStream = vi.fn();
+  const mockGenerateContent = vi.fn();
 
   class MockGoogleGenAI {
     static mock = { instances: [] as MockGoogleGenAI[] };
     models = {
       generateContentStream: mockGenerateContentStream,
+      generateContent: mockGenerateContent,
     };
     constructor() {
       MockGoogleGenAI.mock.instances.push(this);
     }
   }
 
-  return { MockGoogleGenAI, mockGenerateContentStream };
+  return { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent };
 });
 
 vi.mock("@google/genai", () => ({
@@ -36,6 +40,40 @@ vi.mock("@google/genai", () => ({
 
 describe("gemini-client", () => {
   describe("analyzeImage", () => {
+    beforeEach(() => {
+      process.env.GEMINI_API_KEY = "test-api-key";
+      resetGeminiClient();
+      // Mock the generateContent response for analysis
+      mockGenerateContent.mockResolvedValue({
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                mainSubject: "A person in a garden",
+                imageStyle: "photograph",
+                defects: {
+                  isDark: false,
+                  isBlurry: false,
+                  hasNoise: true,
+                  hasVHSArtifacts: false,
+                  isLowResolution: true,
+                  isOverexposed: false,
+                  hasColorCast: false,
+                },
+                lightingCondition: "natural daylight",
+                cropping: { isCroppingNeeded: false },
+              }),
+            }],
+          },
+        }],
+      });
+    });
+
+    afterEach(() => {
+      delete process.env.GEMINI_API_KEY;
+      mockGenerateContent.mockReset();
+    });
+
     it("should return analysis result with enhancement prompt", async () => {
       const result = await analyzeImage("base64data", "image/jpeg");
 
@@ -47,11 +85,11 @@ describe("gemini-client", () => {
       expect(Array.isArray(result.suggestedImprovements)).toBe(true);
     });
 
-    it("should include enhancement prompt with base prompt", async () => {
+    it("should include enhancement prompt with dynamic instructions", async () => {
       const result = await analyzeImage("base64data", "image/jpeg");
 
-      expect(result.enhancementPrompt).toContain("Create a high resolution version");
-      expect(result.enhancementPrompt).toContain("professional photographer");
+      // Dynamic prompt should contain professional image restoration instructions
+      expect(result.enhancementPrompt).toContain("professional image restoration");
     });
 
     it("should log image metadata during analysis", async () => {
@@ -67,6 +105,167 @@ describe("gemini-client", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe("buildDynamicEnhancementPrompt", () => {
+    const baseAnalysis: AnalysisDetailedResult = {
+      mainSubject: "A person in a garden",
+      imageStyle: "photograph",
+      defects: {
+        isDark: false,
+        isBlurry: false,
+        hasNoise: false,
+        hasVHSArtifacts: false,
+        isLowResolution: false,
+        isOverexposed: false,
+        hasColorCast: false,
+      },
+      lightingCondition: "natural daylight",
+      cropping: { isCroppingNeeded: false },
+    };
+
+    it("should return base prompt for clean photograph", () => {
+      const prompt = buildDynamicEnhancementPrompt(baseAnalysis);
+      expect(prompt).toContain("professional image restoration");
+      expect(prompt).toContain("high-resolution");
+    });
+
+    it("should add sketch conversion instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        imageStyle: "sketch",
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("sketch");
+      expect(prompt).toContain("photorealistic");
+    });
+
+    it("should add painting conversion instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        imageStyle: "painting",
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("painting");
+      expect(prompt).toContain("photorealistic");
+    });
+
+    it("should add screenshot cleanup instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        imageStyle: "screenshot",
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("screenshot");
+    });
+
+    it("should add dark image relighting instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, isDark: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("relight");
+    });
+
+    it("should add overexposed recovery instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, isOverexposed: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("blown-out");
+    });
+
+    it("should add VHS artifact removal instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, hasVHSArtifacts: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("analog video");
+      expect(prompt).toContain("tracking");
+    });
+
+    it("should add noise reduction instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, hasNoise: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("noise");
+    });
+
+    it("should add low resolution enhancement instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, isLowResolution: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("pixelated");
+    });
+
+    it("should add color cast correction instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, hasColorCast: true, colorCastType: "yellow" },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("yellow");
+      expect(prompt).toContain("color cast");
+    });
+
+    it("should add blur correction instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: { ...baseAnalysis.defects, isBlurry: true },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("focus");
+    });
+
+    it("should combine multiple defect instructions", () => {
+      const analysis: AnalysisDetailedResult = {
+        ...baseAnalysis,
+        defects: {
+          isDark: true,
+          isBlurry: true,
+          hasNoise: true,
+          hasVHSArtifacts: false,
+          isLowResolution: false,
+          isOverexposed: false,
+          hasColorCast: false,
+        },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("relight");
+      expect(prompt).toContain("focus");
+      expect(prompt).toContain("noise");
+    });
+
+    it("should handle extreme VHS case with multiple defects", () => {
+      const analysis: AnalysisDetailedResult = {
+        mainSubject: "VHS tape recording",
+        imageStyle: "screenshot",
+        defects: {
+          isDark: false,
+          isBlurry: true,
+          hasNoise: true,
+          hasVHSArtifacts: true,
+          isLowResolution: true,
+          isOverexposed: false,
+          hasColorCast: true,
+          colorCastType: "blue",
+        },
+        lightingCondition: "indoor artificial",
+        cropping: { isCroppingNeeded: false },
+      };
+      const prompt = buildDynamicEnhancementPrompt(analysis);
+      expect(prompt).toContain("screenshot");
+      expect(prompt).toContain("analog video");
+      expect(prompt).toContain("noise");
+      expect(prompt).toContain("blue");
     });
   });
 
