@@ -4,6 +4,8 @@ import {
   parsePipelineConfig,
   type PipelineConfig,
   type PipelineDbConfigs,
+  type PromptConfig,
+  type ReferenceImage,
   SYSTEM_DEFAULT_PIPELINE,
 } from "./pipeline-types";
 
@@ -186,6 +188,120 @@ describe("pipeline-types", () => {
         generation: {},
       };
       expect(isValidPipelineConfig(minimalConfig)).toBe(true);
+    });
+  });
+
+  describe("PromptConfig with referenceImages", () => {
+    it("should accept valid reference images in prompt config", () => {
+      const configWithRefs: PipelineConfig = {
+        tier: "TIER_1K",
+        analysis: { enabled: true },
+        autoCrop: { enabled: true },
+        prompt: {
+          referenceImages: [
+            {
+              url: "https://example.com/ref1.jpg",
+              r2Key: "pipelines/123/references/ref1.jpg",
+              description: "Target style",
+            },
+          ],
+        },
+        generation: { retryAttempts: 3 },
+      };
+      expect(isValidPipelineConfig(configWithRefs)).toBe(true);
+    });
+
+    it("should accept multiple reference images (up to 3)", () => {
+      const refs: ReferenceImage[] = [
+        { url: "https://example.com/ref1.jpg", r2Key: "ref1.jpg" },
+        { url: "https://example.com/ref2.jpg", r2Key: "ref2.jpg", description: "Color palette" },
+        { url: "https://example.com/ref3.jpg", r2Key: "ref3.jpg", description: "Lighting" },
+      ];
+      const config: PipelineConfig = {
+        tier: "TIER_2K",
+        analysis: { enabled: true },
+        autoCrop: { enabled: false },
+        prompt: { referenceImages: refs },
+        generation: {},
+      };
+      expect(isValidPipelineConfig(config)).toBe(true);
+      expect(config.prompt.referenceImages).toHaveLength(3);
+    });
+
+    it("should accept reference images without description", () => {
+      const ref: ReferenceImage = {
+        url: "https://example.com/ref.jpg",
+        r2Key: "pipelines/abc/references/ref.jpg",
+      };
+      expect(ref.description).toBeUndefined();
+      expect(ref.url).toBe("https://example.com/ref.jpg");
+      expect(ref.r2Key).toBe("pipelines/abc/references/ref.jpg");
+    });
+
+    it("should accept empty referenceImages array", () => {
+      const config: PipelineConfig = {
+        tier: "TIER_1K",
+        analysis: { enabled: true },
+        autoCrop: { enabled: true },
+        prompt: { referenceImages: [] },
+        generation: { retryAttempts: 3 },
+      };
+      expect(isValidPipelineConfig(config)).toBe(true);
+      expect(config.prompt.referenceImages).toHaveLength(0);
+    });
+
+    it("should combine reference images with other prompt config options", () => {
+      const prompt: PromptConfig = {
+        customInstructions: "Enhance with vintage look",
+        skipCorrections: ["hasNoise"],
+        defectOverrides: { isDark: false },
+        referenceImages: [
+          {
+            url: "https://example.com/vintage.jpg",
+            r2Key: "vintage.jpg",
+            description: "Vintage style",
+          },
+        ],
+      };
+      expect(prompt.customInstructions).toBe("Enhance with vintage look");
+      expect(prompt.skipCorrections).toContain("hasNoise");
+      expect(prompt.defectOverrides?.isDark).toBe(false);
+      expect(prompt.referenceImages).toHaveLength(1);
+    });
+  });
+
+  describe("parsePipelineConfig with referenceImages", () => {
+    it("should preserve reference images from db config", () => {
+      const dbConfigs: PipelineDbConfigs = {
+        analysisConfig: { enabled: true },
+        autoCropConfig: { enabled: false },
+        promptConfig: {
+          referenceImages: [
+            { url: "https://example.com/ref.jpg", r2Key: "ref.jpg", description: "Style ref" },
+          ],
+        },
+        generationConfig: { retryAttempts: 5 },
+      };
+
+      const result = parsePipelineConfig("TIER_2K", dbConfigs);
+
+      expect(result.prompt.referenceImages).toHaveLength(1);
+      expect(result.prompt.referenceImages?.[0].url).toBe("https://example.com/ref.jpg");
+      expect(result.prompt.referenceImages?.[0].description).toBe("Style ref");
+    });
+
+    it("should handle null prompt config with default (no reference images)", () => {
+      const dbConfigs: PipelineDbConfigs = {
+        analysisConfig: { enabled: true },
+        autoCropConfig: null,
+        promptConfig: null,
+        generationConfig: null,
+      };
+
+      const result = parsePipelineConfig("TIER_1K", dbConfigs);
+
+      expect(result.prompt).toEqual(SYSTEM_DEFAULT_PIPELINE.prompt);
+      expect(result.prompt.referenceImages).toBeUndefined();
     });
   });
 });
