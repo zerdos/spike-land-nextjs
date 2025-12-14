@@ -137,6 +137,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         analysisSource: null,
         wasCropped: false,
         cropDimensions: null,
+        // Pipeline reference
+        pipelineId: null,
       };
 
       setImage((prev: ImageWithJobs) => ({
