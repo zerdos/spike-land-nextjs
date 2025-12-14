@@ -255,6 +255,12 @@ model ImageEnhancementJob {
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   workflowRunId         String?
+  // Analysis fields for dynamic prompt pipeline
+  analysisResult        Json?           // Stores full AnalysisDetailedResult JSON
+  analysisSource        String?         // Model used for analysis (e.g., "gemini-3-pro-image-preview")
+  // Cropping fields for auto-crop feature
+  wasCropped            Boolean         @default(false)
+  cropDimensions        Json?           // Stores { left, top, width, height } pixel values used
   image                 EnhancedImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   featuredGalleryItems FeaturedGalleryItem[]

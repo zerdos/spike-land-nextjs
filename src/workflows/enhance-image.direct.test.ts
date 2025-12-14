@@ -6,6 +6,7 @@ const {
   mockDownloadFromR2,
   mockUploadToR2,
   mockEnhanceImageWithGemini,
+  mockAnalyzeImageV2,
   mockRefundTokens,
   mockPrismaUpdate,
   mockSharp,
@@ -13,6 +14,7 @@ const {
   mockDownloadFromR2: vi.fn(),
   mockUploadToR2: vi.fn(),
   mockEnhanceImageWithGemini: vi.fn(),
+  mockAnalyzeImageV2: vi.fn(),
   mockRefundTokens: vi.fn(),
   mockPrismaUpdate: vi.fn(),
   mockSharp: vi.fn(),
@@ -25,6 +27,8 @@ vi.mock("@/lib/storage/r2-client", () => ({
 
 vi.mock("@/lib/ai/gemini-client", () => ({
   enhanceImageWithGemini: mockEnhanceImageWithGemini,
+  analyzeImageV2: mockAnalyzeImageV2,
+  buildDynamicEnhancementPrompt: vi.fn(() => "Mock enhancement prompt for testing"),
   DEFAULT_MODEL: "gemini-3-pro-image-preview",
   DEFAULT_TEMPERATURE: null,
 }));
@@ -76,6 +80,25 @@ describe("enhance-image.direct", () => {
       url: "https://example.com/enhanced.jpg",
     });
     mockEnhanceImageWithGemini.mockResolvedValue(mockEnhancedBuffer);
+    mockAnalyzeImageV2.mockResolvedValue({
+      description: "A test image",
+      quality: "medium",
+      structuredAnalysis: {
+        mainSubject: "test subject",
+        imageStyle: "photograph",
+        defects: {
+          isDark: false,
+          isBlurry: false,
+          hasNoise: false,
+          hasVHSArtifacts: false,
+          isLowResolution: false,
+          isOverexposed: false,
+          hasColorCast: false,
+        },
+        lightingCondition: "natural daylight",
+        cropping: { isCroppingNeeded: false },
+      },
+    });
     mockRefundTokens.mockResolvedValue({ success: true });
     mockPrismaUpdate.mockResolvedValue({});
 

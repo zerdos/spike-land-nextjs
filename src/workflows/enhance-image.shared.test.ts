@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   calculateCropRegion,
   calculateTargetDimensions,
+  cropDimensionsToPixels,
   ENHANCED_JPEG_QUALITY,
   generateEnhancedR2Key,
   TIER_RESOLUTIONS,
+  validateCropDimensions,
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
 
@@ -262,6 +264,195 @@ describe("enhance-image.shared", () => {
         "job-222",
       );
       expect(result).toBe("users/user-abc/enhanced/subfolder/image/job-222.jpg");
+    });
+  });
+
+  describe("validateCropDimensions", () => {
+    it("should return true for valid crop dimensions", () => {
+      expect(validateCropDimensions({
+        x: 0.1,
+        y: 0.2,
+        width: 0.5,
+        height: 0.6,
+      })).toBe(true);
+    });
+
+    it("should return true for crop starting at origin (0, 0)", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 0,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(true);
+    });
+
+    it("should return true for full image crop (1.0 width/height)", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      })).toBe(true);
+    });
+
+    it("should return false for negative x", () => {
+      expect(validateCropDimensions({
+        x: -0.1,
+        y: 0,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false for negative y", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: -0.1,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false for x > 1", () => {
+      expect(validateCropDimensions({
+        x: 1.1,
+        y: 0,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false for y > 1", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 1.1,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false for width <= 0", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false for height <= 0", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 0,
+        width: 0.5,
+        height: 0,
+      })).toBe(false);
+    });
+
+    it("should return false when x + width > 1", () => {
+      expect(validateCropDimensions({
+        x: 0.6,
+        y: 0,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should return false when y + height > 1", () => {
+      expect(validateCropDimensions({
+        x: 0,
+        y: 0.6,
+        width: 0.5,
+        height: 0.5,
+      })).toBe(false);
+    });
+
+    it("should allow small floating point tolerance for x + width", () => {
+      // Should allow up to 1.01 due to floating point tolerance
+      expect(validateCropDimensions({
+        x: 0.5,
+        y: 0,
+        width: 0.505,
+        height: 0.5,
+      })).toBe(true);
+    });
+  });
+
+  describe("cropDimensionsToPixels", () => {
+    it("should convert percentage to pixel values", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0.1, y: 0.2, width: 0.5, height: 0.4 },
+        1000,
+        800,
+      );
+      expect(result).toEqual({
+        left: 100,
+        top: 160,
+        width: 500,
+        height: 320,
+      });
+    });
+
+    it("should handle full image crop (0,0 to 1,1)", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0, y: 0, width: 1, height: 1 },
+        1920,
+        1080,
+      );
+      expect(result).toEqual({
+        left: 0,
+        top: 0,
+        width: 1920,
+        height: 1080,
+      });
+    });
+
+    it("should round to nearest pixel", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0.333, y: 0.666, width: 0.5, height: 0.25 },
+        100,
+        100,
+      );
+      expect(result.left).toBe(33);
+      expect(result.top).toBe(67);
+      expect(result.width).toBe(50);
+      expect(result.height).toBe(25);
+    });
+
+    it("should clamp left to 0 minimum", () => {
+      const result = cropDimensionsToPixels(
+        { x: -0.1, y: 0, width: 0.5, height: 0.5 },
+        100,
+        100,
+      );
+      expect(result.left).toBe(0);
+    });
+
+    it("should clamp top to 0 minimum", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0, y: -0.1, width: 0.5, height: 0.5 },
+        100,
+        100,
+      );
+      expect(result.top).toBe(0);
+    });
+
+    it("should clamp width to image width maximum", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0, y: 0, width: 1.5, height: 0.5 },
+        100,
+        100,
+      );
+      expect(result.width).toBe(100);
+    });
+
+    it("should clamp height to image height maximum", () => {
+      const result = cropDimensionsToPixels(
+        { x: 0, y: 0, width: 0.5, height: 1.5 },
+        100,
+        100,
+      );
+      expect(result.height).toBe(100);
     });
   });
 });
