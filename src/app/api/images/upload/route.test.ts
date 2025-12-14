@@ -62,6 +62,17 @@ const { mockPrisma } = vi.hoisted(() => {
           isPublic: false,
         }),
       },
+      album: {
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
+      albumImage: {
+        create: vi.fn().mockResolvedValue({
+          id: "album-image-123",
+          albumId: "album-123",
+          imageId: "img-123",
+          sortOrder: 0,
+        }),
+      },
     },
   };
 });
@@ -88,10 +99,13 @@ function createMockFile(name = "test.jpg", type = "image/jpeg") {
 type MockFile = ReturnType<typeof createMockFile>;
 
 // Helper to create a mock request with formData
-function createMockRequest(file: MockFile | null): NextRequest {
-  const mockFormData = new Map<string, MockFile | null>();
+function createMockRequest(file: MockFile | null, albumId?: string): NextRequest {
+  const mockFormData = new Map<string, MockFile | string | null>();
   if (file) {
     mockFormData.set("file", file);
+  }
+  if (albumId) {
+    mockFormData.set("albumId", albumId);
   }
 
   const req = new NextRequest("http://localhost/api/images/upload", {
@@ -370,6 +384,77 @@ describe("POST /api/images/upload", () => {
 
       expect(res.status).toBe(200);
       expect(data.success).toBe(true);
+    });
+  });
+
+  describe("album association", () => {
+    it("should not create albumImage when no albumId provided", async () => {
+      const req = createMockRequest(createMockFile());
+      const res = await POST(req);
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.albumImage.create).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 if albumId is provided but album does not exist", async () => {
+      mockPrisma.album.findFirst.mockResolvedValueOnce(null);
+
+      const req = createMockRequest(createMockFile(), "non-existent-album");
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.suggestion).toContain("Album not found");
+      expect(mockPrisma.enhancedImage.create).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 if albumId belongs to another user", async () => {
+      // album.findFirst returns null when album doesn't belong to user
+      mockPrisma.album.findFirst.mockResolvedValueOnce(null);
+
+      const req = createMockRequest(createMockFile(), "other-users-album");
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.suggestion).toContain("Album not found");
+    });
+
+    it("should create albumImage when valid albumId is provided", async () => {
+      mockPrisma.album.findFirst.mockResolvedValueOnce({
+        id: "album-123",
+        userId: "user-123",
+        name: "Test Album",
+      });
+
+      const req = createMockRequest(createMockFile(), "album-123");
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(mockPrisma.albumImage.create).toHaveBeenCalledWith({
+        data: {
+          albumId: "album-123",
+          imageId: "img-123",
+        },
+      });
+    });
+
+    it("should still return success even if albumImage creation is called", async () => {
+      mockPrisma.album.findFirst.mockResolvedValueOnce({
+        id: "album-123",
+        userId: "user-123",
+        name: "Test Album",
+      });
+
+      const req = createMockRequest(createMockFile(), "album-123");
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.image.id).toBe("img-123");
     });
   });
 });
