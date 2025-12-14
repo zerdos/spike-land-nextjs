@@ -593,18 +593,30 @@ describe("AuthButtons Component", () => {
 
     it("should show loading state during account creation", async () => {
       const user = userEvent.setup();
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      // First call is check-email, subsequent calls will be signup
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call - return a delayed promise
+        return new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+              }),
+            100,
+          )
+        );
       });
 
-      let resolveSignIn: (value: unknown) => void;
-      vi.mocked(signIn).mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            resolveSignIn = resolve;
-          }),
-      );
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
       render(<AuthButtons />);
 
@@ -619,15 +631,25 @@ describe("AuthButtons Component", () => {
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       expect(screen.getByText(/creating account/i)).toBeInTheDocument();
-
-      resolveSignIn!({ ok: false, error: "test" });
     });
 
     it("should redirect to callback URL on successful signup", async () => {
       const user = userEvent.setup();
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      // Mock check-email and signup API calls
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+        });
       });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
@@ -667,9 +689,21 @@ describe("AuthButtons Component", () => {
 
     it("should block external callback URLs on signup (security)", async () => {
       const user = userEvent.setup();
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      // Mock check-email and signup API calls
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+        });
       });
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
 
@@ -710,11 +744,19 @@ describe("AuthButtons Component", () => {
     it("should display error on signup exception", async () => {
       const user = userEvent.setup();
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      // Mock check-email and signup API calls, signup throws exception
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call throws
+        return Promise.reject(new Error("Network error"));
       });
-      vi.mocked(signIn).mockRejectedValue(new Error("Network error"));
 
       render(<AuthButtons />);
 
@@ -733,6 +775,96 @@ describe("AuthButtons Component", () => {
       });
 
       consoleSpy.mockRestore();
+    });
+
+    it("should call signup API with correct data", async () => {
+      const user = userEvent.setup();
+      // Mock check-email and signup API calls
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+        });
+      });
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+
+      const originalLocation = window.location;
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { ...originalLocation, href: "", search: "", origin: "http://localhost:3000" },
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "NewUser@Example.COM");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      // Check the signup API was called correctly
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "newuser@example.com", password: "newpassword123" }),
+        });
+      });
+
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: originalLocation,
+      });
+    });
+
+    it("should display signup API error message", async () => {
+      const user = userEvent.setup();
+      // Mock check-email and signup API calls
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call returns error
+        return Promise.resolve({
+          ok: false,
+          status: 409,
+          json: () => Promise.resolve({ error: "An account with this email already exists" }),
+        });
+      });
+
+      render(<AuthButtons />);
+
+      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+      });
+
+      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.click(screen.getByRole("button", { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/an account with this email already exists/i)).toBeInTheDocument();
+      });
     });
   });
 
@@ -817,11 +949,23 @@ describe("AuthButtons Component", () => {
       consoleSpy.mockRestore();
     });
 
-    it("should display error on signup failure", async () => {
+    it("should display error when signin fails after signup", async () => {
       const user = userEvent.setup();
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false, hasPassword: false }),
+      // Mock check-email and signup API calls - signup succeeds but signin fails
+      let callCount = 0;
+      mockFetch.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ exists: false, hasPassword: false }),
+          });
+        }
+        // Signup call succeeds
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+        });
       });
       vi.mocked(signIn).mockResolvedValue({
         error: "CredentialsSignin",
@@ -844,7 +988,7 @@ describe("AuthButtons Component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/unable to create account.*google or github/i),
+          screen.getByText(/account created but sign in failed/i),
         ).toBeInTheDocument();
       });
     });
