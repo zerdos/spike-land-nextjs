@@ -52,7 +52,9 @@ This guide explains how to configure GitHub branch protection rules to ensure no
 
 ✅ **Require deployments to succeed before merging**
 
-- Optional: only if you want to require preview deployments
+- **RECOMMENDED**: Require Vercel preview deployments to succeed
+- Vercel automatically reports deployment status via GitHub integration
+- Add `Vercel` or `Vercel – spike-land-nextjs` to required checks once available
 
 ### 3. Save the Rule
 
@@ -161,11 +163,48 @@ gh api repos/zerdos/spike-land-nextjs/branches/main/protection \
   --field restrictions=null
 ```
 
+## Pre-Merge Smoke Test (MANDATORY)
+
+**Before merging ANY pull request**, a manual smoke test MUST be performed on the Vercel preview deployment.
+
+### Smoke Test Process
+
+1. Find the preview URL in Vercel's PR comment
+2. Open the preview deployment
+3. Test key functionality relevant to the PR changes
+4. Document the test result in a PR comment
+
+### Required PR Comment Format
+
+```markdown
+✅ Manual smoke test completed on preview deployment
+
+Tested:
+
+- [x] Home page loads correctly
+- [x] [Feature specific tests...]
+- [x] No console errors
+
+Ready to merge.
+```
+
+### Why This Is Required
+
+Automated tests catch regressions, but manual verification ensures:
+
+- UI renders correctly in production-like environment
+- Critical user flows work end-to-end
+- No visual regressions or broken layouts
+- Environment variables and integrations work correctly
+
+**See CLAUDE.md "Pre-Merge Smoke Test" section for full checklist.**
+
 ## Benefits
 
 ✅ **No broken code in main** - All tests must pass
 ✅ **Consistent quality** - Enforced code standards
 ✅ **Safe deployments** - Only tested code reaches production
+✅ **Manual verification** - Smoke tests catch UI/UX issues
 ✅ **Code review process** - PRs encourage collaboration
 ✅ **Audit trail** - All changes documented in PRs
 
