@@ -1,16 +1,28 @@
 import { auth } from "@/auth";
 import { SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";
+import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
 import { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
+
+// Maximum number of pipelines a user can create
+const MAX_PIPELINES_PER_USER = 50;
+
+// Default pagination settings
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 100;
 
 /**
  * GET /api/pipelines
  * List pipelines accessible to the current user:
  * - User's own pipelines
  * - Public pipelines from other users
+ *
+ * Query parameters:
+ * - page: Page number (default: 0)
+ * - limit: Number of items per page (default: 50, max: 100)
  */
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -18,6 +30,26 @@ export async function GET() {
   }
 
   try {
+    // Parse pagination parameters from URL
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
+    const limit = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10)),
+    );
+    const skip = page * limit;
+
+    // Get total count for pagination metadata
+    const totalCount = await prisma.enhancementPipeline.count({
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { visibility: PipelineVisibility.PUBLIC },
+          { userId: null },
+        ],
+      },
+    });
+
     const pipelines = await prisma.enhancementPipeline.findMany({
       where: {
         OR: [
@@ -46,6 +78,8 @@ export async function GET() {
         promptConfig: true,
         generationConfig: true,
       },
+      skip,
+      take: limit,
     });
 
     // Add isOwner and isSystemDefault flags
@@ -55,7 +89,16 @@ export async function GET() {
       isSystemDefault: p.userId === null,
     }));
 
-    return NextResponse.json({ pipelines: pipelinesWithFlags });
+    return NextResponse.json({
+      pipelines: pipelinesWithFlags,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: skip + pipelines.length < totalCount,
+      },
+    });
   } catch (error) {
     console.error("Error listing pipelines:", error);
     return NextResponse.json(
@@ -77,6 +120,21 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Rate limiting: Check user's pipeline count
+    const userPipelineCount = await prisma.enhancementPipeline.count({
+      where: { userId: session.user.id },
+    });
+
+    if (userPipelineCount >= MAX_PIPELINES_PER_USER) {
+      return NextResponse.json(
+        {
+          error:
+            `Pipeline limit exceeded. Maximum ${MAX_PIPELINES_PER_USER} pipelines allowed per user.`,
+        },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const {
       name,
@@ -118,6 +176,24 @@ export async function POST(request: Request) {
     if (!validVisibilities.includes(visibility)) {
       return NextResponse.json(
         { error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}` },
+        { status: 400 },
+      );
+    }
+
+    // Validate config objects if provided
+    const configValidation = validatePipelineConfigs({
+      analysisConfig,
+      autoCropConfig,
+      promptConfig,
+      generationConfig,
+    });
+
+    if (!configValidation.valid) {
+      return NextResponse.json(
+        {
+          error: "Invalid configuration",
+          details: configValidation.errors,
+        },
         { status: 400 },
       );
     }

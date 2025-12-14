@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
 import { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -164,6 +165,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           { status: 400 },
         );
       }
+    }
+
+    // Validate config objects if provided
+    const configValidation = validatePipelineConfigs({
+      analysisConfig,
+      autoCropConfig,
+      promptConfig,
+      generationConfig,
+    });
+
+    if (!configValidation.valid) {
+      return NextResponse.json(
+        {
+          error: "Invalid configuration",
+          details: configValidation.errors,
+        },
+        { status: 400 },
+      );
     }
 
     // Build update data
