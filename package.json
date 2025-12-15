@@ -85,15 +85,15 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.68.0",
-    "recharts": "^3.5.1",
+    "recharts": "^3.6.0",
     "resend": "^6.6.0",
     "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0",
     "vercel": "^50.0.1",
-    "workflow": "4.0.1-beta.31",
-    "zod": "^4.1.13"
+    "workflow": "4.0.1-beta.29",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^12.4.0",
@@ -103,7 +103,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.10.3",
+    "@types/node": "^24.10.4",
     "@types/pg": "^8.16.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
