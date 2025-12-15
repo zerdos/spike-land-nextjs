@@ -27,7 +27,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="container mx-auto px-6 max-w-6xl">
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">

@@ -450,7 +450,7 @@ describe("GridThumbnail", () => {
   });
 
   describe("CSS classes", () => {
-    it("has mb-4 class for masonry spacing", () => {
+    it("has mb-6 class for masonry spacing", () => {
       render(
         <GridThumbnail
           image={mockImage}
@@ -460,7 +460,7 @@ describe("GridThumbnail", () => {
       );
 
       const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
-      expect(thumbnail).toHaveClass("mb-4");
+      expect(thumbnail).toHaveClass("mb-6");
     });
 
     it("applies paddingBottom style based on image aspect ratio", () => {
