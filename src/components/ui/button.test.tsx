@@ -120,6 +120,67 @@ describe("Button Component", () => {
     expect(Button.displayName).toBe("Button");
   });
 
+  describe("loading state", () => {
+    it("should render spinner when loading is true", () => {
+      render(<Button loading>Submit</Button>);
+      const spinner = document.querySelector(".animate-spin");
+      expect(spinner).toBeInTheDocument();
+    });
+
+    it("should hide children when loading is true", () => {
+      render(<Button loading>Submit</Button>);
+      expect(screen.queryByText("Submit")).not.toBeInTheDocument();
+    });
+
+    it("should disable button when loading is true", () => {
+      render(<Button loading>Submit</Button>);
+      const button = screen.getByRole("button");
+      expect(button).toBeDisabled();
+    });
+
+    it("should set aria-busy when loading is true", () => {
+      render(<Button loading>Submit</Button>);
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-busy", "true");
+    });
+
+    it("should not set aria-busy when loading is false", () => {
+      render(<Button>Submit</Button>);
+      const button = screen.getByRole("button");
+      expect(button).not.toHaveAttribute("aria-busy");
+    });
+
+    it("should render children when loading is false", () => {
+      render(<Button loading={false}>Submit</Button>);
+      expect(screen.getByText("Submit")).toBeInTheDocument();
+    });
+
+    it("should not prevent clicks when loading (disabled handles it)", async () => {
+      let clicked = false;
+      const user = userEvent.setup();
+      render(
+        <Button
+          loading
+          onClick={() => {
+            clicked = true;
+          }}
+        >
+          Submit
+        </Button>,
+      );
+
+      await user.click(screen.getByRole("button"));
+      expect(clicked).toBe(false);
+    });
+
+    it("should work with different variants when loading", () => {
+      render(<Button loading variant="destructive">Delete</Button>);
+      const button = screen.getByRole("button");
+      expect(button).toHaveClass("bg-destructive");
+      expect(button).toBeDisabled();
+    });
+  });
+
   describe("buttonVariants", () => {
     it("should generate default variant classes", () => {
       const classes = buttonVariants();
