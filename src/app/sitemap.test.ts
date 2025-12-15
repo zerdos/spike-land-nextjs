@@ -1,4 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock the blog module for deterministic testing
+vi.mock("@/lib/blog/get-posts", () => ({
+  getPostSlugs: vi.fn(() => ["pixel-launch-announcement", "test-post"]),
+}));
+
 import sitemap from "./sitemap";
 
 describe("sitemap", () => {
@@ -141,8 +147,38 @@ describe("sitemap", () => {
 
   it("has expected total number of pages", () => {
     const result = sitemap();
-    // 9 public + 5 protected + 6 admin + 11 storybook + 1 blog listing + N blog posts = 32+ total
-    // Blog posts are dynamically added based on content/blog/*.mdx files
-    expect(result.length).toBeGreaterThanOrEqual(32);
+    // 9 public + 5 protected + 6 admin + 11 storybook + 1 blog listing + 2 mocked blog posts = 34 total
+    expect(result.length).toBe(34);
+  });
+
+  it("includes blog listing page in sitemap", () => {
+    const result = sitemap();
+    const blogListing = result.find(
+      (entry) => entry.url === "https://spike.land/blog",
+    );
+
+    expect(blogListing).toBeDefined();
+    expect(blogListing?.priority).toBe(0.8);
+    expect(blogListing?.changeFrequency).toBe("weekly");
+  });
+
+  it("includes blog post pages in sitemap", () => {
+    const result = sitemap();
+    const urls = result.map((entry) => entry.url);
+
+    // Check that mocked blog posts are included
+    expect(urls).toContain("https://spike.land/blog/pixel-launch-announcement");
+    expect(urls).toContain("https://spike.land/blog/test-post");
+  });
+
+  it("sets blog posts with correct priority", () => {
+    const result = sitemap();
+    const blogPost = result.find(
+      (entry) => entry.url === "https://spike.land/blog/pixel-launch-announcement",
+    );
+
+    expect(blogPost).toBeDefined();
+    expect(blogPost?.priority).toBe(0.7);
+    expect(blogPost?.changeFrequency).toBe("weekly");
   });
 });

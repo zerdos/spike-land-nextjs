@@ -5,12 +5,9 @@ import { notFound } from "next/navigation";
 import { BlogHeader, Prose } from "@/components/blog";
 import { MDXContent } from "@/components/blog/MDXContent";
 import { Button } from "@/components/ui/button";
-import { getAllPosts, getPostBySlug } from "@/lib/blog/get-posts";
+import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-
-// Force dynamic rendering for blog posts with interactive components
-export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string; }>;
@@ -53,6 +50,15 @@ export async function generateMetadata({
       images: frontmatter.image ? [frontmatter.image] : undefined,
     },
   };
+}
+
+/**
+ * Generate static params for all blog posts at build time
+ * This enables static generation instead of server-side rendering
+ */
+export async function generateStaticParams() {
+  const slugs = getPostSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export default async function BlogPostPage({ params }: PageProps) {

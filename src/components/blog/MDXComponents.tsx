@@ -7,9 +7,21 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
- * Callout component for info boxes
+ * Callout component for displaying info, warning, or success messages in blog posts.
+ * Renders a styled box with a colored left border based on the message type.
+ *
+ * @param type - The type of callout: "info" (blue), "warning" (yellow), or "success" (green)
+ * @param children - The content to display inside the callout
+ *
+ * @example
+ * ```mdx
+ * <Callout type="info">
+ *   This is an informational callout.
+ * </Callout>
+ * ```
  */
 function Callout({
   type = "info",
@@ -24,21 +36,41 @@ function Callout({
     success: "bg-success border-success text-foreground",
   };
   return (
-    <div className={`border-l-4 p-4 my-6 rounded-r-lg ${styles[type]}`}>
+    <div className={cn("border-l-4 p-4 my-6 rounded-r-lg", styles[type])}>
       {children}
     </div>
   );
 }
 
 /**
- * Gallery component for multiple images
+ * Gallery component for displaying multiple images in a responsive grid layout.
+ * Images are displayed in a single column on mobile and two columns on larger screens.
+ *
+ * @param children - Image elements or other content to display in the gallery
+ *
+ * @example
+ * ```mdx
+ * <Gallery>
+ *   <img src="/image1.jpg" alt="First image" />
+ *   <img src="/image2.jpg" alt="Second image" />
+ * </Gallery>
+ * ```
  */
 function Gallery({ children }: { children: React.ReactNode; }) {
   return <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">{children}</div>;
 }
 
 /**
- * CTA Button component
+ * Call-to-action button component for prominent links in blog posts.
+ * Renders a centered, styled button with the Pixel cyan glow effect.
+ *
+ * @param href - The URL to navigate to when clicked
+ * @param children - The button label text
+ *
+ * @example
+ * ```mdx
+ * <CTAButton href="/apps/pixel">Try Pixel Free</CTAButton>
+ * ```
  */
 function CTAButton({
   href,
@@ -260,7 +292,19 @@ export const mdxComponents: MDXComponents = {
 };
 
 /**
- * Function to get MDX components with optional overrides
+ * Returns MDX components with optional overrides.
+ * Use this function to get the default MDX components with additional
+ * or custom component implementations.
+ *
+ * @param overrides - Optional object of components to override or add
+ * @returns The merged MDX components object
+ *
+ * @example
+ * ```tsx
+ * const components = getMDXComponents({
+ *   CustomComponent: MyCustomComponent,
+ * });
+ * ```
  */
 export function getMDXComponents(
   overrides: MDXComponents = {},

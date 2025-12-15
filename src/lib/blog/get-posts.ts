@@ -3,7 +3,8 @@ import matter from "gray-matter";
 import path from "path";
 import readingTime from "reading-time";
 
-import type { BlogPost, BlogPostFrontmatter, BlogPostMeta } from "./types";
+import type { BlogPost, BlogPostMeta } from "./types";
+import { blogPostFrontmatterSchema } from "./types";
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
 
@@ -24,7 +25,10 @@ export function getPostSlugs(): string[] {
 }
 
 /**
- * Get a single blog post by slug
+ * Get a single blog post by slug.
+ * Validates frontmatter using Zod schema.
+ * @param slug - The URL slug of the blog post
+ * @returns The blog post with content, or null if not found or invalid
  */
 export function getPostBySlug(slug: string): BlogPost | null {
   const filePath = path.join(BLOG_DIR, `${slug}.mdx`);
@@ -37,8 +41,19 @@ export function getPostBySlug(slug: string): BlogPost | null {
   const { data, content } = matter(fileContents);
   const stats = readingTime(content);
 
+  // Validate frontmatter with Zod schema
+  const parseResult = blogPostFrontmatterSchema.safeParse(data);
+
+  if (!parseResult.success) {
+    console.error(
+      `Invalid frontmatter in ${slug}.mdx:`,
+      parseResult.error.flatten().fieldErrors,
+    );
+    return null;
+  }
+
   return {
-    frontmatter: data as BlogPostFrontmatter,
+    frontmatter: parseResult.data,
     content,
     slug,
     readingTime: stats.text,
