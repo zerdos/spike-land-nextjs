@@ -55,7 +55,7 @@ describe("PlatformHeader Component", () => {
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
     expect(ctaButtons[0]).toHaveAttribute(
       "href",
-      "/auth/signin?callbackUrl=/apps/pixel",
+      "/apps/pixel",
     );
   });
 
@@ -154,7 +154,7 @@ describe("PlatformHeader Component", () => {
     // Find the dialog and get the Get Started link inside it
     const dialog = screen.getByRole("dialog");
     const getStartedLinkInDialog = dialog.querySelector(
-      'a[href="/auth/signin?callbackUrl=/apps/pixel"]',
+      'a[href="/apps/pixel"]',
     );
     expect(getStartedLinkInDialog).toBeInTheDocument();
 

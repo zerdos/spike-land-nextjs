@@ -6,10 +6,23 @@ import {
   PlatformHeader,
   PlatformHero,
 } from "@/components/platform-landing";
+import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { Image as ImageIcon } from "lucide-react";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
-const DEMO_COMPARISON_IMAGES = {
+// Cache the super admin's top public photo for 1 hour to reduce database queries
+const getTopPublicPhoto = unstable_cache(
+  async () => {
+    const photos = await getSuperAdminPublicPhotos(1);
+    return photos[0] || null;
+  },
+  ["homepage-super-admin-top-photo"],
+  { revalidate: 3600, tags: ["super-admin-gallery"] },
+);
+
+// Fallback images if no super admin photos available
+const FALLBACK_COMPARISON_IMAGES = {
   originalUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
   enhancedUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=95",
 };
@@ -20,6 +33,24 @@ export default async function Home() {
   if (session?.user?.id) {
     redirect("/apps/pixel");
   }
+
+  // Fetch super admin's public photo for the featured card
+  let comparisonImages = FALLBACK_COMPARISON_IMAGES;
+  try {
+    const topPhoto = await getTopPublicPhoto();
+    if (topPhoto) {
+      comparisonImages = {
+        originalUrl: topPhoto.originalUrl,
+        enhancedUrl: topPhoto.enhancedUrl,
+      };
+    }
+  } catch (error) {
+    // Fall back to defaults if database unavailable
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to fetch super admin public photo:", error);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Fixed Header */}
@@ -44,11 +75,11 @@ export default async function Home() {
             name="Pixel"
             description="Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
             icon={<ImageIcon className="h-8 w-8" />}
-            href="/auth/signin?callbackUrl=/apps/pixel"
+            href="/apps/pixel"
             featured
             usePixelLogo
             tagline="AI Image Enhancement"
-            comparisonImages={DEMO_COMPARISON_IMAGES}
+            comparisonImages={comparisonImages}
           />
           {/* More apps coming soon */}
         </div>

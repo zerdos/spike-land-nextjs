@@ -38,8 +38,8 @@ export function PixelHeader() {
               </Link>
             ))}
             <Button asChild className="shadow-glow-cyan-sm">
-              <Link href="/auth/signin?callbackUrl=/apps/pixel">
-                Get Started
+              <Link href="/auth/signin">
+                Sign Up
               </Link>
             </Button>
           </nav>
@@ -68,10 +68,10 @@ export function PixelHeader() {
                 ))}
                 <Button asChild className="mt-4 shadow-glow-cyan-sm">
                   <Link
-                    href="/auth/signin?callbackUrl=/apps/pixel"
+                    href="/auth/signin"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Get Started
+                    Sign Up
                   </Link>
                 </Button>
               </nav>

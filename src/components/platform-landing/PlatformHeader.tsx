@@ -38,7 +38,7 @@ export function PlatformHeader() {
               </Link>
             ))}
             <Button asChild>
-              <Link href="/auth/signin?callbackUrl=/apps/pixel">
+              <Link href="/apps/pixel">
                 Get Started
               </Link>
             </Button>
@@ -68,7 +68,7 @@ export function PlatformHeader() {
                 ))}
                 <Button asChild className="mt-4">
                   <Link
-                    href="/auth/signin?callbackUrl=/apps/pixel"
+                    href="/apps/pixel"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Get Started
