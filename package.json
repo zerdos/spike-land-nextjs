@@ -110,7 +110,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
-    "autoprefixer": "^10.4.22",
+    "autoprefixer": "^10.4.23",
     "dotenv": "^17.2.3",
     "dprint": "^0.50.2",
     "eslint": "^9.39.2",
