@@ -591,4 +591,11 @@
     font-weight: 700;
     color: hsl(var(--foreground));
   }
+
+  /* Lead paragraph - larger intro text for better hierarchy */
+  .prose-blog > p:first-of-type {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: hsl(var(--foreground) / 0.85);
+  }
 }

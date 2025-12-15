@@ -111,7 +111,7 @@ describe("BeforeAfterGalleryClient Component", () => {
       <BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />,
     );
     // Masonry uses flexbox layout
-    const masonryContainer = container.querySelector(".flex.-ml-4");
+    const masonryContainer = container.querySelector(".flex.-ml-6");
     expect(masonryContainer).toBeInTheDocument();
   });
 

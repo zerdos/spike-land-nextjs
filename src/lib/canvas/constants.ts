@@ -15,14 +15,14 @@ export const MASONRY_BREAKPOINTS_LANDING = {
   640: 1, // Mobile: 1 column
 };
 
-// Masonry CSS class configuration
+// Masonry CSS class configuration (24px gap)
 export const MASONRY_CLASSES = {
-  container: "flex -ml-4 w-auto",
-  column: "pl-4 bg-clip-padding",
+  container: "flex -ml-6 w-auto",
+  column: "pl-6 bg-clip-padding",
 } as const;
 
-// Consistent vertical spacing for masonry items
-export const MASONRY_ITEM_MARGIN = "mb-4";
+// Consistent vertical spacing for masonry items (24px)
+export const MASONRY_ITEM_MARGIN = "mb-6";
 
 export const DEFAULT_INTERVAL = 10;
 export const MIN_INTERVAL = 5;
