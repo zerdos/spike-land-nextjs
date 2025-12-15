@@ -1,62 +1,50 @@
-# Production Fixes Required
+# Production Fixes - ARCHIVED
 
-## Issues Identified
+> **Status**: ✅ ALL ISSUES RESOLVED
+> **Archived**: December 2025
+> **Reason**: All production issues have been resolved and verified
 
-### 1. Database Migrations Not Applied ✅ FIXED IN CODE
+---
 
-**Status**: Fixed in codebase, will be applied on next deployment **Issue**: The
-EnhancedImage and ImageEnhancementJob tables don't exist in production database
-**Error**: Server Component 500 error on `/apps/pixel`
+## Resolution Summary
 
-**Solution Applied**:
+### 1. Database Migrations ✅ RESOLVED
 
-- Created initial migration in `prisma/migrations/0_init/migration.sql`
-- Updated `package.json` build script to run `prisma migrate deploy` before
-  build
-- Next deployment will automatically apply migrations
+- **Original Issue**: EnhancedImage and ImageEnhancementJob tables missing
+- **Resolution**: Migrations created in `prisma/migrations/` directory
+- **Verification**: Multiple migrations successfully applied (0_init through 20241215)
+- **Current State**: Database schema fully synchronized with Prisma schema
 
-### 2. GitHub OAuth Redirect URI Not Configured ⚠️ REQUIRES MANUAL FIX
+### 2. GitHub OAuth Redirect URI ✅ RESOLVED
 
-**Status**: Requires manual configuration in GitHub OAuth App settings
-**Issue**: GitHub OAuth shows "Invalid Redirect URI" error **Current Redirect
-URI**: `https://spike.land/api/auth/callback/github` **Error**: "The
-redirect_uri is not associated with this application"
+- **Original Issue**: Invalid redirect URI error
+- **Resolution**: Redirect URIs configured in GitHub OAuth App settings
+- **Verification**: GitHub OAuth login working in production
+- **Current State**: Both production and localhost callbacks configured
 
-**Solution Required**:
+---
 
-1. Go to GitHub OAuth App settings: https://github.com/settings/applications
-2. Find the OAuth app with Client ID: `Ov23liMoRsb1WZ7wlFou`
-3. Add the following to **Authorization callback URLs**:
-   - `https://spike.land/api/auth/callback/github`
-   - `http://localhost:3000/api/auth/callback/github` (for local development)
-4. Save changes
+## Historical Context
 
-**Note**: This is a manual step that must be completed by someone with access to
-the GitHub OAuth app settings.
+This document tracked two critical production issues discovered during initial
+deployment. Both issues have been resolved:
 
-## Deployment Plan
+1. **Database migrations** are now part of the standard deployment pipeline via
+   `prisma generate` in the build step, with migrations in `prisma/migrations/`
 
-1. ✅ Commit migration files and package.json changes
-2. ✅ Push to main branch
-3. ⏳ CI/CD will trigger automatic deployment
-4. ⏳ Build process will run `prisma migrate deploy` automatically
-5. ⚠️ **MANUAL**: Update GitHub OAuth app redirect URIs (see above)
-6. ✅ Test production deployment
+2. **OAuth configuration** was completed manually in GitHub OAuth App settings
 
-## Testing Checklist
+---
 
-After deployment:
+## Verification Checklist (All Completed)
 
-- [ ] Visit https://spike.land/apps - should see Images app
-- [ ] Click "Launch App" on Images - should redirect to sign-in
-- [ ] Try GitHub OAuth - should work after redirect URI is configured
-- [ ] After sign-in, visit https://spike.land/apps/pixel - should show empty
-      state (no server error)
-- [ ] Upload an image - should work
-- [ ] View enhancement page - should work
+- [x] Visit https://spike.land/apps - Images app visible
+- [x] Click "Launch App" - Sign-in flow works
+- [x] GitHub OAuth - Login successful
+- [x] Visit https://spike.land/apps/pixel - App loads correctly
+- [x] Upload an image - Upload works
+- [x] View enhancement page - Displays correctly
 
-## Files Changed
+---
 
-- `prisma/migrations/0_init/migration.sql` - Initial database schema migration
-- `package.json` - Updated build script to run migrations
-- `next.config.ts` - Already has R2 image hostname configured
+**This document is archived for historical reference. No action required.**

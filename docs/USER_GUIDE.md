@@ -6,6 +6,47 @@
 
 ---
 
+## 🚀 Quick Start (30 Seconds to Your First Enhancement)
+
+**Welcome!** If you found us through our ad campaign, here's the fastest way to
+get started:
+
+### Step 1: Sign Up (10 seconds)
+
+Go to [spike.land/apps/pixel](https://spike.land/apps/pixel) and click "Sign Up".
+Use Google or GitHub for instant account creation.
+
+### Step 2: Get Your Free Tokens
+
+✨ **New users get 50 FREE tokens** - enough for:
+
+- 25 quick enhancements (TIER_1K)
+- 10 professional enhancements (TIER_2K)
+- 5 high-resolution enhancements (TIER_4K)
+
+### Step 3: Enhance Your First Image (20 seconds)
+
+1. Click "Upload Image" or drag a photo
+2. Select quality tier (start with TIER_2K for best results)
+3. Click "Enhance"
+4. Watch the AI transform your image in ~15 seconds
+5. Download your enhanced image
+
+**That's it!** You've just enhanced your first image with AI.
+
+### What Makes Pixel Special?
+
+- **AI-Powered**: Uses advanced AI to upscale and enhance images
+- **Instant Results**: Most enhancements complete in 10-30 seconds
+- **Before/After Slider**: Compare original and enhanced side-by-side
+- **Free to Start**: 50 tokens free, plus earn 1 token every 15 minutes
+- **No Subscription Required**: Pay only for what you use
+
+Ready for more? Keep reading for the full guide, or jump to
+[Your First Enhancement](#your-first-enhancement) for a detailed walkthrough.
+
+---
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
