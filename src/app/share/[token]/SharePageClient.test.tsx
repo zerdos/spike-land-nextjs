@@ -38,7 +38,6 @@ const defaultProps = {
   originalHeight: 1080,
   enhancedWidth: 3840,
   enhancedHeight: 2160,
-  tier: "TIER_4K",
   shareToken: "test-share-token",
 };
 
@@ -48,14 +47,6 @@ describe("SharePageClient", () => {
     global.fetch = vi.fn();
     global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
     global.URL.revokeObjectURL = vi.fn();
-  });
-
-  it("renders the image name as title", () => {
-    render(<SharePageClient {...defaultProps} />);
-
-    expect(
-      screen.getByRole("heading", { name: "Beautiful Sunset" }),
-    ).toBeInTheDocument();
   });
 
   it("renders the description when provided", () => {
@@ -72,22 +63,6 @@ describe("SharePageClient", () => {
     expect(
       screen.queryByText("A stunning sunset over the mountains"),
     ).not.toBeInTheDocument();
-  });
-
-  it("renders the tier badge", () => {
-    render(<SharePageClient {...defaultProps} />);
-
-    expect(screen.getByText("4K")).toBeInTheDocument();
-  });
-
-  it("renders different tier badges correctly", () => {
-    const { rerender } = render(
-      <SharePageClient {...defaultProps} tier="TIER_1K" />,
-    );
-    expect(screen.getByText("1K")).toBeInTheDocument();
-
-    rerender(<SharePageClient {...defaultProps} tier="TIER_2K" />);
-    expect(screen.getByText("2K")).toBeInTheDocument();
   });
 
   it("renders the ImageComparisonSlider with correct props", () => {
@@ -219,14 +194,14 @@ describe("SharePageClient", () => {
     expect(mainContent).toHaveStyle({ maxWidth: "min(3840px, 90vw)" });
   });
 
-  it("renders the footer with CTA link", () => {
+  it("renders the footer with CTA button linking to apps/pixel", () => {
     render(<SharePageClient {...defaultProps} />);
 
     const footerLink = screen.getByRole("link", {
-      name: /enhanced with pixel/i,
+      name: /check out more/i,
     });
     expect(footerLink).toBeInTheDocument();
-    expect(footerLink).toHaveAttribute("href", "/");
+    expect(footerLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("handles download error gracefully", async () => {
