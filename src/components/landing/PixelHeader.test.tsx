@@ -49,13 +49,13 @@ describe("PixelHeader Component", () => {
     );
   });
 
-  it("should render Get Started CTA button", () => {
+  it("should render Sign Up CTA button", () => {
     render(<PixelHeader />);
-    const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
+    const ctaButtons = screen.getAllByRole("link", { name: /sign up/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
     expect(ctaButtons[0]).toHaveAttribute(
       "href",
-      "/auth/signin?callbackUrl=/apps/pixel",
+      "/auth/signin",
     );
   });
 
@@ -117,7 +117,7 @@ describe("PixelHeader Component", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("should close mobile menu when clicking Get Started button in mobile menu", () => {
+  it("should close mobile menu when clicking Sign Up button in mobile menu", () => {
     render(<PixelHeader />);
 
     // Open the mobile menu
@@ -128,13 +128,13 @@ describe("PixelHeader Component", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
-    // Find the Get Started button inside the dialog
-    const getStartedLinks = screen.getAllByRole("link", {
-      name: /get started/i,
+    // Find the Sign Up button inside the dialog
+    const signUpLinks = screen.getAllByRole("link", {
+      name: /sign up/i,
     });
-    const mobileMenuGetStarted = getStartedLinks.find((link) => dialog.contains(link));
-    expect(mobileMenuGetStarted).toBeDefined();
-    fireEvent.click(mobileMenuGetStarted!);
+    const mobileMenuSignUp = signUpLinks.find((link) => dialog.contains(link));
+    expect(mobileMenuSignUp).toBeDefined();
+    fireEvent.click(mobileMenuSignUp!);
 
     // The dialog should no longer be in the document (menu closed)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
