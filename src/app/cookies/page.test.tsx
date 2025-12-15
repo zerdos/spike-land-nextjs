@@ -613,12 +613,12 @@ describe("Cookie Policy Page", () => {
     it("should display privacy contact email", () => {
       render(<CookiePage />);
       const emailLink = screen.getByRole("link", {
-        name: /privacy@\[your-domain\.com\]/,
+        name: /hello@spike\.land/,
       });
       expect(emailLink).toBeInTheDocument();
       expect(emailLink).toHaveAttribute(
         "href",
-        "mailto:privacy@[your-domain.com]",
+        "mailto:hello@spike.land",
       );
     });
 
