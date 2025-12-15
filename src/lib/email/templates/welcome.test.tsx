@@ -13,7 +13,9 @@ describe("WelcomeEmail", () => {
   });
 
   it("should use email username when name is not provided", async () => {
-    const html = await render(<WelcomeEmail userEmail="john.smith@example.com" />);
+    const html = await render(
+      <WelcomeEmail userEmail="john.smith@example.com" />,
+    );
 
     expect(html).toContain("Welcome to Pixel, john.smith!");
   });
@@ -68,7 +70,9 @@ describe("WelcomeEmail", () => {
   });
 
   it("should handle empty user name gracefully", async () => {
-    const html = await render(<WelcomeEmail userName="" userEmail="test@example.com" />);
+    const html = await render(
+      <WelcomeEmail userName="" userEmail="test@example.com" />,
+    );
 
     expect(html).toContain("Welcome to Pixel, test!");
   });

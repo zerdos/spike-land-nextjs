@@ -93,7 +93,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
         );
       }
       url = latestEnhancement.enhancedUrl;
-      const tierSuffix = latestEnhancement.tier.toLowerCase().replace("tier_", "");
+      const tierSuffix = latestEnhancement.tier.toLowerCase().replace(
+        "tier_",
+        "",
+      );
       filename = `${image.name}_enhanced_${tierSuffix}`;
     } else {
       url = image.originalUrl;
@@ -111,7 +114,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // Get content type from response or default to jpeg
-    const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
+    const contentType = imageResponse.headers.get("Content-Type") ||
+      "image/jpeg";
 
     // Determine file extension from content type
     const extensionMap: Record<string, string> = {
@@ -139,7 +143,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     console.error("Error in share download API:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to download image",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to download image",
       },
       { status: 500 },
     );

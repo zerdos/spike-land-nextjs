@@ -32,8 +32,12 @@ describe("ThumbnailViewToggle Component", () => {
     });
 
     it("should apply custom className", () => {
-      render(<ThumbnailViewToggle {...defaultProps} className="custom-class" />);
-      expect(screen.getByTestId("thumbnail-view-toggle")).toHaveClass("custom-class");
+      render(
+        <ThumbnailViewToggle {...defaultProps} className="custom-class" />,
+      );
+      expect(screen.getByTestId("thumbnail-view-toggle")).toHaveClass(
+        "custom-class",
+      );
     });
 
     it("should have proper accessibility label", () => {
@@ -80,7 +84,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should call onToggle with true when clicking unchecked switch", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={false} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={false}
+          onToggle={onToggle}
+        />,
+      );
 
       const switchElement = screen.getByRole("switch");
       await user.click(switchElement);
@@ -91,7 +101,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should call onToggle with false when clicking checked switch", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={true} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={true}
+          onToggle={onToggle}
+        />,
+      );
 
       const switchElement = screen.getByRole("switch");
       await user.click(switchElement);
@@ -102,7 +118,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should be keyboard accessible", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={false} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={false}
+          onToggle={onToggle}
+        />,
+      );
 
       const switchElement = screen.getByRole("switch");
       switchElement.focus();
@@ -114,7 +136,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should toggle with Enter key", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={false} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={false}
+          onToggle={onToggle}
+        />,
+      );
 
       const switchElement = screen.getByRole("switch");
       switchElement.focus();
@@ -126,26 +154,40 @@ describe("ThumbnailViewToggle Component", () => {
 
   describe("Disabled State", () => {
     it("should disable switch when hasEnhancedImages is false", () => {
-      render(<ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />);
+      render(
+        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />,
+      );
       const switchElement = screen.getByRole("switch");
       expect(switchElement).toBeDisabled();
     });
 
     it("should apply opacity class when disabled", () => {
-      render(<ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />);
-      expect(screen.getByTestId("thumbnail-view-toggle")).toHaveClass("opacity-50");
+      render(
+        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />,
+      );
+      expect(screen.getByTestId("thumbnail-view-toggle")).toHaveClass(
+        "opacity-50",
+      );
     });
 
     it("should not apply opacity class when enabled", () => {
-      render(<ThumbnailViewToggle {...defaultProps} hasEnhancedImages={true} />);
-      expect(screen.getByTestId("thumbnail-view-toggle")).not.toHaveClass("opacity-50");
+      render(
+        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={true} />,
+      );
+      expect(screen.getByTestId("thumbnail-view-toggle")).not.toHaveClass(
+        "opacity-50",
+      );
     });
 
     it("should not call onToggle when clicking disabled switch", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
       render(
-        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} onToggle={onToggle} />,
+        <ThumbnailViewToggle
+          {...defaultProps}
+          hasEnhancedImages={false}
+          onToggle={onToggle}
+        />,
       );
 
       const switchElement = screen.getByRole("switch");
@@ -155,7 +197,9 @@ describe("ThumbnailViewToggle Component", () => {
     });
 
     it("should apply cursor-not-allowed to labels when disabled", () => {
-      render(<ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />);
+      render(
+        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} />,
+      );
       const originalLabel = screen.getByText("Original");
       const enhancedLabel = screen.getByText("Enhanced");
       expect(originalLabel).toHaveClass("cursor-not-allowed");
@@ -187,7 +231,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should call onToggle when clicking Original label", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={true} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={true}
+          onToggle={onToggle}
+        />,
+      );
 
       const originalLabel = screen.getByTestId("original-label");
       await user.click(originalLabel);
@@ -198,7 +248,13 @@ describe("ThumbnailViewToggle Component", () => {
     it("should call onToggle when clicking Enhanced label", async () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
-      render(<ThumbnailViewToggle {...defaultProps} showEnhanced={false} onToggle={onToggle} />);
+      render(
+        <ThumbnailViewToggle
+          {...defaultProps}
+          showEnhanced={false}
+          onToggle={onToggle}
+        />,
+      );
 
       const enhancedLabel = screen.getByTestId("enhanced-label");
       await user.click(enhancedLabel);
@@ -210,7 +266,11 @@ describe("ThumbnailViewToggle Component", () => {
       const user = userEvent.setup();
       const onToggle = vi.fn();
       render(
-        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={false} onToggle={onToggle} />,
+        <ThumbnailViewToggle
+          {...defaultProps}
+          hasEnhancedImages={false}
+          onToggle={onToggle}
+        />,
       );
 
       const originalLabel = screen.getByTestId("original-label");
@@ -220,7 +280,9 @@ describe("ThumbnailViewToggle Component", () => {
     });
 
     it("should have cursor-pointer on labels when enabled", () => {
-      render(<ThumbnailViewToggle {...defaultProps} hasEnhancedImages={true} />);
+      render(
+        <ThumbnailViewToggle {...defaultProps} hasEnhancedImages={true} />,
+      );
       const originalLabel = screen.getByText("Original");
       const enhancedLabel = screen.getByText("Enhanced");
       expect(originalLabel).toHaveClass("cursor-pointer");

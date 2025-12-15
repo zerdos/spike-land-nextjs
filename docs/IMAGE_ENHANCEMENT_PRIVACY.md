@@ -1,6 +1,7 @@
 # Image Enhancement App - Privacy & Compliance
 
-This document outlines data handling practices, user rights, and compliance requirements for the Image Enhancement App.
+This document outlines data handling practices, user rights, and compliance
+requirements for the Image Enhancement App.
 
 ---
 
@@ -277,7 +278,8 @@ Response time: 24 hours for review, immediate removal for confirmed violations.
 | Data retention by Google | Per Google AI terms  |
 | Location                 | US (Google Cloud)    |
 
-**Important:** Images are processed by Google's AI. Users consent to this when using the service.
+**Important:** Images are processed by Google's AI. Users consent to this when
+using the service.
 
 ### Stripe
 

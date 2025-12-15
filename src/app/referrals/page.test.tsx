@@ -109,7 +109,9 @@ describe("ReferralsPage", () => {
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(mockLinkData.url);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        mockLinkData.url,
+      );
     });
 
     expect(screen.getByText("Copied!")).toBeTruthy();

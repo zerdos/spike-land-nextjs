@@ -38,7 +38,9 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)),
+            "Retry-After": String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+            ),
             "X-RateLimit-Remaining": String(rateLimitResult.remaining),
           },
         },
@@ -57,7 +59,9 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedCode = code.trim();
-    if (trimmedCode.length === 0 || trimmedCode.length > MAX_VOUCHER_CODE_LENGTH) {
+    if (
+      trimmedCode.length === 0 || trimmedCode.length > MAX_VOUCHER_CODE_LENGTH
+    ) {
       return NextResponse.json(
         { error: "Invalid voucher code format" },
         { status: 400 },

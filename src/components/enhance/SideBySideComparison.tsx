@@ -79,7 +79,9 @@ export function SideBySideComparison({
             )
             : (
               <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-                <p className="text-sm text-destructive">Original image failed to load</p>
+                <p className="text-sm text-destructive">
+                  Original image failed to load
+                </p>
               </div>
             )}
         </div>
@@ -105,7 +107,9 @@ export function SideBySideComparison({
             )
             : (
               <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-                <p className="text-sm text-destructive">Enhanced image failed to load</p>
+                <p className="text-sm text-destructive">
+                  Enhanced image failed to load
+                </p>
               </div>
             )}
         </div>

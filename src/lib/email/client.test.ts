@@ -409,7 +409,9 @@ describe("Email Client", () => {
         data: { id: "test-email-id" },
         error: null,
       });
-      const { sendEmail, setRateLimitCount, getRateLimitStatus } = await import("./client");
+      const { sendEmail, setRateLimitCount, getRateLimitStatus } = await import(
+        "./client"
+      );
 
       // Set a high count
       setRateLimitCount(99);

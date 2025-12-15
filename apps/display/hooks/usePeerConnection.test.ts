@@ -26,7 +26,9 @@ describe("usePeerConnection", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockTrack.stop.mockClear();
-    const { getStreamMetadata } = await import("@apps/display/lib/webrtc/utils");
+    const { getStreamMetadata } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     vi.mocked(getStreamMetadata).mockReturnValue(mockMetadata);
 
     mockDataConnection = {
@@ -96,7 +98,8 @@ describe("usePeerConnection", () => {
 
     // Simulate data connection open
     const onHandler = vi.mocked(mockDataConnection.on);
-    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")?.[1];
+    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")
+      ?.[1];
 
     act(() => {
       openHandler?.();
@@ -116,7 +119,8 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockDataConnection.on);
-    const dataHandler = onHandler.mock.calls.find((call) => call[0] === "data")?.[1];
+    const dataHandler = onHandler.mock.calls.find((call) => call[0] === "data")
+      ?.[1];
 
     const testData = { type: "test", payload: "hello" };
     act(() => {
@@ -187,7 +191,9 @@ describe("usePeerConnection", () => {
       expect(connection?.streamMetadata).toEqual(mockMetadata);
     });
 
-    const { getStreamMetadata } = await import("@apps/display/lib/webrtc/utils");
+    const { getStreamMetadata } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     expect(getStreamMetadata).toHaveBeenCalledWith(mockStream, "remote-peer");
   });
 
@@ -412,7 +418,9 @@ describe("usePeerConnection", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.connections.get("remote-peer")?.stream).toBe(streamWithTracks);
+      expect(result.current.connections.get("remote-peer")?.stream).toBe(
+        streamWithTracks,
+      );
     });
 
     act(() => {
@@ -441,8 +449,12 @@ describe("usePeerConnection", () => {
   it("should disconnect all peers", async () => {
     mockPeer.connect = vi
       .fn()
-      .mockReturnValueOnce({ ...mockDataConnection, peer: "peer-1", open: true } as DataConnection)
-      .mockReturnValueOnce({ ...mockDataConnection, peer: "peer-2", open: true } as DataConnection);
+      .mockReturnValueOnce(
+        { ...mockDataConnection, peer: "peer-1", open: true } as DataConnection,
+      )
+      .mockReturnValueOnce(
+        { ...mockDataConnection, peer: "peer-2", open: true } as DataConnection,
+      );
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -645,7 +657,10 @@ describe("usePeerConnection", () => {
 
     rerender({ peer: null });
 
-    expect(mockPeer.off).toHaveBeenCalledWith("connection", expect.any(Function));
+    expect(mockPeer.off).toHaveBeenCalledWith(
+      "connection",
+      expect.any(Function),
+    );
     expect(mockPeer.off).toHaveBeenCalledWith("call", expect.any(Function));
   });
 
@@ -700,7 +715,8 @@ describe("usePeerConnection", () => {
 
     // Simulate data connection open which calls updateConnection
     const onHandler = vi.mocked(mockDataConnection.on);
-    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")?.[1];
+    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")
+      ?.[1];
 
     act(() => {
       openHandler?.();

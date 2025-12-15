@@ -129,26 +129,29 @@ When(
   },
 );
 
-When("I log out and log in as {string}", async function(this: CustomWorld, name: string) {
-  // First log out by mocking null session
-  await mockSession(this, null);
+When(
+  "I log out and log in as {string}",
+  async function(this: CustomWorld, name: string) {
+    // First log out by mocking null session
+    await mockSession(this, null);
 
-  // Clear previous user's data for isolation
-  await this.page.evaluate(() => {
-    localStorage.clear();
-  });
+    // Clear previous user's data for isolation
+    await this.page.evaluate(() => {
+      localStorage.clear();
+    });
 
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
 
-  // Then log in as the new user
-  await mockSession(this, {
-    name,
-    email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
-  });
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
-});
+    // Then log in as the new user
+    await mockSession(this, {
+      name,
+      email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
+    });
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 When(
   "I log out and log in as {string} with email {string}",
@@ -205,67 +208,85 @@ When(
   },
 );
 
-Then("I should see the {string} button", async function(this: CustomWorld, buttonText: string) {
-  // Use first() to handle cases where Next.js dev tools add extra buttons
-  const button = this.page.getByRole("button", { name: buttonText }).first();
-  await expect(button).toBeVisible();
-});
+Then(
+  "I should see the {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    // Use first() to handle cases where Next.js dev tools add extra buttons
+    const button = this.page.getByRole("button", { name: buttonText }).first();
+    await expect(button).toBeVisible();
+  },
+);
 
 // Removed duplicate - using common.steps.ts
 
-Then("I should not see the {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).not.toBeVisible();
-});
+Then(
+  "I should not see the {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", { name: buttonText });
+    await expect(button).not.toBeVisible();
+  },
+);
 
 Then("I should see the user avatar", async function(this: CustomWorld) {
   // Look for avatar in the header
-  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]').first();
+  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]')
+    .first();
   await expect(avatar).toBeVisible();
 });
 
 Then("I should not see the user avatar", async function(this: CustomWorld) {
-  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]').first();
+  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]')
+    .first();
   await expect(avatar).not.toBeVisible();
 });
 
-Then("the GitHub authentication flow should be initiated", async function(this: CustomWorld) {
-  // Set up route interception before clicking
-  await this.page.route("**/api/auth/signin/**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/html",
-      body: "<html><body>Mock GitHub Sign In</body></html>",
+Then(
+  "the GitHub authentication flow should be initiated",
+  async function(this: CustomWorld) {
+    // Set up route interception before clicking
+    await this.page.route("**/api/auth/signin/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<html><body>Mock GitHub Sign In</body></html>",
+      });
     });
-  });
 
-  // The button should be clickable and attempt to call signIn
-  const button = this.page.getByRole("button", { name: /Continue with GitHub/i });
-  await expect(button).toBeEnabled();
-
-  // Verify the button exists and is interactive
-  await expect(button).toBeVisible();
-  expect(await button.isEnabled()).toBe(true);
-});
-
-Then("the Google authentication flow should be initiated", async function(this: CustomWorld) {
-  // Set up route interception before checking
-  await this.page.route("**/api/auth/signin/**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/html",
-      body: "<html><body>Mock Google Sign In</body></html>",
+    // The button should be clickable and attempt to call signIn
+    const button = this.page.getByRole("button", {
+      name: /Continue with GitHub/i,
     });
-  });
+    await expect(button).toBeEnabled();
 
-  // The button should be clickable and attempt to call signIn
-  const button = this.page.getByRole("button", { name: /Continue with Google/i });
-  await expect(button).toBeEnabled();
+    // Verify the button exists and is interactive
+    await expect(button).toBeVisible();
+    expect(await button.isEnabled()).toBe(true);
+  },
+);
 
-  // Verify the button exists and is interactive
-  await expect(button).toBeVisible();
-  expect(await button.isEnabled()).toBe(true);
-});
+Then(
+  "the Google authentication flow should be initiated",
+  async function(this: CustomWorld) {
+    // Set up route interception before checking
+    await this.page.route("**/api/auth/signin/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<html><body>Mock Google Sign In</body></html>",
+      });
+    });
+
+    // The button should be clickable and attempt to call signIn
+    const button = this.page.getByRole("button", {
+      name: /Continue with Google/i,
+    });
+    await expect(button).toBeEnabled();
+
+    // Verify the button exists and is interactive
+    await expect(button).toBeVisible();
+    expect(await button.isEnabled()).toBe(true);
+  },
+);
 
 Then("I should see the dropdown menu", async function(this: CustomWorld) {
   // Dropdown menu should be visible
@@ -273,10 +294,13 @@ Then("I should see the dropdown menu", async function(this: CustomWorld) {
   await expect(menu).toBeVisible();
 });
 
-Then("I should see {string} in the dropdown", async function(this: CustomWorld, text: string) {
-  const element = this.page.getByText(text);
-  await expect(element).toBeVisible();
-});
+Then(
+  "I should see {string} in the dropdown",
+  async function(this: CustomWorld, text: string) {
+    const element = this.page.getByText(text);
+    await expect(element).toBeVisible();
+  },
+);
 
 Then(
   "I should see {string} option in the dropdown",
@@ -293,32 +317,41 @@ Then("I should be logged out", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 });
 
-Then("I should see the loading spinner in the header", async function(this: CustomWorld) {
-  // Look for the loading placeholder (animated pulse element)
-  const loadingSpinner = this.page.locator(".fixed.top-4.right-4 .animate-pulse");
-  await expect(loadingSpinner).toBeVisible();
-});
+Then(
+  "I should see the loading spinner in the header",
+  async function(this: CustomWorld) {
+    // Look for the loading placeholder (animated pulse element)
+    const loadingSpinner = this.page.locator(
+      ".fixed.top-4.right-4 .animate-pulse",
+    );
+    await expect(loadingSpinner).toBeVisible();
+  },
+);
 
 Then(
   "the avatar should display {string} as initials",
   async function(this: CustomWorld, initials: string) {
     // Look for the avatar fallback with initials
-    const avatarFallback = this.page.locator('[class*="avatar-fallback"]').first();
+    const avatarFallback = this.page.locator('[class*="avatar-fallback"]')
+      .first();
     await expect(avatarFallback).toBeVisible();
     await expect(avatarFallback).toHaveText(initials);
   },
 );
 
-Then("the avatar should display the custom image", async function(this: CustomWorld) {
-  // Look for the avatar image
-  const avatarImage = this.page.locator(
-    'img[alt*="User"], img[alt*="John"], img[alt*="Jane"], img[alt*="Charlie"]',
-  ).first();
-  await expect(avatarImage).toBeVisible();
-  // Verify it has a src attribute
-  const src = await avatarImage.getAttribute("src");
-  expect(src).toBeTruthy();
-});
+Then(
+  "the avatar should display the custom image",
+  async function(this: CustomWorld) {
+    // Look for the avatar image
+    const avatarImage = this.page.locator(
+      'img[alt*="User"], img[alt*="John"], img[alt*="Jane"], img[alt*="Charlie"]',
+    ).first();
+    await expect(avatarImage).toBeVisible();
+    // Verify it has a src attribute
+    const src = await avatarImage.getAttribute("src");
+    expect(src).toBeTruthy();
+  },
+);
 
 // Navigation steps
 When("I visit {string}", async function(this: CustomWorld, path: string) {
@@ -326,58 +359,79 @@ When("I visit {string}", async function(this: CustomWorld, path: string) {
   await this.page.waitForLoadState("networkidle");
 });
 
-Then("I should be on the {string} page", async function(this: CustomWorld, path: string) {
-  // Wait a bit for client-side routing to complete
-  await this.page.waitForLoadState("networkidle");
-  await this.page.waitForTimeout(500);
-  const currentUrl = this.page.url();
-  // Handle both exact match, query parameters, and trailing slashes
-  const expectedUrl = `${this.baseUrl}${path}`;
-  // Also accept URL with trailing slash or query params
-  const urlMatches = currentUrl.startsWith(expectedUrl) ||
-    currentUrl.startsWith(`${expectedUrl}/`) ||
-    currentUrl.includes(path);
-  expect(urlMatches).toBe(true);
-});
+Then(
+  "I should be on the {string} page",
+  async function(this: CustomWorld, path: string) {
+    // Wait a bit for client-side routing to complete
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(500);
+    const currentUrl = this.page.url();
+    // Handle both exact match, query parameters, and trailing slashes
+    const expectedUrl = `${this.baseUrl}${path}`;
+    // Also accept URL with trailing slash or query params
+    const urlMatches = currentUrl.startsWith(expectedUrl) ||
+      currentUrl.startsWith(`${expectedUrl}/`) ||
+      currentUrl.includes(path);
+    expect(urlMatches).toBe(true);
+  },
+);
 
-Then("I should see {string} heading", async function(this: CustomWorld, headingText: string) {
-  // Look for any heading level (h1-h6) or CardTitle (div with font-semibold) with the specified text
-  const heading = this.page.locator(
-    "h1, h2, h3, h4, h5, h6, [class*='CardTitle'], .font-semibold",
-    { hasText: headingText },
-  );
-  await expect(heading.first()).toBeVisible();
-});
+Then(
+  "I should see {string} heading",
+  async function(this: CustomWorld, headingText: string) {
+    // Look for any heading level (h1-h6) or CardTitle (div with font-semibold) with the specified text
+    const heading = this.page.locator(
+      "h1, h2, h3, h4, h5, h6, [class*='CardTitle'], .font-semibold",
+      { hasText: headingText },
+    );
+    await expect(heading.first()).toBeVisible();
+  },
+);
 
-Then("I should see {string} text", async function(this: CustomWorld, text: string) {
-  // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
-  await expect(this.page.getByText(text).first()).toBeVisible();
-});
+Then(
+  "I should see {string} text",
+  async function(this: CustomWorld, text: string) {
+    // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
+    await expect(this.page.getByText(text).first()).toBeVisible();
+  },
+);
 
-Then("I should see {string} link", async function(this: CustomWorld, linkText: string) {
-  const link = this.page.getByRole("link", { name: linkText });
-  // Use .first() to handle cases where there are multiple links with similar names
-  await expect(link.first()).toBeVisible();
-});
+Then(
+  "I should see {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: linkText });
+    // Use .first() to handle cases where there are multiple links with similar names
+    await expect(link.first()).toBeVisible();
+  },
+);
 
-When("I click the {string} link", async function(this: CustomWorld, linkText: string) {
-  const link = this.page.getByRole("link", { name: linkText });
-  await expect(link).toBeVisible();
-  await link.click();
-  await this.page.waitForLoadState("networkidle");
-});
+When(
+  "I click the {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: linkText });
+    await expect(link).toBeVisible();
+    await link.click();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-When("I click the {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: buttonText });
-  await expect(button).toBeVisible();
-  await button.click();
-  await this.page.waitForLoadState("networkidle");
-});
+When(
+  "I click the {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", { name: buttonText });
+    await expect(button).toBeVisible();
+    await button.click();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the URL should contain {string}", async function(this: CustomWorld, urlPart: string) {
-  const currentUrl = this.page.url();
-  expect(currentUrl).toContain(urlPart);
-});
+Then(
+  "the URL should contain {string}",
+  async function(this: CustomWorld, urlPart: string) {
+    const currentUrl = this.page.url();
+    expect(currentUrl).toContain(urlPart);
+  },
+);
 
 // Error message steps
 Then(
@@ -389,10 +443,15 @@ Then(
   },
 );
 
-Then("I should see error title {string}", async function(this: CustomWorld, errorTitle: string) {
-  const alertTitle = this.page.locator('[role="alert"]').getByText(errorTitle);
-  await expect(alertTitle).toBeVisible();
-});
+Then(
+  "I should see error title {string}",
+  async function(this: CustomWorld, errorTitle: string) {
+    const alertTitle = this.page.locator('[role="alert"]').getByText(
+      errorTitle,
+    );
+    await expect(alertTitle).toBeVisible();
+  },
+);
 
 Then(
   "I should see error description containing {string}",
@@ -404,7 +463,10 @@ Then(
   },
 );
 
-Then("I should see error code {string}", async function(this: CustomWorld, errorCode: string) {
-  const codeElement = this.page.locator("code", { hasText: errorCode });
-  await expect(codeElement).toBeVisible();
-});
+Then(
+  "I should see error code {string}",
+  async function(this: CustomWorld, errorCode: string) {
+    const codeElement = this.page.locator("code", { hasText: errorCode });
+    await expect(codeElement).toBeVisible();
+  },
+);

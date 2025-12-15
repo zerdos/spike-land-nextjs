@@ -65,7 +65,9 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="voucher-code" className="text-white/80">Voucher Code</Label>
+        <Label htmlFor="voucher-code" className="text-white/80">
+          Voucher Code
+        </Label>
         <div className="flex gap-3">
           <Input
             id="voucher-code"
@@ -92,7 +94,9 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
             ? "bg-green-500/10 border-green-500/30 text-green-400"
             : "bg-red-500/10 border-red-500/30 text-red-400"}
         >
-          {result.success ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+          {result.success
+            ? <CheckCircle2 className="h-4 w-4" />
+            : <XCircle className="h-4 w-4" />}
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
       )}

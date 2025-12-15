@@ -1,6 +1,8 @@
 # SEO Best Practices for Next.js Applications
 
-A comprehensive guide to optimizing Next.js applications for search engines, covering technical SEO, performance, content optimization, and indexing strategies.
+A comprehensive guide to optimizing Next.js applications for search engines,
+covering technical SEO, performance, content optimization, and indexing
+strategies.
 
 ## Table of Contents
 
@@ -20,7 +22,8 @@ A comprehensive guide to optimizing Next.js applications for search engines, cov
 
 ### 1. Metadata API (Next.js 13+)
 
-The Metadata API is the cornerstone of SEO in Next.js. It provides a type-safe way to define metadata for pages and layouts.
+The Metadata API is the cornerstone of SEO in Next.js. It provides a type-safe
+way to define metadata for pages and layouts.
 
 #### Static Metadata
 
@@ -173,7 +176,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 }
 ```
 
-**Important:** Google ignores sitemaps with more than 50,000 entries. For large sites, create multiple sitemaps with a sitemap index.
+**Important:** Google ignores sitemaps with more than 50,000 entries. For large
+sites, create multiple sitemaps with a sitemap index.
 
 ### 3. Robots.txt Configuration
 
@@ -1394,9 +1398,12 @@ export const metadata: Metadata = {
 ### Popular Next.js SEO Libraries
 
 - [next-seo](https://github.com/garmeeh/next-seo) - Simplified SEO management
-- [schema-dts](https://www.npmjs.com/package/schema-dts) - TypeScript schema definitions
-- [next-sitemap](https://www.npmjs.com/package/next-sitemap) - Advanced sitemap generation
-- [serialize-javascript](https://www.npmjs.com/package/serialize-javascript) - Safe JSON serialization
+- [schema-dts](https://www.npmjs.com/package/schema-dts) - TypeScript schema
+  definitions
+- [next-sitemap](https://www.npmjs.com/package/next-sitemap) - Advanced sitemap
+  generation
+- [serialize-javascript](https://www.npmjs.com/package/serialize-javascript) -
+  Safe JSON serialization
 
 ### Key Metrics & Targets (2025)
 
@@ -1455,6 +1462,5 @@ export const metadata: Metadata = {
 
 ---
 
-**Last Updated:** December 6, 2025
-**Next.js Version:** 15+
-**Status:** Complete & Current
+**Last Updated:** December 6, 2025 **Next.js Version:** 15+ **Status:** Complete
+& Current

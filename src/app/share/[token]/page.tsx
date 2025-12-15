@@ -57,17 +57,20 @@ export async function generateMetadata({
 
   return {
     title: `${image.name} - Enhanced with Pixel`,
-    description: image.description ?? `View this AI-enhanced image created with Pixel`,
+    description: image.description ??
+      `View this AI-enhanced image created with Pixel`,
     openGraph: {
       title: `${image.name} - Enhanced with Pixel`,
-      description: image.description ?? `View this AI-enhanced image created with Pixel`,
+      description: image.description ??
+        `View this AI-enhanced image created with Pixel`,
       type: "website",
       siteName: "Pixel - AI Image Enhancement",
     },
     twitter: {
       card: "summary_large_image",
       title: `${image.name} - Enhanced with Pixel`,
-      description: image.description ?? `View this AI-enhanced image created with Pixel`,
+      description: image.description ??
+        `View this AI-enhanced image created with Pixel`,
     },
   };
 }

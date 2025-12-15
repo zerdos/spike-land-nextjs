@@ -1,60 +1,86 @@
 # SEO Best Practices Quick Reference
 
-Quick links to key sections in the comprehensive SEO guide for Next.js applications.
+Quick links to key sections in the comprehensive SEO guide for Next.js
+applications.
 
 ## Quick Navigation
 
 ### Core Fundamentals
 
-- **[Metadata API](seo-nextjs.md#1-metadata-api-nextjs-13)** - Title, description, canonical tags
-- **[Sitemap Generation](seo-nextjs.md#2-sitemap-generation)** - Static and dynamic sitemaps
-- **[robots.txt](seo-nextjs.md#3-robotstxt-configuration)** - Search engine crawling rules
+- **[Metadata API](seo-nextjs.md#1-metadata-api-nextjs-13)** - Title,
+  description, canonical tags
+- **[Sitemap Generation](seo-nextjs.md#2-sitemap-generation)** - Static and
+  dynamic sitemaps
+- **[robots.txt](seo-nextjs.md#3-robotstxt-configuration)** - Search engine
+  crawling rules
 
 ### Performance (Critical for Ranking)
 
-- **[Core Web Vitals Overview](seo-nextjs.md#performance--core-web-vitals)** - LCP, INP, CLS targets
-- **[LCP Optimization](seo-nextjs.md#1-largest-contentful-paint-lcp)** - Image & script optimization
-- **[CLS Prevention](seo-nextjs.md#3-cumulative-layout-shift-cls)** - Layout stability techniques
-- **[INP Improvements](seo-nextjs.md#2-interaction-to-next-paint-inp)** - Responsiveness optimization
+- **[Core Web Vitals Overview](seo-nextjs.md#performance--core-web-vitals)** -
+  LCP, INP, CLS targets
+- **[LCP Optimization](seo-nextjs.md#1-largest-contentful-paint-lcp)** - Image &
+  script optimization
+- **[CLS Prevention](seo-nextjs.md#3-cumulative-layout-shift-cls)** - Layout
+  stability techniques
+- **[INP Improvements](seo-nextjs.md#2-interaction-to-next-paint-inp)** -
+  Responsiveness optimization
 
 ### Content & Schema
 
-- **[JSON-LD Implementation](seo-nextjs.md#1-json-ld-structured-data)** - Product, article, organization
+- **[JSON-LD Implementation](seo-nextjs.md#1-json-ld-structured-data)** -
+  Product, article, organization
 - **[FAQ Schema](seo-nextjs.md#2-faq-schema)** - Answer engine optimization
-- **[Content Best Practices](seo-nextjs.md#3-content-best-practices)** - SEO-friendly content writing
+- **[Content Best Practices](seo-nextjs.md#3-content-best-practices)** -
+  SEO-friendly content writing
 
 ### URLs & Redirects
 
-- **[URL Structure](seo-nextjs.md#1-url-best-practices)** - Keyword-rich, clean URLs
-- **[Canonical Tags](seo-nextjs.md#2-canonical-urls)** - Duplicate content handling
+- **[URL Structure](seo-nextjs.md#1-url-best-practices)** - Keyword-rich, clean
+  URLs
+- **[Canonical Tags](seo-nextjs.md#2-canonical-urls)** - Duplicate content
+  handling
 - **[Redirects](seo-nextjs.md#3-url-redirects)** - 301 and 302 redirect setup
-- **[Multi-language URLs](seo-nextjs.md#4-multi-language-canonical-urls)** - hreflang implementation
+- **[Multi-language URLs](seo-nextjs.md#4-multi-language-canonical-urls)** -
+  hreflang implementation
 
 ### Social Media
 
-- **[OpenGraph Tags](seo-nextjs.md#1-opengraph-tags)** - Facebook, LinkedIn sharing
+- **[OpenGraph Tags](seo-nextjs.md#1-opengraph-tags)** - Facebook, LinkedIn
+  sharing
 - **[Twitter Cards](seo-nextjs.md#2-twitter-card-tags)** - X/Twitter sharing
-- **[Dynamic OG Images](seo-nextjs.md#3-dynamic-og-image-generation)** - AI-generated social cards
+- **[Dynamic OG Images](seo-nextjs.md#3-dynamic-og-image-generation)** -
+  AI-generated social cards
 
 ### Search Console & Indexing
 
-- **[GSC Setup](seo-nextjs.md#1-google-search-console-setup)** - Verification and configuration
-- **[Indexing Strategy](seo-nextjs.md#2-indexing-strategy)** - SSG, SSR, ISR decisions
-- **[Google Indexing API](seo-nextjs.md#3-google-indexing-api)** - Fast indexing of new content
-- **[Duplicate Content Handling](seo-nextjs.md#4-handling-duplicate-content)** - Canonical, noindex, redirects
+- **[GSC Setup](seo-nextjs.md#1-google-search-console-setup)** - Verification
+  and configuration
+- **[Indexing Strategy](seo-nextjs.md#2-indexing-strategy)** - SSG, SSR, ISR
+  decisions
+- **[Google Indexing API](seo-nextjs.md#3-google-indexing-api)** - Fast indexing
+  of new content
+- **[Duplicate Content Handling](seo-nextjs.md#4-handling-duplicate-content)** -
+  Canonical, noindex, redirects
 
 ### Mobile & Responsive
 
-- **[Responsive Design](seo-nextjs.md#1-responsive-design)** - Mobile-first approach
-- **[Mobile Performance](seo-nextjs.md#2-mobile-performance)** - Mobile-specific optimization
-- **[Mobile-First Indexing](seo-nextjs.md#3-mobile-first-indexing)** - Google's mobile priority
-- **[Viewport Configuration](seo-nextjs.md#4-viewport-meta-tag)** - Device width settings
+- **[Responsive Design](seo-nextjs.md#1-responsive-design)** - Mobile-first
+  approach
+- **[Mobile Performance](seo-nextjs.md#2-mobile-performance)** - Mobile-specific
+  optimization
+- **[Mobile-First Indexing](seo-nextjs.md#3-mobile-first-indexing)** - Google's
+  mobile priority
+- **[Viewport Configuration](seo-nextjs.md#4-viewport-meta-tag)** - Device width
+  settings
 
 ### Verification & Tools
 
-- **[SEO Audit Checklist](seo-nextjs.md#seo-audit-checklist)** - 140+ verification points
-- **[Tools & Resources](seo-nextjs.md#tools--resources)** - Testing and analysis tools
-- **[Best Practices Summary](seo-nextjs.md#best-practices-summary)** - Do's and Don'ts
+- **[SEO Audit Checklist](seo-nextjs.md#seo-audit-checklist)** - 140+
+  verification points
+- **[Tools & Resources](seo-nextjs.md#tools--resources)** - Testing and analysis
+  tools
+- **[Best Practices Summary](seo-nextjs.md#best-practices-summary)** - Do's and
+  Don'ts
 
 ---
 
@@ -70,23 +96,28 @@ Quick links to key sections in the comprehensive SEO guide for Next.js applicati
 
 ### "How do I generate dynamic Open Graph images?"
 
-See [Dynamic OG Image Generation](seo-nextjs.md#3-dynamic-og-image-generation) using `@vercel/og`
+See [Dynamic OG Image Generation](seo-nextjs.md#3-dynamic-og-image-generation)
+using `@vercel/og`
 
 ### "How do I optimize images for SEO?"
 
-See [LCP Optimization](seo-nextjs.md#1-largest-contentful-paint-lcp) - use `next/image` with proper sizing
+See [LCP Optimization](seo-nextjs.md#1-largest-contentful-paint-lcp) - use
+`next/image` with proper sizing
 
 ### "What's the difference between SSG and SSR for SEO?"
 
-See [Indexing Strategy](seo-nextjs.md#2-indexing-strategy) - SSG is 3x faster to crawl
+See [Indexing Strategy](seo-nextjs.md#2-indexing-strategy) - SSG is 3x faster to
+crawl
 
 ### "How do I handle duplicate content?"
 
-See [Handling Duplicate Content](seo-nextjs.md#4-handling-duplicate-content) - 3 methods explained
+See [Handling Duplicate Content](seo-nextjs.md#4-handling-duplicate-content) - 3
+methods explained
 
 ### "How do I set up Google Search Console?"
 
-See [GSC Setup](seo-nextjs.md#1-google-search-console-setup) - Step-by-step instructions
+See [GSC Setup](seo-nextjs.md#1-google-search-console-setup) - Step-by-step
+instructions
 
 ---
 
@@ -255,16 +286,15 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'Product', ... }
 
 ## Related Documentation
 
-- [Web Performance Best Practices](web-performance.md) - General performance optimization
+- [Web Performance Best Practices](web-performance.md) - General performance
+  optimization
 - [Next.js 15 Guide](nextjs-15.md) - Framework features and patterns
 - [React Patterns](react-patterns.md) - Component architecture for SEO
 - [TypeScript Best Practices](typescript.md) - Type-safe implementations
 
 ---
 
-**Last Updated:** December 6, 2025
-**Document Version:** 1.0
-**Next.js Version:** 15+
-**Status:** Current & Ready to Use
+**Last Updated:** December 6, 2025 **Document Version:** 1.0 **Next.js
+Version:** 15+ **Status:** Current & Ready to Use
 
 For complete details, see [seo-nextjs.md](seo-nextjs.md)

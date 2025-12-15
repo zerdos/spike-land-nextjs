@@ -57,7 +57,9 @@ describe("TokensPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>);
+    vi.mocked(useRouter).mockReturnValue(
+      mockRouter as ReturnType<typeof useRouter>,
+    );
     vi.mocked(global.fetch).mockResolvedValue({
       json: () => Promise.resolve({ url: "https://checkout.stripe.com/test" }),
     } as Response);
@@ -71,7 +73,9 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(mockRouter.push).toHaveBeenCalledWith("/auth/signin?callbackUrl=/tokens");
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      "/auth/signin?callbackUrl=/tokens",
+    );
   });
 
   it("should render page for authenticated users", () => {
@@ -373,7 +377,9 @@ describe("TokensPage", () => {
     await user.click(buyButton);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Failed to create checkout session");
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Failed to create checkout session",
+      );
     });
 
     alertSpy.mockRestore();
@@ -419,7 +425,9 @@ describe("TokensPage", () => {
     const buyButton = screen.getByTestId("buy-button-starter");
     await user.click(buyButton);
 
-    expect(mockRouter.push).toHaveBeenCalledWith("/auth/signin?callbackUrl=/tokens");
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      "/auth/signin?callbackUrl=/tokens",
+    );
   });
 
   it("should show loading spinner when balance is loading", () => {
@@ -474,7 +482,8 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.queryByText("Estimated enhancements remaining:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Estimated enhancements remaining:")).not
+      .toBeInTheDocument();
   });
 
   it("should display null stats as zeros", () => {

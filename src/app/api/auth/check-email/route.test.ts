@@ -87,7 +87,9 @@ describe("POST /api/auth/check-email", () => {
     });
 
     it("should use IP address for rate limiting", async () => {
-      const req = createMockRequest({ email: "test@example.com" }, { ip: "192.168.1.1" });
+      const req = createMockRequest({ email: "test@example.com" }, {
+        ip: "192.168.1.1",
+      });
       await POST(req);
 
       expect(mockCheckRateLimit).toHaveBeenCalledWith(
@@ -127,7 +129,9 @@ describe("POST /api/auth/check-email", () => {
 
   describe("Input Validation", () => {
     it("should return 413 when content-length exceeds maximum", async () => {
-      const req = createMockRequest({ email: "test@example.com" }, { contentLength: "2048" });
+      const req = createMockRequest({ email: "test@example.com" }, {
+        contentLength: "2048",
+      });
       const res = await POST(req);
       const data = await res.json();
 
@@ -271,7 +275,9 @@ describe("POST /api/auth/check-email", () => {
     });
 
     it("should log error when database query fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrisma.user.findUnique.mockRejectedValue(new Error("Database error"));
 
       const req = createMockRequest({ email: "test@example.com" });

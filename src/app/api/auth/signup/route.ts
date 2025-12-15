@@ -72,7 +72,9 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)),
+            "Retry-After": String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+            ),
             "X-RateLimit-Remaining": String(rateLimitResult.remaining),
           },
         },
@@ -100,7 +102,9 @@ export async function POST(request: NextRequest) {
 
     if (password.length < MIN_PASSWORD_LENGTH) {
       return NextResponse.json(
-        { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` },
+        {
+          error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+        },
         { status: 400 },
       );
     }

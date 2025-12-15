@@ -81,7 +81,9 @@ describe("SharePageClient", () => {
   });
 
   it("renders different tier badges correctly", () => {
-    const { rerender } = render(<SharePageClient {...defaultProps} tier="TIER_1K" />);
+    const { rerender } = render(
+      <SharePageClient {...defaultProps} tier="TIER_1K" />,
+    );
     expect(screen.getByText("1K")).toBeInTheDocument();
 
     rerender(<SharePageClient {...defaultProps} tier="TIER_2K" />);
@@ -220,7 +222,9 @@ describe("SharePageClient", () => {
   it("renders the footer with CTA link", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    const footerLink = screen.getByRole("link", { name: /enhanced with pixel/i });
+    const footerLink = screen.getByRole("link", {
+      name: /enhanced with pixel/i,
+    });
     expect(footerLink).toBeInTheDocument();
     expect(footerLink).toHaveAttribute("href", "/");
   });
@@ -239,7 +243,10 @@ describe("SharePageClient", () => {
     fireEvent.click(downloadOriginal);
 
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith("Download failed:", expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Download failed:",
+        expect.any(Error),
+      );
     });
 
     consoleSpy.mockRestore();

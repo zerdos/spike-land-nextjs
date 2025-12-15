@@ -1,6 +1,9 @@
 # CI/CD Pipeline Best Practices
 
-This comprehensive guide covers industry best practices for designing, implementing, and maintaining CI/CD pipelines in modern application development. Based on current 2025 standards and proven methodologies, these practices help teams achieve reliable, fast, and secure deployments.
+This comprehensive guide covers industry best practices for designing,
+implementing, and maintaining CI/CD pipelines in modern application development.
+Based on current 2025 standards and proven methodologies, these practices help
+teams achieve reliable, fast, and secure deployments.
 
 ## Table of Contents
 
@@ -19,11 +22,13 @@ This comprehensive guide covers industry best practices for designing, implement
 
 ### Core Principles
 
-GitHub Actions is a powerful CI/CD platform that requires strategic workflow design to maximize efficiency and reliability.
+GitHub Actions is a powerful CI/CD platform that requires strategic workflow
+design to maximize efficiency and reliability.
 
 #### 1. **Workflow Triggering Strategy**
 
-Define specific events that trigger your workflows to optimize CI resource consumption:
+Define specific events that trigger your workflows to optimize CI resource
+consumption:
 
 ```yaml
 name: CI/CD Pipeline
@@ -103,7 +108,8 @@ jobs:
         run: echo "Deploying..."
 ```
 
-**Best Practice:** Use conditional job execution with `if` statements to prevent unnecessary deployments.
+**Best Practice:** Use conditional job execution with `if` statements to prevent
+unnecessary deployments.
 
 #### 3. **Timeout & Resource Management**
 
@@ -130,7 +136,8 @@ jobs:
 
 #### 4. **Action Pinning Strategy**
 
-Pin actions to specific commit SHAs instead of branches/tags for security and stability:
+Pin actions to specific commit SHAs instead of branches/tags for security and
+stability:
 
 ```yaml
 # GOOD: Pinned to specific commit
@@ -143,7 +150,8 @@ Pin actions to specific commit SHAs instead of branches/tags for security and st
 - uses: actions/checkout@main
 ```
 
-**Security Benefit:** Prevents malicious updates to pinned actions that could compromise your CI/CD pipeline.
+**Security Benefit:** Prevents malicious updates to pinned actions that could
+compromise your CI/CD pipeline.
 
 #### 5. **Reusable Workflows**
 
@@ -213,7 +221,8 @@ jobs:
 
 ### Dependency Caching Strategy
 
-Caching is the single most effective way to improve CI/CD pipeline performance, reducing build times by 5-10 minutes on average.
+Caching is the single most effective way to improve CI/CD pipeline performance,
+reducing build times by 5-10 minutes on average.
 
 #### 1. **NPM/Yarn Dependencies**
 
@@ -326,13 +335,15 @@ cache-key: dependencies-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }
 - **Version caches** by including lock file hashes
 - **Purge periodically** (weekly/monthly) to prevent bloat
 - **Monitor cache size** to avoid exceeding GitHub's 10GB limit per repo
-- **Avoid caching dynamic files** (node_modules with binary deps, temporary files)
+- **Avoid caching dynamic files** (node_modules with binary deps, temporary
+  files)
 
 ---
 
 ## Deployment Strategies
 
-Choose the deployment strategy that matches your risk tolerance, infrastructure, and application architecture.
+Choose the deployment strategy that matches your risk tolerance, infrastructure,
+and application architecture.
 
 ### 1. Blue-Green Deployment
 
@@ -807,7 +818,8 @@ deploy-with-safe-db:
 **Key Principles:**
 
 - **Database migrations before code changes** (when adding columns)
-- **Database changes must be backward compatible** (old code must work with new schema)
+- **Database changes must be backward compatible** (old code must work with new
+  schema)
 - **Separate code deployment from DB changes** to enable independent rollbacks
 - **Use dual-schema technique** for complex changes
 

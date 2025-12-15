@@ -35,7 +35,10 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
 
   const validateFile = (file: File): { valid: boolean; error?: string; } => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return { valid: false, error: "Invalid file type. Only JPEG, PNG, and WebP are allowed." };
+      return {
+        valid: false,
+        error: "Invalid file type. Only JPEG, PNG, and WebP are allowed.",
+      };
     }
     if (file.size > MAX_FILE_SIZE) {
       return { valid: false, error: "File too large. Maximum size is 10MB." };
@@ -110,11 +113,14 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
     }
   }, [handleFiles]);
 
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
-  }, [handleFiles]);
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFiles(e.target.files);
+      }
+    },
+    [handleFiles],
+  );
 
   const removeFile = useCallback((fileId: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
@@ -242,8 +248,16 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
           onDrop={handleDrop}
           className={`
             border-2 border-dashed rounded-lg p-8 text-center transition-colors
-            ${isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"}
-            ${files.length >= MAX_BATCH_SIZE ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25"
+          }
+            ${
+            files.length >= MAX_BATCH_SIZE
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+          }
           `}
           onClick={() => files.length < MAX_BATCH_SIZE && fileInputRef.current?.click()}
         >
@@ -321,15 +335,22 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
 
                 {/* File Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{fileStatus.file.name}</p>
+                  <p className="text-sm font-medium truncate">
+                    {fileStatus.file.name}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {fileStatus.status === "uploading" && (
-                    <Progress value={fileStatus.progress} className="mt-1 h-1" />
+                    <Progress
+                      value={fileStatus.progress}
+                      className="mt-1 h-1"
+                    />
                   )}
                   {fileStatus.error && (
-                    <p className="text-xs text-destructive mt-1">{fileStatus.error}</p>
+                    <p className="text-xs text-destructive mt-1">
+                      {fileStatus.error}
+                    </p>
                   )}
                 </div>
 
@@ -383,7 +404,11 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
                 )}
             </Button>
             {completedCount > 0 && (
-              <Button variant="outline" onClick={clearCompleted} disabled={isUploading}>
+              <Button
+                variant="outline"
+                onClick={clearCompleted}
+                disabled={isUploading}
+              >
                 Clear Completed
               </Button>
             )}

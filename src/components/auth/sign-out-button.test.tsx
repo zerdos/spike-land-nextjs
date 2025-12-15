@@ -15,7 +15,8 @@ describe("SignOutButton Component", () => {
 
   it("should render button with default content", () => {
     render(<SignOutButton />);
-    expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign out/i }))
+      .toBeInTheDocument();
   });
 
   it("should render LogOut icon with default content", () => {
@@ -27,7 +28,8 @@ describe("SignOutButton Component", () => {
 
   it("should render custom children when provided", () => {
     render(<SignOutButton>Custom Sign Out Text</SignOutButton>);
-    expect(screen.getByRole("button", { name: "Custom Sign Out Text" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Custom Sign Out Text" }))
+      .toBeInTheDocument();
   });
 
   it("should apply custom className", () => {
@@ -65,7 +67,9 @@ describe("SignOutButton Component", () => {
     render(<SignOutButton callbackUrl="/auth/signin?error=SessionExpired" />);
 
     await user.click(screen.getByRole("button"));
-    expect(signOut).toHaveBeenCalledWith({ callbackUrl: "/auth/signin?error=SessionExpired" });
+    expect(signOut).toHaveBeenCalledWith({
+      callbackUrl: "/auth/signin?error=SessionExpired",
+    });
   });
 
   it("should render children and custom className together", () => {

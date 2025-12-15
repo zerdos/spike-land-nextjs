@@ -100,7 +100,10 @@ describe("TierSelectionCheckboxes Component", () => {
       const checkbox = screen.getByTestId("tier-checkbox-TIER_2K");
       fireEvent.click(checkbox);
 
-      expect(mockOnSelectionChange).toHaveBeenCalledWith(["TIER_1K", "TIER_2K"]);
+      expect(mockOnSelectionChange).toHaveBeenCalledWith([
+        "TIER_1K",
+        "TIER_2K",
+      ]);
     });
 
     it("shows checkboxes as checked when selected", () => {
@@ -238,7 +241,8 @@ describe("TierSelectionCheckboxes Component", () => {
       );
 
       expect(screen.getByTestId("balance-warning-message")).toBeInTheDocument();
-      expect(screen.getByText("Total cost exceeds your available balance")).toBeInTheDocument();
+      expect(screen.getByText("Total cost exceeds your available balance"))
+        .toBeInTheDocument();
     });
 
     it("does not show warning when total is within balance", () => {
@@ -250,7 +254,8 @@ describe("TierSelectionCheckboxes Component", () => {
         />,
       );
 
-      expect(screen.queryByTestId("balance-warning-message")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("balance-warning-message")).not
+        .toBeInTheDocument();
     });
 
     it("shows warning icon in total cost section when exceeds balance", () => {
@@ -274,7 +279,8 @@ describe("TierSelectionCheckboxes Component", () => {
         />,
       );
 
-      expect(screen.queryByTestId("balance-warning-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("balance-warning-icon")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -400,7 +406,11 @@ describe("TierSelectionCheckboxes Component", () => {
       expect(checkbox4K).not.toBeDisabled();
 
       fireEvent.click(checkbox4K);
-      expect(mockOnSelectionChange).toHaveBeenCalledWith(["TIER_1K", "TIER_2K", "TIER_4K"]);
+      expect(mockOnSelectionChange).toHaveBeenCalledWith([
+        "TIER_1K",
+        "TIER_2K",
+        "TIER_4K",
+      ]);
     });
 
     it("correctly updates total when all tiers selected", () => {

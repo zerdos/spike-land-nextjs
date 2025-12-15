@@ -1,10 +1,13 @@
 # Image Enhancement App - Database Schema
 
-This document describes the database schema for the Image Enhancement App, which extends the Spike Land platform's core models.
+This document describes the database schema for the Image Enhancement App, which
+extends the Spike Land platform's core models.
 
 ## Overview
 
-The schema is defined in `prisma/schema.prisma` using Prisma ORM with PostgreSQL. The Image Enhancement App utilizes 19 interconnected models organized into functional groups.
+The schema is defined in `prisma/schema.prisma` using Prisma ORM with
+PostgreSQL. The Image Enhancement App utilizes 19 interconnected models
+organized into functional groups.
 
 ---
 

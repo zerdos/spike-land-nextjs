@@ -4,7 +4,8 @@ This directory contains step-by-step migration guides for API version changes.
 
 ## Overview
 
-When breaking changes are made to the Spike Land API, migration guides are provided to help developers update their integrations smoothly.
+When breaking changes are made to the Spike Land API, migration guides are
+provided to help developers update their integrations smoothly.
 
 ## Current Migrations
 

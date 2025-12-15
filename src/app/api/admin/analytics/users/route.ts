@@ -51,7 +51,9 @@ export async function GET() {
           userId: true,
         },
       });
-      authProviders = result as Array<{ provider: string; _count: { userId: number; }; }>;
+      authProviders = result as Array<
+        { provider: string; _count: { userId: number; }; }
+      >;
     } catch (error) {
       console.error("Failed to fetch auth providers:", error);
       // Return empty array on error

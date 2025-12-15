@@ -126,7 +126,9 @@ vi.mock("./CanvasClient", () => ({
     settings,
     albumName,
   }: {
-    images: Array<{ id: string; url: string; name: string; width: number; height: number; }>;
+    images: Array<
+      { id: string; url: string; name: string; width: number; height: number; }
+    >;
     settings: { rotation: number; order: string; interval: number; };
     albumName: string;
   }) => (
@@ -164,7 +166,9 @@ describe("CanvasPage", () => {
       render(Page);
 
       expect(screen.getByTestId("canvas-client")).toBeInTheDocument();
-      expect(screen.getByTestId("album-name")).toHaveTextContent("My Photo Album");
+      expect(screen.getByTestId("album-name")).toHaveTextContent(
+        "My Photo Album",
+      );
       expect(screen.getByTestId("image-count")).toHaveTextContent("2");
     });
 
@@ -201,7 +205,9 @@ describe("CanvasPage", () => {
       const params = Promise.resolve({ albumId: "nonexistent" });
       const searchParams = Promise.resolve({});
 
-      await expect(CanvasPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
+      await expect(CanvasPage({ params, searchParams })).rejects.toThrow(
+        "NEXT_NOT_FOUND",
+      );
     });
 
     it("allows access to unlisted album with valid token", async () => {
@@ -221,7 +227,9 @@ describe("CanvasPage", () => {
       const params = Promise.resolve({ albumId: "album-unlisted" });
       const searchParams = Promise.resolve({});
 
-      await expect(CanvasPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
+      await expect(CanvasPage({ params, searchParams })).rejects.toThrow(
+        "NEXT_NOT_FOUND",
+      );
     });
 
     it("calls notFound for unlisted album with invalid token", async () => {
@@ -230,7 +238,9 @@ describe("CanvasPage", () => {
       const params = Promise.resolve({ albumId: "album-unlisted" });
       const searchParams = Promise.resolve({ token: "wrong-token" });
 
-      await expect(CanvasPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
+      await expect(CanvasPage({ params, searchParams })).rejects.toThrow(
+        "NEXT_NOT_FOUND",
+      );
     });
 
     it("allows access to private album with valid token", async () => {
@@ -250,7 +260,9 @@ describe("CanvasPage", () => {
       const params = Promise.resolve({ albumId: "album-private" });
       const searchParams = Promise.resolve({});
 
-      await expect(CanvasPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
+      await expect(CanvasPage({ params, searchParams })).rejects.toThrow(
+        "NEXT_NOT_FOUND",
+      );
     });
 
     it("calls notFound for album with unknown privacy type", async () => {
@@ -264,7 +276,9 @@ describe("CanvasPage", () => {
       const params = Promise.resolve({ albumId: "album-unknown" });
       const searchParams = Promise.resolve({});
 
-      await expect(CanvasPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
+      await expect(CanvasPage({ params, searchParams })).rejects.toThrow(
+        "NEXT_NOT_FOUND",
+      );
     });
   });
 
@@ -413,7 +427,9 @@ describe("CanvasPage", () => {
       const metadata = await generateMetadata({ params, searchParams });
 
       expect(metadata.title).toBe("Album Not Found - Spike Land Canvas");
-      expect(metadata.description).toBe("The requested album could not be found.");
+      expect(metadata.description).toBe(
+        "The requested album could not be found.",
+      );
     });
   });
 });

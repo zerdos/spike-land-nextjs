@@ -201,8 +201,12 @@ describe("FloatingHint", () => {
       ];
 
       texts.forEach((text) => {
-        const { unmount } = render(<FloatingHint text={text} isVisible={true} />);
-        expect(screen.getByTestId("floating-hint-text")).toHaveTextContent(text);
+        const { unmount } = render(
+          <FloatingHint text={text} isVisible={true} />,
+        );
+        expect(screen.getByTestId("floating-hint-text")).toHaveTextContent(
+          text,
+        );
         unmount();
       });
     });

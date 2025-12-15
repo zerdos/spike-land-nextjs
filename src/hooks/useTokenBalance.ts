@@ -79,7 +79,9 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
       }
       const data: TokenBalanceResponse = await response.json();
       setBalance(data.balance);
-      setLastRegeneration(data.lastRegeneration ? new Date(data.lastRegeneration) : null);
+      setLastRegeneration(
+        data.lastRegeneration ? new Date(data.lastRegeneration) : null,
+      );
 
       // Calculate next regen time based on "timeUntilNextRegenMs" which is relative to "now" on server
       // We'll use client "now" + delay

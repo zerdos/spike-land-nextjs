@@ -46,8 +46,18 @@ export const TOKEN_PACKAGES = {
 // Subscription plan definitions
 export const SUBSCRIPTION_PLANS = {
   hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: "Hobby" },
-  creator: { tokensPerMonth: 100, priceGBP: 12.99, maxRollover: 100, name: "Creator" },
-  studio: { tokensPerMonth: 300, priceGBP: 29.99, maxRollover: 0, name: "Studio" }, // 0 = unlimited
+  creator: {
+    tokensPerMonth: 100,
+    priceGBP: 12.99,
+    maxRollover: 100,
+    name: "Creator",
+  },
+  studio: {
+    tokensPerMonth: 300,
+    priceGBP: 29.99,
+    maxRollover: 0,
+    name: "Studio",
+  }, // 0 = unlimited
 } as const;
 
 // Enhancement token costs

@@ -101,8 +101,16 @@ describe("Featured Gallery Management API", () => {
           isActive: true,
           createdAt: new Date("2025-01-01"),
           updatedAt: new Date("2025-01-01"),
-          creator: { id: VALID_ADMIN_ID, name: "Admin", email: "admin@example.com" },
-          sourceImage: { id: VALID_IMG_ID, name: "test.jpg", userId: VALID_USER_ID },
+          creator: {
+            id: VALID_ADMIN_ID,
+            name: "Admin",
+            email: "admin@example.com",
+          },
+          sourceImage: {
+            id: VALID_IMG_ID,
+            name: "test.jpg",
+            userId: VALID_USER_ID,
+          },
           sourceJob: { id: VALID_JOB_ID, tier: "TIER_1K", status: "COMPLETED" },
         },
       ];
@@ -261,7 +269,11 @@ describe("Featured Gallery Management API", () => {
         isActive: true,
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-01"),
-        creator: { id: VALID_ADMIN_ID, name: "Admin", email: "admin@example.com" },
+        creator: {
+          id: VALID_ADMIN_ID,
+          name: "Admin",
+          email: "admin@example.com",
+        },
       };
 
       vi.mocked(prisma.featuredGalleryItem.create).mockResolvedValue(
@@ -409,7 +421,11 @@ describe("Featured Gallery Management API", () => {
         isActive: true,
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-01"),
-        creator: { id: VALID_ADMIN_ID, name: "Admin", email: "admin@example.com" },
+        creator: {
+          id: VALID_ADMIN_ID,
+          name: "Admin",
+          email: "admin@example.com",
+        },
       };
 
       vi.mocked(prisma.featuredGalleryItem.create).mockResolvedValue(
@@ -488,7 +504,11 @@ describe("Featured Gallery Management API", () => {
         isActive: false,
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-02"),
-        creator: { id: VALID_ADMIN_ID, name: "Admin", email: "admin@example.com" },
+        creator: {
+          id: VALID_ADMIN_ID,
+          name: "Admin",
+          email: "admin@example.com",
+        },
       };
 
       vi.mocked(prisma.featuredGalleryItem.update).mockResolvedValue(

@@ -63,7 +63,10 @@ const mockProcessingJob = {
 };
 
 // Helper function to mock image API
-async function mockImageApi(world: CustomWorld, imageData: typeof mockImageData) {
+async function mockImageApi(
+  world: CustomWorld,
+  imageData: typeof mockImageData,
+) {
   await world.page.route("**/api/images/**", async (route) => {
     const method = route.request().method();
     if (method === "GET") {
@@ -102,79 +105,94 @@ Given(
   },
 );
 
-Given("I have an image with completed enhancements", async function(this: CustomWorld) {
-  const imageWithEnhancements = {
-    ...mockImageData,
-    enhancementJobs: [mockCompletedJob],
-  };
-  await mockImageApi(this, imageWithEnhancements);
-  await mockTokenBalance(this, 100);
-  (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
-});
+Given(
+  "I have an image with completed enhancements",
+  async function(this: CustomWorld) {
+    const imageWithEnhancements = {
+      ...mockImageData,
+      enhancementJobs: [mockCompletedJob],
+    };
+    await mockImageApi(this, imageWithEnhancements);
+    await mockTokenBalance(this, 100);
+    (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
+  },
+);
 
-Given("I have an image with a completed enhancement", async function(this: CustomWorld) {
-  const imageWithEnhancement = {
-    ...mockImageData,
-    enhancementJobs: [mockCompletedJob],
-  };
-  await mockImageApi(this, imageWithEnhancement);
-  await mockTokenBalance(this, 100);
-  (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
-});
+Given(
+  "I have an image with a completed enhancement",
+  async function(this: CustomWorld) {
+    const imageWithEnhancement = {
+      ...mockImageData,
+      enhancementJobs: [mockCompletedJob],
+    };
+    await mockImageApi(this, imageWithEnhancement);
+    await mockTokenBalance(this, 100);
+    (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
+  },
+);
 
-Given("I have an image with multiple enhancement versions", async function(this: CustomWorld) {
-  const secondJob = {
-    ...mockCompletedJob,
-    id: "job-completed-002",
-    tier: "TIER_2K",
-    tokensCost: 5,
-    enhancedWidth: 3072,
-    enhancedHeight: 1728,
-  };
-  const thirdJob = {
-    ...mockCompletedJob,
-    id: "job-completed-003",
-    tier: "TIER_4K",
-    tokensCost: 10,
-    enhancedWidth: 4096,
-    enhancedHeight: 2304,
-  };
+Given(
+  "I have an image with multiple enhancement versions",
+  async function(this: CustomWorld) {
+    const secondJob = {
+      ...mockCompletedJob,
+      id: "job-completed-002",
+      tier: "TIER_2K",
+      tokensCost: 5,
+      enhancedWidth: 3072,
+      enhancedHeight: 1728,
+    };
+    const thirdJob = {
+      ...mockCompletedJob,
+      id: "job-completed-003",
+      tier: "TIER_4K",
+      tokensCost: 10,
+      enhancedWidth: 4096,
+      enhancedHeight: 2304,
+    };
 
-  const imageWithMultipleVersions = {
-    ...mockImageData,
-    enhancementJobs: [mockCompletedJob, secondJob, thirdJob],
-  };
-  await mockImageApi(this, imageWithMultipleVersions);
-  await mockTokenBalance(this, 100);
-  (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
-});
+    const imageWithMultipleVersions = {
+      ...mockImageData,
+      enhancementJobs: [mockCompletedJob, secondJob, thirdJob],
+    };
+    await mockImageApi(this, imageWithMultipleVersions);
+    await mockTokenBalance(this, 100);
+    (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
+  },
+);
 
-Given("I have an image with multiple completed enhancements", async function(this: CustomWorld) {
-  const secondJob = {
-    ...mockCompletedJob,
-    id: "job-completed-002",
-    tier: "TIER_2K",
-    tokensCost: 5,
-  };
+Given(
+  "I have an image with multiple completed enhancements",
+  async function(this: CustomWorld) {
+    const secondJob = {
+      ...mockCompletedJob,
+      id: "job-completed-002",
+      tier: "TIER_2K",
+      tokensCost: 5,
+    };
 
-  const imageWithMultipleVersions = {
-    ...mockImageData,
-    enhancementJobs: [mockCompletedJob, secondJob],
-  };
-  await mockImageApi(this, imageWithMultipleVersions);
-  await mockTokenBalance(this, 100);
-  (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
-});
+    const imageWithMultipleVersions = {
+      ...mockImageData,
+      enhancementJobs: [mockCompletedJob, secondJob],
+    };
+    await mockImageApi(this, imageWithMultipleVersions);
+    await mockTokenBalance(this, 100);
+    (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
+  },
+);
 
-Given("I have an image with a processing enhancement", async function(this: CustomWorld) {
-  const imageWithProcessing = {
-    ...mockImageData,
-    enhancementJobs: [mockProcessingJob],
-  };
-  await mockImageApi(this, imageWithProcessing);
-  await mockTokenBalance(this, 100);
-  (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
-});
+Given(
+  "I have an image with a processing enhancement",
+  async function(this: CustomWorld) {
+    const imageWithProcessing = {
+      ...mockImageData,
+      enhancementJobs: [mockProcessingJob],
+    };
+    await mockImageApi(this, imageWithProcessing);
+    await mockTokenBalance(this, 100);
+    (this as CustomWorld & { currentImageId: string; }).currentImageId = mockImageData.id;
+  },
+);
 
 Given("I have an image with a share token", async function(this: CustomWorld) {
   const imageWithShareToken = {
@@ -229,25 +247,31 @@ When("I visit the shared image link", async function(this: CustomWorld) {
 });
 
 // Enhancement version selection
-When("I select the completed enhancement version", async function(this: CustomWorld) {
-  const versionCard = this.page.locator("[data-version-id]").filter({
-    has: this.page.locator('[data-status="COMPLETED"]'),
-  }).first();
+When(
+  "I select the completed enhancement version",
+  async function(this: CustomWorld) {
+    const versionCard = this.page.locator("[data-version-id]").filter({
+      has: this.page.locator('[data-status="COMPLETED"]'),
+    }).first();
 
-  if (await versionCard.isVisible()) {
-    await versionCard.click();
-    await this.page.waitForTimeout(300);
-  }
-});
+    if (await versionCard.isVisible()) {
+      await versionCard.click();
+      await this.page.waitForTimeout(300);
+    }
+  },
+);
 
-When("I click on a different version in the enhancement grid", async function(this: CustomWorld) {
-  const versionCards = this.page.locator("[data-version-id]");
-  const count = await versionCards.count();
-  if (count > 1) {
-    await versionCards.nth(1).click();
-    await this.page.waitForTimeout(300);
-  }
-});
+When(
+  "I click on a different version in the enhancement grid",
+  async function(this: CustomWorld) {
+    const versionCards = this.page.locator("[data-version-id]");
+    const count = await versionCards.count();
+    if (count > 1) {
+      await versionCards.nth(1).click();
+      await this.page.waitForTimeout(300);
+    }
+  },
+);
 
 // Share functionality
 When("I click the share button", async function(this: CustomWorld) {
@@ -258,23 +282,29 @@ When("I click the share button", async function(this: CustomWorld) {
 
 // Export functionality
 When("I click on the export options", async function(this: CustomWorld) {
-  const exportSelector = this.page.locator('[data-testid="export-selector"]').or(
-    this.page.getByRole("button", { name: /download|export/i }),
-  );
+  const exportSelector = this.page.locator('[data-testid="export-selector"]')
+    .or(
+      this.page.getByRole("button", { name: /download|export/i }),
+    );
   await exportSelector.click();
   await this.page.waitForTimeout(200);
 });
 
 // Enhancement actions
-When("I select {string} enhancement tier", async function(this: CustomWorld, tier: string) {
-  const tierOption = this.page.locator(`[data-tier="${tier}"]`).or(
-    this.page.getByText(tier),
-  );
-  await tierOption.click();
-});
+When(
+  "I select {string} enhancement tier",
+  async function(this: CustomWorld, tier: string) {
+    const tierOption = this.page.locator(`[data-tier="${tier}"]`).or(
+      this.page.getByText(tier),
+    );
+    await tierOption.click();
+  },
+);
 
 When("I click the enhance button", async function(this: CustomWorld) {
-  const enhanceButton = this.page.getByRole("button", { name: /enhance|start/i });
+  const enhanceButton = this.page.getByRole("button", {
+    name: /enhance|start/i,
+  });
   await enhanceButton.click();
   await this.page.waitForTimeout(500);
 });
@@ -300,18 +330,23 @@ When(
     );
     await tierOption.click();
 
-    const enhanceButton = this.page.getByRole("button", { name: /enhance|start/i });
+    const enhanceButton = this.page.getByRole("button", {
+      name: /enhance|start/i,
+    });
     await enhanceButton.click();
     await this.page.waitForTimeout(500);
   },
 );
 
-When("I click the cancel button on the processing job", async function(this: CustomWorld) {
-  const cancelButton = this.page.locator('[data-testid="cancel-job"]').or(
-    this.page.getByRole("button", { name: /cancel/i }),
-  );
-  await cancelButton.click();
-});
+When(
+  "I click the cancel button on the processing job",
+  async function(this: CustomWorld) {
+    const cancelButton = this.page.locator('[data-testid="cancel-job"]').or(
+      this.page.getByRole("button", { name: /cancel/i }),
+    );
+    await cancelButton.click();
+  },
+);
 
 When("I confirm the cancellation", async function(this: CustomWorld) {
   // Mock the cancel API
@@ -330,12 +365,17 @@ When("I confirm the cancellation", async function(this: CustomWorld) {
   }
 });
 
-When("I click the delete button on a completed version", async function(this: CustomWorld) {
-  const deleteButton = this.page.locator('[data-testid="delete-version"]').or(
-    this.page.locator("[data-version-id]").first().getByRole("button", { name: /delete/i }),
-  );
-  await deleteButton.click();
-});
+When(
+  "I click the delete button on a completed version",
+  async function(this: CustomWorld) {
+    const deleteButton = this.page.locator('[data-testid="delete-version"]').or(
+      this.page.locator("[data-version-id]").first().getByRole("button", {
+        name: /delete/i,
+      }),
+    );
+    await deleteButton.click();
+  },
+);
 
 When("I confirm the deletion", async function(this: CustomWorld) {
   // Mock the delete API
@@ -351,7 +391,9 @@ When("I confirm the deletion", async function(this: CustomWorld) {
     }
   });
 
-  const confirmButton = this.page.getByRole("button", { name: /confirm|yes|delete/i });
+  const confirmButton = this.page.getByRole("button", {
+    name: /confirm|yes|delete/i,
+  });
   if (await confirmButton.isVisible()) {
     await confirmButton.click();
     await this.page.waitForTimeout(300);
@@ -359,36 +401,50 @@ When("I confirm the deletion", async function(this: CustomWorld) {
 });
 
 // Assertion steps
-Then("I should see the enhancement versions grid", async function(this: CustomWorld) {
-  const versionsGrid = this.page.locator('[data-testid="version-grid"]').or(
-    this.page.locator("[data-version-id]").first(),
-  );
-  await expect(versionsGrid).toBeVisible();
-});
+Then(
+  "I should see the enhancement versions grid",
+  async function(this: CustomWorld) {
+    const versionsGrid = this.page.locator('[data-testid="version-grid"]').or(
+      this.page.locator("[data-version-id]").first(),
+    );
+    await expect(versionsGrid).toBeVisible();
+  },
+);
 
-Then("I should see at least one completed enhancement", async function(this: CustomWorld) {
-  const completedVersion = this.page.locator('[data-status="COMPLETED"]').or(
-    this.page.getByText(/completed/i).first(),
-  );
-  await expect(completedVersion).toBeVisible();
-});
+Then(
+  "I should see at least one completed enhancement",
+  async function(this: CustomWorld) {
+    const completedVersion = this.page.locator('[data-status="COMPLETED"]').or(
+      this.page.getByText(/completed/i).first(),
+    );
+    await expect(completedVersion).toBeVisible();
+  },
+);
 
-Then("I should see the comparison view toggle", async function(this: CustomWorld) {
-  const toggleOrSlider = this.page.locator('[data-testid="comparison-toggle"]').or(
-    this.page.locator('input[type="range"]'),
-  ).or(
-    this.page.getByRole("button", { name: /slider|side/i }),
-  );
-  await expect(toggleOrSlider.first()).toBeVisible();
-});
+Then(
+  "I should see the comparison view toggle",
+  async function(this: CustomWorld) {
+    const toggleOrSlider = this.page.locator(
+      '[data-testid="comparison-toggle"]',
+    ).or(
+      this.page.locator('input[type="range"]'),
+    ).or(
+      this.page.getByRole("button", { name: /slider|side/i }),
+    );
+    await expect(toggleOrSlider.first()).toBeVisible();
+  },
+);
 
-Then("I can switch between comparison modes", async function(this: CustomWorld) {
-  const modeToggle = this.page.getByRole("button", { name: /side|slider/i });
-  if (await modeToggle.isVisible()) {
-    await modeToggle.click();
-    await this.page.waitForTimeout(200);
-  }
-});
+Then(
+  "I can switch between comparison modes",
+  async function(this: CustomWorld) {
+    const modeToggle = this.page.getByRole("button", { name: /side|slider/i });
+    if (await modeToggle.isVisible()) {
+      await modeToggle.click();
+      await this.page.waitForTimeout(200);
+    }
+  },
+);
 
 Then(
   "the comparison view should update to show the selected version",
@@ -403,26 +459,35 @@ Then(
   },
 );
 
-Then("the selected version should be highlighted", async function(this: CustomWorld) {
-  const selectedVersion = this.page.locator('[data-version-id][data-selected="true"]').or(
-    this.page.locator("[data-version-id].ring-2"),
-  ).or(
-    this.page.locator("[data-version-id].border-primary"),
-  );
-  await expect(selectedVersion).toBeVisible();
-});
+Then(
+  "the selected version should be highlighted",
+  async function(this: CustomWorld) {
+    const selectedVersion = this.page.locator(
+      '[data-version-id][data-selected="true"]',
+    ).or(
+      this.page.locator("[data-version-id].ring-2"),
+    ).or(
+      this.page.locator("[data-version-id].border-primary"),
+    );
+    await expect(selectedVersion).toBeVisible();
+  },
+);
 
 Then("I should see the export selector", async function(this: CustomWorld) {
-  const exportSelector = this.page.locator('[data-testid="export-selector"]').or(
-    this.page.getByRole("button", { name: /download|export/i }),
-  );
+  const exportSelector = this.page.locator('[data-testid="export-selector"]')
+    .or(
+      this.page.getByRole("button", { name: /download|export/i }),
+    );
   await expect(exportSelector).toBeVisible();
 });
 
-Then("I should see download format options", async function(this: CustomWorld) {
-  const formatOptions = this.page.getByText(/jpg|png|webp|original/i);
-  await expect(formatOptions.first()).toBeVisible();
-});
+Then(
+  "I should see download format options",
+  async function(this: CustomWorld) {
+    const formatOptions = this.page.getByText(/jpg|png|webp|original/i);
+    await expect(formatOptions.first()).toBeVisible();
+  },
+);
 
 Then("I should see the share dialog", async function(this: CustomWorld) {
   const shareDialog = this.page.locator('[role="dialog"]').filter({
@@ -431,20 +496,29 @@ Then("I should see the share dialog", async function(this: CustomWorld) {
   await expect(shareDialog).toBeVisible();
 });
 
-Then("I should be able to copy the share link", async function(this: CustomWorld) {
-  const copyButton = this.page.getByRole("button", { name: /copy/i });
-  await expect(copyButton).toBeVisible();
-});
+Then(
+  "I should be able to copy the share link",
+  async function(this: CustomWorld) {
+    const copyButton = this.page.getByRole("button", { name: /copy/i });
+    await expect(copyButton).toBeVisible();
+  },
+);
 
-Then("the image should be visible without authentication", async function(this: CustomWorld) {
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible();
-});
+Then(
+  "the image should be visible without authentication",
+  async function(this: CustomWorld) {
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible();
+  },
+);
 
-Then("I should see the enhancement tier options", async function(this: CustomWorld) {
-  const tierOptions = this.page.getByText(/tier|1k|2k|4k/i);
-  await expect(tierOptions.first()).toBeVisible();
-});
+Then(
+  "I should see the enhancement tier options",
+  async function(this: CustomWorld) {
+    const tierOptions = this.page.getByText(/tier|1k|2k|4k/i);
+    await expect(tierOptions.first()).toBeVisible();
+  },
+);
 
 Then(
   "I should see {string} option with token cost",
@@ -456,25 +530,34 @@ Then(
   },
 );
 
-Then("I should see the processing indicator", async function(this: CustomWorld) {
-  const processingIndicator = this.page.locator(".animate-spin").or(
-    this.page.getByText(/processing|enhancing/i),
-  );
-  await expect(processingIndicator.first()).toBeVisible();
-});
+Then(
+  "I should see the processing indicator",
+  async function(this: CustomWorld) {
+    const processingIndicator = this.page.locator(".animate-spin").or(
+      this.page.getByText(/processing|enhancing/i),
+    );
+    await expect(processingIndicator.first()).toBeVisible();
+  },
+);
 
-Then("the enhancement should be added to the history", async function(this: CustomWorld) {
-  const historyGrid = this.page.locator("[data-version-id]");
-  const count = await historyGrid.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "the enhancement should be added to the history",
+  async function(this: CustomWorld) {
+    const historyGrid = this.page.locator("[data-version-id]");
+    const count = await historyGrid.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("the job should be removed from the history", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(500);
-  // Verify the processing job is no longer visible
-  const processingJob = this.page.locator('[data-status="PROCESSING"]');
-  await expect(processingJob).not.toBeVisible();
-});
+Then(
+  "the job should be removed from the history",
+  async function(this: CustomWorld) {
+    await this.page.waitForTimeout(500);
+    // Verify the processing job is no longer visible
+    const processingJob = this.page.locator('[data-status="PROCESSING"]');
+    await expect(processingJob).not.toBeVisible();
+  },
+);
 
 Then("my tokens should be refunded", async function(this: CustomWorld) {
   // This is verified by checking the balance was updated
@@ -482,9 +565,12 @@ Then("my tokens should be refunded", async function(this: CustomWorld) {
   await this.page.waitForTimeout(200);
 });
 
-Then("the version should be removed from the history", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(500);
-});
+Then(
+  "the version should be removed from the history",
+  async function(this: CustomWorld) {
+    await this.page.waitForTimeout(500);
+  },
+);
 
 Then(
   "I should see the job status update to {string}",
@@ -494,42 +580,61 @@ Then(
   },
 );
 
-Then("I should see the current stage progress", async function(this: CustomWorld) {
-  // Stage indicator might not always be visible immediately
-  const _stageIndicator = this.page.getByText(/analyzing|generating|cropping|upscaling/i).or(
-    this.page.locator('[data-testid="stage-progress"]'),
-  );
-  await this.page.waitForTimeout(500);
-});
+Then(
+  "I should see the current stage progress",
+  async function(this: CustomWorld) {
+    // Stage indicator might not always be visible immediately
+    const _stageIndicator = this.page.getByText(
+      /analyzing|generating|cropping|upscaling/i,
+    ).or(
+      this.page.locator('[data-testid="stage-progress"]'),
+    );
+    await this.page.waitForTimeout(500);
+  },
+);
 
-Then("the status should update to {string}", async function(this: CustomWorld, status: string) {
-  const statusElement = this.page.getByText(new RegExp(status, "i"));
-  await expect(statusElement.first()).toBeVisible();
-});
+Then(
+  "the status should update to {string}",
+  async function(this: CustomWorld, status: string) {
+    const statusElement = this.page.getByText(new RegExp(status, "i"));
+    await expect(statusElement.first()).toBeVisible();
+  },
+);
 
-Then("the enhanced image should be displayed", async function(this: CustomWorld) {
-  const enhancedImage = this.page.locator("img").first();
-  await expect(enhancedImage).toBeVisible();
-});
+Then(
+  "the enhanced image should be displayed",
+  async function(this: CustomWorld) {
+    const enhancedImage = this.page.locator("img").first();
+    await expect(enhancedImage).toBeVisible();
+  },
+);
 
-Then("I should be redirected to {string}", async function(this: CustomWorld, path: string) {
-  await this.page.waitForURL(`**${path}`, { timeout: 5000 });
-  expect(this.page.url()).toContain(path);
-});
+Then(
+  "I should be redirected to {string}",
+  async function(this: CustomWorld, path: string) {
+    await this.page.waitForURL(`**${path}`, { timeout: 5000 });
+    expect(this.page.url()).toContain(path);
+  },
+);
 
 Then("I should see a not found error", async function(this: CustomWorld) {
   const notFound = this.page.getByText(/not found|404/i);
   await expect(notFound.first()).toBeVisible();
 });
 
-Then("I can toggle between slider and side-by-side modes", async function(this: CustomWorld) {
-  const toggleButton = this.page.getByRole("button", { name: /slider|side|toggle/i });
-  if (await toggleButton.isVisible()) {
-    await toggleButton.click();
-    await this.page.waitForTimeout(200);
-    await toggleButton.click();
-  }
-});
+Then(
+  "I can toggle between slider and side-by-side modes",
+  async function(this: CustomWorld) {
+    const toggleButton = this.page.getByRole("button", {
+      name: /slider|side|toggle/i,
+    });
+    if (await toggleButton.isVisible()) {
+      await toggleButton.click();
+      await this.page.waitForTimeout(200);
+      await toggleButton.click();
+    }
+  },
+);
 
 Then(
   "my displayed token balance should decrease by {int}",

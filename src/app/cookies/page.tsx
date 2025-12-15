@@ -40,7 +40,9 @@ export default function CookiePage() {
         <Card className="mb-12">
           <CardHeader>
             <CardTitle>Table of Contents</CardTitle>
-            <CardDescription>Quick navigation to our cookie policy sections</CardDescription>
+            <CardDescription>
+              Quick navigation to our cookie policy sections
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,7 +67,9 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">What Are Cookies</CardTitle>
-                <CardDescription>Understanding cookies and how they work</CardDescription>
+                <CardDescription>
+                  Understanding cookies and how they work
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -79,18 +83,28 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">How Cookies Work</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    How Cookies Work
+                  </h3>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
                     <li>You visit the Pixel (Spike Land)</li>
-                    <li>The website sends a small file (cookie) to your browser</li>
+                    <li>
+                      The website sends a small file (cookie) to your browser
+                    </li>
                     <li>Your browser stores this cookie on your device</li>
-                    <li>When you return to the website, your browser sends the cookie back</li>
-                    <li>The website recognizes you and can use the information in the cookie</li>
+                    <li>
+                      When you return to the website, your browser sends the cookie back
+                    </li>
+                    <li>
+                      The website recognizes you and can use the information in the cookie
+                    </li>
                   </ol>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Types of Cookies</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Types of Cookies
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Session Cookies</h4>
@@ -131,11 +145,15 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Cookies We Use</CardTitle>
-                <CardDescription>Complete list of all cookies on our platform</CardDescription>
+                <CardDescription>
+                  Complete list of all cookies on our platform
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Cookie Summary Table</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Cookie Summary Table
+                  </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="border-b border-border">
@@ -148,31 +166,41 @@ export default function CookiePage() {
                       </thead>
                       <tbody className="space-y-2">
                         <tr className="border-b border-border">
-                          <td className="py-2 font-mono text-xs">authjs.session-token</td>
+                          <td className="py-2 font-mono text-xs">
+                            authjs.session-token
+                          </td>
                           <td>User authentication session</td>
                           <td>Session / 30 days</td>
                           <td>Essential</td>
                         </tr>
                         <tr className="border-b border-border">
-                          <td className="py-2 font-mono text-xs">__Secure-authjs.session-token</td>
+                          <td className="py-2 font-mono text-xs">
+                            __Secure-authjs.session-token
+                          </td>
                           <td>Secure session token (HTTPS)</td>
                           <td>Session / 30 days</td>
                           <td>Essential</td>
                         </tr>
                         <tr className="border-b border-border">
-                          <td className="py-2 font-mono text-xs">authjs.csrf-token</td>
+                          <td className="py-2 font-mono text-xs">
+                            authjs.csrf-token
+                          </td>
                           <td>CSRF protection</td>
                           <td>Session</td>
                           <td>Essential</td>
                         </tr>
                         <tr className="border-b border-border">
-                          <td className="py-2 font-mono text-xs">authjs.callback-url</td>
+                          <td className="py-2 font-mono text-xs">
+                            authjs.callback-url
+                          </td>
                           <td>OAuth callback redirect</td>
                           <td>Session</td>
                           <td>Essential</td>
                         </tr>
                         <tr className="border-b border-border">
-                          <td className="py-2 font-mono text-xs">__Vercel_Insights_Cache</td>
+                          <td className="py-2 font-mono text-xs">
+                            __Vercel_Insights_Cache
+                          </td>
                           <td>Vercel performance insights</td>
                           <td>1 year</td>
                           <td>Analytics</td>
@@ -190,7 +218,9 @@ export default function CookiePage() {
                           <td>Analytics</td>
                         </tr>
                         <tr>
-                          <td className="py-2 font-mono text-xs">_oauth_nonce</td>
+                          <td className="py-2 font-mono text-xs">
+                            _oauth_nonce
+                          </td>
                           <td>OAuth security nonce</td>
                           <td>Session</td>
                           <td>Essential</td>
@@ -216,11 +246,15 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Essential Cookies</CardTitle>
-                <CardDescription>Necessary for core functionality</CardDescription>
+                <CardDescription>
+                  Necessary for core functionality
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Why We Need Them</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Why We Need Them
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Essential cookies are absolutely necessary for the website to function properly.
                     They cannot be disabled without breaking core features. These cookies enable:
@@ -228,14 +262,18 @@ export default function CookiePage() {
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>Keeping you logged into your account</li>
                     <li>Protecting against security threats (CSRF attacks)</li>
-                    <li>Processing OAuth authentication with Google and GitHub</li>
+                    <li>
+                      Processing OAuth authentication with Google and GitHub
+                    </li>
                     <li>Maintaining your session across page navigations</li>
                     <li>Storing temporary security nonces</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Cannot Be Disabled</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Cannot Be Disabled
+                  </h3>
                   <div className="bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg">
                     <p className="text-yellow-900 dark:text-yellow-100 text-sm">
                       <strong>Important:</strong>{" "}
@@ -248,7 +286,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Essential Cookies List</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Essential Cookies List
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm">
@@ -263,26 +303,36 @@ export default function CookiePage() {
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm">authjs.csrf-token</h4>
+                      <h4 className="font-semibold text-sm">
+                        authjs.csrf-token
+                      </h4>
                       <p className="text-muted-foreground text-sm mt-1">
                         Protects against Cross-Site Request Forgery attacks. Required for secure
                         form submissions.
                       </p>
-                      <p className="text-muted-foreground text-xs mt-2">Duration: Session only</p>
+                      <p className="text-muted-foreground text-xs mt-2">
+                        Duration: Session only
+                      </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm">authjs.callback-url</h4>
+                      <h4 className="font-semibold text-sm">
+                        authjs.callback-url
+                      </h4>
                       <p className="text-muted-foreground text-sm mt-1">
                         Stores the URL to redirect to after OAuth authentication completes.
                       </p>
-                      <p className="text-muted-foreground text-xs mt-2">Duration: Session only</p>
+                      <p className="text-muted-foreground text-xs mt-2">
+                        Duration: Session only
+                      </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm">_oauth_nonce</h4>
                       <p className="text-muted-foreground text-sm mt-1">
                         Security token used in OAuth flows to prevent replay attacks.
                       </p>
-                      <p className="text-muted-foreground text-xs mt-2">Duration: Session only</p>
+                      <p className="text-muted-foreground text-xs mt-2">
+                        Duration: Session only
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -295,11 +345,15 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Analytics Cookies</CardTitle>
-                <CardDescription>Help us understand how you use our platform</CardDescription>
+                <CardDescription>
+                  Help us understand how you use our platform
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">What They Track</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    What They Track
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Analytics cookies collect information about how you use the Spike Land Image
                     Enhancement App. This helps us:
@@ -314,10 +368,14 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Analytics Services We Use</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Analytics Services We Use
+                  </h3>
                   <div className="space-y-4">
                     <div className="bg-muted p-4 rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2">Vercel Analytics</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Vercel Analytics
+                      </h4>
                       <p className="text-muted-foreground text-sm mb-2">
                         <strong>Purpose:</strong>{" "}
                         Tracks page views, user interactions, and performance metrics
@@ -335,7 +393,9 @@ export default function CookiePage() {
                     </div>
 
                     <div className="bg-muted p-4 rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2">Vercel Speed Insights</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Vercel Speed Insights
+                      </h4>
                       <p className="text-muted-foreground text-sm mb-2">
                         <strong>Purpose:</strong>{" "}
                         Monitors application performance and loading speeds
@@ -360,7 +420,9 @@ export default function CookiePage() {
                   </p>
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Browser Settings</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Browser Settings
+                      </h4>
                       <p className="text-muted-foreground text-sm mb-2">
                         You can opt out of analytics tracking through your browser settings. Most
                         browsers allow you to:
@@ -372,7 +434,9 @@ export default function CookiePage() {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Browser Extensions</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Browser Extensions
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can install privacy-focused browser extensions to block analytics
                         trackers (e.g., uBlock Origin, Privacy Badger, Ghostery)
@@ -382,7 +446,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Vercel Privacy Policy</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Vercel Privacy Policy
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     For more information about how Vercel handles data, see their{" "}
                     <a
@@ -404,7 +470,9 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Third-Party Cookies</CardTitle>
-                <CardDescription>Cookies set by external services</CardDescription>
+                <CardDescription>
+                  Cookies set by external services
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -475,7 +543,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Stripe (Payment Processing)</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Stripe (Payment Processing)
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2">
                     <p className="text-sm">
                       <strong>Purpose:</strong> Payment processing and fraud prevention
@@ -524,10 +594,18 @@ export default function CookiePage() {
                     payments), you can:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm">
-                    <li>Block cookies from these services in your browser settings</li>
-                    <li>Review each service's privacy policy and cookie policy</li>
-                    <li>Use private/incognito browsing to prevent persistent cookies</li>
-                    <li>Adjust your privacy settings in each service's account</li>
+                    <li>
+                      Block cookies from these services in your browser settings
+                    </li>
+                    <li>
+                      Review each service's privacy policy and cookie policy
+                    </li>
+                    <li>
+                      Use private/incognito browsing to prevent persistent cookies
+                    </li>
+                    <li>
+                      Adjust your privacy settings in each service's account
+                    </li>
                   </ul>
                 </div>
               </CardContent>
@@ -539,14 +617,20 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Managing Cookies</CardTitle>
-                <CardDescription>How to control cookies in your browser</CardDescription>
+                <CardDescription>
+                  How to control cookies in your browser
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Browser-Specific Instructions</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Browser-Specific Instructions
+                  </h3>
                   <div className="space-y-4">
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm mb-2">Google Chrome</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Google Chrome
+                      </h4>
                       <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-sm">
                         <li>Click Menu (three dots) in the top right corner</li>
                         <li>Select Settings</li>
@@ -558,7 +642,9 @@ export default function CookiePage() {
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm mb-2">Firefox</h4>
                       <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-sm">
-                        <li>Click Menu (three lines) in the top right corner</li>
+                        <li>
+                          Click Menu (three lines) in the top right corner
+                        </li>
                         <li>Select Settings</li>
                         <li>Click Privacy & Security</li>
                         <li>Scroll to Cookies and Site Data</li>
@@ -575,7 +661,9 @@ export default function CookiePage() {
                       </ol>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm mb-2">Microsoft Edge</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Microsoft Edge
+                      </h4>
                       <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-sm">
                         <li>Click Menu (three dots) in the top right corner</li>
                         <li>Select Settings</li>
@@ -600,7 +688,9 @@ export default function CookiePage() {
                         <li>You will not be able to log in to your account</li>
                         <li>Google and GitHub authentication will not work</li>
                         <li>Payment processing may be blocked</li>
-                        <li>Your session will not persist across page visits</li>
+                        <li>
+                          Your session will not persist across page visits
+                        </li>
                         <li>Some features may not function correctly</li>
                       </ul>
                     </div>
@@ -608,7 +698,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Clearing Cookies</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Clearing Cookies
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     You can clear cookies from your device at any time:
                   </p>
@@ -617,8 +709,12 @@ export default function CookiePage() {
                       Use your browser's "Clear browsing data" feature (typically Ctrl+Shift+Delete
                       or Cmd+Shift+Delete)
                     </li>
-                    <li>Select "Cookies and other site data" in the clear browsing data dialog</li>
-                    <li>Choose the time range (all time, last hour, last day, etc.)</li>
+                    <li>
+                      Select "Cookies and other site data" in the clear browsing data dialog
+                    </li>
+                    <li>
+                      Choose the time range (all time, last hour, last day, etc.)
+                    </li>
                     <li>Click Clear or Delete</li>
                   </ul>
                   <p className="text-muted-foreground text-sm mt-4">
@@ -629,7 +725,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Do Not Track (DNT)</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Do Not Track (DNT)
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     Most browsers allow you to send a "Do Not Track" signal to websites. While we
                     respect this preference, some features may require cookies to function properly.
@@ -646,25 +744,35 @@ export default function CookiePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Cookie Consent</CardTitle>
-                <CardDescription>How we obtain and manage your cookie preferences</CardDescription>
+                <CardDescription>
+                  How we obtain and manage your cookie preferences
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">How We Obtain Consent</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    How We Obtain Consent
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     When you first visit the Pixel (Spike Land):
                   </p>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
                     <li>A cookie consent banner appears on your screen</li>
-                    <li>Essential cookies are set immediately (required for functionality)</li>
-                    <li>You can choose to accept or reject analytics cookies</li>
+                    <li>
+                      Essential cookies are set immediately (required for functionality)
+                    </li>
+                    <li>
+                      You can choose to accept or reject analytics cookies
+                    </li>
                     <li>You can customize your cookie preferences</li>
                     <li>Your choice is saved in your browser</li>
                   </ol>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Cookie Banner Options</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Cookie Banner Options
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold text-sm">Accept All</h4>
@@ -673,7 +781,9 @@ export default function CookiePage() {
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-sm">Reject Non-Essential</h4>
+                      <h4 className="font-semibold text-sm">
+                        Reject Non-Essential
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         Accept only essential cookies. Analytics and non-essential cookies are
                         blocked.
@@ -689,22 +799,30 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">GDPR and ePrivacy Compliance</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    GDPR and ePrivacy Compliance
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     Our cookie consent implementation complies with GDPR Article 7 and the ePrivacy
                     Directive requirements:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm mt-3">
                     <li>Consent must be freely given (not forced)</li>
-                    <li>Consent must be specific (separate from other terms)</li>
-                    <li>Consent must be informed (clear information provided)</li>
+                    <li>
+                      Consent must be specific (separate from other terms)
+                    </li>
+                    <li>
+                      Consent must be informed (clear information provided)
+                    </li>
                     <li>Consent must be affirmative (clear action required)</li>
                     <li>You can withdraw consent at any time</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Withdraw or Change Consent</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Withdraw or Change Consent
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     You can change your cookie preferences at any time:
                   </p>
@@ -716,12 +834,16 @@ export default function CookiePage() {
                     <li>Click the link to open the cookie preferences modal</li>
                     <li>Adjust your cookie settings as desired</li>
                     <li>Click "Save Preferences"</li>
-                    <li>Your new preferences are saved and take effect immediately</li>
+                    <li>
+                      Your new preferences are saved and take effect immediately
+                    </li>
                   </ol>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Cookie Consent Expiration</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Cookie Consent Expiration
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     Your cookie consent preferences are stored for 12 months. After 12 months, we
                     may ask you to confirm your preferences again to ensure they remain current.
@@ -729,7 +851,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Consent for Non-EU Users</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Consent for Non-EU Users
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     While GDPR applies primarily to EU residents, we apply the same consent
                     standards to all users regardless of location, as this is a best practice for
@@ -749,7 +873,9 @@ export default function CookiePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Right to Modify</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Right to Modify
+                  </h3>
                   <p className="text-muted-foreground">
                     We may update this Cookie Policy at any time to reflect:
                   </p>
@@ -763,13 +889,19 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">How We Notify You</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    How We Notify You
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     When we make material changes to this Cookie Policy:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm">
-                    <li>We will update the "Last updated" date at the top of this page</li>
-                    <li>We will post a notice on our website for at least 30 days</li>
+                    <li>
+                      We will update the "Last updated" date at the top of this page
+                    </li>
+                    <li>
+                      We will post a notice on our website for at least 30 days
+                    </li>
                     <li>
                       For significant changes, we may send an email notification to registered users
                     </li>
@@ -778,7 +910,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Version History</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Version History
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     We maintain a version history of this policy. If you need to reference a
                     previous version, please contact our privacy team.
@@ -797,7 +931,9 @@ export default function CookiePage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Privacy Inquiries</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Privacy Inquiries
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-sm">
                       Email:{" "}
@@ -808,12 +944,16 @@ export default function CookiePage() {
                         privacy@[your-domain.com]
                       </a>
                     </p>
-                    <p className="text-muted-foreground text-sm mt-2">Response time: 72 hours</p>
+                    <p className="text-muted-foreground text-sm mt-2">
+                      Response time: 72 hours
+                    </p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Cookie Preferences</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Cookie Preferences
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-muted-foreground text-sm">
                       To change your cookie preferences at any time, look for the "Cookie Settings"
@@ -823,13 +963,18 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Related Policies</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Related Policies
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     For more information about how we handle your data, please review:
                   </p>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <a href="/privacy" className="text-primary hover:underline">
+                      <a
+                        href="/privacy"
+                        className="text-primary hover:underline"
+                      >
                         Privacy Policy
                       </a>
                     </li>
@@ -842,7 +987,9 @@ export default function CookiePage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Regulatory Authorities</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Regulatory Authorities
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     If you have concerns about our cookie practices:
                   </p>

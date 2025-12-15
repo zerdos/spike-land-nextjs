@@ -48,7 +48,9 @@ interface SelectedImageData {
 interface GalleryItemFormProps {
   item?: GalleryItem | null;
   selectedImageData?: SelectedImageData | null;
-  onSubmit: (data: { title: string; description?: string; category: GalleryCategory; }) => void;
+  onSubmit: (
+    data: { title: string; description?: string; category: GalleryCategory; },
+  ) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
@@ -69,12 +71,15 @@ export function GalleryItemForm({
 }: GalleryItemFormProps) {
   const [title, setTitle] = useState(item?.title || "");
   const [description, setDescription] = useState(item?.description || "");
-  const [category, setCategory] = useState<GalleryCategory>(item?.category || "PORTRAIT");
+  const [category, setCategory] = useState<GalleryCategory>(
+    item?.category || "PORTRAIT",
+  );
   const [errors, setErrors] = useState<{ title?: string; }>({});
 
   const isEditing = !!item;
   const previewUrl = item?.originalUrl || selectedImageData?.originalUrl;
-  const enhancedPreviewUrl = item?.enhancedUrl || selectedImageData?.enhancedUrl;
+  const enhancedPreviewUrl = item?.enhancedUrl ||
+    selectedImageData?.enhancedUrl;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,7 +173,10 @@ export function GalleryItemForm({
       {/* Category */}
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
-        <Select value={category} onValueChange={(value) => setCategory(value as GalleryCategory)}>
+        <Select
+          value={category}
+          onValueChange={(value) => setCategory(value as GalleryCategory)}
+        >
           <SelectTrigger id="category">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
@@ -184,11 +192,20 @@ export function GalleryItemForm({
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : isEditing ? "Save Changes" : "Add to Gallery"}
+          {isSubmitting
+            ? "Saving..."
+            : isEditing
+            ? "Save Changes"
+            : "Add to Gallery"}
         </Button>
       </div>
     </form>

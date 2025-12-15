@@ -14,12 +14,14 @@ interface TierSelectionCheckboxesProps {
   disabled?: boolean;
 }
 
-const TIER_INFO: Record<EnhancementTierType, { name: string; resolution: string; cost: number; }> =
-  {
-    TIER_1K: { name: "1K", resolution: "1024px", cost: 2 },
-    TIER_2K: { name: "2K", resolution: "2048px", cost: 5 },
-    TIER_4K: { name: "4K", resolution: "4096px", cost: 10 },
-  };
+const TIER_INFO: Record<
+  EnhancementTierType,
+  { name: string; resolution: string; cost: number; }
+> = {
+  TIER_1K: { name: "1K", resolution: "1024px", cost: 2 },
+  TIER_2K: { name: "2K", resolution: "2048px", cost: 5 },
+  TIER_4K: { name: "4K", resolution: "4096px", cost: 10 },
+};
 
 const TIER_ORDER: EnhancementTierType[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 
@@ -29,7 +31,10 @@ export function TierSelectionCheckboxes({
   userBalance,
   disabled = false,
 }: TierSelectionCheckboxesProps) {
-  const totalCost = selectedTiers.reduce((sum, tier) => sum + TIER_INFO[tier].cost, 0);
+  const totalCost = selectedTiers.reduce(
+    (sum, tier) => sum + TIER_INFO[tier].cost,
+    0,
+  );
   const exceedsBalance = totalCost > userBalance;
 
   const handleTierToggle = (tier: EnhancementTierType, checked: boolean) => {
@@ -88,7 +93,9 @@ export function TierSelectionCheckboxes({
                   )}
                 >
                   <span className="font-medium">{info.name}</span>
-                  <span className="text-xs text-muted-foreground">{info.resolution}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {info.resolution}
+                  </span>
                 </Label>
               </div>
 
@@ -103,7 +110,9 @@ export function TierSelectionCheckboxes({
                   {info.cost}
                 </span>
                 {!canAfford && !isSelected && (
-                  <span className="text-xs text-destructive">(Insufficient)</span>
+                  <span className="text-xs text-destructive">
+                    (Insufficient)
+                  </span>
                 )}
               </div>
             </div>
@@ -114,7 +123,9 @@ export function TierSelectionCheckboxes({
       <div
         className={cn(
           "flex items-center justify-between p-3 rounded-lg",
-          exceedsBalance ? "bg-destructive/10 border border-destructive/20" : "bg-muted/50",
+          exceedsBalance
+            ? "bg-destructive/10 border border-destructive/20"
+            : "bg-muted/50",
         )}
         data-testid="total-cost-section"
       >

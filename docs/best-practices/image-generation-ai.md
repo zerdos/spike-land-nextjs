@@ -1,6 +1,9 @@
 # Image Generation AI Best Practices
 
-Comprehensive guide to integrating and optimizing image generation APIs for production applications. This document covers API integration patterns, prompt engineering, performance optimization, cost management, and quality assurance best practices.
+Comprehensive guide to integrating and optimizing image generation APIs for
+production applications. This document covers API integration patterns, prompt
+engineering, performance optimization, cost management, and quality assurance
+best practices.
 
 ---
 
@@ -19,7 +22,8 @@ Comprehensive guide to integrating and optimizing image generation APIs for prod
 
 ### 1. Streaming vs Batch Responses
 
-Image generation APIs support different response models depending on your use case and scale requirements.
+Image generation APIs support different response models depending on your use
+case and scale requirements.
 
 #### Streaming Responses
 
@@ -48,7 +52,10 @@ async function generateImageStreaming(
   options: StreamingImageGenerationOptions,
 ): Promise<{ imageUrl: string; metadata: Record<string, unknown>; }> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), options.timeout || 60000);
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    options.timeout || 60000,
+  );
 
   try {
     // Initial request returns 202 Accepted with polling URL
@@ -253,7 +260,10 @@ class ImageGenerationClient {
         lastError = error as Error;
 
         // Don't retry on client errors (4xx)
-        if (axios.isAxiosError(error) && error.response?.status?.toString().startsWith("4")) {
+        if (
+          axios.isAxiosError(error) &&
+          error.response?.status?.toString().startsWith("4")
+        ) {
           // Except rate limiting (429)
           if (error.response.status !== 429) {
             throw error;
@@ -278,9 +288,12 @@ class ImageGenerationClient {
   }
 
   private async generateImage(prompt: string): Promise<string> {
-    const response = await axios.post("https://api.example.com/v1/images/generations", {
-      prompt,
-    });
+    const response = await axios.post(
+      "https://api.example.com/v1/images/generations",
+      {
+        prompt,
+      },
+    );
     return response.data.image_url;
   }
 
@@ -308,7 +321,8 @@ class ImageGenerationClient {
   }
 
   private calculateBackoffDelay(attempt: number, config: RetryConfig): number {
-    const delay = config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt);
+    const delay = config.initialDelayMs *
+      Math.pow(config.backoffMultiplier, attempt);
     return Math.min(delay, config.maxDelayMs);
   }
 
@@ -658,7 +672,9 @@ const timeoutPresets: Record<string, TimeoutConfig> = {
 };
 
 // Implementation with axios
-function createImageGenerationClient(timeoutPreset: keyof typeof timeoutPresets) {
+function createImageGenerationClient(
+  timeoutPreset: keyof typeof timeoutPresets,
+) {
   const config = timeoutPresets[timeoutPreset];
 
   const client = axios.create({
@@ -957,7 +973,10 @@ class ImageGenerationQueue {
       completed: tasks.filter((t) => t.status === "completed").length,
       failed: tasks.filter((t) => t.status === "failed").length,
       avgProcessingTime: completedTasks.length > 0
-        ? completedTasks.reduce((sum, t) => sum + (t.completedAt! - t.startedAt!), 0) /
+        ? completedTasks.reduce(
+          (sum, t) => sum + (t.completedAt! - t.startedAt!),
+          0,
+        ) /
           completedTasks.length
         : 0,
     };
@@ -971,7 +990,8 @@ class ImageGenerationQueue {
 
 ### 1. Token and Credit Optimization
 
-Effective cost management requires understanding usage patterns and optimization strategies.
+Effective cost management requires understanding usage patterns and optimization
+strategies.
 
 #### Cost Optimization Techniques
 
@@ -1171,7 +1191,8 @@ class UsageMonitor {
       totalDuration += m.duration;
       if (m.success) successCount++;
       else failureCount++;
-      providerCosts[m.provider] = (providerCosts[m.provider] || 0) + m.costAmount;
+      providerCosts[m.provider] = (providerCosts[m.provider] || 0) +
+        m.costAmount;
     });
 
     return {
@@ -1230,15 +1251,21 @@ async function validateImage(
     const metadata = await sharp(Buffer.from(buffer)).metadata();
 
     if (!metadata.width || metadata.width < config.minWidth) {
-      errors.push(`Image width ${metadata.width} below minimum ${config.minWidth}`);
+      errors.push(
+        `Image width ${metadata.width} below minimum ${config.minWidth}`,
+      );
     }
 
     if (!metadata.height || metadata.height < config.minHeight) {
-      errors.push(`Image height ${metadata.height} below minimum ${config.minHeight}`);
+      errors.push(
+        `Image height ${metadata.height} below minimum ${config.minHeight}`,
+      );
     }
 
     if (metadata.format !== config.requiredFormat) {
-      errors.push(`Image format ${metadata.format} != required ${config.requiredFormat}`);
+      errors.push(
+        `Image format ${metadata.format} != required ${config.requiredFormat}`,
+      );
     }
 
     // Check for corruption
@@ -1551,5 +1578,4 @@ function selectBestProvider(criteria: ProviderSelectionCriteria): string {
 
 ---
 
-**Last Updated**: December 2025
-**Maintained By**: Spike Land Development Team
+**Last Updated**: December 2025 **Maintained By**: Spike Land Development Team

@@ -13,9 +13,9 @@ vi.mock("@/hooks/usePipelines", () => ({
 
 // Mock next/link
 vi.mock("next/link", () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string; }) => (
-    <a href={href}>{children}</a>
-  ),
+  default: (
+    { children, href }: { children: React.ReactNode; href: string; },
+  ) => <a href={href}>{children}</a>,
 }));
 
 const mockPipelines: Pipeline[] = [
@@ -99,7 +99,11 @@ describe("PipelineSelector", () => {
         ...defaultMockReturn,
         isLoading: true,
         pipelines: [],
-        groupedPipelines: { systemDefaults: [], myPipelines: [], publicPipelines: [] },
+        groupedPipelines: {
+          systemDefaults: [],
+          myPipelines: [],
+          publicPipelines: [],
+        },
       });
 
       const { container } = render(
@@ -118,7 +122,11 @@ describe("PipelineSelector", () => {
         ...defaultMockReturn,
         error: new Error("Failed to fetch"),
         pipelines: [],
-        groupedPipelines: { systemDefaults: [], myPipelines: [], publicPipelines: [] },
+        groupedPipelines: {
+          systemDefaults: [],
+          myPipelines: [],
+          publicPipelines: [],
+        },
       });
 
       render(<PipelineSelector value={null} onChange={() => {}} />);

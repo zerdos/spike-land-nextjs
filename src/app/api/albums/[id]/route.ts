@@ -59,7 +59,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     // Check access permission
     const isOwner = session?.user?.id === album.userId;
-    const isAccessible = isOwner || album.privacy === "PUBLIC" || album.privacy === "UNLISTED";
+    const isAccessible = isOwner || album.privacy === "PUBLIC" ||
+      album.privacy === "UNLISTED";
 
     if (!isAccessible) {
       return NextResponse.json({ error: "Album not found" }, { status: 404 });
@@ -84,7 +85,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             name: string;
             description: string | null;
             originalUrl: string;
-            enhancementJobs: { enhancedUrl: string | null; tier: EnhancementTier; }[];
+            enhancementJobs: {
+              enhancedUrl: string | null;
+              tier: EnhancementTier;
+            }[];
             originalWidth: number;
             originalHeight: number;
             createdAt: Date;
@@ -140,7 +144,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { name, description, privacy, coverImageId, pipelineId, defaultTier } = body;
+    const {
+      name,
+      description,
+      privacy,
+      coverImageId,
+      pipelineId,
+      defaultTier,
+    } = body;
 
     const updateData: Record<string, unknown> = {};
 

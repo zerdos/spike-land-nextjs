@@ -39,7 +39,10 @@ interface UploadedFileData {
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
-  const requestLogger = logger.child({ requestId, route: "/api/images/batch-upload" });
+  const requestLogger = logger.child({
+    requestId,
+    route: "/api/images/batch-upload",
+  });
 
   try {
     requestLogger.info("Batch upload request received");
@@ -69,7 +72,9 @@ export async function POST(request: NextRequest) {
     if (rateLimitResult.isLimited) {
       requestLogger.warn("Rate limit exceeded", { userId: session.user.id });
       const errorMessage = getUserFriendlyError(new Error("Rate limit"), 429);
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -154,7 +159,10 @@ export async function POST(request: NextRequest) {
 
     if (!files || files.length === 0) {
       requestLogger.warn("No files provided");
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -170,7 +178,10 @@ export async function POST(request: NextRequest) {
         fileCount: files.length,
         maxAllowed: MAX_BATCH_SIZE,
       });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -182,7 +193,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate filenames for security (prevent path traversal, hidden files, etc.)
-    const invalidFilenames = files.filter((f) => !isSecureFilename(f.name)).map((f) => f.name);
+    const invalidFilenames = files.filter((f) => !isSecureFilename(f.name)).map(
+      (f) => f.name,
+    );
     if (invalidFilenames.length > 0) {
       requestLogger.warn("Invalid filenames detected", { invalidFilenames });
       return NextResponse.json(
@@ -195,8 +208,14 @@ export async function POST(request: NextRequest) {
     let totalSize = 0;
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        requestLogger.warn("File size exceeded", { filename: file.name, size: file.size });
-        const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+        requestLogger.warn("File size exceeded", {
+          filename: file.name,
+          size: file.size,
+        });
+        const errorMessage = getUserFriendlyError(
+          new Error("Invalid input"),
+          400,
+        );
         return NextResponse.json(
           {
             error: errorMessage.message,
@@ -215,7 +234,10 @@ export async function POST(request: NextRequest) {
         totalSize,
         maxAllowed: MAX_TOTAL_BATCH_SIZE,
       });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -312,7 +334,7 @@ export async function POST(request: NextRequest) {
     // If all files failed during upload, return early without database transaction
     if (uploadedFiles.length === 0) {
       requestLogger.warn("All files failed during R2 upload phase", {
-        failureCount: results.filter(r => !r.success).length,
+        failureCount: results.filter((r) => !r.success).length,
       });
       // Refund tokens if all failed
       await TokenBalanceManager.addTokens({
@@ -339,7 +361,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Refund for failed individual files (if any)
-    const failedR2Count = results.filter(r => !r.success).length;
+    const failedR2Count = results.filter((r) => !r.success).length;
     if (failedR2Count > 0) {
       await TokenBalanceManager.addTokens({
         userId: session.user.id,
@@ -442,7 +464,9 @@ export async function POST(request: NextRequest) {
         deleteFromR2(fileData.r2Key).catch((deleteError) => {
           requestLogger.error(
             "Failed to cleanup R2 file",
-            deleteError instanceof Error ? deleteError : new Error(String(deleteError)),
+            deleteError instanceof Error
+              ? deleteError
+              : new Error(String(deleteError)),
             { r2Key: fileData.r2Key },
           );
           return { success: false };
@@ -456,7 +480,9 @@ export async function POST(request: NextRequest) {
         results[fileData.index] = {
           success: false,
           filename: fileData.filename,
-          error: error instanceof Error ? error.message : "Database transaction failed",
+          error: error instanceof Error
+            ? error.message
+            : "Database transaction failed",
           errorType: "database" as const,
         };
       }

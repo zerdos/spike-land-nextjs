@@ -19,19 +19,26 @@
 
 ### What is the Model Context Protocol?
 
-The **Model Context Protocol (MCP)** is an open standard that enables language models to access external data sources and perform specialized tasks in a standardized way. Think of it as a "bridge" that gives LLMs controlled access to specific data sources, APIs, and operations.
+The **Model Context Protocol (MCP)** is an open standard that enables language
+models to access external data sources and perform specialized tasks in a
+standardized way. Think of it as a "bridge" that gives LLMs controlled access to
+specific data sources, APIs, and operations.
 
 ### Why MCP Matters
 
 MCP solves three critical problems:
 
-1. **Context Gap**: LLMs need access to current, domain-specific data beyond their training data
-2. **Tool Integration**: Standardized way to expose APIs and operations to AI models
-3. **Vendor Neutrality**: Works across Claude, ChatGPT, Cursor, VS Code, and other AI-powered applications
+1. **Context Gap**: LLMs need access to current, domain-specific data beyond
+   their training data
+2. **Tool Integration**: Standardized way to expose APIs and operations to AI
+   models
+3. **Vendor Neutrality**: Works across Claude, ChatGPT, Cursor, VS Code, and
+   other AI-powered applications
 
 ### Key Statistics (2025)
 
-- Adopted by **OpenAI** (March 2025) across ChatGPT, Agents SDK, and Responses API
+- Adopted by **OpenAI** (March 2025) across ChatGPT, Agents SDK, and Responses
+  API
 - Supported by **Google DeepMind** (April 2025) in upcoming Gemini models
 - **12,698+** npm packages depend on the TypeScript SDK
 - Official SDKs available in **Python, TypeScript, and Java/Kotlin**
@@ -42,7 +49,8 @@ MCP solves three critical problems:
 
 ### Transport Mechanisms
 
-MCP uses **JSON-RPC 2.0** as its wire format and supports multiple transport mechanisms:
+MCP uses **JSON-RPC 2.0** as its wire format and supports multiple transport
+mechanisms:
 
 #### 1. Standard Input/Output (STDIO)
 
@@ -100,7 +108,8 @@ Server ← SSE Stream ← Client (for notifications)
 
 **Status**: Deprecated in favor of StreamableHTTP
 
-Originally used for remote MCP access but now superseded by the more efficient StreamableHTTP transport.
+Originally used for remote MCP access but now superseded by the more efficient
+StreamableHTTP transport.
 
 ### Message Format
 
@@ -279,7 +288,8 @@ server.setRequestHandler(CallToolRequest, async (request) => {
 2. **Clear Descriptions**: Write descriptions that LLMs can understand
 3. **Strict Schemas**: Use JSON Schema to define exact input/output formats
 4. **Error Handling**: Return meaningful error messages within tool results
-5. **Avoid Proliferation**: Don't create a tool for every API endpoint; group related operations
+5. **Avoid Proliferation**: Don't create a tool for every API endpoint; group
+   related operations
 
 ### Resources: Data Exposure
 
@@ -341,7 +351,8 @@ server.setRequestHandler(
 
 ### Prompts: Instruction Templates
 
-**Purpose**: Provide reusable instruction templates that help users interact with LLMs consistently.
+**Purpose**: Provide reusable instruction templates that help users interact
+with LLMs consistently.
 
 **Definition Pattern**:
 
@@ -367,26 +378,30 @@ const codeReviewPrompt: Prompt = {
 };
 
 // Handle prompt requests
-server.setRequestHandler(GetPromptRequest, async (request: GetPromptRequest) => {
-  if (request.params.name === "code_review") {
-    const { language, code } = request.params.arguments as {
-      language: string;
-      code: string;
-    };
+server.setRequestHandler(
+  GetPromptRequest,
+  async (request: GetPromptRequest) => {
+    if (request.params.name === "code_review") {
+      const { language, code } = request.params.arguments as {
+        language: string;
+        code: string;
+      };
 
-    const messages: PromptMessage[] = [
-      {
-        role: "user",
-        content: `Review this ${language} code for quality, performance, and security:\n\n${code}`,
-      },
-    ];
+      const messages: PromptMessage[] = [
+        {
+          role: "user",
+          content:
+            `Review this ${language} code for quality, performance, and security:\n\n${code}`,
+        },
+      ];
 
-    return {
-      messages: messages,
-    };
-  }
-  throw new Error(`Unknown prompt: ${request.params.name}`);
-});
+      return {
+        messages: messages,
+      };
+    }
+    throw new Error(`Unknown prompt: ${request.params.name}`);
+  },
+);
 ```
 
 **Prompt Design Best Practices**:
@@ -545,7 +560,8 @@ function handleValidationError(error: z.ZodError) {
 
 ### Logging Best Practice
 
-**Critical Rule**: MCP servers must only write JSON-RPC messages to stdout. All logging must go to stderr.
+**Critical Rule**: MCP servers must only write JSON-RPC messages to stdout. All
+logging must go to stderr.
 
 ```typescript
 // Correct: Logging to stderr
@@ -705,7 +721,8 @@ server.setRequestHandler(CallToolRequest, async (request) => {
 
 ### Authorization Pattern: Resource Indicators (2025)
 
-June 2025 MCP spec update introduced Resource Indicators for secure token scoping:
+June 2025 MCP spec update introduced Resource Indicators for secure token
+scoping:
 
 ```typescript
 // Client: Request token for specific resource
@@ -932,7 +949,8 @@ npx @yourorg/mcp-server
 }
 ```
 
-**Security Note**: Executes code directly on host system with full privileges. Only for trusted packages.
+**Security Note**: Executes code directly on host system with full privileges.
+Only for trusted packages.
 
 ### 2. Docker Deployment (Production - Recommended)
 
@@ -1603,18 +1621,21 @@ app.listen(PORT, "127.0.0.1", () => {
 
 Building production-ready MCP servers requires attention to:
 
-1. **Protocol Compliance**: Use the MCP Inspector to validate schemas and message formats
-2. **Security First**: Implement multi-layer validation, authentication, and authorization
+1. **Protocol Compliance**: Use the MCP Inspector to validate schemas and
+   message formats
+2. **Security First**: Implement multi-layer validation, authentication, and
+   authorization
 3. **Error Handling**: Categorize errors and return safe messages to clients
-4. **Testing**: Unit test tools, integration test workflows, and load test production
+4. **Testing**: Unit test tools, integration test workflows, and load test
+   production
 5. **Monitoring**: Measure latency, throughput, errors, and availability
 6. **Deployment**: Choose appropriate transport (stdio, Streamable HTTP, Docker)
 7. **Documentation**: Provide clear descriptions and examples for tool schemas
 
-By following these best practices, you'll build MCP servers that are secure, performant, and maintainable for production use.
+By following these best practices, you'll build MCP servers that are secure,
+performant, and maintainable for production use.
 
 ---
 
-**Last Updated**: December 2025
-**Framework**: MCP Specification 2025-06-18
+**Last Updated**: December 2025 **Framework**: MCP Specification 2025-06-18
 **SDK Versions**: TypeScript SDK v1.18.1+

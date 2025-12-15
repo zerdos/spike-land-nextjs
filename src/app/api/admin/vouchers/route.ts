@@ -45,7 +45,11 @@ export async function GET() {
       expiresAt: Date | null;
       status: VoucherStatus;
       createdAt: Date;
-      redemptions: { userId: string; tokensGranted: number; redeemedAt: Date; }[];
+      redemptions: {
+        userId: string;
+        tokensGranted: number;
+        redeemedAt: Date;
+      }[];
     };
     return NextResponse.json({
       vouchers: vouchers.map((v: VoucherItem) => ({
@@ -95,7 +99,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!Object.values(VoucherType).includes(type)) {
-      return NextResponse.json({ error: "Invalid voucher type" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid voucher type" }, {
+        status: 400,
+      });
     }
 
     // Check if code already exists

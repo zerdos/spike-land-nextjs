@@ -24,7 +24,9 @@ describe("Error (Root Error Boundary)", () => {
     render(<ErrorPage error={mockError} reset={mockReset} />);
 
     expect(screen.getByText("Something went wrong!")).toBeInTheDocument();
-    expect(screen.getByText("We encountered an unexpected error. Please try again."))
+    expect(
+      screen.getByText("We encountered an unexpected error. Please try again."),
+    )
       .toBeInTheDocument();
     expect(screen.getByText("Test error message")).toBeInTheDocument();
   });
@@ -39,7 +41,8 @@ describe("Error (Root Error Boundary)", () => {
     const emptyError = new Error("");
     render(<ErrorPage error={emptyError} reset={mockReset} />);
 
-    expect(screen.getByText("An unexpected error occurred")).toBeInTheDocument();
+    expect(screen.getByText("An unexpected error occurred"))
+      .toBeInTheDocument();
   });
 
   it("should call reset when Try again button is clicked", async () => {
@@ -105,7 +108,9 @@ describe("Error (Root Error Boundary)", () => {
   });
 
   it("should render within a card component", () => {
-    const { container } = render(<ErrorPage error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <ErrorPage error={mockError} reset={mockReset} />,
+    );
 
     // Check for card structure
     expect(container.querySelector(".flex.min-h-screen")).toBeInTheDocument();
@@ -119,7 +124,9 @@ describe("Error (Root Error Boundary)", () => {
   });
 
   it("should re-log error if error changes", () => {
-    const { rerender } = render(<ErrorPage error={mockError} reset={mockReset} />);
+    const { rerender } = render(
+      <ErrorPage error={mockError} reset={mockReset} />,
+    );
 
     expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
 
@@ -137,9 +144,13 @@ describe("Error (Root Error Boundary)", () => {
   });
 
   it("should center content on screen", () => {
-    const { container } = render(<ErrorPage error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <ErrorPage error={mockError} reset={mockReset} />,
+    );
 
-    const wrapper = container.querySelector(".flex.min-h-screen.items-center.justify-center");
+    const wrapper = container.querySelector(
+      ".flex.min-h-screen.items-center.justify-center",
+    );
     expect(wrapper).toBeInTheDocument();
   });
 

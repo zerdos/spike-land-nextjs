@@ -52,7 +52,10 @@ describe("opengraph-image", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...originalEnv, CLOUDFLARE_R2_PUBLIC_URL: "https://r2.example.com" };
+    process.env = {
+      ...originalEnv,
+      CLOUDFLARE_R2_PUBLIC_URL: "https://r2.example.com",
+    };
   });
 
   afterEach(() => {
@@ -83,7 +86,9 @@ describe("opengraph-image", () => {
 
   describe("isAllowedImageUrl", () => {
     it("returns true for URLs starting with R2 public URL", () => {
-      expect(isAllowedImageUrl("https://r2.example.com/images/test.jpg")).toBe(true);
+      expect(isAllowedImageUrl("https://r2.example.com/images/test.jpg")).toBe(
+        true,
+      );
     });
 
     it("returns false for external URLs", () => {
@@ -92,11 +97,17 @@ describe("opengraph-image", () => {
 
     it("returns false when R2 public URL is not configured", () => {
       delete process.env.CLOUDFLARE_R2_PUBLIC_URL;
-      expect(isAllowedImageUrl("https://r2.example.com/images/test.jpg")).toBe(false);
+      expect(isAllowedImageUrl("https://r2.example.com/images/test.jpg")).toBe(
+        false,
+      );
     });
 
     it("returns false for URLs that contain but don't start with R2 URL", () => {
-      expect(isAllowedImageUrl("https://evil.com/redirect?url=https://r2.example.com/test.jpg"))
+      expect(
+        isAllowedImageUrl(
+          "https://evil.com/redirect?url=https://r2.example.com/test.jpg",
+        ),
+      )
         .toBe(false);
     });
   });
@@ -178,7 +189,9 @@ describe("opengraph-image", () => {
           },
         ],
       };
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithExternalUrl);
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(
+        imageWithExternalUrl,
+      );
 
       const params = Promise.resolve({ token: "abc123" });
       const result = await Image({ params });
@@ -188,7 +201,9 @@ describe("opengraph-image", () => {
     });
 
     it("returns fallback when database query fails", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrisma.enhancedImage.findUnique.mockRejectedValue(
         new Error("Database connection failed"),
       );
@@ -223,7 +238,9 @@ describe("opengraph-image", () => {
         ...mockImage,
         enhancementJobs: [],
       };
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithOnlyOriginal);
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(
+        imageWithOnlyOriginal,
+      );
 
       const params = Promise.resolve({ token: "abc123" });
       const result = await Image({ params });
@@ -237,7 +254,9 @@ describe("opengraph-image", () => {
         ...mockImage,
         originalUrl: null,
       };
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithOnlyEnhanced);
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(
+        imageWithOnlyEnhanced,
+      );
 
       const params = Promise.resolve({ token: "abc123" });
       const result = await Image({ params });

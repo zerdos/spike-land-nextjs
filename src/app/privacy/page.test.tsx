@@ -18,7 +18,8 @@ describe("Privacy Policy Page", () => {
 
     it("should display the legal disclaimer", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/This is a template for informational purposes/)).toBeInTheDocument();
+      expect(screen.getByText(/This is a template for informational purposes/))
+        .toBeInTheDocument();
     });
 
     it("should render the table of contents card", () => {
@@ -68,17 +69,23 @@ describe("Privacy Policy Page", () => {
   describe("Data Collection Section", () => {
     it("should explain account information collection", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Email, name, and profile image/)).toBeInTheDocument();
+      expect(screen.getByText(/Email, name, and profile image/))
+        .toBeInTheDocument();
     });
 
     it("should mention OAuth providers", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/from OAuth providers like Google or GitHub/)).toBeInTheDocument();
+      expect(screen.getByText(/from OAuth providers like Google or GitHub/))
+        .toBeInTheDocument();
     });
 
     it("should explain image collection", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Original and enhanced images uploaded for processing/))
+      expect(
+        screen.getByText(
+          /Original and enhanced images uploaded for processing/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -96,15 +103,20 @@ describe("Privacy Policy Page", () => {
 
     it("should list what is NOT collected", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Images are NOT used for AI model training/)).toBeInTheDocument();
-      expect(screen.getByText(/No biometric or facial recognition data extracted/))
+      expect(screen.getByText(/Images are NOT used for AI model training/))
         .toBeInTheDocument();
-      expect(screen.getByText(/No EXIF metadata retained from images/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/No biometric or facial recognition data extracted/),
+      )
+        .toBeInTheDocument();
+      expect(screen.getByText(/No EXIF metadata retained from images/))
+        .toBeInTheDocument();
     });
 
     it("should mention EXIF stripping", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/automatically stripped on upload/)).toBeInTheDocument();
+      expect(screen.getByText(/automatically stripped on upload/))
+        .toBeInTheDocument();
     });
   });
 
@@ -130,21 +142,29 @@ describe("Privacy Policy Page", () => {
 
     it("should explain image cleanup process", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Images inactive for 90 days are automatically deleted/))
+      expect(
+        screen.getByText(
+          /Images inactive for 90 days are automatically deleted/,
+        ),
+      )
         .toBeInTheDocument();
       expect(screen.getByText(/Warning email sent/)).toBeInTheDocument();
     });
 
     it("should explain account deletion process", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Immediate \(within 24 hours\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Immediate \(within 24 hours\)/))
+        .toBeInTheDocument();
       expect(screen.getByText(/Within 30 days/)).toBeInTheDocument();
-      expect(screen.getByText(/Session tokens invalidated/)).toBeInTheDocument();
+      expect(screen.getByText(/Session tokens invalidated/))
+        .toBeInTheDocument();
     });
 
     it("should mention transaction retention for legal reasons", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Transaction records retained \(legal requirement\)/))
+      expect(
+        screen.getByText(/Transaction records retained \(legal requirement\)/),
+      )
         .toBeInTheDocument();
     });
   });
@@ -153,25 +173,30 @@ describe("Privacy Policy Page", () => {
     it("should list GDPR Article 15 right of access", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Right of Access/)).toBeInTheDocument();
-      expect(screen.getByText(/can request a copy of all personal data/)).toBeInTheDocument();
+      expect(screen.getByText(/can request a copy of all personal data/))
+        .toBeInTheDocument();
     });
 
     it("should list GDPR Article 16 right to rectification", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Right to Rectification/)).toBeInTheDocument();
-      expect(screen.getByText(/correction of inaccurate personal data/)).toBeInTheDocument();
+      expect(screen.getByText(/correction of inaccurate personal data/))
+        .toBeInTheDocument();
     });
 
     it("should list GDPR Article 17 right to erasure", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Right to Erasure/)).toBeInTheDocument();
-      expect(screen.getByText(/deletion of your personal data/)).toBeInTheDocument();
+      expect(screen.getByText(/deletion of your personal data/))
+        .toBeInTheDocument();
     });
 
     it("should list GDPR Article 18 right to restrict processing", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Right to Restrict Processing/)).toBeInTheDocument();
-      expect(screen.getByText(/limit how we use your data/)).toBeInTheDocument();
+      expect(screen.getByText(/Right to Restrict Processing/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/limit how we use your data/))
+        .toBeInTheDocument();
     });
 
     it("should list GDPR Article 20 right to portability", () => {
@@ -183,7 +208,8 @@ describe("Privacy Policy Page", () => {
     it("should list GDPR Article 21 right to object", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Right to Object/)).toBeInTheDocument();
-      expect(screen.getByText(/object to processing of your data/)).toBeInTheDocument();
+      expect(screen.getByText(/object to processing of your data/))
+        .toBeInTheDocument();
     });
 
     it("should provide privacy contact email", () => {
@@ -194,13 +220,15 @@ describe("Privacy Policy Page", () => {
 
     it("should specify 30-day response time", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/will respond to your request within 30 days/)).toBeInTheDocument();
+      expect(screen.getByText(/will respond to your request within 30 days/))
+        .toBeInTheDocument();
     });
 
     it("should explain CCPA rights", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/California Privacy Rights/)).toBeInTheDocument();
-      expect(screen.getByText(/California residents have the right/)).toBeInTheDocument();
+      expect(screen.getByText(/California residents have the right/))
+        .toBeInTheDocument();
       expect(screen.getByText(/do not sell personal data/)).toBeInTheDocument();
     });
 
@@ -218,13 +246,15 @@ describe("Privacy Policy Page", () => {
     it("should explain Google Gemini API usage", () => {
       render(<PrivacyPage />);
       expect(screen.getByText("Google Gemini API")).toBeInTheDocument();
-      expect(screen.getByText(/AI image enhancement processing/)).toBeInTheDocument();
+      expect(screen.getByText(/AI image enhancement processing/))
+        .toBeInTheDocument();
       expect(screen.getByText(/Image bytes only/)).toBeInTheDocument();
     });
 
     it("should mention user consent for Gemini", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/you consent to this processing/)).toBeInTheDocument();
+      expect(screen.getByText(/you consent to this processing/))
+        .toBeInTheDocument();
     });
 
     it("should explain Stripe usage", () => {
@@ -254,13 +284,15 @@ describe("Privacy Policy Page", () => {
     it("should explain Neon database", () => {
       render(<PrivacyPage />);
       expect(screen.getByText("Neon PostgreSQL")).toBeInTheDocument();
-      expect(screen.getByText(/User account and transaction database/)).toBeInTheDocument();
+      expect(screen.getByText(/User account and transaction database/))
+        .toBeInTheDocument();
     });
 
     it("should mention Vercel hosting", () => {
       render(<PrivacyPage />);
       expect(screen.getByText("Vercel")).toBeInTheDocument();
-      expect(screen.getByText(/Application hosting and deployment/)).toBeInTheDocument();
+      expect(screen.getByText(/Application hosting and deployment/))
+        .toBeInTheDocument();
     });
 
     it("should explain DPA compliance", () => {
@@ -276,26 +308,30 @@ describe("Privacy Policy Page", () => {
     it("should explain TLS encryption", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/TLS 1\.3/)).toBeInTheDocument();
-      expect(screen.getByText(/All data in transit encrypted/)).toBeInTheDocument();
+      expect(screen.getByText(/All data in transit encrypted/))
+        .toBeInTheDocument();
     });
 
     it("should explain AES-256 encryption", () => {
       render(<PrivacyPage />);
       const aesElements = screen.getAllByText(/AES-256/);
       expect(aesElements.length).toBeGreaterThan(0);
-      expect(screen.getByText(/All data at rest encrypted/)).toBeInTheDocument();
+      expect(screen.getByText(/All data at rest encrypted/))
+        .toBeInTheDocument();
     });
 
     it("should explain OAuth authentication", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/OAuth 2\.0/)).toBeInTheDocument();
-      expect(screen.getByText(/Secure authentication with providers/)).toBeInTheDocument();
+      expect(screen.getByText(/Secure authentication with providers/))
+        .toBeInTheDocument();
     });
 
     it("should explain JWT token usage", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/JWT Tokens/)).toBeInTheDocument();
-      expect(screen.getByText(/Signed and encrypted session tokens/)).toBeInTheDocument();
+      expect(screen.getByText(/Signed and encrypted session tokens/))
+        .toBeInTheDocument();
     });
 
     it("should mention rate limiting", () => {
@@ -315,9 +351,12 @@ describe("Privacy Policy Page", () => {
     it("should explain organizational security measures", () => {
       render(<PrivacyPage />);
       expect(screen.getByText("Organizational Security")).toBeInTheDocument();
-      expect(screen.getByText(/Access control and role-based permissions/)).toBeInTheDocument();
-      expect(screen.getByText(/Audit logging of all administrative actions/)).toBeInTheDocument();
-      expect(screen.getByText(/72-hour data breach notification/)).toBeInTheDocument();
+      expect(screen.getByText(/Access control and role-based permissions/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Audit logging of all administrative actions/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/72-hour data breach notification/))
+        .toBeInTheDocument();
     });
 
     it("should display rate limiting policy table", () => {
@@ -333,27 +372,40 @@ describe("Privacy Policy Page", () => {
   describe("Children's Privacy Section", () => {
     it("should state age restriction", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/not intended for children under 13 years of age/))
+      expect(
+        screen.getByText(/not intended for children under 13 years of age/),
+      )
         .toBeInTheDocument();
     });
 
     it("should state children data not collected knowingly", () => {
       render(<PrivacyPage />);
       expect(
-        screen.getByText(/do not knowingly collect personal information from children under 13/),
+        screen.getByText(
+          /do not knowingly collect personal information from children under 13/,
+        ),
       ).toBeInTheDocument();
     });
 
     it("should provide contact for child account deletion", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/If you believe a child under 13 has created an account/))
+      expect(
+        screen.getByText(
+          /If you believe a child under 13 has created an account/,
+        ),
+      )
         .toBeInTheDocument();
-      expect(screen.getByText(/delete the account within 30 days/)).toBeInTheDocument();
+      expect(screen.getByText(/delete the account within 30 days/))
+        .toBeInTheDocument();
     });
 
     it("should require user age confirmation", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/you are at least 13 years old or have parental consent/))
+      expect(
+        screen.getByText(
+          /you are at least 13 years old or have parental consent/,
+        ),
+      )
         .toBeInTheDocument();
     });
   });
@@ -361,7 +413,9 @@ describe("Privacy Policy Page", () => {
   describe("Contact Section", () => {
     it("should display privacy contact email link", () => {
       render(<PrivacyPage />);
-      const emailLinks = screen.getAllByRole("link", { name: /hello@spike\.land/ });
+      const emailLinks = screen.getAllByRole("link", {
+        name: /hello@spike\.land/,
+      });
       expect(emailLinks.length).toBeGreaterThan(0);
     });
 
@@ -373,7 +427,9 @@ describe("Privacy Policy Page", () => {
     it("should mention GDPR Article 30 compliance", () => {
       render(<PrivacyPage />);
       expect(
-        screen.getByText(/maintain records of our data processing activities per GDPR Article 30/),
+        screen.getByText(
+          /maintain records of our data processing activities per GDPR Article 30/,
+        ),
       ).toBeInTheDocument();
     });
 
@@ -387,19 +443,24 @@ describe("Privacy Policy Page", () => {
 
     it("should provide FTC link for US complaints", () => {
       render(<PrivacyPage />);
-      const ftcLink = screen.getByRole("link", { name: /Federal Trade Commission \(FTC\)/ });
+      const ftcLink = screen.getByRole("link", {
+        name: /Federal Trade Commission \(FTC\)/,
+      });
       expect(ftcLink).toHaveAttribute("href", "https://www.ftc.gov");
     });
 
     it("should mention EU local authorities", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/Your local Data Protection Authority/)).toBeInTheDocument();
+      expect(screen.getByText(/Your local Data Protection Authority/))
+        .toBeInTheDocument();
     });
 
     it("should explain policy update notification", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/may update this privacy policy/)).toBeInTheDocument();
-      expect(screen.getByText(/notify you of material changes via email/)).toBeInTheDocument();
+      expect(screen.getByText(/may update this privacy policy/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/notify you of material changes via email/))
+        .toBeInTheDocument();
     });
   });
 
@@ -411,12 +472,14 @@ describe("Privacy Policy Page", () => {
 
     it("should state this is a template", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/template for informational purposes only/)).toBeInTheDocument();
+      expect(screen.getByText(/template for informational purposes only/))
+        .toBeInTheDocument();
     });
 
     it("should recommend legal consultation", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/consult with a qualified attorney/)).toBeInTheDocument();
+      expect(screen.getByText(/consult with a qualified attorney/))
+        .toBeInTheDocument();
     });
 
     it("should mention privacy laws complexity", () => {
@@ -435,10 +498,14 @@ describe("Privacy Policy Page", () => {
 
     it("should link to all major sections", () => {
       const { container } = render(<PrivacyPage />);
-      expect(container.querySelector('a[href="#introduction"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#data-collection"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#data-storage"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#user-rights"]')).toBeInTheDocument();
+      expect(container.querySelector('a[href="#introduction"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#data-collection"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#data-storage"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#user-rights"]'))
+        .toBeInTheDocument();
     });
 
     it("should have section IDs matching anchor links", () => {
@@ -472,7 +539,8 @@ describe("Privacy Policy Page", () => {
 
     it("should cover data breach notification", () => {
       render(<PrivacyPage />);
-      expect(screen.getByText(/72-hour data breach notification/)).toBeInTheDocument();
+      expect(screen.getByText(/72-hour data breach notification/))
+        .toBeInTheDocument();
     });
 
     it("should cover DPA requirements", () => {

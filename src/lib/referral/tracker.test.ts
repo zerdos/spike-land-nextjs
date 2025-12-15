@@ -33,7 +33,9 @@ const mockCookieStore = {
 describe("Referral Tracker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(cookies).mockResolvedValue(mockCookieStore as unknown as ReturnType<typeof cookies>);
+    vi.mocked(cookies).mockResolvedValue(
+      mockCookieStore as unknown as ReturnType<typeof cookies>,
+    );
   });
 
   afterEach(() => {
@@ -123,7 +125,9 @@ describe("Referral Tracker", () => {
       const { getUserByReferralCode } = await import("./code-generator");
       vi.mocked(getUserByReferralCode).mockResolvedValue("referrer-123");
 
-      vi.mocked(prisma.user.update).mockResolvedValue({ id: "user-456" } as never);
+      vi.mocked(prisma.user.update).mockResolvedValue(
+        { id: "user-456" } as never,
+      );
       vi.mocked(prisma.referral.create).mockResolvedValue({
         id: "ref-789",
         referrerId: "referrer-123",
@@ -131,7 +135,10 @@ describe("Referral Tracker", () => {
         status: "PENDING",
       } as never);
 
-      const result = await tracker.linkReferralOnSignup("user-456", "127.0.0.1");
+      const result = await tracker.linkReferralOnSignup(
+        "user-456",
+        "127.0.0.1",
+      );
 
       expect(result.success).toBe(true);
       expect(result.referrerId).toBe("referrer-123");

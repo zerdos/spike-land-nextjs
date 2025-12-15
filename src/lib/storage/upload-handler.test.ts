@@ -1,25 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create shared mock functions using vi.hoisted
-const { mockSharp, mockUploadToR2, mockMetadata, mockResize, mockToBuffer } = vi.hoisted(() => {
-  const mockMetadata = vi.fn();
-  const mockResize = vi.fn();
-  const mockToBuffer = vi.fn();
-  const mockUploadToR2 = vi.fn();
+const { mockSharp, mockUploadToR2, mockMetadata, mockResize, mockToBuffer } = vi
+  .hoisted(() => {
+    const mockMetadata = vi.fn();
+    const mockResize = vi.fn();
+    const mockToBuffer = vi.fn();
+    const mockUploadToR2 = vi.fn();
 
-  const mockSharp = vi.fn(() => ({
-    metadata: mockMetadata,
-    resize: mockResize,
-    toBuffer: mockToBuffer,
-  }));
+    const mockSharp = vi.fn(() => ({
+      metadata: mockMetadata,
+      resize: mockResize,
+      toBuffer: mockToBuffer,
+    }));
 
-  // Set up chainable methods
-  mockResize.mockReturnValue({
-    toBuffer: mockToBuffer,
+    // Set up chainable methods
+    mockResize.mockReturnValue({
+      toBuffer: mockToBuffer,
+    });
+
+    return {
+      mockSharp,
+      mockUploadToR2,
+      mockMetadata,
+      mockResize,
+      mockToBuffer,
+    };
   });
-
-  return { mockSharp, mockUploadToR2, mockMetadata, mockResize, mockToBuffer };
-});
 
 // Mock crypto
 vi.mock("crypto", () => ({
@@ -96,7 +103,9 @@ describe("upload-handler", () => {
     });
 
     it("should validate File object within size limit", () => {
-      const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
+      const file = new File(["test content"], "test.jpg", {
+        type: "image/jpeg",
+      });
       const result = validateImageFile(file);
 
       expect(result.valid).toBe(true);
@@ -106,7 +115,9 @@ describe("upload-handler", () => {
     it("should reject File object exceeding size limit", () => {
       // Create a buffer that exceeds 1MB limit
       const largeContent = "x".repeat(2 * 1024 * 1024); // 2MB
-      const file = new File([largeContent], "large.jpg", { type: "image/jpeg" });
+      const file = new File([largeContent], "large.jpg", {
+        type: "image/jpeg",
+      });
       const result = validateImageFile(file, 1 * 1024 * 1024); // 1MB limit
 
       expect(result.valid).toBe(false);
@@ -144,7 +155,9 @@ describe("upload-handler", () => {
 
       expect(result.success).toBe(true);
       expect(result.imageId).toBe("test-uuid-12345");
-      expect(result.r2Key).toBe("users/user-123/originals/test-uuid-12345.jpeg");
+      expect(result.r2Key).toBe(
+        "users/user-123/originals/test-uuid-12345.jpeg",
+      );
       expect(result.width).toBe(1920);
       expect(result.height).toBe(1080);
       expect(result.format).toBe("jpeg");
@@ -565,7 +578,9 @@ describe("upload-handler", () => {
         userId: "special-user",
       });
 
-      expect(result.r2Key).toBe("users/special-user/originals/test-uuid-12345.jpeg");
+      expect(result.r2Key).toBe(
+        "users/special-user/originals/test-uuid-12345.jpeg",
+      );
     });
   });
 });

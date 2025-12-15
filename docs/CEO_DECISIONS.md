@@ -1,6 +1,8 @@
 # CEO Decisions - Spike Land Platform
 
-> **Purpose**: This document records strategic decisions made by the CEO (Zoltan Erdos) for the Spike Land platform. These decisions guide development priorities, technology choices, and business direction.
+> **Purpose**: This document records strategic decisions made by the CEO (Zoltan
+> Erdos) for the Spike Land platform. These decisions guide development
+> priorities, technology choices, and business direction.
 
 ---
 
@@ -10,12 +12,11 @@
 
 #### DEC-001: No Sentry in Tech Stack
 
-**Decision Date**: December 11, 2025
-**Decision Maker**: Zoltan Erdos (CEO)
+**Decision Date**: December 11, 2025 **Decision Maker**: Zoltan Erdos (CEO)
 **Status**: ACTIVE
 
-**Decision**:
-Sentry shall NOT be included in the Spike Land tech stack for error tracking and monitoring.
+**Decision**: Sentry shall NOT be included in the Spike Land tech stack for
+error tracking and monitoring.
 
 **Rationale**:
 
@@ -26,7 +27,8 @@ Sentry shall NOT be included in the Spike Land tech stack for error tracking and
 
 **Impact**:
 
-- Error tracking to use alternative approaches (Vercel Analytics, structured logging)
+- Error tracking to use alternative approaches (Vercel Analytics, structured
+  logging)
 - Remove all Sentry references from documentation and code
 - Update environment variable examples to exclude SENTRY_DSN
 
@@ -43,12 +45,12 @@ Sentry shall NOT be included in the Spike Land tech stack for error tracking and
 
 #### DEC-002: Gemini Model for Image Enhancement
 
-**Decision Date**: December 11, 2025
-**Decision Maker**: Zoltan Erdos (CEO)
+**Decision Date**: December 11, 2025 **Decision Maker**: Zoltan Erdos (CEO)
 **Status**: ACTIVE
 
-**Decision**:
-The official AI model for image enhancement in Pixel is `gemini-3-pro-image-preview`. This model name is confirmed correct and exists in the Google Gemini API.
+**Decision**: The official AI model for image enhancement in Pixel is
+`gemini-3-pro-image-preview`. This model name is confirmed correct and exists in
+the Google Gemini API.
 
 **Rationale**:
 
@@ -93,9 +95,12 @@ _(None recorded yet)_
 
 ## How to Use This Document
 
-1. **New Decisions**: Add new entries under the current month with incrementing IDs
-2. **Format**: Use the template structure (Decision Date, Decision Maker, Status, Rationale, Impact)
-3. **Updates**: If a decision is superseded, change status to SUPERSEDED and reference new decision
+1. **New Decisions**: Add new entries under the current month with incrementing
+   IDs
+2. **Format**: Use the template structure (Decision Date, Decision Maker,
+   Status, Rationale, Impact)
+3. **Updates**: If a decision is superseded, change status to SUPERSEDED and
+   reference new decision
 4. **Review**: Decisions should be reviewed quarterly for relevance
 
 ---
@@ -105,12 +110,10 @@ _(None recorded yet)_
 ```markdown
 #### DEC-XXX: [Decision Title]
 
-**Decision Date**: [Date]
-**Decision Maker**: [Name] ([Role])
-**Status**: ACTIVE | SUPERSEDED | UNDER_REVIEW
+**Decision Date**: [Date] **Decision Maker**: [Name] ([Role]) **Status**: ACTIVE
+| SUPERSEDED | UNDER_REVIEW
 
-**Decision**:
-[Clear statement of what was decided]
+**Decision**: [Clear statement of what was decided]
 
 **Rationale**:
 
@@ -130,6 +133,5 @@ _(None recorded yet)_
 
 ---
 
-**Document Owner**: Zoltan Erdos (CEO)
-**Last Updated**: December 11, 2025
+**Document Owner**: Zoltan Erdos (CEO) **Last Updated**: December 11, 2025
 **Version**: 1.0

@@ -128,20 +128,22 @@ const { mockTokenBalanceManager, mockPrisma } = vi.hoisted(() => {
         if (typeof callback === "function") {
           const mockTx = {
             enhancedImage: {
-              create: vi.fn().mockImplementation(({ data }: { data: CreateData; }) => {
-                return Promise.resolve({
-                  id: `img-${data.name}`,
-                  userId: data.userId,
-                  name: data.name,
-                  originalUrl: data.originalUrl,
-                  originalR2Key: data.originalR2Key,
-                  originalWidth: data.originalWidth,
-                  originalHeight: data.originalHeight,
-                  originalSizeBytes: data.originalSizeBytes,
-                  originalFormat: data.originalFormat,
-                  isPublic: data.isPublic,
-                });
-              }),
+              create: vi.fn().mockImplementation(
+                ({ data }: { data: CreateData; }) => {
+                  return Promise.resolve({
+                    id: `img-${data.name}`,
+                    userId: data.userId,
+                    name: data.name,
+                    originalUrl: data.originalUrl,
+                    originalR2Key: data.originalR2Key,
+                    originalWidth: data.originalWidth,
+                    originalHeight: data.originalHeight,
+                    originalSizeBytes: data.originalSizeBytes,
+                    originalFormat: data.originalFormat,
+                    isPublic: data.isPublic,
+                  });
+                },
+              ),
             },
             albumImage: {
               create: vi.fn().mockResolvedValue({}),
@@ -193,7 +195,10 @@ function createMockFile(name = "test.jpg", type = "image/jpeg", size = 1024) {
     size,
     arrayBuffer: () =>
       Promise.resolve(
-        buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+        buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength,
+        ),
       ),
   };
 }
@@ -201,7 +206,10 @@ function createMockFile(name = "test.jpg", type = "image/jpeg", size = 1024) {
 type MockFile = ReturnType<typeof createMockFile>;
 
 // Helper to create a mock request with formData including albumId
-function createMockRequest(files: MockFile[], albumId = "album-123"): NextRequest {
+function createMockRequest(
+  files: MockFile[],
+  albumId = "album-123",
+): NextRequest {
   const req = new NextRequest("http://localhost/api/images/batch-upload", {
     method: "POST",
   });
@@ -300,7 +308,10 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should return 400 if more than 20 files provided", async () => {
-    const files = Array.from({ length: 21 }, (_, i) => createMockFile(`test${i}.jpg`));
+    const files = Array.from(
+      { length: 21 },
+      (_, i) => createMockFile(`test${i}.jpg`),
+    );
     const req = createMockRequest(files);
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -384,7 +395,9 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should handle partial upload failure", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage)
       .mockResolvedValueOnce({
@@ -424,7 +437,9 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should refund tokens when all R2 uploads fail", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage).mockResolvedValue({
       success: false,
@@ -453,7 +468,10 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should accept exactly 20 files", async () => {
-    const files = Array.from({ length: 20 }, (_, i) => createMockFile(`test${i}.jpg`));
+    const files = Array.from(
+      { length: 20 },
+      (_, i) => createMockFile(`test${i}.jpg`),
+    );
     const req = createMockRequest(files);
     const res = await POST(req);
     const data = await res.json();
@@ -464,7 +482,9 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should handle database transaction failure", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
     vi.mocked(processAndUploadImage).mockResolvedValue({
       success: true,
       url: "https://r2.dev/images/test.jpg",
@@ -493,7 +513,9 @@ describe("POST /api/images/batch-upload", () => {
 
   it("should rollback R2 uploads when database transaction fails", async () => {
     const { deleteFromR2 } = await import("@/lib/storage/r2-client");
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage)
       .mockResolvedValueOnce({
@@ -517,19 +539,27 @@ describe("POST /api/images/batch-upload", () => {
         imageId: "img-2",
       });
 
-    mockPrisma.$transaction.mockRejectedValueOnce(new Error("Database transaction failed"));
+    mockPrisma.$transaction.mockRejectedValueOnce(
+      new Error("Database transaction failed"),
+    );
 
     const files = [createMockFile("test1.jpg"), createMockFile("test2.jpg")];
     const req = createMockRequest(files);
     await POST(req);
 
     expect(deleteFromR2).toHaveBeenCalledTimes(2);
-    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test1.jpg");
-    expect(deleteFromR2).toHaveBeenCalledWith("users/user-123/originals/test2.jpg");
+    expect(deleteFromR2).toHaveBeenCalledWith(
+      "users/user-123/originals/test1.jpg",
+    );
+    expect(deleteFromR2).toHaveBeenCalledWith(
+      "users/user-123/originals/test2.jpg",
+    );
   });
 
   it("should not call transaction when all files fail upload", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage).mockResolvedValue({
       success: false,
@@ -551,7 +581,9 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should return partial success when some files upload successfully", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage)
       .mockResolvedValueOnce({
@@ -602,7 +634,9 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should handle individual file upload failures gracefully", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
 
     vi.mocked(processAndUploadImage)
       .mockResolvedValueOnce({

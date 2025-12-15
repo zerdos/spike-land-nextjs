@@ -2,17 +2,26 @@
 
 ## Issue
 
-When dual camera mode was enabled on the client, only one camera feed would show up on the display instead of both front and back camera feeds.
+When dual camera mode was enabled on the client, only one camera feed would show
+up on the display instead of both front and back camera feeds.
 
 ## Root Cause
 
-The client page was creating two separate MediaConnection calls to the display using the **same PeerJS instance**. Both calls had the same `call.peer` ID since they originated from the same Peer.
+The client page was creating two separate MediaConnection calls to the display
+using the **same PeerJS instance**. Both calls had the same `call.peer` ID since
+they originated from the same Peer.
 
-On the display page (`src/app/display/page.tsx` lines 82-85), when a new stream arrived, it checked if a stream with that `call.peer` ID already existed. If it did, the new stream was skipped. This meant when the second camera tried to connect, it was rejected because the display thought it was a duplicate connection from the same peer.
+On the display page (`src/app/display/page.tsx` lines 82-85), when a new stream
+arrived, it checked if a stream with that `call.peer` ID already existed. If it
+did, the new stream was skipped. This meant when the second camera tried to
+connect, it was rejected because the display thought it was a duplicate
+connection from the same peer.
 
 ## Solution
 
-Implemented **separate Peer instances** for each camera (front and back). This ensures each stream has a unique peer ID, allowing the display to correctly identify and accept both connections.
+Implemented **separate Peer instances** for each camera (front and back). This
+ensures each stream has a unique peer ID, allowing the display to correctly
+identify and accept both connections.
 
 ## Changes Made
 
@@ -38,23 +47,29 @@ const backPeerRef = useRef<Peer | null>(null);
 **Before:**
 
 ```typescript
-const createCameraCall = useCallback((stream: MediaStream, cameraType: "front" | "back") => {
-  if (!peerRef.current || !displayId) return null;
-  const call = peerRef.current.call(displayId, stream);
-  // ...
-}, [displayId]);
+const createCameraCall = useCallback(
+  (stream: MediaStream, cameraType: "front" | "back") => {
+    if (!peerRef.current || !displayId) return null;
+    const call = peerRef.current.call(displayId, stream);
+    // ...
+  },
+  [displayId],
+);
 ```
 
 **After:**
 
 ```typescript
-const createCameraCall = useCallback((stream: MediaStream, cameraType: "front" | "back") => {
-  const peerRef = cameraType === "front" ? frontPeerRef : backPeerRef;
+const createCameraCall = useCallback(
+  (stream: MediaStream, cameraType: "front" | "back") => {
+    const peerRef = cameraType === "front" ? frontPeerRef : backPeerRef;
 
-  if (!peerRef.current || !displayId) return null;
-  const call = peerRef.current.call(displayId, stream);
-  // ...
-}, [displayId]);
+    if (!peerRef.current || !displayId) return null;
+    const call = peerRef.current.call(displayId, stream);
+    // ...
+  },
+  [displayId],
+);
 ```
 
 #### 3. Revised Peer Initialization (Lines 211-396)
@@ -67,8 +82,10 @@ const createCameraCall = useCallback((stream: MediaStream, cameraType: "front" |
 
 **After:**
 
-- **Dual Camera Mode**: Creates two separate Peer instances (frontPeer and backPeer) with unique IDs
-  - Assigns `frontPeerRef.current = frontPeer` and `backPeerRef.current = backPeer`
+- **Dual Camera Mode**: Creates two separate Peer instances (frontPeer and
+  backPeer) with unique IDs
+  - Assigns `frontPeerRef.current = frontPeer` and
+    `backPeerRef.current = backPeer`
   - Waits for both peers to open before initializing cameras
   - Uses a counter (`peersInitialized`) to track when both are ready
 
@@ -109,12 +126,14 @@ if (backPeerRef.current) {
 4. Both peers register event listeners for `'open'` events
 5. Once both peers are ready (counter reaches 2), cameras are initialized
 6. Each camera creates a MediaConnection call using its own Peer instance
-7. Display receives two connections with unique peer IDs and can distinguish between them
+7. Display receives two connections with unique peer IDs and can distinguish
+   between them
 
 ### Single Camera Mode Flow:
 
 1. User has single camera mode (default)
-2. One Peer instance is created and assigned to the appropriate ref based on camera preference
+2. One Peer instance is created and assigned to the appropriate ref based on
+   camera preference
 3. Camera initializes when peer is ready
 4. Maintains backward compatibility with existing behavior
 

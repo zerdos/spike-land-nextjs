@@ -1,12 +1,15 @@
 # Image Enhancement App - Vision Document
 
-> **Note**: This document is only editable by the project owner or upon explicit request.
+> **Note**: This document is only editable by the project owner or upon explicit
+> request.
 
 ---
 
 ## Overview
 
-The Image Enhancement App is an AI-powered platform that allows users to upload photos and albums, enhance their quality using advanced AI models, and compare/export the improved versions.
+The Image Enhancement App is an AI-powered platform that allows users to upload
+photos and albums, enhance their quality using advanced AI models, and
+compare/export the improved versions.
 
 ---
 
@@ -16,10 +19,13 @@ The Image Enhancement App is an AI-powered platform that allows users to upload 
 
 The Image Enhancement App serves multiple roles within the Spike Land ecosystem:
 
-1. **Showcase Application**: Demonstrates platform capabilities to visitors, showing what AI-powered apps can achieve
-2. **Template App**: Can be forked by users in Phase 3 to create specialized variations (e.g., portrait-focused, product photography)
+1. **Showcase Application**: Demonstrates platform capabilities to visitors,
+   showing what AI-powered apps can achieve
+2. **Template App**: Can be forked by users in Phase 3 to create specialized
+   variations (e.g., portrait-focused, product photography)
 3. **Revenue Generator**: Generates platform revenue through token sales
-4. **Technical Reference**: Provides integration patterns for future apps built on the platform
+4. **Technical Reference**: Provides integration patterns for future apps built
+   on the platform
 
 ### Integration with Existing Infrastructure
 
@@ -37,7 +43,9 @@ The Image Enhancement App serves multiple roles within the Spike Land ecosystem:
 
 From CLAUDE.md:
 
-> "Spike Land is an innovative platform that democratizes app development by connecting users with AI agents to create, modify, and deploy applications on demand."
+> "Spike Land is an innovative platform that democratizes app development by
+> connecting users with AI agents to create, modify, and deploy applications on
+> demand."
 
 The Image Enhancement App is:
 
@@ -168,7 +176,8 @@ A straightforward referral system focused on growth with minimal fraud risk:
 
 ### Phase 2: Commission-Based (Future)
 
-After validating economics and implementing fraud prevention infrastructure, consider:
+After validating economics and implementing fraud prevention infrastructure,
+consider:
 
 | Model              | Details                 | Risk Level |
 | ------------------ | ----------------------- | ---------- |
@@ -183,7 +192,8 @@ After validating economics and implementing fraud prevention infrastructure, con
 - [ ] Unit economics validation
 - [ ] Legal review of affiliate terms
 
-_Note: Original 30% lifetime commission was reconsidered due to fraud risk and margin impact._
+_Note: Original 30% lifetime commission was reconsidered due to fraud risk and
+margin impact._
 
 ---
 
@@ -191,7 +201,8 @@ _Note: Original 30% lifetime commission was reconsidered due to fraud risk and m
 
 ### Purpose
 
-A dedicated dashboard for monitoring app health, user activity, and debugging issues.
+A dedicated dashboard for monitoring app health, user activity, and debugging
+issues.
 
 ### Features
 
@@ -294,10 +305,14 @@ A dedicated dashboard for monitoring app health, user activity, and debugging is
 
 ## Related Documentation
 
-- [Database Schema](./IMAGE_ENHANCEMENT_SCHEMA.md) - Prisma models and relationships
-- [Implementation Roadmap](./IMAGE_ENHANCEMENT_ROADMAP.md) - Phased development plan
-- [Privacy & Compliance](./IMAGE_ENHANCEMENT_PRIVACY.md) - Data handling and GDPR
-- [Feature Suggestions](./IMAGE_ENHANCEMENT_SUGGESTIONS.md) - Future feature ideas
+- [Database Schema](./IMAGE_ENHANCEMENT_SCHEMA.md) - Prisma models and
+  relationships
+- [Implementation Roadmap](./IMAGE_ENHANCEMENT_ROADMAP.md) - Phased development
+  plan
+- [Privacy & Compliance](./IMAGE_ENHANCEMENT_PRIVACY.md) - Data handling and
+  GDPR
+- [Feature Suggestions](./IMAGE_ENHANCEMENT_SUGGESTIONS.md) - Future feature
+  ideas
 
 ---
 

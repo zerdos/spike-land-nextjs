@@ -16,23 +16,24 @@ import {
 } from "./gemini-client";
 
 // Mock the @google/genai module - Vitest 4: Use vi.hoisted for configurable mock
-const { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent } = vi.hoisted(() => {
-  const mockGenerateContentStream = vi.fn();
-  const mockGenerateContent = vi.fn();
+const { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent } = vi
+  .hoisted(() => {
+    const mockGenerateContentStream = vi.fn();
+    const mockGenerateContent = vi.fn();
 
-  class MockGoogleGenAI {
-    static mock = { instances: [] as MockGoogleGenAI[] };
-    models = {
-      generateContentStream: mockGenerateContentStream,
-      generateContent: mockGenerateContent,
-    };
-    constructor() {
-      MockGoogleGenAI.mock.instances.push(this);
+    class MockGoogleGenAI {
+      static mock = { instances: [] as MockGoogleGenAI[] };
+      models = {
+        generateContentStream: mockGenerateContentStream,
+        generateContent: mockGenerateContent,
+      };
+      constructor() {
+        MockGoogleGenAI.mock.instances.push(this);
+      }
     }
-  }
 
-  return { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent };
-});
+    return { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent };
+  });
 
 vi.mock("@google/genai", () => ({
   GoogleGenAI: MockGoogleGenAI,
@@ -89,7 +90,9 @@ describe("gemini-client", () => {
       const result = await analyzeImage("base64data", "image/jpeg");
 
       // Dynamic prompt should contain professional image restoration instructions
-      expect(result.enhancementPrompt).toContain("professional image restoration");
+      expect(result.enhancementPrompt).toContain(
+        "professional image restoration",
+      );
     });
 
     it("should log image metadata during analysis", async () => {
@@ -209,7 +212,11 @@ describe("gemini-client", () => {
     it("should add color cast correction instructions", () => {
       const analysis: AnalysisDetailedResult = {
         ...baseAnalysis,
-        defects: { ...baseAnalysis.defects, hasColorCast: true, colorCastType: "yellow" },
+        defects: {
+          ...baseAnalysis.defects,
+          hasColorCast: true,
+          colorCastType: "yellow",
+        },
       };
       const prompt = buildDynamicEnhancementPrompt(analysis);
       expect(prompt).toContain("yellow");
@@ -652,13 +659,19 @@ describe("gemini-client", () => {
         ...defaultParams,
         promptOverride: "Test prompt",
         referenceImages: [
-          { imageData: refImageBase64, mimeType: "image/jpeg", description: "Style ref" },
+          {
+            imageData: refImageBase64,
+            mimeType: "image/jpeg",
+            description: "Style ref",
+          },
         ],
       });
 
       // Verify reference images are logged
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Including 1 reference image(s) for style guidance"),
+        expect.stringContaining(
+          "Including 1 reference image(s) for style guidance",
+        ),
       );
 
       // Verify the API was called with correct content structure
@@ -758,7 +771,9 @@ describe("gemini-client", () => {
       await enhanceImageWithGemini(defaultParams);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Generating enhanced image with Gemini API using model:"),
+        expect.stringContaining(
+          "Generating enhanced image with Gemini API using model:",
+        ),
       );
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("Tier: 1K, Resolution: 1024x1024"),
@@ -785,7 +800,9 @@ describe("gemini-client", () => {
     });
 
     it("should handle API initialization failure", async () => {
-      mockGenerateContentStream.mockRejectedValueOnce(new Error("Service unavailable"));
+      mockGenerateContentStream.mockRejectedValueOnce(
+        new Error("Service unavailable"),
+      );
 
       await expect(enhanceImageWithGemini(defaultParams)).rejects.toThrow(
         "Failed to start image enhancement: Service unavailable",
@@ -897,7 +914,9 @@ describe("gemini-client", () => {
               role: "user",
               parts: expect.arrayContaining([
                 expect.objectContaining({
-                  text: expect.stringContaining("A beautiful sunset over the ocean"),
+                  text: expect.stringContaining(
+                    "A beautiful sunset over the ocean",
+                  ),
                 }),
               ]),
             }),
@@ -984,7 +1003,9 @@ describe("gemini-client", () => {
     });
 
     it("should handle API initialization failure for generation", async () => {
-      mockGenerateContentStream.mockRejectedValueOnce(new Error("Rate limit exceeded"));
+      mockGenerateContentStream.mockRejectedValueOnce(
+        new Error("Rate limit exceeded"),
+      );
 
       await expect(generateImageWithGemini(defaultParams)).rejects.toThrow(
         "Failed to start image generation: Rate limit exceeded",
@@ -1024,7 +1045,9 @@ describe("gemini-client", () => {
       await generateImageWithGemini(defaultParams);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Generating image with Gemini API using model:"),
+        expect.stringContaining(
+          "Generating image with Gemini API using model:",
+        ),
       );
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("Tier: 1K"),
@@ -1208,7 +1231,9 @@ describe("gemini-client", () => {
     });
 
     it("should handle API initialization failure for modification", async () => {
-      mockGenerateContentStream.mockRejectedValueOnce(new Error("Service unavailable"));
+      mockGenerateContentStream.mockRejectedValueOnce(
+        new Error("Service unavailable"),
+      );
 
       await expect(modifyImageWithGemini(defaultParams)).rejects.toThrow(
         "Failed to start image generation: Service unavailable",
@@ -1366,7 +1391,10 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(mockStream());
 
-      const result = await generateImageWithGemini({ prompt: "test", tier: "1K" });
+      const result = await generateImageWithGemini({
+        prompt: "test",
+        tier: "1K",
+      });
 
       expect(result.toString()).toBe("actual-data");
     });
@@ -1378,9 +1406,10 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(mockStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" })).rejects.toThrow(
-        "Stream processing failed: Unknown error",
-      );
+      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
+        .rejects.toThrow(
+          "Stream processing failed: Unknown error",
+        );
     });
 
     it("should log skipped chunks without valid candidates", async () => {
@@ -1435,7 +1464,9 @@ describe("gemini-client", () => {
         expect.stringMatching(/Received chunk \d+: \d+ bytes/),
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Successfully received \d+ chunks, total \d+ bytes/),
+        expect.stringMatching(
+          /Successfully received \d+ chunks, total \d+ bytes/,
+        ),
       );
 
       consoleSpy.mockRestore();
@@ -1467,9 +1498,12 @@ describe("gemini-client", () => {
     it("should log stream initiation failure", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error");
 
-      mockGenerateContentStream.mockRejectedValueOnce(new Error("Network error"));
+      mockGenerateContentStream.mockRejectedValueOnce(
+        new Error("Network error"),
+      );
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" })).rejects.toThrow();
+      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
+        .rejects.toThrow();
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("Failed to initiate Gemini API stream:"),
@@ -1482,9 +1516,10 @@ describe("gemini-client", () => {
     it("should handle non-Error exceptions during API initialization", async () => {
       mockGenerateContentStream.mockRejectedValueOnce("String rejection");
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" })).rejects.toThrow(
-        "Failed to start image generation: Unknown error",
-      );
+      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
+        .rejects.toThrow(
+          "Failed to start image generation: Unknown error",
+        );
     });
   });
 
@@ -1522,7 +1557,10 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(fastStream());
 
-      const result = await generateImageWithGemini({ prompt: "test", tier: "1K" });
+      const result = await generateImageWithGemini({
+        prompt: "test",
+        tier: "1K",
+      });
 
       expect(result.toString()).toBe("success");
       // clearTimeout should have been called to clean up the timeout
@@ -1541,7 +1579,8 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(errorStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" })).rejects.toThrow();
+      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
+        .rejects.toThrow();
 
       // clearTimeout should have been called even on error
       expect(clearTimeoutSpy).toHaveBeenCalled();
@@ -1586,7 +1625,9 @@ describe("gemini-client", () => {
 
       // Verify the error was thrown
       expect(caughtError).not.toBeNull();
-      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
+      expect(caughtError!.message).toMatch(
+        /Gemini API request timed out after \d+ seconds/,
+      );
     });
 
     it("should timeout and reject for generateImageWithGemini when stream takes too long", async () => {
@@ -1618,7 +1659,9 @@ describe("gemini-client", () => {
 
       // Verify the error was thrown
       expect(caughtError).not.toBeNull();
-      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
+      expect(caughtError!.message).toMatch(
+        /Gemini API request timed out after \d+ seconds/,
+      );
     });
 
     it("should timeout and reject for modifyImageWithGemini when stream takes too long", async () => {
@@ -1652,7 +1695,9 @@ describe("gemini-client", () => {
 
       // Verify the error was thrown
       expect(caughtError).not.toBeNull();
-      expect(caughtError!.message).toMatch(/Gemini API request timed out after \d+ seconds/);
+      expect(caughtError!.message).toMatch(
+        /Gemini API request timed out after \d+ seconds/,
+      );
     });
   });
 
@@ -1695,9 +1740,10 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(errorAfterChunkStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" })).rejects.toThrow(
-        "Stream processing failed: Chunk processing failed midway",
-      );
+      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
+        .rejects.toThrow(
+          "Stream processing failed: Chunk processing failed midway",
+        );
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringMatching(/Error processing stream at chunk \d+:/),
@@ -1777,11 +1823,15 @@ describe("gemini-client", () => {
 
       // Verify success log
       const successLog = consoleSpy.mock.calls.find(
-        (call) => typeof call[0] === "string" && call[0].includes("Successfully received"),
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("Successfully received"),
       );
 
       expect(successLog).toBeDefined();
-      expect(successLog![0]).toMatch(/Successfully received 2 chunks, total \d+ bytes in \d+s/);
+      expect(successLog![0]).toMatch(
+        /Successfully received 2 chunks, total \d+ bytes in \d+s/,
+      );
 
       consoleSpy.mockRestore();
     });

@@ -154,7 +154,11 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
     Credentials({
       name: "Email & Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "test@example.com" },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "test@example.com",
+        },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -166,10 +170,13 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
         const password = credentials.password as string;
 
         // Rate limit login attempts per email (5 attempts per 15 minutes)
-        const rateLimitResult = await checkRateLimit(`login:${email.toLowerCase()}`, {
-          maxRequests: 5,
-          windowMs: 15 * 60 * 1000, // 15 minutes
-        });
+        const rateLimitResult = await checkRateLimit(
+          `login:${email.toLowerCase()}`,
+          {
+            maxRequests: 5,
+            windowMs: 15 * 60 * 1000, // 15 minutes
+          },
+        );
 
         if (rateLimitResult.isLimited) {
           console.warn(`Rate limited login attempt for: ${email}`);

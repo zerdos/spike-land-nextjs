@@ -19,7 +19,8 @@ describe("AppsLayout", () => {
     it("should not add wrapper elements", () => {
       const { container } = render(<AppsLayout>{mockChildren}</AppsLayout>);
       // The first element should be the child content directly
-      expect(container.querySelector('[data-testid="child-content"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="child-content"]'))
+        .toBeInTheDocument();
     });
   });
 
@@ -65,8 +66,10 @@ describe("AppsLayout", () => {
           </section>
         </AppsLayout>,
       );
-      expect(container.querySelector('[data-testid="test-section"]')).toBeInTheDocument();
-      expect(container.querySelector('[data-testid="test-article"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="test-section"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('[data-testid="test-article"]'))
+        .toBeInTheDocument();
     });
   });
 

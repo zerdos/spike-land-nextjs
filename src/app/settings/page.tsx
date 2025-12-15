@@ -67,7 +67,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl" data-testid="settings-page">
+    <div
+      className="container mx-auto py-8 px-4 max-w-4xl"
+      data-testid="settings-page"
+    >
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground mt-2">
@@ -158,7 +161,9 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between space-x-4">
                 <div className="flex-1 space-y-1">
-                  <Label htmlFor="email-notifications">Email Notifications</Label>
+                  <Label htmlFor="email-notifications">
+                    Email Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     Receive email updates about your account activity
                   </p>
@@ -236,9 +241,15 @@ export default function SettingsPage() {
                   Permanently delete your account and all associated data
                 </p>
 
-                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <Dialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                >
                   <DialogTrigger asChild>
-                    <Button variant="destructive" data-testid="delete-account-button">
+                    <Button
+                      variant="destructive"
+                      data-testid="delete-account-button"
+                    >
                       Delete Account
                     </Button>
                   </DialogTrigger>

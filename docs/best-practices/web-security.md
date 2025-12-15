@@ -1,6 +1,8 @@
 # Web Application Security Best Practices
 
-A comprehensive guide to securing web applications, covering the OWASP Top 10, authentication security, input validation, security headers, secrets management, and dependency security.
+A comprehensive guide to securing web applications, covering the OWASP Top 10,
+authentication security, input validation, security headers, secrets management,
+and dependency security.
 
 ---
 
@@ -19,18 +21,22 @@ A comprehensive guide to securing web applications, covering the OWASP Top 10, a
 
 ## OWASP Top 10
 
-The OWASP Top 10 represents the most critical web application security risks. The current standard is OWASP Top 10 2021 (until 2025 update).
+The OWASP Top 10 represents the most critical web application security risks.
+The current standard is OWASP Top 10 2021 (until 2025 update).
 
 ### A01:2021 - Broken Access Control
 
-**Description**: Users can access data or perform actions they shouldn't. This includes URL manipulation, lack of validation in API endpoints, and improper role-based permissions.
+**Description**: Users can access data or perform actions they shouldn't. This
+includes URL manipulation, lack of validation in API endpoints, and improper
+role-based permissions.
 
 **Prevention Strategies**:
 
 - Implement proper authentication and authorization checks on every endpoint
 - Validate user permissions before granting access to resources
 - Use role-based access control (RBAC) consistently
-- Implement principle of least privilege - users get minimum required permissions
+- Implement principle of least privilege - users get minimum required
+  permissions
 - Validate request parameters and reject unauthorized access attempts
 - Use secure session management with proper session IDs
 
@@ -62,7 +68,8 @@ app.get("/api/resources/:id", authenticate, authorizeResource, getResource);
 
 ### A02:2021 - Cryptographic Failures
 
-**Description**: Sensitive data (passwords, financial records, credit cards, health data) is exposed due to poor encryption or no encryption at all.
+**Description**: Sensitive data (passwords, financial records, credit cards,
+health data) is exposed due to poor encryption or no encryption at all.
 
 **Prevention Strategies**:
 
@@ -82,7 +89,11 @@ import crypto from "crypto";
 // Encrypt sensitive data at rest
 function encryptData(plaintext, encryptionKey) {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(encryptionKey), iv);
+  const cipher = crypto.createCipheriv(
+    "aes-256-cbc",
+    Buffer.from(encryptionKey),
+    iv,
+  );
 
   let encrypted = cipher.update(plaintext, "utf8", "hex");
   encrypted += cipher.final("hex");
@@ -113,10 +124,16 @@ function decryptData(encryptedData, encryptionKey) {
 // Express.js example
 app.use((req, res, next) => {
   // Force HTTPS
-  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains",
+  );
 
   // Prevent caching of sensitive responses
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
 
@@ -126,7 +143,9 @@ app.use((req, res, next) => {
 
 ### A03:2021 - Injection
 
-**Description**: Unauthorized user input is sent to an interpreter as part of a command or query, allowing execution of malicious commands or unauthorized data access.
+**Description**: Unauthorized user input is sent to an interpreter as part of a
+command or query, allowing execution of malicious commands or unauthorized data
+access.
 
 **Common Types**:
 
@@ -135,11 +154,14 @@ app.use((req, res, next) => {
 - LDAP Injection
 - XML Injection
 
-**Prevention Strategies** (see [Input Validation](#input-validation) section below for detailed prevention methods)
+**Prevention Strategies** (see [Input Validation](#input-validation) section
+below for detailed prevention methods)
 
 ### A04:2021 - Insecure Design
 
-**Description**: Design flaws and architectural weaknesses that enable attacks. This includes missing threat modeling, insecure architecture patterns, and insufficient security controls.
+**Description**: Design flaws and architectural weaknesses that enable attacks.
+This includes missing threat modeling, insecure architecture patterns, and
+insufficient security controls.
 
 **Prevention Strategies**:
 
@@ -153,7 +175,9 @@ app.use((req, res, next) => {
 
 ### A05:2021 - Security Misconfiguration
 
-**Description**: Default configurations, verbose error messages, and improper settings expose sensitive information. This is the most common vulnerability category.
+**Description**: Default configurations, verbose error messages, and improper
+settings expose sensitive information. This is the most common vulnerability
+category.
 
 **Prevention Strategies**:
 
@@ -191,19 +215,24 @@ app.use((err, req, res, next) => {
 
 ### A06:2021 - Vulnerable and Outdated Components
 
-**Description**: Third-party libraries and dependencies contain known vulnerabilities that attackers can exploit.
+**Description**: Third-party libraries and dependencies contain known
+vulnerabilities that attackers can exploit.
 
-**Prevention Strategies** (see [Dependency Security](#dependency-security) section below)
+**Prevention Strategies** (see [Dependency Security](#dependency-security)
+section below)
 
 ### A07:2021 - Identification and Authentication Failures
 
-**Description**: Issues with login mechanisms allow brute-force attacks, credential stuffing, and weak password handling.
+**Description**: Issues with login mechanisms allow brute-force attacks,
+credential stuffing, and weak password handling.
 
-**Prevention Strategies** (see [Authentication Security](#authentication-security) section below)
+**Prevention Strategies** (see
+[Authentication Security](#authentication-security) section below)
 
 ### A08:2021 - Software and Data Integrity Failures
 
-**Description**: Lack of integrity in code and infrastructure due to using untrusted sources, no integrity checks, or insecure updates.
+**Description**: Lack of integrity in code and infrastructure due to using
+untrusted sources, no integrity checks, or insecure updates.
 
 **Prevention Strategies**:
 
@@ -217,7 +246,8 @@ app.use((err, req, res, next) => {
 
 ### A09:2021 - Security Logging and Monitoring Failures
 
-**Description**: Without proper logging and alerting, breaches can go undetected for months.
+**Description**: Without proper logging and alerting, breaches can go undetected
+for months.
 
 **Prevention Strategies**:
 
@@ -257,20 +287,28 @@ function logSecurityEvent(eventType, userId, details, severity = "info") {
 
 // Usage examples
 logSecurityEvent("FAILED_LOGIN", userId, { attempts: 3 }, "warning");
-logSecurityEvent("UNAUTHORIZED_ACCESS", userId, { resource: "admin" }, "critical");
+logSecurityEvent(
+  "UNAUTHORIZED_ACCESS",
+  userId,
+  { resource: "admin" },
+  "critical",
+);
 logSecurityEvent("API_KEY_CREATED", userId, { keyId: newKey.id }, "info");
 ```
 
 ### A10:2021 - Server-Side Request Forgery (SSRF)
 
-**Description**: Web application accepts user-controlled input and uses it to make requests without validation, allowing attackers to make requests to internal or external resources.
+**Description**: Web application accepts user-controlled input and uses it to
+make requests without validation, allowing attackers to make requests to
+internal or external resources.
 
 **Prevention Strategies**:
 
 - Validate and sanitize all user inputs used in requests
 - Implement URL validation and parsing
 - Use allowlists for permitted domains/IPs
-- Disable access to internal IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8)
+- Disable access to internal IP ranges (10.0.0.0/8, 172.16.0.0/12,
+  192.168.0.0/16, 127.0.0.0/8)
 - Implement network segmentation
 - Use DNS rebinding protections
 - Disable redirects or validate redirect targets
@@ -295,7 +333,7 @@ function isAllowedUrl(targetUrl, allowedDomains) {
       /^fe80:/, // IPv6 link-local
     ];
 
-    if (blockedRanges.some(range => range.test(parsed.hostname))) {
+    if (blockedRanges.some((range) => range.test(parsed.hostname))) {
       return false;
     }
 
@@ -329,7 +367,8 @@ Proper authentication is the foundation of application security.
 
 ### Password Hashing Best Practices
 
-**Never store plain-text passwords.** Use modern password hashing algorithms with proper configurations.
+**Never store plain-text passwords.** Use modern password hashing algorithms
+with proper configurations.
 
 #### Argon2 (Recommended)
 
@@ -525,8 +564,10 @@ app.post("/login-mfa", authenticate, (req, res) => {
 ### Session Management Best Practices
 
 - Use cryptographically secure session IDs (at least 128 bits of entropy)
-- Set appropriate session timeouts (30 minutes to 2 hours for sensitive operations)
-- Implement absolute session timeouts (max session duration regardless of activity)
+- Set appropriate session timeouts (30 minutes to 2 hours for sensitive
+  operations)
+- Implement absolute session timeouts (max session duration regardless of
+  activity)
 - Regenerate session IDs after successful authentication
 - Clear sessions on logout
 - Implement concurrent session limits if appropriate
@@ -540,12 +581,15 @@ All user input is untrusted. Validate and sanitize everything.
 
 ### Cross-Site Scripting (XSS) Prevention
 
-XSS occurs when malicious scripts are injected into web pages viewed by other users.
+XSS occurs when malicious scripts are injected into web pages viewed by other
+users.
 
 #### Types of XSS
 
-1. **Stored XSS**: Malicious input is stored in database and executed for all users
-2. **Reflected XSS**: Malicious input in request is immediately reflected in response
+1. **Stored XSS**: Malicious input is stored in database and executed for all
+   users
+2. **Reflected XSS**: Malicious input in request is immediately reflected in
+   response
 3. **DOM-based XSS**: Vulnerability in client-side JavaScript code
 
 #### Prevention Strategy: Multi-Layered Defense
@@ -736,7 +780,8 @@ CSRF tricks authenticated users into making unintended requests.
 
 #### Prevention: CSRF Tokens
 
-The application generates a unique, unpredictable token that must be included in state-changing requests.
+The application generates a unique, unpredictable token that must be included in
+state-changing requests.
 
 **Synchronizer Token Pattern (for forms)**:
 
@@ -814,7 +859,8 @@ res.cookie("sessionId", sessionId, {
 
 ## Security Headers
 
-HTTP security headers tell browsers how to handle your content and protect against common attacks.
+HTTP security headers tell browsers how to handle your content and protect
+against common attacks.
 
 ### Essential Security Headers
 
@@ -825,7 +871,10 @@ Forces HTTPS connections and prevents downgrade attacks.
 ```javascript
 // Express.js middleware
 app.use((req, res, next) => {
-  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload",
+  );
   next();
 });
 ```
@@ -954,7 +1003,10 @@ export function setSecurityHeaders(req, res, next) {
   res.removeHeader("Server");
 
   // Transport security
-  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload",
+  );
 
   // Content Security Policy
   res.setHeader(
@@ -998,7 +1050,10 @@ export function setSecurityHeaders(req, res, next) {
   );
 
   // Prevent caching of sensitive content
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
 
@@ -1078,7 +1133,8 @@ secrets/
 
 **Features**:
 
-- **Dynamic Secrets**: Generate temporary credentials (database passwords, AWS keys)
+- **Dynamic Secrets**: Generate temporary credentials (database passwords, AWS
+  keys)
 - **Secret Rotation**: Automatically rotate secrets without application downtime
 - **Audit Logging**: Complete audit trail of secret access
 - **Encryption**: Built-in encryption for data at rest and in transit
@@ -1645,7 +1701,5 @@ Use this checklist when implementing security in your application:
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: December 2024
-**Audience**: Developers, Security Engineers, DevOps
-**Classification**: Public
+**Document Version**: 1.0 **Last Updated**: December 2024 **Audience**:
+Developers, Security Engineers, DevOps **Classification**: Public

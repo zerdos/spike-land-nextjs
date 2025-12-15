@@ -4,7 +4,10 @@ This document describes the E2E test suite for the Image Enhancement feature.
 
 ## Overview
 
-The image enhancement E2E tests validate the complete user journey for uploading, enhancing, and managing AI-enhanced images. The tests use Playwright + Cucumber (BDD) to ensure the feature works correctly across different scenarios.
+The image enhancement E2E tests validate the complete user journey for
+uploading, enhancing, and managing AI-enhanced images. The tests use
+Playwright + Cucumber (BDD) to ensure the feature works correctly across
+different scenarios.
 
 ## Test Files
 
@@ -119,7 +122,8 @@ BASE_URL=http://localhost:3000 npx cucumber-js --tags "not @skip and not @flaky"
 
 ### Mock API Endpoints
 
-The tests mock the following API endpoints to avoid dependencies on backend services:
+The tests mock the following API endpoints to avoid dependencies on backend
+services:
 
 - `POST /api/images/upload` - Image upload
 - `POST /api/images/enhance` - Start enhancement job
@@ -204,15 +208,18 @@ Test logs and reports are saved to:
 
 ### Test Fails: "Cannot find file input"
 
-**Solution**: Ensure the ImageUpload component renders properly. Check that the file input element exists in the DOM.
+**Solution**: Ensure the ImageUpload component renders properly. Check that the
+file input element exists in the DOM.
 
 ### Test Fails: "Timeout waiting for navigation"
 
-**Solution**: Check that mock routes are set up before navigation. Increase timeout if needed.
+**Solution**: Check that mock routes are set up before navigation. Increase
+timeout if needed.
 
 ### Test Fails: "Token balance not updating"
 
-**Solution**: Ensure the `useTokenBalance` hook is properly mocked. Check API route handlers.
+**Solution**: Ensure the `useTokenBalance` hook is properly mocked. Check API
+route handlers.
 
 ### Test Fails: "Image not found in list"
 
@@ -221,13 +228,18 @@ Test logs and reports are saved to:
 ## Best Practices
 
 1. **Use Mock Data**: Always mock API endpoints to avoid flaky tests
-2. **Wait for Load States**: Use `waitForLoadState('networkidle')` after navigation
-3. **Use Data Attributes**: Add `data-testid`, `data-tier`, `data-version-id` to components for reliable selection
-4. **Test User Flows**: Focus on complete user journeys, not individual UI elements
+2. **Wait for Load States**: Use `waitForLoadState('networkidle')` after
+   navigation
+3. **Use Data Attributes**: Add `data-testid`, `data-tier`, `data-version-id` to
+   components for reliable selection
+4. **Test User Flows**: Focus on complete user journeys, not individual UI
+   elements
 5. **Keep Tests Fast**: Use `@fast` tag for quick tests, mock slow operations
-6. **Handle Async Operations**: Use proper waits for API responses and UI updates
+6. **Handle Async Operations**: Use proper waits for API responses and UI
+   updates
 7. **Clean Up State**: Clear mocks and state between scenarios
-8. **Descriptive Scenarios**: Write clear scenario names that explain the expected behavior
+8. **Descriptive Scenarios**: Write clear scenario names that explain the
+   expected behavior
 
 ## Future Improvements
 
@@ -243,5 +255,7 @@ Test logs and reports are saved to:
 ## Related Documentation
 
 - [E2E Testing README](./README.md) - General E2E testing guidelines
-- [Cucumber Quick Reference](./QUICK_REFERENCE.md) - Cucumber syntax and patterns
-- [Image Enhancement Feature Spec](../docs/IMAGE_ENHANCEMENT.md) - Feature requirements (if exists)
+- [Cucumber Quick Reference](./QUICK_REFERENCE.md) - Cucumber syntax and
+  patterns
+- [Image Enhancement Feature Spec](../docs/IMAGE_ENHANCEMENT.md) - Feature
+  requirements (if exists)

@@ -237,8 +237,15 @@ export function AgentControlPanel({ box }: AgentControlPanelProps) {
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-semibold">Live Session</h2>
               <div className="flex items-center gap-2">
-                <div className={cn("w-2 h-2 rounded-full", getStatusColor(box.status))} />
-                <Badge variant={getStatusBadgeVariant(box.status)}>{box.status}</Badge>
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    getStatusColor(box.status),
+                  )}
+                />
+                <Badge variant={getStatusBadgeVariant(box.status)}>
+                  {box.status}
+                </Badge>
               </div>
             </div>
 

@@ -223,7 +223,9 @@ describe("enhance-image.direct", () => {
     });
 
     it("should handle Gemini API failure", async () => {
-      mockEnhanceImageWithGemini.mockRejectedValue(new Error("Gemini API error"));
+      mockEnhanceImageWithGemini.mockRejectedValue(
+        new Error("Gemini API error"),
+      );
 
       const result = await enhanceImageDirect(validInput);
 

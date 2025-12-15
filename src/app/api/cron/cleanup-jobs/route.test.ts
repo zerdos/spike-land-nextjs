@@ -34,8 +34,18 @@ describe("GET /api/cron/cleanup-jobs", () => {
       failed: 0,
       tokensRefunded: 15,
       jobs: [
-        { id: "job1", userId: "user1", tokensRefunded: 10, processingDuration: 600000 },
-        { id: "job2", userId: "user2", tokensRefunded: 5, processingDuration: 480000 },
+        {
+          id: "job1",
+          userId: "user1",
+          tokensRefunded: 10,
+          processingDuration: 600000,
+        },
+        {
+          id: "job2",
+          userId: "user2",
+          tokensRefunded: 5,
+          processingDuration: 480000,
+        },
       ],
       errors: [],
     });
@@ -177,8 +187,18 @@ describe("GET /api/cron/cleanup-jobs", () => {
       failed: 1,
       tokensRefunded: 15,
       jobs: [
-        { id: "job1", userId: "user1", tokensRefunded: 10, processingDuration: 600000 },
-        { id: "job2", userId: "user2", tokensRefunded: 5, processingDuration: 480000 },
+        {
+          id: "job1",
+          userId: "user1",
+          tokensRefunded: 10,
+          processingDuration: 600000,
+        },
+        {
+          id: "job2",
+          userId: "user2",
+          tokensRefunded: 5,
+          processingDuration: 480000,
+        },
         {
           id: "job3",
           userId: "user3",

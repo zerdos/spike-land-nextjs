@@ -1,6 +1,7 @@
 # Branch Protection Setup Guide
 
-This guide explains how to configure GitHub branch protection rules to ensure no code can be merged to `main` without passing all tests.
+This guide explains how to configure GitHub branch protection rules to ensure no
+code can be merged to `main` without passing all tests.
 
 ## Steps to Configure Branch Protection
 
@@ -9,7 +10,8 @@ This guide explains how to configure GitHub branch protection rules to ensure no
 1. Go to your GitHub repository: https://github.com/zerdos/spike-land-nextjs
 2. Click on **Settings** (top navigation)
 3. Click on **Branches** (left sidebar under "Code and automation")
-4. Under "Branch protection rules", click **Add rule** or **Add branch protection rule**
+4. Under "Branch protection rules", click **Add rule** or **Add branch
+   protection rule**
 
 ### 2. Configure the Protection Rule
 
@@ -22,14 +24,17 @@ This guide explains how to configure GitHub branch protection rules to ensure no
 ✅ **Require a pull request before merging**
 
 - This ensures all changes go through a PR
-- Optional: Check "Require approvals" if you want code reviews (set number of required reviewers)
-- Optional: Check "Dismiss stale pull request approvals when new commits are pushed"
+- Optional: Check "Require approvals" if you want code reviews (set number of
+  required reviewers)
+- Optional: Check "Dismiss stale pull request approvals when new commits are
+  pushed"
 
 ✅ **Require status checks to pass before merging**
 
 - Check this box
 - Check "Require branches to be up to date before merging"
-- In the search box, add these status checks (they appear after your first CI run):
+- In the search box, add these status checks (they appear after your first CI
+  run):
   - `Run Tests` (unit tests)
   - `Build Application` (build verification)
   - `E2E Tests` (end-to-end tests against preview deployment)
@@ -130,7 +135,8 @@ remote: error: GH006: Protected branch update failed for refs/heads/main.
 ### Can't Find Status Checks
 
 - Make sure you've run the workflow at least once
-- The job names must match exactly: "Run Tests", "Build Application", and "E2E Tests"
+- The job names must match exactly: "Run Tests", "Build Application", and "E2E
+  Tests"
 - Check for spaces and capitalization
 
 ### Need to Override Protection
@@ -165,7 +171,8 @@ gh api repos/zerdos/spike-land-nextjs/branches/main/protection \
 
 ## Pre-Merge Smoke Test (MANDATORY)
 
-**Before merging ANY pull request**, a manual smoke test MUST be performed on the Vercel preview deployment.
+**Before merging ANY pull request**, a manual smoke test MUST be performed on
+the Vercel preview deployment.
 
 ### Smoke Test Process
 
@@ -201,12 +208,11 @@ Automated tests catch regressions, but manual verification ensures:
 
 ## Benefits
 
-✅ **No broken code in main** - All tests must pass
-✅ **Consistent quality** - Enforced code standards
-✅ **Safe deployments** - Only tested code reaches production
-✅ **Manual verification** - Smoke tests catch UI/UX issues
-✅ **Code review process** - PRs encourage collaboration
-✅ **Audit trail** - All changes documented in PRs
+✅ **No broken code in main** - All tests must pass ✅ **Consistent quality** -
+Enforced code standards ✅ **Safe deployments** - Only tested code reaches
+production ✅ **Manual verification** - Smoke tests catch UI/UX issues ✅ **Code
+review process** - PRs encourage collaboration ✅ **Audit trail** - All changes
+documented in PRs
 
 ## Additional Resources
 

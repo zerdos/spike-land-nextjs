@@ -111,7 +111,9 @@ export default function UserAnalyticsPage() {
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Active Users (7d)
           </p>
-          <p className="mt-2 text-3xl font-bold">{data.activeUsers.last7Days}</p>
+          <p className="mt-2 text-3xl font-bold">
+            {data.activeUsers.last7Days}
+          </p>
           <p className="mt-2 text-xs text-neutral-500">
             {((data.activeUsers.last7Days / data.totalUsers) * 100).toFixed(1)}% of total
           </p>
@@ -121,9 +123,13 @@ export default function UserAnalyticsPage() {
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Active Users (30d)
           </p>
-          <p className="mt-2 text-3xl font-bold">{data.activeUsers.last30Days}</p>
+          <p className="mt-2 text-3xl font-bold">
+            {data.activeUsers.last30Days}
+          </p>
           <p className="mt-2 text-xs text-neutral-500">
-            {((data.activeUsers.last30Days / data.totalUsers) * 100).toFixed(1)}% of total
+            {((data.activeUsers.last30Days / data.totalUsers) * 100).toFixed(
+              1,
+            )}% of total
           </p>
         </Card>
       </div>
@@ -165,7 +171,9 @@ export default function UserAnalyticsPage() {
       {/* Auth Provider Breakdown */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="p-6">
-          <h2 className="mb-4 text-xl font-semibold">Auth Provider Breakdown</h2>
+          <h2 className="mb-4 text-xl font-semibold">
+            Auth Provider Breakdown
+          </h2>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie

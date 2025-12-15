@@ -103,10 +103,14 @@ function getUserInitials(name: string | null, email: string | null): string {
 
 export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
   const [feedback, setFeedback] = useState<FeedbackItem[]>(initialFeedback);
-  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | "ALL">(
+    "ALL",
+  );
   const [typeFilter, setTypeFilter] = useState<FeedbackType | "ALL">("ALL");
   const [loading, setLoading] = useState(false);
-  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackItem | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackItem | null>(
+    null,
+  );
   const [adminNote, setAdminNote] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -155,7 +159,13 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
       // Update selected feedback if open
       if (selectedFeedback?.id === id) {
         setSelectedFeedback((prev) =>
-          prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : null
+          prev
+            ? {
+              ...prev,
+              status: newStatus,
+              updatedAt: new Date().toISOString(),
+            }
+            : null
         );
       }
     } catch (error) {
@@ -191,7 +201,9 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
       );
 
       setSelectedFeedback((prev) =>
-        prev ? { ...prev, adminNote, updatedAt: new Date().toISOString() } : null
+        prev
+          ? { ...prev, adminNote, updatedAt: new Date().toISOString() }
+          : null
       );
 
       alert("Note saved successfully");
@@ -277,11 +289,17 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
       {/* Feedback Table */}
       <Card className="overflow-hidden">
         <div className="border-b border-border bg-muted p-4">
-          <h2 className="font-semibold">Feedback ({filteredFeedback.length})</h2>
+          <h2 className="font-semibold">
+            Feedback ({filteredFeedback.length})
+          </h2>
         </div>
 
         {loading
-          ? <div className="p-8 text-center text-muted-foreground">Loading...</div>
+          ? (
+            <div className="p-8 text-center text-muted-foreground">
+              Loading...
+            </div>
+          )
           : filteredFeedback.length === 0
           ? (
             <div className="p-8 text-center text-muted-foreground">
@@ -293,13 +311,27 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
               <table className="w-full">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Type</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">User</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Page</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Message</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      User
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Page
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Message
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -313,18 +345,24 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                         {formatDate(item.createdAt)}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge className={TYPE_COLORS[item.type]}>{item.type}</Badge>
+                        <Badge className={TYPE_COLORS[item.type]}>
+                          {item.type}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
                             <AvatarImage src={item.user?.image || undefined} />
                             <AvatarFallback className="text-xs">
-                              {getUserInitials(item.user?.name || null, item.email)}
+                              {getUserInitials(
+                                item.user?.name || null,
+                                item.email,
+                              )}
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-sm">
-                            {item.user?.name || item.user?.email || item.email || "Anonymous"}
+                            {item.user?.name || item.user?.email ||
+                              item.email || "Anonymous"}
                           </span>
                         </div>
                       </td>
@@ -332,7 +370,9 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                         {item.page}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge className={STATUS_COLORS[item.status]}>{item.status}</Badge>
+                        <Badge className={STATUS_COLORS[item.status]}>
+                          {item.status}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm max-w-[250px]">
                         {truncateMessage(item.message)}
@@ -382,7 +422,10 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
       </Card>
 
       {/* Feedback Details Dialog */}
-      <Dialog open={!!selectedFeedback} onOpenChange={(open) => !open && closeFeedbackDetails()}>
+      <Dialog
+        open={!!selectedFeedback}
+        onOpenChange={(open) => !open && closeFeedbackDetails()}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Feedback Details</DialogTitle>
@@ -396,7 +439,9 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
               {/* Meta Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Type</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Type
+                  </span>
                   <div className="mt-1">
                     <Badge className={TYPE_COLORS[selectedFeedback.type]}>
                       {selectedFeedback.type}
@@ -404,12 +449,17 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Status</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </span>
                   <div className="mt-1">
                     <Select
                       value={selectedFeedback.status}
                       onValueChange={(value) =>
-                        handleStatusChange(selectedFeedback.id, value as FeedbackStatus)}
+                        handleStatusChange(
+                          selectedFeedback.id,
+                          value as FeedbackStatus,
+                        )}
                       disabled={isUpdating}
                     >
                       <SelectTrigger className="w-[150px]">
@@ -425,10 +475,14 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">User</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    User
+                  </span>
                   <div className="mt-1 flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                      <AvatarImage src={selectedFeedback.user?.image || undefined} />
+                      <AvatarImage
+                        src={selectedFeedback.user?.image || undefined}
+                      />
                       <AvatarFallback className="text-xs">
                         {getUserInitials(
                           selectedFeedback.user?.name || null,
@@ -445,31 +499,49 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Page</span>
-                  <p className="mt-1 text-sm break-all">{selectedFeedback.page}</p>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Page
+                  </span>
+                  <p className="mt-1 text-sm break-all">
+                    {selectedFeedback.page}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Submitted</span>
-                  <p className="mt-1 text-sm">{formatDate(selectedFeedback.createdAt)}</p>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Submitted
+                  </span>
+                  <p className="mt-1 text-sm">
+                    {formatDate(selectedFeedback.createdAt)}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Last Updated</span>
-                  <p className="mt-1 text-sm">{formatDate(selectedFeedback.updatedAt)}</p>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Last Updated
+                  </span>
+                  <p className="mt-1 text-sm">
+                    {formatDate(selectedFeedback.updatedAt)}
+                  </p>
                 </div>
               </div>
 
               {/* Message */}
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Message</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Message
+                </span>
                 <div className="mt-2 rounded-lg border border-border bg-muted/50 p-4">
-                  <p className="text-sm whitespace-pre-wrap">{selectedFeedback.message}</p>
+                  <p className="text-sm whitespace-pre-wrap">
+                    {selectedFeedback.message}
+                  </p>
                 </div>
               </div>
 
               {/* User Agent (for bugs) */}
               {selectedFeedback.userAgent && (
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Browser Info</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Browser Info
+                  </span>
                   <p className="mt-1 text-xs text-muted-foreground break-all">
                     {selectedFeedback.userAgent}
                   </p>
@@ -478,7 +550,9 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
 
               {/* Admin Note */}
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Admin Note</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Admin Note
+                </span>
                 <textarea
                   className="mt-2 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-ring"
                   placeholder="Add a note about this feedback..."

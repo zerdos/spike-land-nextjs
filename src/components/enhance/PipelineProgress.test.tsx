@@ -15,7 +15,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows first stage as current when ANALYZING", () => {
-      const { container } = render(<PipelineProgress currentStage="ANALYZING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="ANALYZING" />,
+      );
 
       // First stage should have animate-pulse class (current stage indicator)
       const stages = container.querySelectorAll(".rounded-md");
@@ -26,7 +28,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows second stage as current when CROPPING", () => {
-      const { container } = render(<PipelineProgress currentStage="CROPPING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="CROPPING" />,
+      );
 
       const stages = container.querySelectorAll(".rounded-md");
       // First stage should be past (green)
@@ -38,7 +42,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows third stage as current when PROMPTING", () => {
-      const { container } = render(<PipelineProgress currentStage="PROMPTING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="PROMPTING" />,
+      );
 
       const stages = container.querySelectorAll(".rounded-md");
       expect(stages[0]).toHaveClass("bg-green-500/20");
@@ -48,7 +54,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows fourth stage as current when GENERATING", () => {
-      const { container } = render(<PipelineProgress currentStage="GENERATING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="GENERATING" />,
+      );
 
       const stages = container.querySelectorAll(".rounded-md");
       expect(stages[0]).toHaveClass("bg-green-500/20");
@@ -105,7 +113,9 @@ describe("PipelineProgress", () => {
 
   describe("connector lines", () => {
     it("renders connector lines between stages", () => {
-      const { container } = render(<PipelineProgress currentStage="CROPPING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="CROPPING" />,
+      );
 
       // Should have 3 connector lines (between 4 stages)
       const connectors = container.querySelectorAll(".h-0\\.5");
@@ -113,7 +123,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows completed connector as green", () => {
-      const { container } = render(<PipelineProgress currentStage="CROPPING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="CROPPING" />,
+      );
 
       const connectors = container.querySelectorAll(".h-0\\.5");
       // First connector (after first stage which is complete)
@@ -121,7 +133,9 @@ describe("PipelineProgress", () => {
     });
 
     it("shows future connector as muted", () => {
-      const { container } = render(<PipelineProgress currentStage="ANALYZING" />);
+      const { container } = render(
+        <PipelineProgress currentStage="ANALYZING" />,
+      );
 
       const connectors = container.querySelectorAll(".h-0\\.5");
       // Connectors after current stage should be muted
@@ -175,7 +189,9 @@ describe("PipelineStageLabel", () => {
 
   describe("spinner icon", () => {
     it("shows spinner icon", () => {
-      const { container } = render(<PipelineStageLabel currentStage="ANALYZING" />);
+      const { container } = render(
+        <PipelineStageLabel currentStage="ANALYZING" />,
+      );
 
       // Check for animate-spin class on the loader
       const spinner = container.querySelector(".animate-spin");
@@ -186,7 +202,10 @@ describe("PipelineStageLabel", () => {
   describe("className prop", () => {
     it("applies custom className", () => {
       const { container } = render(
-        <PipelineStageLabel currentStage="ANALYZING" className="custom-class" />,
+        <PipelineStageLabel
+          currentStage="ANALYZING"
+          className="custom-class"
+        />,
       );
 
       const wrapper = container.firstChild;
@@ -195,7 +214,10 @@ describe("PipelineStageLabel", () => {
 
     it("preserves default classes when custom className is added", () => {
       const { container } = render(
-        <PipelineStageLabel currentStage="ANALYZING" className="custom-class" />,
+        <PipelineStageLabel
+          currentStage="ANALYZING"
+          className="custom-class"
+        />,
       );
 
       const wrapper = container.firstChild;

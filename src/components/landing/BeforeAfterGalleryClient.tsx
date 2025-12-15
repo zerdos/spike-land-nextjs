@@ -18,12 +18,14 @@ interface BeforeAfterGalleryClientProps {
   items: GalleryItem[];
 }
 
-export function BeforeAfterGalleryClient({ items }: BeforeAfterGalleryClientProps) {
+export function BeforeAfterGalleryClient(
+  { items }: BeforeAfterGalleryClientProps,
+) {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const filteredItems = activeCategory === "all"
     ? items
-    : items.filter(item => item.category === activeCategory);
+    : items.filter((item) => item.category === activeCategory);
 
   return (
     <section id="gallery" className="py-16 sm:py-24">
@@ -44,37 +46,39 @@ export function BeforeAfterGalleryClient({ items }: BeforeAfterGalleryClientProp
           className="mx-auto max-w-6xl"
         >
           <TabsList className="mx-auto mb-8 flex w-fit">
-            {categories.map(category => (
+            {categories.map((category) => (
               <TabsTrigger key={category.value} value={category.value}>
                 {category.label}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {categories.map(category => (
+          {categories.map((category) => (
             <TabsContent key={category.value} value={category.value}>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {(category.value === "all" ? items : filteredItems).map(item => (
-                  <Card
-                    key={item.id}
-                    className="overflow-hidden transition-all duration-300 hover:shadow-glow-cyan-sm hover:border-primary/30 group"
-                  >
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {item.title}
-                      </CardTitle>
-                      <CardDescription>{item.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <ImageComparisonSlider
-                        originalUrl={item.originalUrl}
-                        enhancedUrl={item.enhancedUrl}
-                        width={item.width}
-                        height={item.height}
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+                {(category.value === "all" ? items : filteredItems).map(
+                  (item) => (
+                    <Card
+                      key={item.id}
+                      className="overflow-hidden transition-all duration-300 hover:shadow-glow-cyan-sm hover:border-primary/30 group"
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          {item.title}
+                        </CardTitle>
+                        <CardDescription>{item.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <ImageComparisonSlider
+                          originalUrl={item.originalUrl}
+                          enhancedUrl={item.enhancedUrl}
+                          width={item.width}
+                          height={item.height}
+                        />
+                      </CardContent>
+                    </Card>
+                  ),
+                )}
               </div>
             </TabsContent>
           ))}

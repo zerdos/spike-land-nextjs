@@ -38,7 +38,9 @@ export function ApiKeysTab() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [newlyCreatedKey, setNewlyCreatedKey] = useState<NewApiKey | null>(null);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<NewApiKey | null>(
+    null,
+  );
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null);
 
@@ -144,7 +146,9 @@ export function ApiKeysTab() {
 
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    }
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
     return formatDate(dateString);
   };
@@ -289,7 +293,9 @@ export function ApiKeysTab() {
                         {!key.isActive && <Badge variant="secondary">Revoked</Badge>}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        <code className="bg-muted px-1 rounded">{key.keyPrefix}</code>
+                        <code className="bg-muted px-1 rounded">
+                          {key.keyPrefix}
+                        </code>
                         <span className="mx-2">-</span>
                         Created {formatDate(key.createdAt)}
                         <span className="mx-2">-</span>

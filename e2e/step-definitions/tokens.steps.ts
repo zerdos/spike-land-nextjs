@@ -97,31 +97,38 @@ Given(
 
 When("I open the purchase modal", async function(this: CustomWorld) {
   // Click the "Get Tokens" or "+" button to open the modal
-  const triggerButton = this.page.locator("button").filter({ hasText: /Get Tokens|\+/ }).first();
+  const triggerButton = this.page.locator("button").filter({
+    hasText: /Get Tokens|\+/,
+  }).first();
   await expect(triggerButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await triggerButton.click();
 
   // Wait for modal to open
-  await waitForTextWithRetry(this.page, "Get More Tokens", { timeout: TIMEOUTS.DEFAULT });
-});
-
-When("I enter the voucher code {string}", async function(this: CustomWorld, code: string) {
-  // Mock voucher API with valid codes
-  await mockVoucherRedemption(this, {
-    "LAUNCH100": { tokens: 100 },
-    "WELCOME50": { tokens: 50 },
-    "REFRESH50": { tokens: 50 },
-    "TESTCODE": { tokens: 10 },
-    "lowercase": { tokens: 25 },
+  await waitForTextWithRetry(this.page, "Get More Tokens", {
+    timeout: TIMEOUTS.DEFAULT,
   });
-
-  const input = this.page.locator("input#voucher-code");
-  await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await input.fill(code);
-
-  // Store the code for later assertions
-  this.voucherCode = code;
 });
+
+When(
+  "I enter the voucher code {string}",
+  async function(this: CustomWorld, code: string) {
+    // Mock voucher API with valid codes
+    await mockVoucherRedemption(this, {
+      "LAUNCH100": { tokens: 100 },
+      "WELCOME50": { tokens: 50 },
+      "REFRESH50": { tokens: 50 },
+      "TESTCODE": { tokens: 10 },
+      "lowercase": { tokens: 25 },
+    });
+
+    const input = this.page.locator("input#voucher-code");
+    await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await input.fill(code);
+
+    // Store the code for later assertions
+    this.voucherCode = code;
+  },
+);
 
 When("I click the apply voucher button", async function(this: CustomWorld) {
   const applyButton = this.page.locator("button").filter({ hasText: "Apply" });
@@ -132,22 +139,26 @@ When("I click the apply voucher button", async function(this: CustomWorld) {
   await this.page.waitForTimeout(100);
 });
 
-When("I click on the {string} token package", async function(this: CustomWorld, packageId: string) {
-  // Mock Stripe checkout
-  await mockStripeCheckout(this);
+When(
+  "I click on the {string} token package",
+  async function(this: CustomWorld, packageId: string) {
+    // Mock Stripe checkout
+    await mockStripeCheckout(this);
 
-  // Find and click the package card
-  // Packages have a Select button
-  const packageCard = this.page.locator(`[data-package-id="${packageId}"]`).or(
-    this.page.locator("button").filter({ hasText: "Select" }).first(),
-  );
+    // Find and click the package card
+    // Packages have a Select button
+    const packageCard = this.page.locator(`[data-package-id="${packageId}"]`)
+      .or(
+        this.page.locator("button").filter({ hasText: "Select" }).first(),
+      );
 
-  await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await packageCard.click();
+    await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await packageCard.click();
 
-  // Wait for redirect (we'll check URL in Then step)
-  await this.page.waitForTimeout(500);
-});
+    // Wait for redirect (we'll check URL in Then step)
+    await this.page.waitForTimeout(500);
+  },
+);
 
 When("I close the purchase modal", async function(this: CustomWorld) {
   // Find and click the close button (X) or press Escape
@@ -161,42 +172,54 @@ When("I close the purchase modal", async function(this: CustomWorld) {
 
 // Removed duplicate: "I should see my token balance" - now using "I should see the token balance display" from image-enhancement.steps.ts
 
-Then("I should see the token balance card with coins icon", async function(this: CustomWorld) {
-  // Should see the balance text with tokens - the coins icon is rendered as SVG
-  await expect(this.page.getByText(/\d+\s*tokens/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the token balance card with coins icon",
+  async function(this: CustomWorld) {
+    // Should see the balance text with tokens - the coins icon is rendered as SVG
+    await expect(this.page.getByText(/\d+\s*tokens/i)).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
-Then("I should see the low balance warning style", async function(this: CustomWorld) {
-  // Low balance applies destructive styling (text-destructive class from Tailwind)
-  // The balance display should have tokens and show red/warning styling
-  const balanceText = this.page.getByText(/\d+\s*tokens/i);
-  await expect(balanceText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+Then(
+  "I should see the low balance warning style",
+  async function(this: CustomWorld) {
+    // Low balance applies destructive styling (text-destructive class from Tailwind)
+    // The balance display should have tokens and show red/warning styling
+    const balanceText = this.page.getByText(/\d+\s*tokens/i);
+    await expect(balanceText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
-  // Check that parent has destructive styling (could be text-destructive or bg-destructive/10)
-  const hasDestructiveClass = await balanceText.evaluate((el) => {
-    const parent = el.closest("div");
-    if (!parent) return false;
-    return parent.className.includes("destructive") ||
-      parent.className.includes("text-red") ||
-      parent.getAttribute("class")?.includes("destructive") || false;
-  });
-  expect(hasDestructiveClass).toBe(true);
-});
+    // Check that parent has destructive styling (could be text-destructive or bg-destructive/10)
+    const hasDestructiveClass = await balanceText.evaluate((el) => {
+      const parent = el.closest("div");
+      if (!parent) return false;
+      return parent.className.includes("destructive") ||
+        parent.className.includes("text-red") ||
+        parent.getAttribute("class")?.includes("destructive") || false;
+    });
+    expect(hasDestructiveClass).toBe(true);
+  },
+);
 
-Then("I should not see the low balance warning style", async function(this: CustomWorld) {
-  // Should not have destructive styling when balance is normal
-  const balanceText = this.page.getByText(/\d+\s*tokens/i);
-  await expect(balanceText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+Then(
+  "I should not see the low balance warning style",
+  async function(this: CustomWorld) {
+    // Should not have destructive styling when balance is normal
+    const balanceText = this.page.getByText(/\d+\s*tokens/i);
+    await expect(balanceText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
-  // Check that parent has muted styling (not destructive)
-  const hasNormalClass = await balanceText.evaluate((el) => {
-    const parent = el.closest("div");
-    if (!parent) return false;
-    const className = parent.className || parent.getAttribute("class") || "";
-    return className.includes("bg-muted") && !className.includes("destructive");
-  });
-  expect(hasNormalClass).toBe(true);
-});
+    // Check that parent has muted styling (not destructive)
+    const hasNormalClass = await balanceText.evaluate((el) => {
+      const parent = el.closest("div");
+      if (!parent) return false;
+      const className = parent.className || parent.getAttribute("class") || "";
+      return className.includes("bg-muted") &&
+        !className.includes("destructive");
+    });
+    expect(hasNormalClass).toBe(true);
+  },
+);
 
 Then(
   "the get tokens button should say {string}",
@@ -212,7 +235,10 @@ Then(
     // After successful voucher redemption, the modal closes automatically
     // So we check if either: the success message is visible briefly, or the modal has closed
     try {
-      await waitForTextWithRetry(this.page, message, { timeout: 2000, retryInterval: 200 });
+      await waitForTextWithRetry(this.page, message, {
+        timeout: 2000,
+        retryInterval: 200,
+      });
     } catch {
       // If the success message isn't visible, the modal should have closed (indicating success)
       const modalTitle = this.page.getByText("Get More Tokens");
@@ -229,35 +255,48 @@ Then("my balance should increase", async function(this: CustomWorld) {
   await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
-Then("I should see an error message for the voucher", async function(this: CustomWorld) {
-  // Look for alert with error styling
-  const errorAlert = this.page.locator('[role="alert"]').filter({
-    hasText: /(Invalid|already been redeemed|error)/i,
-  });
-  await expect(errorAlert).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see an error message for the voucher",
+  async function(this: CustomWorld) {
+    // Look for alert with error styling
+    const errorAlert = this.page.locator('[role="alert"]').filter({
+      hasText: /(Invalid|already been redeemed|error)/i,
+    });
+    await expect(errorAlert).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("the apply voucher button should be disabled", async function(this: CustomWorld) {
-  const applyButton = this.page.locator("button").filter({ hasText: "Apply" });
-  await expect(applyButton).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the apply voucher button should be disabled",
+  async function(this: CustomWorld) {
+    const applyButton = this.page.locator("button").filter({
+      hasText: "Apply",
+    });
+    await expect(applyButton).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("I should see the loading spinner on apply button", async function(this: CustomWorld) {
-  // Look for loading spinner (Loader2 icon with animate-spin)
-  const loadingSpinner = this.page.locator("button").filter({ hasText: "Apply" }).locator(
-    ".animate-spin",
-  );
+Then(
+  "I should see the loading spinner on apply button",
+  async function(this: CustomWorld) {
+    // Look for loading spinner (Loader2 icon with animate-spin)
+    const loadingSpinner = this.page.locator("button").filter({
+      hasText: "Apply",
+    }).locator(
+      ".animate-spin",
+    );
 
-  // We expect to see it briefly, but it might already be gone
-  // So we use a shorter timeout
-  const spinnerVisible = await loadingSpinner.isVisible().catch(() => false);
+    // We expect to see it briefly, but it might already be gone
+    // So we use a shorter timeout
+    const spinnerVisible = await loadingSpinner.isVisible().catch(() => false);
 
-  // If we don't see the spinner, that's okay - it was very fast
-  // But if we do see it, verify it's there
-  if (spinnerVisible) {
-    await expect(loadingSpinner).toBeVisible({ timeout: TIMEOUTS.SHORT });
-  }
-});
+    // If we don't see the spinner, that's okay - it was very fast
+    // But if we do see it, verify it's there
+    if (spinnerVisible) {
+      await expect(loadingSpinner).toBeVisible({ timeout: TIMEOUTS.SHORT });
+    }
+  },
+);
 
 Then(
   "I should see the purchase modal title {string}",
@@ -274,12 +313,17 @@ Then("I should see token package cards", async function(this: CustomWorld) {
   await expect(packageCards.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
-Then("I should see the voucher input section", async function(this: CustomWorld) {
-  await expect(this.page.locator("input#voucher-code")).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await expect(this.page.getByText("Have a voucher code?")).toBeVisible({
-    timeout: TIMEOUTS.DEFAULT,
-  });
-});
+Then(
+  "I should see the voucher input section",
+  async function(this: CustomWorld) {
+    await expect(this.page.locator("input#voucher-code")).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+    await expect(this.page.getByText("Have a voucher code?")).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
 // Removed duplicate - using common.steps.ts
 
@@ -298,43 +342,56 @@ Then("the purchase modal should close", async function(this: CustomWorld) {
 Then("the token balance should be updated", async function(this: CustomWorld) {
   // The balance should have been refetched
   // We verify by checking the balance display is still visible (it refreshed)
-  await expect(this.page.getByText(/\d+\s*Tokens/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(this.page.getByText(/\d+\s*Tokens/i)).toBeVisible({
+    timeout: TIMEOUTS.DEFAULT,
+  });
 });
 
 Then(
   "I should see at least {int} token packages",
   async function(this: CustomWorld, minPackages: number) {
     // Count package cards by their "Buy Now" buttons
-    const packageCards = this.page.locator("button").filter({ hasText: /Buy Now|Select/i });
-    await expect(packageCards.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    const packageCards = this.page.locator("button").filter({
+      hasText: /Buy Now|Select/i,
+    });
+    await expect(packageCards.first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
     const count = await packageCards.count();
     expect(count).toBeGreaterThanOrEqual(minPackages);
   },
 );
 
-Then("each package should show tokens and price", async function(this: CustomWorld) {
-  // Verify packages have token count and price displayed
-  await expect(this.page.getByText(/\d+\s*tokens/i).first()).toBeVisible({
-    timeout: TIMEOUTS.DEFAULT,
-  });
-  // Price is shown as a decimal number (e.g., "2.99") without currency symbol
-  await expect(this.page.getByText(/\d+\.\d{2}/).first()).toBeVisible({
-    timeout: TIMEOUTS.DEFAULT,
-  });
-});
+Then(
+  "each package should show tokens and price",
+  async function(this: CustomWorld) {
+    // Verify packages have token count and price displayed
+    await expect(this.page.getByText(/\d+\s*tokens/i).first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+    // Price is shown as a decimal number (e.g., "2.99") without currency symbol
+    await expect(this.page.getByText(/\d+\.\d{2}/).first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
 Then(
   "the voucher input should show {string}",
   async function(this: CustomWorld, expectedValue: string) {
     const input = this.page.locator("input#voucher-code");
-    await expect(input).toHaveValue(expectedValue, { timeout: TIMEOUTS.DEFAULT });
+    await expect(input).toHaveValue(expectedValue, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
 Then(
   "I should see {string} in the balance display",
   async function(this: CustomWorld, balanceText: string) {
-    await waitForTextWithRetry(this.page, balanceText, { timeout: TIMEOUTS.DEFAULT });
+    await waitForTextWithRetry(this.page, balanceText, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 

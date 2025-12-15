@@ -235,9 +235,15 @@ export default function VouchersPage() {
               <th className="px-6 py-3 text-left text-sm font-medium">Type</th>
               <th className="px-6 py-3 text-left text-sm font-medium">Value</th>
               <th className="px-6 py-3 text-left text-sm font-medium">Uses</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Status</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Expires</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Actions</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium">
+                Expires
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -254,7 +260,9 @@ export default function VouchersPage() {
                 </td>
                 <td className="px-6 py-4">
                   <Badge
-                    variant={voucher.status === "ACTIVE" ? "default" : "secondary"}
+                    variant={voucher.status === "ACTIVE"
+                      ? "default"
+                      : "secondary"}
                   >
                     {voucher.status}
                   </Badge>

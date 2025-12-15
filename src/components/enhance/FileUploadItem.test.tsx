@@ -351,7 +351,9 @@ describe("FileUploadItem", () => {
         />,
       );
 
-      const cancelButton = screen.getByRole("button", { name: "Cancel upload" });
+      const cancelButton = screen.getByRole("button", {
+        name: "Cancel upload",
+      });
       expect(cancelButton).toBeInTheDocument();
     });
 

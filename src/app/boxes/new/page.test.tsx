@@ -176,7 +176,12 @@ describe("NewBoxPage", () => {
 
     // Check container div
     const containerDiv = mainDiv?.firstChild as HTMLElement;
-    expect(containerDiv).toHaveClass("container", "mx-auto", "px-4", "max-w-4xl");
+    expect(containerDiv).toHaveClass(
+      "container",
+      "mx-auto",
+      "px-4",
+      "max-w-4xl",
+    );
   });
 
   it("renders heading with correct styling", async () => {

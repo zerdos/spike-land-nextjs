@@ -43,7 +43,9 @@ export async function GET() {
       privacy: AlbumPrivacy;
       coverImageId: string | null;
       _count: { albumImages: number; };
-      albumImages: { image: { id: string; originalUrl: string; name: string; }; }[];
+      albumImages: {
+        image: { id: string; originalUrl: string; name: string; };
+      }[];
       createdAt: Date;
       updatedAt: Date;
     };

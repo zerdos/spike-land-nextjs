@@ -27,7 +27,10 @@ import prisma from "@/lib/prisma";
 
 describe("/api/images/move-to-album", () => {
   const mockUserId = "clq1234567890userabcdefgh";
-  const mockImageIds = ["clq1234567890img1abcdefgh", "clq1234567890img2abcdefgh"];
+  const mockImageIds = [
+    "clq1234567890img1abcdefgh",
+    "clq1234567890img2abcdefgh",
+  ];
   const mockTargetAlbumId = "clq1234567890albmtgtabcde";
   const mockSourceAlbumId = "clq1234567890albmsrcabcde";
 
@@ -39,13 +42,16 @@ describe("/api/images/move-to-album", () => {
     it("should return 401 if user is not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -59,13 +65,16 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: "not-an-array",
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: "not-an-array",
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -79,13 +88,16 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: [],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: [],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -102,19 +114,24 @@ describe("/api/images/move-to-album", () => {
       // Create array with 101 items
       const tooManyIds = Array.from({ length: 101 }, (_, i) => `image-${i}`);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: tooManyIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: tooManyIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data).toEqual({ error: "Cannot move more than 100 images at once" });
+      expect(data).toEqual({
+        error: "Cannot move more than 100 images at once",
+      });
     });
 
     it("should return 400 if imageIds contain invalid CUID format", async () => {
@@ -122,13 +139,16 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: ["invalid-id", "123", ""],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: ["invalid-id", "123", ""],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -143,13 +163,16 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: [123, null, undefined, {}],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: [123, null, undefined, {}],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -186,18 +209,21 @@ describe("/api/images/move-to-album", () => {
         addedAt: now,
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          // Duplicate the same ID 3 times
-          imageIds: [
-            "clq1234567890abcdefghijkl",
-            "clq1234567890abcdefghijkl",
-            "clq1234567890abcdefghijkl",
-          ],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            // Duplicate the same ID 3 times
+            imageIds: [
+              "clq1234567890abcdefghijkl",
+              "clq1234567890abcdefghijkl",
+              "clq1234567890abcdefghijkl",
+            ],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -214,12 +240,15 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -233,13 +262,16 @@ describe("/api/images/move-to-album", () => {
         user: { id: mockUserId },
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: 123,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: 123,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -255,13 +287,16 @@ describe("/api/images/move-to-album", () => {
 
       (prisma.album.findUnique as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -279,13 +314,16 @@ describe("/api/images/move-to-album", () => {
         userId: "other-user",
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -310,13 +348,16 @@ describe("/api/images/move-to-album", () => {
         { id: "clq1234567890img1abcdefgh" },
       ] as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -341,14 +382,17 @@ describe("/api/images/move-to-album", () => {
         { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-          removeFromSourceAlbum: mockSourceAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+            removeFromSourceAlbum: mockSourceAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -371,14 +415,17 @@ describe("/api/images/move-to-album", () => {
         { id: "clq1234567890img2abcdefgh" },
       ] as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-          removeFromSourceAlbum: mockSourceAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+            removeFromSourceAlbum: mockSourceAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -424,13 +471,16 @@ describe("/api/images/move-to-album", () => {
           addedAt: now,
         } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -487,16 +537,21 @@ describe("/api/images/move-to-album", () => {
           addedAt: now,
         } as any);
 
-      (prisma.albumImage.deleteMany as Mock).mockResolvedValue({ count: 1 } as any);
+      (prisma.albumImage.deleteMany as Mock).mockResolvedValue(
+        { count: 1 } as any,
+      );
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-          removeFromSourceAlbum: mockSourceAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+            removeFromSourceAlbum: mockSourceAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -541,13 +596,16 @@ describe("/api/images/move-to-album", () => {
         addedAt: oldDate,
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: ["clq1234567890img1abcdefgh"],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: ["clq1234567890img1abcdefgh"],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -586,13 +644,16 @@ describe("/api/images/move-to-album", () => {
         } as any)
         .mockRejectedValueOnce(new Error("Database error"));
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -626,13 +687,16 @@ describe("/api/images/move-to-album", () => {
 
       (prisma.albumImage.upsert as Mock).mockRejectedValue("String error");
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: ["clq1234567890img1abcdefgh"],
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: ["clq1234567890img1abcdefgh"],
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -650,13 +714,16 @@ describe("/api/images/move-to-album", () => {
         new Error("Database connection failed"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: mockImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: mockImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -703,13 +770,16 @@ describe("/api/images/move-to-album", () => {
         addedAt: now,
       }));
 
-      const request = new NextRequest("http://localhost:3000/api/images/move-to-album", {
-        method: "POST",
-        body: JSON.stringify({
-          imageIds: threeImageIds,
-          targetAlbumId: mockTargetAlbumId,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/images/move-to-album",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            imageIds: threeImageIds,
+            targetAlbumId: mockTargetAlbumId,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();

@@ -16,7 +16,8 @@
 
 ### Overview of Major Providers
 
-The AI/LLM landscape in 2025 features three dominant providers, each with distinct characteristics, strengths, and use cases.
+The AI/LLM landscape in 2025 features three dominant providers, each with
+distinct characteristics, strengths, and use cases.
 
 ### OpenAI (ChatGPT, GPT-4)
 
@@ -125,7 +126,8 @@ The AI/LLM landscape in 2025 features three dominant providers, each with distin
 
 #### 1. System Prompts
 
-A system prompt sets the context, tone, and behavior for the model. It's the first message in the conversation.
+A system prompt sets the context, tone, and behavior for the model. It's the
+first message in the conversation.
 
 **Example - Customer Support Agent:**
 
@@ -155,7 +157,8 @@ When suggesting improvements, explain the reasoning.
 
 #### 2. Few-Shot Learning
 
-Providing examples dramatically improves model performance, especially for complex or domain-specific tasks.
+Providing examples dramatically improves model performance, especially for
+complex or domain-specific tasks.
 
 **Key Principles:**
 
@@ -211,7 +214,8 @@ Output:
 
 #### 3. Chain-of-Thought (CoT) Prompting
 
-CoT encourages the model to break down reasoning into intermediate steps, improving accuracy on complex tasks.
+CoT encourages the model to break down reasoning into intermediate steps,
+improving accuracy on complex tasks.
 
 **Zero-Shot CoT (No Examples):**
 
@@ -266,17 +270,19 @@ Let's think step-by-step:
 
 ### Why Streaming Matters
 
-Streaming LLM responses provides significant advantages over waiting for complete responses:
+Streaming LLM responses provides significant advantages over waiting for
+complete responses:
 
 **Benefits:**
 
-- **Perceived Latency**: Users see content immediately instead of waiting 30-60 seconds
+- **Perceived Latency**: Users see content immediately instead of waiting 30-60
+  seconds
 - **User Experience**: Typewriter effect is more engaging
 - **Memory Efficiency**: Process responses incrementally instead of buffering
 - **Real-time Interactivity**: Update UI as tokens arrive
 
-**Performance Impact:**
-Typical completion: 45-50 seconds → Perceived speed with streaming: 500-1000ms to first token
+**Performance Impact:** Typical completion: 45-50 seconds → Perceived speed with
+streaming: 500-1000ms to first token
 
 ### Server-Sent Events (SSE) Overview
 
@@ -349,7 +355,9 @@ export async function POST(request: NextRequest) {
 
         controller.close();
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Unknown error";
         const sseData = `data: ${JSON.stringify({ error: errorMessage })}\n\n`;
         controller.enqueue(new TextEncoder().encode(sseData));
         controller.close();
@@ -510,7 +518,8 @@ Understanding token costs is crucial for cost-effective LLM applications.
 
 #### 1. Prompt Caching
 
-Prompt caching stores and reuses the internal state of the model, preventing recomputation of identical prompt segments.
+Prompt caching stores and reuses the internal state of the model, preventing
+recomputation of identical prompt segments.
 
 **How It Works:**
 
@@ -942,7 +951,8 @@ const userMessages = [{
 
 #### 2. Output Injection (Downstream Attacks)
 
-LLM outputs passed to other systems without sanitization can cause SQL injection, XSS, etc.
+LLM outputs passed to other systems without sanitization can cause SQL
+injection, XSS, etc.
 
 **Example:**
 
@@ -1141,7 +1151,9 @@ function validateChatRequest(body: unknown): {
 
   // Validate message format
   for (const msg of messages) {
-    if (typeof msg !== "object" || !msg || !("role" in msg) || !("content" in msg)) {
+    if (
+      typeof msg !== "object" || !msg || !("role" in msg) || !("content" in msg)
+    ) {
       throw new Error("Invalid message format");
     }
     if (typeof msg.content !== "string") {
@@ -1205,7 +1217,9 @@ export async function POST(request: NextRequest) {
 
           controller.close();
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
+          const message = error instanceof Error
+            ? error.message
+            : "Unknown error";
           controller.enqueue(
             new TextEncoder().encode(
               `data: ${JSON.stringify({ error: message })}\n\n`,
@@ -1272,7 +1286,10 @@ export function useChat(systemPrompt?: string) {
 
       try {
         // Add user message
-        const newMessages = [...messages, { role: "user", content: userMessage }];
+        const newMessages = [...messages, {
+          role: "user",
+          content: userMessage,
+        }];
         setMessages(newMessages);
 
         // Call API
@@ -1450,7 +1467,7 @@ export function useChat(systemPrompt?: string) {
 
 ---
 
-**Last Updated:** December 2025
-**Document Version:** 1.0
+**Last Updated:** December 2025 **Document Version:** 1.0
 
-For questions or updates, please refer to the latest research and official documentation from API providers.
+For questions or updates, please refer to the latest research and official
+documentation from API providers.

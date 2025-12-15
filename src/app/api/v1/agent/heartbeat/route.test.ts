@@ -21,10 +21,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   });
 
   it("returns 400 for invalid request body - missing boxId", async () => {
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({}),
+      },
+    );
 
     const response = await POST(request);
 
@@ -35,10 +38,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   });
 
   it("returns 400 for invalid request body - boxId wrong type", async () => {
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: 123 }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: 123 }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -50,10 +56,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   it("returns 404 if box does not exist", async () => {
     vi.mocked(prisma.box.findUnique).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -71,10 +80,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -95,10 +107,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -122,10 +137,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -144,10 +162,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId, status: "IDLE" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId, status: "IDLE" }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -162,10 +183,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId, load: 0.75 }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId, load: 0.75 }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -180,10 +204,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId, status: "BUSY", load: 0.95 }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId, status: "BUSY", load: 0.95 }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -193,21 +220,29 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   });
 
   it("returns 500 for database errors", async () => {
-    vi.mocked(prisma.box.findUnique).mockRejectedValue(new Error("Database connection failed"));
+    vi.mocked(prisma.box.findUnique).mockRejectedValue(
+      new Error("Database connection failed"),
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
     expect(response.status).toBe(500);
     const json = await response.json();
     expect(json.error).toBe("Internal Server Error");
-    expect(consoleSpy).toHaveBeenCalledWith("Heartbeat error:", expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Heartbeat error:",
+      expect.any(Error),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -221,10 +256,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -236,10 +274,13 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   });
 
   it("returns 400 for invalid load type (string instead of number)", async () => {
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId, load: "high" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId, load: "high" }),
+      },
+    );
 
     const response = await POST(request);
 
@@ -250,13 +291,16 @@ describe("/api/v1/agent/heartbeat - POST", () => {
   });
 
   it("returns 500 for invalid JSON body", async () => {
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: "not valid json",
-      headers: {
-        "Content-Type": "application/json",
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: "not valid json",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -275,15 +319,20 @@ describe("/api/v1/agent/heartbeat - POST", () => {
       status: "RUNNING",
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/v1/agent/heartbeat", {
-      method: "POST",
-      body: JSON.stringify({ boxId: mockBoxId }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/v1/agent/heartbeat",
+      {
+        method: "POST",
+        body: JSON.stringify({ boxId: mockBoxId }),
+      },
+    );
 
     const response = await POST(request);
 
     expect(response.status).toBe(200);
     const json = await response.json();
-    expect(json.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+    expect(json.timestamp).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/,
+    );
   });
 });

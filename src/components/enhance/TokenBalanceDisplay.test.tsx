@@ -82,7 +82,8 @@ describe("TokenBalanceDisplay Component", () => {
 
     render(<TokenBalanceDisplay />);
 
-    const balanceSection = screen.getByText("10 tokens").parentElement?.parentElement;
+    const balanceSection = screen.getByText("10 tokens").parentElement
+      ?.parentElement;
     expect(balanceSection?.querySelector("svg")).toBeInTheDocument();
   });
 
@@ -183,7 +184,8 @@ describe("TokenBalanceDisplay Component", () => {
     render(<TokenBalanceDisplay />);
 
     expect(screen.getByTestId("estimated-enhancements")).toBeInTheDocument();
-    expect(screen.getByText("Estimated enhancements remaining")).toBeInTheDocument();
+    expect(screen.getByText("Estimated enhancements remaining"))
+      .toBeInTheDocument();
     expect(screen.getByText("25")).toBeInTheDocument(); // tier1K
     expect(screen.getByText("12")).toBeInTheDocument(); // tier2K
     expect(screen.getByText("5")).toBeInTheDocument(); // tier4K
@@ -194,7 +196,8 @@ describe("TokenBalanceDisplay Component", () => {
 
     render(<TokenBalanceDisplay showEstimates={false} />);
 
-    expect(screen.queryByTestId("estimated-enhancements")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("estimated-enhancements")).not
+      .toBeInTheDocument();
   });
 
   it("shows analytics when showAnalytics is true and stats available", () => {
@@ -315,7 +318,9 @@ describe("TokenBalanceDisplay Component", () => {
   it("applies custom className", () => {
     vi.mocked(useTokenBalance).mockReturnValue(defaultMockReturn);
 
-    const { container } = render(<TokenBalanceDisplay className="custom-class" />);
+    const { container } = render(
+      <TokenBalanceDisplay className="custom-class" />,
+    );
 
     const card = container.firstChild;
     expect(card).toHaveClass("custom-class");
@@ -390,7 +395,9 @@ describe("TokenBalanceDisplay Component", () => {
       isLoading: true,
     });
 
-    const { container } = render(<TokenBalanceDisplay className="test-class" />);
+    const { container } = render(
+      <TokenBalanceDisplay className="test-class" />,
+    );
 
     expect(container.firstChild).toHaveClass("test-class");
   });

@@ -195,7 +195,8 @@ export function RequirementsManager({
         <CardTitle>Requirements</CardTitle>
         <CardDescription>
           Manage app requirements with priorities and status tracking
-          {maxRequirements && " (" + requirements.length + "/" + maxRequirements + ")"}
+          {maxRequirements &&
+            " (" + requirements.length + "/" + maxRequirements + ")"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -268,7 +269,10 @@ export function RequirementsManager({
                       <Select
                         value={requirement.priority}
                         onValueChange={(value) =>
-                          handleUpdatePriority(requirement.id, value as RequirementPriority)}
+                          handleUpdatePriority(
+                            requirement.id,
+                            value as RequirementPriority,
+                          )}
                         disabled={readonly}
                       >
                         <SelectTrigger className="w-[110px] h-7 text-xs">
@@ -284,7 +288,10 @@ export function RequirementsManager({
                       <Select
                         value={requirement.status}
                         onValueChange={(value) =>
-                          handleUpdateStatus(requirement.id, value as RequirementStatus)}
+                          handleUpdateStatus(
+                            requirement.id,
+                            value as RequirementStatus,
+                          )}
                         disabled={readonly}
                       >
                         <SelectTrigger className="w-[130px] h-7 text-xs">
@@ -292,13 +299,17 @@ export function RequirementsManager({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="in-progress">In Progress</SelectItem>
+                          <SelectItem value="in-progress">
+                            In Progress
+                          </SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
 
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Badge variant={priorityColors[requirement.priority] as any}>
+                      <Badge
+                        variant={priorityColors[requirement.priority] as any}
+                      >
                         {requirement.priority}
                       </Badge>
 

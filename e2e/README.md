@@ -2,9 +2,11 @@
 
 ## ⚠️ IMPORTANT: Current Status
 
-**All wizard E2E tests are currently skipped** due to authentication issues in CI/CD environments.
+**All wizard E2E tests are currently skipped** due to authentication issues in
+CI/CD environments.
 
-**Issue:** GitHub Issue #23 - E2E authentication bypass not working in Vercel preview deployments
+**Issue:** GitHub Issue #23 - E2E authentication bypass not working in Vercel
+preview deployments
 
 **Impact:**
 
@@ -12,8 +14,9 @@
 - ❌ E2E tests: Skipped (0% coverage for wizard scenarios)
 - ❌ Integration coverage: Limited
 
-**Action Required:**
-The authentication bypass mechanism needs to be fixed before these tests can run in CI. All wizard feature files are tagged with `@skip` until this is resolved.
+**Action Required:** The authentication bypass mechanism needs to be fixed
+before these tests can run in CI. All wizard feature files are tagged with
+`@skip` until this is resolved.
 
 **Tracking:** See GitHub Issue #23 for progress on fixing authentication
 
@@ -21,13 +24,16 @@ The authentication bypass mechanism needs to be fixed before these tests can run
 
 ## Overview
 
-This directory contains end-to-end (E2E) tests built with Playwright and Cucumber. The tests use Behavior-Driven Development (BDD) approach with Gherkin syntax for test scenarios.
+This directory contains end-to-end (E2E) tests built with Playwright and
+Cucumber. The tests use Behavior-Driven Development (BDD) approach with Gherkin
+syntax for test scenarios.
 
 ## Recent Improvements (2025-10-27)
 
 ### 1. Retry Logic & Timeout Handling
 
-**Problem**: Tests were flaky due to timing issues and strict mode violations when elements weren't immediately available.
+**Problem**: Tests were flaky due to timing issues and strict mode violations
+when elements weren't immediately available.
 
 **Solution**: Created `retry-helper.ts` with:
 
@@ -52,9 +58,11 @@ await expect(element).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
 ### 2. Data-TestId Selectors
 
-**Problem**: Using `getByRole('button', { name: 'Next' })` caused strict mode violations when multiple elements matched (e.g., Next.js Dev Tools button).
+**Problem**: Using `getByRole('button', { name: 'Next' })` caused strict mode
+violations when multiple elements matched (e.g., Next.js Dev Tools button).
 
-**Solution**: Updated page objects and step definitions to prefer `data-testid` selectors:
+**Solution**: Updated page objects and step definitions to prefer `data-testid`
+selectors:
 
 **Before**:
 
@@ -74,7 +82,8 @@ async getNextButton() {
 
 ### 3. Feature File Organization
 
-**Problem**: Single `app-creation-wizard.feature` with 35 scenarios and a shared Background created tight coupling and slow test execution.
+**Problem**: Single `app-creation-wizard.feature` with 35 scenarios and a shared
+Background created tight coupling and slow test execution.
 
 **Solution**: Split into focused, smaller feature files:
 

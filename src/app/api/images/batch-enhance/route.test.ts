@@ -116,7 +116,10 @@ describe("POST /api/images/batch-enhance", () => {
   });
 
   it("should return 400 if imageIds is not an array", async () => {
-    const req = createMockRequest({ imageIds: "not-an-array", tier: "TIER_2K" });
+    const req = createMockRequest({
+      imageIds: "not-an-array",
+      tier: "TIER_2K",
+    });
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
@@ -178,7 +181,9 @@ describe("POST /api/images/batch-enhance", () => {
   });
 
   it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.hasEnoughTokens).mockResolvedValueOnce(false);
 
     const req = createMockRequest({
@@ -193,7 +198,9 @@ describe("POST /api/images/batch-enhance", () => {
   });
 
   it("should return 500 if token consumption fails", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
       success: false,
       error: "Database error",
@@ -211,7 +218,9 @@ describe("POST /api/images/batch-enhance", () => {
 
   it("should start batch enhancement workflow successfully", async () => {
     const { start } = await import("workflow/api");
-    const { batchEnhanceImages } = await import("@/workflows/batch-enhance.workflow");
+    const { batchEnhanceImages } = await import(
+      "@/workflows/batch-enhance.workflow"
+    );
 
     const req = createMockRequest({
       imageIds: ["img-1", "img-2"],
@@ -241,7 +250,9 @@ describe("POST /api/images/batch-enhance", () => {
   });
 
   it("should consume correct amount of tokens", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     const req = createMockRequest({
       imageIds: ["img-1", "img-2"],
@@ -289,7 +300,9 @@ describe("POST /api/images/batch-enhance", () => {
   });
 
   it("should return new balance after token consumption", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
       success: true,
       balance: 85,

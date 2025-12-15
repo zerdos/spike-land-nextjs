@@ -160,7 +160,10 @@ describe("POST /api/pipelines/reference-images", () => {
 
     const formData = new FormData();
     // 6MB file (exceeds 5MB limit)
-    formData.append("file", createMockFile("test.jpg", "image/jpeg", 6 * 1024 * 1024));
+    formData.append(
+      "file",
+      createMockFile("test.jpg", "image/jpeg", 6 * 1024 * 1024),
+    );
     formData.append("pipelineId", "pipeline-123");
     const request = createMockRequest(formData);
     const response = await POST(request);
@@ -338,7 +341,9 @@ describe("POST /api/pipelines/reference-images", () => {
             customInstructions: "existing instructions",
             referenceImages: expect.arrayContaining([
               { url: "existing-url", r2Key: "existing-key" },
-              expect.objectContaining({ url: "https://r2.example.com/new-image.jpg" }),
+              expect.objectContaining({
+                url: "https://r2.example.com/new-image.jpg",
+              }),
             ]),
           }),
         }),

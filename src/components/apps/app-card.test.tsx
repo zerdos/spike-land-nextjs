@@ -18,9 +18,12 @@ describe("AppCard", () => {
       render(<AppCard {...defaultProps} />);
 
       expect(screen.getByText("Test App")).toBeInTheDocument();
-      expect(screen.getByText("This is a test application description")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /launch app/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /view details/i })).toBeInTheDocument();
+      expect(screen.getByText("This is a test application description"))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /launch app/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /view details/i }))
+        .toBeInTheDocument();
     });
 
     it("renders with all props provided", () => {
@@ -42,7 +45,8 @@ describe("AppCard", () => {
 
       expect(screen.getByTestId("test-icon")).toBeInTheDocument();
       expect(screen.getByText("Test App")).toBeInTheDocument();
-      expect(screen.getByText("This is a test application description")).toBeInTheDocument();
+      expect(screen.getByText("This is a test application description"))
+        .toBeInTheDocument();
     });
 
     it("renders without icon when not provided", () => {
@@ -53,7 +57,9 @@ describe("AppCard", () => {
     });
 
     it("applies custom className", () => {
-      const { container } = render(<AppCard {...defaultProps} className="custom-test-class" />);
+      const { container } = render(
+        <AppCard {...defaultProps} className="custom-test-class" />,
+      );
 
       const card = container.querySelector(".custom-test-class");
       expect(card).toBeInTheDocument();
@@ -63,7 +69,9 @@ describe("AppCard", () => {
       render(<AppCard {...defaultProps} />);
 
       const title = screen.getByText("Test App");
-      const description = screen.getByText("This is a test application description");
+      const description = screen.getByText(
+        "This is a test application description",
+      );
 
       expect(title).toBeInTheDocument();
       expect(description).toBeInTheDocument();
@@ -130,7 +138,13 @@ describe("AppCard", () => {
       const onLaunch = vi.fn();
       const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
 
-      render(<AppCard {...defaultProps} onLaunch={onLaunch} appUrl="https://example.com/app" />);
+      render(
+        <AppCard
+          {...defaultProps}
+          onLaunch={onLaunch}
+          appUrl="https://example.com/app"
+        />,
+      );
 
       await user.click(screen.getByRole("button", { name: /launch app/i }));
 
@@ -185,7 +199,13 @@ describe("AppCard", () => {
       delete (window as { location?: unknown; }).location;
       window.location = { href: "" } as Location;
 
-      render(<AppCard {...defaultProps} onViewDetails={onViewDetails} detailsUrl="/app/details" />);
+      render(
+        <AppCard
+          {...defaultProps}
+          onViewDetails={onViewDetails}
+          detailsUrl="/app/details"
+        />,
+      );
 
       await user.click(screen.getByRole("button", { name: /view details/i }));
 
@@ -223,7 +243,9 @@ describe("AppCard", () => {
     it("renders View Details button with correct icon", () => {
       render(<AppCard {...defaultProps} />);
 
-      const detailsButton = screen.getByRole("button", { name: /view details/i });
+      const detailsButton = screen.getByRole("button", {
+        name: /view details/i,
+      });
       expect(detailsButton).toBeInTheDocument();
       expect(detailsButton.querySelector("svg")).toBeInTheDocument();
     });
@@ -232,7 +254,9 @@ describe("AppCard", () => {
       render(<AppCard {...defaultProps} />);
 
       const launchButton = screen.getByRole("button", { name: /launch app/i });
-      const detailsButton = screen.getByRole("button", { name: /view details/i });
+      const detailsButton = screen.getByRole("button", {
+        name: /view details/i,
+      });
 
       expect(launchButton.className).toContain("flex-1");
       expect(detailsButton.className).toContain("flex-1");
@@ -243,7 +267,9 @@ describe("AppCard", () => {
     it("renders long description with line-clamp", () => {
       const longDescription =
         "This is a very long description that should be clamped to two lines when displayed in the card component to maintain consistent layout";
-      const { container } = render(<AppCard {...defaultProps} description={longDescription} />);
+      const { container } = render(
+        <AppCard {...defaultProps} description={longDescription} />,
+      );
 
       const description = container.querySelector(".line-clamp-2");
       expect(description).toBeInTheDocument();
@@ -261,8 +287,10 @@ describe("AppCard", () => {
     it("has accessible button labels", () => {
       render(<AppCard {...defaultProps} />);
 
-      expect(screen.getByRole("button", { name: /launch app/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /view details/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /launch app/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /view details/i }))
+        .toBeInTheDocument();
     });
 
     it("card has proper heading structure", () => {
@@ -306,7 +334,9 @@ describe("AppCard", () => {
 
       render(<AppCard {...defaultProps} onViewDetails={onViewDetails} />);
 
-      const detailsButton = screen.getByRole("button", { name: /view details/i });
+      const detailsButton = screen.getByRole("button", {
+        name: /view details/i,
+      });
       await user.click(detailsButton);
       await user.click(detailsButton);
 

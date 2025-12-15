@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DELETE, GET } from "./route";
 
 // Type for EnhancedImage with jobs relation
-type EnhancedImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
+type EnhancedImageWithJobs = EnhancedImage & {
+  enhancementJobs: ImageEnhancementJob[];
+};
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),

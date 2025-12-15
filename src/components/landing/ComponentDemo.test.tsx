@@ -33,17 +33,22 @@ describe("ComponentDemo Component", () => {
   describe("Buttons Tab", () => {
     it("should render button variants", () => {
       render(<ComponentDemo />);
-      expect(screen.getByRole("button", { name: "Primary" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Secondary" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Outline" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Primary" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Secondary" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Outline" }))
+        .toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Ghost" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Destructive" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Destructive" }))
+        .toBeInTheDocument();
     });
 
     it("should render button sizes", () => {
       render(<ComponentDemo />);
       expect(screen.getByRole("button", { name: "Small" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Default" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Default" }))
+        .toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Large" })).toBeInTheDocument();
     });
 
@@ -62,7 +67,8 @@ describe("ComponentDemo Component", () => {
       const button = screen.getByRole("button", { name: "Click Me" });
       await user.click(button);
 
-      expect(screen.getByRole("button", { name: /Loading/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Loading/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -75,7 +81,8 @@ describe("ComponentDemo Component", () => {
       await user.click(screen.getByRole("tab", { name: "Inputs" }));
 
       expect(screen.getByLabelText("Text Input")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Enter your email")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Enter your email"))
+        .toBeInTheDocument();
     });
 
     it("should render select component", async () => {
@@ -153,7 +160,9 @@ describe("ComponentDemo Component", () => {
 
       await user.click(screen.getByRole("tab", { name: "Feedback" }));
 
-      const animateButton = screen.getByRole("button", { name: "Animate Progress" });
+      const animateButton = screen.getByRole("button", {
+        name: "Animate Progress",
+      });
       await user.click(animateButton);
 
       // Progress should start at 0 and animate
@@ -182,7 +191,8 @@ describe("ComponentDemo Component", () => {
       await user.click(screen.getByRole("tab", { name: "Dialog" }));
 
       expect(screen.getByText("Dialog / Modal")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Open Dialog" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Open Dialog" }))
+        .toBeInTheDocument();
     });
 
     it("should open dialog when button clicked", async () => {
@@ -194,7 +204,8 @@ describe("ComponentDemo Component", () => {
       await user.click(screen.getByRole("button", { name: "Open Dialog" }));
 
       expect(screen.getByText("Dialog Example")).toBeInTheDocument();
-      expect(screen.getByText(/This dialog tests the overlay/)).toBeInTheDocument();
+      expect(screen.getByText(/This dialog tests the overlay/))
+        .toBeInTheDocument();
     });
 
     it("should close dialog with Cancel button", async () => {

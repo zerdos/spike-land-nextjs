@@ -90,7 +90,8 @@ describe("AlbumSelector", () => {
         />,
       );
 
-      expect(screen.queryByTitle("Clear album selection")).not.toBeInTheDocument();
+      expect(screen.queryByTitle("Clear album selection")).not
+        .toBeInTheDocument();
     });
   });
 

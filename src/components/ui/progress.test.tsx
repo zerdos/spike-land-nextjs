@@ -35,14 +35,18 @@ describe("Progress", () => {
     const { container } = render(<Progress value={50} glow />);
     const root = container.firstChild as HTMLElement;
     const indicator = root.firstChild as HTMLElement;
-    expect(indicator.className).toContain("shadow-[0_0_10px_hsl(var(--primary)/0.5)]");
+    expect(indicator.className).toContain(
+      "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
+    );
   });
 
   it("does not apply glow effect by default", () => {
     const { container } = render(<Progress value={50} />);
     const root = container.firstChild as HTMLElement;
     const indicator = root.firstChild as HTMLElement;
-    expect(indicator.className).not.toContain("shadow-[0_0_10px_hsl(var(--primary)/0.5)]");
+    expect(indicator.className).not.toContain(
+      "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
+    );
   });
 
   it("accepts custom className", () => {

@@ -139,7 +139,10 @@ export function EnhancedImagesList({
               </Link>
 
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground truncate" suppressHydrationWarning>
+                <span
+                  className="text-xs text-muted-foreground truncate"
+                  suppressHydrationWarning
+                >
                   {isClient ? formatDate(image.createdAt) : ""}
                 </span>
                 <div className="flex gap-1">

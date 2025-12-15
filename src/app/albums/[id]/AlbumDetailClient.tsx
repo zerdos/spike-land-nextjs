@@ -160,7 +160,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
       setAllAlbums(
         data.albums
           .filter((a: AlbumListItem) => a.id !== albumId)
-          .map((a: AlbumListItem) => ({ id: a.id, name: a.name, imageCount: a.imageCount })),
+          .map((a: AlbumListItem) => ({
+            id: a.id,
+            name: a.name,
+            imageCount: a.imageCount,
+          })),
       );
     } catch (err) {
       console.error("Error fetching albums:", err);
@@ -254,7 +258,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             ...prev,
             images: prev.images.filter((img) => img.id !== imageId),
             imageCount: prev.imageCount - 1,
-            coverImageId: prev.coverImageId === imageId ? null : prev.coverImageId,
+            coverImageId: prev.coverImageId === imageId
+              ? null
+              : prev.coverImageId,
           }
           : null
       );
@@ -268,7 +274,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     if (selectedImages.size === 0) return;
 
     const imageCount = selectedImages.size;
-    if (!confirm(`Remove ${imageCount} image${imageCount > 1 ? "s" : ""} from the album?`)) return;
+    if (
+      !confirm(
+        `Remove ${imageCount} image${imageCount > 1 ? "s" : ""} from the album?`,
+      )
+    ) return;
 
     try {
       const response = await fetch(`/api/albums/${albumId}/images`, {
@@ -285,7 +295,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             ...prev,
             images: prev.images.filter((img) => !selectedImages.has(img.id)),
             imageCount: prev.imageCount - selectedImages.size,
-            coverImageId: selectedImages.has(prev.coverImageId || "") ? null : prev.coverImageId,
+            coverImageId: selectedImages.has(prev.coverImageId || "")
+              ? null
+              : prev.coverImageId,
           }
           : null
       );
@@ -454,13 +466,18 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     setIsMoving(true);
     try {
       // First add images to the target album
-      const addResponse = await fetch(`/api/albums/${selectedTargetAlbum}/images`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: Array.from(selectedImages) }),
-      });
+      const addResponse = await fetch(
+        `/api/albums/${selectedTargetAlbum}/images`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageIds: Array.from(selectedImages) }),
+        },
+      );
 
-      if (!addResponse.ok) throw new Error("Failed to add images to target album");
+      if (!addResponse.ok) {
+        throw new Error("Failed to add images to target album");
+      }
 
       // Then remove from current album
       const removeResponse = await fetch(`/api/albums/${albumId}/images`, {
@@ -469,7 +486,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
         body: JSON.stringify({ imageIds: Array.from(selectedImages) }),
       });
 
-      if (!removeResponse.ok) throw new Error("Failed to remove images from current album");
+      if (!removeResponse.ok) {
+        throw new Error("Failed to remove images from current album");
+      }
 
       // Update local state
       setAlbum((prev) =>
@@ -478,7 +497,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             ...prev,
             images: prev.images.filter((img) => !selectedImages.has(img.id)),
             imageCount: prev.imageCount - selectedImages.size,
-            coverImageId: selectedImages.has(prev.coverImageId || "") ? null : prev.coverImageId,
+            coverImageId: selectedImages.has(prev.coverImageId || "")
+              ? null
+              : prev.coverImageId,
           }
           : null
       );
@@ -582,7 +603,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               </Button>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-3xl font-bold tracking-tight">{album.name}</h1>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    {album.name}
+                  </h1>
                   <Badge variant="secondary" className="gap-1">
                     {getPrivacyIcon(album.privacy)}
                     {album.privacy === "PRIVATE"
@@ -593,14 +616,20 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                   </Badge>
                 </div>
                 {album.description && (
-                  <p className="mt-2 text-muted-foreground">{album.description}</p>
+                  <p className="mt-2 text-muted-foreground">
+                    {album.description}
+                  </p>
                 )}
               </div>
               {album.isOwner && (
                 <div className="flex gap-2">
                   {album.shareToken && album.privacy !== "PRIVATE" && (
                     <>
-                      <Button variant="outline" size="sm" onClick={copyShareLink}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copyShareLink}
+                      >
                         {copied
                           ? <Check className="mr-2 h-4 w-4" />
                           : <Copy className="mr-2 h-4 w-4" />}
@@ -642,7 +671,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                   {isSelectionMode
                     ? (
                       <>
-                        <Button variant="outline" size="sm" onClick={toggleSelectAll}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleSelectAll}
+                        >
                           {selectedImages.size === album.images.length
                             ? (
                               <>
@@ -659,7 +692,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                         </Button>
                         {selectedImages.size > 0 && (
                           <>
-                            <Button variant="outline" size="sm" onClick={openMoveDialog}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={openMoveDialog}
+                            >
                               <FolderInput className="mr-2 h-4 w-4" />
                               Move ({selectedImages.size})
                             </Button>
@@ -673,7 +710,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                             </Button>
                           </>
                         )}
-                        <Button variant="ghost" size="sm" onClick={exitSelectionMode}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={exitSelectionMode}
+                        >
                           <X className="mr-2 h-4 w-4" />
                           Cancel
                         </Button>
@@ -741,7 +782,10 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                         </Badge>
                       )}
                       {album.coverImageId === image.id && (
-                        <Badge className="absolute top-2 left-2" variant="secondary">
+                        <Badge
+                          className="absolute top-2 left-2"
+                          variant="secondary"
+                        >
                           <Star className="h-3 w-3 mr-1 fill-current" />
                           Cover
                         </Badge>

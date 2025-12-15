@@ -5,7 +5,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const actionSchema = z.object({
-  action: z.enum([BoxActionType.START, BoxActionType.STOP, BoxActionType.RESTART]),
+  action: z.enum([
+    BoxActionType.START,
+    BoxActionType.STOP,
+    BoxActionType.RESTART,
+  ]),
 });
 
 export async function POST(

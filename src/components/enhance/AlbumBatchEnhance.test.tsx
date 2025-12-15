@@ -128,7 +128,8 @@ describe("AlbumBatchEnhance", () => {
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
     await waitFor(() => {
-      expect(screen.getByText(`Enhance Album: ${defaultProps.albumName}`)).toBeInTheDocument();
+      expect(screen.getByText(`Enhance Album: ${defaultProps.albumName}`))
+        .toBeInTheDocument();
     });
   });
 
@@ -143,7 +144,9 @@ describe("AlbumBatchEnhance", () => {
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("user-balance")).toHaveTextContent("100 tokens");
+      expect(screen.getByTestId("user-balance")).toHaveTextContent(
+        "100 tokens",
+      );
     });
   });
 
@@ -194,7 +197,9 @@ describe("AlbumBatchEnhance", () => {
       { id: "img-3", enhancementJobs: [] },
     ];
 
-    render(<AlbumBatchEnhance {...defaultProps} images={imagesWithEnhancements} />);
+    render(
+      <AlbumBatchEnhance {...defaultProps} images={imagesWithEnhancements} />,
+    );
 
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
@@ -312,7 +317,9 @@ describe("AlbumBatchEnhance", () => {
       },
     ];
 
-    render(<AlbumBatchEnhance {...defaultProps} images={fullyEnhancedImages} />);
+    render(
+      <AlbumBatchEnhance {...defaultProps} images={fullyEnhancedImages} />,
+    );
 
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
@@ -588,7 +595,9 @@ describe("AlbumBatchEnhance", () => {
   it("should apply custom className to trigger button", () => {
     render(<AlbumBatchEnhance {...defaultProps} className="custom-class" />);
 
-    expect(screen.getByTestId("enhance-all-button")).toHaveClass("custom-class");
+    expect(screen.getByTestId("enhance-all-button")).toHaveClass(
+      "custom-class",
+    );
   });
 
   it("should prevent dialog close while processing", async () => {

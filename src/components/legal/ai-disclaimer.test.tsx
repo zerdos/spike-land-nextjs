@@ -23,12 +23,14 @@ describe("AIDisclaimer Component", () => {
 
     it("should show Learn more button when showLearnMore is true", () => {
       render(<AIDisclaimer showLearnMore />);
-      expect(screen.getByRole("button", { name: /Learn more/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Learn more/i }))
+        .toBeInTheDocument();
     });
 
     it("should not show Learn more button when showLearnMore is false", () => {
       render(<AIDisclaimer showLearnMore={false} />);
-      expect(screen.queryByRole("button", { name: /Learn more/i })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Learn more/i }))
+        .toBeInTheDocument();
 
       const links = screen.queryAllByRole("link");
       expect(links).toHaveLength(0);
@@ -51,13 +53,16 @@ describe("AIDisclaimer Component", () => {
       const user = userEvent.setup();
       render(<AIDisclaimer />);
 
-      const learnMoreButton = screen.getByRole("button", { name: /Learn more/i });
+      const learnMoreButton = screen.getByRole("button", {
+        name: /Learn more/i,
+      });
       await user.click(learnMoreButton);
 
       const showLessButton = screen.getByRole("button", { name: /Show less/i });
       await user.click(showLessButton);
 
-      expect(screen.queryByText("AI Processing Notice")).not.toBeInTheDocument();
+      expect(screen.queryByText("AI Processing Notice")).not
+        .toBeInTheDocument();
     });
 
     it("should display Privacy Policy link when expanded", async () => {
@@ -78,7 +83,9 @@ describe("AIDisclaimer Component", () => {
 
       await user.click(screen.getByRole("button", { name: /Learn more/i }));
 
-      const googleLink = screen.getByRole("link", { name: /Google AI Principles/i });
+      const googleLink = screen.getByRole("link", {
+        name: /Google AI Principles/i,
+      });
       expect(googleLink).toHaveAttribute(
         "href",
         "https://ai.google/responsibility/principles/",
@@ -93,8 +100,10 @@ describe("AIDisclaimer Component", () => {
 
       await user.click(screen.getByRole("button", { name: /Learn more/i }));
 
-      expect(screen.queryByRole("link", { name: /Privacy Policy/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole("link", { name: /Google AI Principles/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Privacy Policy/i })).not
+        .toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Google AI Principles/i })).not
+        .toBeInTheDocument();
     });
 
     it("should apply custom className", () => {
@@ -109,12 +118,18 @@ describe("AIDisclaimer Component", () => {
 
       await user.click(screen.getByRole("button", { name: /Learn more/i }));
 
-      expect(screen.getAllByText(/Images are processed by Google Gemini AI/i).length)
+      expect(
+        screen.getAllByText(/Images are processed by Google Gemini AI/i).length,
+      )
         .toBeGreaterThan(0);
-      expect(screen.getByText(/Processing happens on Google's servers/i)).toBeInTheDocument();
-      expect(screen.getByText(/AI enhancement results vary/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/Images are NOT used for AI training/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/By using enhancement, you consent/i)).toBeInTheDocument();
+      expect(screen.getByText(/Processing happens on Google's servers/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/AI enhancement results vary/i))
+        .toBeInTheDocument();
+      expect(screen.getAllByText(/Images are NOT used for AI training/i).length)
+        .toBeGreaterThan(0);
+      expect(screen.getByText(/By using enhancement, you consent/i))
+        .toBeInTheDocument();
     });
 
     it("should show Info icon", () => {
@@ -147,7 +162,9 @@ describe("AIDisclaimer Component", () => {
       render(<AIDisclaimer variant="full" />);
       expect(screen.getByText("AI Enhancement Disclaimer")).toBeInTheDocument();
       expect(
-        screen.getByText(/Important information about AI-powered image processing/i),
+        screen.getByText(
+          /Important information about AI-powered image processing/i,
+        ),
       ).toBeInTheDocument();
     });
 
@@ -163,8 +180,10 @@ describe("AIDisclaimer Component", () => {
     it("should display AI Processing Notice details", () => {
       render(<AIDisclaimer variant="full" />);
 
-      expect(screen.getByText(/Images are processed by Google Gemini AI/i)).toBeInTheDocument();
-      expect(screen.getByText(/Processing happens on Google's servers/i)).toBeInTheDocument();
+      expect(screen.getByText(/Images are processed by Google Gemini AI/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Processing happens on Google's servers/i))
+        .toBeInTheDocument();
       expect(
         screen.getByText(/Images are sent to Google for enhancement/i),
       ).toBeInTheDocument();
@@ -173,17 +192,23 @@ describe("AIDisclaimer Component", () => {
     it("should display Quality Disclaimer details", () => {
       render(<AIDisclaimer variant="full" />);
 
-      expect(screen.getByText(/AI enhancement results vary/i)).toBeInTheDocument();
-      expect(screen.getByText(/No guarantee of specific outcomes/i)).toBeInTheDocument();
-      expect(screen.getByText(/Results depend on input image quality/i)).toBeInTheDocument();
+      expect(screen.getByText(/AI enhancement results vary/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/No guarantee of specific outcomes/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Results depend on input image quality/i))
+        .toBeInTheDocument();
     });
 
     it("should display Data Handling details", () => {
       render(<AIDisclaimer variant="full" />);
 
-      expect(screen.getAllByText(/Images are NOT used for AI training/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/EXIF metadata is stripped/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/Images are stored temporarily/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Images are NOT used for AI training/i).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByText(/EXIF metadata is stripped/i).length)
+        .toBeGreaterThan(0);
+      expect(screen.getByText(/Images are stored temporarily/i))
+        .toBeInTheDocument();
     });
 
     it("should display Consent details", () => {
@@ -209,7 +234,9 @@ describe("AIDisclaimer Component", () => {
     it("should display Google AI Principles link when showLearnMore is true", () => {
       render(<AIDisclaimer variant="full" showLearnMore />);
 
-      const googleLink = screen.getByRole("link", { name: /Google AI Principles/i });
+      const googleLink = screen.getByRole("link", {
+        name: /Google AI Principles/i,
+      });
       expect(googleLink).toHaveAttribute(
         "href",
         "https://ai.google/responsibility/principles/",
@@ -221,9 +248,12 @@ describe("AIDisclaimer Component", () => {
     it("should not display links when showLearnMore is false", () => {
       render(<AIDisclaimer variant="full" showLearnMore={false} />);
 
-      expect(screen.queryByRole("link", { name: /Privacy Policy/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole("link", { name: /Google AI Principles/i })).not.toBeInTheDocument();
-      expect(screen.queryByText(/For more information:/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Privacy Policy/i })).not
+        .toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Google AI Principles/i })).not
+        .toBeInTheDocument();
+      expect(screen.queryByText(/For more information:/i)).not
+        .toBeInTheDocument();
     });
 
     it("should apply custom className", () => {
@@ -236,7 +266,8 @@ describe("AIDisclaimer Component", () => {
 
     it("should not have Learn more button in full variant", () => {
       render(<AIDisclaimer variant="full" />);
-      expect(screen.queryByRole("button", { name: /Learn more/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Learn more/i })).not
+        .toBeInTheDocument();
     });
 
     it("should show Info icon", () => {
@@ -259,7 +290,8 @@ describe("AIDisclaimer Component", () => {
 
     it("should default showLearnMore to true", () => {
       render(<AIDisclaimer />);
-      expect(screen.getByRole("button", { name: /Learn more/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Learn more/i }))
+        .toBeInTheDocument();
     });
 
     it("should accept variant prop", () => {
@@ -272,7 +304,8 @@ describe("AIDisclaimer Component", () => {
 
     it("should accept showLearnMore prop", () => {
       const { rerender } = render(<AIDisclaimer showLearnMore />);
-      expect(screen.getByRole("button", { name: /Learn more/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Learn more/i }))
+        .toBeInTheDocument();
 
       rerender(<AIDisclaimer showLearnMore={false} />);
       const button = screen.getByRole("button", { name: /Learn more/i });
@@ -311,7 +344,7 @@ describe("AIDisclaimer Component", () => {
       await user.click(screen.getByRole("button", { name: /Learn more/i }));
 
       const links = screen.getAllByRole("link");
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link).toHaveAttribute("target", "_blank");
         expect(link).toHaveAttribute("rel", "noopener noreferrer");
       });
@@ -321,20 +354,23 @@ describe("AIDisclaimer Component", () => {
   describe("Toggle Behavior", () => {
     it("should start collapsed", () => {
       render(<AIDisclaimer />);
-      expect(screen.queryByText("AI Processing Notice")).not.toBeInTheDocument();
+      expect(screen.queryByText("AI Processing Notice")).not
+        .toBeInTheDocument();
     });
 
     it("should toggle between collapsed and expanded states", async () => {
       const user = userEvent.setup();
       render(<AIDisclaimer />);
 
-      expect(screen.queryByText("AI Processing Notice")).not.toBeInTheDocument();
+      expect(screen.queryByText("AI Processing Notice")).not
+        .toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: /Learn more/i }));
       expect(screen.getByText("AI Processing Notice")).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: /Show less/i }));
-      expect(screen.queryByText("AI Processing Notice")).not.toBeInTheDocument();
+      expect(screen.queryByText("AI Processing Notice")).not
+        .toBeInTheDocument();
     });
 
     it("should maintain expanded state across re-renders", async () => {

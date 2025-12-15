@@ -44,7 +44,12 @@ export function trackEvent(
     )
     : undefined;
 
-  track(event, cleanProperties as Record<string, string | number | boolean | null> | undefined);
+  track(
+    event,
+    cleanProperties as
+      | Record<string, string | number | boolean | null>
+      | undefined,
+  );
 }
 
 export const analytics = {

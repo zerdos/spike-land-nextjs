@@ -107,7 +107,10 @@ export function HeroComparisonSlider({
           src={originalUrl}
           alt="Original"
           className="w-full h-full object-cover"
-          style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: "none" }}
+          style={{
+            width: `${100 / (sliderPosition / 100)}%`,
+            maxWidth: "none",
+          }}
           draggable={false}
         />
         {/* Original label */}

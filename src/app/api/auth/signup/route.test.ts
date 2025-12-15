@@ -109,8 +109,12 @@ describe("POST /api/auth/signup", () => {
     // Default referral functions to resolve
     mockReferralFunctions.assignReferralCodeToUser.mockResolvedValue(undefined);
     mockReferralFunctions.linkReferralOnSignup.mockResolvedValue(undefined);
-    mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(null);
-    mockReferralFunctions.completeReferralAndGrantRewards.mockResolvedValue(undefined);
+    mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(
+      null,
+    );
+    mockReferralFunctions.completeReferralAndGrantRewards.mockResolvedValue(
+      undefined,
+    );
     mockBootstrapAdmin.mockResolvedValue(undefined);
     // Default album creation
     mockPrisma.album.create.mockResolvedValue({ id: "album-1" });
@@ -132,7 +136,9 @@ describe("POST /api/auth/signup", () => {
       const data = await res.json();
 
       expect(res.status).toBe(429);
-      expect(data.error).toBe("Too many signup attempts. Please try again later.");
+      expect(data.error).toBe(
+        "Too many signup attempts. Please try again later.",
+      );
     });
 
     it("should include Retry-After header when rate limited", async () => {
@@ -216,7 +222,10 @@ describe("POST /api/auth/signup", () => {
     });
 
     it("should return 400 when password is not a string", async () => {
-      const req = createMockRequest({ email: "test@example.com", password: 12345678 });
+      const req = createMockRequest({
+        email: "test@example.com",
+        password: 12345678,
+      });
       const res = await POST(req);
       const data = await res.json();
 
@@ -225,7 +234,10 @@ describe("POST /api/auth/signup", () => {
     });
 
     it("should return 400 when password is too short", async () => {
-      const req = createMockRequest({ email: "test@example.com", password: "short" });
+      const req = createMockRequest({
+        email: "test@example.com",
+        password: "short",
+      });
       const res = await POST(req);
       const data = await res.json();
 
@@ -234,7 +246,10 @@ describe("POST /api/auth/signup", () => {
     });
 
     it("should return 400 for invalid email format", async () => {
-      const req = createMockRequest({ email: "invalid-email", password: "password123" });
+      const req = createMockRequest({
+        email: "invalid-email",
+        password: "password123",
+      });
       const res = await POST(req);
       const data = await res.json();
 
@@ -398,9 +413,10 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.assignReferralCodeToUser).toHaveBeenCalledWith(
-        "stable-user-id-123",
-      );
+      expect(mockReferralFunctions.assignReferralCodeToUser)
+        .toHaveBeenCalledWith(
+          "stable-user-id-123",
+        );
     });
 
     it("should link referral on signup", async () => {
@@ -410,7 +426,9 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.linkReferralOnSignup).toHaveBeenCalledWith("stable-user-id-123");
+      expect(mockReferralFunctions.linkReferralOnSignup).toHaveBeenCalledWith(
+        "stable-user-id-123",
+      );
     });
 
     it("should create default public album", async () => {
@@ -432,10 +450,12 @@ describe("POST /api/auth/signup", () => {
     });
 
     it("should process referral rewards if validation passes", async () => {
-      mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue({
-        shouldGrantRewards: true,
-        referralId: "referral-123",
-      });
+      mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(
+        {
+          shouldGrantRewards: true,
+          referralId: "referral-123",
+        },
+      );
 
       const req = createMockRequest({
         email: "test@example.com",
@@ -443,16 +463,19 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.completeReferralAndGrantRewards).toHaveBeenCalledWith(
-        "referral-123",
-      );
+      expect(mockReferralFunctions.completeReferralAndGrantRewards)
+        .toHaveBeenCalledWith(
+          "referral-123",
+        );
     });
 
     it("should not process referral rewards if validation fails", async () => {
-      mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue({
-        shouldGrantRewards: false,
-        referralId: null,
-      });
+      mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(
+        {
+          shouldGrantRewards: false,
+          referralId: null,
+        },
+      );
 
       const req = createMockRequest({
         email: "test@example.com",
@@ -460,7 +483,8 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockReferralFunctions.completeReferralAndGrantRewards).not.toHaveBeenCalled();
+      expect(mockReferralFunctions.completeReferralAndGrantRewards).not
+        .toHaveBeenCalled();
     });
 
     it("should continue signup even if post-signup tasks fail", async () => {
@@ -514,7 +538,9 @@ describe("POST /api/auth/signup", () => {
     });
 
     it("should log error when signup fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrisma.user.findUnique.mockRejectedValue(new Error("Database error"));
 
       const req = createMockRequest({

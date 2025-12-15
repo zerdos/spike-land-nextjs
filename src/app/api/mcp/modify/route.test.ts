@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies using vi.hoisted
-const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockCreateModificationJob } = vi.hoisted(
+const {
+  mockAuthenticateMcpOrSession,
+  mockCheckRateLimit,
+  mockCreateModificationJob,
+} = vi.hoisted(
   () => ({
     mockAuthenticateMcpOrSession: vi.fn(),
     mockCheckRateLimit: vi.fn(),
@@ -125,7 +129,9 @@ describe("POST /api/mcp/modify", () => {
 
   describe("validation", () => {
     it("should return 400 for invalid JSON body", async () => {
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" }, null);
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      }, null);
       const response = await POST(request);
       const body = await response.json();
 
@@ -296,7 +302,9 @@ describe("POST /api/mcp/modify", () => {
         tokensCost: 5,
       });
 
-      for (const mimeType of ["image/jpeg", "image/png", "image/webp", "image/gif"]) {
+      for (
+        const mimeType of ["image/jpeg", "image/png", "image/webp", "image/gif"]
+      ) {
         const request = createMockRequest(
           { Authorization: "Bearer sk_test_validkey" },
           {

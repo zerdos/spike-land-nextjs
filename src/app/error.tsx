@@ -32,7 +32,9 @@ export default function Error({
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-destructive">Something went wrong!</CardTitle>
+          <CardTitle className="text-destructive">
+            Something went wrong!
+          </CardTitle>
           <CardDescription>
             We encountered an unexpected error. Please try again.
           </CardDescription>

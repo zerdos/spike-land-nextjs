@@ -49,7 +49,9 @@ export async function GET(_request: Request, { params }: RouteParams) {
     });
 
     if (!pipeline) {
-      return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+      return NextResponse.json({ error: "Pipeline not found" }, {
+        status: 404,
+      });
     }
 
     // Check access
@@ -107,7 +109,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+      return NextResponse.json({ error: "Pipeline not found" }, {
+        status: 404,
+      });
     }
 
     if (existing.userId !== session.user.id) {
@@ -158,10 +162,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Validate visibility if provided
     if (visibility !== undefined) {
-      const validVisibilities: PipelineVisibility[] = ["PRIVATE", "PUBLIC", "LINK"];
+      const validVisibilities: PipelineVisibility[] = [
+        "PRIVATE",
+        "PUBLIC",
+        "LINK",
+      ];
       if (!validVisibilities.includes(visibility)) {
         return NextResponse.json(
-          { error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}` },
+          {
+            error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}`,
+          },
           { status: 400 },
         );
       }
@@ -188,7 +198,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Build update data
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name.trim();
-    if (description !== undefined) updateData.description = description?.trim() || null;
+    if (description !== undefined) {
+      updateData.description = description?.trim() || null;
+    }
     if (tier !== undefined) updateData.tier = tier;
     if (visibility !== undefined) {
       updateData.visibility = visibility;
@@ -203,10 +215,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }
       }
     }
-    if (analysisConfig !== undefined) updateData.analysisConfig = analysisConfig;
-    if (autoCropConfig !== undefined) updateData.autoCropConfig = autoCropConfig;
+    if (analysisConfig !== undefined) {
+      updateData.analysisConfig = analysisConfig;
+    }
+    if (autoCropConfig !== undefined) {
+      updateData.autoCropConfig = autoCropConfig;
+    }
     if (promptConfig !== undefined) updateData.promptConfig = promptConfig;
-    if (generationConfig !== undefined) updateData.generationConfig = generationConfig;
+    if (generationConfig !== undefined) {
+      updateData.generationConfig = generationConfig;
+    }
 
     const pipeline = await prisma.enhancementPipeline.update({
       where: { id },
@@ -267,7 +285,9 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+      return NextResponse.json({ error: "Pipeline not found" }, {
+        status: 404,
+      });
     }
 
     if (existing.userId !== session.user.id) {

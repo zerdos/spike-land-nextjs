@@ -43,22 +43,32 @@ describe("RequirementsManager", () => {
   describe("Rendering", () => {
     it("should render the component with title and description", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       expect(screen.getByText("Requirements")).toBeInTheDocument();
       expect(
-        screen.getByText("Manage app requirements with priorities and status tracking"),
+        screen.getByText(
+          "Manage app requirements with priorities and status tracking",
+        ),
       ).toBeInTheDocument();
     });
 
     it("should render empty state when no requirements", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       expect(
-        screen.getByText("No requirements yet. Add your first requirement above."),
+        screen.getByText(
+          "No requirements yet. Add your first requirement above.",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -99,8 +109,10 @@ describe("RequirementsManager", () => {
         />,
       );
 
-      expect(screen.queryByPlaceholderText("Add new requirement...")).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("Add requirement")).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText("Add new requirement...")).not
+        .toBeInTheDocument();
+      expect(screen.queryByLabelText("Add requirement")).not
+        .toBeInTheDocument();
     });
 
     it("should not render edit/delete buttons in readonly mode", () => {
@@ -112,15 +124,20 @@ describe("RequirementsManager", () => {
         />,
       );
 
-      expect(screen.queryByLabelText("Edit requirement")).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("Delete requirement")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Edit requirement")).not
+        .toBeInTheDocument();
+      expect(screen.queryByLabelText("Delete requirement")).not
+        .toBeInTheDocument();
     });
   });
 
   describe("Adding Requirements", () => {
     it("should add a new requirement when text is entered and add button clicked", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");
@@ -140,7 +157,10 @@ describe("RequirementsManager", () => {
 
     it("should add requirement when Enter key is pressed", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");
@@ -153,7 +173,10 @@ describe("RequirementsManager", () => {
 
     it("should not add empty requirement", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const addButton = screen.getByLabelText("Add requirement");
@@ -164,7 +187,10 @@ describe("RequirementsManager", () => {
 
     it("should not add requirement with only whitespace", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");
@@ -178,7 +204,10 @@ describe("RequirementsManager", () => {
 
     it("should trim whitespace from requirement text", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");
@@ -193,7 +222,10 @@ describe("RequirementsManager", () => {
 
     it("should clear input after adding requirement", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText(
@@ -257,7 +289,8 @@ describe("RequirementsManager", () => {
       expect(mockOnChange).toHaveBeenCalledTimes(1);
       const updatedRequirements = mockOnChange.mock.calls[0][0];
       expect(updatedRequirements).toHaveLength(2);
-      expect(updatedRequirements.find((r: Requirement) => r.id === "req-1")).toBeUndefined();
+      expect(updatedRequirements.find((r: Requirement) => r.id === "req-1"))
+        .toBeUndefined();
     });
 
     it("should reorder remaining requirements after deletion", () => {
@@ -289,7 +322,8 @@ describe("RequirementsManager", () => {
       const editButtons = screen.getAllByLabelText("Edit requirement");
       fireEvent.click(editButtons[0]);
 
-      expect(screen.getByLabelText("Edit requirement text")).toBeInTheDocument();
+      expect(screen.getByLabelText("Edit requirement text"))
+        .toBeInTheDocument();
       expect(screen.getByLabelText("Save edit")).toBeInTheDocument();
       expect(screen.getByLabelText("Cancel edit")).toBeInTheDocument();
     });
@@ -305,7 +339,9 @@ describe("RequirementsManager", () => {
       const editButtons = screen.getAllByLabelText("Edit requirement");
       fireEvent.click(editButtons[0]);
 
-      const input = screen.getByLabelText("Edit requirement text") as HTMLInputElement;
+      const input = screen.getByLabelText(
+        "Edit requirement text",
+      ) as HTMLInputElement;
       expect(input.value).toBe("User authentication");
     });
 
@@ -367,7 +403,8 @@ describe("RequirementsManager", () => {
       fireEvent.click(cancelButton);
 
       expect(mockOnChange).not.toHaveBeenCalled();
-      expect(screen.queryByLabelText("Edit requirement text")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Edit requirement text")).not
+        .toBeInTheDocument();
     });
 
     it("should cancel edit when Escape key is pressed", () => {
@@ -386,7 +423,8 @@ describe("RequirementsManager", () => {
       fireEvent.keyDown(input, { key: "Escape", code: "Escape" });
 
       expect(mockOnChange).not.toHaveBeenCalled();
-      expect(screen.queryByLabelText("Edit requirement text")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Edit requirement text")).not
+        .toBeInTheDocument();
     });
 
     it("should not save empty text", () => {
@@ -692,7 +730,10 @@ describe("RequirementsManager", () => {
   describe("Integration", () => {
     it("should handle complete workflow: add, edit, change priority, change status, delete", () => {
       const { rerender } = render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");
@@ -743,9 +784,10 @@ describe("RequirementsManager", () => {
         />,
       );
 
-      const selectsAgain = within(screen.getByTestId("requirement-item")).getAllByRole(
-        "combobox",
-      );
+      const selectsAgain = within(screen.getByTestId("requirement-item"))
+        .getAllByRole(
+          "combobox",
+        );
       fireEvent.click(selectsAgain[1]);
       const completedOptions = screen.getAllByText("Completed");
       fireEvent.click(completedOptions[completedOptions.length - 1]);
@@ -789,17 +831,25 @@ describe("RequirementsManager", () => {
   describe("Edge Cases", () => {
     it("should handle empty requirements array", () => {
       render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       expect(
-        screen.getByText("No requirements yet. Add your first requirement above."),
+        screen.getByText(
+          "No requirements yet. Add your first requirement above.",
+        ),
       ).toBeInTheDocument();
     });
 
     it("should generate unique IDs for new requirements", () => {
       const { rerender } = render(
-        <RequirementsManager requirements={[]} onRequirementsChange={mockOnChange} />,
+        <RequirementsManager
+          requirements={[]}
+          onRequirementsChange={mockOnChange}
+        />,
       );
 
       const input = screen.getByPlaceholderText("Add new requirement...");

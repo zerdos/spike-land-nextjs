@@ -1,7 +1,6 @@
 # Token System Documentation
 
-> **Last Updated**: December 2025
-> **Status**: MVP Release
+> **Last Updated**: December 2025 **Status**: MVP Release
 
 ---
 
@@ -21,23 +20,31 @@
 
 ## Token Overview
 
-**Tokens** are the primary currency on the Spike Land platform. Every Spike Land user has a single token balance that can be spent across any app on the platform. Apps built on Spike Land consume these platform tokens to provide premium features.
+**Tokens** are the primary currency on the Spike Land platform. Every Spike Land
+user has a single token balance that can be spent across any app on the
+platform. Apps built on Spike Land consume these platform tokens to provide
+premium features.
 
-Currently, the **Pixel** image enhancement app uses tokens to pay for AI-powered image enhancements. As more apps are added to the platform, they will all share this same token economy.
+Currently, the **Pixel** image enhancement app uses tokens to pay for AI-powered
+image enhancements. As more apps are added to the platform, they will all share
+this same token economy.
 
 ### Key Characteristics
 
-- **Platform Currency**: Tokens belong to your Spike Land account, not to individual apps
+- **Platform Currency**: Tokens belong to your Spike Land account, not to
+  individual apps
 - **Cross-App Usage**: One token balance works across all apps on the platform
 - **Non-transferable**: Cannot be gifted between users
-- **Non-refundable**: Consumed tokens cannot be recovered (except on service failure)
+- **Non-refundable**: Consumed tokens cannot be recovered (except on service
+  failure)
 - **Expiration**: Free regenerated tokens expire after 30 days if unused
 - **Account-Specific**: Each user maintains a single platform-wide token balance
 
 ### Token Balance Limits
 
 - **Maximum Balance**: 100 tokens (applies to regenerated tokens only)
-- **Storage Duration**: Purchased tokens never expire; regenerated tokens expire after 30 days
+- **Storage Duration**: Purchased tokens never expire; regenerated tokens expire
+  after 30 days
 - **Subscription Tokens**: Reset monthly, with optional rollover (up to max)
 
 ---
@@ -141,7 +148,8 @@ Available Vouchers:
 
 ### One-Time Purchase Packages
 
-Tokens purchased through Stripe do not expire and accumulate in the user's balance.
+Tokens purchased through Stripe do not expire and accumulate in the user's
+balance.
 
 **Package Details**:
 
@@ -603,7 +611,8 @@ Users can export transaction history as:
 
 ### Pricing Model
 
-**Tokens are the platform's universal currency** for premium features across all apps.
+**Tokens are the platform's universal currency** for premium features across all
+apps.
 
 ### Current Token Costs (Pixel App)
 
@@ -697,8 +706,10 @@ This architecture allows any future app to use the same token system.
 ### For Users
 
 1. **Monitor Balance**: Check token balance regularly before enhancement
-2. **Plan Purchases**: Estimate monthly token needs and choose appropriate package
-3. **Maximize Value**: Use subscriptions for regular usage (better value than one-time purchases)
+2. **Plan Purchases**: Estimate monthly token needs and choose appropriate
+   package
+3. **Maximize Value**: Use subscriptions for regular usage (better value than
+   one-time purchases)
 4. **Use Vouchers**: Always redeem promotional vouchers before purchasing
 5. **Budget Wisely**: Regenerated tokens are free but limited to 100
 

@@ -93,11 +93,14 @@ describe("POST /api/stripe/webhook", () => {
   });
 
   it("returns 413 when content-length exceeds maximum", async () => {
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: JSON.stringify({}),
-      headers: { "content-length": "100000" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: JSON.stringify({}),
+        headers: { "content-length": "100000" },
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -107,10 +110,13 @@ describe("POST /api/stripe/webhook", () => {
   });
 
   it("returns 400 when stripe-signature header is missing", async () => {
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: JSON.stringify({}),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -122,11 +128,14 @@ describe("POST /api/stripe/webhook", () => {
   it("returns 500 when webhook secret is not configured", async () => {
     delete process.env.STRIPE_WEBHOOK_SECRET;
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: JSON.stringify({}),
-      headers: { "stripe-signature": "sig_test" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: JSON.stringify({}),
+        headers: { "stripe-signature": "sig_test" },
+      },
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST(request);
@@ -142,11 +151,14 @@ describe("POST /api/stripe/webhook", () => {
       throw new Error("Invalid signature");
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: JSON.stringify({}),
-      headers: { "stripe-signature": "sig_invalid" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: JSON.stringify({}),
+        headers: { "stripe-signature": "sig_invalid" },
+      },
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST(request);
@@ -176,11 +188,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -188,7 +203,9 @@ describe("POST /api/stripe/webhook", () => {
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith("[Stripe] Credited 50 tokens to user user_123");
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[Stripe] Credited 50 tokens to user user_123",
+      );
       consoleSpy.mockRestore();
     });
 
@@ -232,11 +249,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -259,7 +279,10 @@ describe("POST /api/stripe/webhook", () => {
             create: vi.fn().mockResolvedValue({}),
           },
           tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue({ id: "pkg_123", name: "Basic Pack" }),
+            findFirst: vi.fn().mockResolvedValue({
+              id: "pkg_123",
+              name: "Basic Pack",
+            }),
           },
           stripePayment: {
             create: vi.fn().mockResolvedValue({}),
@@ -287,11 +310,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -314,7 +340,10 @@ describe("POST /api/stripe/webhook", () => {
             create: vi.fn().mockResolvedValue({}),
           },
           tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue({ id: "pkg_123", name: "Basic Pack" }),
+            findFirst: vi.fn().mockResolvedValue({
+              id: "pkg_123",
+              name: "Basic Pack",
+            }),
           },
           stripePayment: {
             create: vi.fn().mockResolvedValue({}),
@@ -342,11 +371,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -393,11 +425,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -466,11 +501,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -504,11 +542,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -531,11 +572,14 @@ describe("POST /api/stripe/webhook", () => {
       },
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: "test_body",
-      headers: { "stripe-signature": "sig_valid" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: "test_body",
+        headers: { "stripe-signature": "sig_valid" },
+      },
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST(request);
@@ -543,7 +587,9 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(consoleSpy).toHaveBeenCalledWith("No userId in checkout session metadata");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "No userId in checkout session metadata",
+    );
     consoleSpy.mockRestore();
   });
 
@@ -558,11 +604,14 @@ describe("POST /api/stripe/webhook", () => {
       },
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: "test_body",
-      headers: { "stripe-signature": "sig_valid" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: "test_body",
+        headers: { "stripe-signature": "sig_valid" },
+      },
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST(request);
@@ -570,7 +619,9 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(consoleSpy).toHaveBeenCalledWith("No userId in checkout session metadata");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "No userId in checkout session metadata",
+    );
     consoleSpy.mockRestore();
   });
 
@@ -635,11 +686,14 @@ describe("POST /api/stripe/webhook", () => {
         })
       );
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -647,7 +701,9 @@ describe("POST /api/stripe/webhook", () => {
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith("[Stripe] Renewed subscription for user user_123");
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[Stripe] Renewed subscription for user user_123",
+      );
       consoleSpy.mockRestore();
     });
 
@@ -711,11 +767,14 @@ describe("POST /api/stripe/webhook", () => {
         })
       );
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -786,11 +845,14 @@ describe("POST /api/stripe/webhook", () => {
         })
       );
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -818,11 +880,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -845,11 +910,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -894,13 +962,18 @@ describe("POST /api/stripe/webhook", () => {
 
       mockPrismaUserFindFirst.mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
@@ -951,19 +1024,26 @@ describe("POST /api/stripe/webhook", () => {
         subscription: null,
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith("No user or subscription found for customer cus_123");
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "No user or subscription found for customer cus_123",
+      );
       consoleSpy.mockRestore();
     });
 
@@ -1027,11 +1107,14 @@ describe("POST /api/stripe/webhook", () => {
         })
       );
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -1093,11 +1176,14 @@ describe("POST /api/stripe/webhook", () => {
         })
       );
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const response = await POST(request);
@@ -1136,11 +1222,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1170,11 +1259,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1203,11 +1295,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1236,11 +1331,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1269,11 +1367,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1299,11 +1400,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1325,11 +1429,14 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1364,13 +1471,18 @@ describe("POST /api/stripe/webhook", () => {
 
       mockPrismaTransaction.mockRejectedValue(new Error("Database error"));
 
-      const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-        method: "POST",
-        body: "test_body",
-        headers: { "stripe-signature": "sig_valid" },
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
@@ -1386,11 +1498,14 @@ describe("POST /api/stripe/webhook", () => {
       data: { object: {} },
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/webhook", {
-      method: "POST",
-      body: "test_body",
-      headers: { "stripe-signature": "sig_valid" },
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/webhook",
+      {
+        method: "POST",
+        body: "test_body",
+        headers: { "stripe-signature": "sig_valid" },
+      },
+    );
 
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const response = await POST(request);
@@ -1398,7 +1513,9 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(consoleSpy).toHaveBeenCalledWith("Unhandled event type: some.other.event");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Unhandled event type: some.other.event",
+    );
     consoleSpy.mockRestore();
   });
 });

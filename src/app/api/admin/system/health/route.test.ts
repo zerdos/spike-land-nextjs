@@ -89,7 +89,9 @@ describe("System Health API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Simulate partial failures
@@ -106,7 +108,10 @@ describe("System Health API", () => {
     expect(data.hourlyJobs).toEqual([]);
     expect(data.avgProcessingTime).toEqual([]);
     expect(data.queueDepth).toBe(0);
-    expect(console.error).toHaveBeenCalledWith("Failed to fetch hourly jobs:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch hourly jobs:",
+      expect.any(Error),
+    );
     expect(console.error).toHaveBeenCalledWith(
       "Failed to fetch average processing time:",
       expect.any(Error),
@@ -118,7 +123,9 @@ describe("System Health API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Success for some queries, failure for others
@@ -159,7 +166,9 @@ describe("System Health API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
@@ -184,14 +193,20 @@ describe("System Health API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Return non-array values (edge case)
     vi.mocked(prisma.$queryRaw).mockResolvedValue(null as any);
-    vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue(null as any);
+    vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue(
+      null as any,
+    );
     vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(0);
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(null as any);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+      null as any,
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -208,7 +223,9 @@ describe("System Health API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     vi.mocked(prisma.$queryRaw)

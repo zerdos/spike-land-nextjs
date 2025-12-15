@@ -480,7 +480,9 @@ describe("EnhancedImagesList Component", () => {
 
       for (const { input, expected } of testDates) {
         const imageWithDate = { ...mockImage, createdAt: input };
-        const { unmount } = render(<EnhancedImagesList images={[imageWithDate]} />);
+        const { unmount } = render(
+          <EnhancedImagesList images={[imageWithDate]} />,
+        );
 
         await vi.waitFor(() => {
           expect(screen.getByText(expected)).toBeInTheDocument();

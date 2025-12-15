@@ -1,12 +1,14 @@
 # Image Enhancement App - Implementation Roadmap
 
-This document outlines the phased implementation plan for the Image Enhancement App, organized by priority and dependencies.
+This document outlines the phased implementation plan for the Image Enhancement
+App, organized by priority and dependencies.
 
 ---
 
 ## Overview
 
-The implementation is divided into 5 phases, each building upon the previous. Each phase has clear deliverables and success criteria.
+The implementation is divided into 5 phases, each building upon the previous.
+Each phase has clear deliverables and success criteria.
 
 ```
 Phase 1 (MVP)         Phase 2              Phase 3              Phase 4              Phase 5
@@ -21,7 +23,8 @@ Phase 1 (MVP)         Phase 2              Phase 3              Phase 4         
 
 ## Phase 1: MVP (Core Features)
 
-**Goal:** Validate core value proposition - users can upload and enhance images with AI.
+**Goal:** Validate core value proposition - users can upload and enhance images
+with AI.
 
 ### Deliverables
 
@@ -364,7 +367,8 @@ Instead of 30% lifetime commission (complex, fraud-prone), implemented:
 | Phase 4 | Referral        | Growth            |
 | Phase 5 | Dashboard       | Operations        |
 
-**Note:** Per CLAUDE.md guidelines, no specific time estimates are provided. Work is broken into actionable steps for team scheduling.
+**Note:** Per CLAUDE.md guidelines, no specific time estimates are provided.
+Work is broken into actionable steps for team scheduling.
 
 ---
 

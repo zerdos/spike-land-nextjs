@@ -23,7 +23,8 @@ Quick start guide for developers integrating with the Spike Land API.
 ### Base Configuration
 
 ```typescript
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3000/api";
 
 interface ApiResponse<T> {
   data?: T;
@@ -119,7 +120,9 @@ async function enhanceImage(
   const costs = { TIER_1K: 2, TIER_2K: 5, TIER_4K: 10 };
 
   if (balance < costs[tier]) {
-    throw new Error(`Insufficient tokens. Need ${costs[tier]}, have ${balance}`);
+    throw new Error(
+      `Insufficient tokens. Need ${costs[tier]}, have ${balance}`,
+    );
   }
 
   // Step 2: Start enhancement job
@@ -157,7 +160,7 @@ async function pollJobStatus(jobId: string): Promise<string> {
       case "PROCESSING":
       case "PENDING":
         // Continue polling
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         attempts++;
         break;
     }
@@ -255,7 +258,7 @@ async function batchEnhanceImages(
   if (!response.ok) throw new Error(result.error);
 
   // Poll all jobs
-  return Promise.all(result.jobIds.map(jobId => pollJobStatus(jobId)));
+  return Promise.all(result.jobIds.map((jobId) => pollJobStatus(jobId)));
 }
 ```
 
@@ -358,7 +361,7 @@ async function apiCallWithRetry<T>(
         );
 
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
           continue;
         }
       }
@@ -422,7 +425,8 @@ class SpikeClient implements ApiClient {
   private session: Session | null;
 
   constructor(session: Session | null) {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3000/api";
     this.session = session;
   }
 
@@ -433,7 +437,7 @@ class SpikeClient implements ApiClient {
   images = {
     enhance: (imageId, tier) =>
       this.post<ImageEnhancementJob>("/images/enhance", { imageId, tier }).then(
-        job => this.waitForCompletion(job.id),
+        (job) => this.waitForCompletion(job.id),
       ),
     upload: (file) => {
       const formData = new FormData();
@@ -443,7 +447,7 @@ class SpikeClient implements ApiClient {
   };
 
   albums = {
-    create: (name, privacy) => this.post<Album>("/albums", { name, privacy }).then(a => a.id),
+    create: (name, privacy) => this.post<Album>("/albums", { name, privacy }).then((a) => a.id),
     addImages: (albumId, imageIds) => this.post(`/albums/${albumId}/images`, { imageIds }),
   };
 
@@ -528,7 +532,9 @@ describe("API Client", () => {
         }),
     });
 
-    await expect(client.tokens.getBalance()).rejects.toThrow("Rate limit exceeded");
+    await expect(client.tokens.getBalance()).rejects.toThrow(
+      "Rate limit exceeded",
+    );
   });
 });
 ```
@@ -560,10 +566,12 @@ describe("Image Enhancement Flow", () => {
 
 ## Next Steps
 
-1. Review [API Reference](../API_REFERENCE.md) for detailed endpoint documentation
+1. Review [API Reference](../API_REFERENCE.md) for detailed endpoint
+   documentation
 2. Check [OpenAPI Specification](./openapi.yaml) for all available schemas
 3. Set up error handling and retry logic
 4. Implement proper authentication flow
 5. Test with development/staging environment first
 
-For support, visit [spike.land](https://spike.land) or contact support@spike.land
+For support, visit [spike.land](https://spike.land) or contact
+support@spike.land

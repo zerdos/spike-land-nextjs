@@ -1,6 +1,8 @@
 # Testing Strategies Best Practices
 
-Comprehensive guide to testing strategies for modern web applications, with practical examples tailored to Next.js, Vitest, React Testing Library, Playwright, and Cucumber.
+Comprehensive guide to testing strategies for modern web applications, with
+practical examples tailored to Next.js, Vitest, React Testing Library,
+Playwright, and Cucumber.
 
 ---
 
@@ -19,7 +21,9 @@ Comprehensive guide to testing strategies for modern web applications, with prac
 
 ## Testing Pyramid
 
-The testing pyramid is a framework that emphasizes the proper balance of different test types. The structure consists of three layers, each serving a specific purpose in the testing strategy.
+The testing pyramid is a framework that emphasizes the proper balance of
+different test types. The structure consists of three layers, each serving a
+specific purpose in the testing strategy.
 
 ### Pyramid Structure
 
@@ -37,20 +41,25 @@ The testing pyramid is a framework that emphasizes the proper balance of differe
 
 ### Recommended Test Distribution
 
-- **Unit Tests (70%)**: Fast, isolated tests of individual functions and components
-- **Integration Tests (20%)**: Tests verifying interactions between multiple components or services
+- **Unit Tests (70%)**: Fast, isolated tests of individual functions and
+  components
+- **Integration Tests (20%)**: Tests verifying interactions between multiple
+  components or services
 - **E2E Tests (10%)**: Critical user journeys and high-risk workflows only
 
 ### Why This Structure?
 
-1. **Speed**: Unit tests are fastest, providing quick feedback during development
-2. **Cost**: E2E tests are expensive to maintain and slow to run; use them sparingly
+1. **Speed**: Unit tests are fastest, providing quick feedback during
+   development
+2. **Cost**: E2E tests are expensive to maintain and slow to run; use them
+   sparingly
 3. **Maintainability**: Fewer E2E tests reduce maintenance burden
 4. **Confidence**: Combined coverage provides complete system validation
 
 ### Anti-Pattern: The "Ice Cream Cone"
 
-Avoid inverting the pyramid by having many slow E2E tests with few unit tests. This leads to:
+Avoid inverting the pyramid by having many slow E2E tests with few unit tests.
+This leads to:
 
 - Slow feedback loops
 - High maintenance costs
@@ -70,7 +79,8 @@ Adjust the pyramid based on your application:
 
 ## Unit Testing with Vitest & React Testing Library
 
-Unit tests are the foundation of your testing strategy. They validate individual functions, hooks, and components in isolation.
+Unit tests are the foundation of your testing strategy. They validate individual
+functions, hooks, and components in isolation.
 
 ### Setup & Configuration
 
@@ -136,7 +146,7 @@ afterEach(() => {
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -153,7 +163,8 @@ Object.defineProperty(window, "matchMedia", {
 
 #### 1. Use `screen` for Queries
 
-Instead of destructuring from render, always use `screen` to access DOM elements:
+Instead of destructuring from render, always use `screen` to access DOM
+elements:
 
 ```typescript
 // ❌ Bad
@@ -169,7 +180,8 @@ render(<Button>Click me</Button>);
 const button = screen.getByRole("button", { name: /click me/i });
 ```
 
-**Why?** Eliminates the need to maintain references and encourages querying the actual DOM, not implementation details.
+**Why?** Eliminates the need to maintain references and encourages querying the
+actual DOM, not implementation details.
 
 #### 2. Prefer Role-Based Queries Over Test IDs
 
@@ -219,7 +231,8 @@ test("types in input field", async () => {
 });
 ```
 
-**Why?** `userEvent` fires realistic events (keyDown, keyPress, keyUp) matching actual user behavior.
+**Why?** `userEvent` fires realistic events (keyDown, keyPress, keyUp) matching
+actual user behavior.
 
 #### 4. Handle Asynchronous Operations
 
@@ -306,7 +319,8 @@ describe("Button Component", () => {
 
   it("renders with text content", () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole("button", { name: /click me/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /click me/i }))
+      .toBeInTheDocument();
   });
 
   it("handles click events", async () => {
@@ -462,7 +476,8 @@ src/
 
 ## Integration Testing
 
-Integration tests verify that multiple components, hooks, and services work together correctly.
+Integration tests verify that multiple components, hooks, and services work
+together correctly.
 
 ### What to Test
 
@@ -526,11 +541,13 @@ describe("UserProfile Integration", () => {
 
 ## API Mocking Strategies
 
-Mock external APIs to ensure tests are fast, reliable, and don't depend on external services.
+Mock external APIs to ensure tests are fast, reliable, and don't depend on
+external services.
 
 ### Strategy 1: Mock Service Worker (MSW) - Recommended
 
-MSW intercepts HTTP requests at the network level, providing mock responses that work across all environments (tests, Storybook, dev servers).
+MSW intercepts HTTP requests at the network level, providing mock responses that
+work across all environments (tests, Storybook, dev servers).
 
 #### Setup MSW
 
@@ -623,7 +640,10 @@ describe("Login with MSW", () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "user@example.com");
+    await user.type(
+      screen.getByRole("textbox", { name: /email/i }),
+      "user@example.com",
+    );
     await user.type(screen.getByLabelText(/password/i), "password");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -636,7 +656,10 @@ describe("Login with MSW", () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "user@example.com");
+    await user.type(
+      screen.getByRole("textbox", { name: /email/i }),
+      "user@example.com",
+    );
     await user.type(screen.getByLabelText(/password/i), "wrong-password");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -660,7 +683,10 @@ describe("Login with MSW", () => {
 
     render(<LoginForm />);
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "user@example.com");
+    await user.type(
+      screen.getByRole("textbox", { name: /email/i }),
+      "user@example.com",
+    );
     await user.type(screen.getByLabelText(/password/i), "password");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -703,17 +729,20 @@ describe("Fetch Mocking", () => {
 
 ### Best Practices for API Mocking
 
-1. **Use MSW for complex scenarios** - Supports all HTTP methods and cross-environment use
+1. **Use MSW for complex scenarios** - Supports all HTTP methods and
+   cross-environment use
 2. **Keep handlers organized** - Group related endpoints in handler files
 3. **Test error cases** - Always mock error responses (4xx, 5xx)
-4. **Override handlers per test** - Use `server.use()` for test-specific mock behavior
+4. **Override handlers per test** - Use `server.use()` for test-specific mock
+   behavior
 5. **Don't mock everything** - Use real API for E2E tests when appropriate
 
 ---
 
 ## E2E Testing with Playwright & Cucumber
 
-E2E tests validate complete user workflows in a real browser environment. Use BDD with Cucumber for human-readable test specifications.
+E2E tests validate complete user workflows in a real browser environment. Use
+BDD with Cucumber for human-readable test specifications.
 
 ### Setup Playwright & Cucumber
 
@@ -1040,9 +1069,12 @@ open e2e/reports/cucumber-report.html
 ### Best Practices for E2E Tests
 
 1. **Test critical user workflows only** - Don't test every possible scenario
-2. **Use BDD/Gherkin** - Write readable feature files that stakeholders understand
-3. **Keep tests isolated** - Each test should be independent and work in any order
-4. **Wait for elements properly** - Use Playwright's auto-waiting and explicit waits
+2. **Use BDD/Gherkin** - Write readable feature files that stakeholders
+   understand
+3. **Keep tests isolated** - Each test should be independent and work in any
+   order
+4. **Wait for elements properly** - Use Playwright's auto-waiting and explicit
+   waits
 5. **Capture screenshots on failure** - Aids debugging
 6. **Use tags to organize** - @auth, @payment, @smoke for selective running
 7. **Test against real browser** - Use actual Chromium/Firefox, not jsdom
@@ -1051,7 +1083,8 @@ open e2e/reports/cucumber-report.html
 
 ## Code Coverage
 
-Code coverage measures how much of your codebase is tested. Use it as a quality metric, not a goal.
+Code coverage measures how much of your codebase is tested. Use it as a quality
+metric, not a goal.
 
 ### Coverage Goals
 
@@ -1062,7 +1095,8 @@ Code coverage measures how much of your codebase is tested. Use it as a quality 
 | System Tests      | 70-80%        |
 | Overall           | 80%+          |
 
-**Important**: Coverage is a metric, not a goal. 100% coverage doesn't guarantee quality. Focus on:
+**Important**: Coverage is a metric, not a goal. 100% coverage doesn't guarantee
+quality. Focus on:
 
 - Testing important logic paths
 - Covering error cases
@@ -1074,7 +1108,8 @@ Code coverage measures how much of your codebase is tested. Use it as a quality 
 Different metrics track different aspects:
 
 1. **Line Coverage**: Percentage of lines executed
-2. **Branch Coverage**: Percentage of conditional paths tested (if/else, switches)
+2. **Branch Coverage**: Percentage of conditional paths tested (if/else,
+   switches)
 3. **Function Coverage**: Percentage of functions called
 4. **Statement Coverage**: Percentage of statements executed
 
@@ -1348,12 +1383,11 @@ gh run view <RUN-ID> --log-failed
 
 ### Anti-Patterns to Avoid
 
-❌ **The Ice Cream Cone** - Too many E2E tests, few unit tests
-❌ **Test Implementation Details** - Test behavior, not internal state
-❌ **Flaky E2E Tests** - Use explicit waits, avoid sleeps
-❌ **No Mocking** - Mock external services in unit/integration tests
-❌ **100% Coverage Obsession** - Focus on quality, not quantity
-❌ **Skipped Tests** - Remove or fix, don't leave `@skip`
+❌ **The Ice Cream Cone** - Too many E2E tests, few unit tests ❌ **Test
+Implementation Details** - Test behavior, not internal state ❌ **Flaky E2E
+Tests** - Use explicit waits, avoid sleeps ❌ **No Mocking** - Mock external
+services in unit/integration tests ❌ **100% Coverage Obsession** - Focus on
+quality, not quantity ❌ **Skipped Tests** - Remove or fix, don't leave `@skip`
 
 ---
 
@@ -1391,4 +1425,5 @@ gh run view <RUN-ID> --log-failed
 
 **Document Version**: 1.0
 
-For questions or suggestions, please refer to the project's contributing guidelines.
+For questions or suggestions, please refer to the project's contributing
+guidelines.

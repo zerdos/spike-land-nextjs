@@ -22,7 +22,9 @@ describe("GalleryAdminPage", () => {
     render(<GalleryAdminPage />);
 
     expect(
-      screen.getByText("Manage before/after image pairs displayed on the landing page."),
+      screen.getByText(
+        "Manage before/after image pairs displayed on the landing page.",
+      ),
     ).toBeInTheDocument();
   });
 

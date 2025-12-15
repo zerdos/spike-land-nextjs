@@ -1,8 +1,8 @@
 # Pixel - AI Image Enhancement User Guide
 
-> **Last Updated**: December 2025
-> **Platform**: Spike Land
-> **Note**: Pixel is an app on the Spike Land platform. Your Spike Land account and tokens work across all platform apps.
+> **Last Updated**: December 2025 **Platform**: Spike Land **Note**: Pixel is an
+> app on the Spike Land platform. Your Spike Land account and tokens work across
+> all platform apps.
 
 ---
 
@@ -63,9 +63,13 @@ The platform accepts these image formats:
 
 ### What Are Tokens?
 
-Tokens are Spike Land's platform currency. When you create a Spike Land account, you get a token balance that can be spent across any app on the platform. Think of tokens like credits that work everywhere on Spike Land.
+Tokens are Spike Land's platform currency. When you create a Spike Land account,
+you get a token balance that can be spent across any app on the platform. Think
+of tokens like credits that work everywhere on Spike Land.
 
-Currently, the Pixel image enhancement app uses tokens to pay for AI-powered image enhancements. As more apps are added to the platform, your same token balance will work with all of them.
+Currently, the Pixel image enhancement app uses tokens to pay for AI-powered
+image enhancements. As more apps are added to the platform, your same token
+balance will work with all of them.
 
 ### Token Sources
 
@@ -108,7 +112,8 @@ Redeem voucher codes for bonus tokens.
 3. Click "Redeem"
 4. Tokens added instantly
 
-**Important**: You can redeem multiple vouchers (one per code), but cannot redeem the same code twice.
+**Important**: You can redeem multiple vouchers (one per code), but cannot
+redeem the same code twice.
 
 #### 3. Stripe One-Time Purchases
 
@@ -131,7 +136,8 @@ Buy tokens directly with your credit or debit card.
 4. Complete Stripe checkout
 5. Tokens credited instantly
 
-**Important**: Purchased tokens never expire and combine with your free token balance.
+**Important**: Purchased tokens never expire and combine with your free token
+balance.
 
 #### 4. Subscription Plans
 
@@ -159,12 +165,13 @@ Subscribe for automatic monthly token allocation.
 - Month 2: Allocated 100 + rollover 40 = 140 (capped at 100)
 - Month 3: New allocation, previous unused tokens still available
 
-**Pause Subscription**: No charge during pause, no tokens added
-**Cancel Anytime**: Keep remaining tokens forever
+**Pause Subscription**: No charge during pause, no tokens added **Cancel
+Anytime**: Keep remaining tokens forever
 
 ### Token Costs (Pixel App)
 
-When you enhance an image in Pixel, the cost depends on the quality tier you choose:
+When you enhance an image in Pixel, the cost depends on the quality tier you
+choose:
 
 | Tier    | Max Resolution | Cost      | Use Case                        |
 | ------- | -------------- | --------- | ------------------------------- |
@@ -289,7 +296,8 @@ If an enhancement fails:
 
 ### Creating Albums
 
-Albums help you organize related images for batch processing, easy sharing, and comparison.
+Albums help you organize related images for batch processing, easy sharing, and
+comparison.
 
 **Create an Album:**
 
@@ -405,8 +413,8 @@ Invite friends to join Spike Land and both of you earn bonus tokens.
 
 ### How It Works
 
-**You Get**: 50 tokens per successful referral
-**Your Friend Gets**: 50 tokens when they sign up
+**You Get**: 50 tokens per successful referral **Your Friend Gets**: 50 tokens
+when they sign up
 
 **Process:**
 
@@ -535,78 +543,83 @@ Control what emails you receive:
 
 ### General Questions
 
-**Q: Is the Image Enhancement App free?**
-A: It's free to sign up and start! You get 50 free tokens to begin with. Additional tokens can be earned through referrals, redeemed via vouchers, purchased, or passively generated (1 per 15 minutes, max 100).
+**Q: Is the Image Enhancement App free?** A: It's free to sign up and start! You
+get 50 free tokens to begin with. Additional tokens can be earned through
+referrals, redeemed via vouchers, purchased, or passively generated (1 per 15
+minutes, max 100).
 
-**Q: How long does enhancement take?**
-A: Most enhancements complete in 10-30 seconds. Processing time may vary based on server load.
+**Q: How long does enhancement take?** A: Most enhancements complete in 10-30
+seconds. Processing time may vary based on server load.
 
-**Q: What image formats do you support?**
-A: JPEG, PNG, WebP, GIF, and BMP. Maximum 25 MB per file.
+**Q: What image formats do you support?** A: JPEG, PNG, WebP, GIF, and BMP.
+Maximum 25 MB per file.
 
-**Q: Is my image data safe?**
-A: Yes! All data is encrypted at rest and in transit. We use Cloudflare R2 for secure storage. See Privacy Policy for details.
+**Q: Is my image data safe?** A: Yes! All data is encrypted at rest and in
+transit. We use Cloudflare R2 for secure storage. See Privacy Policy for
+details.
 
 ### Token Questions
 
-**Q: Do my free tokens ever expire?**
-A: Free regenerated tokens expire after 30 days of inactivity. Purchased and subscription tokens never expire.
+**Q: Do my free tokens ever expire?** A: Free regenerated tokens expire after 30
+days of inactivity. Purchased and subscription tokens never expire.
 
-**Q: Can I gift tokens to a friend?**
-A: Currently no, tokens are account-specific. Use the referral program instead to give your friend tokens.
+**Q: Can I gift tokens to a friend?** A: Currently no, tokens are
+account-specific. Use the referral program instead to give your friend tokens.
 
-**Q: Do unused subscription tokens rollover?**
-A: Yes! Unused tokens carry to the next month (up to your plan's maximum).
+**Q: Do unused subscription tokens rollover?** A: Yes! Unused tokens carry to
+the next month (up to your plan's maximum).
 
-**Q: Can I pause my subscription?**
-A: Yes, pause for 1-3 months without charges. Resume anytime.
+**Q: Can I pause my subscription?** A: Yes, pause for 1-3 months without
+charges. Resume anytime.
 
 ### Enhancement Questions
 
-**Q: Will my image be publicly visible?**
-A: No, all images are private by default. Only you can access them unless you explicitly share an album link.
+**Q: Will my image be publicly visible?** A: No, all images are private by
+default. Only you can access them unless you explicitly share an album link.
 
-**Q: What happens if enhancement fails?**
-A: Tokens are automatically refunded. You can retry immediately at no additional cost.
+**Q: What happens if enhancement fails?** A: Tokens are automatically refunded.
+You can retry immediately at no additional cost.
 
-**Q: Can I enhance the same image multiple times?**
-A: Yes! Each enhancement is independent. Create multiple versions at different tiers.
+**Q: Can I enhance the same image multiple times?** A: Yes! Each enhancement is
+independent. Create multiple versions at different tiers.
 
-**Q: What quality can I expect?**
-A: Results depend on your original image quality. Higher quality originals produce better enhancements. The AI uses Google Gemini for intelligent upscaling.
+**Q: What quality can I expect?** A: Results depend on your original image
+quality. Higher quality originals produce better enhancements. The AI uses
+Google Gemini for intelligent upscaling.
 
 ### Album & Sharing Questions
 
-**Q: Can others edit my shared albums?**
-A: No, shared albums are view-only. You maintain full control.
+**Q: Can others edit my shared albums?** A: No, shared albums are view-only. You
+maintain full control.
 
-**Q: How long do share links work?**
-A: Indefinitely (until you delete the album). Future versions will support expiring links.
+**Q: How long do share links work?** A: Indefinitely (until you delete the
+album). Future versions will support expiring links.
 
-**Q: Can I download images from shared albums?**
-A: No, shared albums are for viewing only. Only you can download your images.
+**Q: Can I download images from shared albums?** A: No, shared albums are for
+viewing only. Only you can download your images.
 
 ### Referral Questions
 
-**Q: How long does it take to earn referral tokens?**
-A: Tokens are awarded when your friend completes their first action (sign-up + email verification).
+**Q: How long does it take to earn referral tokens?** A: Tokens are awarded when
+your friend completes their first action (sign-up + email verification).
 
-**Q: What if my friend already has an account?**
-A: Referral links only work for new sign-ups. Existing users won't trigger referral rewards.
+**Q: What if my friend already has an account?** A: Referral links only work for
+new sign-ups. Existing users won't trigger referral rewards.
 
-**Q: Can I see who referred me?**
-A: The referral system tracks who you referred, not who referred you.
+**Q: Can I see who referred me?** A: The referral system tracks who you
+referred, not who referred you.
 
 ### Payment Questions
 
-**Q: What payment methods do you accept?**
-A: Credit and debit cards via Stripe (Visa, Mastercard, American Express, etc.).
+**Q: What payment methods do you accept?** A: Credit and debit cards via Stripe
+(Visa, Mastercard, American Express, etc.).
 
-**Q: Is my payment information safe?**
-A: Yes, all payments are processed by Stripe (PCI-DSS Level 1 compliant). We never store full credit card details.
+**Q: Is my payment information safe?** A: Yes, all payments are processed by
+Stripe (PCI-DSS Level 1 compliant). We never store full credit card details.
 
-**Q: Can I get a refund?**
-A: Tokens purchased via Stripe can be refunded within 30 days. Subscription cancellations are processed immediately with access until billing period end.
+**Q: Can I get a refund?** A: Tokens purchased via Stripe can be refunded within
+30 days. Subscription cancellations are processed immediately with access until
+billing period end.
 
 ---
 
@@ -740,10 +753,9 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 
 ## Contact & Support
 
-**Help Center**: [docs.spike.land](https://docs.spike.land)
-**Email Support**: support@spike.land
-**General Email**: hello@spike.land
-**Status Page**: [status.spike.land](https://status.spike.land)
+**Help Center**: [docs.spike.land](https://docs.spike.land) **Email Support**:
+support@spike.land **General Email**: hello@spike.land **Status Page**:
+[status.spike.land](https://status.spike.land)
 
 **Response Times:**
 
@@ -753,5 +765,4 @@ A: Tokens purchased via Stripe can be refunded within 30 days. Subscription canc
 
 ---
 
-**Last Updated**: December 2025
-**Version**: 1.0
+**Last Updated**: December 2025 **Version**: 1.0

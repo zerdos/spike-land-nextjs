@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies using vi.hoisted
-const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockCreateGenerationJob } = vi.hoisted(
+const {
+  mockAuthenticateMcpOrSession,
+  mockCheckRateLimit,
+  mockCreateGenerationJob,
+} = vi.hoisted(
   () => ({
     mockAuthenticateMcpOrSession: vi.fn(),
     mockCheckRateLimit: vi.fn(),
@@ -81,7 +85,10 @@ describe("POST /api/mcp/generate", () => {
         error: "Missing Authorization header",
       });
 
-      const request = createMockRequest({}, { prompt: "test", tier: "TIER_1K" });
+      const request = createMockRequest({}, {
+        prompt: "test",
+        tier: "TIER_1K",
+      });
       const response = await POST(request);
       const body = await response.json();
 
@@ -112,7 +119,9 @@ describe("POST /api/mcp/generate", () => {
 
   describe("validation", () => {
     it("should return 400 for invalid JSON body", async () => {
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" }, null);
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      }, null);
       const response = await POST(request);
       const body = await response.json();
 

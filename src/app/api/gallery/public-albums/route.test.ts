@@ -421,8 +421,12 @@ describe("GET /api/gallery/public-albums", () => {
             geminiPrompt: null,
             geminiModel: null,
             geminiTemp: null,
-            processingStartedAt: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
-            processingCompletedAt: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
+            processingStartedAt: new Date(
+              `2025-01-${String(i + 1).padStart(2, "0")}`,
+            ),
+            processingCompletedAt: new Date(
+              `2025-01-${String(i + 1).padStart(2, "0")}`,
+            ),
             workflowRunId: null,
             createdAt: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
             updatedAt: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
@@ -457,7 +461,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should return 500 on database error", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     vi.mocked(prisma.user.findFirst).mockRejectedValue(
       new Error("Database connection failed"),

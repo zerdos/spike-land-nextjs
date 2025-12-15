@@ -89,7 +89,11 @@ describe("TokenPurchaseEmail", () => {
 
   it("handle large token amounts", async () => {
     const html = await render(
-      <TokenPurchaseEmail {...defaultProps} tokensAmount={500} newBalance={650} />,
+      <TokenPurchaseEmail
+        {...defaultProps}
+        tokensAmount={500}
+        newBalance={650}
+      />,
     );
 
     expect(html).toContain("+");
@@ -99,7 +103,9 @@ describe("TokenPurchaseEmail", () => {
   });
 
   it("handle different currency formats", async () => {
-    const html = await render(<TokenPurchaseEmail {...defaultProps} amountPaid="$12.99" />);
+    const html = await render(
+      <TokenPurchaseEmail {...defaultProps} amountPaid="$12.99" />,
+    );
 
     expect(html).toContain("$12.99");
   });

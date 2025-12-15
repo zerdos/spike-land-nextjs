@@ -114,13 +114,16 @@ export function useDragPreview() {
     images: [],
   });
 
-  const showPreview = useCallback((images: DragPreviewImage[], x: number, y: number) => {
-    setPreviewState({
-      visible: true,
-      position: { x, y },
-      images,
-    });
-  }, []);
+  const showPreview = useCallback(
+    (images: DragPreviewImage[], x: number, y: number) => {
+      setPreviewState({
+        visible: true,
+        position: { x, y },
+        images,
+      });
+    },
+    [],
+  );
 
   const updatePosition = useCallback((x: number, y: number) => {
     setPreviewState((prev) => ({

@@ -57,7 +57,11 @@ describe("Card Components", () => {
     });
 
     it("should merge custom className", () => {
-      render(<CardHeader className="custom-header" data-testid="header">Content</CardHeader>);
+      render(
+        <CardHeader className="custom-header" data-testid="header">
+          Content
+        </CardHeader>,
+      );
       expect(screen.getByTestId("header")).toHaveClass("custom-header");
     });
 
@@ -82,11 +86,19 @@ describe("Card Components", () => {
     it("should apply default title classes", () => {
       render(<CardTitle data-testid="title">Content</CardTitle>);
       const title = screen.getByTestId("title");
-      expect(title).toHaveClass("font-semibold", "leading-none", "tracking-tight");
+      expect(title).toHaveClass(
+        "font-semibold",
+        "leading-none",
+        "tracking-tight",
+      );
     });
 
     it("should merge custom className", () => {
-      render(<CardTitle className="custom-title" data-testid="title">Content</CardTitle>);
+      render(
+        <CardTitle className="custom-title" data-testid="title">
+          Content
+        </CardTitle>,
+      );
       expect(screen.getByTestId("title")).toHaveClass("custom-title");
     });
 
@@ -103,13 +115,19 @@ describe("Card Components", () => {
 
   describe("CardDescription", () => {
     it("should render card description with children", () => {
-      render(<CardDescription data-testid="description">Description Content</CardDescription>);
+      render(
+        <CardDescription data-testid="description">
+          Description Content
+        </CardDescription>,
+      );
       expect(screen.getByTestId("description")).toBeInTheDocument();
       expect(screen.getByText("Description Content")).toBeInTheDocument();
     });
 
     it("should apply default description classes", () => {
-      render(<CardDescription data-testid="description">Content</CardDescription>);
+      render(
+        <CardDescription data-testid="description">Content</CardDescription>,
+      );
       const description = screen.getByTestId("description");
       expect(description).toHaveClass("text-sm", "text-muted-foreground");
     });
@@ -148,7 +166,11 @@ describe("Card Components", () => {
     });
 
     it("should merge custom className", () => {
-      render(<CardContent className="custom-content" data-testid="content">Content</CardContent>);
+      render(
+        <CardContent className="custom-content" data-testid="content">
+          Content
+        </CardContent>,
+      );
       expect(screen.getByTestId("content")).toHaveClass("custom-content");
     });
 
@@ -177,7 +199,11 @@ describe("Card Components", () => {
     });
 
     it("should merge custom className", () => {
-      render(<CardFooter className="custom-footer" data-testid="footer">Content</CardFooter>);
+      render(
+        <CardFooter className="custom-footer" data-testid="footer">
+          Content
+        </CardFooter>,
+      );
       expect(screen.getByTestId("footer")).toHaveClass("custom-footer");
     });
 

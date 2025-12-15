@@ -15,7 +15,9 @@ This guide covers how to create, manage, and apply database migrations safely.
 
 ### What is a Migration?
 
-A migration is a set of SQL commands that modify the database schema. Prisma tracks migrations in the `prisma/migrations` directory, with each migration containing:
+A migration is a set of SQL commands that modify the database schema. Prisma
+tracks migrations in the `prisma/migrations` directory, with each migration
+containing:
 
 - `migration.sql` - SQL commands to apply changes
 - Migration timestamp and name - For tracking and ordering
@@ -552,9 +554,12 @@ cat prisma/migrations/[timestamp]_name/migration.sql
 
 ## Additional Resources
 
-- **Prisma Migrate Docs**: https://www.prisma.io/docs/concepts/components/prisma-migrate
-- **Schema Evolution**: https://www.prisma.io/docs/guides/database/developing-with-prisma-migrate
-- **Production Best Practices**: https://www.prisma.io/docs/guides/database/production-troubleshooting
+- **Prisma Migrate Docs**:
+  https://www.prisma.io/docs/concepts/components/prisma-migrate
+- **Schema Evolution**:
+  https://www.prisma.io/docs/guides/database/developing-with-prisma-migrate
+- **Production Best Practices**:
+  https://www.prisma.io/docs/guides/database/production-troubleshooting
 
 ## Emergency Contacts
 

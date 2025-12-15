@@ -152,7 +152,9 @@ export function parsePipelineConfig(
 /**
  * Validate a pipeline config has required fields
  */
-export function isValidPipelineConfig(config: unknown): config is PipelineConfig {
+export function isValidPipelineConfig(
+  config: unknown,
+): config is PipelineConfig {
   if (typeof config !== "object" || config === null) return false;
   const c = config as Record<string, unknown>;
   return (

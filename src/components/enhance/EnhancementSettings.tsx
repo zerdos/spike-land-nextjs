@@ -108,8 +108,13 @@ export function EnhancementSettings({
           )}
           <div className="flex-1 space-y-2">
             <div>
-              <p className="text-sm font-medium text-foreground">Selected Image</p>
-              <Label htmlFor="image-name" className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-foreground">
+                Selected Image
+              </p>
+              <Label
+                htmlFor="image-name"
+                className="text-xs text-muted-foreground"
+              >
                 Image Name
               </Label>
             </div>
@@ -140,7 +145,9 @@ export function EnhancementSettings({
           <div className="flex items-start gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-destructive">Insufficient Tokens</p>
+              <p className="text-sm font-medium text-destructive">
+                Insufficient Tokens
+              </p>
               <p className="text-sm text-muted-foreground">
                 You need {tierCost} tokens but only have {currentBalance}
               </p>
@@ -160,7 +167,9 @@ export function EnhancementSettings({
 
       {/* Tier Selection */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Enhancement Level</Label>
+        <Label className="text-sm font-medium mb-3 block">
+          Enhancement Level
+        </Label>
         <RadioGroup
           value={selectedTier}
           onValueChange={(value) => setSelectedTier(value as EnhancementTier)}
@@ -200,7 +209,9 @@ export function EnhancementSettings({
                     />
                     <span className="font-medium">{info.name}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground text-center">{info.tagline}</p>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {info.tagline}
+                  </p>
                 </Label>
               </div>
             );
@@ -258,10 +269,17 @@ export function EnhancementSettings({
           </DialogHeader>
           {content}
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={handleCancel} disabled={isProcessing}>
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isProcessing}
+            >
               Cancel
             </Button>
-            <Button onClick={handleEnhance} disabled={isProcessing || !hasEnoughTokens}>
+            <Button
+              onClick={handleEnhance}
+              disabled={isProcessing || !hasEnoughTokens}
+            >
               {isProcessing
                 ? (
                   <>
@@ -296,7 +314,9 @@ export function EnhancementSettings({
     <Card>
       <CardHeader>
         <CardTitle>Enhancement Settings</CardTitle>
-        <CardDescription>Choose the quality tier for AI enhancement</CardDescription>
+        <CardDescription>
+          Choose the quality tier for AI enhancement
+        </CardDescription>
       </CardHeader>
       <CardContent>{content}</CardContent>
     </Card>

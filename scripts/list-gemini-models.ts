@@ -26,7 +26,9 @@ async function main() {
       console.log(`\nModel: ${model.name}`);
       console.log(`  Display Name: ${model.displayName || "N/A"}`);
       console.log(`  Description: ${model.description || "N/A"}`);
-      console.log(`  Supported Methods: ${model.supportedGenerationMethods?.join(", ") || "N/A"}`);
+      console.log(
+        `  Supported Methods: ${model.supportedGenerationMethods?.join(", ") || "N/A"}`,
+      );
       console.log(`  Input Token Limit: ${model.inputTokenLimit || "N/A"}`);
       console.log(`  Output Token Limit: ${model.outputTokenLimit || "N/A"}`);
 

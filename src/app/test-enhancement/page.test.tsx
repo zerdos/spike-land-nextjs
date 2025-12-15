@@ -19,12 +19,16 @@ const mockFileReaderResult = "data:image/png;base64,test123";
 const mockFileReaderInstance = {
   readAsDataURL: vi.fn(),
   result: mockFileReaderResult,
-  onloadend: null as ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null,
+  onloadend: null as
+    | ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown)
+    | null,
 };
 
 class MockFileReader {
   result = mockFileReaderResult;
-  onloadend: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null = null;
+  onloadend:
+    | ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown)
+    | null = null;
 
   readAsDataURL(_file: Blob): void {
     mockFileReaderInstance.readAsDataURL(_file);
@@ -32,7 +36,10 @@ class MockFileReader {
     // Simulate async file reading
     setTimeout(() => {
       if (this.onloadend) {
-        this.onloadend.call(this as unknown as FileReader, {} as ProgressEvent<FileReader>);
+        this.onloadend.call(
+          this as unknown as FileReader,
+          {} as ProgressEvent<FileReader>,
+        );
       }
     }, 0);
   }
@@ -112,7 +119,9 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       expect(uploadButton).toBeDisabled();
     });
 
@@ -137,7 +146,8 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      expect(screen.getByRole("button", { name: /Refresh/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Refresh/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -205,7 +215,9 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -213,7 +225,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       expect(uploadButton).not.toBeDisabled();
     });
 
@@ -221,7 +235,9 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -240,13 +256,17 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
 
       await act(async () => {
         fireEvent.change(fileInput, { target: { files: [] } });
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       expect(uploadButton).toBeDisabled();
     });
 
@@ -254,19 +274,33 @@ describe("TestEnhancementPage", () => {
       // First, set up an uploaded image
       mockFetch.mockReset();
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () =>
             Promise.resolve({
-              image: { id: "img1", name: "test.png", url: "http://test", width: 100, height: 100 },
+              image: {
+                id: "img1",
+                name: "test.png",
+                url: "http://test",
+                width: 100,
+                height: 100,
+              },
             }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -275,7 +309,9 @@ describe("TestEnhancementPage", () => {
       });
 
       // Upload the image
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -292,7 +328,8 @@ describe("TestEnhancementPage", () => {
       });
 
       // The uploaded status should be cleared
-      expect(screen.queryByText(/Uploaded Successfully/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Uploaded Successfully/)).not
+        .toBeInTheDocument();
     });
   });
 
@@ -307,16 +344,24 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -324,7 +369,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -344,12 +391,17 @@ describe("TestEnhancementPage", () => {
 
     it("should show uploading state during upload", async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockImplementationOnce(() => new Promise(() => {})); // Never resolves
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -357,17 +409,23 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
 
-      expect(screen.getByRole("button", { name: /Uploading\.\.\./i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Uploading\.\.\./i }))
+        .toBeInTheDocument();
     });
 
     it("should handle upload failure with error response", async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: false,
           json: () => Promise.resolve({ error: "File too large" }),
@@ -375,7 +433,9 @@ describe("TestEnhancementPage", () => {
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -383,7 +443,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -395,12 +457,17 @@ describe("TestEnhancementPage", () => {
 
     it("should handle upload network error", async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockRejectedValueOnce(new Error("Network error"));
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -408,13 +475,17 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining("Upload error"));
+        expect(mockAlert).toHaveBeenCalledWith(
+          expect.stringContaining("Upload error"),
+        );
       });
     });
 
@@ -428,16 +499,24 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -445,7 +524,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -482,18 +563,26 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<TestEnhancementPage />);
 
       // First, upload an image to enable tier selection
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -501,7 +590,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -521,7 +612,9 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      const tier1kRadio = screen.getByDisplayValue("TIER_1K") as HTMLInputElement;
+      const tier1kRadio = screen.getByDisplayValue(
+        "TIER_1K",
+      ) as HTMLInputElement;
       expect(tier1kRadio.disabled).toBe(true);
     });
 
@@ -535,16 +628,24 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -552,13 +653,17 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
 
       await waitFor(() => {
-        const tier1kRadio = screen.getByDisplayValue("TIER_1K") as HTMLInputElement;
+        const tier1kRadio = screen.getByDisplayValue(
+          "TIER_1K",
+        ) as HTMLInputElement;
         expect(tier1kRadio.disabled).toBe(false);
       });
     });
@@ -575,16 +680,24 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -592,7 +705,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -626,9 +741,14 @@ describe("TestEnhancementPage", () => {
               enhancedHeight: 1440,
             }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 43 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 43 }),
+        });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
         // First poll happens immediately after enhanceImage calls pollJobStatus
@@ -663,12 +783,15 @@ describe("TestEnhancementPage", () => {
 
       mockFetch.mockImplementationOnce(() => new Promise(() => {})); // Never resolves
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
       });
 
-      expect(screen.getByRole("button", { name: /Enhancing\.\.\./i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Enhancing\.\.\./i }))
+        .toBeInTheDocument();
     });
 
     it("should handle enhancement failure", async () => {
@@ -679,13 +802,17 @@ describe("TestEnhancementPage", () => {
         json: () => Promise.resolve({ error: "Insufficient tokens" }),
       });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith("Enhancement failed: Insufficient tokens");
+        expect(mockAlert).toHaveBeenCalledWith(
+          "Enhancement failed: Insufficient tokens",
+        );
       });
     });
 
@@ -694,13 +821,17 @@ describe("TestEnhancementPage", () => {
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining("Enhancement error"));
+        expect(mockAlert).toHaveBeenCalledWith(
+          expect.stringContaining("Enhancement error"),
+        );
       });
     });
 
@@ -722,7 +853,9 @@ describe("TestEnhancementPage", () => {
             }),
         });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
       });
@@ -734,7 +867,8 @@ describe("TestEnhancementPage", () => {
       await waitFor(() => {
         // Text is split - "Enhancement failed: " and "Processing error" are separate
         expect(screen.getByText(/Processing error/)).toBeInTheDocument();
-        expect(screen.getByText(/Tokens have been refunded/)).toBeInTheDocument();
+        expect(screen.getByText(/Tokens have been refunded/))
+          .toBeInTheDocument();
       });
     });
 
@@ -748,16 +882,24 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 3 }) }) // Low balance
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 3 }),
+        }) // Low balance
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 3 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 3 }),
+        });
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -765,7 +907,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -775,11 +919,14 @@ describe("TestEnhancementPage", () => {
       });
 
       // TIER_2K costs 5 tokens, but we only have 3
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       expect(enhanceButton).toBeDisabled();
 
       // Should show insufficient tokens message - text pattern: "Insufficient tokens. Need 5, have 3"
-      expect(screen.getByText(/Insufficient tokens\. Need 5, have 3/)).toBeInTheDocument();
+      expect(screen.getByText(/Insufficient tokens\. Need 5, have 3/))
+        .toBeInTheDocument();
     });
 
     it("should not enhance if no image is uploaded", async () => {
@@ -790,7 +937,9 @@ describe("TestEnhancementPage", () => {
       });
 
       // Enhance button should be disabled when no image is uploaded
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       expect(enhanceButton).toBeDisabled();
     });
   });
@@ -806,12 +955,18 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        });
 
       render(<TestEnhancementPage />);
 
@@ -820,7 +975,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -828,7 +985,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
         // Allow upload promise and subsequent balance fetch to resolve
@@ -857,7 +1016,9 @@ describe("TestEnhancementPage", () => {
         });
       }
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
         // First poll happens immediately
@@ -897,16 +1058,24 @@ describe("TestEnhancementPage", () => {
               enhancedHeight: 1440,
             }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 43 }) });
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 43 }),
+        });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
         // First poll happens immediately and fails
         await vi.advanceTimersByTimeAsync(50);
       });
 
-      expect(mockConsoleError).toHaveBeenCalledWith("Job polling error:", expect.any(Error));
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "Job polling error:",
+        expect.any(Error),
+      );
 
       // Second poll happens after 2s retry delay
       await act(async () => {
@@ -931,7 +1100,9 @@ describe("TestEnhancementPage", () => {
           json: () => Promise.resolve({ status: "PROCESSING", tier: "TIER_2K" }),
         });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
         // Allow the first immediate poll to complete
@@ -966,12 +1137,18 @@ describe("TestEnhancementPage", () => {
       };
 
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 50 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 50 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ image: uploadedImage }),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 48 }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 48 }),
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ jobId: "job123", newBalance: 43 }),
@@ -982,12 +1159,17 @@ describe("TestEnhancementPage", () => {
         });
 
       if (jobData.status === "COMPLETED") {
-        mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ balance: 43 }) });
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ balance: 43 }),
+        });
       }
 
       render(<TestEnhancementPage />);
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const testFile = new File(["test"], "test.png", { type: "image/png" });
 
       await act(async () => {
@@ -995,7 +1177,9 @@ describe("TestEnhancementPage", () => {
         await vi.advanceTimersByTimeAsync(10);
       });
 
-      const uploadButton = screen.getByRole("button", { name: /Upload to R2/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /Upload to R2/i,
+      });
       await act(async () => {
         fireEvent.click(uploadButton);
       });
@@ -1004,7 +1188,9 @@ describe("TestEnhancementPage", () => {
         expect(screen.getByText(/Uploaded Successfully/)).toBeInTheDocument();
       });
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance \(5 tokens\)/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance \(5 tokens\)/i,
+      });
       await act(async () => {
         fireEvent.click(enhanceButton);
         // First poll happens immediately after enhanceImage calls pollJobStatus
@@ -1026,7 +1212,8 @@ describe("TestEnhancementPage", () => {
       });
 
       expect(screen.getByText("Enhanced Image URL:")).toBeInTheDocument();
-      expect(screen.getByText("http://example.com/enhanced.png")).toBeInTheDocument();
+      expect(screen.getByText("http://example.com/enhanced.png"))
+        .toBeInTheDocument();
     });
 
     it("should display job tier and tokens used", async () => {
@@ -1070,8 +1257,10 @@ describe("TestEnhancementPage", () => {
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
         "Image Enhancement Demo",
       );
-      expect(screen.getByRole("heading", { name: /1\. Upload Image/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /2\. Enhance Image/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /1\. Upload Image/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /2\. Enhance Image/i }))
+        .toBeInTheDocument();
     });
 
     it("should have container structure", () => {

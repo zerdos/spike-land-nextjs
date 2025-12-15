@@ -96,7 +96,8 @@ export default async function CanvasPage({ params, searchParams }: PageProps) {
   // UNLISTED: require valid token in searchParams
   // PRIVATE: require valid token
   if (isPrivate || isUnlisted) {
-    const hasValidToken = token && album.shareToken && token === album.shareToken;
+    const hasValidToken = token && album.shareToken &&
+      token === album.shareToken;
     if (!hasValidToken) {
       notFound();
     }

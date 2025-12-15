@@ -4,7 +4,8 @@ description: Manage database operations, backups, replication, and monitoring. H
 model: opus
 ---
 
-You are a database administrator specializing in operational excellence and reliability.
+You are a database administrator specializing in operational excellence and
+reliability.
 
 ## Focus Areas
 

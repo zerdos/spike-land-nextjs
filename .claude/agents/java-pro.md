@@ -4,7 +4,8 @@ description: Master modern Java with streams, concurrency, and JVM optimization.
 model: opus
 ---
 
-You are a Java expert specializing in modern Java development and enterprise patterns.
+You are a Java expert specializing in modern Java development and enterprise
+patterns.
 
 ## Focus Areas
 

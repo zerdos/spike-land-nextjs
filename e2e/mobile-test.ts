@@ -10,7 +10,11 @@ import * as fs from "fs";
 import * as path from "path";
 
 const BASE_URL = process.env.BASE_URL || "https://spike.land";
-const SCREENSHOTS_DIR = path.join(process.cwd(), "e2e", "mobile-test-screenshots");
+const SCREENSHOTS_DIR = path.join(
+  process.cwd(),
+  "e2e",
+  "mobile-test-screenshots",
+);
 
 // Ensure screenshots directory exists
 if (!fs.existsSync(SCREENSHOTS_DIR)) {
@@ -27,7 +31,10 @@ interface TestResult {
 
 const results: TestResult[] = [];
 
-async function testViewport(deviceName: string, viewportConfig: Record<string, unknown>) {
+async function testViewport(
+  deviceName: string,
+  viewportConfig: Record<string, unknown>,
+) {
   console.log(`\n========================================`);
   console.log(`Testing ${deviceName}...`);
   console.log(`========================================`);
@@ -35,7 +42,8 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     ...viewportConfig,
-    userAgent: viewportConfig.userAgent || "Mozilla/5.0 (compatible; SpikeLandMobileTest/1.0)",
+    userAgent: viewportConfig.userAgent ||
+      "Mozilla/5.0 (compatible; SpikeLandMobileTest/1.0)",
   });
   const page = await context.newPage();
 
@@ -65,7 +73,8 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
     }
 
     // Check for comparison slider on landing page
-    const comparisonSlider = await page.locator('[class*="cursor-ew-resize"]').first();
+    const comparisonSlider = await page.locator('[class*="cursor-ew-resize"]')
+      .first();
     const hasSlider = await comparisonSlider.count() > 0;
     if (hasSlider) {
       console.log("✅ Comparison slider found on landing page");
@@ -84,7 +93,9 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
         }
       }
     } else {
-      console.log("⚠️  No comparison slider found on landing page (may not be visible)");
+      console.log(
+        "⚠️  No comparison slider found on landing page (may not be visible)",
+      );
     }
 
     // Check navigation menu
@@ -97,7 +108,9 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
     }
 
     // Test 2: Enhancement Page (requires auth, so just check redirect)
-    console.log(`\n[${deviceName}] Testing Enhancement Page (unauthenticated)...`);
+    console.log(
+      `\n[${deviceName}] Testing Enhancement Page (unauthenticated)...`,
+    );
     await page.goto(`${BASE_URL}/pixel`, { waitUntil: "networkidle" });
 
     const enhanceScreenshot = `${deviceName.replace(/\s/g, "-")}-enhance.png`;
@@ -112,7 +125,9 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
     if (currentUrl.includes("/auth/signin")) {
       console.log("✅ Correctly redirected to sign-in page");
     } else {
-      issues.push("Enhancement page did not redirect to sign-in for unauthenticated user");
+      issues.push(
+        "Enhancement page did not redirect to sign-in for unauthenticated user",
+      );
     }
 
     // Test 3: Admin Page (should redirect)
@@ -164,8 +179,12 @@ async function testViewport(deviceName: string, viewportConfig: Record<string, u
       }
     }
     if (smallButtons > 0) {
-      issues.push(`Found ${smallButtons} buttons smaller than 44x44px (touch target size)`);
-      console.log(`⚠️  Found ${smallButtons} buttons smaller than recommended touch target size`);
+      issues.push(
+        `Found ${smallButtons} buttons smaller than 44x44px (touch target size)`,
+      );
+      console.log(
+        `⚠️  Found ${smallButtons} buttons smaller than recommended touch target size`,
+      );
     } else if (buttons.length > 0) {
       console.log("✅ Button sizes meet touch target guidelines");
     }

@@ -10,7 +10,9 @@ class MockFileReader {
   onload: ((e: { target: { result: string; }; }) => void) | null = null;
   readAsDataURL(file: Blob) {
     if (this.onload) {
-      this.onload({ target: { result: `data:image/png;base64,mock-${file.name}` } });
+      this.onload({
+        target: { result: `data:image/png;base64,mock-${file.name}` },
+      });
     }
   }
 }
@@ -41,7 +43,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -58,8 +62,12 @@ describe("BatchUpload Component", () => {
   it("should validate file type", async () => {
     render(<BatchUpload />);
 
-    const file = new File(["test"], "document.pdf", { type: "application/pdf" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["test"], "document.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -79,7 +87,9 @@ describe("BatchUpload Component", () => {
     const file = new File(["a".repeat(11 * 1024 * 1024)], "large.png", {
       type: "image/png",
     });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -100,7 +110,9 @@ describe("BatchUpload Component", () => {
       { length: 25 },
       (_, i) => new File(["test"], `test${i}.png`, { type: "image/png" }),
     );
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -110,7 +122,9 @@ describe("BatchUpload Component", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith("Maximum 20 files allowed per batch");
+      expect(global.alert).toHaveBeenCalledWith(
+        "Maximum 20 files allowed per batch",
+      );
     });
   });
 
@@ -118,7 +132,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -138,7 +154,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -151,7 +169,7 @@ describe("BatchUpload Component", () => {
       expect(screen.getByText("test.png")).toBeInTheDocument();
     });
 
-    const removeButton = screen.getAllByRole("button").find(btn => btn.querySelector("svg"));
+    const removeButton = screen.getAllByRole("button").find((btn) => btn.querySelector("svg"));
     if (removeButton) {
       fireEvent.click(removeButton);
     }
@@ -169,7 +187,9 @@ describe("BatchUpload Component", () => {
       new File(["test1"], "test1.png", { type: "image/png" }),
       new File(["test2"], "test2.png", { type: "image/png" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -204,7 +224,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -224,7 +246,12 @@ describe("BatchUpload Component", () => {
               resolve({
                 ok: true,
                 json: async () => ({
-                  results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+                  results: [{
+                    success: true,
+                    filename: "test.png",
+                    imageId: "id1",
+                    url: "url1",
+                  }],
                 }),
               }),
             100,
@@ -248,7 +275,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -280,7 +309,9 @@ describe("BatchUpload Component", () => {
       new File(["test1"], "test1.png", { type: "image/png" }),
       new File(["test2"], "test2.png", { type: "image/png" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -317,7 +348,9 @@ describe("BatchUpload Component", () => {
       new File(["test1"], "test1.png", { type: "image/png" }),
       new File(["test2"], "test2.png", { type: "image/png" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -335,7 +368,8 @@ describe("BatchUpload Component", () => {
   it("should handle drag and drop", async () => {
     render(<BatchUpload />);
 
-    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+    const dropZone = screen.getByText("Drag and drop files here").parentElement
+      ?.parentElement;
 
     if (!dropZone) {
       throw new Error("Drop zone not found");
@@ -364,7 +398,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -379,7 +415,12 @@ describe("BatchUpload Component", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+        results: [{
+          success: true,
+          filename: "test.png",
+          imageId: "id1",
+          url: "url1",
+        }],
       }),
     });
 
@@ -405,7 +446,9 @@ describe("BatchUpload Component", () => {
       new File(["test1"], "test1.png", { type: "image/png" }),
       new File(["test2"], "test2.png", { type: "image/png" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -431,7 +474,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -446,7 +491,12 @@ describe("BatchUpload Component", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+        results: [{
+          success: true,
+          filename: "test.png",
+          imageId: "id1",
+          url: "url1",
+        }],
       }),
     });
 
@@ -455,7 +505,7 @@ describe("BatchUpload Component", () => {
 
     await waitFor(() => {
       const buttons = screen.getAllByRole("button");
-      const disabledUploadButton = buttons.find(btn =>
+      const disabledUploadButton = buttons.find((btn) =>
         btn.textContent?.includes("Upload") && btn.hasAttribute("disabled")
       );
       expect(disabledUploadButton).toBeDefined();
@@ -470,7 +520,9 @@ describe("BatchUpload Component", () => {
       new File(["test2"], "test2.jpg", { type: "image/jpeg" }),
       new File(["test3"], "test3.webp", { type: "image/webp" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -489,7 +541,8 @@ describe("BatchUpload Component", () => {
   it("should handle dragOver event", async () => {
     render(<BatchUpload />);
 
-    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+    const dropZone = screen.getByText("Drag and drop files here").parentElement
+      ?.parentElement;
 
     if (!dropZone) {
       throw new Error("Drop zone not found");
@@ -506,7 +559,8 @@ describe("BatchUpload Component", () => {
   it("should handle dragLeave event", async () => {
     render(<BatchUpload />);
 
-    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+    const dropZone = screen.getByText("Drag and drop files here").parentElement
+      ?.parentElement;
 
     if (!dropZone) {
       throw new Error("Drop zone not found");
@@ -535,8 +589,12 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     // Add a file with error (invalid type) - this file won't be pending
-    const invalidFile = new File(["test"], "document.pdf", { type: "application/pdf" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const invalidFile = new File(["test"], "document.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [invalidFile],
@@ -551,7 +609,9 @@ describe("BatchUpload Component", () => {
     });
 
     // The upload button should be disabled because there are no pending files
-    const uploadButton = screen.getByRole("button", { name: /Upload 0 files/i });
+    const uploadButton = screen.getByRole("button", {
+      name: /Upload 0 files/i,
+    });
     expect(uploadButton).toBeDisabled();
 
     // Try clicking anyway - should not call fetch
@@ -564,7 +624,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -581,7 +643,12 @@ describe("BatchUpload Component", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+        results: [{
+          success: true,
+          filename: "test.png",
+          imageId: "id1",
+          url: "url1",
+        }],
       }),
     });
 
@@ -593,7 +660,9 @@ describe("BatchUpload Component", () => {
     });
 
     // Now the upload button should show "Upload 0 files" and be disabled
-    const disabledButton = screen.getByRole("button", { name: /Upload 0 files/i });
+    const disabledButton = screen.getByRole("button", {
+      name: /Upload 0 files/i,
+    });
     expect(disabledButton).toBeDisabled();
 
     // Clear the mock call history
@@ -607,7 +676,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -644,7 +715,12 @@ describe("BatchUpload Component", () => {
     resolveFirst!({
       ok: true,
       json: async () => ({
-        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+        results: [{
+          success: true,
+          filename: "test.png",
+          imageId: "id1",
+          url: "url1",
+        }],
       }),
     });
 
@@ -661,7 +737,9 @@ describe("BatchUpload Component", () => {
       new File(["test1"], "test1.png", { type: "image/png" }),
       new File(["test2"], "test2.png", { type: "image/png" }),
     ];
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -706,7 +784,9 @@ describe("BatchUpload Component", () => {
       { length: 20 },
       (_, i) => new File(["test"], `test${i}.png`, { type: "image/png" }),
     );
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: files,
@@ -720,13 +800,17 @@ describe("BatchUpload Component", () => {
     });
 
     // The drop zone should have cursor-not-allowed class
-    const dropZone = screen.getByText(/Drag and drop files here|Drop files here/).closest(
+    const dropZone = screen.getByText(
+      /Drag and drop files here|Drop files here/,
+    ).closest(
       "div.border-dashed",
     );
     expect(dropZone).toHaveClass("cursor-not-allowed");
 
     // Click on the drop zone - should not trigger file input
-    const inputAfterMax = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const inputAfterMax = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(inputAfterMax).toBeDisabled();
   });
 
@@ -734,7 +818,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -748,7 +834,9 @@ describe("BatchUpload Component", () => {
     });
 
     // Mock a network error (fetch throws)
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network error"));
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error("Network error"),
+    );
 
     const uploadButton = screen.getByText(/Upload 1 file/i);
     fireEvent.click(uploadButton);
@@ -762,7 +850,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -776,7 +866,9 @@ describe("BatchUpload Component", () => {
     });
 
     // Mock a non-Error exception
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce("String error");
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      "String error",
+    );
 
     const uploadButton = screen.getByText(/Upload 1 file/i);
     fireEvent.click(uploadButton);
@@ -790,7 +882,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -808,7 +902,8 @@ describe("BatchUpload Component", () => {
   it("should handle drop with zero files", async () => {
     render(<BatchUpload />);
 
-    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+    const dropZone = screen.getByText("Drag and drop files here").parentElement
+      ?.parentElement;
 
     if (!dropZone) {
       throw new Error("Drop zone not found");
@@ -830,7 +925,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -868,7 +965,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -884,7 +983,12 @@ describe("BatchUpload Component", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        results: [{ success: true, filename: "test.png", imageId: "id1", url: "url1" }],
+        results: [{
+          success: true,
+          filename: "test.png",
+          imageId: "id1",
+          url: "url1",
+        }],
       }),
     });
 
@@ -899,8 +1003,12 @@ describe("BatchUpload Component", () => {
   it("should show failed badge when files have errors", async () => {
     render(<BatchUpload />);
 
-    const file = new File(["test"], "document.pdf", { type: "application/pdf" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["test"], "document.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -930,7 +1038,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -953,13 +1063,16 @@ describe("BatchUpload Component", () => {
   it("should handle click on drop zone to open file picker", async () => {
     render(<BatchUpload />);
 
-    const dropZone = screen.getByText("Drag and drop files here").parentElement?.parentElement;
+    const dropZone = screen.getByText("Drag and drop files here").parentElement
+      ?.parentElement;
 
     if (!dropZone) {
       throw new Error("Drop zone not found");
     }
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     const clickSpy = vi.spyOn(input, "click");
 
     fireEvent.click(dropZone);
@@ -970,7 +1083,9 @@ describe("BatchUpload Component", () => {
   it("should handle file input change with no files", async () => {
     render(<BatchUpload />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     // Simulate change event with null files
     Object.defineProperty(input, "files", {
@@ -991,7 +1106,9 @@ describe("BatchUpload Component", () => {
     render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],

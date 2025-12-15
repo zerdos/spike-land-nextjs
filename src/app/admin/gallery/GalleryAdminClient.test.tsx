@@ -116,7 +116,9 @@ describe("GalleryAdminClient", () => {
     await waitFor(() => {
       expect(screen.getByText("No gallery items yet.")).toBeInTheDocument();
       expect(
-        screen.getByText('Click "Add New Item" to add before/after pairs to the featured gallery.'),
+        screen.getByText(
+          'Click "Add New Item" to add before/after pairs to the featured gallery.',
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -142,7 +144,8 @@ describe("GalleryAdminClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Error:/)).toBeInTheDocument();
-      expect(screen.getByText(/Failed to fetch gallery items/)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to fetch gallery items/))
+        .toBeInTheDocument();
     });
   });
 
@@ -196,7 +199,8 @@ describe("GalleryAdminClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Edit Gallery Item")).toBeInTheDocument();
-      expect(screen.getByText("Update the details for this gallery item.")).toBeInTheDocument();
+      expect(screen.getByText("Update the details for this gallery item."))
+        .toBeInTheDocument();
     });
   });
 
@@ -216,7 +220,8 @@ describe("GalleryAdminClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Delete Gallery Item")).toBeInTheDocument();
-      expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
+      expect(screen.getByText(/Are you sure you want to delete/))
+        .toBeInTheDocument();
       expect(screen.getByText(/"Beautiful Portrait"/)).toBeInTheDocument();
     });
   });

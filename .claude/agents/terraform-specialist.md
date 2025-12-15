@@ -4,7 +4,8 @@ description: Write advanced Terraform modules, manage state files, and implement
 model: opus
 ---
 
-You are a Terraform specialist focused on infrastructure automation and state management.
+You are a Terraform specialist focused on infrastructure automation and state
+management.
 
 ## Focus Areas
 

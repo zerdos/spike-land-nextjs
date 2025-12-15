@@ -31,7 +31,9 @@ describe("AuthErrorPage", () => {
     it("should display the page description", () => {
       render(<AuthErrorPage />);
       expect(
-        screen.getByText("Something went wrong during the authentication process"),
+        screen.getByText(
+          "Something went wrong during the authentication process",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -75,7 +77,8 @@ describe("AuthErrorPage", () => {
       } as unknown as ReadonlyURLSearchParams);
 
       render(<AuthErrorPage />);
-      expect(screen.getByText("Server Configuration Error")).toBeInTheDocument();
+      expect(screen.getByText("Server Configuration Error"))
+        .toBeInTheDocument();
       expect(
         screen.getByText(/there is a problem with the server configuration/i),
       ).toBeInTheDocument();
@@ -125,20 +128,26 @@ describe("AuthErrorPage", () => {
 
     it("should display OAuthCreateAccount error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
-        get: vi.fn((param) => (param === "error" ? "OAuthCreateAccount" : null)),
+        get: vi.fn((
+          param,
+        ) => (param === "error" ? "OAuthCreateAccount" : null)),
       } as unknown as ReadonlyURLSearchParams);
 
       render(<AuthErrorPage />);
-      expect(screen.getByText("OAuth Account Creation Error")).toBeInTheDocument();
+      expect(screen.getByText("OAuth Account Creation Error"))
+        .toBeInTheDocument();
     });
 
     it("should display EmailCreateAccount error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
-        get: vi.fn((param) => (param === "error" ? "EmailCreateAccount" : null)),
+        get: vi.fn((
+          param,
+        ) => (param === "error" ? "EmailCreateAccount" : null)),
       } as unknown as ReadonlyURLSearchParams);
 
       render(<AuthErrorPage />);
-      expect(screen.getByText("Email Account Creation Error")).toBeInTheDocument();
+      expect(screen.getByText("Email Account Creation Error"))
+        .toBeInTheDocument();
     });
 
     it("should display Callback error", () => {
@@ -152,7 +161,9 @@ describe("AuthErrorPage", () => {
 
     it("should display OAuthAccountNotLinked error", () => {
       vi.mocked(useSearchParams).mockReturnValue({
-        get: vi.fn((param) => (param === "error" ? "OAuthAccountNotLinked" : null)),
+        get: vi.fn((
+          param,
+        ) => (param === "error" ? "OAuthAccountNotLinked" : null)),
       } as unknown as ReadonlyURLSearchParams);
 
       render(<AuthErrorPage />);
@@ -205,7 +216,9 @@ describe("AuthErrorPage", () => {
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
       render(<AuthErrorPage />);
-      const title = screen.getByText("Authentication Error", { selector: ".text-2xl" });
+      const title = screen.getByText("Authentication Error", {
+        selector: ".text-2xl",
+      });
       expect(title).toBeInTheDocument();
       expect(title).toHaveClass("text-2xl");
     });

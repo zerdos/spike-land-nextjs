@@ -42,7 +42,10 @@ async function isKVAvailable(): Promise<boolean> {
     kvAvailable = true;
     return true;
   } catch (error) {
-    console.warn("Vercel KV unavailable, falling back to in-memory storage:", error);
+    console.warn(
+      "Vercel KV unavailable, falling back to in-memory storage:",
+      error,
+    );
     kvAvailable = false;
     return false;
   }
@@ -204,7 +207,10 @@ export async function checkRateLimit(
     try {
       return await checkRateLimitKV(identifier, config);
     } catch (error) {
-      console.error("KV rate limit check failed, falling back to memory:", error);
+      console.error(
+        "KV rate limit check failed, falling back to memory:",
+        error,
+      );
       kvAvailable = false; // Mark as unavailable for subsequent requests
       return checkRateLimitMemory(identifier, config);
     }
@@ -236,7 +242,9 @@ export async function resetRateLimit(identifier: string): Promise<void> {
  * Useful for testing or administrative purposes.
  * Note: For KV, this only clears entries with known identifiers.
  */
-export async function clearAllRateLimits(identifiers?: string[]): Promise<void> {
+export async function clearAllRateLimits(
+  identifiers?: string[],
+): Promise<void> {
   const useKV = await isKVAvailable();
 
   if (useKV && identifiers) {

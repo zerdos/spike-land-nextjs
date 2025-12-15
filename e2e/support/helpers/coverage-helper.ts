@@ -88,7 +88,8 @@ export async function stopCoverage(page: Page): Promise<void> {
     const appCoverage = coverage.filter((entry) => {
       const url = entry.url;
       // Include files from localhost or deployed app
-      const isAppUrl = url.includes("localhost:3000") || url.includes("spike.land");
+      const isAppUrl = url.includes("localhost:3000") ||
+        url.includes("spike.land");
       if (!isAppUrl) return false;
 
       // Only include our source code chunks (contains src_ in the chunk name)
@@ -211,7 +212,9 @@ function convertToIstanbul(v8Coverage: V8CoverageEntry[]): IstanbulCoverageMap {
  */
 export async function generateCoverageReport(): Promise<void> {
   if (!coverageEnabled) {
-    console.log("[Coverage] Coverage not enabled. Set E2E_COVERAGE=true to enable.");
+    console.log(
+      "[Coverage] Coverage not enabled. Set E2E_COVERAGE=true to enable.",
+    );
     return;
   }
 
@@ -220,7 +223,9 @@ export async function generateCoverageReport(): Promise<void> {
     return;
   }
 
-  console.log(`[Coverage] Generating report from ${allCoverageData.length} entries...`);
+  console.log(
+    `[Coverage] Generating report from ${allCoverageData.length} entries...`,
+  );
 
   const coverageDir = path.join(process.cwd(), "e2e/reports/coverage");
 
@@ -286,8 +291,12 @@ function generateSummary(coverage: IstanbulCoverageMap): string {
       : "N/A";
 
     lines.push(`${filePath}`);
-    lines.push(`  Statements: ${fileCoveredStatements}/${fileStatements} (${stmtPct}%)`);
-    lines.push(`  Functions:  ${fileCoveredFunctions}/${fileFunctions} (${fnPct}%)`);
+    lines.push(
+      `  Statements: ${fileCoveredStatements}/${fileStatements} (${stmtPct}%)`,
+    );
+    lines.push(
+      `  Functions:  ${fileCoveredFunctions}/${fileFunctions} (${fnPct}%)`,
+    );
     lines.push("");
   }
 
@@ -299,8 +308,12 @@ function generateSummary(coverage: IstanbulCoverageMap): string {
     : "0";
 
   lines.unshift("");
-  lines.unshift(`Functions:  ${coveredFunctions}/${totalFunctions} (${totalFnPct}%)`);
-  lines.unshift(`Statements: ${coveredStatements}/${totalStatements} (${totalStmtPct}%)`);
+  lines.unshift(
+    `Functions:  ${coveredFunctions}/${totalFunctions} (${totalFnPct}%)`,
+  );
+  lines.unshift(
+    `Statements: ${coveredStatements}/${totalStatements} (${totalStmtPct}%)`,
+  );
   lines.unshift(`Files: ${files.length}`);
   lines.unshift("TOTALS:");
   lines.unshift("");

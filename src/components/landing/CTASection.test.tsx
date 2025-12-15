@@ -5,7 +5,8 @@ import { CTASection } from "./CTASection";
 describe("CTASection Component", () => {
   it("should render the section heading", () => {
     render(<CTASection />);
-    expect(screen.getByText("Ready to Transform Your Images?")).toBeInTheDocument();
+    expect(screen.getByText("Ready to Transform Your Images?"))
+      .toBeInTheDocument();
   });
 
   it("should render the section description", () => {
@@ -15,18 +16,25 @@ describe("CTASection Component", () => {
 
   it("should render the enhance button", () => {
     render(<CTASection />);
-    expect(screen.getByRole("link", { name: /Start Enhancing Free/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Start Enhancing Free/i }))
+      .toBeInTheDocument();
   });
 
   it("should render the pricing button", () => {
     render(<CTASection />);
-    expect(screen.getByRole("link", { name: /View Pricing/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /View Pricing/i }))
+      .toBeInTheDocument();
   });
 
   it("should have correct href for enhance button", () => {
     render(<CTASection />);
-    const enhanceLink = screen.getByRole("link", { name: /Start Enhancing Free/i });
-    expect(enhanceLink).toHaveAttribute("href", "/auth/signin?callbackUrl=/apps/pixel");
+    const enhanceLink = screen.getByRole("link", {
+      name: /Start Enhancing Free/i,
+    });
+    expect(enhanceLink).toHaveAttribute(
+      "href",
+      "/auth/signin?callbackUrl=/apps/pixel",
+    );
   });
 
   it("should have correct href for pricing button", () => {

@@ -251,18 +251,31 @@ export default function EmailLogsPage() {
             <thead className="border-b bg-neutral-50 dark:bg-neutral-900">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">To</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Subject</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Template</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Sent At</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  Subject
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  Template
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  Sent At
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {loading
                 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-neutral-500">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-neutral-500"
+                    >
                       Loading...
                     </td>
                   </tr>
@@ -270,7 +283,10 @@ export default function EmailLogsPage() {
                 : emails.length === 0
                 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-neutral-500">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-neutral-500"
+                    >
                       No emails found
                     </td>
                   </tr>
@@ -282,10 +298,14 @@ export default function EmailLogsPage() {
                       className="hover:bg-neutral-50 dark:hover:bg-neutral-900"
                     >
                       <td className="px-4 py-3">
-                        <div className="max-w-xs truncate text-sm">{email.to}</div>
+                        <div className="max-w-xs truncate text-sm">
+                          {email.to}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="max-w-xs truncate text-sm">{email.subject}</div>
+                        <div className="max-w-xs truncate text-sm">
+                          {email.subject}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant="outline" className="text-xs">
@@ -366,21 +386,29 @@ export default function EmailLogsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-neutral-500">To</label>
+                <label className="text-sm font-medium text-neutral-500">
+                  To
+                </label>
                 <p>{selectedEmail.to}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">Subject</label>
+                <label className="text-sm font-medium text-neutral-500">
+                  Subject
+                </label>
                 <p>{selectedEmail.subject}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">Template</label>
+                <label className="text-sm font-medium text-neutral-500">
+                  Template
+                </label>
                 <p>
                   <Badge variant="outline">{selectedEmail.template}</Badge>
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">Status</label>
+                <label className="text-sm font-medium text-neutral-500">
+                  Status
+                </label>
                 <p>
                   <Badge className={STATUS_COLORS[selectedEmail.status] || ""}>
                     {selectedEmail.status}
@@ -388,31 +416,52 @@ export default function EmailLogsPage() {
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">Resend ID</label>
-                <p className="font-mono text-sm">{selectedEmail.resendId || "-"}</p>
+                <label className="text-sm font-medium text-neutral-500">
+                  Resend ID
+                </label>
+                <p className="font-mono text-sm">
+                  {selectedEmail.resendId || "-"}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">User</label>
+                <label className="text-sm font-medium text-neutral-500">
+                  User
+                </label>
                 <p>
-                  {selectedEmail.user.name || selectedEmail.user.email || selectedEmail.user.id}
+                  {selectedEmail.user.name || selectedEmail.user.email ||
+                    selectedEmail.user.id}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Sent At</label>
+                  <label className="text-sm font-medium text-neutral-500">
+                    Sent At
+                  </label>
                   <p className="text-sm">{formatDate(selectedEmail.sentAt)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Opened At</label>
-                  <p className="text-sm">{formatDate(selectedEmail.openedAt)}</p>
+                  <label className="text-sm font-medium text-neutral-500">
+                    Opened At
+                  </label>
+                  <p className="text-sm">
+                    {formatDate(selectedEmail.openedAt)}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Clicked At</label>
-                  <p className="text-sm">{formatDate(selectedEmail.clickedAt)}</p>
+                  <label className="text-sm font-medium text-neutral-500">
+                    Clicked At
+                  </label>
+                  <p className="text-sm">
+                    {formatDate(selectedEmail.clickedAt)}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Bounced At</label>
-                  <p className="text-sm">{formatDate(selectedEmail.bouncedAt)}</p>
+                  <label className="text-sm font-medium text-neutral-500">
+                    Bounced At
+                  </label>
+                  <p className="text-sm">
+                    {formatDate(selectedEmail.bouncedAt)}
+                  </p>
                 </div>
               </div>
             </div>

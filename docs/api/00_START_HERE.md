@@ -1,10 +1,13 @@
 # Spike Land API Documentation - Start Here
 
-Welcome to the Spike Land API documentation. This file will guide you to the right resources for your needs.
+Welcome to the Spike Land API documentation. This file will guide you to the
+right resources for your needs.
 
 ## What is Spike Land API?
 
-Spike Land is an AI-powered platform for creating, managing, and monetizing applications. The Pixel app demonstrates image enhancement capabilities using tokens and a referral system.
+Spike Land is an AI-powered platform for creating, managing, and monetizing
+applications. The Pixel app demonstrates image enhancement capabilities using
+tokens and a referral system.
 
 **Key Features**:
 
@@ -19,7 +22,8 @@ Spike Land is an AI-powered platform for creating, managing, and monetizing appl
 ## Quick Start (5 minutes)
 
 1. **First time here?** Read [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) (5 min)
-2. **Want to integrate?** Follow [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) (30 min)
+2. **Want to integrate?** Follow [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
+   (30 min)
 3. **Need to test?** Use [CURL_EXAMPLES.md](./CURL_EXAMPLES.md) (15 min)
 4. **Looking for details?** Check [openapi.yaml](./openapi.yaml) (reference)
 
@@ -31,7 +35,8 @@ Building a web app that uses the Spike Land API:
 
 1. Read: [README.md](./README.md) - Understand the API (5 min)
 2. Read: [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) - Essential info (5 min)
-3. Read: [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) - Implementation patterns (25 min)
+3. Read: [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) - Implementation
+   patterns (25 min)
 4. Copy code examples and start building!
 
 **Total time to start**: 35 minutes
@@ -41,8 +46,10 @@ Building a web app that uses the Spike Land API:
 Building an SDK or integrating server-to-server:
 
 1. Read: [README.md](./README.md) - API overview (5 min)
-2. Read: [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) - Implementation details (30 min)
-3. Reference: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) & [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) (20 min)
+2. Read: [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) - Implementation details
+   (30 min)
+3. Reference: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) &
+   [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) (20 min)
 4. Validate: [openapi.yaml](./openapi.yaml) - Complete specification
 5. Generate: TypeScript/Python/Go SDKs using the spec
 
@@ -54,7 +61,8 @@ Testing the API endpoints:
 
 1. Read: [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) - Essential info (5 min)
 2. Read: [CURL_EXAMPLES.md](./CURL_EXAMPLES.md) - Testing with cURL (25 min)
-3. Reference: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) & [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) - Endpoint details
+3. Reference: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) &
+   [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) - Endpoint details
 4. Copy cURL commands and start testing!
 
 **Total time to start testing**: 30 minutes
@@ -72,7 +80,8 @@ Deploying or monitoring the API:
 
 Understanding the API design:
 
-1. Read: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Project summary (15 min)
+1. Read: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Project
+   summary (15 min)
 2. Read: [README.md](./README.md) - Architecture (10 min)
 3. Reference: [openapi.yaml](./openapi.yaml) - Complete specification
 
@@ -102,11 +111,13 @@ See [QUICK_REFERENCE.md](./QUICK_REFERENCE.md#tokens) - Takes 3 minutes
 
 ### How do I enhance an image?
 
-See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#image-upload--enhancement) - Includes working code
+See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#image-upload--enhancement) -
+Includes working code
 
 ### What's the rate limit?
 
-See [QUICK_REFERENCE.md](./QUICK_REFERENCE.md#rate-limits) - Quick reference table
+See [QUICK_REFERENCE.md](./QUICK_REFERENCE.md#rate-limits) - Quick reference
+table
 
 ### How do I test with cURL?
 
@@ -114,11 +125,13 @@ See [CURL_EXAMPLES.md](./CURL_EXAMPLES.md) - 40+ working examples
 
 ### How do I handle errors?
 
-See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#error-handling) - Error handler class included
+See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#error-handling) - Error
+handler class included
 
 ### How do I generate an SDK?
 
-See [README.md](./README.md#generate-api-client-sdks) - Step-by-step instructions
+See [README.md](./README.md#generate-api-client-sdks) - Step-by-step
+instructions
 
 ### Where's my API reference?
 
@@ -221,17 +234,19 @@ See [openapi.yaml](./openapi.yaml) - Complete specification
 
 ## Next Steps
 
-Choose your role above and start reading the appropriate guide. Most developers can get started in 30-45 minutes.
+Choose your role above and start reading the appropriate guide. Most developers
+can get started in 30-45 minutes.
 
-If you get stuck, check [INDEX.md](./INDEX.md) for detailed navigation or contact support@spike.land.
+If you get stuck, check [INDEX.md](./INDEX.md) for detailed navigation or
+contact support@spike.land.
 
 ---
 
 **Happy building!**
 
-This API documentation is designed for developer experience. If something is unclear, it's a documentation bug. Please report it.
+This API documentation is designed for developer experience. If something is
+unclear, it's a documentation bug. Please report it.
 
 ---
 
-_Last Updated: December 12, 2025_
-_Part of Spike Land - AI-Powered App Platform_
+_Last Updated: December 12, 2025_ _Part of Spike Land - AI-Powered App Platform_

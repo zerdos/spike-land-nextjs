@@ -1,29 +1,31 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create shared mock functions using vi.hoisted
-const { mockSend, mockUploadDone, MockUpload, MockS3Client } = vi.hoisted(() => {
-  const mockSend = vi.fn();
-  const mockUploadDone = vi.fn();
+const { mockSend, mockUploadDone, MockUpload, MockS3Client } = vi.hoisted(
+  () => {
+    const mockSend = vi.fn();
+    const mockUploadDone = vi.fn();
 
-  class MockUpload {
-    static mock = { instances: [] as MockUpload[], params: [] as unknown[] };
-    done = mockUploadDone;
-    constructor(public config: unknown) {
-      MockUpload.mock.instances.push(this);
-      MockUpload.mock.params.push(config);
+    class MockUpload {
+      static mock = { instances: [] as MockUpload[], params: [] as unknown[] };
+      done = mockUploadDone;
+      constructor(public config: unknown) {
+        MockUpload.mock.instances.push(this);
+        MockUpload.mock.params.push(config);
+      }
     }
-  }
 
-  class MockS3Client {
-    static mock = { instances: [] as MockS3Client[] };
-    send = mockSend;
-    constructor() {
-      MockS3Client.mock.instances.push(this);
+    class MockS3Client {
+      static mock = { instances: [] as MockS3Client[] };
+      send = mockSend;
+      constructor() {
+        MockS3Client.mock.instances.push(this);
+      }
     }
-  }
 
-  return { mockSend, mockUploadDone, MockUpload, MockS3Client };
-});
+    return { mockSend, mockUploadDone, MockUpload, MockS3Client };
+  },
+);
 
 // Mock AWS SDK
 vi.mock("@aws-sdk/client-s3", () => ({
@@ -622,7 +624,9 @@ describe("r2-client", () => {
 
       await deleteFromR2("key1.jpg");
 
-      expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
+      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+        "test-bucket",
+      );
     });
 
     it("should reuse cached bucket name in production mode on subsequent calls", async () => {
@@ -638,7 +642,9 @@ describe("r2-client", () => {
       await deleteFromR2("key2.jpg");
 
       // Bucket name should still be the cached value
-      expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
+      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+        "test-bucket",
+      );
     });
 
     it("should set bucket name when global cache is empty in production", async () => {
@@ -655,7 +661,9 @@ describe("r2-client", () => {
       await deleteFromR2("key1.jpg");
 
       // Verify the bucket name was cached
-      expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
+      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+        "test-bucket",
+      );
     });
 
     it("should set bucket name from config when client exists but bucket name is not cached in production", async () => {
@@ -675,7 +683,9 @@ describe("r2-client", () => {
       await deleteFromR2("key2.jpg");
 
       // Verify the bucket name was cached from config
-      expect((global as Record<string, unknown>).__r2BucketName).toBe("test-bucket");
+      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+        "test-bucket",
+      );
     });
   });
 

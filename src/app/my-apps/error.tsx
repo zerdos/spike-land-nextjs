@@ -32,7 +32,9 @@ export default function MyAppsError({
     <div className="container mx-auto p-4">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-destructive">Error Loading My Apps</CardTitle>
+          <CardTitle className="text-destructive">
+            Error Loading My Apps
+          </CardTitle>
           <CardDescription>
             We couldn&apos;t load your apps. This might be a temporary issue.
           </CardDescription>
@@ -54,9 +56,15 @@ export default function MyAppsError({
                 <p className="font-semibold">Common causes:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Database is not running</li>
-                  <li>DATABASE_URL environment variable is not set or incorrect</li>
-                  <li>Prisma client needs to be generated (run: npm run db:generate)</li>
-                  <li>Database migrations haven&apos;t been applied (run: npm run db:migrate)</li>
+                  <li>
+                    DATABASE_URL environment variable is not set or incorrect
+                  </li>
+                  <li>
+                    Prisma client needs to be generated (run: npm run db:generate)
+                  </li>
+                  <li>
+                    Database migrations haven&apos;t been applied (run: npm run db:migrate)
+                  </li>
                 </ul>
                 {error.digest && (
                   <p className="mt-2 text-sm text-muted-foreground">

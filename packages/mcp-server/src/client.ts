@@ -59,7 +59,8 @@ export class SpikeLandClient {
       throw new Error("API key is required");
     }
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl || process.env.SPIKE_LAND_BASE_URL || DEFAULT_BASE_URL;
+    this.baseUrl = baseUrl || process.env.SPIKE_LAND_BASE_URL ||
+      DEFAULT_BASE_URL;
   }
 
   private async request<T>(
@@ -87,7 +88,9 @@ export class SpikeLandClient {
     const data = await response.json() as { error?: string; };
 
     if (!response.ok) {
-      throw new Error(data.error || `Request failed with status ${response.status}`);
+      throw new Error(
+        data.error || `Request failed with status ${response.status}`,
+      );
     }
 
     return data as T;

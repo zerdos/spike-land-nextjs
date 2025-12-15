@@ -2,7 +2,10 @@
 
 ## Overview
 
-Comprehensive end-to-end tests for the batch image enhancement feature in albums. These tests verify the complete workflow of enhancing multiple images simultaneously, including token management, job status tracking, error handling, and user experience.
+Comprehensive end-to-end tests for the batch image enhancement feature in
+albums. These tests verify the complete workflow of enhancing multiple images
+simultaneously, including token management, job status tracking, error handling,
+and user experience.
 
 ## Test Files
 
@@ -215,14 +218,14 @@ These tests run automatically in the CI/CD pipeline:
 
 ### Common Issues
 
-**Issue**: Tests fail with "Element not found"
-**Solution**: Check if UI selectors changed, update step definitions
+**Issue**: Tests fail with "Element not found" **Solution**: Check if UI
+selectors changed, update step definitions
 
-**Issue**: Token balance assertions fail
-**Solution**: Verify token cost calculations match implementation
+**Issue**: Token balance assertions fail **Solution**: Verify token cost
+calculations match implementation
 
-**Issue**: Polling timeouts
-**Solution**: Adjust wait times in mockJobStatusPolling()
+**Issue**: Polling timeouts **Solution**: Adjust wait times in
+mockJobStatusPolling()
 
 ## Best Practices
 

@@ -90,7 +90,10 @@ function createMockFile(name = "test.jpg", type = "image/jpeg") {
     size: buffer.length,
     arrayBuffer: () =>
       Promise.resolve(
-        buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+        buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength,
+        ),
       ),
   };
 }
@@ -99,7 +102,10 @@ function createMockFile(name = "test.jpg", type = "image/jpeg") {
 type MockFile = ReturnType<typeof createMockFile>;
 
 // Helper to create a mock request with formData
-function createMockRequest(file: MockFile | null, albumId?: string): NextRequest {
+function createMockRequest(
+  file: MockFile | null,
+  albumId?: string,
+): NextRequest {
   const mockFormData = new Map<string, MockFile | string | null>();
   if (file) {
     mockFormData.set("file", file);
@@ -243,7 +249,9 @@ describe("POST /api/images/upload", () => {
   });
 
   it("should return 500 if upload processing fails", async () => {
-    const { processAndUploadImage } = await import("@/lib/storage/upload-handler");
+    const { processAndUploadImage } = await import(
+      "@/lib/storage/upload-handler"
+    );
     vi.mocked(processAndUploadImage).mockResolvedValueOnce({
       success: false,
       error: "Upload failed",
@@ -267,7 +275,9 @@ describe("POST /api/images/upload", () => {
   });
 
   it("should handle user upsert failure gracefully", async () => {
-    mockPrisma.user.upsert.mockRejectedValueOnce(new Error("Database connection failed"));
+    mockPrisma.user.upsert.mockRejectedValueOnce(
+      new Error("Database connection failed"),
+    );
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
@@ -306,7 +316,9 @@ describe("POST /api/images/upload", () => {
         image: "https://example.com/new-profile.jpg",
       },
     };
-    vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce(updatedSession);
+    vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce(
+      updatedSession,
+    );
 
     const req = createMockRequest(createMockFile());
     await POST(req);

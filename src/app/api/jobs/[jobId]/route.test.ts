@@ -30,7 +30,9 @@ describe("/api/jobs/[jobId] - GET", () => {
   it("returns 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -47,7 +49,9 @@ describe("/api/jobs/[jobId] - GET", () => {
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -75,7 +79,9 @@ describe("/api/jobs/[jobId] - GET", () => {
       },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -116,7 +122,9 @@ describe("/api/jobs/[jobId] - GET", () => {
       mockJob as any,
     );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -139,7 +147,9 @@ describe("/api/jobs/[jobId] - GET", () => {
       new Error("Database error"),
     );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -161,9 +171,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
   it("returns 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -180,9 +193,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -203,9 +219,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
       status: JobStatus.COMPLETED,
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -226,9 +245,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
       status: JobStatus.PENDING,
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -249,9 +271,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
       status: JobStatus.PROCESSING,
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -274,9 +299,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
 
     vi.mocked(prisma.imageEnhancementJob.delete).mockResolvedValue({} as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -303,9 +331,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
 
     vi.mocked(prisma.imageEnhancementJob.delete).mockResolvedValue({} as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -328,9 +359,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
 
     vi.mocked(prisma.imageEnhancementJob.delete).mockResolvedValue({} as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -353,9 +387,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
 
     vi.mocked(prisma.imageEnhancementJob.delete).mockResolvedValue({} as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -374,9 +411,12 @@ describe("/api/jobs/[jobId] - DELETE", () => {
       new Error("Database error"),
     );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id", {
-      method: "DELETE",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id",
+      {
+        method: "DELETE",
+      },
+    );
     const response = await DELETE(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });

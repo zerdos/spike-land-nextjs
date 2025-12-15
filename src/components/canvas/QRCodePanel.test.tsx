@@ -196,7 +196,9 @@ describe("QRCodePanel", () => {
       const mockExecCommand = vi.fn();
       document.execCommand = mockExecCommand;
 
-      mockClipboard.writeText.mockRejectedValueOnce(new Error("Clipboard failed"));
+      mockClipboard.writeText.mockRejectedValueOnce(
+        new Error("Clipboard failed"),
+      );
 
       render(<QRCodePanel {...defaultProps} />);
 

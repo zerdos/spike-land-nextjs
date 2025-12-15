@@ -78,9 +78,7 @@ export function FloatingHint({
         "shadow-lg",
         "transition-all duration-300",
         isVisible
-          ? prefersReducedMotion
-            ? "opacity-100"
-            : "animate-float-up"
+          ? prefersReducedMotion ? "opacity-100" : "animate-float-up"
           : "opacity-0 pointer-events-none translate-y-full",
       )}
     >

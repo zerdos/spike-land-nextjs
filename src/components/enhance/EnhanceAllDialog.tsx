@@ -28,10 +28,25 @@ interface EnhanceAllDialogProps {
   isLoading?: boolean;
 }
 
-const TIER_INFO: Record<EnhancementTier, { label: string; cost: number; description: string; }> = {
-  TIER_1K: { label: "1K (1024px)", cost: 2, description: "Fast processing, good for previews" },
-  TIER_2K: { label: "2K (2048px)", cost: 5, description: "Balanced quality and speed" },
-  TIER_4K: { label: "4K (4096px)", cost: 10, description: "Maximum quality output" },
+const TIER_INFO: Record<
+  EnhancementTier,
+  { label: string; cost: number; description: string; }
+> = {
+  TIER_1K: {
+    label: "1K (1024px)",
+    cost: 2,
+    description: "Fast processing, good for previews",
+  },
+  TIER_2K: {
+    label: "2K (2048px)",
+    cost: 5,
+    description: "Balanced quality and speed",
+  },
+  TIER_4K: {
+    label: "4K (4096px)",
+    cost: 10,
+    description: "Maximum quality output",
+  },
 };
 
 export function EnhanceAllDialog({
@@ -96,7 +111,9 @@ export function EnhanceAllDialog({
           </div>
 
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Select Enhancement Tier</Label>
+            <Label className="text-sm font-medium">
+              Select Enhancement Tier
+            </Label>
             <RadioGroup
               value={selectedTier}
               onValueChange={(value) => setSelectedTier(value as EnhancementTier)}
@@ -117,9 +134,13 @@ export function EnhanceAllDialog({
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="font-medium">{info.label}</p>
-                          <p className="text-xs text-muted-foreground">{info.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {info.description}
+                          </p>
                         </div>
-                        <span className="text-sm font-medium">{info.cost} tokens/image</span>
+                        <span className="text-sm font-medium">
+                          {info.cost} tokens/image
+                        </span>
                       </div>
                     </Label>
                   </div>
@@ -149,7 +170,9 @@ export function EnhanceAllDialog({
             <p className="text-sm font-medium">Cost Breakdown</p>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Images to enhance:</span>
+                <span className="text-muted-foreground">
+                  Images to enhance:
+                </span>
                 <span>{costBreakdown.imagesToEnhance}</span>
               </div>
               <div className="flex justify-between">
@@ -165,18 +188,24 @@ export function EnhanceAllDialog({
 
           <div
             className={`flex items-center justify-between p-3 rounded-lg ${
-              hasInsufficientBalance ? "bg-destructive/10 border border-destructive/20" : "bg-muted"
+              hasInsufficientBalance
+                ? "bg-destructive/10 border border-destructive/20"
+                : "bg-muted"
             }`}
           >
             <div className="flex items-center gap-2">
               <Coins
                 className={`h-5 w-5 ${
-                  hasInsufficientBalance ? "text-destructive" : "text-yellow-500"
+                  hasInsufficientBalance
+                    ? "text-destructive"
+                    : "text-yellow-500"
                 }`}
               />
               <span className="text-sm font-medium">Your Balance</span>
             </div>
-            <span className={`font-bold ${hasInsufficientBalance ? "text-destructive" : ""}`}>
+            <span
+              className={`font-bold ${hasInsufficientBalance ? "text-destructive" : ""}`}
+            >
               {userBalance} tokens
             </span>
           </div>
@@ -185,7 +214,9 @@ export function EnhanceAllDialog({
             <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
               <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-destructive">Insufficient Balance</p>
+                <p className="text-sm font-medium text-destructive">
+                  Insufficient Balance
+                </p>
                 <p className="text-sm text-muted-foreground">
                   You need {costBreakdown.totalCost - userBalance}{" "}
                   more tokens to enhance all photos.
@@ -214,7 +245,8 @@ export function EnhanceAllDialog({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={isLoading || hasInsufficientBalance || hasNoImagesToEnhance}
+            disabled={isLoading || hasInsufficientBalance ||
+              hasNoImagesToEnhance}
           >
             {isLoading
               ? (

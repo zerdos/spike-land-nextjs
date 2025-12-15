@@ -16,19 +16,19 @@ describe("getIceServers", () => {
 
   it("should include STUN servers", () => {
     const servers = getIceServers();
-    const stunServers = servers.filter(s => s.urls.toString().startsWith("stun:"));
+    const stunServers = servers.filter((s) => s.urls.toString().startsWith("stun:"));
     expect(stunServers.length).toBeGreaterThan(0);
   });
 
   it("should include Google STUN servers", () => {
     const servers = getIceServers();
-    const googleStun = servers.find(s => s.urls === "stun:stun.l.google.com:19302");
+    const googleStun = servers.find((s) => s.urls === "stun:stun.l.google.com:19302");
     expect(googleStun).toBeDefined();
   });
 
   it("should only include STUN servers (no TURN)", () => {
     const servers = getIceServers();
-    const turnServers = servers.filter(s => s.urls.toString().startsWith("turn:"));
+    const turnServers = servers.filter((s) => s.urls.toString().startsWith("turn:"));
     expect(turnServers.length).toBe(0);
   });
 });

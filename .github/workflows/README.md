@@ -1,24 +1,29 @@
 # GitHub Actions CI/CD Pipeline
 
-This workflow automatically tests, builds, deploys, and validates your Next.js application with comprehensive quality gates.
+This workflow automatically tests, builds, deploys, and validates your Next.js
+application with comprehensive quality gates.
 
 ## Workflow Steps
 
 1. **Test** - Runs linter and unit tests with 100% coverage requirement
 2. **Build** - Builds the Next.js application (only if tests pass)
-3. **Deploy** - Deploys to Vercel Preview (only if build succeeds, runs on all branches)
-4. **E2E** - Runs end-to-end tests against deployed preview (only after successful deployment, runs on all branches)
+3. **Deploy** - Deploys to Vercel Preview (only if build succeeds, runs on all
+   branches)
+4. **E2E** - Runs end-to-end tests against deployed preview (only after
+   successful deployment, runs on all branches)
 
 ## Required Secrets
 
-To enable deployment, you need to add the following secrets to your GitHub repository:
+To enable deployment, you need to add the following secrets to your GitHub
+repository:
 
 ### Vercel Deployment (Required)
 
 1. **VERCEL_TOKEN**
    - Go to https://vercel.com/account/tokens
    - Create a new token
-   - Add it to GitHub: Settings → Secrets and variables → Actions → New repository secret
+   - Add it to GitHub: Settings → Secrets and variables → Actions → New
+     repository secret
    - Name: `VERCEL_TOKEN`
 
 2. **VERCEL_ORG_ID** (Optional, for team deployments)
@@ -73,7 +78,8 @@ All jobs run on all branches when:
 - Preview deployment succeeds ✅
 - E2E tests run against preview deployment ✅
 
-**Note:** Production deployments to Vercel are done manually from the `main` branch when needed.
+**Note:** Production deployments to Vercel are done manually from the `main`
+branch when needed.
 
 ## Branch Protection (RECOMMENDED)
 

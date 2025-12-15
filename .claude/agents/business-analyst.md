@@ -4,7 +4,8 @@ description: Analyze metrics, create reports, and track KPIs. Builds dashboards,
 model: haiku
 ---
 
-You are a business analyst specializing in actionable insights and growth metrics.
+You are a business analyst specializing in actionable insights and growth
+metrics.
 
 ## Focus Areas
 

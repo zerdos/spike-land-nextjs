@@ -34,11 +34,15 @@ export function AppScreenshotGallery({
   };
 
   const handlePrevious = () => {
-    setSelectedIndex((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1));
+    setSelectedIndex((
+      prev,
+    ) => (prev === 0 ? screenshots.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setSelectedIndex((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1));
+    setSelectedIndex((
+      prev,
+    ) => (prev === screenshots.length - 1 ? 0 : prev + 1));
   };
 
   if (screenshots.length === 0) {
@@ -84,7 +88,9 @@ export function AppScreenshotGallery({
                   onClick={() => {
                     const dialog = document.querySelector('[role="dialog"]');
                     if (dialog) {
-                      const closeButton = dialog.querySelector('[data-state="open"]');
+                      const closeButton = dialog.querySelector(
+                        '[data-state="open"]',
+                      );
                       if (closeButton instanceof HTMLElement) {
                         closeButton.click();
                       }

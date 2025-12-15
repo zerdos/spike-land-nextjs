@@ -39,30 +39,42 @@ export function ImageUpload(
     }
   }, [onFilesSelected]);
 
-  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-    await handleFiles(files);
-  }, [handleFiles]);
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files) return;
+      await handleFiles(files);
+    },
+    [handleFiles],
+  );
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  }, []);
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(true);
+    },
+    [],
+  );
 
-  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  }, []);
+  const handleDragLeave = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(false);
+    },
+    [],
+  );
 
-  const handleDrop = useCallback(async (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
+  const handleDrop = useCallback(
+    async (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(false);
 
-    const files = event.dataTransfer.files;
-    if (!files) return;
-    await handleFiles(files);
-  }, [handleFiles]);
+      const files = event.dataTransfer.files;
+      if (!files) return;
+      await handleFiles(files);
+    },
+    [handleFiles],
+  );
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();

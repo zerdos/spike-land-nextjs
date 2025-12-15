@@ -63,7 +63,8 @@ describe("SettingsPage", () => {
 
       expect(screen.getByTestId("settings-page")).toBeInTheDocument();
       expect(screen.getByText("Settings")).toBeInTheDocument();
-      expect(screen.getByText("Manage your account settings and preferences")).toBeInTheDocument();
+      expect(screen.getByText("Manage your account settings and preferences"))
+        .toBeInTheDocument();
     });
   });
 
@@ -176,7 +177,9 @@ describe("SettingsPage", () => {
       expect(emailInput).toBeDisabled();
       expect(emailInput).toHaveValue("john@example.com");
       expect(
-        screen.getByText("Email is managed by your OAuth provider and cannot be changed here"),
+        screen.getByText(
+          "Email is managed by your OAuth provider and cannot be changed here",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -443,7 +446,13 @@ describe("SettingsPage", () => {
       render(<SettingsPage />);
 
       const container = screen.getByTestId("settings-page");
-      expect(container).toHaveClass("container", "mx-auto", "py-8", "px-4", "max-w-4xl");
+      expect(container).toHaveClass(
+        "container",
+        "mx-auto",
+        "py-8",
+        "px-4",
+        "max-w-4xl",
+      );
     });
 
     it("renders tabs with responsive grid layout", () => {

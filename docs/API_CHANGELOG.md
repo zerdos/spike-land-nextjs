@@ -1,8 +1,7 @@
 # API Changelog
 
-> **Last Updated**: December 2025
-> **Current API Version**: Unversioned (v1 implicit)
-> **Status**: MVP Release
+> **Last Updated**: December 2025 **Current API Version**: Unversioned (v1
+> implicit) **Status**: MVP Release
 
 All notable changes to the Spike Land API are documented in this file.
 
@@ -10,7 +9,8 @@ All notable changes to the Spike Land API are documented in this file.
 
 ## Format
 
-This changelog follows [Keep a Changelog](https://keepachangelog.com/) format with sections:
+This changelog follows [Keep a Changelog](https://keepachangelog.com/) format
+with sections:
 
 - **Breaking** - Changes requiring code updates
 - **Added** - New functionality
@@ -26,7 +26,8 @@ This changelog follows [Keep a Changelog](https://keepachangelog.com/) format wi
 
 ### Added
 
-- **Batch Enhancement** - POST `/api/albums/{id}/enhance` for processing multiple images
+- **Batch Enhancement** - POST `/api/albums/{id}/enhance` for processing
+  multiple images
   - Processes up to 50 images per request
   - Returns job ID for async tracking
   - Supports progress notifications via webhook
@@ -48,7 +49,8 @@ This changelog follows [Keep a Changelog](https://keepachangelog.com/) format wi
 
 ### Changed
 
-- **Token Consumption Tracking** - Token transactions now include `context` field
+- **Token Consumption Tracking** - Token transactions now include `context`
+  field
   - Allows tracking which operation consumed tokens
   - Example: `context: "pixel_image_enhancement"`
   - Non-breaking: field is optional in v1, required in v2
@@ -60,8 +62,10 @@ This changelog follows [Keep a Changelog](https://keepachangelog.com/) format wi
 
 ### Fixed
 
-- **Album Deletion** - Fixed issue where albums with 100+ images failed to delete
-- **Token Balance Race Condition** - Concurrent enhancement requests no longer cause balance inconsistency
+- **Album Deletion** - Fixed issue where albums with 100+ images failed to
+  delete
+- **Token Balance Race Condition** - Concurrent enhancement requests no longer
+  cause balance inconsistency
 - **Image Upload** - EXIF orientation now correctly applied during upload
 
 ### Security
@@ -136,7 +140,8 @@ Initial public release of Spike Land API for Pixel image enhancement app.
 
 - **Error Handling**
   - Standardized error response format
-  - Error codes: `INVALID_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `INTERNAL_ERROR`
+  - Error codes: `INVALID_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`,
+    `INTERNAL_ERROR`
   - Detailed error messages with guidance
 
 - **Rate Limiting**
@@ -160,10 +165,10 @@ Initial public release of Spike Land API for Pixel image enhancement app.
 
 ### NextAuth.js Email Provider
 
-> **Deprecated**: December 2025
-> **Removed**: Expected June 2026
+> **Deprecated**: December 2025 **Removed**: Expected June 2026
 
-The email-based authentication provider will be removed in favor of passwordless authentication via magic links.
+The email-based authentication provider will be removed in favor of passwordless
+authentication via magic links.
 
 **Timeline**:
 
@@ -268,7 +273,8 @@ v2 Response (hypothetical flattening):
 
 Found a bug or inconsistency in the API?
 
-1. **Check existing issues** - https://github.com/zerdos/spike-land-nextjs/issues
+1. **Check existing issues** -
+   https://github.com/zerdos/spike-land-nextjs/issues
 2. **Report new issues** - Create issue with:
    - API endpoint affected
    - Request and response examples

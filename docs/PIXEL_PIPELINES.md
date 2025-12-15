@@ -1,19 +1,22 @@
 # Pixel Enhancement Pipelines
 
-Pipelines are reusable AI enhancement configurations that control how images are processed through the 4-stage enhancement workflow.
+Pipelines are reusable AI enhancement configurations that control how images are
+processed through the 4-stage enhancement workflow.
 
 ## Overview
 
 Each pipeline consists of four configurable stages:
 
 1. **Analysis** - AI analyzes the image to detect defects and issues
-2. **Auto-Crop** - Automatically crop detected problem areas (black bars, UI elements)
+2. **Auto-Crop** - Automatically crop detected problem areas (black bars, UI
+   elements)
 3. **Prompt** - Build dynamic enhancement prompt based on analysis
 4. **Generation** - Call Gemini API to generate enhanced image
 
 ## Creating a Pipeline
 
-Navigate to `/apps/pixel/pipelines` and click "New Pipeline" to create a custom configuration.
+Navigate to `/apps/pixel/pipelines` and click "New Pipeline" to create a custom
+configuration.
 
 ## Pipeline Settings
 
@@ -88,19 +91,24 @@ Controls the Gemini API image generation.
 
 ### Fork a Pipeline
 
-Copy any pipeline (including system defaults and public pipelines) to create your own version. The fork starts with identical settings that you can customize.
+Copy any pipeline (including system defaults and public pipelines) to create
+your own version. The fork starts with identical settings that you can
+customize.
 
 ### Edit a Pipeline
 
-Modify settings for pipelines you own. System default pipelines cannot be edited.
+Modify settings for pipelines you own. System default pipelines cannot be
+edited.
 
 ### Delete a Pipeline
 
-Remove a pipeline you own. This action cannot be undone. System default pipelines cannot be deleted.
+Remove a pipeline you own. This action cannot be undone. System default
+pipelines cannot be deleted.
 
 ## System Default Pipelines
 
-System defaults are pre-configured pipelines maintained by the platform. They cannot be edited or deleted but can be forked.
+System defaults are pre-configured pipelines maintained by the platform. They
+cannot be edited or deleted but can be forked.
 
 ## Token Costs
 

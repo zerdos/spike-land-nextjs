@@ -422,7 +422,9 @@ describe("SlideshowView", () => {
   describe("Hero animation", () => {
     it("applies hero animation when transitionState is active", async () => {
       const animations = await import("@/lib/canvas/animations");
-      const { applyHeroTransformStyles, calculateHeroTransform } = vi.mocked(animations);
+      const { applyHeroTransformStyles, calculateHeroTransform } = vi.mocked(
+        animations,
+      );
 
       const activeTransition: GalleryTransition = {
         isActive: true,

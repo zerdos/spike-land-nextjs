@@ -156,7 +156,10 @@ describe("DisplayPage", () => {
     render(<DisplayPage />);
 
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get and trigger the open handler
@@ -191,7 +194,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     await act(async () => {
@@ -202,7 +208,9 @@ describe("DisplayPage", () => {
   });
 
   it("should calculate optimal layout with correct dimensions", async () => {
-    const { calculateOptimalLayout } = await import("@apps/display/lib/layout-optimizer");
+    const { calculateOptimalLayout } = await import(
+      "@apps/display/lib/layout-optimizer"
+    );
 
     render(<DisplayPage />);
 
@@ -220,7 +228,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger the open event
@@ -236,10 +247,15 @@ describe("DisplayPage", () => {
     await waitFor(() => {
       const qrImage = screen.getByAltText("QR Code");
       expect(qrImage).toBeInTheDocument();
-      expect(qrImage).toHaveAttribute("src", "data:image/png;base64,mockqrcode");
+      expect(qrImage).toHaveAttribute(
+        "src",
+        "data:image/png;base64,mockqrcode",
+      );
     });
 
-    expect(screen.getByText(/Scan this QR code with your mobile phone to connect/i))
+    expect(
+      screen.getByText(/Scan this QR code with your mobile phone to connect/i),
+    )
       .toBeInTheDocument();
   });
 
@@ -250,7 +266,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger the open event
@@ -273,7 +292,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get the connection handler
@@ -312,7 +334,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get the call handler
@@ -356,7 +381,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get the call handler
@@ -419,7 +447,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get call handler
@@ -471,7 +502,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get call handler
@@ -524,7 +558,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get error handler
@@ -546,7 +583,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // First trigger open event to set displayId
@@ -586,7 +626,8 @@ describe("DisplayPage", () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByText(/Display Ready \(3 clients\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Display Ready \(3 clients\)/i))
+        .toBeInTheDocument();
     });
 
     // Check that video elements are rendered
@@ -601,7 +642,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger open event to generate QR code
@@ -653,7 +697,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get call handler
@@ -703,7 +750,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     const callHandler = mockPeerInstance.on.mock.calls.find(
@@ -795,13 +845,18 @@ describe("DisplayPage", () => {
   });
 
   it("should calculate layout with multiple clients", async () => {
-    const { calculateOptimalLayout } = await import("@apps/display/lib/layout-optimizer");
+    const { calculateOptimalLayout } = await import(
+      "@apps/display/lib/layout-optimizer"
+    );
 
     render(<DisplayPage />);
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get call handler
@@ -846,7 +901,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger open event to generate QR code
@@ -861,7 +919,8 @@ describe("DisplayPage", () => {
 
     // Wait for QR code to be generated
     await waitFor(() => {
-      expect(screen.getByText(/Open Client in New Window/i)).toBeInTheDocument();
+      expect(screen.getByText(/Open Client in New Window/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -874,7 +933,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger open event to generate QR code
@@ -889,7 +951,8 @@ describe("DisplayPage", () => {
 
     // Wait for button to be rendered
     await waitFor(() => {
-      expect(screen.getByText(/Open Client in New Window/i)).toBeInTheDocument();
+      expect(screen.getByText(/Open Client in New Window/i))
+        .toBeInTheDocument();
     });
 
     // Click the button
@@ -914,7 +977,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Trigger open event to generate QR code and set displayId
@@ -976,7 +1042,10 @@ describe("DisplayPage", () => {
 
     // Wait for peer to be initialized
     await waitFor(() => {
-      expect(mockPeerInstance.on).toHaveBeenCalledWith("open", expect.any(Function));
+      expect(mockPeerInstance.on).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
     });
 
     // Get call handler

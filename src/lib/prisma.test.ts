@@ -49,7 +49,8 @@ describe("Prisma Client Singleton", () => {
 
     await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal).toBeDefined();
+    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
+      .toBeDefined();
 
     process.env.NODE_ENV = originalEnv;
   });
@@ -62,7 +63,8 @@ describe("Prisma Client Singleton", () => {
 
     await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal).toBeUndefined();
+    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
+      .toBeUndefined();
 
     process.env.NODE_ENV = originalEnv;
   });

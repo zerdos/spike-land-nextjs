@@ -22,7 +22,9 @@ describe("DroppableAlbum Component", () => {
   });
 
   it("should set data-drag-over attribute based on isDragOver prop", () => {
-    const { rerender } = render(<DroppableAlbum {...defaultProps} isDragOver={false} />);
+    const { rerender } = render(
+      <DroppableAlbum {...defaultProps} isDragOver={false} />,
+    );
 
     const element = screen.getByTestId("droppable-album-album-1");
     expect(element).toHaveAttribute("data-drag-over", "false");
@@ -113,7 +115,9 @@ describe("DroppableAlbum Component", () => {
 
       // When dragging within the same element hierarchy
       const customEvent = new Event("dragleave", { bubbles: true });
-      Object.defineProperty(customEvent, "relatedTarget", { value: childElement });
+      Object.defineProperty(customEvent, "relatedTarget", {
+        value: childElement,
+      });
       element.dispatchEvent(customEvent);
 
       expect(onDragLeave).not.toHaveBeenCalled();
@@ -140,10 +144,14 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
-          getData: vi.fn().mockReturnValue(JSON.stringify({ imageIds: ["img-1", "img-2"] })),
+          getData: vi.fn().mockReturnValue(
+            JSON.stringify({ imageIds: ["img-1", "img-2"] }),
+          ),
         },
       });
       element.dispatchEvent(dropEvent);
@@ -157,7 +165,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
           getData: vi.fn().mockReturnValue(""),
@@ -174,7 +184,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
           getData: vi.fn().mockReturnValue("invalid json"),
@@ -191,10 +203,14 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
-          getData: vi.fn().mockReturnValue(JSON.stringify({ otherData: "value" })),
+          getData: vi.fn().mockReturnValue(
+            JSON.stringify({ otherData: "value" }),
+          ),
         },
       });
       element.dispatchEvent(dropEvent);
@@ -208,10 +224,14 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
-          getData: vi.fn().mockReturnValue(JSON.stringify({ imageIds: "not-an-array" })),
+          getData: vi.fn().mockReturnValue(
+            JSON.stringify({ imageIds: "not-an-array" }),
+          ),
         },
       });
       element.dispatchEvent(dropEvent);
@@ -229,10 +249,14 @@ describe("DroppableAlbum Component", () => {
       expect(element).toHaveAttribute("data-drag-over", "true");
 
       await act(async () => {
-        const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+        const dropEvent = new Event("drop", {
+          bubbles: true,
+        }) as unknown as DragEvent;
         Object.defineProperty(dropEvent, "dataTransfer", {
           value: {
-            getData: vi.fn().mockReturnValue(JSON.stringify({ imageIds: ["img-1"] })),
+            getData: vi.fn().mockReturnValue(
+              JSON.stringify({ imageIds: ["img-1"] }),
+            ),
           },
         });
         element.dispatchEvent(dropEvent);
@@ -259,7 +283,9 @@ describe("DroppableAlbum Component", () => {
     });
 
     it("should use external isDragOver prop when provided", () => {
-      const { rerender } = render(<DroppableAlbum {...defaultProps} isDragOver={true} />);
+      const { rerender } = render(
+        <DroppableAlbum {...defaultProps} isDragOver={true} />,
+      );
 
       const element = screen.getByTestId("droppable-album-album-1");
       expect(element).toHaveAttribute("data-drag-over", "true");
@@ -297,10 +323,14 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
       expect(() => {
-        const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+        const dropEvent = new Event("drop", {
+          bubbles: true,
+        }) as unknown as DragEvent;
         Object.defineProperty(dropEvent, "dataTransfer", {
           value: {
-            getData: vi.fn().mockReturnValue(JSON.stringify({ imageIds: ["img-1"] })),
+            getData: vi.fn().mockReturnValue(
+              JSON.stringify({ imageIds: ["img-1"] }),
+            ),
           },
         });
         element.dispatchEvent(dropEvent);
@@ -310,12 +340,16 @@ describe("DroppableAlbum Component", () => {
 
   describe("different album IDs", () => {
     it("should render with different album IDs in testid", () => {
-      const { rerender } = render(<DroppableAlbum albumId="album-123">{null}</DroppableAlbum>);
+      const { rerender } = render(
+        <DroppableAlbum albumId="album-123">{null}</DroppableAlbum>,
+      );
 
-      expect(screen.getByTestId("droppable-album-album-123")).toBeInTheDocument();
+      expect(screen.getByTestId("droppable-album-album-123"))
+        .toBeInTheDocument();
 
       rerender(<DroppableAlbum albumId="special-album">{null}</DroppableAlbum>);
-      expect(screen.getByTestId("droppable-album-special-album")).toBeInTheDocument();
+      expect(screen.getByTestId("droppable-album-special-album"))
+        .toBeInTheDocument();
     });
   });
 
@@ -342,7 +376,9 @@ describe("DroppableAlbum Component", () => {
       const element = screen.getByTestId("droppable-album-album-1");
 
       await act(async () => {
-        const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+        const dropEvent = new Event("drop", {
+          bubbles: true,
+        }) as unknown as DragEvent;
         // dataTransfer is not defined, so it will be undefined/null
         element.dispatchEvent(dropEvent);
       });
@@ -356,7 +392,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dragEnterEvent = new Event("dragenter", { bubbles: true }) as unknown as DragEvent;
+      const dragEnterEvent = new Event("dragenter", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       const mockDataTransfer = { dropEffect: "" };
       Object.defineProperty(dragEnterEvent, "dataTransfer", {
         value: mockDataTransfer,
@@ -371,7 +409,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dragOverEvent = new Event("dragover", { bubbles: true }) as unknown as DragEvent;
+      const dragOverEvent = new Event("dragover", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       const mockDataTransfer = { dropEffect: "" };
       Object.defineProperty(dragOverEvent, "dataTransfer", {
         value: mockDataTransfer,
@@ -387,7 +427,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dragEnterEvent = new Event("dragenter", { bubbles: true }) as unknown as DragEvent;
+      const dragEnterEvent = new Event("dragenter", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       // No dataTransfer property defined
       element.dispatchEvent(dragEnterEvent);
 
@@ -403,7 +445,9 @@ describe("DroppableAlbum Component", () => {
       // First reset state
       fireEvent.dragLeave(element, { relatedTarget: document.body });
 
-      const dragOverEvent = new Event("dragover", { bubbles: true }) as unknown as DragEvent;
+      const dragOverEvent = new Event("dragover", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       // No dataTransfer property defined
       element.dispatchEvent(dragOverEvent);
 
@@ -431,7 +475,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
           getData: vi.fn().mockReturnValue(JSON.stringify(null)),
@@ -448,7 +494,9 @@ describe("DroppableAlbum Component", () => {
 
       const element = screen.getByTestId("droppable-album-album-1");
 
-      const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+      const dropEvent = new Event("drop", {
+        bubbles: true,
+      }) as unknown as DragEvent;
       Object.defineProperty(dropEvent, "dataTransfer", {
         value: {
           getData: vi.fn().mockReturnValue(JSON.stringify("string-value")),

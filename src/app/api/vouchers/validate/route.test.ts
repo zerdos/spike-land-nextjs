@@ -135,7 +135,10 @@ describe("POST /api/vouchers/validate", () => {
 
     expect(res.status).toBe(200);
     expect(data.valid).toBe(true);
-    expect(mockVoucherManager.validate).toHaveBeenCalledWith("PUBLIC2024", undefined);
+    expect(mockVoucherManager.validate).toHaveBeenCalledWith(
+      "PUBLIC2024",
+      undefined,
+    );
   });
 
   it("should include userId when authenticated", async () => {
@@ -156,7 +159,10 @@ describe("POST /api/vouchers/validate", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(200);
-    expect(mockVoucherManager.validate).toHaveBeenCalledWith("AUTH2024", "user-123");
+    expect(mockVoucherManager.validate).toHaveBeenCalledWith(
+      "AUTH2024",
+      "user-123",
+    );
   });
 
   it("should check if already redeemed when authenticated", async () => {
@@ -172,7 +178,10 @@ describe("POST /api/vouchers/validate", () => {
     expect(res.status).toBe(400);
     expect(data.valid).toBe(false);
     expect(data.error).toBe("You have already redeemed this voucher");
-    expect(mockVoucherManager.validate).toHaveBeenCalledWith("REDEEMED2024", "user-123");
+    expect(mockVoucherManager.validate).toHaveBeenCalledWith(
+      "REDEEMED2024",
+      "user-123",
+    );
   });
 
   it("should handle expired voucher error", async () => {

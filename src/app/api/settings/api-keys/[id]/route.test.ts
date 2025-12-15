@@ -32,7 +32,9 @@ describe("API Key [id] Route", () => {
     it("returns 401 when user is not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys/key-123");
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys/key-123",
+      );
       const response = await GET(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -43,7 +45,9 @@ describe("API Key [id] Route", () => {
     it("returns 401 when session has no user id", async () => {
       (auth as Mock).mockResolvedValue({ user: {} });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys/key-123");
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys/key-123",
+      );
       const response = await GET(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -55,7 +59,9 @@ describe("API Key [id] Route", () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
       (getApiKey as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys/nonexistent");
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys/nonexistent",
+      );
       const response = await GET(request, createParams("nonexistent"));
       const data = await response.json();
 
@@ -75,7 +81,9 @@ describe("API Key [id] Route", () => {
         createdAt: mockDate,
       });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`);
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+      );
       const response = await GET(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -102,7 +110,9 @@ describe("API Key [id] Route", () => {
         createdAt: mockDate,
       });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`);
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+      );
       const response = await GET(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -114,7 +124,9 @@ describe("API Key [id] Route", () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
       (getApiKey as Mock).mockRejectedValue(new Error("Database error"));
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`);
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+      );
       const response = await GET(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -127,9 +139,12 @@ describe("API Key [id] Route", () => {
     it("returns 401 when user is not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -140,9 +155,12 @@ describe("API Key [id] Route", () => {
     it("returns 401 when session has no user id", async () => {
       (auth as Mock).mockResolvedValue({ user: {} });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -157,9 +175,12 @@ describe("API Key [id] Route", () => {
         error: "API key not found",
       });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/nonexistent`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/nonexistent`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("nonexistent"));
       const data = await response.json();
 
@@ -175,9 +196,12 @@ describe("API Key [id] Route", () => {
         error: "API key is already revoked",
       });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -189,9 +213,12 @@ describe("API Key [id] Route", () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
       (revokeApiKey as Mock).mockResolvedValue({ success: true });
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams(testKeyId));
       const data = await response.json();
 
@@ -205,9 +232,12 @@ describe("API Key [id] Route", () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
       (revokeApiKey as Mock).mockRejectedValue(new Error("Database error"));
 
-      const request = new NextRequest(`http://localhost:3000/api/settings/api-keys/${testKeyId}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost:3000/api/settings/api-keys/${testKeyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams(testKeyId));
       const data = await response.json();
 

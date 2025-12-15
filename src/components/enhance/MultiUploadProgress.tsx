@@ -25,7 +25,9 @@ interface MultiUploadProgressProps {
 function truncateFilename(filename: string, maxLength: number = 25): string {
   if (filename.length <= maxLength) return filename;
 
-  const extension = filename.includes(".") ? filename.split(".").pop() || "" : "";
+  const extension = filename.includes(".")
+    ? filename.split(".").pop() || ""
+    : "";
   const name = filename.includes(".")
     ? filename.slice(0, filename.lastIndexOf("."))
     : filename;
@@ -42,11 +44,26 @@ function truncateFilename(filename: string, maxLength: number = 25): string {
 function StatusIcon({ status }: { status: FileStatus["status"]; }) {
   switch (status) {
     case "pending":
-      return <Upload className="h-4 w-4 text-muted-foreground" aria-label="Pending" />;
+      return (
+        <Upload
+          className="h-4 w-4 text-muted-foreground"
+          aria-label="Pending"
+        />
+      );
     case "uploading":
-      return <Loader2 className="h-4 w-4 text-primary animate-spin" aria-label="Uploading" />;
+      return (
+        <Loader2
+          className="h-4 w-4 text-primary animate-spin"
+          aria-label="Uploading"
+        />
+      );
     case "completed":
-      return <Check className="h-4 w-4 text-green-500" aria-label="Completed" />;
+      return (
+        <Check
+          className="h-4 w-4 text-green-500"
+          aria-label="Completed"
+        />
+      );
     case "failed":
       return <X className="h-4 w-4 text-destructive" aria-label="Failed" />;
     case "cancelled":
@@ -81,7 +98,10 @@ export function MultiUploadProgress({
   }
 
   return (
-    <div className={cn("space-y-3", className)} data-testid="multi-upload-progress">
+    <div
+      className={cn("space-y-3", className)}
+      data-testid="multi-upload-progress"
+    >
       {/* Overall progress section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
@@ -92,7 +112,11 @@ export function MultiUploadProgress({
             {Math.round(totalProgress)}%
           </span>
         </div>
-        <Progress value={totalProgress} className="h-2" aria-label="Overall upload progress" />
+        <Progress
+          value={totalProgress}
+          className="h-2"
+          aria-label="Overall upload progress"
+        />
 
         {/* Status summary */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -116,14 +140,20 @@ export function MultiUploadProgress({
       </div>
 
       {/* File list */}
-      <div className="space-y-2 max-h-60 overflow-y-auto" role="list" aria-label="Upload file list">
+      <div
+        className="space-y-2 max-h-60 overflow-y-auto"
+        role="list"
+        aria-label="Upload file list"
+      >
         {files.map((fileStatus, index) => (
           <div
             key={`${fileStatus.file.name}-${index}`}
             className={cn(
               "flex items-center gap-3 p-2 rounded-lg border bg-card",
-              fileStatus.status === "failed" && "border-destructive/50 bg-destructive/5",
-              fileStatus.status === "completed" && "border-green-500/30 bg-green-500/5",
+              fileStatus.status === "failed" &&
+                "border-destructive/50 bg-destructive/5",
+              fileStatus.status === "completed" &&
+                "border-green-500/30 bg-green-500/5",
             )}
             role="listitem"
             data-testid={`file-item-${index}`}
@@ -159,7 +189,10 @@ export function MultiUploadProgress({
 
               {/* Error message for failed state */}
               {fileStatus.status === "failed" && fileStatus.error && (
-                <p className="text-xs text-destructive" data-testid={`file-error-${index}`}>
+                <p
+                  className="text-xs text-destructive"
+                  data-testid={`file-error-${index}`}
+                >
                   {fileStatus.error}
                 </p>
               )}

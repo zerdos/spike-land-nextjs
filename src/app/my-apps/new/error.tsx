@@ -49,7 +49,10 @@ export default function NewAppError({
           <Button onClick={reset} variant="default">
             Try again
           </Button>
-          <Button onClick={() => window.location.href = "/my-apps"} variant="outline">
+          <Button
+            onClick={() => window.location.href = "/my-apps"}
+            variant="outline"
+          >
             Back to My Apps
           </Button>
         </CardFooter>

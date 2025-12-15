@@ -46,7 +46,9 @@ describe("ComparisonViewToggle Component", () => {
   });
 
   it("should render with side-by-side mode when defaultMode is set", () => {
-    render(<ComparisonViewToggle {...defaultProps} defaultMode="side-by-side" />);
+    render(
+      <ComparisonViewToggle {...defaultProps} defaultMode="side-by-side" />,
+    );
 
     const sideBySideTab = screen.getByRole("tab", { name: /side by side/i });
     expect(sideBySideTab).toHaveAttribute("data-state", "active");
@@ -71,7 +73,9 @@ describe("ComparisonViewToggle Component", () => {
 
   it("should switch to slider mode when tab is clicked", async () => {
     const user = userEvent.setup();
-    render(<ComparisonViewToggle {...defaultProps} defaultMode="side-by-side" />);
+    render(
+      <ComparisonViewToggle {...defaultProps} defaultMode="side-by-side" />,
+    );
 
     const sliderTab = screen.getByRole("tab", { name: /slider/i });
     await user.click(sliderTab);
@@ -92,7 +96,9 @@ describe("ComparisonViewToggle Component", () => {
   it("should call onModeChange when mode is changed", async () => {
     const user = userEvent.setup();
     const onModeChange = vi.fn();
-    render(<ComparisonViewToggle {...defaultProps} onModeChange={onModeChange} />);
+    render(
+      <ComparisonViewToggle {...defaultProps} onModeChange={onModeChange} />,
+    );
 
     const sideBySideTab = screen.getByRole("tab", { name: /side by side/i });
     await user.click(sideBySideTab);
@@ -103,7 +109,9 @@ describe("ComparisonViewToggle Component", () => {
   it("should call onModeChange with split when split mode is selected", async () => {
     const user = userEvent.setup();
     const onModeChange = vi.fn();
-    render(<ComparisonViewToggle {...defaultProps} onModeChange={onModeChange} />);
+    render(
+      <ComparisonViewToggle {...defaultProps} onModeChange={onModeChange} />,
+    );
 
     const splitTab = screen.getByRole("tab", { name: /split/i });
     await user.click(splitTab);
@@ -116,7 +124,9 @@ describe("ComparisonViewToggle Component", () => {
       <ComparisonViewToggle {...defaultProps} width={1920} height={1080} />,
     );
 
-    const aspectRatioElements = container.querySelectorAll('[style*="aspect-ratio"]');
+    const aspectRatioElements = container.querySelectorAll(
+      '[style*="aspect-ratio"]',
+    );
     expect(aspectRatioElements.length).toBeGreaterThan(0);
   });
 
@@ -124,7 +134,8 @@ describe("ComparisonViewToggle Component", () => {
     render(<ComparisonViewToggle {...defaultProps} />);
 
     expect(screen.getByRole("tab", { name: /slider/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /side by side/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /side by side/i }))
+      .toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /split/i })).toBeInTheDocument();
   });
 
@@ -160,7 +171,9 @@ describe("ComparisonViewToggle Component", () => {
   it("should use default width and height values", () => {
     const { container } = render(<ComparisonViewToggle {...defaultProps} />);
 
-    const aspectRatioElements = container.querySelectorAll('[style*="aspect-ratio"]');
+    const aspectRatioElements = container.querySelectorAll(
+      '[style*="aspect-ratio"]',
+    );
     expect(aspectRatioElements.length).toBeGreaterThan(0);
   });
 

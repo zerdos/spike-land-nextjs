@@ -37,13 +37,18 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status") as JobStatus | null;
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt(searchParams.get("limit") || "20", 10)),
+    );
     const search = searchParams.get("search")?.trim() || "";
 
     // Validate status if provided
     if (status && !VALID_STATUSES.includes(status)) {
       return NextResponse.json(
-        { error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}` },
+        {
+          error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+        },
         { status: 400 },
       );
     }
@@ -111,7 +116,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate total count across all statuses
-    const totalAll = Object.values(statusCountsMap).reduce((sum, count) => sum + count, 0);
+    const totalAll = Object.values(statusCountsMap).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
 
     return NextResponse.json({
       jobs,

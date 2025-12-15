@@ -89,7 +89,11 @@ describe("VoucherInput", () => {
 
     it("trims whitespace from code before submitting", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const user = userEvent.setup();
@@ -113,7 +117,11 @@ describe("VoucherInput", () => {
   describe("successful redemption", () => {
     it("shows success message on successful redemption", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const user = userEvent.setup();
@@ -123,14 +131,20 @@ describe("VoucherInput", () => {
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Successfully redeemed! You received 50 tokens."))
+        expect(
+          screen.getByText("Successfully redeemed! You received 50 tokens."),
+        )
           .toBeInTheDocument();
       });
     });
 
     it("clears input on successful redemption", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const user = userEvent.setup();
@@ -147,7 +161,11 @@ describe("VoucherInput", () => {
 
     it("calls onRedeemed callback on successful redemption", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const onRedeemed = vi.fn();
@@ -164,7 +182,11 @@ describe("VoucherInput", () => {
 
     it("shows success icon on successful redemption", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 100, newBalance: 200 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 100,
+          newBalance: 200,
+        }),
       });
 
       const user = userEvent.setup();
@@ -180,7 +202,11 @@ describe("VoucherInput", () => {
 
     it("works without onRedeemed callback", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const user = userEvent.setup();
@@ -190,7 +216,9 @@ describe("VoucherInput", () => {
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Successfully redeemed! You received 50 tokens."))
+        expect(
+          screen.getByText("Successfully redeemed! You received 50 tokens."),
+        )
           .toBeInTheDocument();
       });
     });
@@ -225,7 +253,8 @@ describe("VoucherInput", () => {
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to redeem voucher")).toBeInTheDocument();
+        expect(screen.getByText("Failed to redeem voucher"))
+          .toBeInTheDocument();
       });
     });
 
@@ -284,7 +313,9 @@ describe("VoucherInput", () => {
 
   describe("network error handling", () => {
     it("shows error message on network error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const user = userEvent.setup();
@@ -294,14 +325,17 @@ describe("VoucherInput", () => {
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
-        expect(screen.getByText("An error occurred. Please try again.")).toBeInTheDocument();
+        expect(screen.getByText("An error occurred. Please try again."))
+          .toBeInTheDocument();
       });
 
       consoleErrorSpy.mockRestore();
     });
 
     it("logs error to console on network error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const error = new Error("Network error");
       mockFetch.mockRejectedValueOnce(error);
 
@@ -312,14 +346,19 @@ describe("VoucherInput", () => {
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith("[VoucherInput] Redemption error:", error);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "[VoucherInput] Redemption error:",
+          error,
+        );
       });
 
       consoleErrorSpy.mockRestore();
     });
 
     it("shows error icon on network error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const user = userEvent.setup();
@@ -343,7 +382,11 @@ describe("VoucherInput", () => {
           new Promise((resolve) =>
             setTimeout(() =>
               resolve({
-                json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+                json: async () => ({
+                  success: true,
+                  tokensGranted: 50,
+                  newBalance: 150,
+                }),
               }), 100)
           ),
       );
@@ -367,7 +410,11 @@ describe("VoucherInput", () => {
           new Promise((resolve) =>
             setTimeout(() =>
               resolve({
-                json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+                json: async () => ({
+                  success: true,
+                  tokensGranted: 50,
+                  newBalance: 150,
+                }),
               }), 100)
           ),
       );
@@ -391,7 +438,11 @@ describe("VoucherInput", () => {
           new Promise((resolve) =>
             setTimeout(() =>
               resolve({
-                json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+                json: async () => ({
+                  success: true,
+                  tokensGranted: 50,
+                  newBalance: 150,
+                }),
               }), 100)
           ),
       );
@@ -431,7 +482,11 @@ describe("VoucherInput", () => {
           new Promise((resolve) =>
             setTimeout(() =>
               resolve({
-                json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+                json: async () => ({
+                  success: true,
+                  tokensGranted: 50,
+                  newBalance: 150,
+                }),
               }), 100)
           ),
       );
@@ -444,7 +499,9 @@ describe("VoucherInput", () => {
       expect(screen.queryByText("Invalid code")).not.toBeInTheDocument();
 
       await waitFor(() => {
-        expect(screen.getByText("Successfully redeemed! You received 50 tokens."))
+        expect(
+          screen.getByText("Successfully redeemed! You received 50 tokens."),
+        )
           .toBeInTheDocument();
       });
     });
@@ -453,7 +510,11 @@ describe("VoucherInput", () => {
   describe("alert styling", () => {
     it("applies success styling on successful redemption", async () => {
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ success: true, tokensGranted: 50, newBalance: 150 }),
+        json: async () => ({
+          success: true,
+          tokensGranted: 50,
+          newBalance: 150,
+        }),
       });
 
       const user = userEvent.setup();
@@ -464,7 +525,11 @@ describe("VoucherInput", () => {
 
       await waitFor(() => {
         const alert = screen.getByRole("alert");
-        expect(alert).toHaveClass("bg-green-500/10", "border-green-500/30", "text-green-400");
+        expect(alert).toHaveClass(
+          "bg-green-500/10",
+          "border-green-500/30",
+          "text-green-400",
+        );
       });
     });
 
@@ -481,7 +546,11 @@ describe("VoucherInput", () => {
 
       await waitFor(() => {
         const alert = screen.getByRole("alert");
-        expect(alert).toHaveClass("bg-red-500/10", "border-red-500/30", "text-red-400");
+        expect(alert).toHaveClass(
+          "bg-red-500/10",
+          "border-red-500/30",
+          "text-red-400",
+        );
       });
     });
   });

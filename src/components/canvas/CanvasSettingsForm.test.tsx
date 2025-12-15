@@ -18,7 +18,10 @@ describe("CanvasSettingsForm", () => {
   describe("Rendering", () => {
     it("renders all controls", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       expect(screen.getByLabelText("Rotation")).toBeInTheDocument();
@@ -28,7 +31,10 @@ describe("CanvasSettingsForm", () => {
 
     it("renders rotation select with correct value", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const rotationSelect = screen.getByTestId("rotation-select");
@@ -37,7 +43,10 @@ describe("CanvasSettingsForm", () => {
 
     it("renders order select with correct value", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const orderSelect = screen.getByTestId("order-select");
@@ -46,7 +55,10 @@ describe("CanvasSettingsForm", () => {
 
     it("renders interval input with correct value", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");
@@ -55,7 +67,10 @@ describe("CanvasSettingsForm", () => {
 
     it("renders seconds suffix for interval", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       expect(screen.getByText("seconds")).toBeInTheDocument();
@@ -65,7 +80,10 @@ describe("CanvasSettingsForm", () => {
   describe("Rotation changes", () => {
     it("calls onChange with new rotation value when rotation is changed", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const rotationTrigger = screen.getByTestId("rotation-select");
@@ -82,7 +100,10 @@ describe("CanvasSettingsForm", () => {
 
     it("calls onChange with 180 rotation", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const rotationTrigger = screen.getByTestId("rotation-select");
@@ -99,7 +120,10 @@ describe("CanvasSettingsForm", () => {
 
     it("calls onChange with 270 rotation", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const rotationTrigger = screen.getByTestId("rotation-select");
@@ -118,7 +142,10 @@ describe("CanvasSettingsForm", () => {
   describe("Order changes", () => {
     it("calls onChange with new order value when order is changed to random", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const orderTrigger = screen.getByTestId("order-select");
@@ -140,7 +167,10 @@ describe("CanvasSettingsForm", () => {
       };
 
       render(
-        <CanvasSettingsForm settings={settingsWithRandom} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={settingsWithRandom}
+          onChange={mockOnChange}
+        />,
       );
 
       const orderTrigger = screen.getByTestId("order-select");
@@ -159,7 +189,10 @@ describe("CanvasSettingsForm", () => {
   describe("Interval changes", () => {
     it("calls onChange with new interval value when interval is changed", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");
@@ -173,7 +206,10 @@ describe("CanvasSettingsForm", () => {
 
     it("clamps interval to minimum value of 5", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");
@@ -187,7 +223,10 @@ describe("CanvasSettingsForm", () => {
 
     it("clamps interval to maximum value of 60", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");
@@ -201,7 +240,10 @@ describe("CanvasSettingsForm", () => {
 
     it("handles invalid input by setting to minimum", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");
@@ -215,7 +257,10 @@ describe("CanvasSettingsForm", () => {
 
     it("accepts valid interval within range", () => {
       render(
-        <CanvasSettingsForm settings={defaultSettings} onChange={mockOnChange} />,
+        <CanvasSettingsForm
+          settings={defaultSettings}
+          onChange={mockOnChange}
+        />,
       );
 
       const intervalInput = screen.getByTestId("interval-input");

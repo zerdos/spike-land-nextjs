@@ -74,7 +74,11 @@ export default function UserManagementPage() {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to change this user's role to ${newRole}?`,
+      )
+    ) {
       return;
     }
 
@@ -105,7 +109,9 @@ export default function UserManagementPage() {
   };
 
   const handleTokenAdjustment = async (userId: string) => {
-    const amount = prompt("Enter token adjustment amount (positive to add, negative to subtract):");
+    const amount = prompt(
+      "Enter token adjustment amount (positive to add, negative to subtract):",
+    );
     if (!amount) return;
 
     const numAmount = parseInt(amount);
@@ -245,7 +251,11 @@ export default function UserManagementPage() {
           </div>
           <div className="max-h-[600px] overflow-y-auto">
             {loading
-              ? <div className="p-8 text-center text-muted-foreground">Loading...</div>
+              ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  Loading...
+                </div>
+              )
               : users.length === 0
               ? (
                 <div className="p-8 text-center text-muted-foreground">
@@ -265,10 +275,13 @@ export default function UserManagementPage() {
                           <p className="font-medium">
                             {user.name || "No name"}
                           </p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
                           <div className="mt-2 flex gap-2">
                             <Badge
-                              variant={user.role === "ADMIN" || user.role === "SUPER_ADMIN"
+                              variant={user.role === "ADMIN" ||
+                                  user.role === "SUPER_ADMIN"
                                 ? "default"
                                 : "secondary"}
                             >
@@ -386,7 +399,9 @@ export default function UserManagementPage() {
                             >
                               <span>{tx.type}</span>
                               <span
-                                className={tx.amount > 0 ? "text-green-600" : "text-red-600"}
+                                className={tx.amount > 0
+                                  ? "text-green-600"
+                                  : "text-red-600"}
                               >
                                 {tx.amount > 0 ? "+" : ""}
                                 {tx.amount}
@@ -399,7 +414,9 @@ export default function UserManagementPage() {
 
                   {/* Danger Zone */}
                   <div className="border-t border-red-200 pt-6">
-                    <h3 className="mb-3 font-semibold text-red-600">Danger Zone</h3>
+                    <h3 className="mb-3 font-semibold text-red-600">
+                      Danger Zone
+                    </h3>
                     <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-950/20">
                       <p className="mb-3 text-sm text-red-700 dark:text-red-400">
                         Permanently delete this user and all their data. This action cannot be
@@ -409,7 +426,11 @@ export default function UserManagementPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() =>
-                          handleUserDelete(selectedUser.id, selectedUser.name, selectedUser.email)}
+                          handleUserDelete(
+                            selectedUser.id,
+                            selectedUser.name,
+                            selectedUser.email,
+                          )}
                         disabled={isDeleting}
                       >
                         {isDeleting ? "Deleting..." : "Delete User"}

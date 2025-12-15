@@ -4,7 +4,9 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
-type EnhancedImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
+type EnhancedImageWithJobs = EnhancedImage & {
+  enhancementJobs: ImageEnhancementJob[];
+};
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -45,7 +47,9 @@ describe("GET /api/images/[id]/versions", () => {
   it("should return 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -67,7 +71,9 @@ describe("GET /api/images/[id]/versions", () => {
       resetAt,
     });
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -88,7 +94,9 @@ describe("GET /api/images/[id]/versions", () => {
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -125,7 +133,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -205,7 +215,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as unknown as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -222,7 +234,9 @@ describe("GET /api/images/[id]/versions", () => {
     expect(data.versions[0].jobId).toBe("job-1");
     expect(data.versions[0].tier).toBe("TIER_1K");
     expect(data.versions[0].status).toBe("COMPLETED");
-    expect(data.versions[0].resultUrl).toBe("https://example.com/enhanced-1k.jpg");
+    expect(data.versions[0].resultUrl).toBe(
+      "https://example.com/enhanced-1k.jpg",
+    );
     expect(data.versions[0].tokensSpent).toBe(5);
     expect(data.versions[0].processingTimeMs).toBe(15000);
     expect(data.versions[0].width).toBe(1000);
@@ -289,7 +303,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as unknown as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -392,7 +408,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as unknown as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -454,7 +472,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as unknown as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -492,7 +512,9 @@ describe("GET /api/images/[id]/versions", () => {
       mockImage as EnhancedImageWithJobs,
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);
@@ -512,7 +534,9 @@ describe("GET /api/images/[id]/versions", () => {
       new Error("Database connection failed"),
     );
 
-    const request = new NextRequest("http://localhost/api/images/img-1/versions");
+    const request = new NextRequest(
+      "http://localhost/api/images/img-1/versions",
+    );
     const context = { params: Promise.resolve({ id: "img-1" }) };
 
     const response = await GET(request, context);

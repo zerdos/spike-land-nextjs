@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Public Albums Gallery API endpoint provides access to before/after image pairs from PUBLIC albums owned by the super admin. This is designed for showcase galleries on public-facing pages.
+The Public Albums Gallery API endpoint provides access to before/after image
+pairs from PUBLIC albums owned by the super admin. This is designed for showcase
+galleries on public-facing pages.
 
 ## Endpoint
 
@@ -16,7 +18,8 @@ GET /api/gallery/public-albums
 
 ## Features
 
-- Fetches images from PUBLIC albums only (owned by super admin: `zolika84@gmail.com`)
+- Fetches images from PUBLIC albums only (owned by super admin:
+  `zolika84@gmail.com`)
 - Returns only images with COMPLETED enhancement jobs
 - Includes both original and enhanced URLs for before/after comparisons
 - Limited to 12 images by default
@@ -113,7 +116,9 @@ export function PublicGallery() {
               <img src={photo.originalUrl} alt={`${photo.title} - Original`} />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">After ({photo.tier})</p>
+              <p className="text-sm text-muted-foreground">
+                After ({photo.tier})
+              </p>
               <img src={photo.enhancedUrl} alt={`${photo.title} - Enhanced`} />
             </div>
           </div>
@@ -184,7 +189,9 @@ fetch("/api/gallery/public-albums")
   .then((data) => {
     console.log(`Loaded ${data.items.length} photos`);
     data.items.forEach((photo) => {
-      console.log(`${photo.title}: ${photo.originalUrl} → ${photo.enhancedUrl}`);
+      console.log(
+        `${photo.title}: ${photo.originalUrl} → ${photo.enhancedUrl}`,
+      );
     });
   })
   .catch((error) => console.error("Error:", error));
@@ -193,7 +200,8 @@ fetch("/api/gallery/public-albums")
 ## Caching
 
 - **Server-side cache**: 5 minutes (`s-maxage=300`)
-- **Stale-while-revalidate**: 10 minutes (serves stale content while fetching fresh data)
+- **Stale-while-revalidate**: 10 minutes (serves stale content while fetching
+  fresh data)
 - **Client-side**: Browsers can cache according to Cache-Control headers
 
 ## Implementation Details
@@ -216,7 +224,8 @@ Images are included only if:
 
 - They have at least one COMPLETED enhancement job
 - The latest enhancement job has a valid `enhancedUrl`
-- The latest enhancement job has valid dimensions (`enhancedWidth`, `enhancedHeight`)
+- The latest enhancement job has valid dimensions (`enhancedWidth`,
+  `enhancedHeight`)
 
 ## Error Responses
 

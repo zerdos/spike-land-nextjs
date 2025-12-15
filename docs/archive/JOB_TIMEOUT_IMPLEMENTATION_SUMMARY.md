@@ -6,7 +6,9 @@
 
 ## Overview
 
-Implemented a comprehensive job timeout and cleanup system to automatically detect and clean up stuck enhancement jobs, preventing jobs from remaining indefinitely in the PROCESSING state.
+Implemented a comprehensive job timeout and cleanup system to automatically
+detect and clean up stuck enhancement jobs, preventing jobs from remaining
+indefinitely in the PROCESSING state.
 
 ## Implementation Details
 
@@ -27,8 +29,7 @@ Implemented a comprehensive job timeout and cleanup system to automatically dete
 - Comprehensive error handling
 - Structured logging
 
-**Detection Logic**:
-Jobs are considered stuck if:
+**Detection Logic**: Jobs are considered stuck if:
 
 - Status is `PROCESSING`, AND
 - Either `processingStartedAt` OR `updatedAt` is older than timeout threshold
@@ -105,8 +106,10 @@ Jobs are considered stuck if:
 ### Test Files
 
 1. `/src/lib/jobs/cleanup.test.ts` - Core logic tests (583 lines, 15 tests)
-2. `/src/app/api/admin/jobs/cleanup/route.test.ts` - Admin endpoint tests (410 lines, 10 tests)
-3. `/src/app/api/cron/cleanup-jobs/route.test.ts` - Cron endpoint tests (276 lines, 8 tests)
+2. `/src/app/api/admin/jobs/cleanup/route.test.ts` - Admin endpoint tests (410
+   lines, 10 tests)
+3. `/src/app/api/cron/cleanup-jobs/route.test.ts` - Cron endpoint tests (276
+   lines, 8 tests)
 
 ### Documentation
 
@@ -313,7 +316,8 @@ All success criteria met:
 
 ## Summary
 
-The job timeout mechanism is fully implemented, tested, and documented. It provides:
+The job timeout mechanism is fully implemented, tested, and documented. It
+provides:
 
 - Automatic cleanup every 15 minutes via Vercel Cron
 - Manual admin control for on-demand cleanup
@@ -322,4 +326,5 @@ The job timeout mechanism is fully implemented, tested, and documented. It provi
 - Comprehensive test coverage (33 tests)
 - Production-ready configuration
 
-The system is ready for deployment to production after setting the `CRON_SECRET` environment variable.
+The system is ready for deployment to production after setting the `CRON_SECRET`
+environment variable.

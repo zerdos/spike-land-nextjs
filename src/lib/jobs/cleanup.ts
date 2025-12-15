@@ -134,7 +134,8 @@ export async function findStuckJobs(
   cleanupLogger.info("Found stuck jobs", {
     count: stuckJobs.length,
     oldestJob: stuckJobs.length > 0 && stuckJobs[0]
-      ? (stuckJobs[0].processingStartedAt?.toISOString() ?? stuckJobs[0].updatedAt.toISOString())
+      ? (stuckJobs[0].processingStartedAt?.toISOString() ??
+        stuckJobs[0].updatedAt.toISOString())
       : null,
   });
 
@@ -307,7 +308,10 @@ export async function cleanupStuckJobs(
     // Aggregate results
     const cleanedUp = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;
-    const tokensRefunded = results.reduce((sum, r) => sum + r.tokensRefunded, 0);
+    const tokensRefunded = results.reduce(
+      (sum, r) => sum + r.tokensRefunded,
+      0,
+    );
 
     const jobDetails = stuckJobs.map((job, index) => {
       const result = results[index];

@@ -2,7 +2,8 @@
 
 ## Summary
 
-Successfully configured `E2E_BYPASS_SECRET` environment variable in Vercel using Playwright MCP browser automation on behalf of the user.
+Successfully configured `E2E_BYPASS_SECRET` environment variable in Vercel using
+Playwright MCP browser automation on behalf of the user.
 
 ## Actions Completed
 

@@ -18,12 +18,16 @@ const MAX_CONCURRENT_JOBS_PER_USER = 3;
  * Helps users understand what went wrong and how to fix it
  * @internal Exported for testing purposes
  */
-export function classifyError(error: unknown): { message: string; code: string; } {
+export function classifyError(
+  error: unknown,
+): { message: string; code: string; } {
   if (error instanceof Error) {
     const errorMessage = error.message.toLowerCase();
 
     // Timeout errors
-    if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
+    if (
+      errorMessage.includes("timeout") || errorMessage.includes("timed out")
+    ) {
       return {
         message: "Generation took too long. Try a lower quality tier.",
         code: "TIMEOUT",
@@ -54,7 +58,8 @@ export function classifyError(error: unknown): { message: string; code: string; 
 
     // API key or authentication errors
     if (
-      errorMessage.includes("api key") || errorMessage.includes("unauthorized") ||
+      errorMessage.includes("api key") ||
+      errorMessage.includes("unauthorized") ||
       errorMessage.includes("401")
     ) {
       return {
@@ -151,7 +156,8 @@ export async function createGenerationJob(
   if (!consumeResult.success) {
     return {
       success: false,
-      error: consumeResult.error || `Insufficient token balance. Required: ${tokensCost} tokens`,
+      error: consumeResult.error ||
+        `Insufficient token balance. Required: ${tokensCost} tokens`,
     };
   }
 
@@ -220,7 +226,8 @@ export async function createModificationJob(
   if (!consumeResult.success) {
     return {
       success: false,
-      error: consumeResult.error || `Insufficient token balance. Required: ${tokensCost} tokens`,
+      error: consumeResult.error ||
+        `Insufficient token balance. Required: ${tokensCost} tokens`,
     };
   }
 
@@ -308,7 +315,9 @@ async function processGenerationJob(
 
     // Classify error for user-friendly message
     const classifiedError = classifyError(error);
-    console.log(`Generation job ${jobId} error classified as: ${classifiedError.code}`);
+    console.log(
+      `Generation job ${jobId} error classified as: ${classifiedError.code}`,
+    );
 
     // Update job with failure
     await prisma.mcpGenerationJob.update({
@@ -413,7 +422,9 @@ async function processModificationJob(
 
     // Classify error for user-friendly message
     const classifiedError = classifyError(error);
-    console.log(`Modification job ${jobId} error classified as: ${classifiedError.code}`);
+    console.log(
+      `Modification job ${jobId} error classified as: ${classifiedError.code}`,
+    );
 
     // Update job with failure
     await prisma.mcpGenerationJob.update({

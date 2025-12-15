@@ -2,7 +2,9 @@
 
 ## Overview
 
-Spike Land uses Stripe for secure payment processing to sell token packages. This document describes the complete payment flow, configuration, and testing procedures.
+Spike Land uses Stripe for secure payment processing to sell token packages.
+This document describes the complete payment flow, configuration, and testing
+procedures.
 
 ## Architecture
 
@@ -164,15 +166,26 @@ export const TOKEN_PACKAGES = {
 } as const;
 ```
 
-**Note**: Prices use dynamic price creation (no Stripe product IDs needed). The checkout API creates prices on-the-fly during session creation.
+**Note**: Prices use dynamic price creation (no Stripe product IDs needed). The
+checkout API creates prices on-the-fly during session creation.
 
 ### Subscription Plans
 
 ```typescript
 export const SUBSCRIPTION_PLANS = {
   hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: "Hobby" },
-  creator: { tokensPerMonth: 100, priceGBP: 12.99, maxRollover: 100, name: "Creator" },
-  studio: { tokensPerMonth: 300, priceGBP: 29.99, maxRollover: 0, name: "Studio" },
+  creator: {
+    tokensPerMonth: 100,
+    priceGBP: 12.99,
+    maxRollover: 100,
+    name: "Creator",
+  },
+  studio: {
+    tokensPerMonth: 300,
+    priceGBP: 29.99,
+    maxRollover: 0,
+    name: "Studio",
+  },
 } as const;
 ```
 
@@ -239,16 +252,20 @@ vercel env add STRIPE_WEBHOOK_SECRET production
 
 - ✅ **Never store card data** - All card details handled by Stripe
 - ✅ **Use Stripe Checkout** - PCI-compliant hosted checkout
-- ✅ **Webhook signature verification** - All webhooks verified with STRIPE_WEBHOOK_SECRET
+- ✅ **Webhook signature verification** - All webhooks verified with
+  STRIPE_WEBHOOK_SECRET
 - ✅ **HTTPS only** - All production traffic encrypted
 - ✅ **No sensitive data in logs** - Card details never logged
 
 ### Best Practices
 
-1. **Idempotency**: All webhook handlers use `sourceId` to prevent duplicate credits
+1. **Idempotency**: All webhook handlers use `sourceId` to prevent duplicate
+   credits
 2. **Authentication**: All checkout requests require valid session
-3. **Input validation**: Package IDs and prices validated before creating sessions
-4. **Error handling**: Failed payments don't crash, users see clear error messages
+3. **Input validation**: Package IDs and prices validated before creating
+   sessions
+4. **Error handling**: Failed payments don't crash, users see clear error
+   messages
 5. **Rate limiting**: Checkout API has size limits on request bodies
 
 ## Testing
@@ -356,7 +373,8 @@ Check logs for:
 
 **Cause**: User session is still loading (`status === "loading"`)
 
-**Solution**: Wait 1-2 seconds for authentication to complete. Buttons enable automatically.
+**Solution**: Wait 1-2 seconds for authentication to complete. Buttons enable
+automatically.
 
 **Code**:
 
@@ -401,7 +419,8 @@ stripe trigger checkout.session.completed
 
 **Cause**: Webhook received multiple times but `sourceId` not checked
 
-**Prevention**: All webhook handlers use `sourceId` in transaction records to ensure idempotency.
+**Prevention**: All webhook handlers use `sourceId` in transaction records to
+ensure idempotency.
 
 **Check**:
 

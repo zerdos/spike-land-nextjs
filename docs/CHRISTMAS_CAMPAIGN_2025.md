@@ -1,15 +1,17 @@
 # Christmas Marketing Campaign 2025
 
 > **Campaign Period**: December 14, 2025 - December 31, 2025 (18 days)
-> **Channel**: Instagram Ads
-> **Focus**: Old Family Photo Restoration
-> **Target**: Families looking for meaningful Christmas activities
+> **Channel**: Instagram Ads **Focus**: Old Family Photo Restoration **Target**:
+> Families looking for meaningful Christmas activities
 
 ---
 
 ## Executive Summary
 
-Spike Land's Pixel app offers AI-powered photo restoration - perfect timing for Christmas when families gather, browse old photo albums, and want to preserve precious memories. This campaign leverages the emotional connection of family memories during the holiday season.
+Spike Land's Pixel app offers AI-powered photo restoration - perfect timing for
+Christmas when families gather, browse old photo albums, and want to preserve
+precious memories. This campaign leverages the emotional connection of family
+memories during the holiday season.
 
 ### Why Christmas is Perfect for Photo Restoration
 
@@ -27,7 +29,8 @@ Spike Land's Pixel app offers AI-powered photo restoration - perfect timing for 
 
 ### Core Message
 
-> "This Christmas, bring your family memories back to life. Restore old, faded photos in seconds with AI."
+> "This Christmas, bring your family memories back to life. Restore old, faded
+> photos in seconds with AI."
 
 ### Key Selling Points
 
@@ -165,8 +168,8 @@ First campaigns rarely break even. The real value is:
 | Organic/Social Shares | 100 sign-ups  | 8%         | £80      |
 | **Total**             | **820 users** | -          | **£980** |
 
-**30-Day LTV Projection**: £2,500 - £4,000
-(Includes return customers and subscription upgrades)
+**30-Day LTV Projection**: £2,500 - £4,000 (Includes return customers and
+subscription upgrades)
 
 ### Realistic Scenario (18 days)
 
@@ -406,5 +409,4 @@ UTM Parameters:
 
 ---
 
-_Document created: December 14, 2025_
-_Next review: January 2, 2026_
+_Document created: December 14, 2025_ _Next review: January 2, 2026_

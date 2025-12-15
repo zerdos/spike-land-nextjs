@@ -144,17 +144,19 @@ async function mockBatchEnhancement(
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
-      const jobs: MockJob[] = imagesToEnhance.map((img: MockImage, idx: number) => {
-        const shouldFail = options?.failSome && idx % 3 === 0;
-        return {
-          id: `job-${img.id}`,
-          imageId: img.id,
-          tier,
-          status: shouldFail ? "FAILED" : "PENDING",
-          tokensCost: tier === "TIER_1K" ? 2 : tier === "TIER_2K" ? 5 : 10,
-          errorMessage: shouldFail ? "Enhancement failed" : null,
-        };
-      });
+      const jobs: MockJob[] = imagesToEnhance.map(
+        (img: MockImage, idx: number) => {
+          const shouldFail = options?.failSome && idx % 3 === 0;
+          return {
+            id: `job-${img.id}`,
+            imageId: img.id,
+            tier,
+            status: shouldFail ? "FAILED" : "PENDING",
+            tokensCost: tier === "TIER_1K" ? 2 : tier === "TIER_2K" ? 5 : 10,
+            errorMessage: shouldFail ? "Enhancement failed" : null,
+          };
+        },
+      );
 
       const totalCost = jobs.reduce((sum, job) => sum + job.tokensCost, 0);
       const newBalance = (batchWorld.currentTokenBalance || 0) - totalCost;
@@ -365,13 +367,16 @@ Given(
 
 Given("another user has an album", async function(this: CustomWorld) {
   // Mock an album belonging to a different user
-  await this.page.route(`**/api/albums/${mockAlbumId}/enhance`, async (route) => {
-    await route.fulfill({
-      status: 403,
-      contentType: "application/json",
-      body: JSON.stringify({ error: "Forbidden" }),
-    });
-  });
+  await this.page.route(
+    `**/api/albums/${mockAlbumId}/enhance`,
+    async (route) => {
+      await route.fulfill({
+        status: 403,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Forbidden" }),
+      });
+    },
+  );
 });
 
 // When steps
@@ -506,15 +511,21 @@ Then(
   },
 );
 
-Then("the enhance button should be disabled", async function(this: CustomWorld) {
-  const enhanceButton = this.page.getByRole("button", { name: /Enhance/i });
-  await expect(enhanceButton).toBeDisabled();
-});
+Then(
+  "the enhance button should be disabled",
+  async function(this: CustomWorld) {
+    const enhanceButton = this.page.getByRole("button", { name: /Enhance/i });
+    await expect(enhanceButton).toBeDisabled();
+  },
+);
 
-Then("the batch enhancement dialog should close", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  await expect(dialog).not.toBeVisible();
-});
+Then(
+  "the batch enhancement dialog should close",
+  async function(this: CustomWorld) {
+    const dialog = this.page.locator('[role="dialog"]');
+    await expect(dialog).not.toBeVisible();
+  },
+);
 
 Then("no enhancements should start", async function(this: CustomWorld) {
   // Verify no processing indicators appear
@@ -577,17 +588,23 @@ Then(
   },
 );
 
-Then("completed images should show checkmark icon", async function(this: CustomWorld) {
-  const checkmarks = this.page.locator('[data-testid*="check"]');
-  const count = await checkmarks.count();
-  expect(count).toBeGreaterThanOrEqual(0);
-});
+Then(
+  "completed images should show checkmark icon",
+  async function(this: CustomWorld) {
+    const checkmarks = this.page.locator('[data-testid*="check"]');
+    const count = await checkmarks.count();
+    expect(count).toBeGreaterThanOrEqual(0);
+  },
+);
 
-Then("processing images should show spinner icon", async function(this: CustomWorld) {
-  const spinners = this.page.locator('[data-testid*="spinner"]');
-  const count = await spinners.count();
-  expect(count).toBeGreaterThanOrEqual(0);
-});
+Then(
+  "processing images should show spinner icon",
+  async function(this: CustomWorld) {
+    const spinners = this.page.locator('[data-testid*="spinner"]');
+    const count = await spinners.count();
+    expect(count).toBeGreaterThanOrEqual(0);
+  },
+);
 
 Then(
   "I should see {string}",
@@ -597,10 +614,13 @@ Then(
   },
 );
 
-Then("total cost should be {string}", async function(this: CustomWorld, cost: string) {
-  const costElement = this.page.getByText(cost, { exact: false });
-  await expect(costElement).toBeVisible();
-});
+Then(
+  "total cost should be {string}",
+  async function(this: CustomWorld, cost: string) {
+    const costElement = this.page.getByText(cost, { exact: false });
+    await expect(costElement).toBeVisible();
+  },
+);
 
 Then(
   "only {int} images should be processed",
@@ -700,12 +720,15 @@ Then(
   },
 );
 
-Then("I should not see {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", {
-    name: new RegExp(buttonText, "i"),
-  });
-  await expect(button).not.toBeVisible();
-});
+Then(
+  "I should not see {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    await expect(button).not.toBeVisible();
+  },
+);
 
 Then(
   "the system should poll job statuses every {int} seconds",

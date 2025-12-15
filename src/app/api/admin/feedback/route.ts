@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
 
     // Validate status filter
-    if (status && !Object.values(FeedbackStatus).includes(status as FeedbackStatus)) {
+    if (
+      status &&
+      !Object.values(FeedbackStatus).includes(status as FeedbackStatus)
+    ) {
       return NextResponse.json(
         { error: "Invalid status filter" },
         { status: 400 },
@@ -169,7 +172,9 @@ export async function PATCH(request: NextRequest) {
     // Validate adminNote length if provided
     if (adminNote && adminNote.length > MAX_ADMIN_NOTE_LENGTH) {
       return NextResponse.json(
-        { error: `Admin note too long (max ${MAX_ADMIN_NOTE_LENGTH} characters)` },
+        {
+          error: `Admin note too long (max ${MAX_ADMIN_NOTE_LENGTH} characters)`,
+        },
         { status: 400 },
       );
     }

@@ -1,6 +1,7 @@
 # Automated E2E Bypass Setup Guide
 
-This guide explains how to configure the E2E authentication bypass feature using both automated tools (Playwright MCP) and manual steps.
+This guide explains how to configure the E2E authentication bypass feature using
+both automated tools (Playwright MCP) and manual steps.
 
 ## Overview
 
@@ -17,10 +18,13 @@ Both must use the **same secret value** for the bypass to work correctly.
 
 ⚠️ **CRITICAL:** The E2E bypass is protected by multiple security layers:
 
-- **Production Protection**: Bypass is BLOCKED when both `NODE_ENV=production` AND `VERCEL_ENV=production`
+- **Production Protection**: Bypass is BLOCKED when both `NODE_ENV=production`
+  AND `VERCEL_ENV=production`
 - **Constant-Time Comparison**: Prevents timing attacks on the secret
-- **Audit Logging**: All bypass attempts are logged with timestamp and environment info
-- **Explicit Configuration**: Secret must be explicitly set (empty strings rejected)
+- **Audit Logging**: All bypass attempts are logged with timestamp and
+  environment info
+- **Explicit Configuration**: Secret must be explicitly set (empty strings
+  rejected)
 
 ---
 
@@ -30,7 +34,8 @@ Both must use the **same secret value** for the bypass to work correctly.
 
 The `E2E_BYPASS_SECRET` is already configured in GitHub Secrets:
 
-- **Location**: https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions
+- **Location**:
+  https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions
 - **Added**: October 27, 2025
 - **Status**: Active and functional
 
@@ -38,10 +43,13 @@ The `E2E_BYPASS_SECRET` is already configured in GitHub Secrets:
 
 ```javascript
 // Navigate to GitHub Secrets page
-await page.goto("https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions");
+await page.goto(
+  "https://github.com/zerdos/spike-land-nextjs/settings/secrets/actions",
+);
 
 // Verify E2E_BYPASS_SECRET exists
-const secretExists = await page.locator('code:has-text("E2E_BYPASS_SECRET")').isVisible();
+const secretExists = await page.locator('code:has-text("E2E_BYPASS_SECRET")')
+  .isVisible();
 console.log("E2E_BYPASS_SECRET configured:", secretExists);
 ```
 
@@ -72,13 +80,16 @@ If you need to regenerate or create the secret:
 
 ### Status: ⚠️ REQUIRES MANUAL CONFIGURATION
 
-The `E2E_BYPASS_SECRET` must be added to Vercel environment variables for runtime middleware access.
+The `E2E_BYPASS_SECRET` must be added to Vercel environment variables for
+runtime middleware access.
 
 ### Why Vercel Needs This
 
 - **GitHub Secrets**: Available during CI/CD build and test execution
-- **Vercel Environment Variables**: Available to the deployed application at runtime
-- **Middleware Execution**: Runs on Vercel's edge network and needs runtime access to the secret
+- **Vercel Environment Variables**: Available to the deployed application at
+  runtime
+- **Middleware Execution**: Runs on Vercel's edge network and needs runtime
+  access to the secret
 
 ### Automated Navigation (Playwright MCP)
 
@@ -95,7 +106,8 @@ await page.getByRole("link", { name: "Environment Variables" }).click();
 **IMPORTANT:** You must use the **same secret value** from GitHub Secrets!
 
 1. **Navigate to Vercel Environment Variables:**
-   - URL: https://vercel.com/zoltan-erdos-projects/spike-land-nextjs/settings/environment-variables
+   - URL:
+     https://vercel.com/zoltan-erdos-projects/spike-land-nextjs/settings/environment-variables
    - Or: Dashboard → spike-land-nextjs → Settings → Environment Variables
 
 2. **Click "Add New" → "Environment Variable"**
@@ -111,15 +123,18 @@ await page.getByRole("link", { name: "Environment Variables" }).click();
 4. **Click "Save"**
 
 5. **Verify the configuration:**
-   - You should see `E2E_BYPASS_SECRET` listed with "Preview" and "Development" labels
+   - You should see `E2E_BYPASS_SECRET` listed with "Preview" and "Development"
+     labels
    - Confirm it does NOT have a "Production" label
 
 ### Why Not Production?
 
-Even though the middleware has built-in production protection (`NODE_ENV` and `VERCEL_ENV` checks), we follow defense-in-depth principles:
+Even though the middleware has built-in production protection (`NODE_ENV` and
+`VERCEL_ENV` checks), we follow defense-in-depth principles:
 
 - **Layer 1**: Don't configure the secret in production environment (Vercel)
-- **Layer 2**: Middleware checks both `NODE_ENV` and `VERCEL_ENV` before allowing bypass
+- **Layer 2**: Middleware checks both `NODE_ENV` and `VERCEL_ENV` before
+  allowing bypass
 - **Layer 3**: Constant-time comparison prevents timing attacks
 - **Layer 4**: Audit logging for monitoring
 
@@ -157,7 +172,8 @@ E2E_BYPASS_SECRET  Updated 2025-10-27
 
 ### 2. Verify Vercel Environment Variable
 
-1. Go to: https://vercel.com/zoltan-erdos-projects/spike-land-nextjs/settings/environment-variables
+1. Go to:
+   https://vercel.com/zoltan-erdos-projects/spike-land-nextjs/settings/environment-variables
 2. Search for `E2E_BYPASS_SECRET`
 3. Confirm it shows: "Preview" and "Development" (NOT "Production")
 
@@ -195,16 +211,20 @@ Expected result: Tests should pass and access protected routes
 
 ### Problem: Bypass works in Preview but not Production
 
-**Expected Behavior:** This is correct! The bypass should be blocked in production.
+**Expected Behavior:** This is correct! The bypass should be blocked in
+production.
 
 **Verification:**
 
-- Check middleware logs: `console.warn('[E2E Bypass]')` should NOT appear in production
-- Production environment check: `NODE_ENV=production` AND `VERCEL_ENV=production`
+- Check middleware logs: `console.warn('[E2E Bypass]')` should NOT appear in
+  production
+- Production environment check: `NODE_ENV=production` AND
+  `VERCEL_ENV=production`
 
 ### Problem: "Sensitive" toggle is disabled in Vercel
 
-**Explanation:** The project has existing non-sensitive environment variables, so new variables default to non-sensitive mode.
+**Explanation:** The project has existing non-sensitive environment variables,
+so new variables default to non-sensitive mode.
 
 **Action:** This is acceptable for E2E_BYPASS_SECRET since:
 
@@ -266,8 +286,10 @@ When the E2E bypass is successfully used, the middleware logs:
 
 ## References
 
-- **GitHub Secrets Documentation**: https://docs.github.com/en/actions/security-guides/encrypted-secrets
-- **Vercel Environment Variables**: https://vercel.com/docs/environment-variables
+- **GitHub Secrets Documentation**:
+  https://docs.github.com/en/actions/security-guides/encrypted-secrets
+- **Vercel Environment Variables**:
+  https://vercel.com/docs/environment-variables
 - **Proxy Code**: `src/proxy.ts:99-121`
 - **Proxy Tests**: `src/proxy.test.ts:382-525`
 - **Setup Documentation**: `docs/archive/WORKFLOW_CHANGES_NEEDED.md`

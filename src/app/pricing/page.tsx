@@ -20,11 +20,15 @@ import { useState } from "react";
 
 // Calculate value comparison for packages
 function getPackageValueInfo(id: TokenPackageId) {
-  const basePrice = TOKEN_PACKAGES.starter.price / TOKEN_PACKAGES.starter.tokens;
+  const basePrice = TOKEN_PACKAGES.starter.price /
+    TOKEN_PACKAGES.starter.tokens;
   const currentPrice = TOKEN_PACKAGES[id].price / TOKEN_PACKAGES[id].tokens;
   const savings = Math.round((1 - currentPrice / basePrice) * 100);
 
-  const badges: { label: string; variant: "default" | "secondary" | "outline"; }[] = [];
+  const badges: {
+    label: string;
+    variant: "default" | "secondary" | "outline";
+  }[] = [];
 
   if (id === "pro") {
     badges.push({ label: "Most Popular", variant: "default" });
@@ -303,7 +307,9 @@ export default function PricingPage() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Which pack should I choose?</h3>
+              <h3 className="font-semibold mb-2">
+                Which pack should I choose?
+              </h3>
               <p className="text-muted-foreground">
                 If you're just getting started, the <strong>Starter Pack</strong>{" "}
                 is perfect for trying out the service. For regular use, the{" "}

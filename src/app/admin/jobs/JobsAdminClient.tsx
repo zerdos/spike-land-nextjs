@@ -71,7 +71,9 @@ interface JobsResponse {
   statusCounts: Record<string, number>;
 }
 
-const STATUS_TABS: Array<{ key: string; label: string; status: JobStatus | null; }> = [
+const STATUS_TABS: Array<
+  { key: string; label: string; status: JobStatus | null; }
+> = [
   { key: "ALL", label: "All", status: null },
   { key: "PENDING", label: "Queue", status: "PENDING" },
   { key: "PROCESSING", label: "Running", status: "PROCESSING" },
@@ -103,9 +105,13 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function formatDuration(startTime: string | null, endTime: string | null): string {
+function formatDuration(
+  startTime: string | null,
+  endTime: string | null,
+): string {
   if (!startTime || !endTime) return "N/A";
-  const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
+  const durationMs = new Date(endTime).getTime() -
+    new Date(startTime).getTime();
   if (durationMs < 1000) return `${durationMs}ms`;
   if (durationMs < 60000) return `${(durationMs / 1000).toFixed(1)}s`;
   const minutes = Math.floor(durationMs / 60000);
@@ -137,43 +143,51 @@ export function JobsAdminClient() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchJobs = useCallback(async (status: JobStatus | null, page: number, search: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchJobs = useCallback(
+    async (status: JobStatus | null, page: number, search: string) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const params = new URLSearchParams();
-      if (status) params.set("status", status);
-      params.set("page", page.toString());
-      params.set("limit", "20");
-      if (search) params.set("search", search);
+      try {
+        const params = new URLSearchParams();
+        if (status) params.set("status", status);
+        params.set("page", page.toString());
+        params.set("limit", "20");
+        if (search) params.set("search", search);
 
-      const response = await fetch(`/api/admin/jobs?${params.toString()}`);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to fetch jobs");
+        const response = await fetch(`/api/admin/jobs?${params.toString()}`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to fetch jobs");
+        }
+
+        const data: JobsResponse = await response.json();
+        setJobs(data.jobs);
+        setPagination(data.pagination);
+        setStatusCounts(data.statusCounts);
+
+        // Clear selection if the selected job is no longer in the list
+        if (selectedJob && !data.jobs.find((j) => j.id === selectedJob.id)) {
+          setSelectedJob(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
       }
-
-      const data: JobsResponse = await response.json();
-      setJobs(data.jobs);
-      setPagination(data.pagination);
-      setStatusCounts(data.statusCounts);
-
-      // Clear selection if the selected job is no longer in the list
-      if (selectedJob && !data.jobs.find((j) => j.id === selectedJob.id)) {
-        setSelectedJob(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedJob]);
+    },
+    [selectedJob],
+  );
 
   // Note: eslint-disable is intentional here. We exclude:
   // - fetchJobs: it's memoized with useCallback and stable
@@ -242,7 +256,11 @@ export function JobsAdminClient() {
         <Button variant="outline" onClick={handleSearch} aria-label="Search">
           Search
         </Button>
-        <Button variant="outline" onClick={handleRefresh} aria-label="Refresh job list">
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          aria-label="Refresh job list"
+        >
           Refresh
         </Button>
       </div>
@@ -258,7 +276,9 @@ export function JobsAdminClient() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Job List */}
         <Card className="p-4">
-          <h2 className="mb-4 text-lg font-semibold">Jobs ({pagination.total})</h2>
+          <h2 className="mb-4 text-lg font-semibold">
+            Jobs ({pagination.total})
+          </h2>
           {loading
             ? (
               <div className="space-y-2">
@@ -286,25 +306,36 @@ export function JobsAdminClient() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge className={STATUS_COLORS[job.status]}>{job.status}</Badge>
-                        <span className="text-sm font-medium">{TIER_LABELS[job.tier]}</span>
+                        <Badge className={STATUS_COLORS[job.status]}>
+                          {job.status}
+                        </Badge>
+                        <span className="text-sm font-medium">
+                          {TIER_LABELS[job.tier]}
+                        </span>
                       </div>
                       <span className="text-xs text-neutral-500">
                         {formatRelativeTime(job.createdAt)}
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
-                      <span className="font-mono">{job.id.slice(0, 12)}...</span>
+                      <span className="font-mono">
+                        {job.id.slice(0, 12)}...
+                      </span>
                       {" | "}
                       {job.user.email}
                     </div>
                     {job.status === "COMPLETED" && (
                       <div className="mt-1 text-xs text-green-600">
-                        {formatDuration(job.processingStartedAt, job.processingCompletedAt)}
+                        {formatDuration(
+                          job.processingStartedAt,
+                          job.processingCompletedAt,
+                        )}
                       </div>
                     )}
                     {job.status === "FAILED" && job.errorMessage && (
-                      <div className="mt-1 truncate text-xs text-red-600">{job.errorMessage}</div>
+                      <div className="mt-1 truncate text-xs text-red-600">
+                        {job.errorMessage}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -345,7 +376,8 @@ export function JobsAdminClient() {
             : (
               <div className="space-y-4">
                 {/* Before/After Comparison for Completed Jobs */}
-                {selectedJob.status === "COMPLETED" && selectedJob.enhancedUrl && (
+                {selectedJob.status === "COMPLETED" &&
+                  selectedJob.enhancedUrl && (
                   <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
                     <ImageComparisonSlider
                       originalUrl={selectedJob.image.originalUrl}
@@ -362,14 +394,18 @@ export function JobsAdminClient() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Status & Timing */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-neutral-500">Status</h3>
+                    <h3 className="text-sm font-semibold text-neutral-500">
+                      Status
+                    </h3>
                     <Badge className={STATUS_COLORS[selectedJob.status]}>
                       {selectedJob.status}
                     </Badge>
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-neutral-500">Processing Time</h3>
+                    <h3 className="text-sm font-semibold text-neutral-500">
+                      Processing Time
+                    </h3>
                     <p className="text-sm">
                       {formatDuration(
                         selectedJob.processingStartedAt,
@@ -379,13 +415,19 @@ export function JobsAdminClient() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-neutral-500">Created</h3>
-                    <p className="text-sm">{formatAbsoluteTime(selectedJob.createdAt)}</p>
+                    <h3 className="text-sm font-semibold text-neutral-500">
+                      Created
+                    </h3>
+                    <p className="text-sm">
+                      {formatAbsoluteTime(selectedJob.createdAt)}
+                    </p>
                   </div>
 
                   {selectedJob.processingCompletedAt && (
                     <div className="space-y-2">
-                      <h3 className="text-sm font-semibold text-neutral-500">Completed</h3>
+                      <h3 className="text-sm font-semibold text-neutral-500">
+                        Completed
+                      </h3>
                       <p className="text-sm">
                         {formatAbsoluteTime(selectedJob.processingCompletedAt)}
                       </p>
@@ -395,32 +437,38 @@ export function JobsAdminClient() {
 
                 {/* Enhancement Details */}
                 <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                  <h3 className="mb-2 text-sm font-semibold">Enhancement Details</h3>
+                  <h3 className="mb-2 text-sm font-semibold">
+                    Enhancement Details
+                  </h3>
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Tier</span>
-                      <span>{TIER_LABELS[selectedJob.tier]} ({selectedJob.tokensCost} tokens)</span>
+                      <span>
+                        {TIER_LABELS[selectedJob.tier]} ({selectedJob.tokensCost} tokens)
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Original</span>
                       <span>
                         {selectedJob.image.name || "Unnamed"}{" "}
-                        ({selectedJob.image.originalWidth}x{selectedJob.image.originalHeight},{" "}
-                        {formatBytes(selectedJob.image.originalSizeBytes)})
+                        ({selectedJob.image.originalWidth}x{selectedJob.image
+                          .originalHeight}, {formatBytes(selectedJob.image.originalSizeBytes)})
                       </span>
                     </div>
                     {selectedJob.enhancedUrl && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Enhanced</span>
                         <span>
-                          {selectedJob.enhancedWidth}x{selectedJob.enhancedHeight},{" "}
-                          {formatBytes(selectedJob.enhancedSizeBytes)}
+                          {selectedJob.enhancedWidth}x{selectedJob
+                            .enhancedHeight}, {formatBytes(selectedJob.enhancedSizeBytes)}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Retries</span>
-                      <span>{selectedJob.retryCount}/{selectedJob.maxRetries}</span>
+                      <span>
+                        {selectedJob.retryCount}/{selectedJob.maxRetries}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -431,12 +479,16 @@ export function JobsAdminClient() {
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Model</span>
-                      <span className="font-mono text-xs">{selectedJob.geminiModel || "N/A"}</span>
+                      <span className="font-mono text-xs">
+                        {selectedJob.geminiModel || "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Temperature</span>
                       <span>
-                        {selectedJob.geminiTemp !== null ? selectedJob.geminiTemp : "Default"}
+                        {selectedJob.geminiTemp !== null
+                          ? selectedJob.geminiTemp
+                          : "Default"}
                       </span>
                     </div>
                   </div>
@@ -455,7 +507,9 @@ export function JobsAdminClient() {
                 {/* Error Message */}
                 {selectedJob.errorMessage && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <h3 className="mb-2 text-sm font-semibold text-red-600">Error</h3>
+                    <h3 className="mb-2 text-sm font-semibold text-red-600">
+                      Error
+                    </h3>
                     <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
                     {selectedJob.errorMessage}
                     </pre>

@@ -75,7 +75,10 @@ describe("POST /api/apps", () => {
     };
 
     vi.mocked(prisma.app.create).mockResolvedValue(
-      mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[]; },
+      mockApp as App & {
+        requirements: Requirement[];
+        monetizationModels: MonetizationModel[];
+      },
     );
 
     const request = new NextRequest("http://localhost/api/apps", {
@@ -250,7 +253,9 @@ describe("GET /api/apps", () => {
       user: { id: "user-1", email: "test@example.com" },
     } as Session);
 
-    vi.mocked(prisma.app.findMany).mockRejectedValue(new Error("Database error"));
+    vi.mocked(prisma.app.findMany).mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const response = await GET();
     const data = await response.json();

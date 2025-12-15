@@ -118,7 +118,9 @@ export class TokenBalanceManager {
       this.validateUserId(userId);
 
       if (amount <= 0) {
-        const error = new Error(`Invalid token amount: ${amount}. Must be positive.`);
+        const error = new Error(
+          `Invalid token amount: ${amount}. Must be positive.`,
+        );
         consumeLogger.error("Invalid token amount", error);
         throw error;
       }
@@ -202,7 +204,9 @@ export class TokenBalanceManager {
         balance: result.balance,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       const userFriendlyError = getUserFriendlyError(
         error instanceof Error ? error : new Error(errorMessage),
       );
@@ -238,7 +242,9 @@ export class TokenBalanceManager {
       this.validateUserId(userId);
 
       if (amount <= 0) {
-        const error = new Error(`Invalid token amount: ${amount}. Must be positive.`);
+        const error = new Error(
+          `Invalid token amount: ${amount}. Must be positive.`,
+        );
         addLogger.error("Invalid token amount", error);
         throw error;
       }
@@ -323,7 +329,9 @@ export class TokenBalanceManager {
         balance: result.balance,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       const userFriendlyError = getUserFriendlyError(
         error instanceof Error ? error : new Error(errorMessage),
       );
@@ -433,30 +441,31 @@ export class TokenBalanceManager {
   }> {
     this.validateUserId(userId);
 
-    const [spendResult, earnResult, refundResult, countResult] = await Promise.all([
-      prisma.tokenTransaction.aggregate({
-        where: { userId, type: TokenTransactionType.SPEND_ENHANCEMENT },
-        _sum: { amount: true },
-      }),
-      prisma.tokenTransaction.aggregate({
-        where: {
-          userId,
-          type: {
-            in: [
-              TokenTransactionType.EARN_PURCHASE,
-              TokenTransactionType.EARN_REGENERATION,
-              TokenTransactionType.EARN_BONUS,
-            ],
+    const [spendResult, earnResult, refundResult, countResult] = await Promise
+      .all([
+        prisma.tokenTransaction.aggregate({
+          where: { userId, type: TokenTransactionType.SPEND_ENHANCEMENT },
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.aggregate({
+          where: {
+            userId,
+            type: {
+              in: [
+                TokenTransactionType.EARN_PURCHASE,
+                TokenTransactionType.EARN_REGENERATION,
+                TokenTransactionType.EARN_BONUS,
+              ],
+            },
           },
-        },
-        _sum: { amount: true },
-      }),
-      prisma.tokenTransaction.aggregate({
-        where: { userId, type: TokenTransactionType.REFUND },
-        _sum: { amount: true },
-      }),
-      prisma.tokenTransaction.count({ where: { userId } }),
-    ]);
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.aggregate({
+          where: { userId, type: TokenTransactionType.REFUND },
+          _sum: { amount: true },
+        }),
+        prisma.tokenTransaction.count({ where: { userId } }),
+      ]);
 
     return {
       totalSpent: Math.abs(spendResult._sum.amount ?? 0),

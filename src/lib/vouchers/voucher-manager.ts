@@ -44,7 +44,10 @@ export class VoucherManager {
   /**
    * Validate a voucher code without redeeming
    */
-  static async validate(code: string, userId?: string): Promise<VoucherValidationResult> {
+  static async validate(
+    code: string,
+    userId?: string,
+  ): Promise<VoucherValidationResult> {
     const normalizedCode = code.trim().toUpperCase();
 
     const voucher = await prisma.voucher.findUnique({
@@ -71,11 +74,17 @@ export class VoucherManager {
     }
 
     if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) {
-      return { valid: false, error: "This voucher has reached its usage limit" };
+      return {
+        valid: false,
+        error: "This voucher has reached its usage limit",
+      };
     }
 
     // Check if user already redeemed (if userId provided)
-    if (userId && Array.isArray(voucher.redemptions) && voucher.redemptions.length > 0) {
+    if (
+      userId && Array.isArray(voucher.redemptions) &&
+      voucher.redemptions.length > 0
+    ) {
       return { valid: false, error: "You have already redeemed this voucher" };
     }
 
@@ -106,7 +115,10 @@ export class VoucherManager {
    *    uses database-level atomicity - worst case is slightly exceeding maxUses
    * 5. If strict enforcement needed, add SELECT FOR UPDATE when Prisma supports it
    */
-  static async redeem(code: string, userId: string): Promise<VoucherRedemptionResult> {
+  static async redeem(
+    code: string,
+    userId: string,
+  ): Promise<VoucherRedemptionResult> {
     const normalizedCode = code.trim().toUpperCase();
 
     try {
@@ -160,7 +172,10 @@ export class VoucherManager {
             currentUses: voucher.currentUses,
             timestamp: new Date().toISOString(),
           });
-          return { success: false, error: "This voucher has reached its usage limit" };
+          return {
+            success: false,
+            error: "This voucher has reached its usage limit",
+          };
         }
 
         if (voucher.redemptions.length > 0) {
@@ -170,14 +185,18 @@ export class VoucherManager {
             userId,
             timestamp: new Date().toISOString(),
           });
-          return { success: false, error: "You have already redeemed this voucher" };
+          return {
+            success: false,
+            error: "You have already redeemed this voucher",
+          };
         }
 
         // Calculate tokens to grant
         let tokensToGrant = voucher.value;
         if (voucher.type === VoucherType.PERCENTAGE_BONUS) {
           // For percentage, get current balance and add percentage
-          const { balance: currentBalance } = await TokenBalanceManager.getBalance(userId);
+          const { balance: currentBalance } = await TokenBalanceManager
+            .getBalance(userId);
           tokensToGrant = Math.floor(currentBalance * (voucher.value / 100));
         }
 
@@ -270,7 +289,9 @@ export class VoucherManager {
       });
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to redeem voucher",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to redeem voucher",
       };
     }
   }

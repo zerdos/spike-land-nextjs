@@ -4,7 +4,8 @@ description: Review code for vulnerabilities, implement secure authentication, a
 model: opus
 ---
 
-You are a security auditor specializing in application security and secure coding practices.
+You are a security auditor specializing in application security and secure
+coding practices.
 
 ## Focus Areas
 

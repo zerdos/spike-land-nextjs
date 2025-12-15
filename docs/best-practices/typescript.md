@@ -1,6 +1,7 @@
 # TypeScript Best Practices for Production Applications
 
-A comprehensive guide to writing maintainable, type-safe, and performant TypeScript code in production environments.
+A comprehensive guide to writing maintainable, type-safe, and performant
+TypeScript code in production environments.
 
 ## Table of Contents
 
@@ -18,7 +19,9 @@ A comprehensive guide to writing maintainable, type-safe, and performant TypeScr
 
 ### Strict Mode Configuration
 
-Enabling strict mode is essential for production TypeScript projects. It enables a comprehensive set of type checking behaviors that catch potential errors early.
+Enabling strict mode is essential for production TypeScript projects. It enables
+a comprehensive set of type checking behaviors that catch potential errors
+early.
 
 #### Enable Strict Mode
 
@@ -35,11 +38,14 @@ Set `"strict": true` in your `tsconfig.json`:
 This automatically enables:
 
 - **noImplicitAny** - Raises errors on expressions with inferred type `any`
-- **noImplicitThis** - Raises errors on `this` expressions with inferred type `any`
+- **noImplicitThis** - Raises errors on `this` expressions with inferred type
+  `any`
 - **strictNullChecks** - Treats `null` and `undefined` as distinct types
 - **strictFunctionTypes** - Enables strict checking of function type parameters
-- **strictBindCallApply** - Enables strict checking of `bind`, `call`, and `apply` methods
-- **strictPropertyInitialization** - Requires non-undefined class properties to be initialized
+- **strictBindCallApply** - Enables strict checking of `bind`, `call`, and
+  `apply` methods
+- **strictPropertyInitialization** - Requires non-undefined class properties to
+  be initialized
 - **alwaysStrict** - Parses code in strict mode and emits `"use strict"`
 
 #### Additional Strict Options
@@ -319,7 +325,8 @@ export interface RequestContext {
 
 ### Namespaces (Use with Caution)
 
-**Avoid namespaces in modern TypeScript.** They add unnecessary nesting when using ES modules:
+**Avoid namespaces in modern TypeScript.** They add unnecessary nesting when
+using ES modules:
 
 ```typescript
 // ✗ Avoid: Unnecessary nesting
@@ -530,7 +537,8 @@ type Entity = "users" | "products" | "orders";
 type ApiEndpoint = `/${Method}:${Entity}`;
 
 // Extract parts from a formatted string
-type ParsePath<T> = T extends `/${infer M}:${infer E}` ? { method: M; entity: E; } : never;
+type ParsePath<T> = T extends `/${infer M}:${infer E}` ? { method: M; entity: E; }
+  : never;
 
 type UserPath = ParsePath<"/POST:users">; // { method: "POST"; entity: "users" }
 ```
@@ -671,7 +679,9 @@ const Either = {
     onRight: (value: R) => T,
     either: Either<L, R>,
   ): T => {
-    return either.kind === "left" ? onLeft(either.value) : onRight(either.value);
+    return either.kind === "left"
+      ? onLeft(either.value)
+      : onRight(either.value);
   },
 };
 
@@ -1289,4 +1299,6 @@ TypeScript's type system integrates with AI tools for:
 
 **Last Updated:** 2025-12-06
 
-This guide reflects TypeScript 5.x+ best practices and the direction of TypeScript 2025, emphasizing strict types, modern ESM, and practical patterns for production applications.
+This guide reflects TypeScript 5.x+ best practices and the direction of
+TypeScript 2025, emphasizing strict types, modern ESM, and practical patterns
+for production applications.

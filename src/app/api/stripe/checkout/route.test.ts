@@ -27,8 +27,18 @@ vi.mock("@/lib/stripe/client", () => ({
     basic: { tokens: 50, price: 9.99, name: "Basic Pack" },
   },
   SUBSCRIPTION_PLANS: {
-    hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: "Hobby" },
-    creator: { tokensPerMonth: 100, priceGBP: 12.99, maxRollover: 100, name: "Creator" },
+    hobby: {
+      tokensPerMonth: 30,
+      priceGBP: 4.99,
+      maxRollover: 30,
+      name: "Hobby",
+    },
+    creator: {
+      tokensPerMonth: 100,
+      priceGBP: 12.99,
+      maxRollover: 100,
+      name: "Creator",
+    },
   },
 }));
 
@@ -54,13 +64,16 @@ describe("POST /api/stripe/checkout", () => {
   });
 
   it("returns 413 when request body is too large", async () => {
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      headers: {
-        "content-length": "20000", // Larger than MAX_BODY_SIZE (10KB)
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        headers: {
+          "content-length": "20000", // Larger than MAX_BODY_SIZE (10KB)
+        },
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
       },
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -72,10 +85,13 @@ describe("POST /api/stripe/checkout", () => {
   it("returns 401 when user is not authenticated", async () => {
     (auth as Mock).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -89,10 +105,13 @@ describe("POST /api/stripe/checkout", () => {
       user: { id: "123", email: "test@test.com" },
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -106,10 +125,13 @@ describe("POST /api/stripe/checkout", () => {
       user: { id: "123", email: "test@test.com" },
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ mode: "subscription" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ mode: "subscription" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -126,10 +148,13 @@ describe("POST /api/stripe/checkout", () => {
       stripeCustomerId: "cus_existing",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "invalid", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "invalid", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -147,10 +172,13 @@ describe("POST /api/stripe/checkout", () => {
     });
     (prisma.subscription.findUnique as Mock).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ planId: "invalid", mode: "subscription" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ planId: "invalid", mode: "subscription" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -167,10 +195,13 @@ describe("POST /api/stripe/checkout", () => {
       stripeCustomerId: "cus_existing",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -189,10 +220,13 @@ describe("POST /api/stripe/checkout", () => {
       stripeCustomerId: null,
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -213,10 +247,13 @@ describe("POST /api/stripe/checkout", () => {
       stripeCustomerId: null,
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -234,10 +271,13 @@ describe("POST /api/stripe/checkout", () => {
     });
     (prisma.subscription.findUnique as Mock).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -258,10 +298,13 @@ describe("POST /api/stripe/checkout", () => {
       status: "ACTIVE",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -278,10 +321,13 @@ describe("POST /api/stripe/checkout", () => {
       stripeCustomerId: "cus_existing",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ mode: "unknown" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ mode: "unknown" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();
@@ -312,7 +358,12 @@ describe("POST /api/stripe/checkout", () => {
         starter: { tokens: 10, price: -1, name: "Starter Pack" }, // Invalid negative price
       },
       SUBSCRIPTION_PLANS: {
-        hobby: { tokensPerMonth: 30, priceGBP: 4.99, maxRollover: 30, name: "Hobby" },
+        hobby: {
+          tokensPerMonth: 30,
+          priceGBP: 4.99,
+          maxRollover: 30,
+          name: "Hobby",
+        },
       },
     }));
 
@@ -325,7 +376,9 @@ describe("POST /api/stripe/checkout", () => {
     vi.doMock("@/lib/prisma", () => ({
       default: {
         user: {
-          findUnique: vi.fn().mockResolvedValue({ stripeCustomerId: "cus_existing" }),
+          findUnique: vi.fn().mockResolvedValue({
+            stripeCustomerId: "cus_existing",
+          }),
           update: vi.fn(),
         },
         subscription: {
@@ -336,12 +389,17 @@ describe("POST /api/stripe/checkout", () => {
 
     const { POST: POSTWithInvalidPackagePrice } = await import("./route");
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POSTWithInvalidPackagePrice(request);
     const data = await response.json();
@@ -349,7 +407,9 @@ describe("POST /api/stripe/checkout", () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe("Invalid package configuration");
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Invalid price configuration for package starter"),
+      expect.stringContaining(
+        "Invalid price configuration for package starter",
+      ),
     );
 
     consoleErrorSpy.mockRestore();
@@ -378,7 +438,12 @@ describe("POST /api/stripe/checkout", () => {
         starter: { tokens: 10, price: 2.99, name: "Starter Pack" },
       },
       SUBSCRIPTION_PLANS: {
-        hobby: { tokensPerMonth: 30, priceGBP: -1, maxRollover: 30, name: "Hobby" }, // Invalid negative price
+        hobby: {
+          tokensPerMonth: 30,
+          priceGBP: -1,
+          maxRollover: 30,
+          name: "Hobby",
+        }, // Invalid negative price
       },
     }));
 
@@ -391,7 +456,9 @@ describe("POST /api/stripe/checkout", () => {
     vi.doMock("@/lib/prisma", () => ({
       default: {
         user: {
-          findUnique: vi.fn().mockResolvedValue({ stripeCustomerId: "cus_existing" }),
+          findUnique: vi.fn().mockResolvedValue({
+            stripeCustomerId: "cus_existing",
+          }),
           update: vi.fn(),
         },
         subscription: {
@@ -402,12 +469,17 @@ describe("POST /api/stripe/checkout", () => {
 
     const { POST: POSTWithInvalidPrice } = await import("./route");
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ planId: "hobby", mode: "subscription" }),
+      },
+    );
 
     const response = await POSTWithInvalidPrice(request);
     const data = await response.json();
@@ -426,14 +498,21 @@ describe("POST /api/stripe/checkout", () => {
       user: { id: "123", email: "test@test.com" },
     });
     // Simulate an error by making prisma.user.findUnique throw
-    (prisma.user.findUnique as Mock).mockRejectedValue(new Error("Database connection failed"));
+    (prisma.user.findUnique as Mock).mockRejectedValue(
+      new Error("Database connection failed"),
+    );
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/stripe/checkout", {
-      method: "POST",
-      body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
+      },
+    );
 
     const response = await POST(request);
     const data = await response.json();

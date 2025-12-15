@@ -1,6 +1,7 @@
 # Spike Land Documentation
 
-Welcome to the Spike Land documentation. This is the central index for all platform documentation.
+Welcome to the Spike Land documentation. This is the central index for all
+platform documentation.
 
 **Website**: [spike.land](https://spike.land)
 
@@ -131,7 +132,8 @@ See [best-practices/](./best-practices/) for development guidelines:
 - [typescript.md](./best-practices/typescript.md) - TypeScript guidelines
 - [react-patterns.md](./best-practices/react-patterns.md) - React best practices
 - [prisma-orm.md](./best-practices/prisma-orm.md) - Database patterns
-- [testing-strategies.md](./best-practices/testing-strategies.md) - Testing approaches
+- [testing-strategies.md](./best-practices/testing-strategies.md) - Testing
+  approaches
 
 ---
 

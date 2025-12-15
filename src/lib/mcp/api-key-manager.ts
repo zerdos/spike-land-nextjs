@@ -42,7 +42,9 @@ export interface ApiKeyValidationResult {
  * @returns Object containing the full key, its hash, and a masked prefix
  */
 function generateApiKey(): { key: string; hash: string; prefix: string; } {
-  const prefix = process.env.NODE_ENV === "production" ? KEY_PREFIX_PROD : KEY_PREFIX_DEV;
+  const prefix = process.env.NODE_ENV === "production"
+    ? KEY_PREFIX_PROD
+    : KEY_PREFIX_DEV;
   const keyBody = randomBytes(32).toString("base64url");
   const fullKey = prefix + keyBody;
   const hash = createHash("sha256").update(fullKey).digest("hex");
@@ -102,8 +104,14 @@ export async function validateApiKey(
   }
 
   // Security: Reject development keys in production environment
-  if (process.env.NODE_ENV === "production" && providedKey.startsWith(KEY_PREFIX_DEV)) {
-    return { isValid: false, error: "Development keys not allowed in production" };
+  if (
+    process.env.NODE_ENV === "production" &&
+    providedKey.startsWith(KEY_PREFIX_DEV)
+  ) {
+    return {
+      isValid: false,
+      error: "Development keys not allowed in production",
+    };
   }
 
   // Hash the provided key

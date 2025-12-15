@@ -5,10 +5,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const cloneBoxSchema = z.object({
-  name: z.string().min(1, "Name is required").max(50, "Name is too long").optional(),
+  name: z.string().min(1, "Name is required").max(50, "Name is too long")
+    .optional(),
 });
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string; }>; }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string; }>; },
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
@@ -38,12 +42,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Lazy import TokenBalanceManager
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     // Cost: Same as new box creation (1 hour of tier price)
     const cost = sourceBox.tier.pricePerHour;
 
-    const hasBalance = await TokenBalanceManager.hasEnoughTokens(session.user.id, cost);
+    const hasBalance = await TokenBalanceManager.hasEnoughTokens(
+      session.user.id,
+      cost,
+    );
     if (!hasBalance) {
       return new NextResponse("Insufficient Tokens", { status: 402 });
     }

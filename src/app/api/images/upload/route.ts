@@ -9,7 +9,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
-  const requestLogger = logger.child({ requestId, route: "/api/images/upload" });
+  const requestLogger = logger.child({
+    requestId,
+    route: "/api/images/upload",
+  });
 
   try {
     requestLogger.info("Upload request received");
@@ -39,7 +42,9 @@ export async function POST(request: NextRequest) {
     if (rateLimitResult.isLimited) {
       requestLogger.warn("Rate limit exceeded", { userId: session.user.id });
       const errorMessage = getUserFriendlyError(new Error("Rate limit"), 429);
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -65,7 +70,10 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       requestLogger.warn("No file provided");
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -97,8 +105,14 @@ export async function POST(request: NextRequest) {
         },
       });
       if (!album) {
-        requestLogger.warn("Invalid album ID", { albumId, userId: session.user.id });
-        const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+        requestLogger.warn("Invalid album ID", {
+          albumId,
+          userId: session.user.id,
+        });
+        const errorMessage = getUserFriendlyError(
+          new Error("Invalid input"),
+          400,
+        );
         return NextResponse.json(
           {
             error: errorMessage.message,
@@ -144,10 +158,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      requestLogger.error("Upload processing failed", new Error(result.error || "Unknown error"), {
-        filename: file.name,
-        userId: session.user.id,
-      });
+      requestLogger.error(
+        "Upload processing failed",
+        new Error(result.error || "Unknown error"),
+        {
+          filename: file.name,
+          userId: session.user.id,
+        },
+      );
       const errorMessage = getUserFriendlyError(
         new Error(result.error || "Upload processing failed"),
         500,

@@ -34,7 +34,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       rateLimitConfigs.albumBatchEnhancement,
     );
     if (rateLimitResult.isLimited) {
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
       return NextResponse.json(
         {
           error: "Rate limit exceeded for batch enhancement",
@@ -241,7 +243,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         // Fire and forget - don't await, let it run in the background
         batchEnhanceImagesDirect(batchInput).catch((error) => {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage = error instanceof Error
+            ? error.message
+            : String(error);
           console.error("Direct album batch enhancement failed:", {
             error: errorMessage,
             albumId,
@@ -262,7 +266,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
 
       return NextResponse.json(
-        { error: "Failed to start enhancement workflow. Tokens have been refunded." },
+        {
+          error: "Failed to start enhancement workflow. Tokens have been refunded.",
+        },
         { status: 500 },
       );
     }
@@ -283,7 +289,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     console.error("Error in album batch enhance API:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Album batch enhancement failed",
+        error: error instanceof Error
+          ? error.message
+          : "Album batch enhancement failed",
       },
       { status: 500 },
     );

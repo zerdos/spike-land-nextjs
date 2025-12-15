@@ -5,7 +5,11 @@ export async function navigateToHome(page: Page, baseUrl: string) {
   await page.waitForLoadState("networkidle");
 }
 
-export async function navigateToPath(page: Page, baseUrl: string, path: string) {
+export async function navigateToPath(
+  page: Page,
+  baseUrl: string,
+  path: string,
+) {
   await page.goto(`${baseUrl}${path}`);
   await page.waitForLoadState("networkidle");
 }
@@ -51,12 +55,18 @@ export async function getCurrentUrl(page: Page): Promise<string> {
   return page.url();
 }
 
-export async function getQueryParam(page: Page, paramName: string): Promise<string | null> {
+export async function getQueryParam(
+  page: Page,
+  paramName: string,
+): Promise<string | null> {
   const url = new URL(page.url());
   return url.searchParams.get(paramName);
 }
 
-export async function waitForNavigation(page: Page, urlPattern?: string | RegExp) {
+export async function waitForNavigation(
+  page: Page,
+  urlPattern?: string | RegExp,
+) {
   if (urlPattern) {
     await page.waitForURL(urlPattern);
   } else {
@@ -74,7 +84,11 @@ export async function verifyUrlEquals(page: Page, expectedUrl: string) {
   expect(currentUrl).toBe(expectedUrl);
 }
 
-export async function verifyQueryParam(page: Page, paramName: string, expectedValue: string) {
+export async function verifyQueryParam(
+  page: Page,
+  paramName: string,
+  expectedValue: string,
+) {
   const actualValue = await getQueryParam(page, paramName);
   expect(actualValue).toBe(expectedValue);
 }

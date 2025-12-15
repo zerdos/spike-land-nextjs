@@ -25,7 +25,9 @@ export async function POST(
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
-    if (job.status !== JobStatus.PENDING && job.status !== JobStatus.PROCESSING) {
+    if (
+      job.status !== JobStatus.PENDING && job.status !== JobStatus.PROCESSING
+    ) {
       return NextResponse.json(
         { error: `Cannot cancel job with status: ${job.status}` },
         { status: 400 },
@@ -77,7 +79,9 @@ export async function POST(
   } catch (error) {
     console.error("Error cancelling job:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to cancel job" },
+      {
+        error: error instanceof Error ? error.message : "Failed to cancel job",
+      },
       { status: 500 },
     );
   }

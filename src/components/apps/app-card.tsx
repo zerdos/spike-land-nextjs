@@ -50,7 +50,12 @@ export function AppCard({
   };
 
   return (
-    <Card className={cn("flex flex-col h-full hover:shadow-lg transition-shadow", className)}>
+    <Card
+      className={cn(
+        "flex flex-col h-full hover:shadow-lg transition-shadow",
+        className,
+      )}
+    >
       <CardHeader>
         {icon && (
           <div className="w-12 h-12 mb-3 flex items-center justify-center">
@@ -58,7 +63,9 @@ export function AppCard({
           </div>
         )}
         <CardTitle className="text-xl">{name}</CardTitle>
-        <CardDescription className="line-clamp-2">{description}</CardDescription>
+        <CardDescription className="line-clamp-2">
+          {description}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow" />
       <CardFooter className="flex gap-2">

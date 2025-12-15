@@ -6,7 +6,13 @@ import { ReferenceImageUpload } from "./ReferenceImageUpload";
 
 // Mock next/image
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown; }) => (
+  default: (
+    { src, alt, ...props }: {
+      src: string;
+      alt: string;
+      [key: string]: unknown;
+    },
+  ) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
@@ -52,14 +58,19 @@ describe("ReferenceImageUpload", () => {
   it("renders with empty state", () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    expect(screen.getByText("Reference Images (Style Guidance)")).toBeInTheDocument();
+    expect(screen.getByText("Reference Images (Style Guidance)"))
+      .toBeInTheDocument();
     expect(screen.getByText("0/3")).toBeInTheDocument();
     expect(screen.getByText("Add reference image")).toBeInTheDocument();
   });
 
   it("displays existing reference images", () => {
     const images: ReferenceImage[] = [
-      { url: "https://example.com/ref1.jpg", r2Key: "key1", description: "Style 1" },
+      {
+        url: "https://example.com/ref1.jpg",
+        r2Key: "key1",
+        description: "Style 1",
+      },
       { url: "https://example.com/ref2.jpg", r2Key: "key2" },
     ];
 
@@ -86,7 +97,8 @@ describe("ReferenceImageUpload", () => {
   it("opens file picker on drop zone click", async () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const dropZone = screen.getByText("Add reference image").closest("div")?.parentElement;
+    const dropZone = screen.getByText("Add reference image").closest("div")
+      ?.parentElement;
     expect(dropZone).toBeInTheDocument();
 
     // The input should be hidden inside the drop zone's parent
@@ -98,7 +110,9 @@ describe("ReferenceImageUpload", () => {
   it("accepts valid file types", async () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     expect(input).toBeInTheDocument();
     expect(input.accept).toBe("image/jpeg,image/png,image/webp");
   });
@@ -106,27 +120,34 @@ describe("ReferenceImageUpload", () => {
   it("shows pending upload after file selection", async () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Description (optional)")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /upload/i })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Description (optional)"))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /upload/i }))
+        .toBeInTheDocument();
     });
   });
 
   it("allows entering description for pending upload", async () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Description (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Description (optional)"))
+        .toBeInTheDocument();
     });
 
     const descInput = screen.getByPlaceholderText("Description (optional)");
@@ -138,20 +159,24 @@ describe("ReferenceImageUpload", () => {
   it("removes pending upload on X click", async () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Description (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Description (optional)"))
+        .toBeInTheDocument();
     });
 
     const removeButton = screen.getByRole("button", { name: "" }); // X button has no text
     await userEvent.click(removeButton);
 
     await waitFor(() => {
-      expect(screen.queryByPlaceholderText("Description (optional)")).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText("Description (optional)")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -171,13 +196,16 @@ describe("ReferenceImageUpload", () => {
 
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /upload/i }))
+        .toBeInTheDocument();
     });
 
     const uploadButton = screen.getByRole("button", { name: /upload/i });
@@ -209,13 +237,16 @@ describe("ReferenceImageUpload", () => {
 
     render(<ReferenceImageUpload {...defaultProps} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /upload/i }))
+        .toBeInTheDocument();
     });
 
     const uploadButton = screen.getByRole("button", { name: /upload/i });
@@ -290,7 +321,9 @@ describe("ReferenceImageUpload", () => {
 
     render(<ReferenceImageUpload {...defaultProps} referenceImages={images} />);
 
-    const input = document.querySelector("input[type='file']") as HTMLInputElement;
+    const input = document.querySelector(
+      "input[type='file']",
+    ) as HTMLInputElement;
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
     await userEvent.upload(input, file);
@@ -304,7 +337,9 @@ describe("ReferenceImageUpload", () => {
     render(<ReferenceImageUpload {...defaultProps} />);
 
     expect(
-      screen.getByText(/Reference images guide the AI to match a specific style/),
+      screen.getByText(
+        /Reference images guide the AI to match a specific style/,
+      ),
     ).toBeInTheDocument();
   });
 });

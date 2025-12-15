@@ -118,11 +118,13 @@ export function EnhancementHistoryGrid({
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {versions.map((version) => {
         const isSelected = selectedVersionId === version.id;
-        const isProcessing = version.status === "PROCESSING" || version.status === "PENDING";
+        const isProcessing = version.status === "PROCESSING" ||
+          version.status === "PENDING";
         const isCompleted = version.status === "COMPLETED";
         const isFailed = version.status === "FAILED";
         const isCancelled = version.status === "CANCELLED";
-        const isDeletable = isCompleted || isFailed || isCancelled || version.status === "REFUNDED";
+        const isDeletable = isCompleted || isFailed || isCancelled ||
+          version.status === "REFUNDED";
 
         return (
           <div
@@ -168,8 +170,16 @@ export function EnhancementHistoryGrid({
                     {version.status === "PENDING"
                       ? <p className="text-xs text-muted-foreground">Queued</p>
                       : version.currentStage
-                      ? <PipelineStageLabel currentStage={version.currentStage} />
-                      : <p className="text-xs text-muted-foreground">Processing</p>}
+                      ? (
+                        <PipelineStageLabel
+                          currentStage={version.currentStage}
+                        />
+                      )
+                      : (
+                        <p className="text-xs text-muted-foreground">
+                          Processing
+                        </p>
+                      )}
                   </div>
                 </div>
               )}

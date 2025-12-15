@@ -94,7 +94,9 @@ export default function AdminPhotosPage() {
     isOpen: boolean;
     userId: string | null;
   }>({ isOpen: false, userId: null });
-  const [userHistoryData, setUserHistoryData] = useState<UserHistoryData | null>(null);
+  const [userHistoryData, setUserHistoryData] = useState<
+    UserHistoryData | null
+  >(null);
   const [userHistoryLoading, setUserHistoryLoading] = useState(false);
   const [userHistoryPage, setUserHistoryPage] = useState(1);
 
@@ -176,7 +178,9 @@ export default function AdminPhotosPage() {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getStatusColor = (status?: string): "default" | "secondary" | "destructive" => {
+  const getStatusColor = (
+    status?: string,
+  ): "default" | "secondary" | "destructive" => {
     switch (status) {
       case "COMPLETED":
         return "default";
@@ -228,7 +232,10 @@ export default function AdminPhotosPage() {
       <Card className="p-6">
         <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <label htmlFor="userSearch" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="userSearch"
+              className="mb-2 block text-sm font-medium"
+            >
               User ID
             </label>
             <input
@@ -241,7 +248,10 @@ export default function AdminPhotosPage() {
             />
           </div>
           <div>
-            <label htmlFor="startDate" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="startDate"
+              className="mb-2 block text-sm font-medium"
+            >
               Start Date
             </label>
             <input
@@ -329,7 +339,9 @@ export default function AdminPhotosPage() {
                       />
                     </div>
                     <div className="p-3">
-                      <p className="truncate text-sm font-medium">{photo.name}</p>
+                      <p className="truncate text-sm font-medium">
+                        {photo.name}
+                      </p>
                       <button
                         type="button"
                         className="mt-1 truncate text-xs text-primary hover:underline"
@@ -377,7 +389,8 @@ export default function AdminPhotosPage() {
                   <Button
                     variant="outline"
                     onClick={() => fetchPhotos(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages || loading}
+                    disabled={pagination.page === pagination.totalPages ||
+                      loading}
                   >
                     Next
                   </Button>
@@ -388,7 +401,10 @@ export default function AdminPhotosPage() {
       </Card>
 
       {/* Photo Details Modal */}
-      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+      <Dialog
+        open={!!selectedPhoto}
+        onOpenChange={() => setSelectedPhoto(null)}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Photo Details</DialogTitle>
@@ -498,7 +514,11 @@ export default function AdminPhotosPage() {
                     {selectedPhoto.latestJobStatus && (
                       <p>
                         <span className="font-medium">Latest Status:</span>{" "}
-                        <Badge variant={getStatusColor(selectedPhoto.latestJobStatus)}>
+                        <Badge
+                          variant={getStatusColor(
+                            selectedPhoto.latestJobStatus,
+                          )}
+                        >
                           {selectedPhoto.latestJobStatus}
                         </Badge>
                       </p>
@@ -580,21 +600,31 @@ export default function AdminPhotosPage() {
                                 <div className="flex items-start justify-between">
                                   <div>
                                     <p className="font-medium">
-                                      {enhancement.image?.name || "Unknown Image"}
+                                      {enhancement.image?.name ||
+                                        "Unknown Image"}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {new Date(enhancement.createdAt).toLocaleString()}
+                                      {new Date(enhancement.createdAt)
+                                        .toLocaleString()}
                                     </p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Badge variant="outline">{enhancement.tier}</Badge>
-                                    <Badge variant={getStatusColor(enhancement.status)}>
+                                    <Badge variant="outline">
+                                      {enhancement.tier}
+                                    </Badge>
+                                    <Badge
+                                      variant={getStatusColor(
+                                        enhancement.status,
+                                      )}
+                                    >
                                       {enhancement.status}
                                     </Badge>
                                   </div>
                                 </div>
                                 <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                                  <span>Cost: {enhancement.tokenCost} tokens</span>
+                                  <span>
+                                    Cost: {enhancement.tokenCost} tokens
+                                  </span>
                                   <span>
                                     Duration: {formatDuration(
                                       enhancement.processingStartedAt,
@@ -612,7 +642,11 @@ export default function AdminPhotosPage() {
                                     variant="link"
                                     size="sm"
                                     className="mt-2 h-auto p-0"
-                                    onClick={() => window.open(enhancement.resultUrl!, "_blank")}
+                                    onClick={() =>
+                                      window.open(
+                                        enhancement.resultUrl!,
+                                        "_blank",
+                                      )}
                                   >
                                     View Enhanced Result
                                   </Button>
@@ -633,7 +667,8 @@ export default function AdminPhotosPage() {
                                   userHistoryModal.userId!,
                                   userHistoryPage - 1,
                                 )}
-                              disabled={userHistoryPage === 1 || userHistoryLoading}
+                              disabled={userHistoryPage === 1 ||
+                                userHistoryLoading}
                             >
                               Previous
                             </Button>
@@ -648,7 +683,8 @@ export default function AdminPhotosPage() {
                                   userHistoryModal.userId!,
                                   userHistoryPage + 1,
                                 )}
-                              disabled={userHistoryPage === userHistoryData.pagination.totalPages ||
+                              disabled={userHistoryPage ===
+                                  userHistoryData.pagination.totalPages ||
                                 userHistoryLoading}
                             >
                               Next

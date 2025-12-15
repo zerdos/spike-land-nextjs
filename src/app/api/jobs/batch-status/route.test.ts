@@ -28,10 +28,13 @@ describe("/api/jobs/batch-status - POST", () => {
   it("returns 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(401);
@@ -44,10 +47,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: {},
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(401);
@@ -60,10 +66,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: "invalid json",
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: "invalid json",
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -76,10 +85,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: "not-an-array" }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: "not-an-array" }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -92,10 +104,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: [] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: [] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -109,10 +124,13 @@ describe("/api/jobs/batch-status - POST", () => {
     } as any);
 
     const tooManyJobIds = Array.from({ length: 51 }, (_, i) => `job-${i}`);
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: tooManyJobIds }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: tooManyJobIds }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -125,10 +143,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", 123, "job-3"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", 123, "job-3"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -141,10 +162,13 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", "", "job-3"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", "", "job-3"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(400);
@@ -160,22 +184,39 @@ describe("/api/jobs/batch-status - POST", () => {
     const mockJobs = [
       { id: "job-1", status: JobStatus.COMPLETED, errorMessage: null },
       { id: "job-2", status: JobStatus.PROCESSING, errorMessage: null },
-      { id: "job-3", status: JobStatus.FAILED, errorMessage: "Enhancement failed" },
+      {
+        id: "job-3",
+        status: JobStatus.FAILED,
+        errorMessage: "Enhancement failed",
+      },
     ];
 
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs as any);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+      mockJobs as any,
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", "job-2", "job-3"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", "job-2", "job-3"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json.jobs).toHaveLength(3);
-    expect(json.jobs[0]).toEqual({ id: "job-1", status: JobStatus.COMPLETED, errorMessage: null });
-    expect(json.jobs[1]).toEqual({ id: "job-2", status: JobStatus.PROCESSING, errorMessage: null });
+    expect(json.jobs[0]).toEqual({
+      id: "job-1",
+      status: JobStatus.COMPLETED,
+      errorMessage: null,
+    });
+    expect(json.jobs[1]).toEqual({
+      id: "job-2",
+      status: JobStatus.PROCESSING,
+      errorMessage: null,
+    });
     expect(json.jobs[2]).toEqual({
       id: "job-3",
       status: JobStatus.FAILED,
@@ -190,10 +231,13 @@ describe("/api/jobs/batch-status - POST", () => {
 
     vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([]);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", "job-2"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", "job-2"] }),
+      },
+    );
     await POST(request);
 
     expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith({
@@ -219,12 +263,17 @@ describe("/api/jobs/batch-status - POST", () => {
       { id: "job-1", status: JobStatus.COMPLETED, errorMessage: null },
     ];
 
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs as any);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+      mockJobs as any,
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", "job-2"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", "job-2"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);
@@ -245,12 +294,17 @@ describe("/api/jobs/batch-status - POST", () => {
       { id: "job-2", status: JobStatus.PROCESSING, errorMessage: null },
     ];
 
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs as any);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+      mockJobs as any,
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1", "job-2", "job-3"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1", "job-2", "job-3"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);
@@ -269,10 +323,13 @@ describe("/api/jobs/batch-status - POST", () => {
 
     vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([]);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["nonexistent-job"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["nonexistent-job"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);
@@ -291,10 +348,13 @@ describe("/api/jobs/batch-status - POST", () => {
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(500);
@@ -316,10 +376,13 @@ describe("/api/jobs/batch-status - POST", () => {
     const maxJobIds = Array.from({ length: 50 }, (_, i) => `job-${i}`);
     vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([]);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: maxJobIds }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: maxJobIds }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);
@@ -336,12 +399,17 @@ describe("/api/jobs/batch-status - POST", () => {
       { id: "job-1", status: JobStatus.COMPLETED, errorMessage: null },
     ];
 
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs as any);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+      mockJobs as any,
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/batch-status", {
-      method: "POST",
-      body: JSON.stringify({ jobIds: ["job-1"] }),
-    });
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/batch-status",
+      {
+        method: "POST",
+        body: JSON.stringify({ jobIds: ["job-1"] }),
+      },
+    );
     const response = await POST(request);
 
     expect(response.status).toBe(200);

@@ -63,7 +63,8 @@ describe("User Analytics API", () => {
     vi.mocked(prisma.session.findMany)
       .mockResolvedValueOnce(Array(50).fill({ userId: "user" }))
       .mockResolvedValueOnce(Array(100).fill({ userId: "user" }));
-    vi.mocked(prisma.user.count).mockResolvedValueOnce(150).mockResolvedValueOnce(10)
+    vi.mocked(prisma.user.count).mockResolvedValueOnce(150)
+      .mockResolvedValueOnce(10)
       .mockResolvedValueOnce(30);
 
     const response = await GET();
@@ -84,7 +85,9 @@ describe("User Analytics API", () => {
       user: { id: "user_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockRejectedValue(
       new Error("Forbidden: Admin access required"),
     );
@@ -101,11 +104,15 @@ describe("User Analytics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Simulate partial failures
-    vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error("Daily registrations DB error"));
+    vi.mocked(prisma.$queryRaw).mockRejectedValue(
+      new Error("Daily registrations DB error"),
+    );
     vi.mocked(prisma.account.groupBy).mockResolvedValue([]);
     vi.mocked(prisma.session.findMany).mockResolvedValue([]);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
@@ -131,15 +138,21 @@ describe("User Analytics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Success for some queries, failure for others
     vi.mocked(prisma.$queryRaw).mockResolvedValue([
       { date: new Date("2025-01-01"), count: BigInt(5) },
     ]);
-    vi.mocked(prisma.account.groupBy).mockRejectedValue(new Error("GroupBy error"));
-    vi.mocked(prisma.session.findMany).mockRejectedValue(new Error("Session error"));
+    vi.mocked(prisma.account.groupBy).mockRejectedValue(
+      new Error("GroupBy error"),
+    );
+    vi.mocked(prisma.session.findMany).mockRejectedValue(
+      new Error("Session error"),
+    );
     vi.mocked(prisma.user.count)
       .mockResolvedValueOnce(100) // totalUsers succeeds
       .mockRejectedValueOnce(new Error("Count error")) // usersLast7Days fails
@@ -171,7 +184,9 @@ describe("User Analytics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Return non-array values (edge case)

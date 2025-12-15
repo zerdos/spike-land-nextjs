@@ -2,11 +2,12 @@ import { JobStatus, McpJobType } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies using vi.hoisted
-const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockGetJob } = vi.hoisted(() => ({
-  mockAuthenticateMcpOrSession: vi.fn(),
-  mockCheckRateLimit: vi.fn(),
-  mockGetJob: vi.fn(),
-}));
+const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockGetJob } = vi
+  .hoisted(() => ({
+    mockAuthenticateMcpOrSession: vi.fn(),
+    mockCheckRateLimit: vi.fn(),
+    mockGetJob: vi.fn(),
+  }));
 
 vi.mock("@/lib/mcp/auth", () => ({
   authenticateMcpOrSession: mockAuthenticateMcpOrSession,
@@ -87,7 +88,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         resetAt: Date.now() + 30000,
       });
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -118,7 +121,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
 
       mockGetJob.mockResolvedValue(mockJob);
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -161,7 +166,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
 
       mockGetJob.mockResolvedValue(mockJob);
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -193,7 +200,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
 
       mockGetJob.mockResolvedValue(mockJob);
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -207,7 +216,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
     it("should return 404 for non-existent job", async () => {
       mockGetJob.mockResolvedValue(null);
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams("nonexistent-job"));
       const body = await response.json();
 
@@ -219,7 +230,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
       // The getJob function returns null if job doesn't belong to user
       mockGetJob.mockResolvedValue(null);
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -235,7 +248,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
     it("should return 500 when getJob throws", async () => {
       mockGetJob.mockRejectedValue(new Error("Database error"));
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request, createRouteParams(testJobId));
       const body = await response.json();
 
@@ -263,7 +278,9 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         processingCompletedAt: mockDate,
       });
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       await GET(request, createRouteParams(testJobId));
 
       // Verify getJob was called with the authenticated user's ID

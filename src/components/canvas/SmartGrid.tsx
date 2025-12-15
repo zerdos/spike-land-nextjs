@@ -76,7 +76,9 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
     );
 
     // Calculate rotation transform
-    const rotationTransform = rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
+    const rotationTransform = rotation !== 0
+      ? `rotate(${rotation}deg)`
+      : undefined;
 
     return (
       <div

@@ -70,7 +70,9 @@ describe("AppScreenshotGallery", () => {
     it("empty state has correct styling", () => {
       const { container } = render(<AppScreenshotGallery screenshots={[]} />);
 
-      const emptyState = container.querySelector(".text-center.py-8.text-muted-foreground");
+      const emptyState = container.querySelector(
+        ".text-center.py-8.text-muted-foreground",
+      );
       expect(emptyState).toBeInTheDocument();
     });
   });
@@ -86,9 +88,13 @@ describe("AppScreenshotGallery", () => {
     });
 
     it("renders with default 3 columns", () => {
-      const { container } = render(<AppScreenshotGallery screenshots={mockScreenshots} />);
+      const { container } = render(
+        <AppScreenshotGallery screenshots={mockScreenshots} />,
+      );
 
-      const grid = container.querySelector(".grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3");
+      const grid = container.querySelector(
+        ".grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3",
+      );
       expect(grid).toBeInTheDocument();
     });
 
@@ -114,7 +120,10 @@ describe("AppScreenshotGallery", () => {
 
     it("applies custom className to gallery container", () => {
       const { container } = render(
-        <AppScreenshotGallery screenshots={mockScreenshots} className="custom-gallery" />,
+        <AppScreenshotGallery
+          screenshots={mockScreenshots}
+          className="custom-gallery"
+        />,
       );
 
       const gallery = container.querySelector(".custom-gallery");
@@ -151,9 +160,13 @@ describe("AppScreenshotGallery", () => {
     });
 
     it("thumbnail buttons have correct accessibility attributes", () => {
-      const { container } = render(<AppScreenshotGallery screenshots={mockScreenshots} />);
+      const { container } = render(
+        <AppScreenshotGallery screenshots={mockScreenshots} />,
+      );
 
-      const thumbnailButtons = container.querySelectorAll("button.group.relative");
+      const thumbnailButtons = container.querySelectorAll(
+        "button.group.relative",
+      );
       thumbnailButtons.forEach((button) => {
         expect(button).toHaveClass("focus:outline-none");
         expect(button).toHaveClass("focus:ring-2");
@@ -166,7 +179,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -182,7 +195,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -197,7 +210,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -213,7 +226,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -227,12 +240,17 @@ describe("AppScreenshotGallery", () => {
     it("does not show navigation buttons for single screenshot", async () => {
       const user = userEvent.setup();
       const singleScreenshot: Screenshot[] = [
-        { id: "1", url: "/test.jpg", alt: "Single", title: "Single Screenshot" },
+        {
+          id: "1",
+          url: "/test.jpg",
+          alt: "Single",
+          title: "Single Screenshot",
+        },
       ];
 
       render(<AppScreenshotGallery screenshots={singleScreenshot} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -241,8 +259,10 @@ describe("AppScreenshotGallery", () => {
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
 
-      const hasNavigationButtons = buttons.some(btn =>
-        btn.querySelector("svg")?.parentElement?.className.includes("absolute") &&
+      const hasNavigationButtons = buttons.some((btn) =>
+        btn.querySelector("svg")?.parentElement?.className.includes(
+          "absolute",
+        ) &&
         btn.querySelector("svg")?.parentElement?.className.includes("top-1/2")
       );
 
@@ -253,7 +273,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -272,7 +292,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -284,7 +304,7 @@ describe("AppScreenshotGallery", () => {
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
-      const nextButton = buttons.find(btn => {
+      const nextButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg");
         return svg?.parentElement?.className.includes("right-2") &&
           svg?.parentElement?.className.includes("top-1/2");
@@ -302,7 +322,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -314,7 +334,7 @@ describe("AppScreenshotGallery", () => {
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
-      const prevButton = buttons.find(btn => {
+      const prevButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg");
         return svg?.parentElement?.className.includes("left-2") &&
           svg?.parentElement?.className.includes("top-1/2");
@@ -332,7 +352,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -344,7 +364,7 @@ describe("AppScreenshotGallery", () => {
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
-      const prevButton = buttons.find(btn => {
+      const prevButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg");
         return svg?.parentElement?.className.includes("left-2") &&
           svg?.parentElement?.className.includes("top-1/2");
@@ -362,7 +382,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -374,7 +394,7 @@ describe("AppScreenshotGallery", () => {
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
-      const nextButton = buttons.find(btn => {
+      const nextButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg");
         return svg?.parentElement?.className.includes("right-2") &&
           svg?.parentElement?.className.includes("top-1/2");
@@ -394,7 +414,7 @@ describe("AppScreenshotGallery", () => {
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
       const images = screen.getAllByRole("img");
-      const thumbnailImages = images.filter(img =>
+      const thumbnailImages = images.filter((img) =>
         img.getAttribute("data-sizes") ===
           "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       );
@@ -409,7 +429,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -417,7 +437,7 @@ describe("AppScreenshotGallery", () => {
 
       await vi.waitFor(() => {
         const images = screen.getAllByRole("img");
-        const priorityImage = images.find(img => img.getAttribute("data-priority") === "true");
+        const priorityImage = images.find((img) => img.getAttribute("data-priority") === "true");
         expect(priorityImage).toBeDefined();
       });
     });
@@ -426,7 +446,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -434,7 +454,7 @@ describe("AppScreenshotGallery", () => {
 
       await vi.waitFor(() => {
         const images = screen.getAllByRole("img");
-        const modalImage = images.find(img => img.getAttribute("data-sizes") === "90vw");
+        const modalImage = images.find((img) => img.getAttribute("data-sizes") === "90vw");
         expect(modalImage).toBeDefined();
       });
     });
@@ -449,7 +469,7 @@ describe("AppScreenshotGallery", () => {
 
       render(<AppScreenshotGallery screenshots={screenshotNoTitle} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -469,7 +489,9 @@ describe("AppScreenshotGallery", () => {
         },
       ];
 
-      const { container } = render(<AppScreenshotGallery screenshots={longTitleScreenshot} />);
+      const { container } = render(
+        <AppScreenshotGallery screenshots={longTitleScreenshot} />,
+      );
 
       const titleElement = container.querySelector(".truncate");
       expect(titleElement).toBeInTheDocument();
@@ -493,7 +515,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -504,7 +526,7 @@ describe("AppScreenshotGallery", () => {
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
-      const nextButton = buttons.find(btn => {
+      const nextButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg");
         return svg?.parentElement?.className.includes("right-2") &&
           svg?.parentElement?.className.includes("top-1/2");
@@ -526,7 +548,9 @@ describe("AppScreenshotGallery", () => {
 
   describe("Accessibility", () => {
     it("thumbnails have proper focus styles", () => {
-      const { container } = render(<AppScreenshotGallery screenshots={mockScreenshots} />);
+      const { container } = render(
+        <AppScreenshotGallery screenshots={mockScreenshots} />,
+      );
 
       const thumbnailButtons = container.querySelectorAll("button.group");
       thumbnailButtons.forEach((button) => {
@@ -549,7 +573,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 
@@ -563,7 +587,7 @@ describe("AppScreenshotGallery", () => {
       const user = userEvent.setup();
       render(<AppScreenshotGallery screenshots={mockScreenshots} />);
 
-      const thumbnailButtons = screen.getAllByRole("button").filter(btn =>
+      const thumbnailButtons = screen.getAllByRole("button").filter((btn) =>
         btn.className.includes("group")
       );
 

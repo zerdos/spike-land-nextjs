@@ -6,7 +6,8 @@ describe("Cookie Policy Page", () => {
   describe("Page Structure", () => {
     it("should render the page title", () => {
       render(<CookiePage />);
-      expect(screen.getByRole("heading", { level: 1, name: /Cookie Policy/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: /Cookie Policy/i }))
+        .toBeInTheDocument();
     });
 
     it("should display the last updated date", () => {
@@ -17,7 +18,8 @@ describe("Cookie Policy Page", () => {
 
     it("should display the legal disclaimer", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/This is a template for informational purposes/)).toBeInTheDocument();
+      expect(screen.getByText(/This is a template for informational purposes/))
+        .toBeInTheDocument();
     });
 
     it("should render the table of contents card", () => {
@@ -43,7 +45,9 @@ describe("Cookie Policy Page", () => {
   describe("What Are Cookies Section", () => {
     it("should explain what cookies are", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/small text files that are stored on your device/))
+      expect(
+        screen.getByText(/small text files that are stored on your device/),
+      )
         .toBeInTheDocument();
     });
 
@@ -51,19 +55,28 @@ describe("Cookie Policy Page", () => {
       render(<CookiePage />);
       expect(screen.getByText(/You visit the Pixel \(Spike Land\)/))
         .toBeInTheDocument();
-      expect(screen.getByText(/When you return to the website, your browser sends the cookie back/))
+      expect(
+        screen.getByText(
+          /When you return to the website, your browser sends the cookie back/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should define session cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Temporary cookies that are deleted when you close your browser/))
+      expect(
+        screen.getByText(
+          /Temporary cookies that are deleted when you close your browser/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should define persistent cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/remain on your device for a set period/)).toBeInTheDocument();
+      expect(screen.getByText(/remain on your device for a set period/))
+        .toBeInTheDocument();
     });
 
     it("should define first-party cookies", () => {
@@ -74,7 +87,11 @@ describe("Cookie Policy Page", () => {
 
     it("should define third-party cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Set by other websites or services embedded in our site/))
+      expect(
+        screen.getByText(
+          /Set by other websites or services embedded in our site/,
+        ),
+      )
         .toBeInTheDocument();
     });
   });
@@ -136,56 +153,72 @@ describe("Cookie Policy Page", () => {
 
     it("should include table note", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Cookie names and durations may vary/)).toBeInTheDocument();
+      expect(screen.getByText(/Cookie names and durations may vary/))
+        .toBeInTheDocument();
     });
   });
 
   describe("Essential Cookies Section", () => {
     it("should explain why essential cookies are needed", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Keeping you logged into your account/)).toBeInTheDocument();
-      expect(screen.getByText(/Protecting against security threats/)).toBeInTheDocument();
+      expect(screen.getByText(/Keeping you logged into your account/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Protecting against security threats/))
+        .toBeInTheDocument();
     });
 
     it("should state essential cookies cannot be disabled", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Essential cookies cannot be disabled/)).toBeInTheDocument();
+      expect(screen.getByText(/Essential cookies cannot be disabled/))
+        .toBeInTheDocument();
     });
 
     it("should explain impact of blocking essential cookies", () => {
       render(<CookiePage />);
       const bodyText = screen.getAllByText(/will not be able to log in/)[0];
       expect(bodyText).toBeInTheDocument();
-      expect(screen.getByText(/authenticate with Google or GitHub/)).toBeInTheDocument();
+      expect(screen.getByText(/authenticate with Google or GitHub/))
+        .toBeInTheDocument();
     });
 
     it("should clarify essential cookies are not for tracking", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/not used for tracking or marketing purposes/)).toBeInTheDocument();
+      expect(screen.getByText(/not used for tracking or marketing purposes/))
+        .toBeInTheDocument();
     });
 
     it("should describe authjs.session-token", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Stores your authentication session/)).toBeInTheDocument();
-      expect(screen.getByText(/NextAuth.js when you log in/)).toBeInTheDocument();
+      expect(screen.getByText(/Stores your authentication session/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/NextAuth.js when you log in/))
+        .toBeInTheDocument();
     });
 
     it("should describe CSRF token details", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Protects against Cross-Site Request Forgery attacks/))
+      expect(
+        screen.getByText(/Protects against Cross-Site Request Forgery attacks/),
+      )
         .toBeInTheDocument();
-      expect(screen.getByText(/Required for secure form submissions/)).toBeInTheDocument();
+      expect(screen.getByText(/Required for secure form submissions/))
+        .toBeInTheDocument();
     });
 
     it("should describe callback URL cookie", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Stores the URL to redirect to after OAuth authentication completes/))
+      expect(
+        screen.getByText(
+          /Stores the URL to redirect to after OAuth authentication completes/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should describe OAuth nonce details", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Security token used in OAuth flows/)).toBeInTheDocument();
+      expect(screen.getByText(/Security token used in OAuth flows/))
+        .toBeInTheDocument();
       expect(screen.getByText(/prevent replay attacks/)).toBeInTheDocument();
     });
   });
@@ -194,7 +227,8 @@ describe("Cookie Policy Page", () => {
     it("should explain what analytics cookies track", () => {
       const { container } = render(<CookiePage />);
       const bodyText = container.textContent;
-      expect(bodyText?.includes("Understand which features are most popular")).toBe(true);
+      expect(bodyText?.includes("Understand which features are most popular"))
+        .toBe(true);
       expect(bodyText?.includes("Identify performance issues")).toBe(true);
       expect(bodyText?.includes("Improve the user experience")).toBe(true);
     });
@@ -202,7 +236,11 @@ describe("Cookie Policy Page", () => {
     it("should explain Vercel Analytics", () => {
       render(<CookiePage />);
       expect(screen.getByText("Vercel Analytics")).toBeInTheDocument();
-      expect(screen.getByText(/Tracks page views, user interactions, and performance metrics/))
+      expect(
+        screen.getByText(
+          /Tracks page views, user interactions, and performance metrics/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -214,34 +252,45 @@ describe("Cookie Policy Page", () => {
 
     it("should state Vercel Analytics does not use cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Vercel Analytics does not use cookies for tracking/))
+      expect(
+        screen.getByText(/Vercel Analytics does not use cookies for tracking/),
+      )
         .toBeInTheDocument();
     });
 
     it("should explain Vercel Speed Insights", () => {
       render(<CookiePage />);
       expect(screen.getByText("Vercel Speed Insights")).toBeInTheDocument();
-      expect(screen.getByText(/Monitors application performance and loading speeds/))
+      expect(
+        screen.getByText(/Monitors application performance and loading speeds/),
+      )
         .toBeInTheDocument();
     });
 
     it("should describe Speed Insights data", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Page load times, Core Web Vitals, performance metrics/))
+      expect(
+        screen.getByText(
+          /Page load times, Core Web Vitals, performance metrics/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should explain how to opt out of analytics", () => {
       const { container } = render(<CookiePage />);
       const bodyText = container.textContent;
-      expect(bodyText?.includes("Block cookies from analytics services")).toBe(true);
+      expect(bodyText?.includes("Block cookies from analytics services")).toBe(
+        true,
+      );
       expect(bodyText?.includes('Set "Do Not Track" preference')).toBe(true);
       expect(bodyText?.includes("Use private/incognito browsing")).toBe(true);
     });
 
     it("should mention browser extensions for privacy", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/uBlock Origin, Privacy Badger, Ghostery/)).toBeInTheDocument();
+      expect(screen.getByText(/uBlock Origin, Privacy Badger, Ghostery/))
+        .toBeInTheDocument();
     });
 
     it("should provide Vercel privacy policy link", () => {
@@ -256,7 +305,11 @@ describe("Cookie Policy Page", () => {
   describe("Third-Party Cookies Section", () => {
     it("should explain third-party cookies purpose", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/external services that are embedded in our application/))
+      expect(
+        screen.getByText(
+          /external services that are embedded in our application/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -264,14 +317,20 @@ describe("Cookie Policy Page", () => {
       const { container } = render(<CookiePage />);
       const bodyText = container.textContent;
       expect(bodyText?.includes("Google OAuth")).toBe(true);
-      expect(bodyText?.includes('When you click "Sign in with Google," Google sets cookies')).toBe(
+      expect(
+        bodyText?.includes(
+          'When you click "Sign in with Google," Google sets cookies',
+        ),
+      ).toBe(
         true,
       );
     });
 
     it("should provide Google Privacy Policy link", () => {
       const { container } = render(<CookiePage />);
-      const googleLink = container.querySelector('a[href="https://policies.google.com/privacy"]');
+      const googleLink = container.querySelector(
+        'a[href="https://policies.google.com/privacy"]',
+      );
       expect(googleLink).toBeInTheDocument();
     });
 
@@ -287,7 +346,11 @@ describe("Cookie Policy Page", () => {
       const { container } = render(<CookiePage />);
       const bodyText = container.textContent;
       expect(bodyText?.includes("GitHub OAuth")).toBe(true);
-      expect(bodyText?.includes('When you click "Sign in with GitHub," GitHub sets cookies')).toBe(
+      expect(
+        bodyText?.includes(
+          'When you click "Sign in with GitHub," GitHub sets cookies',
+        ),
+      ).toBe(
         true,
       );
     });
@@ -302,30 +365,41 @@ describe("Cookie Policy Page", () => {
 
     it("should explain Stripe cookie usage", () => {
       render(<CookiePage />);
-      expect(screen.getByText("Stripe (Payment Processing)")).toBeInTheDocument();
-      expect(screen.getByText(/When you make a payment, Stripe sets cookies/)).toBeInTheDocument();
+      expect(screen.getByText("Stripe (Payment Processing)"))
+        .toBeInTheDocument();
+      expect(screen.getByText(/When you make a payment, Stripe sets cookies/))
+        .toBeInTheDocument();
     });
 
     it("should explain Stripe fraud prevention", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/securely process your transaction and prevent fraud/))
+      expect(
+        screen.getByText(/securely process your transaction and prevent fraud/),
+      )
         .toBeInTheDocument();
     });
 
     it("should clarify we do not store credit cards", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Stripe does not store your credit card information on our servers/))
+      expect(
+        screen.getByText(
+          /Stripe does not store your credit card information on our servers/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should mention Stripe PCI DSS compliance", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Stripe is PCI DSS Level 1 certified/)).toBeInTheDocument();
+      expect(screen.getByText(/Stripe is PCI DSS Level 1 certified/))
+        .toBeInTheDocument();
     });
 
     it("should provide Stripe Privacy Center link", () => {
       const { container } = render(<CookiePage />);
-      const stripeLink = container.querySelector('a[href="https://stripe.com/privacy"]');
+      const stripeLink = container.querySelector(
+        'a[href="https://stripe.com/privacy"]',
+      );
       expect(stripeLink).toBeInTheDocument();
     });
 
@@ -339,8 +413,10 @@ describe("Cookie Policy Page", () => {
 
     it("should explain user control over third-party cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Block cookies from these services/)).toBeInTheDocument();
-      expect(screen.getByText(/Review each service's privacy policy/)).toBeInTheDocument();
+      expect(screen.getByText(/Block cookies from these services/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Review each service's privacy policy/))
+        .toBeInTheDocument();
     });
   });
 
@@ -349,13 +425,17 @@ describe("Cookie Policy Page", () => {
       const { container } = render(<CookiePage />);
       expect(screen.getByText(/Google Chrome/)).toBeInTheDocument();
       const bodyText = container.textContent;
-      expect(bodyText?.includes("Click Menu (three dots) in the top right corner")).toBe(true);
+      expect(
+        bodyText?.includes("Click Menu (three dots) in the top right corner"),
+      ).toBe(true);
     });
 
     it("should provide Firefox instructions", () => {
       render(<CookiePage />);
       expect(screen.getByText(/Firefox/)).toBeInTheDocument();
-      expect(screen.getByText(/Click Menu \(three lines\) in the top right corner/))
+      expect(
+        screen.getByText(/Click Menu \(three lines\) in the top right corner/),
+      )
         .toBeInTheDocument();
     });
 
@@ -371,7 +451,9 @@ describe("Cookie Policy Page", () => {
       const { container } = render(<CookiePage />);
       const bodyText = container.textContent;
       expect(bodyText?.includes("Microsoft Edge")).toBe(true);
-      expect(bodyText?.includes("Click Menu (three dots) in the top right corner")).toBe(true);
+      expect(
+        bodyText?.includes("Click Menu (three dots) in the top right corner"),
+      ).toBe(true);
       expect(bodyText?.includes("Privacy, search, and services")).toBe(true);
     });
 
@@ -381,7 +463,8 @@ describe("Cookie Policy Page", () => {
         .toBeInTheDocument();
       expect(screen.getByText(/Google and GitHub authentication will not work/))
         .toBeInTheDocument();
-      expect(screen.getByText(/Payment processing may be blocked/)).toBeInTheDocument();
+      expect(screen.getByText(/Payment processing may be blocked/))
+        .toBeInTheDocument();
     });
 
     it("should explain how to clear cookies", () => {
@@ -393,14 +476,17 @@ describe("Cookie Policy Page", () => {
 
     it("should warn about clearing cookies side effects", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Clearing cookies will log you out of your account/))
+      expect(
+        screen.getByText(/Clearing cookies will log you out of your account/),
+      )
         .toBeInTheDocument();
     });
 
     it("should explain Do Not Track", () => {
       render(<CookiePage />);
       expect(screen.getByText(/Do Not Track \(DNT\)/)).toBeInTheDocument();
-      expect(screen.getByText(/send a "Do Not Track" signal to websites/)).toBeInTheDocument();
+      expect(screen.getByText(/send a "Do Not Track" signal to websites/))
+        .toBeInTheDocument();
     });
   });
 
@@ -409,46 +495,64 @@ describe("Cookie Policy Page", () => {
       render(<CookiePage />);
       expect(screen.getByText(/A cookie consent banner appears on your screen/))
         .toBeInTheDocument();
-      expect(screen.getByText(/Essential cookies are set immediately/)).toBeInTheDocument();
+      expect(screen.getByText(/Essential cookies are set immediately/))
+        .toBeInTheDocument();
     });
 
     it("should explain Accept All option", () => {
       render(<CookiePage />);
       expect(screen.getByText(/Accept all/)).toBeInTheDocument();
-      expect(screen.getByText(/Accept all cookies, including analytics/)).toBeInTheDocument();
+      expect(screen.getByText(/Accept all cookies, including analytics/))
+        .toBeInTheDocument();
     });
 
     it("should explain Reject Non-Essential option", () => {
       render(<CookiePage />);
       expect(screen.getByText(/Reject Non-Essential/)).toBeInTheDocument();
-      expect(screen.getByText(/Accept only essential cookies/)).toBeInTheDocument();
+      expect(screen.getByText(/Accept only essential cookies/))
+        .toBeInTheDocument();
     });
 
     it("should explain Customize option", () => {
       render(<CookiePage />);
       expect(screen.getByText(/Customize/)).toBeInTheDocument();
-      expect(screen.getByText(/Choose which specific cookie categories to accept or reject/))
+      expect(
+        screen.getByText(
+          /Choose which specific cookie categories to accept or reject/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should mention GDPR Article 7 compliance", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/GDPR Article 7 and the ePrivacy Directive requirements/))
+      expect(
+        screen.getByText(
+          /GDPR Article 7 and the ePrivacy Directive requirements/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should list GDPR consent requirements", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Consent must be freely given/)).toBeInTheDocument();
+      expect(screen.getByText(/Consent must be freely given/))
+        .toBeInTheDocument();
       expect(screen.getByText(/Consent must be specific/)).toBeInTheDocument();
       expect(screen.getByText(/Consent must be informed/)).toBeInTheDocument();
-      expect(screen.getByText(/Consent must be affirmative/)).toBeInTheDocument();
-      expect(screen.getByText(/You can withdraw consent at any time/)).toBeInTheDocument();
+      expect(screen.getByText(/Consent must be affirmative/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/You can withdraw consent at any time/))
+        .toBeInTheDocument();
     });
 
     it("should explain how to change preferences", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Look for a "Cookie Settings" link at the bottom of the page/))
+      expect(
+        screen.getByText(
+          /Look for a "Cookie Settings" link at the bottom of the page/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -459,48 +563,63 @@ describe("Cookie Policy Page", () => {
 
     it("should mention consent for non-EU users", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/apply the same consent standards to all users/)).toBeInTheDocument();
+      expect(screen.getByText(/apply the same consent standards to all users/))
+        .toBeInTheDocument();
     });
   });
 
   describe("Policy Updates Section", () => {
     it("should explain right to modify policy", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/may update this Cookie Policy at any time/)).toBeInTheDocument();
+      expect(screen.getByText(/may update this Cookie Policy at any time/))
+        .toBeInTheDocument();
     });
 
     it("should list reasons for updates", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Changes in our cookie usage practices/)).toBeInTheDocument();
+      expect(screen.getByText(/Changes in our cookie usage practices/))
+        .toBeInTheDocument();
       expect(screen.getByText(/New third-party services/)).toBeInTheDocument();
-      expect(screen.getByText(/Changes to regulations or legal requirements/)).toBeInTheDocument();
+      expect(screen.getByText(/Changes to regulations or legal requirements/))
+        .toBeInTheDocument();
     });
 
     it("should explain notification process", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/update the "Last updated" date/)).toBeInTheDocument();
-      expect(screen.getByText(/post a notice on our website for at least 30 days/))
+      expect(screen.getByText(/update the "Last updated" date/))
         .toBeInTheDocument();
-      expect(screen.getByText(/send an email notification/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/post a notice on our website for at least 30 days/),
+      )
+        .toBeInTheDocument();
+      expect(screen.getByText(/send an email notification/))
+        .toBeInTheDocument();
     });
 
     it("should mention renewed consent for significant changes", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/ask for renewed consent if required by law/)).toBeInTheDocument();
+      expect(screen.getByText(/ask for renewed consent if required by law/))
+        .toBeInTheDocument();
     });
 
     it("should mention version history availability", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/maintain a version history of this policy/)).toBeInTheDocument();
+      expect(screen.getByText(/maintain a version history of this policy/))
+        .toBeInTheDocument();
     });
   });
 
   describe("Contact Section", () => {
     it("should display privacy contact email", () => {
       render(<CookiePage />);
-      const emailLink = screen.getByRole("link", { name: /privacy@\[your-domain\.com\]/ });
+      const emailLink = screen.getByRole("link", {
+        name: /privacy@\[your-domain\.com\]/,
+      });
       expect(emailLink).toBeInTheDocument();
-      expect(emailLink).toHaveAttribute("href", "mailto:privacy@[your-domain.com]");
+      expect(emailLink).toHaveAttribute(
+        "href",
+        "mailto:privacy@[your-domain.com]",
+      );
     });
 
     it("should specify response time", () => {
@@ -510,7 +629,11 @@ describe("Cookie Policy Page", () => {
 
     it("should explain how to change cookie preferences", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/look for the "Cookie Settings" link at the bottom of the page/))
+      expect(
+        screen.getByText(
+          /look for the "Cookie Settings" link at the bottom of the page/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -534,7 +657,8 @@ describe("Cookie Policy Page", () => {
 
     it("should mention EU local authorities", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Your local Data Protection Authority/)).toBeInTheDocument();
+      expect(screen.getByText(/Your local Data Protection Authority/))
+        .toBeInTheDocument();
     });
 
     it("should provide FTC link for US", () => {
@@ -552,17 +676,20 @@ describe("Cookie Policy Page", () => {
 
     it("should state this is a template", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/template for informational purposes only/)).toBeInTheDocument();
+      expect(screen.getByText(/template for informational purposes only/))
+        .toBeInTheDocument();
     });
 
     it("should recommend legal consultation", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/consult with a qualified attorney/)).toBeInTheDocument();
+      expect(screen.getByText(/consult with a qualified attorney/))
+        .toBeInTheDocument();
     });
 
     it("should mention cookie laws complexity", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/cookie laws are complex and evolve frequently/)).toBeInTheDocument();
+      expect(screen.getByText(/cookie laws are complex and evolve frequently/))
+        .toBeInTheDocument();
     });
   });
 
@@ -575,12 +702,18 @@ describe("Cookie Policy Page", () => {
 
     it("should link to all major sections", () => {
       const { container } = render(<CookiePage />);
-      expect(container.querySelector('a[href="#introduction"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#cookies-used"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#essential"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#analytics"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#third-party"]')).toBeInTheDocument();
-      expect(container.querySelector('a[href="#managing-cookies"]')).toBeInTheDocument();
+      expect(container.querySelector('a[href="#introduction"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#cookies-used"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#essential"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#analytics"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#third-party"]'))
+        .toBeInTheDocument();
+      expect(container.querySelector('a[href="#managing-cookies"]'))
+        .toBeInTheDocument();
       expect(container.querySelector('a[href="#consent"]')).toBeInTheDocument();
       expect(container.querySelector('a[href="#updates"]')).toBeInTheDocument();
       expect(container.querySelector('a[href="#contact"]')).toBeInTheDocument();
@@ -608,13 +741,16 @@ describe("Cookie Policy Page", () => {
   describe("Compliance Coverage", () => {
     it("should cover GDPR cookie consent requirements", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/GDPR Article 7 and the ePrivacy Directive/)).toBeInTheDocument();
-      expect(screen.getByText(/Consent must be freely given/)).toBeInTheDocument();
+      expect(screen.getByText(/GDPR Article 7 and the ePrivacy Directive/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/Consent must be freely given/))
+        .toBeInTheDocument();
     });
 
     it("should cover ePrivacy Directive requirements", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/ePrivacy Directive requirements/)).toBeInTheDocument();
+      expect(screen.getByText(/ePrivacy Directive requirements/))
+        .toBeInTheDocument();
     });
 
     it("should explain cookie persistence and duration", () => {
@@ -626,13 +762,16 @@ describe("Cookie Policy Page", () => {
 
     it("should cover user rights to withdraw consent", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/You can change your cookie preferences at any time/))
+      expect(
+        screen.getByText(/You can change your cookie preferences at any time/),
+      )
         .toBeInTheDocument();
     });
 
     it("should cover security and HTTPS considerations", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Secure session token \(HTTPS\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Secure session token \(HTTPS\)/))
+        .toBeInTheDocument();
     });
   });
 
@@ -746,19 +885,25 @@ describe("Cookie Policy Page", () => {
   describe("Privacy and Security Information", () => {
     it("should clarify no credit card storage", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Stripe does not store your credit card information on our servers/))
+      expect(
+        screen.getByText(
+          /Stripe does not store your credit card information on our servers/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should mention PCI DSS compliance", () => {
       render(<CookiePage />);
       expect(screen.getByText(/PCI DSS Level 1 certified/)).toBeInTheDocument();
-      expect(screen.getByText(/highest security standards/)).toBeInTheDocument();
+      expect(screen.getByText(/highest security standards/))
+        .toBeInTheDocument();
     });
 
     it("should explain CSRF protection cookies", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Cross-Site Request Forgery attacks/)).toBeInTheDocument();
+      expect(screen.getByText(/Cross-Site Request Forgery attacks/))
+        .toBeInTheDocument();
       expect(screen.getByText(/secure form submissions/)).toBeInTheDocument();
     });
 
@@ -769,7 +914,8 @@ describe("Cookie Policy Page", () => {
 
     it("should explain approximate location tracking", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/approximate location \(country level\)/)).toBeInTheDocument();
+      expect(screen.getByText(/approximate location \(country level\)/))
+        .toBeInTheDocument();
     });
   });
 
@@ -781,18 +927,24 @@ describe("Cookie Policy Page", () => {
 
     it("should explain choice saving mechanism", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Your choice is saved in your browser/)).toBeInTheDocument();
+      expect(screen.getByText(/Your choice is saved in your browser/))
+        .toBeInTheDocument();
     });
 
     it("should mention 12-month consent expiration", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/Your cookie consent preferences are stored for 12 months/))
+      expect(
+        screen.getByText(
+          /Your cookie consent preferences are stored for 12 months/,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should explain re-confirmation process", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/may ask you to confirm your preferences again/)).toBeInTheDocument();
+      expect(screen.getByText(/may ask you to confirm your preferences again/))
+        .toBeInTheDocument();
     });
   });
 
@@ -805,20 +957,25 @@ describe("Cookie Policy Page", () => {
 
     it("should provide comprehensive legal notice", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/template for informational purposes only/)).toBeInTheDocument();
-      expect(screen.getByText(/cookie laws are complex and evolve frequently/)).toBeInTheDocument();
+      expect(screen.getByText(/template for informational purposes only/))
+        .toBeInTheDocument();
+      expect(screen.getByText(/cookie laws are complex and evolve frequently/))
+        .toBeInTheDocument();
     });
 
     it("should recommend attorney consultation", () => {
       render(<CookiePage />);
       expect(
-        screen.getByText(/qualified attorney who specializes in privacy and data protection law/),
+        screen.getByText(
+          /qualified attorney who specializes in privacy and data protection law/,
+        ),
       ).toBeInTheDocument();
     });
 
     it("should recommend customization", () => {
       render(<CookiePage />);
-      expect(screen.getByText(/customize it for your specific cookie usage/)).toBeInTheDocument();
+      expect(screen.getByText(/customize it for your specific cookie usage/))
+        .toBeInTheDocument();
     });
   });
 });

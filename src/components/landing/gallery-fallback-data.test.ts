@@ -24,7 +24,12 @@ describe("gallery-fallback-data", () => {
     });
 
     it("should have valid categories", () => {
-      const validCategories = ["portrait", "landscape", "product", "architecture"];
+      const validCategories = [
+        "portrait",
+        "landscape",
+        "product",
+        "architecture",
+      ];
       FALLBACK_GALLERY_ITEMS.forEach((item: GalleryItem) => {
         expect(validCategories).toContain(item.category);
       });

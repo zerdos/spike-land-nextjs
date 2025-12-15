@@ -206,7 +206,9 @@ describe("SignInContent", () => {
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
       render(<SignInContent />);
-      const title = screen.getByText("Welcome to Pixel", { selector: ".text-2xl" });
+      const title = screen.getByText("Welcome to Pixel", {
+        selector: ".text-2xl",
+      });
       expect(title).toBeInTheDocument();
       expect(title).toHaveClass("text-2xl");
     });

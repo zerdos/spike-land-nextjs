@@ -129,7 +129,9 @@ describe("BatchEnhance Component", () => {
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     expect(enhanceButton).toBeDisabled();
   });
 
@@ -157,7 +159,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -182,7 +186,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -212,7 +218,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -231,11 +239,15 @@ describe("BatchEnhance Component", () => {
       json: async () => ({ error: "Enhancement service unavailable" }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
-      const errorMessages = screen.getAllByText(/Enhancement service unavailable/i);
+      const errorMessages = screen.getAllByText(
+        /Enhancement service unavailable/i,
+      );
       expect(errorMessages.length).toBeGreaterThan(0);
     }, { timeout: 1000 });
   }, 10000);
@@ -257,7 +269,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -289,7 +303,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -314,7 +330,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -341,7 +359,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -368,7 +388,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -382,7 +404,9 @@ describe("BatchEnhance Component", () => {
   it("should handle no images selected", () => {
     render(<BatchEnhance images={mockImages} currentBalance={50} />);
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 0 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 0 Images/i,
+    });
     expect(enhanceButton).toBeDisabled();
   });
 
@@ -409,7 +433,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -425,7 +451,8 @@ describe("BatchEnhance Component", () => {
     render(<BatchEnhance images={mockImages} currentBalance={50} />);
 
     // Select an image
-    const image1Container = screen.getByText("test1.jpg").closest("div")?.parentElement;
+    const image1Container = screen.getByText("test1.jpg").closest("div")
+      ?.parentElement;
     if (image1Container) {
       fireEvent.click(image1Container);
     }
@@ -472,7 +499,9 @@ describe("BatchEnhance Component", () => {
       ok: false,
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -517,7 +546,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -551,11 +582,17 @@ describe("BatchEnhance Component", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        jobs: [{ id: "job-1", status: "FAILED", errorMessage: "Processing failed" }],
+        jobs: [{
+          id: "job-1",
+          status: "FAILED",
+          errorMessage: "Processing failed",
+        }],
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -601,7 +638,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should keep showing enhancing while processing
@@ -640,7 +679,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Wait for completion
@@ -683,7 +724,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Wait for completion
@@ -721,7 +764,9 @@ describe("BatchEnhance Component", () => {
       json: async () => ({}),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -738,9 +783,13 @@ describe("BatchEnhance Component", () => {
     fireEvent.click(selectAllButton);
 
     // Mock fetch throwing a non-Error object
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce("Network failure");
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      "Network failure",
+    );
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -766,7 +815,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -808,7 +859,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -833,7 +886,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should be in pending state since no results were returned
@@ -873,7 +928,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should show various statuses
@@ -897,7 +954,9 @@ describe("BatchEnhance Component", () => {
     render(<BatchEnhance images={mockImages} currentBalance={50} />);
 
     // Do not select any images
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 0 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 0 Images/i,
+    });
     expect(enhanceButton).toBeDisabled();
 
     // Try to click anyway
@@ -946,7 +1005,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -980,7 +1041,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should complete without error even without callback
@@ -1011,7 +1074,9 @@ describe("BatchEnhance Component", () => {
       new Error("Network error"),
     );
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -1057,7 +1122,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should still be enhancing after empty jobs response
@@ -1075,7 +1142,9 @@ describe("BatchEnhance Component", () => {
     fireEvent.click(selectAllButton);
 
     // Button should be disabled
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 3 Images/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 3 Images/i,
+    });
     expect(enhanceButton).toBeDisabled();
 
     // Try to click anyway
@@ -1111,7 +1180,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -1153,7 +1224,9 @@ describe("BatchEnhance Component", () => {
       }),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -1176,7 +1249,9 @@ describe("BatchEnhance Component", () => {
       json: async () => ({}),
     });
 
-    const enhanceButton = screen.getByRole("button", { name: /Enhance 1 Image/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Enhance 1 Image/i,
+    });
     fireEvent.click(enhanceButton);
 
     // Should be in pending state since no results were returned

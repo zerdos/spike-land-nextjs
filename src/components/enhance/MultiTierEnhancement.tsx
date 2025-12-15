@@ -62,11 +62,16 @@ export function MultiTierEnhancement({
   disabled = false,
   className,
 }: MultiTierEnhancementProps) {
-  const [selectedTiers, setSelectedTiers] = useState<Set<EnhancementTier>>(new Set());
+  const [selectedTiers, setSelectedTiers] = useState<Set<EnhancementTier>>(
+    new Set(),
+  );
   const [isProcessing, setIsProcessing] = useState(false);
 
   const totalCost = calculateTotalCost(Array.from(selectedTiers));
-  const hasEnoughTokens = canAffordTiers(Array.from(selectedTiers), userBalance);
+  const hasEnoughTokens = canAffordTiers(
+    Array.from(selectedTiers),
+    userBalance,
+  );
   const hasSelectedTiers = selectedTiers.size > 0;
 
   /**
@@ -157,7 +162,9 @@ export function MultiTierEnhancement({
           // Check if all jobs are complete
           const allStatuses = Array.from(jobStatuses.values());
           const allComplete = allStatuses.every(
-            (s) => s.status === "COMPLETED" || s.status === "FAILED" || s.status === "CANCELLED",
+            (s) =>
+              s.status === "COMPLETED" || s.status === "FAILED" ||
+              s.status === "CANCELLED",
           );
 
           if (allComplete || attempts >= maxAttempts) {
@@ -165,7 +172,10 @@ export function MultiTierEnhancement({
             setSelectedTiers(new Set());
             onEnhancementComplete?.(allStatuses);
           } else {
-            currentInterval = Math.min(currentInterval * backoffMultiplier, maxInterval);
+            currentInterval = Math.min(
+              currentInterval * backoffMultiplier,
+              maxInterval,
+            );
             setTimeout(poll, currentInterval);
           }
         } catch (error) {
@@ -263,16 +273,23 @@ export function MultiTierEnhancement({
     <Card className={cn(className)}>
       <CardHeader>
         <CardTitle>Select Enhancement Tiers</CardTitle>
-        <CardDescription>Choose one or more tiers to enhance in parallel</CardDescription>
+        <CardDescription>
+          Choose one or more tiers to enhance in parallel
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Tier Selection Checkboxes */}
-        <div className="space-y-3" role="group" aria-label="Enhancement tier selection">
+        <div
+          className="space-y-3"
+          role="group"
+          aria-label="Enhancement tier selection"
+        >
           {ALL_TIERS.map((tier) => {
             const info = TIER_INFO[tier];
             const isSelected = selectedTiers.has(tier);
             const isAffordable = canAffordTier(tier);
-            const isDisabled = disabled || isProcessing || (!isSelected && !isAffordable);
+            const isDisabled = disabled || isProcessing ||
+              (!isSelected && !isAffordable);
 
             return (
               <div
@@ -294,7 +311,10 @@ export function MultiTierEnhancement({
                   />
                   <Label
                     htmlFor={`tier-${tier}`}
-                    className={cn("cursor-pointer", isDisabled && "cursor-not-allowed")}
+                    className={cn(
+                      "cursor-pointer",
+                      isDisabled && "cursor-not-allowed",
+                    )}
                   >
                     <span className="font-medium">
                       {info.name} ({info.resolution})
@@ -307,7 +327,9 @@ export function MultiTierEnhancement({
                     </span>
                   </Label>
                 </div>
-                <span className="text-sm font-medium whitespace-nowrap">{info.cost} tokens</span>
+                <span className="text-sm font-medium whitespace-nowrap">
+                  {info.cost} tokens
+                </span>
               </div>
             );
           })}
@@ -351,7 +373,8 @@ export function MultiTierEnhancement({
         {/* Enhance Button */}
         <Button
           onClick={handleEnhance}
-          disabled={disabled || isProcessing || !hasSelectedTiers || !hasEnoughTokens}
+          disabled={disabled || isProcessing || !hasSelectedTiers ||
+            !hasEnoughTokens}
           className="w-full"
           size="lg"
         >

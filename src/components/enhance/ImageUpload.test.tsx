@@ -39,7 +39,9 @@ describe("ImageUpload Component", () => {
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -59,7 +61,9 @@ describe("ImageUpload Component", () => {
 
     const file1 = new File(["test1"], "test1.png", { type: "image/png" });
     const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file1, file2],
@@ -74,11 +78,15 @@ describe("ImageUpload Component", () => {
   });
 
   it("should show error when onFilesSelected throws", async () => {
-    const mockOnFilesSelected = vi.fn().mockRejectedValue(new Error("Upload failed"));
+    const mockOnFilesSelected = vi.fn().mockRejectedValue(
+      new Error("Upload failed"),
+    );
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -96,7 +104,9 @@ describe("ImageUpload Component", () => {
     const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [],
@@ -113,21 +123,27 @@ describe("ImageUpload Component", () => {
   it("should disable input during upload", () => {
     render(<ImageUpload isUploading={true} />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(input).toBeDisabled();
   });
 
   it("should have multiple attribute on file input", () => {
     render(<ImageUpload />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(input).toHaveAttribute("multiple");
   });
 
   it("should accept image files", () => {
     render(<ImageUpload />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(input).toHaveAttribute("accept", "image/*");
   });
 
@@ -138,7 +154,9 @@ describe("ImageUpload Component", () => {
 
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     // First upload - trigger error
     const file1 = new File(["test1"], "test1.png", { type: "image/png" });
@@ -190,7 +208,9 @@ describe("ImageUpload Component", () => {
 
   it("should call onFilesSelected when files are dropped", async () => {
     const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
-    const { container } = render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+    const { container } = render(
+      <ImageUpload onFilesSelected={mockOnFilesSelected} />,
+    );
     const card = container.querySelector(".border-dashed");
 
     const file = new File(["test"], "test.png", { type: "image/png" });
@@ -208,7 +228,9 @@ describe("ImageUpload Component", () => {
   it("should trigger file input when button is clicked", () => {
     render(<ImageUpload />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     const clickSpy = vi.spyOn(input, "click");
 
     const button = screen.getByRole("button");
@@ -221,7 +243,9 @@ describe("ImageUpload Component", () => {
     render(<ImageUpload />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -242,7 +266,9 @@ describe("ImageUpload Component", () => {
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: [file],
@@ -260,7 +286,9 @@ describe("ImageUpload Component", () => {
     const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     Object.defineProperty(input, "files", {
       value: null,
@@ -276,7 +304,9 @@ describe("ImageUpload Component", () => {
 
   it("should not call onFilesSelected when drop has null files", async () => {
     const mockOnFilesSelected = vi.fn().mockResolvedValue(undefined);
-    const { container } = render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
+    const { container } = render(
+      <ImageUpload onFilesSelected={mockOnFilesSelected} />,
+    );
     const card = container.querySelector(".border-dashed");
 
     const dataTransfer = {
@@ -295,7 +325,9 @@ describe("ImageUpload Component", () => {
     render(<ImageUpload onFilesSelected={mockOnFilesSelected} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     // Set initial value to simulate a file selection
     Object.defineProperty(input, "value", {

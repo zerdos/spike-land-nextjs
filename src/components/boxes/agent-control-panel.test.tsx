@@ -292,7 +292,9 @@ describe("AgentControlPanel", () => {
 
     render(<AgentControlPanel box={mockBox} />);
 
-    const restartButton = screen.getByRole("button", { name: /restart agent/i });
+    const restartButton = screen.getByRole("button", {
+      name: /restart agent/i,
+    });
     fireEvent.click(restartButton);
 
     expect(toast.info).toHaveBeenCalledWith("Restarting agent...");
@@ -353,7 +355,9 @@ describe("AgentControlPanel", () => {
 
   it("handles messages without the messages prop", () => {
     const { messages: _messages, ...boxWithoutMessagesProp } = mockBox;
-    render(<AgentControlPanel box={boxWithoutMessagesProp as typeof mockBox} />);
+    render(
+      <AgentControlPanel box={boxWithoutMessagesProp as typeof mockBox} />,
+    );
 
     expect(screen.getByText("Chat")).toBeInTheDocument();
   });
@@ -439,7 +443,9 @@ describe("AgentControlPanel", () => {
     const debugButton = screen.getByRole("button", { name: /debug agent/i });
     fireEvent.click(debugButton);
 
-    expect(toast.info).toHaveBeenCalledWith("Debug mode is not yet implemented");
+    expect(toast.info).toHaveBeenCalledWith(
+      "Debug mode is not yet implemented",
+    );
   });
 
   it("auto-scrolls to bottom when messages change", async () => {
@@ -484,7 +490,10 @@ describe("AgentControlPanel", () => {
 
   it("displays default status color for unknown status", () => {
     // Test with an unknown status value to cover the default case
-    const unknownStatusBox = { ...mockBox, status: "UNKNOWN_STATUS" as BoxStatus };
+    const unknownStatusBox = {
+      ...mockBox,
+      status: "UNKNOWN_STATUS" as BoxStatus,
+    };
     render(<AgentControlPanel box={unknownStatusBox} />);
 
     const statusIndicator = screen.getByText("UNKNOWN_STATUS").previousSibling;
@@ -493,7 +502,10 @@ describe("AgentControlPanel", () => {
 
   it("displays default badge variant for unknown status", () => {
     // Test with an unknown status value to cover the default case in getStatusBadgeVariant
-    const unknownStatusBox = { ...mockBox, status: "UNKNOWN_STATUS" as BoxStatus };
+    const unknownStatusBox = {
+      ...mockBox,
+      status: "UNKNOWN_STATUS" as BoxStatus,
+    };
     render(<AgentControlPanel box={unknownStatusBox} />);
 
     // The badge should use "outline" variant for unknown status

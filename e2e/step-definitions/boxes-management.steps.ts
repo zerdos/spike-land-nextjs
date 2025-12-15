@@ -16,7 +16,9 @@ function getBoxesPage(world: CustomWorld): BoxesPage {
 declare module "../support/world" {
   interface CustomWorld {
     boxesPage?: BoxesPage;
-    createdBoxes?: Array<{ id: string; name: string; tier: string; status: string; }>;
+    createdBoxes?: Array<
+      { id: string; name: string; tier: string; status: string; }
+    >;
     serverErrorMode?: boolean;
   }
 }
@@ -28,18 +30,21 @@ Given("I have no boxes created", async function(this: CustomWorld) {
   this.createdBoxes = [];
 });
 
-Given("I have created a box named {string}", async function(this: CustomWorld, boxName: string) {
-  const boxesPage = getBoxesPage(this);
-  const boxData = {
-    id: `box-${Date.now()}`,
-    name: boxName,
-    tier: "Standard",
-    status: "Stopped",
-  };
-  await boxesPage.seedBox(boxData);
-  this.createdBoxes = this.createdBoxes || [];
-  this.createdBoxes.push(boxData);
-});
+Given(
+  "I have created a box named {string}",
+  async function(this: CustomWorld, boxName: string) {
+    const boxesPage = getBoxesPage(this);
+    const boxData = {
+      id: `box-${Date.now()}`,
+      name: boxName,
+      tier: "Standard",
+      status: "Stopped",
+    };
+    await boxesPage.seedBox(boxData);
+    this.createdBoxes = this.createdBoxes || [];
+    this.createdBoxes.push(boxData);
+  },
+);
 
 Given(
   "I have created a {string} box named {string}",
@@ -61,8 +66,18 @@ Given("I have created multiple boxes", async function(this: CustomWorld) {
   const boxesPage = getBoxesPage(this);
   const boxes = [
     { id: "box-1", name: "Test Agent 1", tier: "Standard", status: "Stopped" },
-    { id: "box-2", name: "Test Agent 2", tier: "Professional", status: "Running" },
-    { id: "box-3", name: "Production Agent", tier: "Enterprise", status: "Stopped" },
+    {
+      id: "box-2",
+      name: "Test Agent 2",
+      tier: "Professional",
+      status: "Running",
+    },
+    {
+      id: "box-3",
+      name: "Production Agent",
+      tier: "Enterprise",
+      status: "Stopped",
+    },
   ];
   for (const box of boxes) {
     await boxesPage.seedBox(box);
@@ -70,18 +85,26 @@ Given("I have created multiple boxes", async function(this: CustomWorld) {
   this.createdBoxes = boxes;
 });
 
-Given("I have boxes with different statuses", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  const boxes = [
-    { id: "box-1", name: "Running Box", tier: "Standard", status: "Running" },
-    { id: "box-2", name: "Stopped Box", tier: "Standard", status: "Stopped" },
-    { id: "box-3", name: "Starting Box", tier: "Standard", status: "Starting" },
-  ];
-  for (const box of boxes) {
-    await boxesPage.seedBox(box);
-  }
-  this.createdBoxes = boxes;
-});
+Given(
+  "I have boxes with different statuses",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    const boxes = [
+      { id: "box-1", name: "Running Box", tier: "Standard", status: "Running" },
+      { id: "box-2", name: "Stopped Box", tier: "Standard", status: "Stopped" },
+      {
+        id: "box-3",
+        name: "Starting Box",
+        tier: "Standard",
+        status: "Starting",
+      },
+    ];
+    for (const box of boxes) {
+      await boxesPage.seedBox(box);
+    }
+    this.createdBoxes = boxes;
+  },
+);
 
 Given("the server will return an error", async function(this: CustomWorld) {
   this.serverErrorMode = true;
@@ -117,27 +140,36 @@ When(
 );
 
 // Tier selection steps
-Then("I should see the tier selection cards", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  const tierCards = await boxesPage.getTierSelectionCards();
-  await expect(tierCards).toHaveCount(3, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the tier selection cards",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    const tierCards = await boxesPage.getTierSelectionCards();
+    await expect(tierCards).toHaveCount(3, { timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("I should see the {string} tier card", async function(this: CustomWorld, tierName: string) {
-  const boxesPage = getBoxesPage(this);
-  const tierCard = await boxesPage.getTierCard(tierName);
-  await expect(tierCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the {string} tier card",
+  async function(this: CustomWorld, tierName: string) {
+    const boxesPage = getBoxesPage(this);
+    const tierCard = await boxesPage.getTierCard(tierName);
+    await expect(tierCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("each tier card should display pricing information", async function(this: CustomWorld) {
-  const tierCards = this.page.locator('[data-testid="tier-card"]');
-  const count = await tierCards.count();
-  for (let i = 0; i < count; i++) {
-    const card = tierCards.nth(i);
-    const priceElement = card.locator('[data-testid="tier-price"], .price');
-    await expect(priceElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  }
-});
+Then(
+  "each tier card should display pricing information",
+  async function(this: CustomWorld) {
+    const tierCards = this.page.locator('[data-testid="tier-card"]');
+    const count = await tierCards.count();
+    for (let i = 0; i < count; i++) {
+      const card = tierCards.nth(i);
+      const priceElement = card.locator('[data-testid="tier-price"], .price');
+      await expect(priceElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    }
+  },
+);
 
 Then(
   "the {string} tier should be highlighted",
@@ -147,11 +179,14 @@ Then(
   },
 );
 
-Then("I should see the box configuration form", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  const form = await boxesPage.getBoxConfigurationForm();
-  await expect(form).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the box configuration form",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    const form = await boxesPage.getBoxConfigurationForm();
+    await expect(form).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Then(
   "the {string} input field should be visible",
@@ -177,15 +212,21 @@ Then(
 );
 
 // Box list verification steps
-Then("I should see the empty state message for boxes", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  await boxesPage.verifyEmptyState();
-});
+Then(
+  "I should see the empty state message for boxes",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    await boxesPage.verifyEmptyState();
+  },
+);
 
-Then("I should see {string} in the boxes list", async function(this: CustomWorld, boxName: string) {
-  const boxesPage = getBoxesPage(this);
-  await boxesPage.verifyBoxInList(boxName);
-});
+Then(
+  "I should see {string} in the boxes list",
+  async function(this: CustomWorld, boxName: string) {
+    const boxesPage = getBoxesPage(this);
+    await boxesPage.verifyBoxInList(boxName);
+  },
+);
 
 Then(
   "I should not see {string} in the boxes list",
@@ -195,14 +236,19 @@ Then(
   },
 );
 
-Then("I should see the box status indicator", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  const statusIndicator = await boxesPage.getStatusIndicator();
-  await expect(statusIndicator).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the box status indicator",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    const statusIndicator = await boxesPage.getStatusIndicator();
+    await expect(statusIndicator).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Then("I should see the box tier badge", async function(this: CustomWorld) {
-  const tierBadge = this.page.locator('[data-testid="tier-badge"], .tier-badge');
+  const tierBadge = this.page.locator(
+    '[data-testid="tier-badge"], .tier-badge',
+  );
   await expect(tierBadge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
@@ -216,7 +262,9 @@ Then("I should see the box control panel", async function(this: CustomWorld) {
 Then(
   "I should see the {string} button appear",
   async function(this: CustomWorld, buttonName: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonName, "i"),
+    });
     await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
@@ -236,33 +284,49 @@ Then("I should see the connection URL", async function(this: CustomWorld) {
   await expect(connectionUrl).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
-Then("I should see the authentication token", async function(this: CustomWorld) {
-  const boxesPage = getBoxesPage(this);
-  const authToken = await boxesPage.getAuthToken();
-  await expect(authToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the authentication token",
+  async function(this: CustomWorld) {
+    const boxesPage = getBoxesPage(this);
+    const authToken = await boxesPage.getAuthToken();
+    await expect(authToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 // Delete box steps
-Then("I should see the delete confirmation dialog", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
-  await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the delete confirmation dialog",
+  async function(this: CustomWorld) {
+    const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 When("I confirm the deletion", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", { name: /Confirm|Delete|Yes/i });
+  const confirmButton = this.page.getByRole("button", {
+    name: /Confirm|Delete|Yes/i,
+  });
   await confirmButton.click();
   await waitForPageLoad(this.page);
 });
 
-Then("I should still be on the box detail page", async function(this: CustomWorld) {
-  await expect(this.page).toHaveURL(/\/boxes\/[^/]+$/, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should still be on the box detail page",
+  async function(this: CustomWorld) {
+    await expect(this.page).toHaveURL(/\/boxes\/[^/]+$/, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
 // Settings steps
-When("I change the box name to {string}", async function(this: CustomWorld, newName: string) {
-  const boxesPage = getBoxesPage(this);
-  await boxesPage.changeBoxName(newName);
-});
+When(
+  "I change the box name to {string}",
+  async function(this: CustomWorld, newName: string) {
+    const boxesPage = getBoxesPage(this);
+    await boxesPage.changeBoxName(newName);
+  },
+);
 
 // NOTE: "I click the {string} tab" is defined in common.steps.ts
 
@@ -276,16 +340,21 @@ Then("I should see the tier upgrade modal", async function(this: CustomWorld) {
 Then(
   "I should see the {string} upgrade option",
   async function(this: CustomWorld, tierName: string) {
-    const option = this.page.locator('[data-testid="upgrade-option"]', { hasText: tierName });
+    const option = this.page.locator('[data-testid="upgrade-option"]', {
+      hasText: tierName,
+    });
     await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 // Search and filter steps
-When("I type {string} in the search box", async function(this: CustomWorld, query: string) {
-  const boxesPage = getBoxesPage(this);
-  await boxesPage.searchBoxes(query);
-});
+When(
+  "I type {string} in the search box",
+  async function(this: CustomWorld, query: string) {
+    const boxesPage = getBoxesPage(this);
+    await boxesPage.searchBoxes(query);
+  },
+);
 
 Then(
   "I should only see boxes containing {string} in the name",
@@ -305,16 +374,25 @@ Then(
     const boxCards = this.page.locator('[data-testid="box-card"]');
     const count = await boxCards.count();
     for (let i = 0; i < count; i++) {
-      const statusElement = boxCards.nth(i).locator('[data-testid="box-status"]');
-      await expect(statusElement).toContainText(status, { timeout: TIMEOUTS.DEFAULT });
+      const statusElement = boxCards.nth(i).locator(
+        '[data-testid="box-status"]',
+      );
+      await expect(statusElement).toContainText(status, {
+        timeout: TIMEOUTS.DEFAULT,
+      });
     }
   },
 );
 
 // Error handling steps
-Then("I should remain on the creation page", async function(this: CustomWorld) {
-  await expect(this.page).toHaveURL(/\/boxes\/new/, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should remain on the creation page",
+  async function(this: CustomWorld) {
+    await expect(this.page).toHaveURL(/\/boxes\/new/, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
 // NOTE: "I should see {string} text" is defined in authentication.steps.ts
 

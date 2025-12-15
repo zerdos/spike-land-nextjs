@@ -5,7 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 // Mock PixelLogo component
 vi.mock("@/components/brand", () => ({
   PixelLogo: (
-    { size, variant, showText }: { size?: string; variant?: string; showText?: boolean; },
+    { size, variant, showText }: {
+      size?: string;
+      variant?: string;
+      showText?: boolean;
+    },
   ) => (
     <div
       data-testid="pixel-logo"
@@ -38,27 +42,33 @@ describe("StorybookPage", () => {
   describe("rendering", () => {
     it("should render the page title", () => {
       render(<StorybookPage />);
-      expect(screen.getByRole("heading", { name: /design system/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /design system/i }))
+        .toBeInTheDocument();
     });
 
     it("should render the page description", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel brand guidelines & component library/i)).toBeInTheDocument();
+      expect(screen.getByText(/pixel brand guidelines & component library/i))
+        .toBeInTheDocument();
     });
 
     it("should render all tab triggers", () => {
       render(<StorybookPage />);
       expect(screen.getByRole("tab", { name: /brand/i })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /colors/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /typography/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /typography/i }))
+        .toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /buttons/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /components/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /components/i }))
+        .toBeInTheDocument();
     });
 
     it("should render footer content", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel design system v1\.0/i)).toBeInTheDocument();
-      expect(screen.getByText(/part of the spike land platform/i)).toBeInTheDocument();
+      expect(screen.getByText(/pixel design system v1\.0/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/part of the spike land platform/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -70,22 +80,26 @@ describe("StorybookPage", () => {
 
     it("should render logo sizes section", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/available logo sizes for different contexts/i)).toBeInTheDocument();
+      expect(screen.getByText(/available logo sizes for different contexts/i))
+        .toBeInTheDocument();
     });
 
     it("should render logo variants section", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/different layout options for the logo/i)).toBeInTheDocument();
+      expect(screen.getByText(/different layout options for the logo/i))
+        .toBeInTheDocument();
     });
 
     it("should render complete matrix section", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/all size and variant combinations/i)).toBeInTheDocument();
+      expect(screen.getByText(/all size and variant combinations/i))
+        .toBeInTheDocument();
     });
 
     it("should render icon only section", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/icon only \(showtext=false\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/icon only \(showtext=false\)/i))
+        .toBeInTheDocument();
     });
 
     it("should render PixelLogo components", () => {
@@ -101,7 +115,11 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /colors/i }));
       await waitFor(() => {
-        expect(screen.getByText(/brand colors optimized for both light and dark modes/i))
+        expect(
+          screen.getByText(
+            /brand colors optimized for both light and dark modes/i,
+          ),
+        )
           .toBeInTheDocument();
       });
     });
@@ -111,7 +129,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /colors/i }));
       await waitFor(() => {
-        expect(screen.getByText(/primary brand accent colors/i)).toBeInTheDocument();
+        expect(screen.getByText(/primary brand accent colors/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -158,7 +177,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /typography/i }));
       await waitFor(() => {
-        expect(screen.getByText(/font families and text styles/i)).toBeInTheDocument();
+        expect(screen.getByText(/font families and text styles/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -167,7 +187,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /typography/i }));
       await waitFor(() => {
-        expect(screen.getByText(/montserrat for headers, geist for body/i)).toBeInTheDocument();
+        expect(screen.getByText(/montserrat for headers, geist for body/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -176,7 +197,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /typography/i }));
       await waitFor(() => {
-        expect(screen.getByText(/all headings use montserrat font/i)).toBeInTheDocument();
+        expect(screen.getByText(/all headings use montserrat font/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -185,7 +207,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /typography/i }));
       await waitFor(() => {
-        expect(screen.getByText(/semantic text color classes/i)).toBeInTheDocument();
+        expect(screen.getByText(/semantic text color classes/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -210,7 +233,11 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /buttons/i }));
       await waitFor(() => {
-        expect(screen.getByText(/interactive button components with various styles/i))
+        expect(
+          screen.getByText(
+            /interactive button components with various styles/i,
+          ),
+        )
           .toBeInTheDocument();
       });
     });
@@ -220,7 +247,9 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /buttons/i }));
       await waitFor(() => {
-        expect(screen.getByText(/different button styles for various contexts/i))
+        expect(
+          screen.getByText(/different button styles for various contexts/i),
+        )
           .toBeInTheDocument();
       });
     });
@@ -239,7 +268,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /buttons/i }));
       await waitFor(() => {
-        expect(screen.getByText(/button interaction states/i)).toBeInTheDocument();
+        expect(screen.getByText(/button interaction states/i))
+          .toBeInTheDocument();
       });
     });
   });
@@ -250,7 +280,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /components/i }));
       await waitFor(() => {
-        expect(screen.getByText(/ui component library showcase/i)).toBeInTheDocument();
+        expect(screen.getByText(/ui component library showcase/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -259,7 +290,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /components/i }));
       await waitFor(() => {
-        expect(screen.getByText(/container components with glass-morphism/i)).toBeInTheDocument();
+        expect(screen.getByText(/container components with glass-morphism/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -268,7 +300,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /components/i }));
       await waitFor(() => {
-        expect(screen.getByText(/small status indicators/i)).toBeInTheDocument();
+        expect(screen.getByText(/small status indicators/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -277,7 +310,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /components/i }));
       await waitFor(() => {
-        expect(screen.getByText(/input fields and form controls/i)).toBeInTheDocument();
+        expect(screen.getByText(/input fields and form controls/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -286,7 +320,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /components/i }));
       await waitFor(() => {
-        expect(screen.getByText(/visual dividers for content sections/i)).toBeInTheDocument();
+        expect(screen.getByText(/visual dividers for content sections/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -307,7 +342,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /modals/i }));
       await waitFor(() => {
-        expect(screen.getByText(/dialog, sheet, and alert dialog components/i)).toBeInTheDocument();
+        expect(screen.getByText(/dialog, sheet, and alert dialog components/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -316,9 +352,12 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /modals/i }));
       await waitFor(() => {
-        expect(screen.getByText(/enhancement settings dialog/i)).toBeInTheDocument();
+        expect(screen.getByText(/enhancement settings dialog/i))
+          .toBeInTheDocument();
         expect(
-          screen.getByText(/modal dialog with card-based tier selection for image enhancement/i),
+          screen.getByText(
+            /modal dialog with card-based tier selection for image enhancement/i,
+          ),
         ).toBeInTheDocument();
       });
     });
@@ -328,7 +367,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /modals/i }));
       await waitFor(() => {
-        expect(screen.getByTestId("enhancement-settings-mock")).toBeInTheDocument();
+        expect(screen.getByTestId("enhancement-settings-mock"))
+          .toBeInTheDocument();
       });
     });
 
@@ -337,7 +377,8 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       await user.click(screen.getByRole("tab", { name: /modals/i }));
       await waitFor(() => {
-        expect(screen.getByText(/slide-out panel for navigation or settings/i)).toBeInTheDocument();
+        expect(screen.getByText(/slide-out panel for navigation or settings/i))
+          .toBeInTheDocument();
       });
     });
 

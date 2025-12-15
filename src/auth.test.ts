@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockUpsert = vi.fn().mockResolvedValue({ id: "user_123" });
 const mockFindUnique = vi.fn().mockResolvedValue(null);
 const mockUserCount = vi.fn().mockResolvedValue(0);
-const mockUserUpdate = vi.fn().mockResolvedValue({ id: "user_123", role: "ADMIN" });
+const mockUserUpdate = vi.fn().mockResolvedValue({
+  id: "user_123",
+  role: "ADMIN",
+});
 const mockAlbumCreate = vi.fn().mockResolvedValue({ id: "album_123" });
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -220,7 +223,10 @@ describe("handleSignIn", () => {
 
     // Should still return true to allow sign-in
     expect(result).toBe(true);
-    expect(consoleSpy).toHaveBeenCalledWith("Failed to upsert user with stable ID:", dbError);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to upsert user with stable ID:",
+      dbError,
+    );
 
     consoleSpy.mockRestore();
   });
@@ -247,7 +253,9 @@ describe("handleSignIn", () => {
 
   it("should assign referral code to new users", async () => {
     const { handleSignIn } = await import("./auth");
-    const { assignReferralCodeToUser } = await import("@/lib/referral/code-generator");
+    const { assignReferralCodeToUser } = await import(
+      "@/lib/referral/code-generator"
+    );
 
     mockFindUnique.mockResolvedValueOnce(null); // No existing user
     const user = { email: "newuser@example.com", name: "New User" };
@@ -271,10 +279,15 @@ describe("handleSignIn", () => {
 
   it("should not process referrals for existing users", async () => {
     const { handleSignIn } = await import("./auth");
-    const { assignReferralCodeToUser } = await import("@/lib/referral/code-generator");
+    const { assignReferralCodeToUser } = await import(
+      "@/lib/referral/code-generator"
+    );
     const { linkReferralOnSignup } = await import("@/lib/referral/tracker");
 
-    mockFindUnique.mockResolvedValueOnce({ id: "user_123", email: "existing@example.com" });
+    mockFindUnique.mockResolvedValueOnce({
+      id: "user_123",
+      email: "existing@example.com",
+    });
     const user = { email: "existing@example.com" };
 
     await handleSignIn(user);
@@ -285,8 +298,12 @@ describe("handleSignIn", () => {
 
   it("should grant referral rewards for new users with valid referrals", async () => {
     const { handleSignIn } = await import("./auth");
-    const { validateReferralAfterVerification } = await import("@/lib/referral/fraud-detection");
-    const { completeReferralAndGrantRewards } = await import("@/lib/referral/rewards");
+    const { validateReferralAfterVerification } = await import(
+      "@/lib/referral/fraud-detection"
+    );
+    const { completeReferralAndGrantRewards } = await import(
+      "@/lib/referral/rewards"
+    );
 
     vi.mocked(validateReferralAfterVerification).mockResolvedValueOnce({
       success: true,
@@ -304,8 +321,12 @@ describe("handleSignIn", () => {
 
   it("should not grant rewards if fraud checks fail", async () => {
     const { handleSignIn } = await import("./auth");
-    const { validateReferralAfterVerification } = await import("@/lib/referral/fraud-detection");
-    const { completeReferralAndGrantRewards } = await import("@/lib/referral/rewards");
+    const { validateReferralAfterVerification } = await import(
+      "@/lib/referral/fraud-detection"
+    );
+    const { completeReferralAndGrantRewards } = await import(
+      "@/lib/referral/rewards"
+    );
 
     vi.mocked(validateReferralAfterVerification).mockResolvedValueOnce({
       success: true,
@@ -323,10 +344,14 @@ describe("handleSignIn", () => {
 
   it("should handle referral errors gracefully without blocking sign-in", async () => {
     const { handleSignIn } = await import("./auth");
-    const { assignReferralCodeToUser } = await import("@/lib/referral/code-generator");
+    const { assignReferralCodeToUser } = await import(
+      "@/lib/referral/code-generator"
+    );
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    vi.mocked(assignReferralCodeToUser).mockRejectedValueOnce(new Error("Referral code error"));
+    vi.mocked(assignReferralCodeToUser).mockRejectedValueOnce(
+      new Error("Referral code error"),
+    );
 
     mockFindUnique.mockResolvedValueOnce(null);
     const user = { email: "newuser@example.com" };
@@ -334,7 +359,10 @@ describe("handleSignIn", () => {
     const result = await handleSignIn(user);
 
     expect(result).toBe(true); // Should still allow sign-in
-    expect(consoleSpy).toHaveBeenCalledWith("Failed to assign referral code:", expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to assign referral code:",
+      expect.any(Error),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -381,7 +409,9 @@ describe("signIn callback behavior", () => {
 
   it("should verify OAuth handleSignIn triggers referral processing for new users", async () => {
     const { handleSignIn } = await import("./auth");
-    const { assignReferralCodeToUser } = await import("@/lib/referral/code-generator");
+    const { assignReferralCodeToUser } = await import(
+      "@/lib/referral/code-generator"
+    );
 
     mockFindUnique.mockResolvedValueOnce(null); // New user
 

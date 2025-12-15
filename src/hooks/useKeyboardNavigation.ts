@@ -105,7 +105,15 @@ export function useKeyboardNavigation(
           break;
       }
     },
-    [onSpacebar, onLeftArrow, onRightArrow, onUpArrow, onDownArrow, onBKeyDown, onEscape],
+    [
+      onSpacebar,
+      onLeftArrow,
+      onRightArrow,
+      onUpArrow,
+      onDownArrow,
+      onBKeyDown,
+      onEscape,
+    ],
   );
 
   const handleKeyUp = useCallback(

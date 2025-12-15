@@ -71,25 +71,72 @@ function EnhancementSettingsDemo() {
 
 const colorPalette = {
   brand: [
-    { name: "Pixel Cyan", var: "--pixel-cyan", hex: "#00E5FF", desc: "Primary accent" },
+    {
+      name: "Pixel Cyan",
+      var: "--pixel-cyan",
+      hex: "#00E5FF",
+      desc: "Primary accent",
+    },
   ],
   dark: [
-    { name: "Deep Space", var: "--background", hex: "#08081C", desc: "Dark background" },
-    { name: "Surface Blue", var: "--card", hex: "#151530", desc: "Dark cards/surfaces" },
-    { name: "Text Muted", var: "--muted-foreground", hex: "#A0A0C0", desc: "Secondary text" },
+    {
+      name: "Deep Space",
+      var: "--background",
+      hex: "#08081C",
+      desc: "Dark background",
+    },
+    {
+      name: "Surface Blue",
+      var: "--card",
+      hex: "#151530",
+      desc: "Dark cards/surfaces",
+    },
+    {
+      name: "Text Muted",
+      var: "--muted-foreground",
+      hex: "#A0A0C0",
+      desc: "Secondary text",
+    },
     { name: "Border", var: "--border", hex: "#2A2A4A", desc: "Dark borders" },
   ],
   light: [
-    { name: "Clean White", var: "--background", hex: "#FFFFFF", desc: "Light background" },
-    { name: "Light Surface", var: "--card", hex: "#F4F6F8", desc: "Light cards" },
-    { name: "Carbon Text", var: "--foreground", hex: "#12121C", desc: "Primary text" },
-    { name: "Grid Grey", var: "--border", hex: "#DCE0E8", desc: "Light borders" },
+    {
+      name: "Clean White",
+      var: "--background",
+      hex: "#FFFFFF",
+      desc: "Light background",
+    },
+    {
+      name: "Light Surface",
+      var: "--card",
+      hex: "#F4F6F8",
+      desc: "Light cards",
+    },
+    {
+      name: "Carbon Text",
+      var: "--foreground",
+      hex: "#12121C",
+      desc: "Primary text",
+    },
+    {
+      name: "Grid Grey",
+      var: "--border",
+      hex: "#DCE0E8",
+      desc: "Light borders",
+    },
   ],
 };
 
 const logoSizes = ["sm", "md", "lg", "xl"] as const;
 const logoVariants = ["icon", "horizontal", "stacked"] as const;
-const buttonVariants = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
+const buttonVariants = [
+  "default",
+  "secondary",
+  "outline",
+  "ghost",
+  "destructive",
+  "link",
+] as const;
 const buttonSizes = ["sm", "default", "lg", "icon"] as const;
 
 function ColorSwatch({
@@ -153,7 +200,9 @@ export default function StorybookPage() {
         {/* Header */}
         <div className="mb-12">
           <div className="mb-6">
-            <h1 className="text-4xl font-bold font-heading mb-2">Design System</h1>
+            <h1 className="text-4xl font-bold font-heading mb-2">
+              Design System
+            </h1>
             <p className="text-muted-foreground text-lg">
               Pixel Brand Guidelines & Component Library
             </p>
@@ -183,12 +232,17 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Sizes</CardTitle>
-                  <CardDescription>Available logo sizes for different contexts</CardDescription>
+                  <CardDescription>
+                    Available logo sizes for different contexts
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap items-end gap-8">
                     {logoSizes.map((size) => (
-                      <div key={size} className="flex flex-col items-center gap-2">
+                      <div
+                        key={size}
+                        className="flex flex-col items-center gap-2"
+                      >
                         <PixelLogo size={size} />
                         <Badge variant="outline">{size}</Badge>
                       </div>
@@ -201,7 +255,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Variants</CardTitle>
-                  <CardDescription>Different layout options for the logo</CardDescription>
+                  <CardDescription>
+                    Different layout options for the logo
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -222,7 +278,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Complete Matrix</CardTitle>
-                  <CardDescription>All size and variant combinations</CardDescription>
+                  <CardDescription>
+                    All size and variant combinations
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -247,7 +305,10 @@ export default function StorybookPage() {
                           <tr key={size} className="border-t border-border">
                             <td className="p-2 text-sm font-medium">{size}</td>
                             {logoVariants.map((variant) => (
-                              <td key={`${size}-${variant}`} className="p-4 text-center">
+                              <td
+                                key={`${size}-${variant}`}
+                                className="p-4 text-center"
+                              >
                                 <div className="inline-flex justify-center">
                                   <PixelLogo size={size} variant={variant} />
                                 </div>
@@ -265,12 +326,17 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Icon Only (showText=false)</CardTitle>
-                  <CardDescription>Logo without wordmark for compact spaces</CardDescription>
+                  <CardDescription>
+                    Logo without wordmark for compact spaces
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap items-center gap-6">
                     {logoSizes.map((size) => (
-                      <div key={size} className="flex flex-col items-center gap-2">
+                      <div
+                        key={size}
+                        className="flex flex-col items-center gap-2"
+                      >
                         <PixelLogo size={size} showText={false} />
                         <Badge variant="outline">{size}</Badge>
                       </div>
@@ -309,7 +375,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Dark Mode Palette</CardTitle>
-                  <CardDescription>Colors optimized for dark backgrounds</CardDescription>
+                  <CardDescription>
+                    Colors optimized for dark backgrounds
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -322,7 +390,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Light Mode Palette</CardTitle>
-                  <CardDescription>Colors optimized for light backgrounds</CardDescription>
+                  <CardDescription>
+                    Colors optimized for light backgrounds
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -335,12 +405,16 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Glow Effects</CardTitle>
-                  <CardDescription>Cyan glow utilities for emphasis</CardDescription>
+                  <CardDescription>
+                    Cyan glow utilities for emphasis
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-6 items-center">
                     <div className="w-24 h-24 rounded-xl bg-primary shadow-glow-cyan flex items-center justify-center">
-                      <span className="text-primary-foreground font-bold text-xs">glow-cyan</span>
+                      <span className="text-primary-foreground font-bold text-xs">
+                        glow-cyan
+                      </span>
                     </div>
                     <div className="w-24 h-24 rounded-xl bg-primary shadow-glow-cyan-sm flex items-center justify-center">
                       <span className="text-primary-foreground font-bold text-xs">
@@ -368,7 +442,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Font Families</CardTitle>
-                  <CardDescription>Montserrat for headers, Geist for body</CardDescription>
+                  <CardDescription>
+                    Montserrat for headers, Geist for body
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
@@ -404,7 +480,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Heading Scale</CardTitle>
-                  <CardDescription>All headings use Montserrat font</CardDescription>
+                  <CardDescription>
+                    All headings use Montserrat font
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-1">
@@ -441,10 +519,18 @@ export default function StorybookPage() {
                   <CardDescription>Semantic text color classes</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-foreground">text-foreground - Primary text</p>
-                  <p className="text-muted-foreground">text-muted-foreground - Secondary text</p>
-                  <p className="text-primary">text-primary - Accent/link text</p>
-                  <p className="text-destructive">text-destructive - Error text</p>
+                  <p className="text-foreground">
+                    text-foreground - Primary text
+                  </p>
+                  <p className="text-muted-foreground">
+                    text-muted-foreground - Secondary text
+                  </p>
+                  <p className="text-primary">
+                    text-primary - Accent/link text
+                  </p>
+                  <p className="text-destructive">
+                    text-destructive - Error text
+                  </p>
                 </CardContent>
               </Card>
             </Section>
@@ -460,7 +546,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Variants</CardTitle>
-                  <CardDescription>Different button styles for various contexts</CardDescription>
+                  <CardDescription>
+                    Different button styles for various contexts
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-4">
@@ -482,7 +570,10 @@ export default function StorybookPage() {
                 <CardContent>
                   <div className="flex flex-wrap items-center gap-4">
                     {buttonSizes.map((size) => (
-                      <div key={size} className="flex flex-col items-center gap-2">
+                      <div
+                        key={size}
+                        className="flex flex-col items-center gap-2"
+                      >
                         <Button size={size}>
                           {size === "icon" ? "+" : size}
                         </Button>
@@ -512,7 +603,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Complete Matrix</CardTitle>
-                  <CardDescription>All variant and size combinations</CardDescription>
+                  <CardDescription>
+                    All variant and size combinations
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -522,7 +615,9 @@ export default function StorybookPage() {
                           <th className="text-left p-2 text-sm font-medium text-muted-foreground">
                             Variant / Size
                           </th>
-                          {buttonSizes.filter(s => s !== "icon").map((size) => (
+                          {buttonSizes.filter((s) => s !== "icon").map((
+                            size,
+                          ) => (
                             <th
                               key={size}
                               className="text-center p-2 text-sm font-medium text-muted-foreground"
@@ -535,11 +630,18 @@ export default function StorybookPage() {
                       <tbody>
                         {buttonVariants.map((variant) => (
                           <tr key={variant} className="border-t border-border">
-                            <td className="p-2 text-sm font-medium">{variant}</td>
-                            {buttonSizes.filter(s =>
+                            <td className="p-2 text-sm font-medium">
+                              {variant}
+                            </td>
+                            {buttonSizes.filter((s) =>
                               s !== "icon"
-                            ).map((size) => (
-                              <td key={`${variant}-${size}`} className="p-3 text-center">
+                            ).map((
+                              size,
+                            ) => (
+                              <td
+                                key={`${variant}-${size}`}
+                                className="p-3 text-center"
+                              >
                                 <Button variant={variant} size={size}>
                                   Button
                                 </Button>
@@ -620,15 +722,23 @@ export default function StorybookPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-success border border-success">
                       <p className="text-success font-medium">Success State</p>
-                      <p className="text-sm text-muted-foreground">bg-success, border-success</p>
+                      <p className="text-sm text-muted-foreground">
+                        bg-success, border-success
+                      </p>
                     </div>
                     <div className="p-4 rounded-lg bg-warning border border-warning">
                       <p className="text-warning font-medium">Warning State</p>
-                      <p className="text-sm text-muted-foreground">bg-warning, border-warning</p>
+                      <p className="text-sm text-muted-foreground">
+                        bg-warning, border-warning
+                      </p>
                     </div>
                     <div className="p-4 rounded-lg bg-destructive/10 border border-destructive">
-                      <p className="text-destructive font-medium">Error State</p>
-                      <p className="text-sm text-muted-foreground">bg-destructive/10</p>
+                      <p className="text-destructive font-medium">
+                        Error State
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        bg-destructive/10
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -646,11 +756,15 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Skeleton Loaders</CardTitle>
-                  <CardDescription>Placeholder components for loading states</CardDescription>
+                  <CardDescription>
+                    Placeholder components for loading states
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Default Skeleton</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      Default Skeleton
+                    </Label>
                     <div className="flex items-center space-x-4">
                       <Skeleton className="h-12 w-12 rounded-full" />
                       <div className="space-y-2">
@@ -661,9 +775,14 @@ export default function StorybookPage() {
                   </div>
                   <Separator />
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Shimmer Variant</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      Shimmer Variant
+                    </Label>
                     <div className="flex items-center space-x-4">
-                      <Skeleton variant="shimmer" className="h-12 w-12 rounded-full" />
+                      <Skeleton
+                        variant="shimmer"
+                        className="h-12 w-12 rounded-full"
+                      />
                       <div className="space-y-2">
                         <Skeleton variant="shimmer" className="h-4 w-[250px]" />
                         <Skeleton variant="shimmer" className="h-4 w-[200px]" />
@@ -672,12 +791,17 @@ export default function StorybookPage() {
                   </div>
                   <Separator />
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Card Skeleton</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      Card Skeleton
+                    </Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[1, 2, 3].map((i) => (
                         <Card key={i}>
                           <CardContent className="pt-6 space-y-3">
-                            <Skeleton variant="shimmer" className="h-32 w-full rounded-lg" />
+                            <Skeleton
+                              variant="shimmer"
+                              className="h-32 w-full rounded-lg"
+                            />
                             <Skeleton variant="shimmer" className="h-4 w-3/4" />
                             <Skeleton variant="shimmer" className="h-4 w-1/2" />
                           </CardContent>
@@ -692,7 +816,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Progress Bars</CardTitle>
-                  <CardDescription>Progress indicators with optional glow effect</CardDescription>
+                  <CardDescription>
+                    Progress indicators with optional glow effect
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
@@ -723,21 +849,29 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Spinners & Animations</CardTitle>
-                  <CardDescription>Loading indicators and pulse animations</CardDescription>
+                  <CardDescription>
+                    Loading indicators and pulse animations
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-8 items-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Spinner</span>
+                      <span className="text-xs text-muted-foreground">
+                        Spinner
+                      </span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-12 h-12 rounded-full bg-primary animate-pulse-cyan" />
-                      <span className="text-xs text-muted-foreground">Pulse Cyan</span>
+                      <span className="text-xs text-muted-foreground">
+                        Pulse Cyan
+                      </span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-12 h-12 rounded-full bg-primary animate-pulse" />
-                      <span className="text-xs text-muted-foreground">Pulse</span>
+                      <span className="text-xs text-muted-foreground">
+                        Pulse
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -768,7 +902,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Sheet</CardTitle>
-                  <CardDescription>Slide-out panel for navigation or settings</CardDescription>
+                  <CardDescription>
+                    Slide-out panel for navigation or settings
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-4">
@@ -779,7 +915,9 @@ export default function StorybookPage() {
                       <SheetContent>
                         <SheetHeader>
                           <SheetTitle>Settings</SheetTitle>
-                          <SheetDescription>Manage your account settings.</SheetDescription>
+                          <SheetDescription>
+                            Manage your account settings.
+                          </SheetDescription>
                         </SheetHeader>
                         <div className="py-6 space-y-4">
                           <div className="flex items-center justify-between">
@@ -801,7 +939,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Alert Dialog</CardTitle>
-                  <CardDescription>Confirmation dialog for destructive actions</CardDescription>
+                  <CardDescription>
+                    Confirmation dialog for destructive actions
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <AlertDialog>
@@ -837,14 +977,18 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Cards</CardTitle>
-                  <CardDescription>Container components with glass-morphism</CardDescription>
+                  <CardDescription>
+                    Container components with glass-morphism
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card>
                       <CardHeader>
                         <CardTitle>Default Card</CardTitle>
-                        <CardDescription>Standard card component</CardDescription>
+                        <CardDescription>
+                          Standard card component
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-muted-foreground">
@@ -898,7 +1042,9 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Form Elements</CardTitle>
-                  <CardDescription>Input fields and form controls</CardDescription>
+                  <CardDescription>
+                    Input fields and form controls
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -908,7 +1054,11 @@ export default function StorybookPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="input-disabled">Disabled Input</Label>
-                      <Input id="input-disabled" placeholder="Disabled" disabled />
+                      <Input
+                        id="input-disabled"
+                        placeholder="Disabled"
+                        disabled
+                      />
                     </div>
                   </div>
                   <Separator />
@@ -949,7 +1099,9 @@ export default function StorybookPage() {
                   </div>
                   <Separator />
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium">Select / Dropdown</Label>
+                    <Label className="text-sm font-medium">
+                      Select / Dropdown
+                    </Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Select>
                         <SelectTrigger>
@@ -983,12 +1135,18 @@ export default function StorybookPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Separators</CardTitle>
-                  <CardDescription>Visual dividers for content sections</CardDescription>
+                  <CardDescription>
+                    Visual dividers for content sections
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">Content above separator</p>
+                  <p className="text-sm text-muted-foreground">
+                    Content above separator
+                  </p>
                   <Separator />
-                  <p className="text-sm text-muted-foreground">Content below separator</p>
+                  <p className="text-sm text-muted-foreground">
+                    Content below separator
+                  </p>
                 </CardContent>
               </Card>
             </Section>
