@@ -62,7 +62,7 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: false, // In CI, run all tests to get full report\
+    failFast: false, // In CI, run all tests to get full report
     retry: 1, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @requires-db", // Skip db-dependent tests (no seeded test data in CI)
     timeout: 10000, // 30 second timeout for CI
