@@ -51,19 +51,18 @@ function getLuminance(r: number, g: number, b: number): number {
   const [rs, gs, bs] = [r, g, b].map((c) => {
     const sRGB = c / 255;
     return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
-  });
+  }) as [number, number, number];
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number; } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16),
-    }
-    : null;
+  if (!result || !result[1] || !result[2] || !result[3]) return null;
+  return {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16),
+  };
 }
 
 function getContrastRatio(hex1: string, hex2: string): number {
@@ -233,10 +232,38 @@ const colorPalette = {
       name: "Pixel Cyan",
       var: "--pixel-cyan",
       hex: "#00E5FF",
-      desc: "Primary accent",
+      desc: "Primary brand accent colors",
+      role: "Primary",
+      contrastPass: true,
+    },
+    {
+      name: "Pixel Fuchsia",
+      var: "--pixel-fuchsia",
+      hex: "#FF00FF",
+      desc: "Secondary accent",
+      role: "Secondary",
+      contrastPass: true,
     },
   ],
   dark: [
+    {
+      name: "Surface Blue",
+      var: "--surface-blue",
+      hex: "#112244",
+      desc: "Card backgrounds",
+    },
+    {
+      name: "Border",
+      var: "--border-dark",
+      hex: "#221144",
+      desc: "Primary borders",
+    },
+    {
+      name: "Border Item",
+      var: "--border-item",
+      hex: "#222244",
+      desc: "Item borders",
+    },
     {
       name: "Deep Space",
       var: "--background",
@@ -244,18 +271,11 @@ const colorPalette = {
       desc: "Dark background",
     },
     {
-      name: "Surface Blue",
-      var: "--card",
-      hex: "#151530",
-      desc: "Dark cards/surfaces",
-    },
-    {
       name: "Text Muted",
       var: "--muted-foreground",
       hex: "#A0A0C0",
       desc: "Secondary text",
     },
-    { name: "Border", var: "--border", hex: "#2A2A4A", desc: "Dark borders" },
   ],
   light: [
     {
@@ -301,21 +321,35 @@ function ColorSwatch({
   name,
   hex,
   desc,
+  role,
+  contrastPass,
 }: {
   name: string;
   hex: string;
   desc: string;
+  role?: string;
+  contrastPass?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+    <div className="flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-border hover:bg-muted/50 transition-colors">
       <div
-        className="w-12 h-12 rounded-lg border border-border shadow-sm flex-shrink-0"
+        className="w-16 h-16 rounded-xl border border-border shadow-sm flex-shrink-0"
         style={{ backgroundColor: hex }}
       />
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm">{name}</div>
-        <div className="text-xs text-muted-foreground font-mono">{hex}</div>
-        <div className="text-xs text-muted-foreground">{desc}</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-base">{name}</span>
+          {role && <Badge variant="secondary" className="text-xs">{role}</Badge>}
+        </div>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <span className="text-sm text-muted-foreground font-mono">{hex}</span>
+          {contrastPass && (
+            <Badge variant="outline" className="text-xs border-green-500 text-green-500">
+              Contrast Pass (AA)
+            </Badge>
+          )}
+        </div>
+        <div className="text-sm text-muted-foreground mt-1">{desc}</div>
       </div>
     </div>
   );
@@ -353,15 +387,15 @@ export default function StorybookPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-[#08081C] via-[#0c1020] to-[#08081C]">
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-12">
           <div className="mb-6">
-            <h1 className="text-4xl font-bold font-heading mb-2">
+            <h1 className="text-5xl md:text-6xl font-bold font-heading mb-3 tracking-tight">
               Design System
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-xl md:text-2xl">
               Pixel Brand Guidelines & Component Library
             </p>
           </div>
@@ -431,15 +465,18 @@ export default function StorybookPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {logoVariants.map((variant) => (
-                      <div
-                        key={variant}
-                        className="flex flex-col items-center gap-4 p-6 rounded-lg border border-border"
-                      >
-                        <PixelLogo size="lg" variant={variant} />
-                        <Badge variant="outline">{variant}</Badge>
-                      </div>
-                    ))}
+                    <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-[#112244] border border-[#221144]">
+                      <PixelLogo size="lg" variant="icon" />
+                      <Badge variant="outline">icon</Badge>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-gradient-to-r from-[#112244] to-[#221144] border border-[#2a2a4a]">
+                      <PixelLogo size="lg" variant="horizontal" />
+                      <Badge variant="outline">horizontal</Badge>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-[#112244] border border-[#FF00FF]/20">
+                      <PixelLogo size="lg" variant="stacked" />
+                      <Badge variant="outline">stacked</Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -471,7 +508,7 @@ export default function StorybookPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {logoSizes.map((size) => (
+                        {logoSizes.map((size, sizeIndex) => (
                           <tr key={size} className="border-t border-border">
                             <td className="p-2 text-sm font-medium">{size}</td>
                             {logoVariants.map((variant) => (
@@ -479,7 +516,14 @@ export default function StorybookPage() {
                                 key={`${size}-${variant}`}
                                 className="p-4 text-center"
                               >
-                                <div className="inline-flex justify-center">
+                                <div
+                                  className="inline-flex justify-center p-4 rounded-xl"
+                                  style={{
+                                    background: `linear-gradient(180deg, rgba(0, 229, 255, ${
+                                      0.03 + sizeIndex * 0.04
+                                    }) 0%, rgba(255, 0, 255, ${0.03 + sizeIndex * 0.04}) 100%)`,
+                                  }}
+                                >
                                   <PixelLogo size={size} variant={variant} />
                                 </div>
                               </td>
@@ -533,10 +577,13 @@ export default function StorybookPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {colorPalette.brand.map((color) => <ColorSwatch key={color.name} {...color} />)}
                   </div>
-                  <div className="mt-6 p-4 rounded-lg bg-[#00E5FF] flex items-center justify-center">
-                    <span className="font-bold text-[#08081C]">
-                      Pixel Cyan with Dark Text
-                    </span>
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg bg-[#00E5FF] flex items-center justify-center">
+                      <span className="font-bold text-[#08081C]">Pixel Cyan</span>
+                    </div>
+                    <div className="p-4 rounded-lg bg-[#FF00FF] flex items-center justify-center">
+                      <span className="font-bold text-white">Pixel Fuchsia</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -580,21 +627,36 @@ export default function StorybookPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-6 items-center">
-                    <div className="w-24 h-24 rounded-xl bg-primary shadow-glow-cyan flex items-center justify-center">
-                      <span className="text-primary-foreground font-bold text-xs">
-                        glow-cyan
-                      </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Button with glow */}
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground">Primary Button</Label>
+                      <Button className="shadow-glow-cyan">Primary Button</Button>
                     </div>
-                    <div className="w-24 h-24 rounded-xl bg-primary shadow-glow-cyan-sm flex items-center justify-center">
-                      <span className="text-primary-foreground font-bold text-xs">
-                        glow-cyan-sm
-                      </span>
+
+                    {/* Input with glow */}
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground">Text Input</Label>
+                      <Input
+                        placeholder="Text Input"
+                        className="input-glow-cyan"
+                      />
                     </div>
-                    <div className="w-24 h-24 rounded-xl bg-primary shadow-glow-primary flex items-center justify-center">
-                      <span className="text-primary-foreground font-bold text-xs">
-                        glow-primary
-                      </span>
+
+                    {/* Fuchsia glow button */}
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground">Fuchsia Glow</Label>
+                      <Button className="bg-[#FF00FF] hover:bg-[#FF00FF]/90 shadow-glow-fuchsia">
+                        Fuchsia Button
+                      </Button>
+                    </div>
+
+                    {/* Gradient glow */}
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground">Gradient Glow</Label>
+                      <div className="h-10 rounded-xl gradient-cyan-fuchsia shadow-glow-gradient flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">Gradient</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

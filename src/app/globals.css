@@ -78,6 +78,7 @@
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
+    --pixel-fuchsia: 300 100% 50%; /* #FF00FF */
     --grid-inactive: 220 24% 89%; /* Grid Grey for light mode */
 
     /* Chart Colors - Light mode */
@@ -117,7 +118,13 @@
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
+    --pixel-fuchsia: 300 100% 50%; /* #FF00FF */
     --grid-inactive: 240 38% 14%; /* Surface Blue for dark mode */
+
+    /* Dark Mode Palette - Enhanced */
+    --surface-blue: 220 60% 17%; /* #112244 */
+    --border-dark: 260 60% 17%; /* #221144 */
+    --border-item: 240 33% 20%; /* #222244 */
 
     /* Chart Colors - Dark mode */
     --chart-1: 187 100% 50%; /* Pixel Cyan */
@@ -445,5 +452,34 @@
   /* Border glow effect for active/drag states */
   .border-glow-cyan {
     box-shadow: inset 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.3);
+  }
+
+  /* Cyan-to-Fuchsia gradient */
+  .gradient-cyan-fuchsia {
+    background: linear-gradient(135deg, #00e5ff 0%, #ff00ff 100%);
+  }
+
+  /* Card gradient background */
+  .gradient-card-dark {
+    background: linear-gradient(180deg, #112244 0%, #221144 100%);
+  }
+
+  /* Fuchsia glow effect */
+  .shadow-glow-fuchsia {
+    box-shadow:
+      0 0 20px hsl(300 100% 50% / 0.4),
+      0 0 40px hsl(300 100% 50% / 0.2),
+      0 4px 12px hsl(300 100% 50% / 0.3);
+  }
+
+  /* Combined cyan-fuchsia glow */
+  .shadow-glow-gradient {
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 30px rgba(255, 0, 255, 0.2);
+  }
+
+  /* Input focus glow (for glow effects demo) */
+  .input-glow-cyan {
+    box-shadow: 0 0 0 1px hsl(var(--pixel-cyan)), 0 0 15px hsl(var(--pixel-cyan) / 0.4);
+    border-color: hsl(var(--pixel-cyan));
   }
 }
