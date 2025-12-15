@@ -19,6 +19,7 @@
 10. [Payment Processing](#payment-processing)
 11. [Error Handling](#error-handling)
 12. [Rate Limiting](#rate-limiting)
+13. [Marketing Dashboard](#marketing-dashboard)
 
 ---
 
@@ -1533,6 +1534,348 @@ async function fetchWithRateLimit(url, options = {}) {
   return response;
 }
 ```
+
+---
+
+## Marketing Dashboard
+
+The Marketing Dashboard allows administrators to connect and manage Facebook Ads
+and Google Ads accounts for campaign tracking and analytics.
+
+### Facebook OAuth Flow
+
+#### Initiate Facebook Connection
+
+Starts the OAuth flow to connect Facebook Ad accounts.
+
+**Endpoint**: `GET /api/marketing/facebook/connect`
+
+**Authentication**: Required
+
+**Request**:
+
+```http
+GET /api/marketing/facebook/connect HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response**: Redirects to Facebook OAuth consent page
+
+**Flow**:
+
+1. User is redirected to Facebook
+2. User grants permissions for Ad account access
+3. Facebook redirects back to callback URL
+4. Tokens are exchanged and accounts are saved
+
+**Error Responses**:
+
+| Status | Error        | Description       |
+| ------ | ------------ | ----------------- |
+| 401    | Unauthorized | Not authenticated |
+| 500    | Failed       | OAuth init failed |
+
+---
+
+#### Facebook OAuth Callback
+
+Handles the OAuth callback from Facebook after user authorization.
+
+**Endpoint**: `GET /api/marketing/facebook/callback`
+
+**Authentication**: Required (via session)
+
+**Query Parameters**:
+
+| Parameter | Type   | Description                 |
+| --------- | ------ | --------------------------- |
+| code      | string | Authorization code from FB  |
+| state     | string | CSRF protection state token |
+| error     | string | Error code (if auth failed) |
+
+**Response**: Redirects to `/admin/marketing` with success or error message
+
+**Success Redirect**:
+
+```
+/admin/marketing?success=Connected 2 Facebook ad account(s)
+```
+
+**Error Redirect**:
+
+```
+/admin/marketing?error=No ad accounts found
+```
+
+---
+
+### Google Ads OAuth Flow
+
+#### Initiate Google Ads Connection
+
+Starts the OAuth flow to connect Google Ads accounts.
+
+**Endpoint**: `GET /api/marketing/google/connect`
+
+**Authentication**: Required
+
+**Request**:
+
+```http
+GET /api/marketing/google/connect HTTP/1.1
+Authorization: Bearer {session_token}
+```
+
+**Response**: Redirects to Google OAuth consent page
+
+**Flow**:
+
+1. User is redirected to Google
+2. User grants permissions for Ads account access
+3. Google redirects back to callback URL
+4. Tokens are exchanged and accounts are saved
+
+**Error Responses**:
+
+| Status | Error        | Description       |
+| ------ | ------------ | ----------------- |
+| 401    | Unauthorized | Not authenticated |
+| 500    | Failed       | OAuth init failed |
+
+---
+
+#### Google Ads OAuth Callback
+
+Handles the OAuth callback from Google after user authorization.
+
+**Endpoint**: `GET /api/marketing/google/callback`
+
+**Authentication**: Required (via session)
+
+**Query Parameters**:
+
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| code      | string | Authorization code from Google |
+| state     | string | CSRF protection state token    |
+| error     | string | Error code (if auth failed)    |
+
+**Response**: Redirects to `/admin/marketing` with success or error message
+
+---
+
+### Marketing Accounts Management
+
+#### List Connected Accounts
+
+Retrieve all connected marketing accounts for the current admin user.
+
+**Endpoint**: `GET /api/admin/marketing/accounts`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+
+```http
+GET /api/admin/marketing/accounts HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "accounts": [
+    {
+      "id": "clm123abc",
+      "platform": "FACEBOOK",
+      "accountId": "act_123456789",
+      "accountName": "My Business Ad Account",
+      "isActive": true,
+      "tokenStatus": "valid",
+      "createdAt": "2025-12-01T10:00:00Z",
+      "updatedAt": "2025-12-02T15:30:00Z",
+      "expiresAt": "2026-02-01T10:00:00Z"
+    },
+    {
+      "id": "clm456def",
+      "platform": "GOOGLE_ADS",
+      "accountId": "123-456-7890",
+      "accountName": "My Google Ads Account",
+      "isActive": true,
+      "tokenStatus": "valid",
+      "createdAt": "2025-12-01T11:00:00Z",
+      "updatedAt": "2025-12-02T16:00:00Z",
+      "expiresAt": null
+    }
+  ]
+}
+```
+
+**Response Fields**:
+
+| Field       | Type   | Description                              |
+| ----------- | ------ | ---------------------------------------- |
+| id          | string | Internal account record ID               |
+| platform    | string | FACEBOOK or GOOGLE_ADS                   |
+| accountId   | string | Platform-specific account identifier     |
+| accountName | string | Human-readable account name              |
+| isActive    | bool   | Whether account is currently connected   |
+| tokenStatus | string | "valid" or "expired"                     |
+| createdAt   | string | When account was first connected         |
+| updatedAt   | string | Last token refresh or update             |
+| expiresAt   | string | When access token expires (null if none) |
+
+**Error Responses**:
+
+| Status | Error        | Description          |
+| ------ | ------------ | -------------------- |
+| 401    | Unauthorized | Not authenticated    |
+| 403    | Forbidden    | User is not an admin |
+| 500    | Failed       | Database error       |
+
+---
+
+#### Disconnect Account
+
+Remove a connected marketing account (soft delete).
+
+**Endpoint**: `DELETE /api/admin/marketing/accounts`
+
+**Authentication**: Required (Admin role)
+
+**Content-Type**: `application/json`
+
+**Request**:
+
+```http
+DELETE /api/admin/marketing/accounts HTTP/1.1
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "accountId": "clm123abc"
+}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true
+}
+```
+
+**Error Responses**:
+
+| Status | Error                  | Description              |
+| ------ | ---------------------- | ------------------------ |
+| 400    | Account ID is required | Missing accountId field  |
+| 401    | Unauthorized           | Not authenticated        |
+| 403    | Forbidden              | User is not an admin     |
+| 404    | Account not found      | Invalid or wrong account |
+| 500    | Failed to disconnect   | Database error           |
+
+---
+
+### Marketing Campaigns
+
+#### List Campaigns
+
+Retrieve campaigns from all connected marketing accounts.
+
+**Endpoint**: `GET /api/admin/marketing/campaigns`
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| platform  | string | No       | Filter: FACEBOOK or GOOGLE_ADS |
+| accountId | string | No       | Filter by specific account ID  |
+
+**Request**:
+
+```http
+GET /api/admin/marketing/campaigns?platform=FACEBOOK HTTP/1.1
+Authorization: Bearer {admin_token}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "campaigns": [
+    {
+      "id": "campaign_123",
+      "name": "Pixel Launch Campaign",
+      "status": "ACTIVE",
+      "platform": "FACEBOOK",
+      "accountId": "act_123456789",
+      "budget": 1000,
+      "spent": 450.50,
+      "impressions": 125000,
+      "clicks": 3200,
+      "conversions": 85
+    }
+  ],
+  "errors": [
+    {
+      "platform": "GOOGLE_ADS",
+      "accountId": "123-456-7890",
+      "error": "Failed to fetch campaigns for this account"
+    }
+  ]
+}
+```
+
+**Campaign Fields**:
+
+| Field       | Type   | Description                     |
+| ----------- | ------ | ------------------------------- |
+| id          | string | Platform campaign ID            |
+| name        | string | Campaign name                   |
+| status      | string | ACTIVE, PAUSED, COMPLETED, etc. |
+| platform    | string | FACEBOOK or GOOGLE_ADS          |
+| accountId   | string | Parent account ID               |
+| budget      | number | Total budget (currency units)   |
+| spent       | number | Amount spent so far             |
+| impressions | number | Total impressions               |
+| clicks      | number | Total clicks                    |
+| conversions | number | Total conversions               |
+
+**Error Responses**:
+
+| Status | Error        | Description          |
+| ------ | ------------ | -------------------- |
+| 401    | Unauthorized | Not authenticated    |
+| 403    | Forbidden    | User is not an admin |
+| 500    | Failed       | Internal error       |
+
+---
+
+### Environment Variables
+
+Required environment variables for marketing integrations:
+
+#### Facebook Ads
+
+| Variable              | Description                   |
+| --------------------- | ----------------------------- |
+| FACEBOOK_APP_ID       | Facebook App ID               |
+| FACEBOOK_APP_SECRET   | Facebook App Secret           |
+| FACEBOOK_CALLBACK_URL | OAuth callback URL (optional) |
+
+#### Google Ads
+
+| Variable                   | Description                    |
+| -------------------------- | ------------------------------ |
+| GOOGLE_ADS_CLIENT_ID       | Google OAuth Client ID         |
+| GOOGLE_ADS_CLIENT_SECRET   | Google OAuth Client Secret     |
+| GOOGLE_ADS_DEVELOPER_TOKEN | Google Ads API Developer Token |
+| GOOGLE_ADS_CUSTOMER_ID     | Default Manager Account ID     |
+| GOOGLE_ADS_CALLBACK_URL    | OAuth callback URL (optional)  |
 
 ---
 
