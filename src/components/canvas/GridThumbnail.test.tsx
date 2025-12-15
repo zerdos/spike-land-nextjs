@@ -164,8 +164,8 @@ describe("GridThumbnail", () => {
 
       const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
       expect(thumbnail).toHaveClass("ring-2");
-      expect(thumbnail).toHaveClass("ring-green-500");
-      expect(thumbnail).toHaveClass("animate-pulse-glow");
+      expect(thumbnail).toHaveClass("ring-primary");
+      expect(thumbnail).toHaveClass("animate-pulse-cyan");
     });
 
     it("does not apply glow styles when not selected", () => {
@@ -179,8 +179,8 @@ describe("GridThumbnail", () => {
 
       const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
       expect(thumbnail).not.toHaveClass("ring-2");
-      expect(thumbnail).not.toHaveClass("ring-green-500");
-      expect(thumbnail).not.toHaveClass("animate-pulse-glow");
+      expect(thumbnail).not.toHaveClass("ring-primary");
+      expect(thumbnail).not.toHaveClass("animate-pulse-cyan");
     });
   });
 
@@ -248,7 +248,7 @@ describe("GridThumbnail", () => {
 
       const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
       expect(thumbnail).toHaveClass("focus:ring-2");
-      expect(thumbnail).toHaveClass("focus:ring-green-500");
+      expect(thumbnail).toHaveClass("focus:ring-primary");
     });
   });
 

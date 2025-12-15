@@ -120,7 +120,7 @@ describe("ImageComparisonSlider", () => {
     fireEvent.mouseDown(sliderContainer, { clientX: 250 });
 
     // Check that the divider moved (the divider uses left style with percentage)
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("25%");
   });
 
@@ -145,7 +145,7 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 750 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("75%");
   });
 
@@ -167,12 +167,12 @@ describe("ImageComparisonSlider", () => {
 
     // Try to drag beyond left boundary
     fireEvent.mouseDown(sliderContainer, { clientX: 0 });
-    let divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    let divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("0%");
 
     // Try to drag beyond right boundary
     fireEvent.mouseDown(sliderContainer, { clientX: 2000 });
-    divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("100%");
   });
 
@@ -191,7 +191,7 @@ describe("ImageComparisonSlider", () => {
 
   it("renders divider line at slider position", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
 
     expect(divider).toBeDefined();
     expect(divider.style.left).toBe("50%");
@@ -218,7 +218,7 @@ describe("ImageComparisonSlider", () => {
 
   it("has pointer-events-none on divider", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const divider = container.querySelector('[class*="bg-white"]');
+    const divider = container.querySelector('[class*="bg-primary"]');
     expect(divider?.className).toContain("pointer-events-none");
   });
 
@@ -250,7 +250,7 @@ describe("ImageComparisonSlider", () => {
     // Simulate mouse move at document level
     fireEvent.mouseMove(document, { clientX: 500 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("50%");
   });
 
@@ -280,7 +280,7 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 600 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("60%");
   });
 
@@ -309,7 +309,7 @@ describe("ImageComparisonSlider", () => {
     // After mouseup, move should not update position
     fireEvent.mouseMove(document, { clientX: 800 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     // Should remain at 25% since dragging ended
     expect(divider.style.left).toBe("25%");
   });
@@ -343,7 +343,7 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 900 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     // Should remain at 30% since touch ended
     expect(divider.style.left).toBe("30%");
   });
@@ -367,7 +367,7 @@ describe("ImageComparisonSlider", () => {
     // Move without starting drag
     fireEvent.mouseMove(document, { clientX: 700 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     // Should remain at default 50%
     expect(divider.style.left).toBe("50%");
   });
@@ -405,7 +405,7 @@ describe("ImageComparisonSlider", () => {
       touches: [],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     // Position should remain at default 50%
     expect(divider.style.left).toBe("50%");
   });
@@ -436,7 +436,7 @@ describe("ImageComparisonSlider", () => {
       touches: [],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     // Should remain at 25% since no valid touch in move event
     expect(divider.style.left).toBe("25%");
   });
@@ -537,7 +537,7 @@ describe("ImageComparisonSlider", () => {
     // Verify normal flow works
     fireEvent.mouseDown(sliderContainer, { clientX: 500 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("50%");
   });
 });
