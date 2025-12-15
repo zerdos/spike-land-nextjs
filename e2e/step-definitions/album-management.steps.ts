@@ -623,12 +623,7 @@ When("I select an image", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-  await expect(button).toBeVisible();
-  await button.click();
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "I click {string} button" is defined in common.steps.ts
 
 When("I confirm removal", async function(this: CustomWorld) {
   const confirmButton = this.page.getByRole("button", { name: /remove|confirm|yes/i });

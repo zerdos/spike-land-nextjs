@@ -521,14 +521,7 @@ Then("I should see the loading spinner", async function(this: CustomWorld) {
   await expect(spinner.first()).toBeVisible();
 });
 
-Then(
-  "I should see {string} or {string} text",
-  async function(this: CustomWorld, text1: string, text2: string) {
-    const element = this.page.getByText(text1).or(this.page.getByText(text2));
-    // Use first() to handle cases where the text appears multiple times on the page
-    await expect(element.first()).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} or {string} text" is defined in common.steps.ts
 
 Then("I should see the enhancement settings panel", async function(this: CustomWorld) {
   const settingsPanel = this.page.locator('[data-testid="enhancement-settings"]').or(

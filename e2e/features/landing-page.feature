@@ -1,0 +1,114 @@
+Feature: Landing Page - CTA and Feature Cards
+  As a visitor to the site
+  I want to interact with the landing page elements
+  So that I can navigate to relevant sections and learn about the platform
+
+  Background:
+    Given I am not logged in
+
+  # CTA Button Tests
+  @fast
+  Scenario: Landing page displays main CTA button
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the primary CTA button
+
+  @fast
+  Scenario: Landing page CTA button navigates to sign-in
+    When I visit "/"
+    And I click the primary CTA button
+    Then I should be redirected to sign-in page
+
+  # Featured Apps Section Tests
+  @fast
+  Scenario: Landing page displays Featured Applications section
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Featured Applications" heading
+    And I should see "AI-powered apps" text
+
+  @fast
+  Scenario: Landing page displays Pixel app card
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the Pixel feature card
+    And I should see "AI Image Enhancement" text
+    And I should see "photos back to life" text
+
+  @fast
+  Scenario: Pixel feature card has comparison preview
+    When I visit "/"
+    Then the page should load successfully
+    And the Pixel feature card should display an image
+
+  @fast
+  Scenario: Pixel feature card links to sign-in
+    When I visit "/"
+    And I click on the Pixel feature card
+    Then I should be redirected to sign-in page
+
+  # Platform Features Section Tests
+  @fast
+  Scenario: Landing page displays platform features
+    When I visit "/"
+    Then the page should load successfully
+    And I should see platform feature cards
+
+  # Final CTA Section Tests
+  @fast
+  Scenario: Landing page has bottom CTA section
+    When I visit "/"
+    Then the page should load successfully
+    And I should see a bottom CTA section
+
+  # Header Tests
+  @fast
+  Scenario: Landing page displays header with logo
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the platform header
+    And I should see the Pixel logo in header
+
+  @fast
+  Scenario: Landing page header has sign-in option
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Sign In" or "Sign in" text
+
+  # Hero Section Tests
+  @fast
+  Scenario: Landing page displays hero section
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the hero section
+
+  # Mobile Responsiveness Tests
+  @fast
+  Scenario: Landing page is mobile responsive
+    When I visit "/" on a mobile viewport
+    Then the page should load successfully
+    And the layout should be responsive
+
+  # Scroll Navigation Tests
+  @fast
+  Scenario: Apps section is scrollable via anchor
+    When I visit "/#apps"
+    Then the page should load successfully
+    And the apps section should be visible
+
+  # Authenticated User Redirect Tests
+  @fast @requires-db
+  Scenario: Authenticated users are redirected from landing
+    Given I am logged in as "Test User" with email "test@example.com"
+    When I visit "/"
+    Then I should be redirected to the Pixel app
+
+  # Footer Tests
+  @fast
+  Scenario: Landing page has legal footer links
+    When I visit "/"
+    Then the page should load successfully
+    And I should see footer links for:
+      | Link    |
+      | Terms   |
+      | Privacy |

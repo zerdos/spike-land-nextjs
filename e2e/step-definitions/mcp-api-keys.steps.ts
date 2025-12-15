@@ -46,21 +46,8 @@ Then(
   },
 );
 
-Then(
-  "the {string} button should be disabled",
-  async function(this: CustomWorld, buttonName: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-    await expect(button).toBeDisabled({ timeout: 10000 });
-  },
-);
-
-Then(
-  "the {string} button should be enabled",
-  async function(this: CustomWorld, buttonName: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-    await expect(button).toBeEnabled({ timeout: 10000 });
-  },
-);
+// NOTE: "the {string} button should be disabled" is defined in common.steps.ts
+// NOTE: "the {string} button should be enabled" is defined in common.steps.ts
 
 When("I enter {string} in the key name field", async function(this: CustomWorld, keyName: string) {
   const input = this.page.getByRole("textbox", { name: /key name/i });

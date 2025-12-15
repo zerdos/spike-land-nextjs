@@ -557,13 +557,7 @@ Then("no images should be selected", async function(this: CustomWorld) {
   expect(count).toBe(0);
 });
 
-Then(
-  "the {string} button should be disabled",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: buttonText });
-    await expect(button).toBeDisabled();
-  },
-);
+// NOTE: "the {string} button should be disabled" is defined in common.steps.ts
 
 Then("all {int} images should be selected", async function(this: CustomWorld, count: number) {
   const checkedBoxes = this.page.locator('input[type="checkbox"]:checked');

@@ -21,20 +21,7 @@ Then("I should see admin dashboard content", async function(this: CustomWorld) {
   expect(count).toBeGreaterThan(0);
 });
 
-Then("I should be redirected to sign-in page", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  const url = this.page.url();
-
-  // Most protected routes redirect to /auth/signin via middleware
-  // Exception: /admin redirects to home page (/) via admin layout
-  // Also accept 404 pages (route not deployed yet) as "access denied"
-  const isRedirectedToSignIn = url.includes("/auth/signin");
-  const isRedirectedToHome = url.endsWith("/");
-  const is404Page = await this.page.getByText(/404|not found/i).isVisible().catch(() => false);
-
-  const validResult = isRedirectedToSignIn || isRedirectedToHome || is404Page;
-  expect(validResult).toBe(true);
-});
+// NOTE: "I should be redirected to sign-in page" is defined in common.steps.ts
 
 Then("I should be redirected or see access denied", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
