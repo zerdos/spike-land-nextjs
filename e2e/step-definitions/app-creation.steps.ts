@@ -137,37 +137,8 @@ When(
   },
 );
 
-Then(
-  "the {string} button should be disabled",
-  async function(this: CustomWorld, buttonName: string) {
-    // Try to find by testid first to avoid strict mode violations
-    let button;
-    try {
-      const testId = `wizard-${buttonName.toLowerCase()}-button`;
-      button = this.page.getByTestId(testId);
-      await expect(button).toBeVisible({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-    }
-    await expect(button).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
-
-Then(
-  "the {string} button should be enabled",
-  async function(this: CustomWorld, buttonName: string) {
-    // Try to find by testid first to avoid strict mode violations
-    let button;
-    try {
-      const testId = `wizard-${buttonName.toLowerCase()}-button`;
-      button = this.page.getByTestId(testId);
-      await expect(button).toBeVisible({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      button = this.page.getByRole("button", { name: new RegExp(buttonName, "i") });
-    }
-    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "the {string} button should be disabled" is defined in common.steps.ts
+// NOTE: "the {string} button should be enabled" is defined in common.steps.ts
 
 Given("I complete step 1 with valid data", async function(this: CustomWorld) {
   const wizard = getWizard(this);

@@ -31,12 +31,7 @@ Then("I should see the settings tabs", async function(this: CustomWorld) {
   await expect(tabs).toBeVisible({ timeout: 10000 });
 });
 
-When("I click the {string} tab", async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole("tab", { name: tabName });
-  await expect(tab).toBeVisible();
-  await tab.click();
-  await this.page.waitForTimeout(500);
-});
+// NOTE: "I click the {string} tab" is defined in common.steps.ts
 
 Then("the {string} tab should be active", async function(this: CustomWorld, tabName: string) {
   const tab = this.page.getByRole("tab", { name: tabName });

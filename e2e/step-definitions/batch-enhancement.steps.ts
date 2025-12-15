@@ -380,11 +380,7 @@ When("I navigate to my album", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-  await button.click();
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "I click {string} button" is defined in common.steps.ts
 
 When(
   "I click {string} button in the dialog",

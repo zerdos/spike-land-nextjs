@@ -119,6 +119,46 @@ Feature: Smoke Tests
     Then the page should load successfully
     And I should see "Photo Gallery" heading
 
+  @fast @requires-db
+  Scenario: Admin gallery page loads for admin user
+    Given I am logged in as "Admin User" with email "admin@example.com"
+    And the user is an admin
+    When I visit "/admin/gallery"
+    Then the page should load successfully
+    And I should see "Featured Gallery" heading
+
+  @fast @requires-db
+  Scenario: Admin feedback page loads for admin user
+    Given I am logged in as "Admin User" with email "admin@example.com"
+    And the user is an admin
+    When I visit "/admin/feedback"
+    Then the page should load successfully
+    And I should see "Feedback Management" heading
+
+  @fast @requires-db
+  Scenario: Admin emails page loads for admin user
+    Given I am logged in as "Admin User" with email "admin@example.com"
+    And the user is an admin
+    When I visit "/admin/emails"
+    Then the page should load successfully
+    And I should see "Email Logs" heading
+
+  @fast @requires-db
+  Scenario: Admin sitemap page loads for admin user
+    Given I am logged in as "Admin User" with email "admin@example.com"
+    And the user is an admin
+    When I visit "/admin/sitemap"
+    Then the page should load successfully
+    And I should see "Application Monitor" heading
+
+  @fast @requires-db
+  Scenario: Admin jobs page loads for admin user
+    Given I am logged in as "Admin User" with email "admin@example.com"
+    And the user is an admin
+    When I visit "/admin/jobs"
+    Then the page should load successfully
+    And I should see "Jobs Management" heading
+
   @fast
   Scenario: Unauthenticated user sees Pixel landing page
     Given I am not logged in
