@@ -3,19 +3,13 @@
 import { PipelineStageLabel } from "@/components/enhance/PipelineProgress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MASONRY_BREAKPOINTS_GALLERY, MASONRY_CLASSES, MASONRY_ITEM_MARGIN } from "@/lib/canvas";
 import { formatFileSize } from "@/lib/utils";
 import type { EnhancementTier, JobStatus, PipelineStage } from "@prisma/client";
 import { Loader2, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
-
-const masonryBreakpoints = {
-  default: 4,
-  1024: 3,
-  768: 2,
-  640: 2,
-};
 
 async function logBrokenImage(versionId: string, tier: string, url: string) {
   try {
@@ -124,9 +118,9 @@ export function EnhancementHistoryGrid({
 
   return (
     <Masonry
-      breakpointCols={masonryBreakpoints}
-      className="flex -ml-4 w-auto"
-      columnClassName="pl-4 bg-clip-padding"
+      breakpointCols={MASONRY_BREAKPOINTS_GALLERY}
+      className={MASONRY_CLASSES.container}
+      columnClassName={MASONRY_CLASSES.column}
     >
       {versions.map((version) => {
         const isSelected = selectedVersionId === version.id;
@@ -146,7 +140,7 @@ export function EnhancementHistoryGrid({
         return (
           <div
             key={version.id}
-            className={`relative rounded-lg overflow-hidden border bg-card cursor-pointer transition-all hover:shadow-lg mb-4 ${
+            className={`relative rounded-lg overflow-hidden border bg-card cursor-pointer transition-all hover:shadow-lg ${MASONRY_ITEM_MARGIN} ${
               isSelected ? "ring-2 ring-primary" : "border-white/10"
             }`}
             onClick={() => onVersionSelect(version.id)}

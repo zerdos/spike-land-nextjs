@@ -1,17 +1,11 @@
 "use client";
 
+import { MASONRY_BREAKPOINTS_GALLERY, MASONRY_CLASSES } from "@/lib/canvas";
 import type { GalleryImage } from "@/lib/canvas/types";
 import { cn } from "@/lib/utils";
 import { forwardRef, useCallback, useRef } from "react";
 import Masonry from "react-masonry-css";
 import { GridThumbnail } from "./GridThumbnail";
-
-const masonryBreakpoints = {
-  default: 4,
-  1024: 3,
-  768: 2,
-  640: 2,
-};
 
 export interface SmartGridProps {
   images: GalleryImage[];
@@ -51,12 +45,11 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
     const handleDoubleClick = useCallback(
       (id: string) => {
         // Select the image first, then enter slideshow
-        // The element is guaranteed to exist since this callback
-        // is only called from rendered GridThumbnail components
         const element = thumbnailRefs.current.get(id);
-        // Use non-null assertion since the element must exist when this is called
-        onImageSelect(id, element!);
-        onEnterSlideshow();
+        if (element) {
+          onImageSelect(id, element);
+          onEnterSlideshow();
+        }
       },
       [onImageSelect, onEnterSlideshow],
     );
@@ -106,9 +99,9 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
         )}
       >
         <Masonry
-          breakpointCols={masonryBreakpoints}
-          className="flex -ml-4 w-auto"
-          columnClassName="pl-4 bg-clip-padding"
+          breakpointCols={MASONRY_BREAKPOINTS_GALLERY}
+          className={MASONRY_CLASSES.container}
+          columnClassName={MASONRY_CLASSES.column}
         >
           {images.map((image) => (
             <GridThumbnail

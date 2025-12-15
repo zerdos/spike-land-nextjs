@@ -1,5 +1,6 @@
 "use client";
 
+import { MASONRY_ITEM_MARGIN } from "@/lib/canvas";
 import type { GalleryImage } from "@/lib/canvas/types";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -78,7 +79,7 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
         onKeyDown={handleKeyDown}
         data-testid={`grid-thumbnail-${image.id}`}
         className={cn(
-          "relative cursor-pointer overflow-hidden rounded-xl mb-4",
+          `relative cursor-pointer overflow-hidden rounded-xl ${MASONRY_ITEM_MARGIN}`,
           "transition-all duration-200 ease-out",
           "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           isSelected && [
