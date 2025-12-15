@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
 /**
+ * Tailwind v4 Theme Configuration
+ *
+ * ROOT CAUSE DOCUMENTATION:
+ * In Tailwind v4, utility classes like `bg-popover` defined in tailwind.config.ts
+ * may not work correctly for Radix UI portaled components (Select, DropdownMenu, etc.).
+ *
+ * This happens because:
+ * 1. Tailwind v4 uses a CSS-first approach with @theme directive
+ * 2. Colors defined in JS config as `hsl(var(--color))` may not generate proper utilities
+ * 3. Portaled content renders outside the main React tree but still inherits CSS variables
+ *
+ * SOLUTION:
+ * Use arbitrary value syntax `bg-[hsl(var(--popover))]` in portaled components
+ * instead of `bg-popover` to ensure the CSS variable is properly resolved.
+ *
+ * Affected components: SelectContent, DropdownMenuContent, DropdownMenuSubContent
+ * See: src/components/ui/select.tsx, src/components/ui/dropdown-menu.tsx
+ */
+@theme {
+  /* Ensure popover colors work in portaled content */
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+}
+
+/**
  * Pixel Brand Design System
  *
  * Brand Philosophy: Dark Futuristic - "The AI Spark"
