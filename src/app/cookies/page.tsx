@@ -938,10 +938,10 @@ export default function CookiePage() {
                     <p className="text-sm">
                       Email:{" "}
                       <a
-                        href="mailto:privacy@[your-domain.com]"
+                        href="mailto:hello@spike.land"
                         className="text-primary hover:underline"
                       >
-                        privacy@[your-domain.com]
+                        hello@spike.land
                       </a>
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">

@@ -1,14 +1,33 @@
 "use client";
 
 import type { MDXComponents } from "mdx/types";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
-import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
-import { SplitPreview } from "@/components/enhance/SplitPreview";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+// Dynamic imports with SSR disabled to prevent React hooks errors during static generation
+const ImageComparisonSlider = dynamic(
+  () =>
+    import("@/components/enhance/ImageComparisonSlider").then(
+      (mod) => mod.ImageComparisonSlider,
+    ),
+  {
+    ssr: false,
+    loading: () => <div className="w-full aspect-square bg-muted animate-pulse rounded-lg" />,
+  },
+);
+
+const SplitPreview = dynamic(
+  () => import("@/components/enhance/SplitPreview").then((mod) => mod.SplitPreview),
+  {
+    ssr: false,
+    loading: () => <div className="w-full aspect-square bg-muted animate-pulse rounded-lg" />,
+  },
+);
 
 /**
  * Callout component for displaying info, warning, or success messages in blog posts.

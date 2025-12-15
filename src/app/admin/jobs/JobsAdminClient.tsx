@@ -236,7 +236,9 @@ export function JobsAdminClient() {
           >
             {tab.label}
             <Badge variant="secondary" className="ml-1">
-              {statusCounts[tab.key] ?? 0}
+              {Object.keys(statusCounts).length === 0
+                ? "..."
+                : (statusCounts[tab.key] ?? 0)}
             </Badge>
           </Button>
         ))}

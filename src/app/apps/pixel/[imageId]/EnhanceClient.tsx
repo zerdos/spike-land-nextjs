@@ -369,12 +369,15 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                       undefined}
                   />
                 )}
-                <ShareButton
-                  imageId={image.id}
-                  shareToken={image.shareToken}
-                  imageName={image.name}
-                  className="w-full"
-                />
+                {/* Only show Share when there's a successful enhancement */}
+                {selectedVersion && selectedVersion.enhancedUrl && (
+                  <ShareButton
+                    imageId={image.id}
+                    shareToken={image.shareToken}
+                    imageName={image.name}
+                    className="w-full"
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
