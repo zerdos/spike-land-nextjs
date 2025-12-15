@@ -68,13 +68,14 @@ export function PixelLogo({
         </filter>
         <radialGradient id={sparkGradientId} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="35%" stopColor="#00E5FF" />
-          <stop offset="100%" stopColor="#00E5FF" stopOpacity="0.85" />
+          <stop offset="30%" stopColor="#00E5FF" />
+          <stop offset="70%" stopColor="#FF00FF" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#FF00FF" stopOpacity="0.7" />
         </radialGradient>
         <linearGradient id={sparkShineId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
-          <stop offset="50%" stopColor="#00E5FF" stopOpacity="0" />
-          <stop offset="100%" stopColor="#00E5FF" stopOpacity="0.3" />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7" />
+          <stop offset="40%" stopColor="#00E5FF" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#FF00FF" stopOpacity="0.4" />
         </linearGradient>
       </defs>
 
