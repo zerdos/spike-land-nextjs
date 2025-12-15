@@ -14,10 +14,10 @@ export interface GridThumbnailProps {
 }
 
 /**
- * GridThumbnail component displays an individual image in the gallery grid.
+ * GridThumbnail component displays an individual image in the masonry gallery grid.
  *
  * Features:
- * - Shows original image by default
+ * - Shows original image by default with natural aspect ratio
  * - When selected, swaps to enhanced image (if available) with neon glow effect
  * - Handles image load errors gracefully
  * - Forwards ref for FLIP animation origin tracking
@@ -62,6 +62,11 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
       setImageError(true);
     }, []);
 
+    // Calculate aspect ratio padding for natural image dimensions
+    const aspectRatioPadding = image.width && image.height
+      ? (image.height / image.width) * 100
+      : 100; // Default to square if dimensions not available
+
     return (
       <div
         ref={ref}
@@ -73,7 +78,7 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
         onKeyDown={handleKeyDown}
         data-testid={`grid-thumbnail-${image.id}`}
         className={cn(
-          "relative aspect-square cursor-pointer overflow-hidden rounded-xl",
+          "relative cursor-pointer overflow-hidden rounded-xl mb-4",
           "transition-all duration-200 ease-out",
           "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           isSelected && [
@@ -83,11 +88,12 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
           ],
           className,
         )}
+        style={{ paddingBottom: `${aspectRatioPadding}%` }}
       >
         {imageError
           ? (
             <div
-              className="flex h-full w-full items-center justify-center bg-muted"
+              className="absolute inset-0 flex items-center justify-center bg-muted"
               data-testid="image-error-fallback"
             >
               <span className="text-sm text-muted-foreground">
@@ -100,7 +106,7 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
               src={displayUrl}
               alt={image.name || "Gallery image"}
               fill
-              sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover"
               onError={handleImageError}
             />

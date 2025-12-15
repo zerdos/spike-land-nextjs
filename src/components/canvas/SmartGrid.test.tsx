@@ -115,8 +115,8 @@ describe("SmartGrid", () => {
     });
   });
 
-  describe("Responsive grid classes", () => {
-    it("has 3 column grid class for mobile", () => {
+  describe("Masonry layout", () => {
+    it("contains Masonry component with flex layout", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -127,52 +127,12 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("grid-cols-2");
+      // Masonry uses flexbox layout
+      const masonryContainer = grid.querySelector(".flex.-ml-4");
+      expect(masonryContainer).toBeInTheDocument();
     });
 
-    it("has 3 column grid class for tablet (md breakpoint)", () => {
-      render(
-        <SmartGrid
-          images={mockImages}
-          selectedImageId={null}
-          onImageSelect={mockOnImageSelect}
-          onEnterSlideshow={mockOnEnterSlideshow}
-        />,
-      );
-
-      const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("md:grid-cols-3");
-    });
-
-    it("has 4 column grid class for desktop (lg breakpoint)", () => {
-      render(
-        <SmartGrid
-          images={mockImages}
-          selectedImageId={null}
-          onImageSelect={mockOnImageSelect}
-          onEnterSlideshow={mockOnEnterSlideshow}
-        />,
-      );
-
-      const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("lg:grid-cols-4");
-    });
-
-    it("has gap-4 class for spacing", () => {
-      render(
-        <SmartGrid
-          images={mockImages}
-          selectedImageId={null}
-          onImageSelect={mockOnImageSelect}
-          onEnterSlideshow={mockOnEnterSlideshow}
-        />,
-      );
-
-      const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("gap-4");
-    });
-
-    it("has p-4 class for padding", () => {
+    it("has p-4 class for padding on container", () => {
       render(
         <SmartGrid
           images={mockImages}
@@ -532,8 +492,7 @@ describe("SmartGrid", () => {
       );
 
       const grid = screen.getByTestId("smart-grid");
-      expect(grid).toHaveClass("grid");
-      expect(grid).toHaveClass("grid-cols-2");
+      expect(grid).toHaveClass("p-4");
       expect(grid).toHaveClass("custom-class");
     });
   });

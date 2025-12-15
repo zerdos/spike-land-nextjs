@@ -3,7 +3,15 @@
 import type { GalleryImage } from "@/lib/canvas/types";
 import { cn } from "@/lib/utils";
 import { forwardRef, useCallback, useRef } from "react";
+import Masonry from "react-masonry-css";
 import { GridThumbnail } from "./GridThumbnail";
+
+const masonryBreakpoints = {
+  default: 4,
+  1024: 3,
+  768: 2,
+  640: 2,
+};
 
 export interface SmartGridProps {
   images: GalleryImage[];
@@ -16,10 +24,10 @@ export interface SmartGridProps {
 }
 
 /**
- * SmartGrid component displays a responsive grid of gallery images.
+ * SmartGrid component displays a responsive masonry grid of gallery images.
  *
  * Features:
- * - Responsive grid layout (2 cols mobile, 3 cols tablet, 4 cols desktop)
+ * - Responsive masonry layout (2 cols mobile, 3 cols tablet, 4 cols desktop)
  * - Fade in/out animation when transitioning to/from slideshow
  * - CSS rotation support
  * - Accessible with proper ARIA attributes
@@ -91,22 +99,28 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
           transform: rotationTransform,
         }}
         className={cn(
-          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4",
+          "p-4",
           isBlurred && "animate-grid-fade-out",
           !isBlurred && "animate-grid-fade-in",
           className,
         )}
       >
-        {images.map((image) => (
-          <GridThumbnail
-            key={image.id}
-            ref={setThumbnailRef(image.id)}
-            image={image}
-            isSelected={selectedImageId === image.id}
-            onSelect={onImageSelect}
-            onDoubleClick={handleDoubleClick}
-          />
-        ))}
+        <Masonry
+          breakpointCols={masonryBreakpoints}
+          className="flex -ml-4 w-auto"
+          columnClassName="pl-4 bg-clip-padding"
+        >
+          {images.map((image) => (
+            <GridThumbnail
+              key={image.id}
+              ref={setThumbnailRef(image.id)}
+              image={image}
+              isSelected={selectedImageId === image.id}
+              onSelect={onImageSelect}
+              onDoubleClick={handleDoubleClick}
+            />
+          ))}
+        </Masonry>
       </div>
     );
   },

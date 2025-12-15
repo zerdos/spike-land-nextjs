@@ -450,7 +450,7 @@ describe("GridThumbnail", () => {
   });
 
   describe("CSS classes", () => {
-    it("has aspect-square class for square aspect ratio", () => {
+    it("has mb-4 class for masonry spacing", () => {
       render(
         <GridThumbnail
           image={mockImage}
@@ -460,7 +460,21 @@ describe("GridThumbnail", () => {
       );
 
       const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
-      expect(thumbnail).toHaveClass("aspect-square");
+      expect(thumbnail).toHaveClass("mb-4");
+    });
+
+    it("applies paddingBottom style based on image aspect ratio", () => {
+      render(
+        <GridThumbnail
+          image={mockImage}
+          isSelected={false}
+          onSelect={mockOnSelect}
+        />,
+      );
+
+      const thumbnail = screen.getByTestId(`grid-thumbnail-${mockImage.id}`);
+      // Image is 1920x1080, so aspect ratio padding = (1080/1920) * 100 = 56.25%
+      expect(thumbnail).toHaveStyle({ paddingBottom: "56.25%" });
     });
 
     it("has rounded-xl class for border radius", () => {
