@@ -13,6 +13,16 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+// Mock next/cache
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: () => Promise<unknown>) => fn,
+}));
+
+// Mock getSuperAdminPublicPhotos to avoid Prisma import
+vi.mock("@/lib/gallery/super-admin-photos", () => ({
+  getSuperAdminPublicPhotos: vi.fn().mockResolvedValue([]),
+}));
+
 // Mock all the landing page components
 vi.mock("@/components/landing/CTASection", () => ({
   CTASection: () => (
