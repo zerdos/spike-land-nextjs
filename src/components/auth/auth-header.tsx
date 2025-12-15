@@ -1,11 +1,18 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { AuthButtons } from "./auth-buttons";
 import { UserAvatar } from "./user-avatar";
 
 export function AuthHeader() {
+  const pathname = usePathname();
   const { data: session, status } = useSession();
+
+  // Hide on storybook pages - no authentication required
+  if (pathname?.startsWith("/storybook")) {
+    return null;
+  }
 
   if (status === "loading") {
     return (

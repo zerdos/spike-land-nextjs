@@ -1,10 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthHeader, AuthSection } from "./auth-header";
 
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: vi.fn(),
 }));
 
 vi.mock("./auth-buttons", () => ({
@@ -22,6 +27,44 @@ vi.mock("./user-avatar", () => ({
 describe("AuthHeader Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default to non-storybook route
+    vi.mocked(usePathname).mockReturnValue("/");
+  });
+
+  it("should return null on storybook routes even when authenticated", () => {
+    vi.mocked(usePathname).mockReturnValue("/storybook");
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: "John Doe",
+          email: "john@example.com",
+        },
+        expires: "2024-01-01",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    const { container } = render(<AuthHeader />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("should return null on storybook sub-routes", () => {
+    vi.mocked(usePathname).mockReturnValue("/storybook/buttons");
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          name: "John Doe",
+          email: "john@example.com",
+        },
+        expires: "2024-01-01",
+      },
+      status: "authenticated",
+      update: vi.fn(),
+    });
+
+    const { container } = render(<AuthHeader />);
+    expect(container.firstChild).toBeNull();
   });
 
   it("should render loading state when status is loading", () => {
