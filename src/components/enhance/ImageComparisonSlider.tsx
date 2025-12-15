@@ -166,7 +166,7 @@ export function ImageComparisonSlider({
         className="relative bg-muted rounded-lg overflow-hidden w-full select-none cursor-ew-resize"
         style={{
           aspectRatio: `${safeWidth} / ${safeHeight}`,
-          touchAction: "none",
+          touchAction: "pan-y pinch-zoom",
         }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}

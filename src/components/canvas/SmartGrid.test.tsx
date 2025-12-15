@@ -128,7 +128,7 @@ describe("SmartGrid", () => {
 
       const grid = screen.getByTestId("smart-grid");
       // Masonry uses flexbox layout
-      const masonryContainer = grid.querySelector(".flex.-ml-4");
+      const masonryContainer = grid.querySelector(".flex.-ml-6");
       expect(masonryContainer).toBeInTheDocument();
     });
 
