@@ -16,15 +16,8 @@ interface SharePageClientProps {
   originalHeight: number;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
-  tier: string;
   shareToken: string;
 }
-
-const tierLabels: Record<string, string> = {
-  TIER_1K: "1K",
-  TIER_2K: "2K",
-  TIER_4K: "4K",
-};
 
 export function SharePageClient({
   imageName,
@@ -35,7 +28,6 @@ export function SharePageClient({
   originalHeight,
   enhancedWidth,
   enhancedHeight,
-  tier,
   shareToken,
 }: SharePageClientProps) {
   const [downloadingOriginal, setDownloadingOriginal] = useState(false);
@@ -44,8 +36,6 @@ export function SharePageClient({
   // Use enhanced dimensions if available, otherwise fall back to original
   const displayWidth = enhancedWidth ?? originalWidth;
   const displayHeight = enhancedHeight ?? originalHeight;
-
-  const tierLabel = tierLabels[tier] || tier.replace("TIER_", "");
 
   const handleDownload = async (type: "original" | "enhanced") => {
     const setLoading = type === "original"
@@ -109,16 +99,6 @@ export function SharePageClient({
             maxWidth: `min(${displayWidth}px, 90vw)`,
           }}
         >
-          {/* Image name with tier badge */}
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <h1 className="text-lg md:text-xl font-medium text-white/90">
-              {imageName}
-            </h1>
-            <span className="px-2 py-0.5 text-xs font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
-              {tierLabel}
-            </span>
-          </div>
-
           {/* Optional description */}
           {description && (
             <p className="text-sm text-white/60 text-center mb-4">
@@ -167,13 +147,15 @@ export function SharePageClient({
         </div>
       </main>
 
-      {/* Minimal footer */}
+      {/* CTA footer */}
       <footer className="p-4 md:p-6 text-center">
-        <Link
-          href="/"
-          className="text-sm text-white/40 hover:text-white/60 transition-colors"
-        >
-          Enhanced with Pixel
+        <Link href="/apps/pixel">
+          <Button
+            size="lg"
+            className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
+          >
+            Check out more
+          </Button>
         </Link>
       </footer>
     </div>
