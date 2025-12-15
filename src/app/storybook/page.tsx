@@ -1,6 +1,7 @@
 "use client";
 
 import { PixelLogo } from "@/components/brand";
+import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,15 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -51,6 +43,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+// Demo component for EnhancementSettings dialog showcase
+function EnhancementSettingsDemo() {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleEnhance = async () => {
+    setIsProcessing(true);
+    // Simulate enhancement process
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsProcessing(false);
+    toast.success("Enhancement completed!");
+  };
+
+  return (
+    <EnhancementSettings
+      onEnhance={handleEnhance}
+      currentBalance={15}
+      isProcessing={isProcessing}
+      completedVersions={[]}
+      imageUrl="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop"
+      imageName="mountain_view.jpg"
+      trigger={<Button>Open Enhancement Settings</Button>}
+    />
+  );
+}
 
 const colorPalette = {
   brand: [
@@ -734,49 +751,16 @@ export default function StorybookPage() {
               title="Modal Components"
               description="Dialog, sheet, and alert dialog components"
             >
-              {/* Dialog */}
+              {/* Enhancement Settings Dialog */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Dialog</CardTitle>
-                  <CardDescription>Modal dialog for forms and confirmations</CardDescription>
+                  <CardTitle>Enhancement Settings Dialog</CardTitle>
+                  <CardDescription>
+                    Modal dialog with card-based tier selection for image enhancement
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button>Open Dialog</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Enhancement Settings</DialogTitle>
-                        <DialogDescription>
-                          Configure your image enhancement preferences.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="py-4 space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="dialog-name">Image Name</Label>
-                          <Input id="dialog-name" placeholder="Enter image name" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Enhancement Level</Label>
-                          <Select defaultValue="pro">
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="standard">Standard</SelectItem>
-                              <SelectItem value="pro">Pro</SelectItem>
-                              <SelectItem value="max">Max</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline">Cancel</Button>
-                        <Button>Save Changes</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <EnhancementSettingsDemo />
                 </CardContent>
               </Card>
 
