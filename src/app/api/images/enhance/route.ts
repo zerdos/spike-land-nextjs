@@ -22,7 +22,10 @@ function isVercelEnvironment(): boolean {
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
-  const requestLogger = logger.child({ requestId, route: "/api/images/enhance" });
+  const requestLogger = logger.child({
+    requestId,
+    route: "/api/images/enhance",
+  });
 
   try {
     requestLogger.info("Enhancement request received");
@@ -52,7 +55,9 @@ export async function POST(request: NextRequest) {
     if (rateLimitResult.isLimited) {
       requestLogger.warn("Rate limit exceeded", { userId: session.user.id });
       const errorMessage = getUserFriendlyError(new Error("Rate limit"), 429);
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -73,11 +78,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { imageId, tier } = body as { imageId: string; tier: EnhancementTier; };
+    const { imageId, tier } = body as {
+      imageId: string;
+      tier: EnhancementTier;
+    };
 
     if (!imageId || !tier) {
       requestLogger.warn("Missing required fields", { imageId, tier });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -90,7 +101,10 @@ export async function POST(request: NextRequest) {
 
     if (!Object.keys(ENHANCEMENT_COSTS).includes(tier)) {
       requestLogger.warn("Invalid tier", { tier });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -106,7 +120,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!image || image.userId !== session.user.id) {
-      requestLogger.warn("Image not found or access denied", { imageId, userId: session.user.id });
+      requestLogger.warn("Image not found or access denied", {
+        imageId,
+        userId: session.user.id,
+      });
       const errorMessage = getUserFriendlyError(new Error("Not found"), 404);
       return NextResponse.json(
         {
@@ -153,9 +170,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!consumeResult.success) {
-      requestLogger.error("Failed to consume tokens", new Error(consumeResult.error), {
-        userId: session.user.id,
-      });
+      requestLogger.error(
+        "Failed to consume tokens",
+        new Error(consumeResult.error),
+        {
+          userId: session.user.id,
+        },
+      );
       const errorMessage = getUserFriendlyError(
         new Error(consumeResult.error || "Failed to consume tokens"),
         500,
@@ -206,7 +227,9 @@ export async function POST(request: NextRequest) {
         } catch (updateError) {
           requestLogger.error(
             "Failed to store workflowRunId - job may not be cancellable",
-            updateError instanceof Error ? updateError : new Error(String(updateError)),
+            updateError instanceof Error
+              ? updateError
+              : new Error(String(updateError)),
             { jobId: job.id, workflowRunId: workflowRun.runId },
           );
           // Continue - workflow is running, we just can't cancel it
@@ -220,7 +243,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Development: Run enhancement directly (fire-and-forget)
       // The workflow infrastructure doesn't fully execute in dev mode
-      requestLogger.info("Running enhancement directly (dev mode)", { jobId: job.id });
+      requestLogger.info("Running enhancement directly (dev mode)", {
+        jobId: job.id,
+      });
 
       // Fire and forget - don't await, let it run in the background
       enhanceImageDirect(enhancementInput).catch((error) => {

@@ -74,7 +74,9 @@ describe("/api/images/export", () => {
       mimeType: "image/jpeg",
       sizeBytes: mockConvertedBuffer.length,
     });
-    vi.mocked(mockPrisma.imageEnhancementJob.findFirst).mockResolvedValue(mockJob as never);
+    vi.mocked(mockPrisma.imageEnhancementJob.findFirst).mockResolvedValue(
+      mockJob as never,
+    );
   });
 
   it("should return 401 if user is not authenticated", async () => {

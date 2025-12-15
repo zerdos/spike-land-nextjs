@@ -33,13 +33,18 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(
       MAX_PAGE_SIZE,
-      Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10)),
+      Math.max(
+        1,
+        parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10),
+      ),
     );
 
     // Validate search query length
     if (search && search.length > MAX_SEARCH_LENGTH) {
       return NextResponse.json(
-        { error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)` },
+        {
+          error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)`,
+        },
         { status: 400 },
       );
     }

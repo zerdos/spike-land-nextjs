@@ -115,10 +115,13 @@ describe("API Keys Settings Route", () => {
     it("returns 401 when user is not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "Test Key" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Test Key" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -130,10 +133,13 @@ describe("API Keys Settings Route", () => {
     it("returns 400 when name is missing", async () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -145,10 +151,13 @@ describe("API Keys Settings Route", () => {
     it("returns 400 when name is empty string", async () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -160,10 +169,13 @@ describe("API Keys Settings Route", () => {
     it("returns 400 when name is whitespace only", async () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "   " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "   " }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -175,10 +187,13 @@ describe("API Keys Settings Route", () => {
     it("returns 400 when name exceeds 50 characters", async () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "a".repeat(51) }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "a".repeat(51) }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -191,10 +206,13 @@ describe("API Keys Settings Route", () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
       (countActiveApiKeys as Mock).mockResolvedValue(MAX_API_KEYS_PER_USER);
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "New Key" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "New Key" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -215,10 +233,13 @@ describe("API Keys Settings Route", () => {
         createdAt: mockDate,
       });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "My New Key" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "My New Key" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -247,10 +268,13 @@ describe("API Keys Settings Route", () => {
         createdAt: mockDate,
       });
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "  Trimmed Key  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "  Trimmed Key  " }),
+        },
+      );
 
       await POST(request);
 
@@ -262,10 +286,13 @@ describe("API Keys Settings Route", () => {
       (countActiveApiKeys as Mock).mockResolvedValue(0);
       (createApiKey as Mock).mockRejectedValue(new Error("Database error"));
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "Test Key" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Test Key" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -276,12 +303,17 @@ describe("API Keys Settings Route", () => {
 
     it("returns 500 when countActiveApiKeys throws", async () => {
       (auth as Mock).mockResolvedValue({ user: { id: testUserId } });
-      (countActiveApiKeys as Mock).mockRejectedValue(new Error("Database error"));
+      (countActiveApiKeys as Mock).mockRejectedValue(
+        new Error("Database error"),
+      );
 
-      const request = new NextRequest("http://localhost:3000/api/settings/api-keys", {
-        method: "POST",
-        body: JSON.stringify({ name: "Test Key" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/settings/api-keys",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Test Key" }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();

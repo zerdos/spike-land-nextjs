@@ -290,7 +290,11 @@ describe("useMultiFileUpload", () => {
         const file = formData.get("file") as File;
 
         // Different delays to ensure files complete in different order
-        const delay = file.name === "file1.jpg" ? 100 : file.name === "file2.jpg" ? 10 : 50;
+        const delay = file.name === "file1.jpg"
+          ? 100
+          : file.name === "file2.jpg"
+          ? 10
+          : 50;
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         fileCompletionOrder.push(file.name);
@@ -318,7 +322,11 @@ describe("useMultiFileUpload", () => {
       });
 
       // Files completed in different order (file2 first, then file3, then file1)
-      expect(fileCompletionOrder).toEqual(["file2.jpg", "file3.jpg", "file1.jpg"]);
+      expect(fileCompletionOrder).toEqual([
+        "file2.jpg",
+        "file3.jpg",
+        "file1.jpg",
+      ]);
 
       // But each file should have its correct imageId matching its name
       const file1Status = result.current.files.find((f) => f.file.name === "file1.jpg");
@@ -372,7 +380,9 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.completedCount + result.current.failedCount).toBe(3);
+        expect(result.current.completedCount + result.current.failedCount).toBe(
+          3,
+        );
       });
 
       // Verify each file has the correct status

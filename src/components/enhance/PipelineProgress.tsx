@@ -24,7 +24,9 @@ const STAGE_ORDER: Record<PipelineStage, number> = {
   GENERATING: 3,
 };
 
-export function PipelineProgress({ currentStage, isComplete, className }: PipelineProgressProps) {
+export function PipelineProgress(
+  { currentStage, isComplete, className }: PipelineProgressProps,
+) {
   const currentStageIndex = currentStage ? STAGE_ORDER[currentStage] : -1;
 
   return (
@@ -46,7 +48,12 @@ export function PipelineProgress({ currentStage, isComplete, className }: Pipeli
               )}
             >
               {isPast
-                ? <Check className="h-3 w-3" aria-label={`${stage.label} completed`} />
+                ? (
+                  <Check
+                    className="h-3 w-3"
+                    aria-label={`${stage.label} completed`}
+                  />
+                )
                 : isCurrent
                 ? (
                   <Loader2
@@ -54,7 +61,12 @@ export function PipelineProgress({ currentStage, isComplete, className }: Pipeli
                     aria-label={`${stage.label} in progress`}
                   />
                 )
-                : <Icon className="h-3 w-3" aria-label={`${stage.label} pending`} />}
+                : (
+                  <Icon
+                    className="h-3 w-3"
+                    aria-label={`${stage.label} pending`}
+                  />
+                )}
               <span className="hidden sm:inline">{stage.label}</span>
             </div>
             {index < STAGES.length - 1 && (
@@ -88,8 +100,16 @@ export function PipelineStageLabel({
   if (!stage) return null;
 
   return (
-    <span className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground", className)}>
-      <Loader2 className="h-3 w-3 animate-spin" aria-label={`${stage.label} in progress`} />
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 text-xs text-muted-foreground",
+        className,
+      )}
+    >
+      <Loader2
+        className="h-3 w-3 animate-spin"
+        aria-label={`${stage.label} in progress`}
+      />
       <span>{stage.label}...</span>
     </span>
   );

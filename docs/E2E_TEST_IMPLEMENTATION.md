@@ -1,6 +1,7 @@
 # E2E Test Implementation for Image Enhancement App Features
 
-This document describes the comprehensive E2E tests created for the newly implemented features in the Image Enhancement App.
+This document describes the comprehensive E2E tests created for the newly
+implemented features in the Image Enhancement App.
 
 ## Overview
 
@@ -17,7 +18,8 @@ Created comprehensive E2E test coverage for:
 
 #### 1. Legal Pages (`e2e/features/legal-pages.feature`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/features/legal-pages.feature`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/features/legal-pages.feature`
 - **Size**: 3.0 KB
 - **Scenarios**: 15 scenarios covering:
   - Privacy policy page accessibility
@@ -31,7 +33,8 @@ Created comprehensive E2E test coverage for:
 
 #### 2. Referral System (`e2e/features/referral-system.feature`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/features/referral-system.feature`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/features/referral-system.feature`
 - **Size**: 4.5 KB
 - **Tag**: `@requires-db`
 - **Scenarios**: 22 scenarios covering:
@@ -46,7 +49,8 @@ Created comprehensive E2E test coverage for:
 
 #### 3. Admin Dashboard (`e2e/features/admin-dashboard.feature`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/features/admin-dashboard.feature`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/features/admin-dashboard.feature`
 - **Size**: 5.5 KB
 - **Tag**: `@requires-db`
 - **Scenarios**: 30+ scenarios covering:
@@ -60,7 +64,8 @@ Created comprehensive E2E test coverage for:
 
 #### 4. Batch Operations (`e2e/features/batch-operations.feature`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/features/batch-operations.feature`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/features/batch-operations.feature`
 - **Size**: 6.4 KB
 - **Tag**: `@requires-db`
 - **Scenarios**: 30+ scenarios covering:
@@ -80,7 +85,8 @@ Created comprehensive E2E test coverage for:
 
 #### 1. Legal Pages Steps (`e2e/step-definitions/legal-pages.steps.ts`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/legal-pages.steps.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/legal-pages.steps.ts`
 - **Size**: 1.9 KB
 - **Key Features**:
   - Cookie consent banner manipulation
@@ -90,7 +96,8 @@ Created comprehensive E2E test coverage for:
 
 #### 2. Referral Steps (`e2e/step-definitions/referral.steps.ts`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/referral.steps.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/referral.steps.ts`
 - **Size**: 9.8 KB
 - **Key Features**:
   - API response mocking for referral data
@@ -102,7 +109,8 @@ Created comprehensive E2E test coverage for:
 
 #### 3. Admin Steps (`e2e/step-definitions/admin.steps.ts`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/admin.steps.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/admin.steps.ts`
 - **Size**: 8.2 KB
 - **Key Features**:
   - Admin status mocking
@@ -113,7 +121,8 @@ Created comprehensive E2E test coverage for:
 
 #### 4. Batch Operations Steps (`e2e/step-definitions/batch-operations.steps.ts`)
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/batch-operations.steps.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/batch-operations.steps.ts`
 - **Size**: 22 KB (largest file - comprehensive batch testing)
 - **Key Features**:
   - File upload simulation
@@ -128,7 +137,8 @@ Created comprehensive E2E test coverage for:
 
 ### 1. Authentication Helpers
 
-All tests leverage existing authentication helpers from `e2e/step-definitions/authentication.steps.ts`:
+All tests leverage existing authentication helpers from
+`e2e/step-definitions/authentication.steps.ts`:
 
 - `I am logged in as "Name" with email "email@example.com"`
 - `I am not logged in`
@@ -256,7 +266,8 @@ Quick-running tests (not explicitly tagged in new features)
 
 ### Clipboard API
 
-Some browsers/test environments may not support `navigator.clipboard.writeText()`:
+Some browsers/test environments may not support
+`navigator.clipboard.writeText()`:
 
 - Clipboard tests may need to be skipped in CI
 - Alternative: verify button state change instead of actual clipboard content
@@ -336,5 +347,7 @@ These new tests integrate seamlessly with existing E2E infrastructure:
 
 - **Cucumber Documentation**: https://cucumber.io/docs/cucumber/
 - **Playwright Documentation**: https://playwright.dev/
-- **Existing Tests**: See `e2e/features/image-enhancement.feature` for reference patterns
-- **Step Definitions**: See `e2e/step-definitions/authentication.steps.ts` for auth helpers
+- **Existing Tests**: See `e2e/features/image-enhancement.feature` for reference
+  patterns
+- **Step Definitions**: See `e2e/step-definitions/authentication.steps.ts` for
+  auth helpers

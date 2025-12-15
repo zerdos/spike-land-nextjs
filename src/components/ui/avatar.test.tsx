@@ -38,7 +38,10 @@ describe("Avatar Component", () => {
 
     it("should pass through additional props", () => {
       const { container } = render(<Avatar data-testid="avatar-test" />);
-      expect(container.firstChild).toHaveAttribute("data-testid", "avatar-test");
+      expect(container.firstChild).toHaveAttribute(
+        "data-testid",
+        "avatar-test",
+      );
     });
 
     it("should merge custom className with default classes", () => {

@@ -32,7 +32,9 @@ export default function SettingsError({
     <div className="container mx-auto p-4">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-destructive">Error Loading Settings</CardTitle>
+          <CardTitle className="text-destructive">
+            Error Loading Settings
+          </CardTitle>
           <CardDescription>
             We couldn&apos;t load your settings. Please try again.
           </CardDescription>

@@ -1,8 +1,7 @@
 # Sitemap Page Test Results
 
-**Test Date:** 2025-12-05
-**Test Method:** Automated Playwright MCP browser testing
-**Total Pages Tested:** 22
+**Test Date:** 2025-12-05 **Test Method:** Automated Playwright MCP browser
+testing **Total Pages Tested:** 22
 
 ---
 
@@ -19,65 +18,67 @@
 
 ### 1. /enhance
 
-**URL:** https://spike.land/enhance
-**Status:** FAIL
-**Error Type:** React Hydration Error
-**Error Details:**
+**URL:** https://spike.land/enhance **Status:** FAIL **Error Type:** React
+Hydration Error **Error Details:**
 
 ```
 Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]=
 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
 ```
 
-**Description:** React hydration mismatch error. This error (#418) indicates that the server-rendered HTML doesn't match what React expected during hydration. The error involves a "text" element. This is likely caused by conditional rendering based on browser-only values or dynamic content that differs between server and client.
+**Description:** React hydration mismatch error. This error (#418) indicates
+that the server-rendered HTML doesn't match what React expected during
+hydration. The error involves a "text" element. This is likely caused by
+conditional rendering based on browser-only values or dynamic content that
+differs between server and client.
 
 ---
 
 ### 2. /admin/analytics
 
-**URL:** https://spike.land/admin/analytics
-**Status:** FAIL
-**Error Type:** API Server Error (500)
-**Error Details:**
+**URL:** https://spike.land/admin/analytics **Status:** FAIL **Error Type:** API
+Server Error (500) **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
 @ https://spike.land/api/admin/analytics/users
 ```
 
-**Description:** The page displays "Error: Failed to fetch analytics". The backend API endpoint `/api/admin/analytics/users` is returning a 500 Internal Server Error.
+**Description:** The page displays "Error: Failed to fetch analytics". The
+backend API endpoint `/api/admin/analytics/users` is returning a 500 Internal
+Server Error.
 
 ---
 
 ### 3. /admin/tokens
 
-**URL:** https://spike.land/admin/tokens
-**Status:** FAIL
-**Error Type:** API Server Error (500)
-**Error Details:**
+**URL:** https://spike.land/admin/tokens **Status:** FAIL **Error Type:** API
+Server Error (500) **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
 @ https://spike.land/api/admin/analytics/tokens
 ```
 
-**Description:** The page displays "Error: Failed to fetch token analytics". The backend API endpoint `/api/admin/analytics/tokens` is returning a 500 Internal Server Error.
+**Description:** The page displays "Error: Failed to fetch token analytics". The
+backend API endpoint `/api/admin/analytics/tokens` is returning a 500 Internal
+Server Error.
 
 ---
 
 ### 4. /admin/system
 
-**URL:** https://spike.land/admin/system
-**Status:** FAIL
-**Error Type:** API Server Error (500)
-**Error Details:**
+**URL:** https://spike.land/admin/system **Status:** FAIL **Error Type:** API
+Server Error (500) **Error Details:**
 
 ```
 Failed to load resource: the server responded with a status of 500 ()
 @ https://spike.land/api/admin/system/health
 ```
 
-**Description:** The page displays "Error: Failed to fetch system health". The backend API endpoint `/api/admin/system/health` is returning a 500 Internal Server Error.
+**Description:** The page displays "Error: Failed to fetch system health". The
+backend API endpoint `/api/admin/system/health` is returning a 500 Internal
+Server Error.
 
 ---
 
@@ -121,7 +122,8 @@ Failed to load resource: the server responded with a status of 405 ()
 @ https://spike.land/_vercel/insights/view
 ```
 
-This is a known Vercel Analytics issue when viewing pages in automated testing contexts and is not a functional problem for end users.
+This is a known Vercel Analytics issue when viewing pages in automated testing
+contexts and is not a functional problem for end users.
 
 ---
 
@@ -129,22 +131,26 @@ This is a known Vercel Analytics issue when viewing pages in automated testing c
 
 ### High Priority
 
-1. **Fix React Hydration Error on /enhance** - Investigate the source of the hydration mismatch. Common causes:
+1. **Fix React Hydration Error on /enhance** - Investigate the source of the
+   hydration mismatch. Common causes:
    - Conditional rendering based on `window` or `document`
    - Using `Date.now()` or `Math.random()` during render
    - Browser-only APIs being called during SSR
    - Dynamic content that changes between server and client render
 
-2. **Fix Admin Analytics API Endpoints** - Three admin API endpoints are returning 500 errors:
+2. **Fix Admin Analytics API Endpoints** - Three admin API endpoints are
+   returning 500 errors:
    - `/api/admin/analytics/users`
    - `/api/admin/analytics/tokens`
    - `/api/admin/system/health`
 
-   Check server logs for the specific error messages and fix the underlying issues (likely database queries or missing data handling).
+   Check server logs for the specific error messages and fix the underlying
+   issues (likely database queries or missing data handling).
 
 ### Low Priority
 
-- The Vercel Insights 405 error can be ignored as it only appears in automated testing environments.
+- The Vercel Insights 405 error can be ignored as it only appears in automated
+  testing environments.
 
 ---
 

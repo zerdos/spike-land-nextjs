@@ -107,7 +107,9 @@ export async function POST(request: NextRequest) {
 
       if (sourceAlbum.userId !== session.user.id) {
         return NextResponse.json(
-          { error: "You do not have permission to remove images from the source album" },
+          {
+            error: "You do not have permission to remove images from the source album",
+          },
           { status: 403 },
         );
       }
@@ -150,7 +152,9 @@ export async function POST(request: NextRequest) {
           });
 
           // Remove from source album if requested
-          if (removeFromSourceAlbum && typeof removeFromSourceAlbum === "string") {
+          if (
+            removeFromSourceAlbum && typeof removeFromSourceAlbum === "string"
+          ) {
             await prisma.albumImage.deleteMany({
               where: {
                 albumId: removeFromSourceAlbum,

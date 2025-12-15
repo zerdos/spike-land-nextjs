@@ -24,7 +24,9 @@ interface CreateBoxFormProps {
 
 export function CreateBoxForm({ tiers }: CreateBoxFormProps) {
   const router = useRouter();
-  const [selectedTierId, setSelectedTierId] = useState<string>(tiers[0]?.id || "");
+  const [selectedTierId, setSelectedTierId] = useState<string>(
+    tiers[0]?.id || "",
+  );
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -92,7 +94,9 @@ export function CreateBoxForm({ tiers }: CreateBoxFormProps) {
                 <CardFooter>
                   <div className="text-lg font-bold">
                     {tier.pricePerHour}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">tokens/hr</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      tokens/hr
+                    </span>
                   </div>
                 </CardFooter>
               </Card>
@@ -119,7 +123,11 @@ export function CreateBoxForm({ tiers }: CreateBoxFormProps) {
       </div>
 
       <div className="pt-4">
-        <Button type="submit" size="lg" disabled={isLoading || !selectedTierId || !name}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isLoading || !selectedTierId || !name}
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Box
         </Button>

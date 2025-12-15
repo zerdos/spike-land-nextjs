@@ -24,7 +24,11 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
     expect(screen.getByText("Error Loading My Apps")).toBeInTheDocument();
-    expect(screen.getByText("We couldn't load your apps. This might be a temporary issue."))
+    expect(
+      screen.getByText(
+        "We couldn't load your apps. This might be a temporary issue.",
+      ),
+    )
       .toBeInTheDocument();
   });
 
@@ -45,7 +49,8 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByText(/An error occurred while loading your apps/i)).toBeInTheDocument();
+    expect(screen.getByText(/An error occurred while loading your apps/i))
+      .toBeInTheDocument();
     expect(screen.queryByText("Failed to load apps")).not.toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
@@ -55,7 +60,8 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
     const emptyError = new Error("");
     render(<MyAppsError error={emptyError} reset={mockReset} />);
 
-    expect(screen.getByText(/An error occurred while loading your apps/i)).toBeInTheDocument();
+    expect(screen.getByText(/An error occurred while loading your apps/i))
+      .toBeInTheDocument();
   });
 
   it("should call reset when Try again button is clicked", async () => {
@@ -115,12 +121,16 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
   it("should have both action buttons", () => {
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /go home/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /go home/i }))
+      .toBeInTheDocument();
   });
 
   it("should re-log error if error changes", () => {
-    const { rerender } = render(<MyAppsError error={mockError} reset={mockReset} />);
+    const { rerender } = render(
+      <MyAppsError error={mockError} reset={mockReset} />,
+    );
 
     expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
 
@@ -131,7 +141,9 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
   });
 
   it("should render within container", () => {
-    const { container } = render(<MyAppsError error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <MyAppsError error={mockError} reset={mockReset} />,
+    );
 
     expect(container.querySelector(".container")).toBeInTheDocument();
   });
@@ -149,11 +161,15 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByText("Development Mode - Troubleshooting")).toBeInTheDocument();
+    expect(screen.getByText("Development Mode - Troubleshooting"))
+      .toBeInTheDocument();
     expect(screen.getByText(/Database is not running/i)).toBeInTheDocument();
-    expect(screen.getByText(/DATABASE_URL environment variable/i)).toBeInTheDocument();
-    expect(screen.getByText(/Prisma client needs to be generated/i)).toBeInTheDocument();
-    expect(screen.getByText(/Database migrations haven't been applied/i)).toBeInTheDocument();
+    expect(screen.getByText(/DATABASE_URL environment variable/i))
+      .toBeInTheDocument();
+    expect(screen.getByText(/Prisma client needs to be generated/i))
+      .toBeInTheDocument();
+    expect(screen.getByText(/Database migrations haven't been applied/i))
+      .toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
   });
@@ -164,8 +180,10 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
-    expect(screen.queryByText("Development Mode - Troubleshooting")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Database is not running/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Development Mode - Troubleshooting")).not
+      .toBeInTheDocument();
+    expect(screen.queryByText(/Database is not running/i)).not
+      .toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
   });

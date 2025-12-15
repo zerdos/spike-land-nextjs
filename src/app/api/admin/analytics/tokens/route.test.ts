@@ -60,7 +60,11 @@ describe("Token Economics API", () => {
     ] as any);
 
     vi.mocked(prisma.$queryRaw).mockResolvedValue([
-      { date: new Date("2025-01-01"), purchased: BigInt(100), spent: BigInt(50) },
+      {
+        date: new Date("2025-01-01"),
+        purchased: BigInt(100),
+        spent: BigInt(50),
+      },
     ]);
 
     vi.mocked(prisma.stripePayment.aggregate).mockResolvedValue({
@@ -75,7 +79,11 @@ describe("Token Economics API", () => {
     vi.mocked(prisma.tokenTransaction.count).mockResolvedValue(100);
 
     vi.mocked(prisma.tokensPackage.findMany).mockResolvedValue([
-      { name: "Basic", tokens: 100, stripePayments: [{ id: "1" }, { id: "2" }] },
+      {
+        name: "Basic",
+        tokens: 100,
+        stripePayments: [{ id: "1" }, { id: "2" }],
+      },
     ] as any);
 
     const response = await GET();
@@ -95,11 +103,15 @@ describe("Token Economics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Simulate partial failures
-    vi.mocked(prisma.tokenTransaction.groupBy).mockRejectedValue(new Error("GroupBy error"));
+    vi.mocked(prisma.tokenTransaction.groupBy).mockRejectedValue(
+      new Error("GroupBy error"),
+    );
     vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error("Query error"));
     vi.mocked(prisma.stripePayment.aggregate).mockResolvedValue({
       _sum: { amountUSD: null },
@@ -125,7 +137,10 @@ describe("Token Economics API", () => {
       "Failed to fetch tokens by type:",
       expect.any(Error),
     );
-    expect(console.error).toHaveBeenCalledWith("Failed to fetch daily tokens:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch daily tokens:",
+      expect.any(Error),
+    );
   });
 
   it("should handle individual query failures gracefully", async () => {
@@ -133,7 +148,9 @@ describe("Token Economics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Success for some queries, failure for others
@@ -141,14 +158,22 @@ describe("Token Economics API", () => {
       { type: "EARN_PURCHASE", _sum: { amount: 1000 } },
     ] as any);
     vi.mocked(prisma.$queryRaw).mockResolvedValue([
-      { date: new Date("2025-01-01"), purchased: BigInt(100), spent: BigInt(50) },
+      {
+        date: new Date("2025-01-01"),
+        purchased: BigInt(100),
+        spent: BigInt(50),
+      },
     ]);
-    vi.mocked(prisma.stripePayment.aggregate).mockRejectedValue(new Error("Revenue error"));
+    vi.mocked(prisma.stripePayment.aggregate).mockRejectedValue(
+      new Error("Revenue error"),
+    );
     vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
       _avg: { balance: 50 },
       _sum: { balance: 5000 },
     } as any);
-    vi.mocked(prisma.tokenTransaction.count).mockRejectedValue(new Error("Count error"));
+    vi.mocked(prisma.tokenTransaction.count).mockRejectedValue(
+      new Error("Count error"),
+    );
     vi.mocked(prisma.tokensPackage.findMany).mockResolvedValue([]);
 
     const response = await GET();
@@ -160,7 +185,10 @@ describe("Token Economics API", () => {
     expect(data.revenue.total).toBe(0);
     expect(data.circulation.total).toBe(5000);
     expect(data.regenerationCount).toBe(0);
-    expect(console.error).toHaveBeenCalledWith("Failed to fetch revenue:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch revenue:",
+      expect.any(Error),
+    );
     expect(console.error).toHaveBeenCalledWith(
       "Failed to fetch regeneration count:",
       expect.any(Error),
@@ -172,7 +200,9 @@ describe("Token Economics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     vi.mocked(prisma.tokenTransaction.groupBy).mockResolvedValue([
@@ -204,7 +234,9 @@ describe("Token Economics API", () => {
       user: { id: "admin_123" },
     } as any);
 
-    const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+    const { requireAdminByUserId } = await import(
+      "@/lib/auth/admin-middleware"
+    );
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
     // Return non-array values (edge case)

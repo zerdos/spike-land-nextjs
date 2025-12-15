@@ -35,7 +35,10 @@ export function usePeer(config: PeerConfig) {
   const initialize = useCallback(() => {
     // Prevent multiple simultaneous initializations
     if (isInitializing.current) return;
-    if (peerRef.current && !peerRef.current.disconnected && !peerRef.current.destroyed) return;
+    if (
+      peerRef.current && !peerRef.current.disconnected &&
+      !peerRef.current.destroyed
+    ) return;
 
     // Check browser support
     if (!isWebRTCSupported()) {
@@ -122,7 +125,9 @@ export function usePeer(config: PeerConfig) {
       setState((prev) => ({
         ...prev,
         status: "failed",
-        error: error instanceof Error ? error.message : "Failed to initialize peer",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initialize peer",
       }));
       isInitializing.current = false;
     }

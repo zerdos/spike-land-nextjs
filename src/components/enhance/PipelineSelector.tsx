@@ -87,7 +87,8 @@ export function PipelineSelector({
 
   // Get display name for current selection
   const selectedPipeline = value ? getPipelineById(value) : null;
-  const displayValue = selectedPipeline?.name || (value ? "Unknown pipeline" : null);
+  const displayValue = selectedPipeline?.name ||
+    (value ? "Unknown pipeline" : null);
 
   if (isLoading) {
     return (

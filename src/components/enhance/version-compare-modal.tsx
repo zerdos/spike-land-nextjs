@@ -69,7 +69,11 @@ const formatDate = (date: string | Date): string => {
   });
 };
 
-const handleDownload = (url: string | null, imageName: string, tier: string): void => {
+const handleDownload = (
+  url: string | null,
+  imageName: string,
+  tier: string,
+): void => {
   if (!url) return;
   const link = document.createElement("a");
   link.href = url;
@@ -93,8 +97,12 @@ export function VersionCompareModal({
 
   useEffect(() => {
     if (open) {
-      setVersion1(initialVersion1 ?? (versions.length > 0 ? versions[0] : null) ?? null);
-      setVersion2(initialVersion2 ?? (versions.length > 1 ? versions[1] : null) ?? null);
+      setVersion1(
+        initialVersion1 ?? (versions.length > 0 ? versions[0] : null) ?? null,
+      );
+      setVersion2(
+        initialVersion2 ?? (versions.length > 1 ? versions[1] : null) ?? null,
+      );
     }
   }, [open, initialVersion1, initialVersion2, versions]);
 
@@ -103,7 +111,7 @@ export function VersionCompareModal({
   }
 
   const getVersionById = (jobId: string): Version | null => {
-    return versions.find(v => v.jobId === jobId) || null;
+    return versions.find((v) => v.jobId === jobId) || null;
   };
 
   const getImageUrl = (version: Version | null): string => {
@@ -140,15 +148,17 @@ export function VersionCompareModal({
               <label className="text-sm font-medium">Left Image</label>
               <Select
                 value={version1?.jobId || "original"}
-                onValueChange={jobId =>
-                  setVersion1(jobId === "original" ? null : getVersionById(jobId))}
+                onValueChange={(jobId) =>
+                  setVersion1(
+                    jobId === "original" ? null : getVersionById(jobId),
+                  )}
               >
                 <SelectTrigger data-testid="version1-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="original">Original</SelectItem>
-                  {versions.map(version => (
+                  {versions.map((version) => (
                     <SelectItem key={version.jobId} value={version.jobId}>
                       {getTierLabel(version.tier)} - {formatDate(version.createdAt)}
                     </SelectItem>
@@ -157,7 +167,10 @@ export function VersionCompareModal({
               </Select>
               {version1 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className={getTierColor(version1.tier)} variant="outline">
+                  <Badge
+                    className={getTierColor(version1.tier)}
+                    variant="outline"
+                  >
                     {getTierLabel(version1.tier)}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
@@ -171,7 +184,12 @@ export function VersionCompareModal({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDownload(version1.resultUrl, imageName, version1.tier)}
+                    onClick={() =>
+                      handleDownload(
+                        version1.resultUrl,
+                        imageName,
+                        version1.tier,
+                      )}
                     disabled={!version1.resultUrl}
                     className="h-6 px-2"
                     data-testid="download-version1"
@@ -186,15 +204,17 @@ export function VersionCompareModal({
               <label className="text-sm font-medium">Right Image</label>
               <Select
                 value={version2?.jobId || "original"}
-                onValueChange={jobId =>
-                  setVersion2(jobId === "original" ? null : getVersionById(jobId))}
+                onValueChange={(jobId) =>
+                  setVersion2(
+                    jobId === "original" ? null : getVersionById(jobId),
+                  )}
               >
                 <SelectTrigger data-testid="version2-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="original">Original</SelectItem>
-                  {versions.map(version => (
+                  {versions.map((version) => (
                     <SelectItem key={version.jobId} value={version.jobId}>
                       {getTierLabel(version.tier)} - {formatDate(version.createdAt)}
                     </SelectItem>
@@ -203,7 +223,10 @@ export function VersionCompareModal({
               </Select>
               {version2 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className={getTierColor(version2.tier)} variant="outline">
+                  <Badge
+                    className={getTierColor(version2.tier)}
+                    variant="outline"
+                  >
                     {getTierLabel(version2.tier)}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
@@ -217,7 +240,12 @@ export function VersionCompareModal({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDownload(version2.resultUrl, imageName, version2.tier)}
+                    onClick={() =>
+                      handleDownload(
+                        version2.resultUrl,
+                        imageName,
+                        version2.tier,
+                      )}
                     disabled={!version2.resultUrl}
                     className="h-6 px-2"
                     data-testid="download-version2"

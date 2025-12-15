@@ -1,6 +1,9 @@
 # Cloudflare Cloud Services: Best Practices & Integration Guide
 
-A comprehensive guide to Cloudflare's cloud services ecosystem, including R2 object storage, Workers edge computing, D1 SQL database, and security features. This document covers best practices, integration patterns, and practical implementation strategies for Next.js applications.
+A comprehensive guide to Cloudflare's cloud services ecosystem, including R2
+object storage, Workers edge computing, D1 SQL database, and security features.
+This document covers best practices, integration patterns, and practical
+implementation strategies for Next.js applications.
 
 ---
 
@@ -21,7 +24,9 @@ A comprehensive guide to Cloudflare's cloud services ecosystem, including R2 obj
 
 ### Overview
 
-Cloudflare R2 is a serverless object storage solution with S3-compatible API. The key differentiator is **zero egress fees**, making it ideal for applications with high data retrieval requirements.
+Cloudflare R2 is a serverless object storage solution with S3-compatible API.
+The key differentiator is **zero egress fees**, making it ideal for applications
+with high data retrieval requirements.
 
 **Key Facts:**
 
@@ -33,7 +38,8 @@ Cloudflare R2 is a serverless object storage solution with S3-compatible API. Th
 
 ### S3 Compatibility
 
-R2 implements the S3 API to enable seamless migration from AWS S3. However, not all S3 features are available.
+R2 implements the S3 API to enable seamless migration from AWS S3. However, not
+all S3 features are available.
 
 #### Configuration Details
 
@@ -237,7 +243,9 @@ R2 integrates seamlessly with Cloudflare's global CDN:
 
 ### Overview
 
-Cloudflare Workers enables serverless computing at the edge—code runs in 200+ data centers globally, close to users. This provides sub-millisecond response times and automatic scaling.
+Cloudflare Workers enables serverless computing at the edge—code runs in 200+
+data centers globally, close to users. This provides sub-millisecond response
+times and automatic scaling.
 
 **Key Benefits:**
 
@@ -554,7 +562,8 @@ Includes:
 
 ### Overview
 
-D1 is Cloudflare's managed serverless SQL database built on SQLite. It combines SQLite's simplicity with Cloudflare's global infrastructure.
+D1 is Cloudflare's managed serverless SQL database built on SQLite. It combines
+SQLite's simplicity with Cloudflare's global infrastructure.
 
 **Key Facts:**
 
@@ -778,7 +787,10 @@ SELECT * FROM users_fts WHERE name MATCH 'john';
 ```javascript
 // Batch multiple statements
 const result = await env.DB.batch([
-  env.DB.prepare(`INSERT INTO users (id, name) VALUES (?, ?)`).bind("1", "Alice"),
+  env.DB.prepare(`INSERT INTO users (id, name) VALUES (?, ?)`).bind(
+    "1",
+    "Alice",
+  ),
   env.DB.prepare(`INSERT INTO users (id, name) VALUES (?, ?)`).bind("2", "Bob"),
   env.DB.prepare(`UPDATE users SET active = 1 WHERE id = ?`).bind("1"),
 ]);
@@ -786,7 +798,8 @@ const result = await env.DB.batch([
 
 ### Connection Pooling
 
-D1 automatically manages connections—no manual pooling needed. However, be mindful of concurrent query limits on Worker Free plan.
+D1 automatically manages connections—no manual pooling needed. However, be
+mindful of concurrent query limits on Worker Free plan.
 
 ---
 
@@ -1556,6 +1569,5 @@ D1 works well for most production apps, but:
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** December 2024
-**Maintained By:** Development Team
+**Document Version:** 1.0 **Last Updated:** December 2024 **Maintained By:**
+Development Team

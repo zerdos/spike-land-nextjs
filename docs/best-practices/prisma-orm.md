@@ -1,9 +1,11 @@
 # Prisma ORM Best Practices for Production Applications
 
-A comprehensive guide covering schema design, query optimization, migrations, connection management, type safety, and testing strategies for production Prisma applications.
+A comprehensive guide covering schema design, query optimization, migrations,
+connection management, type safety, and testing strategies for production Prisma
+applications.
 
-**Last Updated:** December 2025
-**Prisma Version:** 6.x+ (with Rust-free support available in v6.16.0+)
+**Last Updated:** December 2025 **Prisma Version:** 6.x+ (with Rust-free support
+available in v6.16.0+)
 
 ---
 
@@ -24,7 +26,8 @@ A comprehensive guide covering schema design, query optimization, migrations, co
 
 ### 1. Model Relationships
 
-Defining proper relationships is fundamental to a well-structured Prisma schema. Use explicit relation syntax to establish clear relationships between models.
+Defining proper relationships is fundamental to a well-structured Prisma schema.
+Use explicit relation syntax to establish clear relationships between models.
 
 #### One-to-Many Relationship
 
@@ -111,13 +114,16 @@ model Category {
 **Best Practices:**
 
 - Always name relations explicitly for clarity: `@relation("RelationName")`
-- Set `onDelete` and `onUpdate` strategies explicitly (`Cascade`, `SetNull`, `Restrict`)
-- Use `@@map` and `@map` for mapping to different database names while keeping TypeScript names clean
+- Set `onDelete` and `onUpdate` strategies explicitly (`Cascade`, `SetNull`,
+  `Restrict`)
+- Use `@@map` and `@map` for mapping to different database names while keeping
+  TypeScript names clean
 - Avoid deeply nested relations; keep query paths shallow (usually max 3 levels)
 
 ### 2. Index Optimization
 
-Strategic indexing dramatically improves query performance without impacting schema design.
+Strategic indexing dramatically improves query performance without impacting
+schema design.
 
 #### Single Column Index
 
@@ -176,11 +182,13 @@ model Product {
 
 **PostgreSQL Index Types:**
 
-- **B-tree** (default): Best for equality (`=`) and range (`<`, `>`, `<=`, `>=`) queries
+- **B-tree** (default): Best for equality (`=`) and range (`<`, `>`, `<=`, `>=`)
+  queries
 - **Hash**: Excellent for equality-only queries with O(1) lookup
 - **GIN**: Ideal for full-text search and composite values
 - **GiST/SP-GiST**: For geometric types and pattern matching
-- **BRIN**: Space-efficient for immutable data (timestamps, auto-incrementing IDs)
+- **BRIN**: Space-efficient for immutable data (timestamps, auto-incrementing
+  IDs)
 
 ```prisma
 // PostgreSQL full-text search
@@ -203,7 +211,8 @@ model Article {
 **Best Practices:**
 
 - Index columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses
-- Index foreign keys automatically when using `referentialIntegrity = "database"`
+- Index foreign keys automatically when using
+  `referentialIntegrity = "database"`
 - For `relationMode = "prisma"`, explicitly add indexes on foreign key fields
 - Avoid over-indexing: each index slows writes and consumes storage
 - Monitor query performance with database tools before indexing aggressively
@@ -211,7 +220,8 @@ model Article {
 
 ### 3. Enum Usage
 
-Enums provide type safety and prevent invalid values from entering your database.
+Enums provide type safety and prevent invalid values from entering your
+database.
 
 ```prisma
 model Order {
@@ -284,7 +294,8 @@ model User {
 
 ### 1. N+1 Query Prevention
 
-The N+1 problem occurs when you fetch a parent record and then loop through results fetching related records individually.
+The N+1 problem occurs when you fetch a parent record and then loop through
+results fetching related records individually.
 
 #### The Problem
 
@@ -310,7 +321,7 @@ const users = await prisma.user.findMany({
 });
 
 // All data available without additional queries
-users.forEach(user => {
+users.forEach((user) => {
   console.log(user.posts);
 });
 ```
@@ -364,7 +375,7 @@ const posts = await prisma.post.findMany({
 
 // Then map to users manually or use in-memory joining
 const postsMap = new Map();
-posts.forEach(post => {
+posts.forEach((post) => {
   if (!postsMap.has(post.userId)) {
     postsMap.set(post.userId, []);
   }
@@ -384,7 +395,7 @@ const postsLoader = new DataLoader(async (userIds) => {
   });
 
   // Return posts in the same order as userIds
-  return userIds.map(id => posts.filter(p => p.userId === id));
+  return userIds.map((id) => posts.filter((p) => p.userId === id));
 });
 
 // In resolver
@@ -392,8 +403,8 @@ const user = await prisma.user.findUnique({ where: { id: 1 } });
 const userPosts = await postsLoader.load(user.id);
 ```
 
-**Important Constraint:**
-Cannot use `select` and `include` at the same nesting level. Choose one or the other:
+**Important Constraint:** Cannot use `select` and `include` at the same nesting
+level. Choose one or the other:
 
 ```typescript
 // ❌ ERROR: Can't mix select and include at same level
@@ -501,8 +512,8 @@ const stats = await prisma.$queryRaw<UserStats[]>`
 - Window functions and CTE (Common Table Expressions)
 - Stored procedure calls (via raw SQL)
 
-**Security Note:**
-Always use parameterized queries with template literals. Never use string concatenation:
+**Security Note:** Always use parameterized queries with template literals.
+Never use string concatenation:
 
 ```typescript
 // ✅ SAFE: Parameterized
@@ -628,7 +639,8 @@ npx prisma migrate resolve --rolled-back "20240101120000_add_new_column"
 
 ### 4. Handling Schema Drift
 
-Schema drift occurs when your production database schema doesn't match your migration history.
+Schema drift occurs when your production database schema doesn't match your
+migration history.
 
 ```bash
 # Check for schema drift
@@ -685,7 +697,8 @@ model User {
 
 ### 1. Connection Pooling Configuration
 
-The default connection pool size is `num_cpus * 2 + 1`. Adjust based on your workload:
+The default connection pool size is `num_cpus * 2 + 1`. Adjust based on your
+workload:
 
 ```typescript
 // prisma/schema.prisma
@@ -746,7 +759,8 @@ export async function GET() {
 
 ### 3. PgBouncer Integration (PostgreSQL)
 
-For serverless environments with PostgreSQL, use PgBouncer for connection pooling:
+For serverless environments with PostgreSQL, use PgBouncer for connection
+pooling:
 
 ```typescript
 // .env.production
@@ -971,7 +985,9 @@ const userSelect = {
 
 type UserSelects = typeof userSelect;
 type BasicUser = Prisma.UserGetPayload<{ select: UserSelects["basic"]; }>;
-type UserWithPosts = Prisma.UserGetPayload<{ select: UserSelects["withPosts"]; }>;
+type UserWithPosts = Prisma.UserGetPayload<
+  { select: UserSelects["withPosts"]; }
+>;
 
 // Use in queries
 async function getUserBasic(id: number): Promise<BasicUser> {
@@ -1060,7 +1076,9 @@ beforeEach(() => {
   mockReset(prismaMock);
 });
 
-export const prismaMock = jest.mocked(prisma) as unknown as DeepMockProxy<PrismaClient>;
+export const prismaMock = jest.mocked(prisma) as unknown as DeepMockProxy<
+  PrismaClient
+>;
 ```
 
 ### 2. Integration Testing with Test Database
@@ -1350,7 +1368,7 @@ const interval = setInterval(() => {
     SELECT datname, count(*) as connections
     FROM pg_stat_activity
     GROUP BY datname
-  `.then(result => {
+  `.then((result) => {
     console.log("Database connections:", result);
   });
 }, 30000);
@@ -1480,6 +1498,8 @@ npm start
 
 ## Contributing & Updates
 
-This document reflects best practices as of December 2025. As Prisma evolves (with Prisma 7.0.0 planned for mid-2025), best practices may change. Check the official documentation regularly for updates.
+This document reflects best practices as of December 2025. As Prisma evolves
+(with Prisma 7.0.0 planned for mid-2025), best practices may change. Check the
+official documentation regularly for updates.
 
 For improvements or corrections, please submit updates to this documentation.

@@ -248,7 +248,9 @@ describe("VoucherManager", () => {
       voucher: {
         findUnique: vi.fn().mockResolvedValue(voucher),
         update: vi.fn().mockImplementation(() => {
-          if (voucher && typeof voucher === "object" && "currentUses" in voucher) {
+          if (
+            voucher && typeof voucher === "object" && "currentUses" in voucher
+          ) {
             return Promise.resolve({
               ...voucher,
               currentUses: (voucher as { currentUses: number; }).currentUses + 1,
@@ -287,7 +289,10 @@ describe("VoucherManager", () => {
           const tokensToGrant = voucher && typeof voucher === "object" && "value" in voucher
             ? (voucher as { value: number; }).value
             : 0;
-          return Promise.resolve({ userId: testUserId, balance: initialBalance + tokensToGrant });
+          return Promise.resolve({
+            userId: testUserId,
+            balance: initialBalance + tokensToGrant,
+          });
         }),
       },
       tokenTransaction: {
@@ -421,7 +426,10 @@ describe("VoucherManager", () => {
         const mockTx = {
           voucher: {
             findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
+            update: vi.fn().mockResolvedValue({
+              ...mockVoucher,
+              currentUses: 4,
+            }),
           },
           voucherRedemption: {
             create: vi.fn().mockResolvedValue({
@@ -448,7 +456,10 @@ describe("VoucherManager", () => {
               balance: 0,
               lastRegeneration: new Date(),
             }),
-            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: currentBalance + 50 }),
+            update: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: currentBalance + 50,
+            }),
           },
           tokenTransaction: {
             create: vi.fn().mockResolvedValue({ id: "tx-1" }),
@@ -599,7 +610,10 @@ describe("VoucherManager", () => {
         const mockTx = {
           voucher: {
             findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
+            update: vi.fn().mockResolvedValue({
+              ...mockVoucher,
+              currentUses: 4,
+            }),
           },
           voucherRedemption: {
             create: vi.fn().mockResolvedValue({
@@ -623,7 +637,10 @@ describe("VoucherManager", () => {
               balance: 0,
               lastRegeneration: new Date(),
             }),
-            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: 200 }),
+            update: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 200,
+            }),
           },
           tokenTransaction: {
             create: vi.fn().mockImplementation((params) => {
@@ -667,7 +684,10 @@ describe("VoucherManager", () => {
         const mockTx = {
           voucher: {
             findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
+            update: vi.fn().mockResolvedValue({
+              ...mockVoucher,
+              currentUses: 4,
+            }),
           },
           voucherRedemption: {
             create: vi.fn().mockResolvedValue({
@@ -727,7 +747,10 @@ describe("VoucherManager", () => {
         const mockTx = {
           voucher: {
             findUnique: vi.fn().mockResolvedValue(mockVoucher),
-            update: vi.fn().mockResolvedValue({ ...mockVoucher, currentUses: 4 }),
+            update: vi.fn().mockResolvedValue({
+              ...mockVoucher,
+              currentUses: 4,
+            }),
           },
           voucherRedemption: {
             create: vi.fn().mockResolvedValue({
@@ -750,7 +773,10 @@ describe("VoucherManager", () => {
                 lastRegeneration: new Date(),
               });
             }),
-            update: vi.fn().mockResolvedValue({ userId: testUserId, balance: 50 }),
+            update: vi.fn().mockResolvedValue({
+              userId: testUserId,
+              balance: 50,
+            }),
           },
           tokenTransaction: {
             create: vi.fn().mockResolvedValue({ id: "tx-1" }),

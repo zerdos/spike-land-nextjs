@@ -9,7 +9,11 @@ import { useState } from "react";
 // Google "G" logo SVG
 function GoogleIcon({ className }: { className?: string; }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
         fill="#4285F4"
@@ -205,7 +209,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
 
       if (result?.error) {
         // Account was created but signin failed - unusual but handle it
-        setError("Account created but sign in failed. Please try signing in again.");
+        setError(
+          "Account created but sign in failed. Please try signing in again.",
+        );
       } else if (result?.ok) {
         const params = new URLSearchParams(window.location.search);
         const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
@@ -236,15 +242,18 @@ export function AuthButtons({ className }: AuthButtonsProps) {
   };
 
   const renderEmailStep = () => (
-    <form onSubmit={handleEmailContinue} className="space-y-4" autoComplete="off">
+    <form
+      onSubmit={handleEmailContinue}
+      className="space-y-4"
+      autoComplete="off"
+    >
       <div className="space-y-2">
         <Input
           id="email"
           type="email"
           placeholder="name@example.com"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isCheckingEmail}
           className="h-12"

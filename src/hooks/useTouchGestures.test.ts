@@ -70,7 +70,9 @@ describe("useTouchGestures", () => {
       cancelable: true,
       touches: type === "touchend" || type === "touchcancel" ? [] : touchList,
       changedTouches: touchList,
-      targetTouches: type === "touchend" || type === "touchcancel" ? [] : touchList,
+      targetTouches: type === "touchend" || type === "touchcancel"
+        ? []
+        : touchList,
     });
 
     return event;
@@ -678,7 +680,10 @@ describe("useTouchGestures", () => {
 
   describe("cleanup", () => {
     it("should remove event listeners on unmount", () => {
-      const removeEventListenerSpy = vi.spyOn(mockElement, "removeEventListener");
+      const removeEventListenerSpy = vi.spyOn(
+        mockElement,
+        "removeEventListener",
+      );
 
       const { unmount } = renderHook(() => useTouchGestures(mockElementRef, defaultOptions));
 

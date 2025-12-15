@@ -667,7 +667,9 @@ describe("getSuperAdminPublicPhotos", () => {
     const result = await getSuperAdminPublicPhotos();
 
     expect(result).toHaveLength(1);
-    expect(result[0].enhancedUrl).toBe("https://example.com/enhanced-newer.jpg");
+    expect(result[0].enhancedUrl).toBe(
+      "https://example.com/enhanced-newer.jpg",
+    );
     expect(result[0].tier).toBe(EnhancementTier.TIER_4K);
   });
 });

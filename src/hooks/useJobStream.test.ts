@@ -408,7 +408,9 @@ describe("useJobStream", () => {
     });
 
     it("should handle JSON parse error gracefully", () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const { result } = renderHook(() =>
         useJobStream({
           jobId: mockJobId,
@@ -518,7 +520,9 @@ describe("useJobStream", () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(MockEventSource.getInstances().length).toBe(initialInstanceCount + 1);
+      expect(MockEventSource.getInstances().length).toBe(
+        initialInstanceCount + 1,
+      );
     });
 
     it("should stop reconnecting after max attempts", () => {

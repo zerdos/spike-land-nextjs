@@ -27,7 +27,10 @@ global.fetch = vi.fn();
 // Mock confirm and prompt
 const mockConfirm = vi.fn();
 const mockPrompt = vi.fn();
-Object.defineProperty(window, "confirm", { value: mockConfirm, writable: true });
+Object.defineProperty(window, "confirm", {
+  value: mockConfirm,
+  writable: true,
+});
 Object.defineProperty(window, "prompt", { value: mockPrompt, writable: true });
 
 describe("BoxCard", () => {
@@ -156,7 +159,11 @@ describe("BoxCard", () => {
     it("does not render VNC link when status is not RUNNING", () => {
       render(
         <BoxCard
-          box={{ ...mockBox, status: BoxStatus.STOPPED, connectionUrl: "https://example.com/vnc" }}
+          box={{
+            ...mockBox,
+            status: BoxStatus.STOPPED,
+            connectionUrl: "https://example.com/vnc",
+          }}
         />,
       );
 
@@ -168,21 +175,26 @@ describe("BoxCard", () => {
     it("renders Start button when status is STOPPED", () => {
       render(<BoxCard box={{ ...mockBox, status: BoxStatus.STOPPED }} />);
 
-      expect(screen.getByRole("button", { name: /start/i })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /stop/i })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /start/i }))
+        .toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /stop/i })).not
+        .toBeInTheDocument();
     });
 
     it("renders Stop button when status is RUNNING", () => {
       render(<BoxCard box={{ ...mockBox, status: BoxStatus.RUNNING }} />);
 
       expect(screen.getByRole("button", { name: /stop/i })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /start/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /start/i })).not
+        .toBeInTheDocument();
     });
 
     it("renders Processing button when status is STARTING", () => {
       render(<BoxCard box={{ ...mockBox, status: BoxStatus.STARTING }} />);
 
-      const processingButton = screen.getByRole("button", { name: /processing/i });
+      const processingButton = screen.getByRole("button", {
+        name: /processing/i,
+      });
       expect(processingButton).toBeInTheDocument();
       expect(processingButton).toBeDisabled();
     });
@@ -190,7 +202,9 @@ describe("BoxCard", () => {
     it("renders Processing button when status is STOPPING", () => {
       render(<BoxCard box={{ ...mockBox, status: BoxStatus.STOPPING }} />);
 
-      const processingButton = screen.getByRole("button", { name: /processing/i });
+      const processingButton = screen.getByRole("button", {
+        name: /processing/i,
+      });
       expect(processingButton).toBeInTheDocument();
       expect(processingButton).toBeDisabled();
     });
@@ -256,7 +270,9 @@ describe("BoxCard", () => {
 
     it("handles action failure with error response", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -281,7 +297,9 @@ describe("BoxCard", () => {
       const fetchPromise = new Promise((resolve) => {
         resolvePromise = resolve;
       });
-      (global.fetch as ReturnType<typeof vi.fn>).mockReturnValueOnce(fetchPromise);
+      (global.fetch as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+        fetchPromise,
+      );
 
       render(<BoxCard box={{ ...mockBox, status: BoxStatus.STOPPED }} />);
 
@@ -296,7 +314,8 @@ describe("BoxCard", () => {
       resolvePromise!({ ok: true, json: async () => ({ success: true }) });
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /start/i })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: /start/i })).not
+          .toBeDisabled();
       });
     });
   });
@@ -319,7 +338,9 @@ describe("BoxCard", () => {
       expect(deleteButton).toBeTruthy();
       await user.click(deleteButton!);
 
-      expect(mockConfirm).toHaveBeenCalledWith("Are you sure you want to delete this box?");
+      expect(mockConfirm).toHaveBeenCalledWith(
+        "Are you sure you want to delete this box?",
+      );
       expect(global.fetch).toHaveBeenCalledWith("/api/boxes/box-1", {
         method: "DELETE",
       });
@@ -411,7 +432,9 @@ describe("BoxCard", () => {
 
     it("handles clone failure with error message from response", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrompt.mockReturnValue("My Cloned Box");
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
@@ -433,7 +456,9 @@ describe("BoxCard", () => {
 
     it("handles clone failure with default error message", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrompt.mockReturnValue("My Cloned Box");
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
@@ -455,9 +480,13 @@ describe("BoxCard", () => {
 
     it("handles clone failure with non-Error object", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockPrompt.mockReturnValue("My Cloned Box");
-      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce("Network error");
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        "Network error",
+      );
 
       render(<BoxCard box={mockBox} />);
 
@@ -475,21 +504,27 @@ describe("BoxCard", () => {
 
   describe("Button Icons", () => {
     it("renders Play icon in Start button", () => {
-      const { container } = render(<BoxCard box={{ ...mockBox, status: BoxStatus.STOPPED }} />);
+      const { container } = render(
+        <BoxCard box={{ ...mockBox, status: BoxStatus.STOPPED }} />,
+      );
 
       const playIcon = container.querySelector("svg.lucide-play");
       expect(playIcon).toBeInTheDocument();
     });
 
     it("renders Square icon in Stop button", () => {
-      const { container } = render(<BoxCard box={{ ...mockBox, status: BoxStatus.RUNNING }} />);
+      const { container } = render(
+        <BoxCard box={{ ...mockBox, status: BoxStatus.RUNNING }} />,
+      );
 
       const squareIcon = container.querySelector("svg.lucide-square");
       expect(squareIcon).toBeInTheDocument();
     });
 
     it("renders RefreshCw icon with animation in Processing button", () => {
-      const { container } = render(<BoxCard box={{ ...mockBox, status: BoxStatus.STARTING }} />);
+      const { container } = render(
+        <BoxCard box={{ ...mockBox, status: BoxStatus.STARTING }} />,
+      );
 
       const refreshIcon = container.querySelector("svg.lucide-refresh-cw");
       expect(refreshIcon).toBeInTheDocument();

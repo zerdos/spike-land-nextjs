@@ -101,7 +101,9 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting job:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete job" },
+      {
+        error: error instanceof Error ? error.message : "Failed to delete job",
+      },
       { status: 500 },
     );
   }

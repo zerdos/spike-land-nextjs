@@ -1,6 +1,9 @@
 # Tailwind CSS Best Practices Guide
 
-A comprehensive guide to writing maintainable, performant, and well-organized Tailwind CSS code. This document covers configuration, component patterns, responsive design, dark mode, performance optimization, and organization strategies.
+A comprehensive guide to writing maintainable, performant, and well-organized
+Tailwind CSS code. This document covers configuration, component patterns,
+responsive design, dark mode, performance optimization, and organization
+strategies.
 
 ## Table of Contents
 
@@ -18,7 +21,8 @@ A comprehensive guide to writing maintainable, performant, and well-organized Ta
 
 ### Custom Theme Setup
 
-Tailwind v4 uses a CSS-first configuration model with the `@theme` directive. Define your design tokens once and consume them across your project.
+Tailwind v4 uses a CSS-first configuration model with the `@theme` directive.
+Define your design tokens once and consume them across your project.
 
 #### Basic Theme Configuration
 
@@ -97,11 +101,14 @@ export default {
 };
 ```
 
-**Key Principle**: Always use `extend` instead of replacing `theme` entirely. This preserves Tailwind's default values and prevents breaking existing utilities.
+**Key Principle**: Always use `extend` instead of replacing `theme` entirely.
+This preserves Tailwind's default values and prevents breaking existing
+utilities.
 
 ### Using Plugins
 
-Tailwind's plugin ecosystem provides pre-built solutions for common styling needs:
+Tailwind's plugin ecosystem provides pre-built solutions for common styling
+needs:
 
 #### Official Plugins
 
@@ -173,7 +180,8 @@ export default {
 };
 ```
 
-**Critical**: Misconfigured content paths result in megabytes of unnecessary CSS. Double-check these paths match your project structure.
+**Critical**: Misconfigured content paths result in megabytes of unnecessary
+CSS. Double-check these paths match your project structure.
 
 ---
 
@@ -181,7 +189,8 @@ export default {
 
 ### Class Variance Authority (CVA)
 
-CVA provides a type-safe, composable way to manage component variants. It eliminates long conditional classname strings and provides autocompletion.
+CVA provides a type-safe, composable way to manage component variants. It
+eliminates long conditional classname strings and provides autocompletion.
 
 #### Installation
 
@@ -319,7 +328,8 @@ When to extract components:
 
 ### Mobile-First Approach
 
-Tailwind uses a mobile-first strategy: unprefixed utilities apply to all screen sizes, prefixed utilities override at specific breakpoints.
+Tailwind uses a mobile-first strategy: unprefixed utilities apply to all screen
+sizes, prefixed utilities override at specific breakpoints.
 
 ```html
 <!-- Good: Mobile first, then progressive enhancement -->
@@ -354,7 +364,8 @@ screens: {
 
 ### Responsive Class Ordering
 
-Always prefix responsive variants clearly to show which breakpoint they apply to:
+Always prefix responsive variants clearly to show which breakpoint they apply
+to:
 
 ```html
 <!-- ✅ Good: Clear which classes apply at which breakpoints -->
@@ -410,7 +421,8 @@ export default {
 };
 ```
 
-**Guideline**: Avoid too many custom breakpoints. Stick to defaults unless design specifications require otherwise.
+**Guideline**: Avoid too many custom breakpoints. Stick to defaults unless
+design specifications require otherwise.
 
 ---
 
@@ -436,8 +448,8 @@ export default {
 </button>
 ```
 
-**Pros**: No JavaScript required, respects user OS preference
-**Cons**: Users can't manually override their system preference
+**Pros**: No JavaScript required, respects user OS preference **Cons**: Users
+can't manually override their system preference
 
 #### 2. Selector Strategy (Manual Control)
 
@@ -495,8 +507,8 @@ function updateDOM(theme: 'light' | 'dark') {
 </html>
 ```
 
-**Pros**: Full user control, manual override support
-**Cons**: Requires JavaScript, potential flicker on initial load
+**Pros**: Full user control, manual override support **Cons**: Requires
+JavaScript, potential flicker on initial load
 
 #### 3. Data Attribute Strategy
 
@@ -513,8 +525,7 @@ export default {
 </html>
 ```
 
-**Pros**: Cleaner HTML attribute approach
-**Cons**: Still requires JavaScript
+**Pros**: Cleaner HTML attribute approach **Cons**: Still requires JavaScript
 
 ### Preventing Dark Mode Flash
 
@@ -537,7 +548,9 @@ In Next.js with App Router:
 
 ```typescript
 // src/app/layout.tsx
-export default function RootLayout({ children }: { children: React.ReactNode; }) {
+export default function RootLayout(
+  { children }: { children: React.ReactNode; },
+) {
   return (
     <html suppressHydrationWarning>
       <head>
@@ -603,7 +616,8 @@ Combine CSS variables with dark mode for more flexibility:
 
 ### Bundle Size Reduction
 
-Tailwind aims to produce the smallest CSS file possible by only generating used styles.
+Tailwind aims to produce the smallest CSS file possible by only generating used
+styles.
 
 #### Current Benchmarks
 
@@ -719,25 +733,22 @@ Order classes using the "Concentric CSS" approach for consistency:
 
 ```html
 <!-- Pattern: Positioning → Box Model → Borders → Backgrounds → Typography → Effects -->
-<div class="
-  /* Positioning & Display */
-  relative flex items-center justify-center
-
-  /* Box Model (margin, padding, dimensions) */
-  mx-auto my-4 px-4 py-6 w-full max-w-2xl
-
-  /* Borders & Shadows */
-  border border-gray-200 rounded-lg shadow-md
-
-  /* Background & Colors */
-  bg-white
-
-  /* Typography */
-  text-center text-lg font-semibold text-gray-900
-
-  /* Effects & Transitions */
-  transition-all hover:shadow-lg active:shadow-none
-">
+<div
+  class="
+    /* Positioning & Display */
+    relative flex items-center justify-center
+    /* Box Model (margin, padding, dimensions) */
+    mx-auto my-4 px-4 py-6 w-full max-w-2xl
+    /* Borders & Shadows */
+    border border-gray-200 rounded-lg shadow-md
+    /* Background & Colors */
+    bg-white
+    /* Typography */
+    text-center text-lg font-semibold text-gray-900
+    /* Effects & Transitions */
+    transition-all hover:shadow-lg active:shadow-none
+  "
+>
   Content
 </div>
 ```
@@ -748,7 +759,9 @@ Group related utilities for readability:
 
 ```html
 <!-- Grouped for clarity -->
-<div class="flex flex-col gap-4 items-center justify-between md:flex-row md:items-start">
+<div
+  class="flex flex-col gap-4 items-center justify-between md:flex-row md:items-start"
+>
   <!-- Group: flex container properties
        flex flex-col gap-4 items-center justify-between
        md:flex-row md:items-start
@@ -802,7 +815,8 @@ export function Card({ title, children, variant }: Props) {
 
 ### 1. Dynamic Class Names Don't Purge
 
-**Problem**: Using template strings for class names prevents Tailwind's static analysis:
+**Problem**: Using template strings for class names prevents Tailwind's static
+analysis:
 
 ```typescript
 // ❌ BROKEN: Tailwind can't find these classes
@@ -941,7 +955,8 @@ export default {
 - [ ] Choose responsive strategy and implement mobile-first
 - [ ] Select and implement dark mode strategy early
 - [ ] Use CVA for reusable component variants
-- [ ] Order classes consistently (positioning → box model → borders → backgrounds → typography → effects)
+- [ ] Order classes consistently (positioning → box model → borders →
+      backgrounds → typography → effects)
 - [ ] Extract components only when truly reused
 - [ ] Avoid dynamic class names - use explicit or CVA
 - [ ] Test production build size (`yarn build && ls -lh .next/static/css/`)

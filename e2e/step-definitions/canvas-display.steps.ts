@@ -64,26 +64,32 @@ async function mockCanvasSession(world: CustomWorld) {
 }
 
 // Background step - ensure authenticated user with albums
-Given("I am authenticated as a user with albums", async function(this: CustomWorld) {
-  // Reset skip flag for each scenario
-  shouldSkipCanvasTests = false;
+Given(
+  "I am authenticated as a user with albums",
+  async function(this: CustomWorld) {
+    // Reset skip flag for each scenario
+    shouldSkipCanvasTests = false;
 
-  // Set up authentication
-  await mockCanvasSession(this);
+    // Set up authentication
+    await mockCanvasSession(this);
 
-  // Use seeded test album data
-  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
-  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
-  testContext.albumPrivacy = "UNLISTED";
-});
+    // Use seeded test album data
+    testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+    testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+    testContext.albumPrivacy = "UNLISTED";
+  },
+);
 
 // Album setup steps
-Given("I have an UNLISTED album with images", async function(this: CustomWorld) {
-  // Use seeded E2E test data - no need to navigate and search
-  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
-  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
-  testContext.albumPrivacy = "UNLISTED";
-});
+Given(
+  "I have an UNLISTED album with images",
+  async function(this: CustomWorld) {
+    // Use seeded E2E test data - no need to navigate and search
+    testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+    testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+    testContext.albumPrivacy = "UNLISTED";
+  },
+);
 
 Given("I have a PRIVATE album with images", async function(this: CustomWorld) {
   // Use seeded E2E test data
@@ -92,12 +98,15 @@ Given("I have a PRIVATE album with images", async function(this: CustomWorld) {
   testContext.albumPrivacy = "PRIVATE";
 });
 
-Given("I have an UNLISTED album with multiple images", async function(this: CustomWorld) {
-  // Use seeded E2E test data - the unlisted album has 5 images
-  testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
-  testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
-  testContext.albumPrivacy = "UNLISTED";
-});
+Given(
+  "I have an UNLISTED album with multiple images",
+  async function(this: CustomWorld) {
+    // Use seeded E2E test data - the unlisted album has 5 images
+    testContext.albumId = E2E_TEST_ALBUMS.unlisted.id;
+    testContext.shareToken = E2E_TEST_ALBUMS.unlisted.shareToken;
+    testContext.albumPrivacy = "UNLISTED";
+  },
+);
 
 // Canvas page navigation steps
 When("I navigate to the canvas page", async function(this: CustomWorld) {
@@ -110,25 +119,31 @@ When("I navigate to the canvas page", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-When("I navigate to the canvas page for that album", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+When(
+  "I navigate to the canvas page for that album",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const url = `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`;
-  await this.page.goto(url);
-  await this.page.waitForLoadState("networkidle");
-});
+    const url = `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`;
+    await this.page.goto(url);
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-When("I navigate to the canvas page without token", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+When(
+  "I navigate to the canvas page without token",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const url = `${this.baseUrl}/canvas/${testContext.albumId}`;
-  await this.page.goto(url);
-  await this.page.waitForLoadState("networkidle");
-});
+    const url = `${this.baseUrl}/canvas/${testContext.albumId}`;
+    await this.page.goto(url);
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 When("I navigate to the canvas page with rotation {string}", async function(
   this: CustomWorld,
@@ -208,23 +223,29 @@ Given("I am on my album detail page", async function(this: CustomWorld) {
 });
 
 // Canvas page assertions
-Then("I should see a fullscreen black background", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "I should see a fullscreen black background",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const container = this.page.locator("div.bg-black").first();
-  await expect(container).toBeVisible({ timeout: 10000 });
-});
+    const container = this.page.locator("div.bg-black").first();
+    await expect(container).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("I should see the first album image displayed", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "I should see the first album image displayed",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible({ timeout: 10000 });
-});
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible({ timeout: 10000 });
+  },
+);
 
 Then("I should see a 404 error page", async function(this: CustomWorld) {
   if (shouldSkipCanvasTests) {
@@ -261,57 +282,72 @@ Then("I should see the image rotated by {int} degrees", async function(
   }
 });
 
-Then("the slideshow should be configured with those settings", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the slideshow should be configured with those settings",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Verify the page loaded successfully
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible({ timeout: 10000 });
-});
+    // Verify the page loaded successfully
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible({ timeout: 10000 });
+  },
+);
 
 // QR Panel assertions
-Then("I should see the Canvas Display QR panel", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "I should see the Canvas Display QR panel",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const qrPanel = this.page.getByText("Canvas Display");
-  await expect(qrPanel).toBeVisible({ timeout: 10000 });
-});
+    const qrPanel = this.page.getByText("Canvas Display");
+    await expect(qrPanel).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("I should NOT see the Canvas Display QR panel", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "I should NOT see the Canvas Display QR panel",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const qrPanel = this.page.getByText("Canvas Display");
-  await expect(qrPanel).not.toBeVisible({ timeout: 5000 });
-});
+    const qrPanel = this.page.getByText("Canvas Display");
+    await expect(qrPanel).not.toBeVisible({ timeout: 5000 });
+  },
+);
 
-Then("the QR panel should contain a QR code image", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the QR panel should contain a QR code image",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const qrCode = this.page.locator('[data-testid="qr-code-container"] svg');
-  await expect(qrCode).toBeVisible({ timeout: 10000 });
-});
+    const qrCode = this.page.locator('[data-testid="qr-code-container"] svg');
+    await expect(qrCode).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("the QR panel should have settings controls", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the QR panel should have settings controls",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
-  const orderSelect = this.page.locator('[data-testid="order-select"]');
-  const intervalInput = this.page.locator('[data-testid="interval-input"]');
+    const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
+    const orderSelect = this.page.locator('[data-testid="order-select"]');
+    const intervalInput = this.page.locator('[data-testid="interval-input"]');
 
-  await expect(rotationSelect).toBeVisible({ timeout: 10000 });
-  await expect(orderSelect).toBeVisible({ timeout: 10000 });
-  await expect(intervalInput).toBeVisible({ timeout: 10000 });
-});
+    await expect(rotationSelect).toBeVisible({ timeout: 10000 });
+    await expect(orderSelect).toBeVisible({ timeout: 10000 });
+    await expect(intervalInput).toBeVisible({ timeout: 10000 });
+  },
+);
 
 // Settings interaction steps
 When("I change the rotation setting to {string}", async function(
@@ -340,7 +376,9 @@ When("I change the order setting to {string}", async function(
   const orderSelect = this.page.locator('[data-testid="order-select"]');
   await orderSelect.click();
 
-  const option = this.page.getByText(order === "random" ? "Random" : "Album order");
+  const option = this.page.getByText(
+    order === "random" ? "Random" : "Album order",
+  );
   await option.click();
 });
 
@@ -368,7 +406,9 @@ Then("the QR code URL should contain {string}", async function(
   // The QRCodePanel component stores the URL and we can verify via the Copy URL button action
   await this.page.waitForTimeout(500); // Wait for QR code to update
   // This would ideally check the actual QR code value, but for now we verify the settings changed
-  const settingsContainer = this.page.locator('[data-testid="qr-code-container"]');
+  const settingsContainer = this.page.locator(
+    '[data-testid="qr-code-container"]',
+  );
   await expect(settingsContainer).toBeVisible();
 });
 
@@ -399,63 +439,80 @@ Then("I should see {string} feedback text", async function(
   await expect(feedback).toBeVisible({ timeout: 5000 });
 });
 
-Then("the clipboard should contain the canvas URL", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the clipboard should contain the canvas URL",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Note: Clipboard API may not be available in all test environments
-  // This is a placeholder for clipboard verification
-  console.log("Clipboard verification - implementation depends on test environment");
-});
+    // Note: Clipboard API may not be available in all test environments
+    // This is a placeholder for clipboard verification
+    console.log(
+      "Clipboard verification - implementation depends on test environment",
+    );
+  },
+);
 
-Then("a new tab should open with the canvas URL", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "a new tab should open with the canvas URL",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Check for new page/tab
-  const pages = this.context.pages();
-  expect(pages.length).toBeGreaterThan(1);
+    // Check for new page/tab
+    const pages = this.context.pages();
+    expect(pages.length).toBeGreaterThan(1);
 
-  const newPage = pages[pages.length - 1];
-  expect(newPage.url()).toContain("/canvas/");
-});
+    const newPage = pages[pages.length - 1];
+    expect(newPage.url()).toContain("/canvas/");
+  },
+);
 
 // Slideshow behavior steps
 // Note: "I wait for {int} seconds" step is defined in smart-gallery.steps.ts
 
-Then("the displayed image should have changed", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the displayed image should have changed",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // This would require tracking the initial image and comparing after wait
-  // For now, we verify the slideshow container is still active
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible();
-});
+    // This would require tracking the initial image and comparing after wait
+    // For now, we verify the slideshow container is still active
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible();
+  },
+);
 
-Then("the images should be displayed in a shuffled order", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the images should be displayed in a shuffled order",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Verify random order is active - this is hard to verify definitively
-  // We just ensure the slideshow is running
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible();
-});
+    // Verify random order is active - this is hard to verify definitively
+    // We just ensure the slideshow is running
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible();
+  },
+);
 
-Then("the images should be displayed in album order", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the images should be displayed in album order",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Verify album order is active
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible();
-});
+    // Verify album order is active
+    const image = this.page.locator("img").first();
+    await expect(image).toBeVisible();
+  },
+);
 
 // Accessibility steps
 // Note: "I do not move the mouse for {int} seconds" step is defined in smart-gallery.steps.ts
@@ -472,26 +529,32 @@ Then("the cursor should be hidden", async function(this: CustomWorld) {
   expect(cursor).toBe("none");
 });
 
-Then("the QR panel should have proper ARIA labels", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the QR panel should have proper ARIA labels",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  const qrCode = this.page.locator("svg[aria-label]");
-  await expect(qrCode).toBeVisible({ timeout: 10000 });
-});
+    const qrCode = this.page.locator("svg[aria-label]");
+    await expect(qrCode).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("the settings controls should be keyboard accessible", async function(this: CustomWorld) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
+Then(
+  "the settings controls should be keyboard accessible",
+  async function(this: CustomWorld) {
+    if (shouldSkipCanvasTests) {
+      return "skipped";
+    }
 
-  // Tab through the controls and verify focus
-  const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
-  await rotationSelect.focus();
-  await expect(rotationSelect).toBeFocused();
+    // Tab through the controls and verify focus
+    const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
+    await rotationSelect.focus();
+    await expect(rotationSelect).toBeFocused();
 
-  await this.page.keyboard.press("Tab");
-  const orderSelect = this.page.locator('[data-testid="order-select"]');
-  await expect(orderSelect).toBeFocused();
-});
+    await this.page.keyboard.press("Tab");
+    const orderSelect = this.page.locator('[data-testid="order-select"]');
+    await expect(orderSelect).toBeFocused();
+  },
+);

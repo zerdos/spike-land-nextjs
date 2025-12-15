@@ -27,6 +27,7 @@ import {
   Wallet,
   Wand2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -57,6 +58,10 @@ interface McpToolsClientProps {
 }
 
 export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
+  // Check both server-side prop and client-side session for E2E test compatibility
+  const { data: session } = useSession();
+  const isAuthenticated = isLoggedIn || !!session?.user;
+
   // API keys state - unused for now but kept for future API key selection feature
   const [_apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [_selectedApiKey, _setSelectedApiKey] = useState<string>("");
@@ -75,7 +80,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   const [modifyPrompt, setModifyPrompt] = useState("");
   const [modifyTier, setModifyTier] = useState("TIER_1K");
   const [modifyImage, setModifyImage] = useState<File | null>(null);
-  const [modifyImagePreview, setModifyImagePreview] = useState<string | null>(null);
+  const [modifyImagePreview, setModifyImagePreview] = useState<string | null>(
+    null,
+  );
   const [isModifying, setIsModifying] = useState(false);
   const [modifyResult, setModifyResult] = useState<JobResult | null>(null);
   const [modifyError, setModifyError] = useState<string | null>(null);
@@ -120,8 +127,8 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   ) => {
     const apiKey = getApiKey();
 
-    // If not logged in and no API key provided, show error
-    if (!isLoggedIn && !apiKey) {
+    // If not authenticated and no API key provided, show error
+    if (!isAuthenticated && !apiKey) {
       throw new Error("Please enter an API key to test the API");
     }
 
@@ -152,11 +159,13 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || `Request failed with status ${response.status}`);
+      throw new Error(
+        data.error || `Request failed with status ${response.status}`,
+      );
     }
 
     return data;
-  }, [getApiKey, isLoggedIn]);
+  }, [getApiKey, isAuthenticated]);
 
   const handleGenerate = async () => {
     if (!generatePrompt.trim()) return;
@@ -176,7 +185,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
         await pollJob(result.jobId, setGenerateResult, setGenerateError);
       }
     } catch (error) {
-      setGenerateError(error instanceof Error ? error.message : "Failed to generate image");
+      setGenerateError(
+        error instanceof Error ? error.message : "Failed to generate image",
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -215,7 +226,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
         await pollJob(result.jobId, setModifyResult, setModifyError);
       }
     } catch (error) {
-      setModifyError(error instanceof Error ? error.message : "Failed to modify image");
+      setModifyError(
+        error instanceof Error ? error.message : "Failed to modify image",
+      );
     } finally {
       setIsModifying(false);
     }
@@ -245,7 +258,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         attempts++;
       } catch (error) {
-        setError(error instanceof Error ? error.message : "Failed to check job status");
+        setError(
+          error instanceof Error ? error.message : "Failed to check job status",
+        );
         return;
       }
     }
@@ -264,7 +279,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       const data = await makeApiRequest(`/api/mcp/jobs/${jobId}`);
       setJobResult(data);
     } catch (error) {
-      setJobError(error instanceof Error ? error.message : "Failed to fetch job");
+      setJobError(
+        error instanceof Error ? error.message : "Failed to fetch job",
+      );
     } finally {
       setIsCheckingJob(false);
     }
@@ -278,7 +295,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       const data = await makeApiRequest("/api/mcp/balance");
       setBalance(data.balance);
     } catch (error) {
-      setBalanceError(error instanceof Error ? error.message : "Failed to fetch balance");
+      setBalanceError(
+        error instanceof Error ? error.message : "Failed to fetch balance",
+      );
     } finally {
       setIsLoadingBalance(false);
     }
@@ -345,15 +364,18 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">
-            {isLoggedIn ? "Authentication" : "API Key Required"}
+            {isAuthenticated ? "Authentication" : "API Key Required"}
           </CardTitle>
           <CardDescription>
-            {isLoggedIn
+            {isAuthenticated
               ? (
                 <>
                   You&apos;re signed in and can use the tools directly with your session.
                   Optionally, enter an API key to test Bearer token authentication.{" "}
-                  <Link href="/settings" className="text-primary hover:underline">
+                  <Link
+                    href="/settings"
+                    className="text-primary hover:underline"
+                  >
                     Manage API keys
                   </Link>
                 </>
@@ -361,7 +383,10 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
               : (
                 <>
                   Enter an API key to test the MCP API.{" "}
-                  <Link href="/auth/signin" className="text-primary hover:underline">
+                  <Link
+                    href="/auth/signin"
+                    className="text-primary hover:underline"
+                  >
                     Sign in
                   </Link>{" "}
                   to use your session instead.
@@ -370,7 +395,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isLoggedIn
+          {isAuthenticated
             ? (
               <>
                 <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
@@ -378,7 +403,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   <span>Using session authentication (no API key needed)</span>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="manual-key">Optional: Test with API Key</Label>
+                  <Label htmlFor="manual-key">
+                    Optional: Test with API Key
+                  </Label>
                   <Input
                     id="manual-key"
                     type="password"
@@ -405,7 +432,10 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 />
                 <p className="text-xs text-muted-foreground">
                   Get your API key from the{" "}
-                  <Link href="/settings" className="text-primary hover:underline">
+                  <Link
+                    href="/settings"
+                    className="text-primary hover:underline"
+                  >
                     Settings page
                   </Link>
                 </p>
@@ -463,9 +493,15 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="TIER_1K">1K (1024px) - 2 tokens</SelectItem>
-                      <SelectItem value="TIER_2K">2K (2048px) - 5 tokens</SelectItem>
-                      <SelectItem value="TIER_4K">4K (4096px) - 10 tokens</SelectItem>
+                      <SelectItem value="TIER_1K">
+                        1K (1024px) - 2 tokens
+                      </SelectItem>
+                      <SelectItem value="TIER_2K">
+                        2K (2048px) - 5 tokens
+                      </SelectItem>
+                      <SelectItem value="TIER_4K">
+                        4K (4096px) - 10 tokens
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -477,7 +513,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   <Button
                     onClick={handleGenerate}
                     disabled={!generatePrompt.trim() || isGenerating ||
-                      (!isLoggedIn && !getApiKey())}
+                      (!isAuthenticated && !getApiKey())}
                   >
                     {isGenerating
                       ? (
@@ -528,8 +564,8 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                           <strong>Job ID:</strong> {generateResult.id}
                         </p>
                         <p>
-                          <strong>Dimensions:</strong>{" "}
-                          {generateResult.outputWidth}x{generateResult.outputHeight}
+                          <strong>Dimensions:</strong> {generateResult.outputWidth}x{generateResult
+                            .outputHeight}
                         </p>
                         <p>
                           <strong>Tokens Used:</strong> {generateResult.tokensCost}
@@ -596,9 +632,15 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="TIER_1K">1K (1024px) - 2 tokens</SelectItem>
-                      <SelectItem value="TIER_2K">2K (2048px) - 5 tokens</SelectItem>
-                      <SelectItem value="TIER_4K">4K (4096px) - 10 tokens</SelectItem>
+                      <SelectItem value="TIER_1K">
+                        1K (1024px) - 2 tokens
+                      </SelectItem>
+                      <SelectItem value="TIER_2K">
+                        2K (2048px) - 5 tokens
+                      </SelectItem>
+                      <SelectItem value="TIER_4K">
+                        4K (4096px) - 10 tokens
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -609,8 +651,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   </span>
                   <Button
                     onClick={handleModify}
-                    disabled={!modifyPrompt.trim() || !modifyImage || isModifying ||
-                      (!isLoggedIn && !getApiKey())}
+                    disabled={!modifyPrompt.trim() || !modifyImage ||
+                      isModifying ||
+                      (!isAuthenticated && !getApiKey())}
                   >
                     {isModifying
                       ? (
@@ -703,7 +746,8 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
 
                 <Button
                   onClick={handleCheckJob}
-                  disabled={!jobId.trim() || isCheckingJob || (!isLoggedIn && !getApiKey())}
+                  disabled={!jobId.trim() || isCheckingJob ||
+                    (!isAuthenticated && !getApiKey())}
                   className="w-full"
                 >
                   {isCheckingJob
@@ -805,7 +849,8 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
               <CardContent className="space-y-4">
                 <Button
                   onClick={handleCheckBalance}
-                  disabled={isLoadingBalance || (!isLoggedIn && !getApiKey())}
+                  disabled={isLoadingBalance ||
+                    (!isAuthenticated && !getApiKey())}
                   className="w-full"
                 >
                   {isLoadingBalance
@@ -833,7 +878,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 {balance !== null && (
                   <div className="rounded-md bg-muted p-4 text-center">
                     <p className="text-4xl font-bold">{balance}</p>
-                    <p className="text-sm text-muted-foreground">tokens available</p>
+                    <p className="text-sm text-muted-foreground">
+                      tokens available
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -851,21 +898,27 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div>
                       <p className="font-medium">1K Quality</p>
-                      <p className="text-sm text-muted-foreground">1024px resolution</p>
+                      <p className="text-sm text-muted-foreground">
+                        1024px resolution
+                      </p>
                     </div>
                     <Badge>2 tokens</Badge>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div>
                       <p className="font-medium">2K Quality</p>
-                      <p className="text-sm text-muted-foreground">2048px resolution</p>
+                      <p className="text-sm text-muted-foreground">
+                        2048px resolution
+                      </p>
                     </div>
                     <Badge>5 tokens</Badge>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div>
                       <p className="font-medium">4K Quality</p>
-                      <p className="text-sm text-muted-foreground">4096px resolution</p>
+                      <p className="text-sm text-muted-foreground">
+                        4096px resolution
+                      </p>
                     </div>
                     <Badge>10 tokens</Badge>
                   </div>
@@ -986,7 +1039,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
           </div>
 
           <div className="pt-4 border-t">
-            <h4 className="font-medium mb-2">MCP Server (Claude Desktop / Claude Code)</h4>
+            <h4 className="font-medium mb-2">
+              MCP Server (Claude Desktop / Claude Code)
+            </h4>
             <p className="text-sm text-muted-foreground mb-3">
               Install the MCP server to use these tools directly in Claude:
             </p>

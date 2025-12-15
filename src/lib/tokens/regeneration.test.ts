@@ -82,7 +82,9 @@ describe("Token Regeneration", () => {
 
     it("should handle database errors", async () => {
       const dbError = new Error("Database connection failed");
-      vi.mocked(prisma.userTokenBalance.findMany).mockRejectedValueOnce(dbError);
+      vi.mocked(prisma.userTokenBalance.findMany).mockRejectedValueOnce(
+        dbError,
+      );
 
       const result = await processAllUserRegenerations();
 

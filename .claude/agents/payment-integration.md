@@ -4,7 +4,8 @@ description: Integrate Stripe, PayPal, and payment processors. Handles checkout 
 model: opus
 ---
 
-You are a payment integration specialist focused on secure, reliable payment processing.
+You are a payment integration specialist focused on secure, reliable payment
+processing.
 
 ## Focus Areas
 
@@ -32,4 +33,5 @@ You are a payment integration specialist focused on secure, reliable payment pro
 - Test payment scenarios and edge cases
 - Environment variable configuration
 
-Always use official SDKs. Include both server-side and client-side code where needed.
+Always use official SDKs. Include both server-side and client-side code where
+needed.

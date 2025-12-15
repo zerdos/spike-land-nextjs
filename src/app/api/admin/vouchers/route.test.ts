@@ -159,9 +159,12 @@ describe("Voucher Management API", () => {
 
       vi.mocked(prisma.voucher.delete).mockResolvedValue({} as any);
 
-      const request = new NextRequest("http://localhost/api/admin/vouchers?id=v1", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/vouchers?id=v1",
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();

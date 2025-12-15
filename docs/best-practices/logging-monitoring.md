@@ -1,6 +1,9 @@
 # Logging and Monitoring Best Practices for Node.js/Next.js
 
-A comprehensive guide to implementing production-ready logging, monitoring, and observability in Node.js and Next.js applications. This document covers structured logging, monitoring tools, metrics collection, alerting strategies, and production best practices.
+A comprehensive guide to implementing production-ready logging, monitoring, and
+observability in Node.js and Next.js applications. This document covers
+structured logging, monitoring tools, metrics collection, alerting strategies,
+and production best practices.
 
 ## Table of Contents
 
@@ -19,15 +22,21 @@ A comprehensive guide to implementing production-ready logging, monitoring, and 
 
 ### Overview
 
-Structured logging is the foundation of modern observability. Unlike traditional text-based logging that produces unstructured output, structured logging uses consistent, machine-readable formats (typically JSON) that can be automatically parsed, aggregated, and analyzed.
+Structured logging is the foundation of modern observability. Unlike traditional
+text-based logging that produces unstructured output, structured logging uses
+consistent, machine-readable formats (typically JSON) that can be automatically
+parsed, aggregated, and analyzed.
 
 ### Benefits of Structured Logging
 
-- **Machine Readability**: Logs can be automatically parsed and indexed by log aggregation systems
+- **Machine Readability**: Logs can be automatically parsed and indexed by log
+  aggregation systems
 - **Searchability**: Easy to filter, search, and correlate logs across systems
-- **Contextual Information**: Capture metadata and context alongside log messages
+- **Contextual Information**: Capture metadata and context alongside log
+  messages
 - **Performance**: JSON-formatted logs can be processed efficiently
-- **Integration**: Seamless integration with observability platforms and log aggregation services
+- **Integration**: Seamless integration with observability platforms and log
+  aggregation services
 
 ### Log Levels and When to Use Them
 
@@ -41,7 +50,8 @@ Structured logging is the foundation of modern observability. Unlike traditional
 
 ### Best Practices for Structured Logging
 
-1. **Use Consistent Field Names**: Define a standard set of fields across your application
+1. **Use Consistent Field Names**: Define a standard set of fields across your
+   application
    ```typescript
    // Consistent logging structure
    {
@@ -66,7 +76,8 @@ Structured logging is the foundation of modern observability. Unlike traditional
    });
    ```
 
-3. **Log at Appropriate Levels**: Avoid log spam by using correct severity levels
+3. **Log at Appropriate Levels**: Avoid log spam by using correct severity
+   levels
    - Use ERROR for unexpected failures
    - Use WARN for degraded conditions
    - Use INFO for business-relevant events
@@ -109,7 +120,8 @@ Structured logging is the foundation of modern observability. Unlike traditional
 
 ### Pino (Recommended for Performance)
 
-Pino is the fastest logging library for Node.js, designed for high throughput and minimal overhead. It achieves this through asynchronous, non-blocking I/O.
+Pino is the fastest logging library for Node.js, designed for high throughput
+and minimal overhead. It achieves this through asynchronous, non-blocking I/O.
 
 **Installation:**
 
@@ -187,7 +199,8 @@ export default logger;
 
 ### Winston (Recommended for Flexibility)
 
-Winston is the most popular and flexible logging library, supporting multiple transports and extensive customization.
+Winston is the most popular and flexible logging library, supporting multiple
+transports and extensive customization.
 
 **Installation:**
 
@@ -255,7 +268,8 @@ const logger = winston.createLogger({
 
 ### Bunyan (JSON-First Approach)
 
-Bunyan is focused on structured JSON logging with built-in serializers for common objects.
+Bunyan is focused on structured JSON logging with built-in serializers for
+common objects.
 
 **Installation:**
 
@@ -433,9 +447,11 @@ module.exports = {
 
 #### Structured Logging (Spike Land Approach)
 
-**Best for:** Applications requiring custom error tracking without external dependencies
+**Best for:** Applications requiring custom error tracking without external
+dependencies
 
-This project uses structured logging with `src/lib/error-logger.ts` combined with Vercel Analytics for monitoring. This approach provides:
+This project uses structured logging with `src/lib/error-logger.ts` combined
+with Vercel Analytics for monitoring. This approach provides:
 
 - Full control over error logging format
 - No external service dependencies
@@ -525,11 +541,14 @@ Best for open-source, self-hosted monitoring:
 
 ### Overview
 
-Context propagation enables trace IDs, span IDs, and sampling decisions to flow through your entire application, allowing you to correlate logs, metrics, and traces across distributed services.
+Context propagation enables trace IDs, span IDs, and sampling decisions to flow
+through your entire application, allowing you to correlate logs, metrics, and
+traces across distributed services.
 
 ### Correlation IDs
 
-A correlation ID (also called request ID or trace ID) uniquely identifies a request as it flows through your system.
+A correlation ID (also called request ID or trace ID) uniquely identifies a
+request as it flows through your system.
 
 **Implementation with cls-rtracer:**
 
@@ -596,7 +615,8 @@ import { BatchSpanProcessor, ConsoleSpanExporter } from "@opentelemetry/sdk-trac
 
 const traceExporter = process.env.NODE_ENV === "production"
   ? new OTLPTraceExporter({
-    url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318/v1/traces",
+    url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ||
+      "http://localhost:4318/v1/traces",
   })
   : new ConsoleSpanExporter();
 
@@ -1052,7 +1072,7 @@ function redactSensitiveData(obj: any): any {
   const sensitiveFields = ["password", "token", "secret", "api_key"];
   const redacted = { ...obj };
 
-  sensitiveFields.forEach(field => {
+  sensitiveFields.forEach((field) => {
     if (field in redacted) {
       redacted[field] = "***REDACTED***";
     }
@@ -1407,8 +1427,6 @@ Days 31+: Cold storage (Glacier, minimal cost)
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** December 6, 2025
-**Author:** Claude Code (AI Assistant)
-**Target Audience:** Backend engineers, DevOps, SREs
+**Document Version:** 1.0 **Last Updated:** December 6, 2025 **Author:** Claude
+Code (AI Assistant) **Target Audience:** Backend engineers, DevOps, SREs
 **Status:** Production Ready

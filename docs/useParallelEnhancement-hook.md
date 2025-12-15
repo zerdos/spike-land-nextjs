@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `useParallelEnhancement` hook manages multiple image enhancement jobs simultaneously. It handles SSE (Server-Sent Events) connections for real-time job status updates and provides aggregated status tracking across all jobs.
+The `useParallelEnhancement` hook manages multiple image enhancement jobs
+simultaneously. It handles SSE (Server-Sent Events) connections for real-time
+job status updates and provides aggregated status tracking across all jobs.
 
 ## Location
 
@@ -156,7 +158,9 @@ function EnhancementResults() {
 
   return (
     <div>
-      <button onClick={() => startEnhancement(["TIER_1K", "TIER_2K", "TIER_4K"])}>
+      <button
+        onClick={() => startEnhancement(["TIER_1K", "TIER_2K", "TIER_4K"])}
+      >
         Enhance
       </button>
       <div className="results">
@@ -215,7 +219,8 @@ function EnhancementResults() {
 The hook expects a POST endpoint at `/api/images/parallel-enhance` that:
 
 1. Accepts `{ imageId: string, tiers: EnhancementTier[] }`
-2. Returns `{ jobs: Array<{ jobId: string, tier: EnhancementTier, status: JobStatus }> }`
+2. Returns
+   `{ jobs: Array<{ jobId: string, tier: EnhancementTier, status: JobStatus }> }`
 3. Creates enhancement jobs in the database
 4. Each job streams updates via `/api/jobs/{jobId}/stream`
 
@@ -247,6 +252,9 @@ yarn test:run src/hooks/useParallelEnhancement.test.ts
 
 ## Related Files
 
-- `/Users/z/Developer/spike-land-nextjs/src/hooks/useJobStream.ts` - Single job SSE hook
-- `/Users/z/Developer/spike-land-nextjs/src/hooks/useParallelEnhancement.test.ts` - Test suite
-- `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma` - Database schema (EnhancementTier, JobStatus enums)
+- `/Users/z/Developer/spike-land-nextjs/src/hooks/useJobStream.ts` - Single job
+  SSE hook
+- `/Users/z/Developer/spike-land-nextjs/src/hooks/useParallelEnhancement.test.ts` -
+  Test suite
+- `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma` - Database schema
+  (EnhancementTier, JobStatus enums)

@@ -108,7 +108,9 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([mockJob] as any);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        [mockJob] as any,
+      );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([
         { status: "COMPLETED", _count: { status: 1 } },
@@ -140,13 +142,17 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([mockJob] as any);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        [mockJob] as any,
+      );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([
         { status: "COMPLETED", _count: { status: 1 } },
       ] as any);
 
-      const request = new NextRequest("http://localhost/api/admin/jobs?status=COMPLETED");
+      const request = new NextRequest(
+        "http://localhost/api/admin/jobs?status=COMPLETED",
+      );
       const response = await GET(request);
       await response.json();
 
@@ -163,7 +169,9 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/jobs?status=INVALID");
+      const request = new NextRequest(
+        "http://localhost/api/admin/jobs?status=INVALID",
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -180,7 +188,9 @@ describe("Admin Jobs API", () => {
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(100);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
 
-      const request = new NextRequest("http://localhost/api/admin/jobs?page=3&limit=10");
+      const request = new NextRequest(
+        "http://localhost/api/admin/jobs?page=3&limit=10",
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -204,7 +214,9 @@ describe("Admin Jobs API", () => {
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(0);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
 
-      const request = new NextRequest("http://localhost/api/admin/jobs?limit=100");
+      const request = new NextRequest(
+        "http://localhost/api/admin/jobs?limit=100",
+      );
       const response = await GET(request);
       await response.json();
 
@@ -221,11 +233,15 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([mockJob] as any);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        [mockJob] as any,
+      );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
 
-      const request = new NextRequest("http://localhost/api/admin/jobs?search=job_123");
+      const request = new NextRequest(
+        "http://localhost/api/admin/jobs?search=job_123",
+      );
       const response = await GET(request);
       await response.json();
 
@@ -247,7 +263,9 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([mockJob] as any);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        [mockJob] as any,
+      );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
 

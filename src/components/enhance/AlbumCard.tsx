@@ -60,7 +60,9 @@ function getGridClassName(imageCount: number, index: number): string {
   return "";
 }
 
-export function AlbumCard({ album, onClick, isDropTarget = false }: AlbumCardProps) {
+export function AlbumCard(
+  { album, onClick, isDropTarget = false }: AlbumCardProps,
+) {
   const handleClick = () => {
     onClick?.();
   };
@@ -94,7 +96,10 @@ export function AlbumCard({ album, onClick, isDropTarget = false }: AlbumCardPro
               {album.previewImages.slice(0, 4).map((img, idx) => (
                 <div
                   key={img.id}
-                  className={cn("relative", getGridClassName(album.previewImages.length, idx))}
+                  className={cn(
+                    "relative",
+                    getGridClassName(album.previewImages.length, idx),
+                  )}
                 >
                   <Image
                     src={img.url}

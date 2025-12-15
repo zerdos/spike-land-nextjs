@@ -140,7 +140,9 @@ async function testModel(modelName: string) {
     console.log(`  - Time: ${elapsed}ms`);
   } catch (error) {
     console.log(`\n✗ FAILED: Model "${modelName}" does not work`);
-    console.log(`  - Error: ${error instanceof Error ? error.message : String(error)}`);
+    console.log(
+      `  - Error: ${error instanceof Error ? error.message : String(error)}`,
+    );
 
     if (error instanceof Error && error.message.includes("not found")) {
       console.log(`  - This model does not exist in the API`);

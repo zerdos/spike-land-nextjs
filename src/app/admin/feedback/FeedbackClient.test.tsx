@@ -61,7 +61,9 @@ describe("FeedbackClient", () => {
 
     expect(screen.getByText("Feedback Management")).toBeInTheDocument();
     expect(
-      screen.getByText("Review and manage user feedback, bug reports, and ideas"),
+      screen.getByText(
+        "Review and manage user feedback, bug reports, and ideas",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -70,7 +72,8 @@ describe("FeedbackClient", () => {
 
     expect(screen.getByText("Status:")).toBeInTheDocument();
     expect(screen.getByText("Type:")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /refresh/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /refresh/i }))
+      .toBeInTheDocument();
   });
 
   it("should display no feedback message when list is empty", () => {

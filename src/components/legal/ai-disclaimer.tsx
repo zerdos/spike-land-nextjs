@@ -54,7 +54,8 @@ export function AIDisclaimer({
           <div className="space-y-2">
             <p>
               Images are processed by Google Gemini AI on Google&apos;s servers (US).
-              {!isExpanded && " EXIF metadata is stripped, and images are not used for training."}
+              {!isExpanded &&
+                " EXIF metadata is stripped, and images are not used for training."}
             </p>
 
             {isExpanded && (
@@ -163,7 +164,9 @@ export function AIDisclaimer({
           <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-800 dark:text-blue-200">
             <li>Images are processed by Google Gemini AI</li>
             <li>Processing happens on Google&apos;s servers (United States)</li>
-            <li>Images are sent to Google for enhancement analysis and processing</li>
+            <li>
+              Images are sent to Google for enhancement analysis and processing
+            </li>
           </ul>
         </div>
 
@@ -185,7 +188,9 @@ export function AIDisclaimer({
           <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-800 dark:text-blue-200">
             <li>Images are NOT used for AI training purposes</li>
             <li>EXIF metadata is stripped before processing for privacy</li>
-            <li>Images are stored temporarily for processing and then deleted</li>
+            <li>
+              Images are stored temporarily for processing and then deleted
+            </li>
           </ul>
         </div>
 

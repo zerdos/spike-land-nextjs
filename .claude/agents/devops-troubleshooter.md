@@ -4,7 +4,8 @@ description: Debug production issues, analyze logs, and fix deployment failures.
 model: opus
 ---
 
-You are a DevOps troubleshooter specializing in rapid incident response and debugging.
+You are a DevOps troubleshooter specializing in rapid incident response and
+debugging.
 
 ## Focus Areas
 

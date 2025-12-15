@@ -44,7 +44,9 @@ const TIER_CONFIG = {
   },
 } as const;
 
-function StatusIcon({ status, tier }: { status: JobStatus; tier: EnhancementTier; }) {
+function StatusIcon(
+  { status, tier }: { status: JobStatus; tier: EnhancementTier; },
+) {
   const config = TIER_CONFIG[tier];
 
   switch (status) {
@@ -64,10 +66,18 @@ function StatusIcon({ status, tier }: { status: JobStatus; tier: EnhancementTier
       );
     case "COMPLETED":
       return (
-        <Check className="h-4 w-4 text-green-500" data-testid={`status-icon-completed-${tier}`} />
+        <Check
+          className="h-4 w-4 text-green-500"
+          data-testid={`status-icon-completed-${tier}`}
+        />
       );
     case "FAILED":
-      return <X className="h-4 w-4 text-destructive" data-testid={`status-icon-failed-${tier}`} />;
+      return (
+        <X
+          className="h-4 w-4 text-destructive"
+          data-testid={`status-icon-failed-${tier}`}
+        />
+      );
   }
 }
 
@@ -196,7 +206,11 @@ export function ParallelJobsProgress(
 
   // Sort jobs by tier order: 1K, 2K, 4K
   const sortedJobs = [...jobs].sort((a, b) => {
-    const order: Record<EnhancementTier, number> = { TIER_1K: 0, TIER_2K: 1, TIER_4K: 2 };
+    const order: Record<EnhancementTier, number> = {
+      TIER_1K: 0,
+      TIER_2K: 1,
+      TIER_4K: 2,
+    };
     return order[a.tier] - order[b.tier];
   });
 
@@ -205,12 +219,18 @@ export function ParallelJobsProgress(
   const processingCount = jobs.filter((j) => j.status === "PROCESSING").length;
 
   return (
-    <div className={cn("space-y-3", className)} data-testid="parallel-jobs-progress">
+    <div
+      className={cn("space-y-3", className)}
+      data-testid="parallel-jobs-progress"
+    >
       {/* Progress summary header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium">Enhancement Progress</h3>
-          <span className="text-xs text-muted-foreground" data-testid="progress-summary">
+          <span
+            className="text-xs text-muted-foreground"
+            data-testid="progress-summary"
+          >
             {completedCount}/{jobs.length} completed
             {failedCount > 0 && `, ${failedCount} failed`}
             {processingCount > 0 && `, ${processingCount} processing`}
@@ -228,7 +248,10 @@ export function ParallelJobsProgress(
       </div>
 
       {/* Job cards row */}
-      <div className="flex gap-2 flex-wrap md:flex-nowrap" data-testid="job-cards-container">
+      <div
+        className="flex gap-2 flex-wrap md:flex-nowrap"
+        data-testid="job-cards-container"
+      >
         {sortedJobs.map((job) => (
           <JobCard
             key={job.jobId}

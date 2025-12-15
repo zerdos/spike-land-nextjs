@@ -2,11 +2,14 @@
 
 ## Context
 
-We need to implement the "Agent Control Interface" which allows users to interact with their Browser Agents. This interface combines a conversational chat UI with a live VNC view of the isolated desktop environment.
+We need to implement the "Agent Control Interface" which allows users to
+interact with their Browser Agents. This interface combines a conversational
+chat UI with a live VNC view of the isolated desktop environment.
 
 ## Visual Reference
 
-The design mocks are available at: `https://raw.githubusercontent.com/zerdos/spike-land-nextjs/main/public/mockups/agent_control_interface.png`
+The design mocks are available at:
+`https://raw.githubusercontent.com/zerdos/spike-land-nextjs/main/public/mockups/agent_control_interface.png`
 
 ## Requirements
 
@@ -17,14 +20,16 @@ The design mocks are available at: `https://raw.githubusercontent.com/zerdos/spi
   - Input area with variable height text area.
   - Send button.
 - **Right Panel (60%)**: Live Session View.
-  - Iframe or Canvas to render the NoVNC stream (use `connectionUrl` from Box model).
+  - Iframe or Canvas to render the NoVNC stream (use `connectionUrl` from Box
+    model).
   - "Live Session" header.
 
 ### 2. Actions & Controls (Top Bar)
 
 - **Status Indicator**: Green (Running), Red (Stopped), Yellow (Starting).
 - **Control Buttons**:
-  - `Pause` (Stop execution but keep container warm? Or just standard `STOP` action).
+  - `Pause` (Stop execution but keep container warm? Or just standard `STOP`
+    action).
   - `Restart` (Trigger `RESTART` action).
   - `Debug` (Toggle developer tools or logs - placeholder for now).
 
@@ -33,7 +38,8 @@ The design mocks are available at: `https://raw.githubusercontent.com/zerdos/spi
 - **Page**: `src/app/boxes/[id]/page.tsx` (or similar detail view).
 - **Data**: Fetch `Box` details to get `connectionUrl`.
 - **API**: Use `/api/boxes/[id]/action` for control buttons.
-- **Mocking**: For Phase 1, the chat messages can be mocked or echoed back. The VNC URL can be a placeholder if not real.
+- **Mocking**: For Phase 1, the chat messages can be mocked or echoed back. The
+  VNC URL can be a placeholder if not real.
 
 ## Implementation Steps
 

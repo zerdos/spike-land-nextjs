@@ -34,27 +34,46 @@ describe("BatchEnhanceProgress Component", () => {
     it("applies custom className", () => {
       const images = [createImage("PENDING")];
       render(
-        <BatchEnhanceProgress {...defaultProps} images={images} className="custom-class" />,
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          className="custom-class"
+        />,
       );
       expect(screen.getByRole("region")).toHaveClass("custom-class");
     });
 
     it("renders image thumbnails", () => {
       const images = [
-        createImage("PENDING", { imageId: "img-1", thumbnailUrl: "http://example.com/1.jpg" }),
-        createImage("PROCESSING", { imageId: "img-2", thumbnailUrl: "http://example.com/2.jpg" }),
+        createImage("PENDING", {
+          imageId: "img-1",
+          thumbnailUrl: "http://example.com/1.jpg",
+        }),
+        createImage("PROCESSING", {
+          imageId: "img-2",
+          thumbnailUrl: "http://example.com/2.jpg",
+        }),
       ];
-      const { container } = render(<BatchEnhanceProgress {...defaultProps} images={images} />);
+      const { container } = render(
+        <BatchEnhanceProgress {...defaultProps} images={images} />,
+      );
       const imageElements = container.querySelectorAll("img");
       expect(imageElements).toHaveLength(2);
-      expect(imageElements[0]).toHaveAttribute("src", "http://example.com/1.jpg");
-      expect(imageElements[1]).toHaveAttribute("src", "http://example.com/2.jpg");
+      expect(imageElements[0]).toHaveAttribute(
+        "src",
+        "http://example.com/1.jpg",
+      );
+      expect(imageElements[1]).toHaveAttribute(
+        "src",
+        "http://example.com/2.jpg",
+      );
     });
 
     it("renders the image list with correct aria-label", () => {
       const images = [createImage("PENDING")];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
-      expect(screen.getByRole("list", { name: "Image processing status" })).toBeInTheDocument();
+      expect(screen.getByRole("list", { name: "Image processing status" }))
+        .toBeInTheDocument();
     });
 
     it("renders each image as a listitem with correct aria-label", () => {
@@ -65,27 +84,51 @@ describe("BatchEnhanceProgress Component", () => {
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
       const listItems = screen.getAllByRole("listitem");
       expect(listItems).toHaveLength(2);
-      expect(listItems[0]).toHaveAttribute("aria-label", "Pending: Image img-1");
-      expect(listItems[1]).toHaveAttribute("aria-label", "Completed: Image img-2");
+      expect(listItems[0]).toHaveAttribute(
+        "aria-label",
+        "Pending: Image img-1",
+      );
+      expect(listItems[1]).toHaveAttribute(
+        "aria-label",
+        "Completed: Image img-2",
+      );
     });
   });
 
   describe("Tier Labels", () => {
     it("displays 1K for TIER_1K", () => {
       const images = [createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} tier="TIER_1K" />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          tier="TIER_1K"
+        />,
+      );
       expect(screen.getByText(/at 1K quality/)).toBeInTheDocument();
     });
 
     it("displays 2K for TIER_2K", () => {
       const images = [createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} tier="TIER_2K" />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          tier="TIER_2K"
+        />,
+      );
       expect(screen.getByText(/at 2K quality/)).toBeInTheDocument();
     });
 
     it("displays 4K for TIER_4K", () => {
       const images = [createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} tier="TIER_4K" />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          tier="TIER_4K"
+        />,
+      );
       expect(screen.getByText(/at 4K quality/)).toBeInTheDocument();
     });
   });
@@ -94,18 +137,21 @@ describe("BatchEnhanceProgress Component", () => {
     it("displays singular photo when there is 1 image", () => {
       const images = [createImage("PENDING")];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
-      expect(screen.getByText("Enhancing 1 photo at 1K quality")).toBeInTheDocument();
+      expect(screen.getByText("Enhancing 1 photo at 1K quality"))
+        .toBeInTheDocument();
     });
 
     it("displays plural photos when there are multiple images", () => {
       const images = [createImage("PENDING"), createImage("PENDING")];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
-      expect(screen.getByText("Enhancing 2 photos at 1K quality")).toBeInTheDocument();
+      expect(screen.getByText("Enhancing 2 photos at 1K quality"))
+        .toBeInTheDocument();
     });
 
     it("displays plural photos when there are zero images", () => {
       render(<BatchEnhanceProgress {...defaultProps} images={[]} />);
-      expect(screen.getByText("Enhancing 0 photos at 1K quality")).toBeInTheDocument();
+      expect(screen.getByText("Enhancing 0 photos at 1K quality"))
+        .toBeInTheDocument();
     });
   });
 
@@ -153,7 +199,8 @@ describe("BatchEnhanceProgress Component", () => {
     it("has accessible progress bar with correct aria-label", () => {
       const images = [createImage("COMPLETED"), createImage("PENDING")];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
-      expect(screen.getByLabelText("Enhancement progress: 50%")).toBeInTheDocument();
+      expect(screen.getByLabelText("Enhancement progress: 50%"))
+        .toBeInTheDocument();
     });
   });
 
@@ -258,7 +305,12 @@ describe("BatchEnhanceProgress Component", () => {
     });
 
     it("shows error message as title for failed images with error", () => {
-      const images = [createImage("FAILED", { imageId: "img-1", error: "Enhancement failed" })];
+      const images = [
+        createImage("FAILED", {
+          imageId: "img-1",
+          error: "Enhancement failed",
+        }),
+      ];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
       const listItem = screen.getByRole("listitem");
       expect(listItem).toHaveAttribute("title", "Enhancement failed");
@@ -269,48 +321,90 @@ describe("BatchEnhanceProgress Component", () => {
     it("shows cancel button when onCancel is provided and not complete", () => {
       const onCancel = vi.fn();
       const images = [createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
+      expect(screen.getByRole("button", { name: /cancel/i }))
+        .toBeInTheDocument();
     });
 
     it("does not show cancel button when onCancel is not provided", () => {
       const images = [createImage("PENDING")];
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
-      expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /cancel/i })).not
+        .toBeInTheDocument();
     });
 
     it("does not show cancel button when all images are complete", () => {
       const onCancel = vi.fn();
       const images = [createImage("COMPLETED"), createImage("COMPLETED")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
-      expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
+      expect(screen.queryByRole("button", { name: /cancel/i })).not
+        .toBeInTheDocument();
     });
 
     it("does not show cancel button when all images are failed", () => {
       const onCancel = vi.fn();
       const images = [createImage("FAILED"), createImage("FAILED")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
-      expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
+      expect(screen.queryByRole("button", { name: /cancel/i })).not
+        .toBeInTheDocument();
     });
 
     it("does not show cancel button when all images are completed or failed", () => {
       const onCancel = vi.fn();
       const images = [createImage("COMPLETED"), createImage("FAILED")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
-      expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
+      expect(screen.queryByRole("button", { name: /cancel/i })).not
+        .toBeInTheDocument();
     });
 
     it("shows cancel button when some images are still processing", () => {
       const onCancel = vi.fn();
       const images = [createImage("COMPLETED"), createImage("PROCESSING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
+      expect(screen.getByRole("button", { name: /cancel/i }))
+        .toBeInTheDocument();
     });
 
     it("calls onCancel when cancel button is clicked", () => {
       const onCancel = vi.fn();
       const images = [createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onCancel={onCancel} />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onCancel={onCancel}
+        />,
+      );
       fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
       expect(onCancel).toHaveBeenCalledTimes(1);
     });
@@ -320,7 +414,13 @@ describe("BatchEnhanceProgress Component", () => {
     it("calls onComplete when all images are finished", async () => {
       const onComplete = vi.fn();
       const images = [createImage("COMPLETED"), createImage("FAILED")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onComplete={onComplete} />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onComplete={onComplete}
+        />,
+      );
       await waitFor(() => {
         expect(onComplete).toHaveBeenCalledTimes(1);
       });
@@ -329,20 +429,38 @@ describe("BatchEnhanceProgress Component", () => {
     it("does not call onComplete when some images are still pending", () => {
       const onComplete = vi.fn();
       const images = [createImage("COMPLETED"), createImage("PENDING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onComplete={onComplete} />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onComplete={onComplete}
+        />,
+      );
       expect(onComplete).not.toHaveBeenCalled();
     });
 
     it("does not call onComplete when some images are still processing", () => {
       const onComplete = vi.fn();
       const images = [createImage("COMPLETED"), createImage("PROCESSING")];
-      render(<BatchEnhanceProgress {...defaultProps} images={images} onComplete={onComplete} />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={images}
+          onComplete={onComplete}
+        />,
+      );
       expect(onComplete).not.toHaveBeenCalled();
     });
 
     it("does not call onComplete when images array is empty", () => {
       const onComplete = vi.fn();
-      render(<BatchEnhanceProgress {...defaultProps} images={[]} onComplete={onComplete} />);
+      render(
+        <BatchEnhanceProgress
+          {...defaultProps}
+          images={[]}
+          onComplete={onComplete}
+        />,
+      );
       expect(onComplete).not.toHaveBeenCalled();
     });
 
@@ -401,7 +519,8 @@ describe("BatchEnhanceProgress Component", () => {
       );
       render(<BatchEnhanceProgress {...defaultProps} images={images} />);
       expect(screen.getAllByRole("listitem")).toHaveLength(100);
-      expect(screen.getByText("Enhancing 100 photos at 1K quality")).toBeInTheDocument();
+      expect(screen.getByText("Enhancing 100 photos at 1K quality"))
+        .toBeInTheDocument();
     });
 
     it("rounds progress percentage correctly", () => {
@@ -439,14 +558,18 @@ describe("BatchEnhanceProgress Component", () => {
       const listItems = screen.getAllByRole("listitem");
 
       // PENDING - gray background
-      expect(listItems[0].querySelector(".bg-gray-500\\/20")).toBeInTheDocument();
+      expect(listItems[0].querySelector(".bg-gray-500\\/20"))
+        .toBeInTheDocument();
       // PROCESSING - blue background with spinner
-      expect(listItems[1].querySelector(".bg-blue-500\\/30")).toBeInTheDocument();
+      expect(listItems[1].querySelector(".bg-blue-500\\/30"))
+        .toBeInTheDocument();
       expect(listItems[1].querySelector(".animate-spin")).toBeInTheDocument();
       // COMPLETED - green background
-      expect(listItems[2].querySelector(".bg-green-500\\/30")).toBeInTheDocument();
+      expect(listItems[2].querySelector(".bg-green-500\\/30"))
+        .toBeInTheDocument();
       // FAILED - red background
-      expect(listItems[3].querySelector(".bg-red-500\\/30")).toBeInTheDocument();
+      expect(listItems[3].querySelector(".bg-red-500\\/30"))
+        .toBeInTheDocument();
     });
   });
 

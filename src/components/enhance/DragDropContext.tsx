@@ -149,7 +149,9 @@ export function DragDropProvider({
           return;
         }
       } catch (error) {
-        const err = error instanceof Error ? error : new Error("Unknown error occurred");
+        const err = error instanceof Error
+          ? error
+          : new Error("Unknown error occurred");
         onMoveError?.(err);
       } finally {
         setIsMoving(false);

@@ -181,7 +181,10 @@ export async function mockJobPollingAPI(
 /**
  * Mock the images list API endpoint
  */
-export async function mockImagesListAPI(page: Page, images: MockEnhancedImage[] = []) {
+export async function mockImagesListAPI(
+  page: Page,
+  images: MockEnhancedImage[] = [],
+) {
   await page.route("**/api/images", async (route) => {
     await route.fulfill({
       status: 200,
@@ -194,7 +197,10 @@ export async function mockImagesListAPI(page: Page, images: MockEnhancedImage[] 
 /**
  * Mock image deletion API endpoint
  */
-export async function mockImageDeletionAPI(page: Page, success: boolean = true) {
+export async function mockImageDeletionAPI(
+  page: Page,
+  success: boolean = true,
+) {
   await page.route("**/api/images/**", async (route) => {
     if (route.request().method() === "DELETE") {
       if (success) {
@@ -291,7 +297,9 @@ export async function simulateFileUpload(
   await fileInput.evaluate(
     (input: HTMLInputElement, opts) => {
       const dataTransfer = new DataTransfer();
-      const file = new File([opts.content], opts.fileName, { type: opts.fileType });
+      const file = new File([opts.content], opts.fileName, {
+        type: opts.fileType,
+      });
 
       // Override size if needed
       if (opts.fileSize !== file.size) {
@@ -309,7 +317,10 @@ export async function simulateFileUpload(
 /**
  * Wait for enhancement job to complete
  */
-export async function waitForEnhancementComplete(page: Page, timeout: number = 5000) {
+export async function waitForEnhancementComplete(
+  page: Page,
+  timeout: number = 5000,
+) {
   await page.waitForFunction(
     () => {
       const statusElement = document.querySelector("[data-job-status]");

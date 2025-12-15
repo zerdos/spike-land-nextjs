@@ -516,7 +516,9 @@ describe("DropdownMenu Component", () => {
         <DropdownMenu>
           <DropdownMenuTrigger>Open</DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel className="custom-label">Label</DropdownMenuLabel>
+            <DropdownMenuLabel className="custom-label">
+              Label
+            </DropdownMenuLabel>
           </DropdownMenuContent>
         </DropdownMenu>,
       );
@@ -572,7 +574,10 @@ describe("DropdownMenu Component", () => {
         <DropdownMenu>
           <DropdownMenuTrigger>Open</DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuSeparator className="custom-separator" data-testid="sep" />
+            <DropdownMenuSeparator
+              className="custom-separator"
+              data-testid="sep"
+            />
           </DropdownMenuContent>
         </DropdownMenu>,
       );
@@ -631,7 +636,9 @@ describe("DropdownMenu Component", () => {
           <DropdownMenuContent>
             <DropdownMenuItem>
               Action
-              <DropdownMenuShortcut className="custom-shortcut">⌘S</DropdownMenuShortcut>
+              <DropdownMenuShortcut className="custom-shortcut">
+                ⌘S
+              </DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>,

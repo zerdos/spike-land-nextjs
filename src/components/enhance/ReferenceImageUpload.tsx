@@ -55,7 +55,10 @@ export function ReferenceImageUpload({
 
   const validateFile = (file: File): { valid: boolean; error?: string; } => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return { valid: false, error: "Invalid file type. Only JPEG, PNG, and WebP allowed." };
+      return {
+        valid: false,
+        error: "Invalid file type. Only JPEG, PNG, and WebP allowed.",
+      };
     }
     if (file.size > MAX_FILE_SIZE) {
       return { valid: false, error: "File too large. Maximum size is 5MB." };
@@ -146,9 +149,12 @@ export function ReferenceImageUpload({
     [handleFiles],
   );
 
-  const updatePendingDescription = useCallback((index: number, description: string) => {
-    setPendingUploads((prev) => prev.map((p, i) => (i === index ? { ...p, description } : p)));
-  }, []);
+  const updatePendingDescription = useCallback(
+    (index: number, description: string) => {
+      setPendingUploads((prev) => prev.map((p, i) => (i === index ? { ...p, description } : p)));
+    },
+    [],
+  );
 
   const removePending = useCallback((index: number) => {
     setPendingUploads((prev) => {
@@ -169,7 +175,10 @@ export function ReferenceImageUpload({
       if (!pending || pending.uploading) return;
 
       setPendingUploads((prev) =>
-        prev.map((p, i) => (i === index ? { ...p, uploading: true, error: undefined } : p))
+        prev.map((
+          p,
+          i,
+        ) => (i === index ? { ...p, uploading: true, error: undefined } : p))
       );
 
       try {
@@ -231,7 +240,9 @@ export function ReferenceImageUpload({
         // Remove from reference images
         onImagesChange(referenceImages.filter((img) => img.r2Key !== r2Key));
       } catch (error) {
-        alert(error instanceof Error ? error.message : "Failed to delete image");
+        alert(
+          error instanceof Error ? error.message : "Failed to delete image",
+        );
       } finally {
         setDeletingKeys((prev) => {
           const newSet = new Set(prev);
@@ -267,7 +278,9 @@ export function ReferenceImageUpload({
                 />
               </div>
               {img.description && (
-                <p className="text-xs text-muted-foreground mt-1 truncate">{img.description}</p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {img.description}
+                </p>
               )}
               <Button
                 type="button"
@@ -290,7 +303,10 @@ export function ReferenceImageUpload({
       {pendingUploads.length > 0 && (
         <div className="space-y-3">
           {pendingUploads.map((pending, index) => (
-            <div key={index} className="flex gap-3 p-3 bg-muted/50 rounded-lg border">
+            <div
+              key={index}
+              className="flex gap-3 p-3 bg-muted/50 rounded-lg border"
+            >
               <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic preview */}
                 <img
@@ -303,8 +319,7 @@ export function ReferenceImageUpload({
                 <Input
                   placeholder="Description (optional)"
                   value={pending.description}
-                  onChange={(e) =>
-                    updatePendingDescription(index, e.target.value)}
+                  onChange={(e) => updatePendingDescription(index, e.target.value)}
                   disabled={pending.uploading || disabled}
                   className="h-8 text-sm"
                 />
@@ -318,8 +333,7 @@ export function ReferenceImageUpload({
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() =>
-                      uploadPending(index)}
+                    onClick={() => uploadPending(index)}
                     disabled={pending.uploading || disabled}
                   >
                     {pending.uploading

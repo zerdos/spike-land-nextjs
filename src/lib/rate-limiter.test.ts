@@ -320,7 +320,10 @@ describe("rate-limiter", () => {
 
       resetKVAvailability();
 
-      const result = await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
+      const result = await checkRateLimit("user1", {
+        maxRequests: 5,
+        windowMs: 1000,
+      });
 
       expect(mockedKV.ping).toHaveBeenCalled();
       expect(mockedKV.get).not.toHaveBeenCalled(); // Should not try to use KV
@@ -730,7 +733,10 @@ describe("rate-limiter", () => {
       const config = { maxRequests: 10, windowMs: 1000 };
 
       // Simulate concurrent requests
-      const promises = Array.from({ length: 5 }, () => checkRateLimit("user1", config));
+      const promises = Array.from(
+        { length: 5 },
+        () => checkRateLimit("user1", config),
+      );
 
       const results = await Promise.all(promises);
 
@@ -862,7 +868,9 @@ describe("rate-limiter", () => {
 
       // Check states
       expect((await checkRateLimit("heavy-user", config)).isLimited).toBe(true);
-      expect((await checkRateLimit("light-user", config)).isLimited).toBe(false);
+      expect((await checkRateLimit("light-user", config)).isLimited).toBe(
+        false,
+      );
       expect((await checkRateLimit("new-user", config)).isLimited).toBe(false);
     });
 

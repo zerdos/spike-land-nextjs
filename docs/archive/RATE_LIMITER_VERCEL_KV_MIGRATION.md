@@ -2,7 +2,9 @@
 
 ## Overview
 
-Migrated the rate limiter from in-memory Map storage to Vercel KV (Redis-compatible) for persistent, serverless-compatible rate limiting across cold starts.
+Migrated the rate limiter from in-memory Map storage to Vercel KV
+(Redis-compatible) for persistent, serverless-compatible rate limiting across
+cold starts.
 
 ## Changes Made
 
@@ -14,11 +16,15 @@ Migrated the rate limiter from in-memory Map storage to Vercel KV (Redis-compati
 
 #### Key Features
 
-- **Dual Storage Backend**: Uses Vercel KV when available, falls back to in-memory storage
-- **Automatic Failover**: Gracefully handles KV connection failures without blocking requests
-- **Async API**: Changed from synchronous to async operations for KV compatibility
+- **Dual Storage Backend**: Uses Vercel KV when available, falls back to
+  in-memory storage
+- **Automatic Failover**: Gracefully handles KV connection failures without
+  blocking requests
+- **Async API**: Changed from synchronous to async operations for KV
+  compatibility
 - **TTL-based Cleanup**: Uses KV's built-in TTL for automatic entry expiration
-- **Connection Caching**: Caches KV availability check to avoid repeated connection attempts
+- **Connection Caching**: Caches KV availability check to avoid repeated
+  connection attempts
 
 #### API Changes
 
@@ -36,7 +42,8 @@ const result = await checkRateLimit(identifier, config);
 
 #### New Exported Functions
 
-- `resetKVAvailability()` - Resets KV availability cache (testing/config changes)
+- `resetKVAvailability()` - Resets KV availability cache (testing/config
+  changes)
 - `forceMemoryStorage()` - Forces use of in-memory storage (testing)
 - `forceKVStorage()` - Forces attempt to use KV storage (testing)
 
@@ -70,7 +77,8 @@ All routes using `checkRateLimit` were updated to use `await`:
 
 ### 4. Updated Tests
 
-All test files mocking `checkRateLimit` were updated to use `mockResolvedValue` instead of `mockReturnValue`:
+All test files mocking `checkRateLimit` were updated to use `mockResolvedValue`
+instead of `mockReturnValue`:
 
 - `/src/lib/rate-limiter.test.ts`
 - `/src/app/api/images/upload/route.test.ts`
@@ -90,7 +98,8 @@ KV_REST_API_URL=https://your-kv-instance.kv.vercel-storage.com
 KV_REST_API_TOKEN=your-token-here
 ```
 
-**Note:** If these variables are not set, the rate limiter will automatically fall back to in-memory storage without errors.
+**Note:** If these variables are not set, the rate limiter will automatically
+fall back to in-memory storage without errors.
 
 ## Rate Limit Configurations
 
@@ -111,7 +120,8 @@ No changes to rate limit thresholds:
 
 ## Testing Strategy
 
-Tests use `forceMemoryStorage()` to ensure consistent, fast test execution without requiring a KV instance:
+Tests use `forceMemoryStorage()` to ensure consistent, fast test execution
+without requiring a KV instance:
 
 ```typescript
 beforeEach(() => {
@@ -132,7 +142,8 @@ beforeEach(() => {
 ### Production (Vercel)
 
 1. Add Vercel KV integration via Vercel dashboard
-2. Environment variables (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) are auto-configured
+2. Environment variables (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) are
+   auto-configured
 3. Rate limiter automatically detects and uses KV
 4. If KV fails, automatically falls back to in-memory
 
@@ -185,7 +196,10 @@ export function checkRateLimit(identifier: string, config: RateLimitConfig) {
 ### After (Async, KV + In-Memory Fallback)
 
 ```typescript
-export async function checkRateLimit(identifier: string, config: RateLimitConfig) {
+export async function checkRateLimit(
+  identifier: string,
+  config: RateLimitConfig,
+) {
   const useKV = await isKVAvailable();
 
   if (useKV) {

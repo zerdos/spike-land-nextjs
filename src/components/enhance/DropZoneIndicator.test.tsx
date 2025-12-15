@@ -18,13 +18,17 @@ describe("DropZoneIndicator Component", () => {
   it("should render with default label", () => {
     render(<DropZoneIndicator isActive={true} />);
 
-    expect(screen.getByTestId("drop-zone-label")).toHaveTextContent("Drop to add to album");
+    expect(screen.getByTestId("drop-zone-label")).toHaveTextContent(
+      "Drop to add to album",
+    );
   });
 
   it("should render with custom label", () => {
     render(<DropZoneIndicator isActive={true} label="Drop files here" />);
 
-    expect(screen.getByTestId("drop-zone-label")).toHaveTextContent("Drop files here");
+    expect(screen.getByTestId("drop-zone-label")).toHaveTextContent(
+      "Drop files here",
+    );
   });
 
   it("should apply custom className", () => {

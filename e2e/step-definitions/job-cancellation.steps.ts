@@ -57,16 +57,20 @@ Given("I have a pending enhancement job", async function(this: CustomWorld) {
   (this as CustomWorld & { currentJob: typeof mockPendingJob; }).currentJob = mockPendingJob;
 });
 
-Given("I have a processing enhancement job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockProcessingJob),
+Given(
+  "I have a processing enhancement job",
+  async function(this: CustomWorld) {
+    await world.page.route("**/api/jobs/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockProcessingJob),
+      });
     });
-  });
-  (this as CustomWorld & { currentJob: typeof mockProcessingJob; }).currentJob = mockProcessingJob;
-});
+    (this as CustomWorld & { currentJob: typeof mockProcessingJob; })
+      .currentJob = mockProcessingJob;
+  },
+);
 
 Given("I have a completed enhancement job", async function(this: CustomWorld) {
   await world.page.route("**/api/jobs/**", async (route) => {
@@ -116,10 +120,13 @@ Given(
   },
 );
 
-Given("I have {int} tokens", async function(this: CustomWorld, balance: number) {
-  await mockTokenBalance(this, balance);
-  (this as CustomWorld & { tokenBalance: number; }).tokenBalance = balance;
-});
+Given(
+  "I have {int} tokens",
+  async function(this: CustomWorld, balance: number) {
+    await mockTokenBalance(this, balance);
+    (this as CustomWorld & { tokenBalance: number; }).tokenBalance = balance;
+  },
+);
 
 Given("I mock a failed job cancellation", async function(this: CustomWorld) {
   await world.page.route("**/api/jobs/**/cancel", async (route) => {
@@ -131,11 +138,14 @@ Given("I mock a failed job cancellation", async function(this: CustomWorld) {
   });
 });
 
-When("I click the cancel button for the job", async function(this: CustomWorld) {
-  const cancelButton = this.page.getByRole("button", { name: /cancel/i });
-  await expect(cancelButton).toBeVisible();
-  await cancelButton.click();
-});
+When(
+  "I click the cancel button for the job",
+  async function(this: CustomWorld) {
+    const cancelButton = this.page.getByRole("button", { name: /cancel/i });
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+  },
+);
 
 When("I confirm the cancellation", async function(this: CustomWorld) {
   await world.page.route("**/api/jobs/**/cancel", async (route) => {
@@ -158,7 +168,9 @@ When("I confirm the cancellation", async function(this: CustomWorld) {
 });
 
 When("I dismiss the cancellation dialog", async function(this: CustomWorld) {
-  const cancelButton = this.page.getByRole("button", { name: /cancel|dismiss/i });
+  const cancelButton = this.page.getByRole("button", {
+    name: /cancel|dismiss/i,
+  });
   await expect(cancelButton).toBeVisible();
   await cancelButton.click();
 });
@@ -204,10 +216,13 @@ Then("I should see a confirmation dialog", async function(this: CustomWorld) {
   await expect(dialog).toBeVisible();
 });
 
-Then("the job status should be {string}", async function(this: CustomWorld, status: string) {
-  const statusBadge = this.page.getByText(status);
-  await expect(statusBadge).toBeVisible();
-});
+Then(
+  "the job status should be {string}",
+  async function(this: CustomWorld, status: string) {
+    const statusBadge = this.page.getByText(status);
+    await expect(statusBadge).toBeVisible();
+  },
+);
 
 // Removed duplicate - using common.steps.ts
 
@@ -219,10 +234,13 @@ Then("my tokens should be refunded", async function(this: CustomWorld) {
   }
 });
 
-Then("I should not see a cancel button for the job", async function(this: CustomWorld) {
-  const cancelButton = this.page.getByRole("button", { name: /cancel/i });
-  await expect(cancelButton).not.toBeVisible();
-});
+Then(
+  "I should not see a cancel button for the job",
+  async function(this: CustomWorld) {
+    const cancelButton = this.page.getByRole("button", { name: /cancel/i });
+    await expect(cancelButton).not.toBeVisible();
+  },
+);
 
 Then("I should see {string} status in the version grid", async function(
   this: CustomWorld,
@@ -233,16 +251,22 @@ Then("I should see {string} status in the version grid", async function(
   await expect(statusBadge).toBeVisible();
 });
 
-Then("the job should be marked as cancelled", async function(this: CustomWorld) {
-  const cancelledBadge = this.page.getByText(/cancelled/i);
-  await expect(cancelledBadge).toBeVisible();
-});
+Then(
+  "the job should be marked as cancelled",
+  async function(this: CustomWorld) {
+    const cancelledBadge = this.page.getByText(/cancelled/i);
+    await expect(cancelledBadge).toBeVisible();
+  },
+);
 
-Then("the job status should remain {string}", async function(this: CustomWorld, status: string) {
-  await this.page.waitForTimeout(500);
-  const statusBadge = this.page.getByText(status);
-  await expect(statusBadge).toBeVisible();
-});
+Then(
+  "the job status should remain {string}",
+  async function(this: CustomWorld, status: string) {
+    await this.page.waitForTimeout(500);
+    const statusBadge = this.page.getByText(status);
+    await expect(statusBadge).toBeVisible();
+  },
+);
 
 Then("my token balance should not change", async function(this: CustomWorld) {
   const worldWithBalance = this as CustomWorld & { tokenBalance?: number; };
@@ -256,7 +280,9 @@ Then("my token balance should be {int} tokens", async function(
   expectedBalance: number,
 ) {
   await mockTokenBalance(this, expectedBalance);
-  const balanceDisplay = this.page.getByText(new RegExp(`${expectedBalance}\\s*token`, "i"));
+  const balanceDisplay = this.page.getByText(
+    new RegExp(`${expectedBalance}\\s*token`, "i"),
+  );
   await expect(balanceDisplay).toBeVisible();
 });
 

@@ -45,7 +45,10 @@ export function SlideshowView({
 
   // Handle hero animation on mount
   useEffect(() => {
-    if (!transitionState.isActive || !transitionState.originRect || !containerRef.current) {
+    if (
+      !transitionState.isActive || !transitionState.originRect ||
+      !containerRef.current
+    ) {
       return;
     }
 
@@ -101,7 +104,9 @@ export function SlideshowView({
   }, []);
 
   // Calculate rotation transform
-  const rotationTransform = rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
+  const rotationTransform = rotation !== 0
+    ? `rotate(${rotation}deg)`
+    : undefined;
 
   // Check if we should reduce motion
   const prefersReducedMotion = typeof window !== "undefined" &&

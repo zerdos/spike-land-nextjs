@@ -100,7 +100,9 @@ describe("Admin Photos API", () => {
       vi.mocked(prisma.enhancedImage.count).mockResolvedValue(5);
       vi.mocked(prisma.enhancedImage.findMany).mockResolvedValue([]);
 
-      const request = new NextRequest(`http://localhost/api/admin/photos?userId=${VALID_USER_ID}`);
+      const request = new NextRequest(
+        `http://localhost/api/admin/photos?userId=${VALID_USER_ID}`,
+      );
 
       await GET(request);
 
@@ -145,7 +147,9 @@ describe("Admin Photos API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?page=0");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?page=0",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -159,7 +163,9 @@ describe("Admin Photos API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?userId=invalid");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?userId=invalid",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -173,7 +179,9 @@ describe("Admin Photos API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?startDate=invalid");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?startDate=invalid",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -187,7 +195,9 @@ describe("Admin Photos API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?endDate=invalid");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?endDate=invalid",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -204,7 +214,9 @@ describe("Admin Photos API", () => {
       vi.mocked(prisma.enhancedImage.count).mockResolvedValue(200);
       vi.mocked(prisma.enhancedImage.findMany).mockResolvedValue([]);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?limit=200");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?limit=200",
+      );
 
       await GET(request);
 
@@ -223,7 +235,9 @@ describe("Admin Photos API", () => {
       vi.mocked(prisma.enhancedImage.count).mockResolvedValue(50);
       vi.mocked(prisma.enhancedImage.findMany).mockResolvedValue([]);
 
-      const request = new NextRequest("http://localhost/api/admin/photos?page=2&limit=20");
+      const request = new NextRequest(
+        "http://localhost/api/admin/photos?page=2&limit=20",
+      );
 
       await GET(request);
 

@@ -1,6 +1,8 @@
 # Next.js 15 Application with Full Testing & CI/CD
 
-A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4, shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD pipeline.
+A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4,
+shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD
+pipeline.
 
 [![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
 
@@ -52,7 +54,8 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ### Authentication Setup
 
-This application uses [NextAuth.js v5](https://authjs.dev/) for authentication with support for GitHub and Google OAuth providers.
+This application uses [NextAuth.js v5](https://authjs.dev/) for authentication
+with support for GitHub and Google OAuth providers.
 
 #### 1. Generate AUTH_SECRET
 
@@ -61,7 +64,8 @@ This application uses [NextAuth.js v5](https://authjs.dev/) for authentication w
 openssl rand -base64 32
 ```
 
-Or visit [https://generate-secret.vercel.app/32](https://generate-secret.vercel.app/32)
+Or visit
+[https://generate-secret.vercel.app/32](https://generate-secret.vercel.app/32)
 
 #### 2. Configure OAuth Providers
 
@@ -72,7 +76,8 @@ Or visit [https://generate-secret.vercel.app/32](https://generate-secret.vercel.
 3. Fill in the details:
    - Application name: Your app name
    - Homepage URL: `http://localhost:3000`
-   - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+   - Authorization callback URL:
+     `http://localhost:3000/api/auth/callback/github`
 4. Click "Register application"
 5. Copy the **Client ID** and generate a **Client Secret**
 6. Add them to your `.env.local` file
@@ -112,16 +117,20 @@ GOOGLE_ID=your-google-client-id
 GOOGLE_SECRET=your-google-client-secret
 ```
 
-**Note:** `.env.local` is gitignored and will not be committed to the repository.
+**Note:** `.env.local` is gitignored and will not be committed to the
+repository.
 
 #### 4. Production Configuration
 
-For production deployment, set these environment variables in your hosting platform (e.g., Vercel):
+For production deployment, set these environment variables in your hosting
+platform (e.g., Vercel):
 
 - `AUTH_SECRET` - Your generated secret key
 - `NEXTAUTH_URL` - Your production domain (e.g., `https://yourdomain.com`)
-- `GITHUB_ID` and `GITHUB_SECRET` - Update GitHub OAuth callback URL to your production domain
-- `GOOGLE_ID` and `GOOGLE_SECRET` - Update Google OAuth redirect URI to your production domain
+- `GITHUB_ID` and `GITHUB_SECRET` - Update GitHub OAuth callback URL to your
+  production domain
+- `GOOGLE_ID` and `GOOGLE_SECRET` - Update Google OAuth redirect URI to your
+  production domain
 
 ## 📋 Available Scripts
 
@@ -252,7 +261,8 @@ The project uses GitHub Actions for automated testing and deployment:
 - ✅ Run Playwright/Cucumber tests against preview deployment
 - ✅ Upload test reports and screenshots
 
-**Note:** Production deployments are done manually from the `main` branch when needed.
+**Note:** Production deployments are done manually from the `main` branch when
+needed.
 
 ### Required Secrets
 
@@ -269,7 +279,8 @@ See `.github/workflows/README.md` for detailed setup instructions.
 
 To enforce code quality, you **must** set up branch protection for `main`:
 
-1. Go to: [Repository Settings → Branches](https://github.com/zerdos/spike-land-nextjs/settings/branches)
+1. Go to:
+   [Repository Settings → Branches](https://github.com/zerdos/spike-land-nextjs/settings/branches)
 2. Click **Add branch protection rule**
 3. Configure:
    - Branch name pattern: `main`
@@ -329,8 +340,10 @@ git push origin feature/my-feature
 
 ### Testing
 
-- **Unit**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
-- **E2E**: [Playwright](https://playwright.dev/) + [Cucumber](https://cucumber.io/)
+- **Unit**: [Vitest](https://vitest.dev/) +
+  [React Testing Library](https://testing-library.com/react)
+- **E2E**: [Playwright](https://playwright.dev/) +
+  [Cucumber](https://cucumber.io/)
 - **Coverage**: [Codecov](https://codecov.io/)
 
 ### DevOps
@@ -360,7 +373,8 @@ git push origin feature/my-feature
 
 ## 📝 License
 
-This project is bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This project is bootstrapped with
+[`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## 🔗 Links
 
@@ -370,7 +384,8 @@ This project is bootstrapped with [`create-next-app`](https://nextjs.org/docs/ap
 
 ## 📖 Learn More
 
-- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features
+- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js
+  features
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs) - Styling guide
 - [shadcn/ui Documentation](https://ui.shadcn.com/) - Component library
 - [Vitest Documentation](https://vitest.dev/) - Unit testing

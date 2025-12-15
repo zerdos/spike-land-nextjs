@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
     // Validate search query length
     if (search && search.length > MAX_SEARCH_LENGTH) {
       return NextResponse.json(
-        { error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)` },
+        {
+          error: `Search query too long (max ${MAX_SEARCH_LENGTH} characters)`,
+        },
         { status: 400 },
       );
     }
@@ -221,7 +223,10 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Prevent demoting super admins (except by other super admins)
-      if (targetUser.role === UserRole.SUPER_ADMIN && value !== UserRole.SUPER_ADMIN) {
+      if (
+        targetUser.role === UserRole.SUPER_ADMIN &&
+        value !== UserRole.SUPER_ADMIN
+      ) {
         const isSuperAdminUser = await isSuperAdmin(session.user.id);
         if (!isSuperAdminUser) {
           return NextResponse.json(
@@ -240,7 +245,8 @@ export async function PATCH(request: NextRequest) {
 
       // Log role change
       const forwarded = request.headers.get("x-forwarded-for");
-      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined;
+      const ipAddress = forwarded?.split(",")[0] ??
+        request.headers.get("x-real-ip") ?? undefined;
       await AuditLogger.logRoleChange(
         session.user.id,
         userId,
@@ -262,13 +268,17 @@ export async function PATCH(request: NextRequest) {
       // Validate token adjustment bounds
       if (amount > MAX_TOKEN_ADJUSTMENT) {
         return NextResponse.json(
-          { error: `Cannot add more than ${MAX_TOKEN_ADJUSTMENT} tokens at once` },
+          {
+            error: `Cannot add more than ${MAX_TOKEN_ADJUSTMENT} tokens at once`,
+          },
           { status: 400 },
         );
       }
       if (amount < MIN_TOKEN_ADJUSTMENT) {
         return NextResponse.json(
-          { error: `Cannot remove more than ${Math.abs(MIN_TOKEN_ADJUSTMENT)} tokens at once` },
+          {
+            error: `Cannot remove more than ${Math.abs(MIN_TOKEN_ADJUSTMENT)} tokens at once`,
+          },
           { status: 400 },
         );
       }
@@ -307,7 +317,8 @@ export async function PATCH(request: NextRequest) {
 
       // Log token adjustment
       const forwarded = request.headers.get("x-forwarded-for");
-      const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined;
+      const ipAddress = forwarded?.split(",")[0] ??
+        request.headers.get("x-real-ip") ?? undefined;
       await AuditLogger.logTokenAdjustment(
         session.user.id,
         userId,
@@ -427,7 +438,8 @@ export async function DELETE(request: NextRequest) {
 
     // Log user deletion
     const forwarded = request.headers.get("x-forwarded-for");
-    const ipAddress = forwarded?.split(",")[0] ?? request.headers.get("x-real-ip") ?? undefined;
+    const ipAddress = forwarded?.split(",")[0] ??
+      request.headers.get("x-real-ip") ?? undefined;
     await AuditLogger.logUserDelete(
       session.user.id,
       userId,

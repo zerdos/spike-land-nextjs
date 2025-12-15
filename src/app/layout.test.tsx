@@ -127,7 +127,9 @@ describe("RootLayout", () => {
 describe("metadata", () => {
   it("should export correct metadata object", () => {
     expect(metadata).toBeDefined();
-    expect(metadata.title).toBe("Spike Land - Vibe Coded Apps with Claude Code");
+    expect(metadata.title).toBe(
+      "Spike Land - Vibe Coded Apps with Claude Code",
+    );
     expect(metadata.description).toContain("Smart Video Wall");
     expect(metadata.description).toContain("vibe-coded");
   });

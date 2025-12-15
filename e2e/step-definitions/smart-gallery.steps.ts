@@ -90,32 +90,38 @@ async function mockGalleryAPI(world: CustomWorld, images: MockGalleryImage[]) {
 // BACKGROUND & SETUP STEPS
 // =====================================
 
-Given("I have an album with gallery images", async function(this: CustomWorld) {
-  shouldSkipGalleryTests = false;
-  testContext.albumId = "test-gallery-album";
-  testContext.shareToken = "test-gallery-token";
-  testContext.imageCount = 5;
-  testContext.hasEnhancedVersions = true;
-  testContext.selectedImageId = null;
-  testContext.autoCycleInterval = null;
-  testContext.rotation = 0;
+Given(
+  "I have an album with gallery images",
+  async function(this: CustomWorld) {
+    shouldSkipGalleryTests = false;
+    testContext.albumId = "test-gallery-album";
+    testContext.shareToken = "test-gallery-token";
+    testContext.imageCount = 5;
+    testContext.hasEnhancedVersions = true;
+    testContext.selectedImageId = null;
+    testContext.autoCycleInterval = null;
+    testContext.rotation = 0;
 
-  const images = Array.from(
-    { length: testContext.imageCount },
-    (_, i) => createMockGalleryImage(i + 1, testContext.hasEnhancedVersions),
-  );
+    const images = Array.from(
+      { length: testContext.imageCount },
+      (_, i) => createMockGalleryImage(i + 1, testContext.hasEnhancedVersions),
+    );
 
-  await mockGalleryAPI(this, images);
-});
+    await mockGalleryAPI(this, images);
+  },
+);
 
-Given("I have an album with only one image", async function(this: CustomWorld) {
-  testContext.albumId = "single-image-album";
-  testContext.shareToken = "single-token";
-  testContext.imageCount = 1;
+Given(
+  "I have an album with only one image",
+  async function(this: CustomWorld) {
+    testContext.albumId = "single-image-album";
+    testContext.shareToken = "single-token";
+    testContext.imageCount = 1;
 
-  const images = [createMockGalleryImage(1, true)];
-  await mockGalleryAPI(this, images);
-});
+    const images = [createMockGalleryImage(1, true)];
+    await mockGalleryAPI(this, images);
+  },
+);
 
 Given("I have an empty album", async function(this: CustomWorld) {
   testContext.albumId = "empty-album";
@@ -241,14 +247,17 @@ Given(
   },
 );
 
-When("I navigate to the album gallery page", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+When(
+  "I navigate to the album gallery page",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  await this.page.goto(
-    `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
-  );
-  await this.page.waitForLoadState("networkidle");
-});
+    await this.page.goto(
+      `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
+    );
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 // =====================================
 // IMAGE SELECTION STEPS
@@ -419,12 +428,15 @@ Then("the next image should be selected", async function(this: CustomWorld) {
   expect(testId).not.toBe(testContext.selectedImageId);
 });
 
-Then("the previous image should be selected", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the previous image should be selected",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const selected = this.page.locator('[aria-selected="true"]');
-  await expect(selected).toBeVisible();
-});
+    const selected = this.page.locator('[aria-selected="true"]');
+    await expect(selected).toBeVisible();
+  },
+);
 
 Then("the last image should be selected", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -451,23 +463,27 @@ Then(
     if (shouldSkipGalleryTests) return "skipped";
 
     // Check that there's only one selected element
-    const selectedCount = await this.page.locator('[aria-selected="true"]').count();
+    const selectedCount = await this.page.locator('[aria-selected="true"]')
+      .count();
     expect(selectedCount).toBe(1);
   },
 );
 
-Then("a different image should be selected", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "a different image should be selected",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const selected = this.page.locator('[aria-selected="true"]');
-  const testId = await selected.getAttribute("data-testid");
+    const selected = this.page.locator('[aria-selected="true"]');
+    const testId = await selected.getAttribute("data-testid");
 
-  // After auto-cycle, a different image should be selected
-  // (unless there's only one image)
-  if (testContext.imageCount > 1) {
-    expect(testId).not.toBe(testContext.selectedImageId);
-  }
-});
+    // After auto-cycle, a different image should be selected
+    // (unless there's only one image)
+    if (testContext.imageCount > 1) {
+      expect(testId).not.toBe(testContext.selectedImageId);
+    }
+  },
+);
 
 // =====================================
 // SLIDESHOW MODE STEPS
@@ -635,12 +651,15 @@ Then(
   },
 );
 
-Then("the slideshow should have role dialog", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the slideshow should have role dialog",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const slideshow = this.page.locator('[data-testid="slideshow-view"]');
-  await expect(slideshow).toHaveAttribute("role", "dialog");
-});
+    const slideshow = this.page.locator('[data-testid="slideshow-view"]');
+    await expect(slideshow).toHaveAttribute("role", "dialog");
+  },
+);
 
 Then(
   "the slideshow should animate from the grid position",
@@ -713,20 +732,26 @@ Then(
 // PEEK FUNCTIONALITY STEPS
 // =====================================
 
-Then("I should see the original image version", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "I should see the original image version",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  // The slideshow image should be visible
-  const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
-  await expect(slideshowImage).toBeVisible();
-});
+    // The slideshow image should be visible
+    const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
+    await expect(slideshowImage).toBeVisible();
+  },
+);
 
-Then("I should see the enhanced image version again", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "I should see the enhanced image version again",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
-  await expect(slideshowImage).toBeVisible();
-});
+    const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
+    await expect(slideshowImage).toBeVisible();
+  },
+);
 
 Then(
   "the screen reader should announce showing original",
@@ -734,19 +759,24 @@ Then(
     if (shouldSkipGalleryTests) return "skipped";
 
     // Check for aria-live region content
-    const statusRegion = this.page.locator('[role="status"][aria-live="polite"]');
+    const statusRegion = this.page.locator(
+      '[role="status"][aria-live="polite"]',
+    );
     const content = await statusRegion.textContent();
     expect(content).toContain("original");
   },
 );
 
-Then("the B key peek should have no visible effect", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the B key peek should have no visible effect",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  // When there's no enhanced version, B key shouldn't change the display
-  const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
-  await expect(slideshowImage).toBeVisible();
-});
+    // When there's no enhanced version, B key shouldn't change the display
+    const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
+    await expect(slideshowImage).toBeVisible();
+  },
+);
 
 // =====================================
 // TOUCH GESTURE STEPS
@@ -828,16 +858,19 @@ When("I release the long press", async function(this: CustomWorld) {
 // NAVIGATION CONTROLS STEPS
 // =====================================
 
-Given("the navigation controls are visible", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Given(
+  "the navigation controls are visible",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  // Move mouse to trigger controls visibility
-  await this.page.mouse.move(300, 300);
-  await this.page.waitForTimeout(100);
+    // Move mouse to trigger controls visibility
+    await this.page.mouse.move(300, 300);
+    await this.page.waitForTimeout(100);
 
-  const controls = this.page.locator('[data-testid="slideshow-controls"]');
-  await expect(controls).toBeVisible();
-});
+    const controls = this.page.locator('[data-testid="slideshow-controls"]');
+    await expect(controls).toBeVisible();
+  },
+);
 
 When("I move the mouse", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -855,11 +888,14 @@ When("I do not move the mouse for {int} seconds", async function(
   await this.page.waitForTimeout(seconds * 1000);
 });
 
-When("I wait for {int} seconds", async function(this: CustomWorld, seconds: number) {
-  if (shouldSkipGalleryTests) return "skipped";
+When(
+  "I wait for {int} seconds",
+  async function(this: CustomWorld, seconds: number) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  await this.page.waitForTimeout(seconds * 1000);
-});
+    await this.page.waitForTimeout(seconds * 1000);
+  },
+);
 
 When("I click the previous button", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -916,12 +952,17 @@ Then(
 // EDGE CASE STEPS
 // =====================================
 
-Then("the previous button should be disabled", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the previous button should be disabled",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const prevButton = this.page.locator('[data-testid="slideshow-prev-button"]');
-  await expect(prevButton).toBeDisabled();
-});
+    const prevButton = this.page.locator(
+      '[data-testid="slideshow-prev-button"]',
+    );
+    await expect(prevButton).toBeDisabled();
+  },
+);
 
 Then("the next button should be disabled", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -944,12 +985,15 @@ Then(
   },
 );
 
-Then("I should see the empty album message", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "I should see the empty album message",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const emptyState = this.page.locator('[data-testid="canvas-empty"]');
-  await expect(emptyState).toBeVisible({ timeout: 10000 });
-});
+    const emptyState = this.page.locator('[data-testid="canvas-empty"]');
+    await expect(emptyState).toBeVisible({ timeout: 10000 });
+  },
+);
 
 Then(
   "I should see {string}",
@@ -961,19 +1005,24 @@ Then(
   },
 );
 
-Then("the slideshow should show the original image", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the slideshow should show the original image",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
-  await expect(slideshowImage).toBeVisible();
-});
+    const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
+    await expect(slideshowImage).toBeVisible();
+  },
+);
 
 Then(
   "I should see an error fallback for the failed image",
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const errorFallback = this.page.locator('[data-testid="image-error-fallback"]');
+    const errorFallback = this.page.locator(
+      '[data-testid="image-error-fallback"]',
+    );
     await expect(errorFallback).toBeVisible({ timeout: 10000 });
   },
 );
@@ -999,17 +1048,20 @@ Then(
   },
 );
 
-Then("each thumbnail should have role gridcell", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "each thumbnail should have role gridcell",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const thumbnails = this.page.locator('[data-testid="smart-grid"] > div');
-  const count = await thumbnails.count();
+    const thumbnails = this.page.locator('[data-testid="smart-grid"] > div');
+    const count = await thumbnails.count();
 
-  for (let i = 0; i < Math.min(count, 5); i++) {
-    const thumbnail = thumbnails.nth(i);
-    await expect(thumbnail).toHaveAttribute("role", "gridcell");
-  }
-});
+    for (let i = 0; i < Math.min(count, 5); i++) {
+      const thumbnail = thumbnails.nth(i);
+      await expect(thumbnail).toHaveAttribute("role", "gridcell");
+    }
+  },
+);
 
 Then(
   "focus should move to the first thumbnail",
@@ -1031,12 +1083,15 @@ Then(
   },
 );
 
-Then("the slideshow should have aria-modal true", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+Then(
+  "the slideshow should have aria-modal true",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
 
-  const slideshow = this.page.locator('[data-testid="slideshow-view"]');
-  await expect(slideshow).toHaveAttribute("aria-modal", "true");
-});
+    const slideshow = this.page.locator('[data-testid="slideshow-view"]');
+    await expect(slideshow).toHaveAttribute("aria-modal", "true");
+  },
+);
 
 Then(
   "the slideshow should have aria-label {string}",
@@ -1053,7 +1108,9 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const statusRegion = this.page.locator('[role="status"][aria-live="polite"]');
+    const statusRegion = this.page.locator(
+      '[role="status"][aria-live="polite"]',
+    );
     await expect(statusRegion).toBeVisible();
   },
 );
@@ -1063,7 +1120,9 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const statusRegion = this.page.locator('[role="status"][aria-live="polite"]');
+    const statusRegion = this.page.locator(
+      '[role="status"][aria-live="polite"]',
+    );
     const content = await statusRegion.textContent();
     expect(content).toContain("Image");
   },
@@ -1074,7 +1133,9 @@ Then(
   async function(this: CustomWorld, label: string) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const prevButton = this.page.locator('[data-testid="slideshow-prev-button"]');
+    const prevButton = this.page.locator(
+      '[data-testid="slideshow-prev-button"]',
+    );
     await expect(prevButton).toHaveAttribute("aria-label", label);
   },
 );
@@ -1084,7 +1145,9 @@ Then(
   async function(this: CustomWorld, label: string) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const nextButton = this.page.locator('[data-testid="slideshow-next-button"]');
+    const nextButton = this.page.locator(
+      '[data-testid="slideshow-next-button"]',
+    );
     await expect(nextButton).toHaveAttribute("aria-label", label);
   },
 );
@@ -1094,7 +1157,9 @@ Then(
   async function(this: CustomWorld, label: string) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const exitButton = this.page.locator('[data-testid="slideshow-exit-button"]');
+    const exitButton = this.page.locator(
+      '[data-testid="slideshow-exit-button"]',
+    );
     await expect(exitButton).toHaveAttribute("aria-label", label);
   },
 );
@@ -1125,7 +1190,9 @@ Then(
   async function(this: CustomWorld, degrees: number) {
     if (shouldSkipGalleryTests) return "skipped";
 
-    const imageContainer = this.page.locator('[data-testid="slideshow-view"] > div > div');
+    const imageContainer = this.page.locator(
+      '[data-testid="slideshow-view"] > div > div',
+    );
     const transform = await imageContainer.first().evaluate((el) => {
       return window.getComputedStyle(el).transform;
     });

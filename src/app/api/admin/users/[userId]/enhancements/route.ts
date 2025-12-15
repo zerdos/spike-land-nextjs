@@ -28,7 +28,9 @@ export async function GET(
     const { userId } = await params;
 
     if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      return NextResponse.json({ error: "User ID is required" }, {
+        status: 400,
+      });
     }
 
     const { searchParams } = new URL(request.url);

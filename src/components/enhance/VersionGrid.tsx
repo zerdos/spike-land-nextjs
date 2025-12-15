@@ -67,11 +67,14 @@ export function VersionGrid({
 }: VersionGridProps) {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [processingJobId, setProcessingJobId] = useState<string | null>(null);
-  const [selectedForDelete, setSelectedForDelete] = useState<Set<string>>(new Set());
+  const [selectedForDelete, setSelectedForDelete] = useState<Set<string>>(
+    new Set(),
+  );
 
   const deletableVersions = versions.filter(
     (v) =>
-      v.status === "COMPLETED" || v.status === "FAILED" || v.status === "CANCELLED" ||
+      v.status === "COMPLETED" || v.status === "FAILED" ||
+      v.status === "CANCELLED" ||
       v.status === "REFUNDED",
   );
 
@@ -196,7 +199,9 @@ export function VersionGrid({
               size="sm"
               onClick={toggleSelectAll}
             >
-              {selectedForDelete.size === deletableVersions.length ? "Deselect All" : "Select All"}
+              {selectedForDelete.size === deletableVersions.length
+                ? "Deselect All"
+                : "Select All"}
             </Button>
             <BulkDeleteDialog
               selectedVersions={selectedVersionsData}
@@ -219,10 +224,12 @@ export function VersionGrid({
             <Card
               key={version.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
-                selectedVersionId === version.id
-                  ? "ring-2 ring-primary"
+                selectedVersionId === version.id ? "ring-2 ring-primary" : ""
+              } ${
+                selectedForDelete.has(version.id)
+                  ? "ring-2 ring-destructive"
                   : ""
-              } ${selectedForDelete.has(version.id) ? "ring-2 ring-destructive" : ""}`}
+              }`}
               onClick={() => onVersionSelect?.(version.id)}
             >
               <CardContent className="p-4">
@@ -241,7 +248,8 @@ export function VersionGrid({
                     </div>
                   )}
 
-                  {version.status === "COMPLETED" && !failedImages.has(version.id) && (
+                  {version.status === "COMPLETED" &&
+                    !failedImages.has(version.id) && (
                     <Image
                       src={version.enhancedUrl}
                       alt={`Enhanced version ${tierLabels[version.tier]}`}
@@ -250,26 +258,32 @@ export function VersionGrid({
                       onError={() => handleImageError(version)}
                     />
                   )}
-                  {version.status === "COMPLETED" && failedImages.has(version.id) && (
+                  {version.status === "COMPLETED" &&
+                    failedImages.has(version.id) && (
                     <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
                       <p className="text-sm text-destructive text-center px-2">
                         Image failed to load
                       </p>
                     </div>
                   )}
-                  {(version.status === "PROCESSING" || version.status === "PENDING") && (
+                  {(version.status === "PROCESSING" ||
+                    version.status === "PENDING") && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">
-                          {version.status === "PENDING" ? "Queued..." : "Processing..."}
+                          {version.status === "PENDING"
+                            ? "Queued..."
+                            : "Processing..."}
                         </p>
                       </div>
                     </div>
                   )}
                   {version.status === "FAILED" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-                      <p className="text-sm text-destructive">Enhancement Failed</p>
+                      <p className="text-sm text-destructive">
+                        Enhancement Failed
+                      </p>
                     </div>
                   )}
                   {version.status === "CANCELLED" && (
@@ -281,9 +295,14 @@ export function VersionGrid({
 
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{tierLabels[version.tier]}</Badge>
+                    <Badge variant="secondary">
+                      {tierLabels[version.tier]}
+                    </Badge>
                     {version.status === "CANCELLED" && (
-                      <Badge variant="outline" className="text-muted-foreground">
+                      <Badge
+                        variant="outline"
+                        className="text-muted-foreground"
+                      >
                         Cancelled
                       </Badge>
                     )}
@@ -325,7 +344,8 @@ export function VersionGrid({
                     </Button>
                   )}
 
-                  {(version.status === "PENDING" || version.status === "PROCESSING") &&
+                  {(version.status === "PENDING" ||
+                    version.status === "PROCESSING") &&
                     onJobCancel && (
                     <Button
                       variant="outline"
@@ -335,7 +355,9 @@ export function VersionGrid({
                       disabled={processingJobId === version.id}
                     >
                       <X className="mr-2 h-4 w-4" />
-                      {processingJobId === version.id ? "Cancelling..." : "Cancel"}
+                      {processingJobId === version.id
+                        ? "Cancelling..."
+                        : "Cancel"}
                     </Button>
                   )}
 
@@ -351,7 +373,9 @@ export function VersionGrid({
                       disabled={processingJobId === version.id}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      {processingJobId === version.id ? "Deleting..." : "Delete"}
+                      {processingJobId === version.id
+                        ? "Deleting..."
+                        : "Delete"}
                     </Button>
                   )}
                 </div>

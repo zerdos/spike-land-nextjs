@@ -11,8 +11,16 @@ import { AlertTriangle, CheckCircle, Coins, Loader2, Sparkles, XCircle } from "l
 import { useCallback, useState } from "react";
 
 const TIER_INFO = {
-  TIER_1K: { label: "1K (1024px)", cost: 2, description: "Fast, good for previews" },
-  TIER_2K: { label: "2K (2048px)", cost: 5, description: "Balanced quality and speed" },
+  TIER_1K: {
+    label: "1K (1024px)",
+    cost: 2,
+    description: "Fast, good for previews",
+  },
+  TIER_2K: {
+    label: "2K (2048px)",
+    cost: 5,
+    description: "Balanced quality and speed",
+  },
   TIER_4K: { label: "4K (4096px)", cost: 10, description: "Maximum quality" },
 };
 
@@ -112,7 +120,11 @@ export function BatchEnhance({
               if (statusCheck.status === "COMPLETED") {
                 return { ...img, status: "completed" as const };
               } else if (statusCheck.status === "FAILED") {
-                return { ...img, status: "error" as const, error: statusCheck.error };
+                return {
+                  ...img,
+                  status: "error" as const,
+                  error: statusCheck.error,
+                };
               }
             }
             return img;
@@ -131,7 +143,10 @@ export function BatchEnhance({
           }
         } else {
           // Apply exponential backoff with cap
-          currentInterval = Math.min(currentInterval * backoffMultiplier, maxInterval);
+          currentInterval = Math.min(
+            currentInterval * backoffMultiplier,
+            maxInterval,
+          );
           setTimeout(poll, currentInterval);
         }
       } catch (error) {
@@ -151,15 +166,17 @@ export function BatchEnhance({
     setIsProcessing(true);
 
     // Initialize enhancing images with pending status
-    const imagesToEnhance: ImageToEnhance[] = Array.from(selectedImages).map((imageId) => {
-      const image = images.find((img) => img.id === imageId)!;
-      return {
-        id: imageId,
-        name: image.name,
-        url: image.url,
-        status: "pending" as const,
-      };
-    });
+    const imagesToEnhance: ImageToEnhance[] = Array.from(selectedImages).map(
+      (imageId) => {
+        const image = images.find((img) => img.id === imageId)!;
+        return {
+          id: imageId,
+          name: image.name,
+          url: image.url,
+          status: "pending" as const,
+        };
+      },
+    );
 
     setEnhancingImages(imagesToEnhance);
 
@@ -220,7 +237,14 @@ export function BatchEnhance({
       );
       setIsProcessing(false);
     }
-  }, [selectedImages, selectedTier, hasEnoughTokens, images, onBalanceRefresh, pollJobStatuses]);
+  }, [
+    selectedImages,
+    selectedTier,
+    hasEnoughTokens,
+    images,
+    onBalanceRefresh,
+    pollJobStatuses,
+  ]);
 
   const clearCompleted = useCallback(() => {
     setEnhancingImages((prev) => prev.filter((img) => img.status !== "completed"));
@@ -267,11 +291,16 @@ export function BatchEnhance({
               return (
                 <div key={tier} className="flex items-center space-x-2">
                   <RadioGroupItem value={tier} id={`batch-${tier}`} />
-                  <Label htmlFor={`batch-${tier}`} className="flex-1 cursor-pointer">
+                  <Label
+                    htmlFor={`batch-${tier}`}
+                    className="flex-1 cursor-pointer"
+                  >
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-medium">{info.label}</p>
-                        <p className="text-sm text-muted-foreground">{info.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {info.description}
+                        </p>
                       </div>
                       <p className="text-sm font-medium">{info.cost} tokens</p>
                     </div>
@@ -288,10 +317,20 @@ export function BatchEnhance({
             <div className="flex items-center justify-between">
               <Label>Select Images</Label>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={selectAll} disabled={isProcessing}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={selectAll}
+                  disabled={isProcessing}
+                >
                   Select All
                 </Button>
-                <Button variant="ghost" size="sm" onClick={deselectAll} disabled={isProcessing}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={deselectAll}
+                  disabled={isProcessing}
+                >
                   Deselect All
                 </Button>
               </div>
@@ -306,7 +345,11 @@ export function BatchEnhance({
                     className={`
                       relative cursor-pointer rounded-lg border-2 transition-all overflow-hidden
                       ${isSelected ? "border-primary" : "border-transparent"}
-                      ${isProcessing ? "opacity-50 cursor-not-allowed" : "hover:border-primary/50"}
+                      ${
+                      isProcessing
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:border-primary/50"
+                    }
                     `}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded image from R2 */}
@@ -364,7 +407,9 @@ export function BatchEnhance({
               {pendingCount > 0 && <Badge variant="outline">{pendingCount} pending</Badge>}
               {enhancingCount > 0 && <Badge variant="default">{enhancingCount} enhancing</Badge>}
               {completedCount > 0 && (
-                <Badge variant="default" className="bg-green-500">{completedCount} completed</Badge>
+                <Badge variant="default" className="bg-green-500">
+                  {completedCount} completed
+                </Badge>
               )}
               {errorCount > 0 && <Badge variant="destructive">{errorCount} failed</Badge>}
             </div>
@@ -375,11 +420,15 @@ export function BatchEnhance({
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Overall Progress</span>
                   <span>
-                    {Math.round((completedCount + errorCount) / enhancingImages.length * 100)}%
+                    {Math.round(
+                      (completedCount + errorCount) / enhancingImages.length *
+                        100,
+                    )}%
                   </span>
                 </div>
                 <Progress
-                  value={(completedCount + errorCount) / enhancingImages.length * 100}
+                  value={(completedCount + errorCount) /
+                    enhancingImages.length * 100}
                   className="h-2"
                 />
               </div>
@@ -388,7 +437,10 @@ export function BatchEnhance({
             {/* Image List */}
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {enhancingImages.map((image) => (
-                <div key={image.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div
+                  key={image.id}
+                  className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                >
                   <div className="relative w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded image from R2 */}
                     <img
@@ -400,7 +452,11 @@ export function BatchEnhance({
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{image.name}</p>
-                    {image.error && <p className="text-xs text-destructive mt-1">{image.error}</p>}
+                    {image.error && (
+                      <p className="text-xs text-destructive mt-1">
+                        {image.error}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex-shrink-0">
@@ -425,7 +481,8 @@ export function BatchEnhance({
             ? (
               <Button
                 onClick={startBatchEnhancement}
-                disabled={isProcessing || selectedImages.size === 0 || !hasEnoughTokens}
+                disabled={isProcessing || selectedImages.size === 0 ||
+                  !hasEnoughTokens}
                 className="flex-1"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
@@ -436,12 +493,20 @@ export function BatchEnhance({
             : (
               <>
                 {!isProcessing && completedCount > 0 && (
-                  <Button variant="outline" onClick={clearCompleted} className="flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={clearCompleted}
+                    className="flex-1"
+                  >
                     Clear Completed
                   </Button>
                 )}
                 {!isProcessing && (
-                  <Button variant="outline" onClick={clearAll} className="flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={clearAll}
+                    className="flex-1"
+                  >
                     Clear All
                   </Button>
                 )}

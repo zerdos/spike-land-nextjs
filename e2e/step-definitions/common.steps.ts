@@ -3,20 +3,29 @@ import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
 // Common button click step used across multiple features
-When("I click {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-  await button.click();
-});
+When(
+  "I click {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    await button.click();
+  },
+);
 
 // Common success message check
 Then("I should see a success message", async function(this: CustomWorld) {
-  const successMessage = this.page.locator('[role="status"], .success, .toast, [class*="success"]');
+  const successMessage = this.page.locator(
+    '[role="status"], .success, .toast, [class*="success"]',
+  );
   await expect(successMessage).toBeVisible({ timeout: 10000 });
 });
 
 // Common error message check
 Then("I should see an error message", async function(this: CustomWorld) {
-  const errorMessage = this.page.locator('[role="alert"], .error, .toast, [class*="error"]');
+  const errorMessage = this.page.locator(
+    '[role="alert"], .error, .toast, [class*="error"]',
+  );
   await expect(errorMessage).toBeVisible({ timeout: 10000 });
 });
 
@@ -33,32 +42,44 @@ When("I cancel the deletion confirmation", async function(this: CustomWorld) {
 });
 
 // Common button visibility check
-Then("I should see {string} button", async function(this: CustomWorld, buttonText: string) {
-  const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-  await expect(button).toBeVisible();
-});
+Then(
+  "I should see {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    await expect(button).toBeVisible();
+  },
+);
 
 // Common Stripe redirect check
-Then("I should be redirected to Stripe checkout", async function(this: CustomWorld) {
-  await this.page.waitForURL(/checkout\.stripe\.com/, { timeout: 15000 });
-  expect(this.page.url()).toContain("stripe.com");
-});
+Then(
+  "I should be redirected to Stripe checkout",
+  async function(this: CustomWorld) {
+    await this.page.waitForURL(/checkout\.stripe\.com/, { timeout: 15000 });
+    expect(this.page.url()).toContain("stripe.com");
+  },
+);
 
 // Common sign-in redirect check
-Then("I should be redirected to sign-in page", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  const url = this.page.url();
+Then(
+  "I should be redirected to sign-in page",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+    const url = this.page.url();
 
-  // Most protected routes redirect to /auth/signin via middleware
-  // Exception: /admin redirects to home page (/) via admin layout
-  // Also accept 404 pages (route not deployed yet) as "access denied"
-  const isRedirectedToSignIn = url.includes("/auth/signin");
-  const isRedirectedToHome = url.endsWith("/");
-  const is404Page = await this.page.getByText(/404|not found/i).isVisible().catch(() => false);
+    // Most protected routes redirect to /auth/signin via middleware
+    // Exception: /admin redirects to home page (/) via admin layout
+    // Also accept 404 pages (route not deployed yet) as "access denied"
+    const isRedirectedToSignIn = url.includes("/auth/signin");
+    const isRedirectedToHome = url.endsWith("/");
+    const is404Page = await this.page.getByText(/404|not found/i).isVisible()
+      .catch(() => false);
 
-  const validResult = isRedirectedToSignIn || isRedirectedToHome || is404Page;
-  expect(validResult).toBe(true);
-});
+    const validResult = isRedirectedToSignIn || isRedirectedToHome || is404Page;
+    expect(validResult).toBe(true);
+  },
+);
 
 // Common text visibility with two options
 Then("I should see {string} or {string} text", async function(
@@ -72,17 +93,22 @@ Then("I should see {string} or {string} text", async function(
 });
 
 // Common tab visibility check (handles both tab and button roles)
-Then("I should see {string} tab", async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
-    .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
-  await expect(tab.first()).toBeVisible();
-});
+Then(
+  "I should see {string} tab",
+  async function(this: CustomWorld, tabName: string) {
+    const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
+      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+    await expect(tab.first()).toBeVisible();
+  },
+);
 
 // Common button disabled check
 Then(
   "the {string} button should be disabled",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
     await expect(button.first()).toBeDisabled();
   },
 );
@@ -91,52 +117,72 @@ Then(
 Then(
   "the {string} button should be enabled",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
     await expect(button.first()).toBeEnabled();
   },
 );
 
 // Common tab click action (handles both tab and button roles)
-When("I click the {string} tab", async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
-    .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
-  await tab.first().click();
-});
+When(
+  "I click the {string} tab",
+  async function(this: CustomWorld, tabName: string) {
+    const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
+      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+    await tab.first().click();
+  },
+);
 
 // Common tokens used display check
 Then("I should see the tokens used", async function(this: CustomWorld) {
-  const tokensElement = this.page.locator('[class*="token"], [data-testid*="token"]')
+  const tokensElement = this.page.locator(
+    '[class*="token"], [data-testid*="token"]',
+  )
     .or(this.page.getByText(/token/i));
   await expect(tokensElement.first()).toBeVisible();
 });
 
 // Common error message display check (specific error message)
 Then("I should see the error message", async function(this: CustomWorld) {
-  const errorElement = this.page.locator('[role="alert"], [class*="error"], [class*="Error"]')
+  const errorElement = this.page.locator(
+    '[role="alert"], [class*="error"], [class*="Error"]',
+  )
     .or(this.page.getByText(/error|failed/i));
   await expect(errorElement.first()).toBeVisible();
 });
 
 // Common link click (variant without "the")
-When("I click {string} link", async function(this: CustomWorld, linkText: string) {
-  const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
-  await expect(link.first()).toBeVisible({ timeout: 10000 });
-  // Click and wait for URL to change (handles both server and client-side navigation)
-  const currentUrl = this.page.url();
-  await link.first().click();
-  // Wait for URL to change
-  await this.page.waitForFunction((oldUrl) => window.location.href !== oldUrl, currentUrl, {
-    timeout: 10000,
-  });
-  // Wait for page to settle
-  await this.page.waitForLoadState("networkidle");
-});
+When(
+  "I click {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", {
+      name: new RegExp(linkText, "i"),
+    });
+    await expect(link.first()).toBeVisible({ timeout: 10000 });
+    // Click and wait for URL to change (handles both server and client-side navigation)
+    const currentUrl = this.page.url();
+    await link.first().click();
+    // Wait for URL to change
+    await this.page.waitForFunction(
+      (oldUrl) => window.location.href !== oldUrl,
+      currentUrl,
+      {
+        timeout: 10000,
+      },
+    );
+    // Wait for page to settle
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 // Check link href attribute
 Then(
   "the {string} link should point to {string}",
   async function(this: CustomWorld, linkText: string, expectedPath: string) {
-    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
+    const link = this.page.getByRole("link", {
+      name: new RegExp(linkText, "i"),
+    });
     await expect(link.first()).toBeVisible();
     const href = await link.first().getAttribute("href");
     expect(href).toContain(expectedPath);

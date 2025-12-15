@@ -4,12 +4,12 @@ import { describe, expect, it, vi } from "vitest";
 import AppsPage from "./page";
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({ children, className }: { children: React.ReactNode; className?: string; }) => (
-    <div data-testid="card" className={className}>{children}</div>
-  ),
-  CardContent: ({ children, className }: { children: React.ReactNode; className?: string; }) => (
-    <div data-testid="card-content" className={className}>{children}</div>
-  ),
+  Card: (
+    { children, className }: { children: React.ReactNode; className?: string; },
+  ) => <div data-testid="card" className={className}>{children}</div>,
+  CardContent: (
+    { children, className }: { children: React.ReactNode; className?: string; },
+  ) => <div data-testid="card-content" className={className}>{children}</div>,
   CardDescription: ({ children }: { children: React.ReactNode; }) => (
     <p data-testid="card-description">{children}</p>
   ),
@@ -65,20 +65,25 @@ describe("AppsPage", () => {
     it("should render featured apps section first", () => {
       const { container } = render(<AppsPage />);
       const sections = container.querySelectorAll("section");
-      expect(within(sections[0]).getByText("Featured Apps")).toBeInTheDocument();
+      expect(within(sections[0]).getByText("Featured Apps"))
+        .toBeInTheDocument();
     });
 
     it("should render coming soon section second", () => {
       const { container } = render(<AppsPage />);
       const sections = container.querySelectorAll("section");
-      expect(within(sections[1]).getByText("More Apps Coming Soon")).toBeInTheDocument();
+      expect(within(sections[1]).getByText("More Apps Coming Soon"))
+        .toBeInTheDocument();
     });
   });
 
   describe("Featured Apps Section", () => {
     it("should render featured apps heading", () => {
       render(<AppsPage />);
-      const heading = screen.getByRole("heading", { name: "Featured Apps", level: 2 });
+      const heading = screen.getByRole("heading", {
+        name: "Featured Apps",
+        level: 2,
+      });
       expect(heading).toBeInTheDocument();
     });
 
@@ -98,7 +103,9 @@ describe("AppsPage", () => {
       render(<AppsPage />);
       const cards = screen.getAllByTestId("card");
       // Filter out the coming soon card
-      const appCards = cards.filter(card => within(card).queryByText("Smart Video Wall") !== null);
+      const appCards = cards.filter((card) =>
+        within(card).queryByText("Smart Video Wall") !== null
+      );
       expect(appCards).toHaveLength(1);
     });
   });
@@ -111,7 +118,11 @@ describe("AppsPage", () => {
 
     it("should render app description", () => {
       render(<AppsPage />);
-      expect(screen.getByText(/A real-time video conferencing wall with WebRTC support/i))
+      expect(
+        screen.getByText(
+          /A real-time video conferencing wall with WebRTC support/i,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -134,7 +145,7 @@ describe("AppsPage", () => {
     it("should render exactly 3 tags", () => {
       render(<AppsPage />);
       const tags = ["WebRTC", "Video", "Real-time"];
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         expect(screen.getByText(tag)).toBeInTheDocument();
       });
     });
@@ -188,7 +199,9 @@ describe("AppsPage", () => {
 
     it("should render card description", () => {
       render(<AppsPage />);
-      expect(screen.getAllByTestId("card-description").length).toBeGreaterThan(0);
+      expect(screen.getAllByTestId("card-description").length).toBeGreaterThan(
+        0,
+      );
     });
 
     it("should have flex-1 class on card content", () => {
@@ -207,19 +220,27 @@ describe("AppsPage", () => {
 
     it("should render coming soon heading", () => {
       render(<AppsPage />);
-      const heading = screen.getByRole("heading", { name: "More Apps Coming Soon", level: 3 });
+      const heading = screen.getByRole("heading", {
+        name: "More Apps Coming Soon",
+        level: 3,
+      });
       expect(heading).toBeInTheDocument();
     });
 
     it("should render coming soon description", () => {
       render(<AppsPage />);
-      expect(screen.getByText(/We are continuously building new interactive experiences/i))
+      expect(
+        screen.getByText(
+          /We are continuously building new interactive experiences/i,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should render check back message", () => {
       render(<AppsPage />);
-      expect(screen.getByText(/Check back soon for more applications/i)).toBeInTheDocument();
+      expect(screen.getByText(/Check back soon for more applications/i))
+        .toBeInTheDocument();
     });
 
     it("should have rounded border styling", () => {
@@ -291,7 +312,7 @@ describe("AppsPage", () => {
     it("should render launch app as a link", () => {
       render(<AppsPage />);
       const links = screen.getAllByRole("link", { name: "Launch App" });
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link.tagName).toBe("A");
       });
     });
@@ -322,7 +343,8 @@ describe("AppsPage", () => {
 
     it("should mention automatic layout optimization", () => {
       render(<AppsPage />);
-      expect(screen.getByText(/automatic layout optimization/i)).toBeInTheDocument();
+      expect(screen.getByText(/automatic layout optimization/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -338,7 +360,7 @@ describe("AppsPage", () => {
     it("should have descriptive link text", () => {
       render(<AppsPage />);
       const links = screen.getAllByRole("link", { name: "Launch App" });
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link.textContent).toBe("Launch App");
       });
     });
@@ -386,7 +408,7 @@ describe("AppsPage", () => {
     it("should render buttons with full width", () => {
       render(<AppsPage />);
       const buttons = screen.getAllByRole("link", { name: "Launch App" });
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         expect(button).toHaveClass("w-full");
       });
     });

@@ -27,7 +27,8 @@ describe("BulkDeleteDialog Component", () => {
   it("should render delete button with count when versions are selected", () => {
     render(<BulkDeleteDialog {...defaultProps} />);
 
-    expect(screen.getByRole("button", { name: /delete selected \(3\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete selected \(3\)/i }))
+      .toBeInTheDocument();
   });
 
   it("should open dialog when delete button is clicked", async () => {
@@ -75,7 +76,9 @@ describe("BulkDeleteDialog Component", () => {
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));
-    await user.click(screen.getByRole("button", { name: /delete 3 versions/i }));
+    await user.click(
+      screen.getByRole("button", { name: /delete 3 versions/i }),
+    );
 
     await waitFor(() => {
       expect(onDelete).toHaveBeenCalledWith(["1", "2", "3"]);
@@ -107,7 +110,9 @@ describe("BulkDeleteDialog Component", () => {
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));
-    await user.click(screen.getByRole("button", { name: /delete 3 versions/i }));
+    await user.click(
+      screen.getByRole("button", { name: /delete 3 versions/i }),
+    );
 
     expect(screen.getByRole("button", { name: /deleting/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /^cancel$/i })).toBeDisabled();
@@ -127,7 +132,9 @@ describe("BulkDeleteDialog Component", () => {
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));
-    await user.click(screen.getByRole("button", { name: /delete 3 versions/i }));
+    await user.click(
+      screen.getByRole("button", { name: /delete 3 versions/i }),
+    );
 
     expect(screen.getByText(/deleting/i)).toBeInTheDocument();
 
@@ -137,7 +144,8 @@ describe("BulkDeleteDialog Component", () => {
   it("should disable trigger button when disabled prop is true", () => {
     render(<BulkDeleteDialog {...defaultProps} disabled />);
 
-    expect(screen.getByRole("button", { name: /delete selected/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /delete selected/i }))
+      .toBeDisabled();
   });
 
   it("should handle single version text correctly", () => {
@@ -148,7 +156,8 @@ describe("BulkDeleteDialog Component", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /delete selected \(1\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete selected \(1\)/i }))
+      .toBeInTheDocument();
   });
 
   it("should handle versions with null sizeBytes", async () => {
@@ -174,7 +183,9 @@ describe("BulkDeleteDialog Component", () => {
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));
-    await user.click(screen.getByRole("button", { name: /delete 3 versions/i }));
+    await user.click(
+      screen.getByRole("button", { name: /delete 3 versions/i }),
+    );
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -188,10 +199,15 @@ describe("BulkDeleteDialog Component", () => {
     render(<BulkDeleteDialog {...defaultProps} onDelete={onDelete} />);
 
     await user.click(screen.getByRole("button", { name: /delete selected/i }));
-    await user.click(screen.getByRole("button", { name: /delete 3 versions/i }));
+    await user.click(
+      screen.getByRole("button", { name: /delete 3 versions/i }),
+    );
 
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith("Bulk delete failed:", expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Bulk delete failed:",
+        expect.any(Error),
+      );
     });
 
     consoleSpy.mockRestore();

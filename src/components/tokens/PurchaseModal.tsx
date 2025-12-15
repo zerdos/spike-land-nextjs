@@ -20,7 +20,9 @@ interface PurchaseModalProps {
   onPurchaseComplete?: () => void;
 }
 
-export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProps) {
+export function PurchaseModal(
+  { trigger, onPurchaseComplete }: PurchaseModalProps,
+) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
@@ -87,7 +89,9 @@ export function PurchaseModal({ trigger, onPurchaseComplete }: PurchaseModalProp
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white">Get More Tokens</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Get More Tokens
+          </DialogTitle>
           <DialogDescription className="text-white/60">
             Choose a token package or redeem a voucher code
           </DialogDescription>

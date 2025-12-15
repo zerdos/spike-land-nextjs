@@ -61,7 +61,9 @@ describe("Alert Component", () => {
     });
 
     it("should merge className with variant classes", () => {
-      render(<Alert variant="destructive" className="my-custom-class">Test</Alert>);
+      render(
+        <Alert variant="destructive" className="my-custom-class">Test</Alert>,
+      );
       const alert = screen.getByRole("alert");
       expect(alert).toHaveClass("my-custom-class");
     });
@@ -119,7 +121,12 @@ describe("Alert Component", () => {
     it("should have default styling classes", () => {
       render(<AlertTitle>Title</AlertTitle>);
       const title = screen.getByText("Title");
-      expect(title).toHaveClass("mb-1", "font-medium", "leading-none", "tracking-tight");
+      expect(title).toHaveClass(
+        "mb-1",
+        "font-medium",
+        "leading-none",
+        "tracking-tight",
+      );
     });
 
     it("should merge custom className with default classes", () => {
@@ -153,7 +160,11 @@ describe("Alert Component", () => {
     });
 
     it("should apply custom className", () => {
-      render(<AlertDescription className="custom-desc">Description</AlertDescription>);
+      render(
+        <AlertDescription className="custom-desc">
+          Description
+        </AlertDescription>,
+      );
       const description = screen.getByText("Description");
       expect(description).toHaveClass("custom-desc");
     });
@@ -165,7 +176,11 @@ describe("Alert Component", () => {
     });
 
     it("should pass through additional props", () => {
-      render(<AlertDescription data-testid="desc-test">Description</AlertDescription>);
+      render(
+        <AlertDescription data-testid="desc-test">
+          Description
+        </AlertDescription>,
+      );
       expect(screen.getByTestId("desc-test")).toBeInTheDocument();
     });
 
@@ -194,7 +209,11 @@ describe("Alert Component", () => {
     });
 
     it("should merge custom className with default classes", () => {
-      render(<AlertDescription className="text-blue-500">Description</AlertDescription>);
+      render(
+        <AlertDescription className="text-blue-500">
+          Description
+        </AlertDescription>,
+      );
       const description = screen.getByText("Description");
       expect(description).toHaveClass("text-sm", "text-blue-500");
     });
@@ -241,7 +260,8 @@ describe("Alert Component", () => {
       );
       expect(screen.getByTestId("icon")).toBeInTheDocument();
       expect(screen.getByText("Information")).toBeInTheDocument();
-      expect(screen.getByText("This is an informational message")).toBeInTheDocument();
+      expect(screen.getByText("This is an informational message"))
+        .toBeInTheDocument();
     });
   });
 });

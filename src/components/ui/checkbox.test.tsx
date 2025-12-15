@@ -21,7 +21,9 @@ describe("Checkbox", () => {
 
   it("calls onCheckedChange when clicked", () => {
     const handleChange = vi.fn();
-    render(<Checkbox aria-label="test checkbox" onCheckedChange={handleChange} />);
+    render(
+      <Checkbox aria-label="test checkbox" onCheckedChange={handleChange} />,
+    );
 
     const checkbox = screen.getByRole("checkbox");
     fireEvent.click(checkbox);
@@ -54,14 +56,22 @@ describe("Checkbox", () => {
   it("supports controlled state", () => {
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Checkbox aria-label="test checkbox" checked={false} onCheckedChange={handleChange} />,
+      <Checkbox
+        aria-label="test checkbox"
+        checked={false}
+        onCheckedChange={handleChange}
+      />,
     );
 
     const checkbox = screen.getByRole("checkbox");
     expect(checkbox.getAttribute("data-state")).toBe("unchecked");
 
     rerender(
-      <Checkbox aria-label="test checkbox" checked={true} onCheckedChange={handleChange} />,
+      <Checkbox
+        aria-label="test checkbox"
+        checked={true}
+        onCheckedChange={handleChange}
+      />,
     );
     expect(checkbox.getAttribute("data-state")).toBe("checked");
   });
@@ -76,7 +86,11 @@ describe("Checkbox", () => {
   it("can be toggled multiple times", () => {
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Checkbox aria-label="test checkbox" checked={false} onCheckedChange={handleChange} />,
+      <Checkbox
+        aria-label="test checkbox"
+        checked={false}
+        onCheckedChange={handleChange}
+      />,
     );
 
     const checkbox = screen.getByRole("checkbox");
@@ -85,7 +99,11 @@ describe("Checkbox", () => {
     expect(handleChange).toHaveBeenLastCalledWith(true);
 
     rerender(
-      <Checkbox aria-label="test checkbox" checked={true} onCheckedChange={handleChange} />,
+      <Checkbox
+        aria-label="test checkbox"
+        checked={true}
+        onCheckedChange={handleChange}
+      />,
     );
 
     fireEvent.click(checkbox);
@@ -97,7 +115,13 @@ describe("Checkbox", () => {
   it("should not call onCheckedChange when disabled", async () => {
     const user = userEvent.setup();
     const onCheckedChange = vi.fn();
-    render(<Checkbox disabled onCheckedChange={onCheckedChange} aria-label="test checkbox" />);
+    render(
+      <Checkbox
+        disabled
+        onCheckedChange={onCheckedChange}
+        aria-label="test checkbox"
+      />,
+    );
 
     await user.click(screen.getByRole("checkbox"));
     expect(onCheckedChange).not.toHaveBeenCalled();

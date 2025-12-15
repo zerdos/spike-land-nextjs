@@ -77,10 +77,18 @@ export async function resolvePipelineConfig(
 
       return {
         config: parsePipelineConfig(pipeline.tier, {
-          analysisConfig: pipeline.analysisConfig as PipelineConfig["analysis"] | null,
-          autoCropConfig: pipeline.autoCropConfig as PipelineConfig["autoCrop"] | null,
-          promptConfig: pipeline.promptConfig as PipelineConfig["prompt"] | null,
-          generationConfig: pipeline.generationConfig as PipelineConfig["generation"] | null,
+          analysisConfig: pipeline.analysisConfig as
+            | PipelineConfig["analysis"]
+            | null,
+          autoCropConfig: pipeline.autoCropConfig as
+            | PipelineConfig["autoCrop"]
+            | null,
+          promptConfig: pipeline.promptConfig as
+            | PipelineConfig["prompt"]
+            | null,
+          generationConfig: pipeline.generationConfig as
+            | PipelineConfig["generation"]
+            | null,
         }),
         pipelineId: resolvedPipelineId,
       };

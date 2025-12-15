@@ -19,7 +19,9 @@ export default function GalleryError({
     <div className="flex items-center justify-center min-h-[400px]">
       <Card className="max-w-md">
         <CardHeader>
-          <CardTitle className="text-destructive">Something went wrong</CardTitle>
+          <CardTitle className="text-destructive">
+            Something went wrong
+          </CardTitle>
           <CardDescription>
             An error occurred while loading the gallery admin page.
           </CardDescription>
@@ -32,7 +34,10 @@ export default function GalleryError({
             <Button onClick={reset} variant="default">
               Try again
             </Button>
-            <Button onClick={() => window.location.href = "/admin"} variant="outline">
+            <Button
+              onClick={() => window.location.href = "/admin"}
+              variant="outline"
+            >
               Back to Dashboard
             </Button>
           </div>

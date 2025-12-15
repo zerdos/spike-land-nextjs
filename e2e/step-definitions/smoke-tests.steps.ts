@@ -14,62 +14,81 @@ Then("I should see the navigation bar", async function(this: CustomWorld) {
   await expect(bodyElement).toBeVisible();
 });
 
-Then("I should see admin dashboard content", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  const content = this.page.locator('h1, h2, [class*="Card"]');
-  const count = await content.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "I should see admin dashboard content",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+    const content = this.page.locator('h1, h2, [class*="Card"]');
+    const count = await content.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
 // NOTE: "I should be redirected to sign-in page" is defined in common.steps.ts
 
-Then("I should be redirected or see access denied", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  const url = this.page.url();
+Then(
+  "I should be redirected or see access denied",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+    const url = this.page.url();
 
-  const isRedirected = url.includes("/auth/signin") || !url.includes("/admin");
-  const accessDenied = await this.page.getByText(/access denied|forbidden|unauthorized/i)
-    .isVisible().catch(() => false);
+    const isRedirected = url.includes("/auth/signin") ||
+      !url.includes("/admin");
+    const accessDenied = await this.page.getByText(
+      /access denied|forbidden|unauthorized/i,
+    )
+      .isVisible().catch(() => false);
 
-  expect(isRedirected || accessDenied).toBe(true);
-});
+    expect(isRedirected || accessDenied).toBe(true);
+  },
+);
 
-Then("I should see a 404 or not found page", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
+Then(
+  "I should see a 404 or not found page",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
 
-  const notFoundText = this.page.getByText(/404|not found|page not found/i);
-  const isVisible = await notFoundText.isVisible().catch(() => false);
+    const notFoundText = this.page.getByText(/404|not found|page not found/i);
+    const isVisible = await notFoundText.isVisible().catch(() => false);
 
-  expect(isVisible).toBe(true);
-});
+    expect(isVisible).toBe(true);
+  },
+);
 
-Then("I should see navigation links for:", async function(this: CustomWorld, dataTable) {
-  const rows = dataTable.hashes();
+Then(
+  "I should see navigation links for:",
+  async function(this: CustomWorld, dataTable) {
+    const rows = dataTable.hashes();
 
-  for (const row of rows) {
-    const linkText = row.Link;
+    for (const row of rows) {
+      const linkText = row.Link;
 
-    // First try to find as a link
-    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
-    const isLinkVisible = await link.isVisible().catch(() => false);
+      // First try to find as a link
+      const link = this.page.getByRole("link", {
+        name: new RegExp(linkText, "i"),
+      });
+      const isLinkVisible = await link.isVisible().catch(() => false);
 
-    if (isLinkVisible) {
-      continue; // Link found and visible
+      if (isLinkVisible) {
+        continue; // Link found and visible
+      }
+
+      // If not a link, try to find as a button (e.g., "Sign In" is a button on home page)
+      const button = this.page.getByRole("button", {
+        name: new RegExp(linkText, "i"),
+      });
+      const isButtonVisible = await button.isVisible().catch(() => false);
+
+      if (isButtonVisible) {
+        continue; // Button found and visible
+      }
+
+      // Last resort: try to find as any text element (use first() to avoid strict mode violation)
+      const anyText = this.page.getByText(new RegExp(linkText, "i")).first();
+      await expect(anyText).toBeVisible();
     }
-
-    // If not a link, try to find as a button (e.g., "Sign In" is a button on home page)
-    const button = this.page.getByRole("button", { name: new RegExp(linkText, "i") });
-    const isButtonVisible = await button.isVisible().catch(() => false);
-
-    if (isButtonVisible) {
-      continue; // Button found and visible
-    }
-
-    // Last resort: try to find as any text element (use first() to avoid strict mode violation)
-    const anyText = this.page.getByText(new RegExp(linkText, "i")).first();
-    await expect(anyText).toBeVisible();
-  }
-});
+  },
+);
 
 Then("I should see {string} or {string} option", async function(
   this: CustomWorld,
@@ -85,52 +104,59 @@ Then("I should see {string} or {string} option", async function(
   expect(isVisible1 || isVisible2).toBe(true);
 });
 
-Then("I should see footer links for:", async function(this: CustomWorld, dataTable) {
-  const rows = dataTable.hashes();
+Then(
+  "I should see footer links for:",
+  async function(this: CustomWorld, dataTable) {
+    const rows = dataTable.hashes();
 
-  for (const row of rows) {
-    const linkText = row.Link;
+    for (const row of rows) {
+      const linkText = row.Link;
 
-    // Try to find link in footer first
-    const footer = this.page.locator("footer");
-    const footerExists = await footer.count() > 0;
+      // Try to find link in footer first
+      const footer = this.page.locator("footer");
+      const footerExists = await footer.count() > 0;
 
-    if (footerExists) {
-      const footerLink = footer.getByRole("link", { name: new RegExp(linkText, "i") });
-      const isFooterLinkVisible = await footerLink.isVisible().catch(() => false);
+      if (footerExists) {
+        const footerLink = footer.getByRole("link", {
+          name: new RegExp(linkText, "i"),
+        });
+        const isFooterLinkVisible = await footerLink.isVisible().catch(() => false);
 
-      if (isFooterLinkVisible) {
-        continue; // Footer link found
+        if (isFooterLinkVisible) {
+          continue; // Footer link found
+        }
       }
+
+      // If no footer or link not in footer, look for the link anywhere on the page
+      // (e.g., cookie consent banner, navigation, etc.)
+      const anyPageLink = this.page.getByRole("link", {
+        name: new RegExp(linkText, "i"),
+      });
+      const isPageLinkVisible = await anyPageLink.isVisible().catch(() => false);
+
+      if (isPageLinkVisible) {
+        continue; // Link found somewhere on page
+      }
+
+      // Last resort: check if the route exists by navigating to it
+      // This ensures the page exists even if there's no visible link
+      const linkPath = `/${linkText.toLowerCase()}`;
+      const currentUrl = this.page.url();
+
+      await this.page.goto(`${this.baseUrl}${linkPath}`);
+      await this.page.waitForLoadState("domcontentloaded");
+
+      // Verify the page loaded successfully (no 404)
+      const pageTitle = await this.page.title();
+      expect(pageTitle).toBeTruthy();
+      expect(pageTitle).not.toMatch(/404|not found/i);
+
+      // Navigate back
+      await this.page.goto(currentUrl);
+      await this.page.waitForLoadState("domcontentloaded");
     }
-
-    // If no footer or link not in footer, look for the link anywhere on the page
-    // (e.g., cookie consent banner, navigation, etc.)
-    const anyPageLink = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
-    const isPageLinkVisible = await anyPageLink.isVisible().catch(() => false);
-
-    if (isPageLinkVisible) {
-      continue; // Link found somewhere on page
-    }
-
-    // Last resort: check if the route exists by navigating to it
-    // This ensures the page exists even if there's no visible link
-    const linkPath = `/${linkText.toLowerCase()}`;
-    const currentUrl = this.page.url();
-
-    await this.page.goto(`${this.baseUrl}${linkPath}`);
-    await this.page.waitForLoadState("domcontentloaded");
-
-    // Verify the page loaded successfully (no 404)
-    const pageTitle = await this.page.title();
-    expect(pageTitle).toBeTruthy();
-    expect(pageTitle).not.toMatch(/404|not found/i);
-
-    // Navigate back
-    await this.page.goto(currentUrl);
-    await this.page.waitForLoadState("domcontentloaded");
-  }
-});
+  },
+);
 
 When("I visit each main page", async function(this: CustomWorld) {
   const pages = [
@@ -147,8 +173,11 @@ When("I visit each main page", async function(this: CustomWorld) {
   }
 });
 
-Then("each page should have a proper HTML title", async function(this: CustomWorld) {
-  const title = await this.page.title();
-  expect(title).toBeTruthy();
-  expect(title.length).toBeGreaterThan(0);
-});
+Then(
+  "each page should have a proper HTML title",
+  async function(this: CustomWorld) {
+    const title = await this.page.title();
+    expect(title).toBeTruthy();
+    expect(title.length).toBeGreaterThan(0);
+  },
+);

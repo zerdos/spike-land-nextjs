@@ -1,7 +1,6 @@
 # Voucher System Documentation
 
-> **Last Updated**: December 2025
-> **Status**: MVP Release
+> **Last Updated**: December 2025 **Status**: MVP Release
 
 ---
 
@@ -20,7 +19,8 @@
 
 ## Voucher Overview
 
-**Vouchers** are promotional codes that grant users tokens and other benefits. They are used to:
+**Vouchers** are promotional codes that grant users tokens and other benefits.
+They are used to:
 
 - Welcome new users
 - Reward beta testers
@@ -31,7 +31,8 @@
 ### Key Characteristics
 
 - **One-Time Use Per User**: Each user can only redeem a specific voucher once
-- **Transferable**: Codes can be shared across users (each user redeems separately)
+- **Transferable**: Codes can be shared across users (each user redeems
+  separately)
 - **No Expiration Required**: Vouchers can be created without expiration
 - **Immediate Credit**: Tokens granted instantly upon redemption
 - **Audit Trail**: All redemptions tracked for analytics

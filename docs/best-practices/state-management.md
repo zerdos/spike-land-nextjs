@@ -1,6 +1,7 @@
 # React State Management Best Practices 2025
 
-A comprehensive guide to managing state in modern React applications, covering server state, client state, URL state, form state, and persistence strategies.
+A comprehensive guide to managing state in modern React applications, covering
+server state, client state, URL state, form state, and persistence strategies.
 
 ---
 
@@ -21,7 +22,9 @@ A comprehensive guide to managing state in modern React applications, covering s
 
 ### The Modern State Management Mindset
 
-The approach to state management has fundamentally changed in modern React development. Instead of using a single state management library for everything, developers now use **specialized libraries for different types of state**:
+The approach to state management has fundamentally changed in modern React
+development. Instead of using a single state management library for everything,
+developers now use **specialized libraries for different types of state**:
 
 - **Server State**: Data from APIs and external sources
 - **Client State**: Local application state (UI, preferences, filters)
@@ -33,7 +36,8 @@ The approach to state management has fundamentally changed in modern React devel
 1. **Keep State Local When Possible**
    - Only share state between components when necessary
    - Avoid premature abstraction and "state management for everything"
-   - Use React's built-in hooks (useState, useContext, useReducer) for most needs
+   - Use React's built-in hooks (useState, useContext, useReducer) for most
+     needs
 
 2. **Separate Server State from Client State**
    - Server state has unique challenges: caching, synchronization, staleness
@@ -65,7 +69,9 @@ Server state is fundamentally different from client state. It's:
 
 ### TanStack Query (React Query)
 
-**TanStack Query** is the de facto standard for server state management. It handles fetching, caching, synchronization, and updating server state without touching global state.
+**TanStack Query** is the de facto standard for server state management. It
+handles fetching, caching, synchronization, and updating server state without
+touching global state.
 
 #### Key Features
 
@@ -158,15 +164,18 @@ function UpdateUser() {
 
 #### Best Practices
 
-- **Query Keys**: Use arrays for clear, nested structure: `['users', userId, 'posts']`
+- **Query Keys**: Use arrays for clear, nested structure:
+  `['users', userId, 'posts']`
 - **Stale Time**: Set appropriate `staleTime` to balance freshness and requests
 - **GC Time**: Configure garbage collection to manage memory
-- **Invalidation**: Invalidate related queries after mutations, not the entire cache
+- **Invalidation**: Invalidate related queries after mutations, not the entire
+  cache
 - **Error Boundaries**: Use error boundaries for better error handling
 
 ### Alternative: SWR
 
-SWR is lighter and simpler than TanStack Query, suitable for simpler fetching scenarios.
+SWR is lighter and simpler than TanStack Query, suitable for simpler fetching
+scenarios.
 
 ```typescript
 import useSWR from "swr";
@@ -233,7 +242,8 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 ### Zustand
 
-**Zustand** is the popular choice for when Context becomes cumbersome. It offers simplicity with power.
+**Zustand** is the popular choice for when Context becomes cumbersome. It offers
+simplicity with power.
 
 #### Key Advantages
 
@@ -333,7 +343,8 @@ const useStore = create<Store>(
 
 ### Jotai
 
-**Jotai** uses an atomic bottom-up approach, excellent for fine-grained reactivity and code splitting.
+**Jotai** uses an atomic bottom-up approach, excellent for fine-grained
+reactivity and code splitting.
 
 #### Key Advantages
 
@@ -404,7 +415,8 @@ function UserComponent() {
 
 ### Redux Toolkit
 
-**Redux Toolkit** is the modern way to use Redux. Recommended for large enterprise applications with complex state logic.
+**Redux Toolkit** is the modern way to use Redux. Recommended for large
+enterprise applications with complex state logic.
 
 #### When to Use Redux Toolkit
 
@@ -459,7 +471,8 @@ function Counter() {
 
 ### Why URL State Matters
 
-Shareable URLs, browser back button support, and bookmarkable state are features users expect. URL state is ideal for:
+Shareable URLs, browser back button support, and bookmarkable state are features
+users expect. URL state is ideal for:
 
 - Search and filters
 - Pagination
@@ -469,7 +482,8 @@ Shareable URLs, browser back button support, and bookmarkable state are features
 
 ### nuqs: Type-Safe URL State
 
-**nuqs** provides a `useState`-like API for URL search parameters with full type safety.
+**nuqs** provides a `useState`-like API for URL search parameters with full type
+safety.
 
 #### Installation
 
@@ -569,7 +583,12 @@ function DateFilter() {
     serialize: (date) => date.toISOString(),
   });
 
-  return <input type="date" onChange={(e) => setDate(new Date(e.target.value))} />;
+  return (
+    <input
+      type="date"
+      onChange={(e) => setDate(new Date(e.target.value))}
+    />
+  );
 }
 ```
 
@@ -588,7 +607,8 @@ function DateFilter() {
 
 ### React Hook Form + Zod
 
-This combination is the modern standard for form handling in React, providing excellent developer experience and type safety.
+This combination is the modern standard for form handling in React, providing
+excellent developer experience and type safety.
 
 #### Installation
 
@@ -727,7 +747,10 @@ function TeamForm() {
           </button>
         </div>
       ))}
-      <button type="button" onClick={() => append({ name: "", email: "", role: "" })}>
+      <button
+        type="button"
+        onClick={() => append({ name: "", email: "", role: "" })}
+      >
         Add Member
       </button>
     </form>
@@ -1251,6 +1274,8 @@ const namesAtom = atom((get) => {
 
 ## Contributing & Updates
 
-This document reflects best practices as of 2025. As React and its ecosystem continue to evolve, these recommendations may change. Please refer to official documentation for the latest versions and APIs.
+This document reflects best practices as of 2025. As React and its ecosystem
+continue to evolve, these recommendations may change. Please refer to official
+documentation for the latest versions and APIs.
 
 Last updated: 2025-12-06

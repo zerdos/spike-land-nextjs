@@ -1,6 +1,7 @@
 # API Best Practices Documentation
 
-This directory contains comprehensive guides for building production-ready APIs and services.
+This directory contains comprehensive guides for building production-ready APIs
+and services.
 
 ## Files
 
@@ -10,13 +11,19 @@ This directory contains comprehensive guides for building production-ready APIs 
 
 A comprehensive, implementation-ready guide covering:
 
-- **URL Design** - Resource naming conventions, versioning strategies, hierarchy management
-- **HTTP Methods** - GET, POST, PUT, PATCH, DELETE with proper semantics and idempotency
-- **Response Formats** - Status codes, error handling (RFC 9457), pagination strategies
-- **Authentication** - API Keys, JWT, OAuth 2.0, OpenID Connect with security best practices
-- **Rate Limiting** - Algorithms (Token Bucket, Leaky Bucket, Sliding Window), implementation strategies
+- **URL Design** - Resource naming conventions, versioning strategies, hierarchy
+  management
+- **HTTP Methods** - GET, POST, PUT, PATCH, DELETE with proper semantics and
+  idempotency
+- **Response Formats** - Status codes, error handling (RFC 9457), pagination
+  strategies
+- **Authentication** - API Keys, JWT, OAuth 2.0, OpenID Connect with security
+  best practices
+- **Rate Limiting** - Algorithms (Token Bucket, Leaky Bucket, Sliding Window),
+  implementation strategies
 - **API Documentation** - OpenAPI 3.1.x specification with real-world examples
-- **Advanced Patterns** - HATEOAS, async operations, conditional requests, batch operations
+- **Advanced Patterns** - HATEOAS, async operations, conditional requests, batch
+  operations
 
 **Size**: 1,590 lines | **Format**: Markdown with code examples
 
@@ -44,7 +51,8 @@ A comprehensive, implementation-ready guide covering:
 ### Status Code Quick Reference
 
 - **2xx**: Success (200 OK, 201 Created, 202 Accepted, 204 No Content)
-- **4xx**: Client error (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Rate Limited)
+- **4xx**: Client error (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404
+  Not Found, 429 Rate Limited)
 - **5xx**: Server error (500 Internal Server Error, 503 Service Unavailable)
 
 ### Authentication Methods Comparison
@@ -77,14 +85,19 @@ A comprehensive, implementation-ready guide covering:
 
 ## Research Methodology
 
-This documentation was created through comprehensive research of industry standards and best practices from:
+This documentation was created through comprehensive research of industry
+standards and best practices from:
 
 - **API Design Standards**: RESTful API standards and architectural guidelines
-- **HTTP Specifications**: RFC standards including RFC 9457 (Problem Details), RFC 6902 (JSON Patch), RFC 6585 (HTTP Status Code 429)
+- **HTTP Specifications**: RFC standards including RFC 9457 (Problem Details),
+  RFC 6902 (JSON Patch), RFC 6585 (HTTP Status Code 429)
 - **Authentication Standards**: OAuth 2.0, OpenID Connect, JWT specifications
-- **Industry Guidelines**: Azure Architecture Center, GitHub API practices, Stripe API design patterns
-- **Rate Limiting Expertise**: Cloudflare, Kong, Tyk, and other API management platforms
-- **Documentation Standards**: OpenAPI 3.1.x specification and Swagger best practices
+- **Industry Guidelines**: Azure Architecture Center, GitHub API practices,
+  Stripe API design patterns
+- **Rate Limiting Expertise**: Cloudflare, Kong, Tyk, and other API management
+  platforms
+- **Documentation Standards**: OpenAPI 3.1.x specification and Swagger best
+  practices
 
 ## Usage
 
@@ -106,6 +119,5 @@ Use this documentation as a reference when:
 
 ---
 
-**Last Updated**: December 6, 2025
-**Format**: Markdown with code examples
+**Last Updated**: December 6, 2025 **Format**: Markdown with code examples
 **License**: Available for Spike Land platform documentation

@@ -15,7 +15,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * - Connection state tracking
  */
 export function usePeerConnection(peer: Peer | null) {
-  const [connections, setConnections] = useState<Map<string, ClientConnectionState>>(new Map());
+  const [connections, setConnections] = useState<
+    Map<string, ClientConnectionState>
+  >(new Map());
   const connectionsRef = useRef<Map<string, ClientConnectionState>>(new Map());
 
   // Keep ref in sync with state

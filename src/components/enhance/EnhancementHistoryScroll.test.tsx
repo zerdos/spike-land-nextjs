@@ -5,7 +5,11 @@ import { EnhancementHistoryScroll, type EnhancementVersion } from "./Enhancement
 // Mock Next.js Image component
 vi.mock("next/image", () => ({
   default: (
-    { src, alt, onError, ...props }: { src: string; alt: string; onError?: () => void; },
+    { src, alt, onError, ...props }: {
+      src: string;
+      alt: string;
+      onError?: () => void;
+    },
   ) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} onError={onError} {...props} />
@@ -56,7 +60,8 @@ describe("EnhancementHistoryScroll", () => {
 
   it("should render empty state when no versions", () => {
     render(<EnhancementHistoryScroll versions={[]} />);
-    expect(screen.getByText(/no enhancement versions yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no enhancement versions yet/i))
+      .toBeInTheDocument();
   });
 
   it("should render versions with tier badges", () => {
@@ -105,7 +110,9 @@ describe("EnhancementHistoryScroll", () => {
       />,
     );
 
-    const firstVersion = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    const firstVersion = screen.getByText("1K").closest(
+      "div[class*='cursor-pointer']",
+    );
     if (firstVersion) {
       fireEvent.click(firstVersion);
       expect(mockOnVersionSelect).toHaveBeenCalledWith("version-1");
@@ -121,7 +128,9 @@ describe("EnhancementHistoryScroll", () => {
       />,
     );
 
-    const selectedVersion = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    const selectedVersion = screen.getByText("1K").closest(
+      "div[class*='cursor-pointer']",
+    );
     expect(selectedVersion?.className).toContain("ring-2");
     expect(selectedVersion?.className).toContain("ring-cyan-500");
   });
@@ -360,7 +369,8 @@ describe("EnhancementHistoryScroll", () => {
     );
 
     // Cancel button should not be shown when onJobCancel is not provided
-    expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /cancel/i })).not
+      .toBeInTheDocument();
   });
 
   it("should show cancel button for pending jobs", () => {
@@ -390,7 +400,9 @@ describe("EnhancementHistoryScroll", () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const mockCancelError = vi.fn().mockRejectedValue(new Error("Cancel failed"));
+    const mockCancelError = vi.fn().mockRejectedValue(
+      new Error("Cancel failed"),
+    );
 
     const processingVersion: EnhancementVersion = {
       id: "version-processing",
@@ -418,7 +430,10 @@ describe("EnhancementHistoryScroll", () => {
     await vi.waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith("Cancel failed");
     });
-    expect(console.error).toHaveBeenCalledWith("Failed to cancel job:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to cancel job:",
+      expect.any(Error),
+    );
   });
 
   it("should handle cancel error with non-Error instance", async () => {
@@ -459,7 +474,9 @@ describe("EnhancementHistoryScroll", () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const mockDeleteError = vi.fn().mockRejectedValue(new Error("Delete failed"));
+    const mockDeleteError = vi.fn().mockRejectedValue(
+      new Error("Delete failed"),
+    );
 
     render(
       <EnhancementHistoryScroll
@@ -476,7 +493,10 @@ describe("EnhancementHistoryScroll", () => {
     await vi.waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith("Delete failed");
     });
-    expect(console.error).toHaveBeenCalledWith("Failed to delete job:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to delete job:",
+      expect.any(Error),
+    );
   });
 
   it("should handle delete error with non-Error instance", async () => {
@@ -511,7 +531,8 @@ describe("EnhancementHistoryScroll", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete/i })).not
+      .toBeInTheDocument();
   });
 
   it("should not show remove button when onJobDelete is not provided for failed versions", () => {
@@ -534,7 +555,8 @@ describe("EnhancementHistoryScroll", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: /remove/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /remove/i })).not
+      .toBeInTheDocument();
   });
 
   it("should not display dimensions when width is 0", () => {
@@ -604,7 +626,9 @@ describe("EnhancementHistoryScroll", () => {
 
     // The HardDrive icon indicates file size, check it's not present
     // We look for text that would be file size - but since there's no sizeBytes, no size shown
-    const versionCard = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    const versionCard = screen.getByText("1K").closest(
+      "div[class*='cursor-pointer']",
+    );
     // Verify no KB/MB text is shown for this version
     expect(versionCard?.textContent).not.toMatch(/\d+\.\d+ [KMG]B/);
   });
@@ -621,7 +645,9 @@ describe("EnhancementHistoryScroll", () => {
     expect(screen.getByText("1K")).toBeInTheDocument();
 
     // Clicking should not cause error
-    const firstVersion = screen.getByText("1K").closest("div[class*='cursor-pointer']");
+    const firstVersion = screen.getByText("1K").closest(
+      "div[class*='cursor-pointer']",
+    );
     if (firstVersion) {
       fireEvent.click(firstVersion);
       // No error should occur

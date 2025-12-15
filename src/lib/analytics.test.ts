@@ -59,7 +59,9 @@ describe("analytics", () => {
 
     it("should track wizard started event", () => {
       analytics.wizard.started({ source: "homepage" });
-      expect(track).toHaveBeenCalledWith("wizard_started", { source: "homepage" });
+      expect(track).toHaveBeenCalledWith("wizard_started", {
+        source: "homepage",
+      });
     });
 
     it("should track wizard step completed event", () => {
@@ -91,17 +93,23 @@ describe("analytics", () => {
 
     it("should track login started event", () => {
       analytics.auth.loginStarted("github");
-      expect(track).toHaveBeenCalledWith("login_started", { provider: "github" });
+      expect(track).toHaveBeenCalledWith("login_started", {
+        provider: "github",
+      });
     });
 
     it("should track login started without provider", () => {
       analytics.auth.loginStarted();
-      expect(track).toHaveBeenCalledWith("login_started", { provider: undefined });
+      expect(track).toHaveBeenCalledWith("login_started", {
+        provider: undefined,
+      });
     });
 
     it("should track login completed event", () => {
       analytics.auth.loginCompleted("google");
-      expect(track).toHaveBeenCalledWith("login_completed", { provider: "google" });
+      expect(track).toHaveBeenCalledWith("login_completed", {
+        provider: "google",
+      });
     });
 
     it("should track logout event", () => {

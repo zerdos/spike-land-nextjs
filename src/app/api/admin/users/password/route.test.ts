@@ -131,7 +131,9 @@ describe("Password API Route", () => {
     });
 
     it("returns 403 when user is not admin", async () => {
-      mockRequireAdmin.mockRejectedValue(new Error("Forbidden: Admin access required"));
+      mockRequireAdmin.mockRejectedValue(
+        new Error("Forbidden: Admin access required"),
+      );
 
       const request = createRequest({
         email: "test@example.com",
@@ -259,7 +261,8 @@ describe("Password API Route", () => {
           id: "existing-user-id",
           email: "test@example.com",
           name: "Test User",
-        } as ReturnType<typeof prisma.user.findUnique> extends Promise<infer T> ? T : never,
+        } as ReturnType<typeof prisma.user.findUnique> extends Promise<infer T> ? T
+          : never,
       );
       mockPrismaUserUpdate.mockResolvedValue({} as never);
 
@@ -438,7 +441,9 @@ describe("Password API Route", () => {
     });
 
     it("returns 403 for Forbidden errors", async () => {
-      mockPrismaUserFindUnique.mockRejectedValue(new Error("Forbidden: Not allowed"));
+      mockPrismaUserFindUnique.mockRejectedValue(
+        new Error("Forbidden: Not allowed"),
+      );
 
       const request = createRequest({
         email: "test@example.com",

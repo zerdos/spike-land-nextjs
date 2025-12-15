@@ -11,7 +11,11 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/components/canvas", () => ({
   QRCodePanel: (
-    { albumId, shareToken, albumName }: { albumId: string; shareToken: string; albumName: string; },
+    { albumId, shareToken, albumName }: {
+      albumId: string;
+      shareToken: string;
+      albumName: string;
+    },
   ) => (
     <div
       data-testid="qr-panel"
@@ -245,7 +249,10 @@ describe("AlbumDetailClient", () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            album: createMockAlbum({ name: "My Album", description: "Description" }),
+            album: createMockAlbum({
+              name: "My Album",
+              description: "Description",
+            }),
           }),
       });
 
@@ -255,7 +262,9 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("My Album")).toBeDefined();
       });
 
-      const settingsButton = document.querySelector("button:has(svg.lucide-settings)");
+      const settingsButton = document.querySelector(
+        "button:has(svg.lucide-settings)",
+      );
       if (settingsButton) {
         fireEvent.click(settingsButton);
       }
@@ -284,7 +293,9 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("Other Album")).toBeDefined();
       });
 
-      const settingsButton = document.querySelector("button:has(svg.lucide-settings)");
+      const settingsButton = document.querySelector(
+        "button:has(svg.lucide-settings)",
+      );
       expect(settingsButton).toBeNull();
     });
   });
@@ -395,7 +406,10 @@ describe("AlbumDetailClient", () => {
           Promise.resolve({
             album: createMockAlbum({
               imageCount: 2,
-              images: [createMockImage(), createMockImage({ id: "img_2", name: "Image 2" })],
+              images: [
+                createMockImage(),
+                createMockImage({ id: "img_2", name: "Image 2" }),
+              ],
             }),
           }),
       });
@@ -984,7 +998,9 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("Test Album")).toBeDefined();
       });
 
-      const settingsButton = document.querySelector("button:has(svg.lucide-settings)");
+      const settingsButton = document.querySelector(
+        "button:has(svg.lucide-settings)",
+      );
       if (settingsButton) {
         fireEvent.click(settingsButton);
       }
@@ -1021,7 +1037,9 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("Test Album")).toBeDefined();
       });
 
-      const settingsButton = document.querySelector("button:has(svg.lucide-settings)");
+      const settingsButton = document.querySelector(
+        "button:has(svg.lucide-settings)",
+      );
       if (settingsButton) {
         fireEvent.click(settingsButton);
       }
@@ -1108,7 +1126,9 @@ describe("AlbumDetailClient", () => {
 
       const qrPanel = screen.getByTestId("qr-panel");
       expect(qrPanel.getAttribute("data-album-id")).toBe("album_1");
-      expect(qrPanel.getAttribute("data-share-token")).toBe("public-share-token");
+      expect(qrPanel.getAttribute("data-share-token")).toBe(
+        "public-share-token",
+      );
     });
 
     it("does NOT render QR panel for PRIVATE album", async () => {

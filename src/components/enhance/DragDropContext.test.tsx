@@ -91,7 +91,9 @@ describe("DragDropContext", () => {
   describe("useDragDrop hook", () => {
     it("throws error when used outside of provider", () => {
       // Suppress console.error for this test
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       expect(() => {
         render(<TestConsumer />);
@@ -114,7 +116,9 @@ describe("DragDropContext", () => {
       });
 
       expect(screen.getByTestId("is-dragging")).toHaveTextContent("true");
-      expect(screen.getByTestId("dragged-ids")).toHaveTextContent("img-1,img-2");
+      expect(screen.getByTestId("dragged-ids")).toHaveTextContent(
+        "img-1,img-2",
+      );
     });
 
     it("does not start drag when image IDs array is empty", async () => {
@@ -146,7 +150,9 @@ describe("DragDropContext", () => {
         screen.getByTestId("set-drag-over").click();
       });
 
-      expect(screen.getByTestId("drag-over-album")).toHaveTextContent("album-1");
+      expect(screen.getByTestId("drag-over-album")).toHaveTextContent(
+        "album-1",
+      );
 
       // Start new drag
       await act(async () => {
@@ -174,7 +180,9 @@ describe("DragDropContext", () => {
       });
 
       expect(screen.getByTestId("is-dragging")).toHaveTextContent("true");
-      expect(screen.getByTestId("drag-over-album")).toHaveTextContent("album-1");
+      expect(screen.getByTestId("drag-over-album")).toHaveTextContent(
+        "album-1",
+      );
 
       // End drag
       await act(async () => {
@@ -199,7 +207,9 @@ describe("DragDropContext", () => {
         screen.getByTestId("set-drag-over").click();
       });
 
-      expect(screen.getByTestId("drag-over-album")).toHaveTextContent("album-1");
+      expect(screen.getByTestId("drag-over-album")).toHaveTextContent(
+        "album-1",
+      );
     });
 
     it("clears the drag over album ID when set to null", async () => {
@@ -213,7 +223,9 @@ describe("DragDropContext", () => {
         screen.getByTestId("set-drag-over").click();
       });
 
-      expect(screen.getByTestId("drag-over-album")).toHaveTextContent("album-1");
+      expect(screen.getByTestId("drag-over-album")).toHaveTextContent(
+        "album-1",
+      );
 
       await act(async () => {
         screen.getByTestId("clear-drag-over").click();
@@ -259,13 +271,15 @@ describe("DragDropContext", () => {
       let resolvePromise: () => void;
       mockFetch.mockImplementation(
         () =>
-          new Promise<{ ok: boolean; json: () => Promise<unknown>; }>((resolve) => {
-            resolvePromise = () =>
-              resolve({
-                ok: true,
-                json: async () => ({ success: true, added: 2 }),
-              });
-          }),
+          new Promise<{ ok: boolean; json: () => Promise<unknown>; }>(
+            (resolve) => {
+              resolvePromise = () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ success: true, added: 2 }),
+                });
+            },
+          ),
       );
 
       render(
@@ -526,7 +540,10 @@ describe("DragDropContext", () => {
       });
 
       await waitFor(() => {
-        expect(onMoveComplete).toHaveBeenCalledWith("album-1", ["img-1", "img-2"]);
+        expect(onMoveComplete).toHaveBeenCalledWith("album-1", [
+          "img-1",
+          "img-2",
+        ]);
       });
     });
   });
@@ -558,7 +575,9 @@ describe("DragDropContext", () => {
         contextRef?.startDrag(["img-3", "img-4"]);
       });
 
-      expect(screen.getByTestId("dragged-ids")).toHaveTextContent("img-3,img-4");
+      expect(screen.getByTestId("dragged-ids")).toHaveTextContent(
+        "img-3,img-4",
+      );
     });
   });
 });

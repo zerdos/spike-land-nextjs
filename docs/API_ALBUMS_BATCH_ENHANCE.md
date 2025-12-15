@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document describes the API endpoint for batch enhancing all photos in an album.
+This document describes the API endpoint for batch enhancing all photos in an
+album.
 
 ## Endpoint
 
@@ -34,7 +35,8 @@ The user must own the album. Returns 403 if unauthorized.
   - `TIER_2K`: 2048px max dimension, costs 5 tokens per image
   - `TIER_4K`: 4096px max dimension, costs 10 tokens per image
 
-- **skipAlreadyEnhanced** (optional, default: true): If true, skips images already enhanced at the selected tier
+- **skipAlreadyEnhanced** (optional, default: true): If true, skips images
+  already enhanced at the selected tier
 
 ## Response
 
@@ -98,7 +100,8 @@ The user must own the album. Returns 403 if unauthorized.
 
 1. **Verify ownership**: Ensures the user owns the album
 2. **Fetch images**: Retrieves all images with their enhancement job history
-3. **Filter images**: Optionally skips images already enhanced at the selected tier
+3. **Filter images**: Optionally skips images already enhanced at the selected
+   tier
 4. **Validate batch size**: Maximum 20 images per batch
 5. **Calculate cost**: Total tokens = images to enhance × tier cost
 6. **Check balance**: Verifies user has enough tokens

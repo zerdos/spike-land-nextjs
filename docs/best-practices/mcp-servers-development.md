@@ -19,9 +19,15 @@
 
 ## Introduction
 
-This guide provides comprehensive information about Model Context Protocol (MCP) servers that are most useful for development workflows. MCP servers extend AI capabilities by providing secure, standardized access to tools, data sources, and external services.
+This guide provides comprehensive information about Model Context Protocol (MCP)
+servers that are most useful for development workflows. MCP servers extend AI
+capabilities by providing secure, standardized access to tools, data sources,
+and external services.
 
-As of December 2025, there are over 12,000 MCP servers available through various registries, with adoption accelerating across development teams. This document focuses on production-ready, proven servers that directly enhance development productivity.
+As of December 2025, there are over 12,000 MCP servers available through various
+registries, with adoption accelerating across development teams. This document
+focuses on production-ready, proven servers that directly enhance development
+productivity.
 
 ---
 
@@ -29,7 +35,9 @@ As of December 2025, there are over 12,000 MCP servers available through various
 
 ### Overview
 
-The Model Context Protocol (MCP) is an open standard, open-source framework introduced by Anthropic in November 2024 to standardize how AI systems integrate with external tools, systems, and data sources.
+The Model Context Protocol (MCP) is an open standard, open-source framework
+introduced by Anthropic in November 2024 to standardize how AI systems integrate
+with external tools, systems, and data sources.
 
 **Key Benefits:**
 
@@ -44,7 +52,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 - **March 2025**: OpenAI officially adopted the MCP standard
 - **May 2025**: AWS released MCP servers for Lambda, ECS, EKS
 - **September 2025**: MCP Registry launched in preview
-- **November 2025**: MCP Registry approaching general availability with 12,000+ servers
+- **November 2025**: MCP Registry approaching general availability with 12,000+
+  servers
 
 ### Industry Adoption
 
@@ -62,9 +71,11 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 
 #### 1. **Playwright MCP** (Microsoft)
 
-**Purpose**: Browser automation with web scraping, testing, and interaction capabilities
+**Purpose**: Browser automation with web scraping, testing, and interaction
+capabilities
 
-**Repository**: [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)
+**Repository**:
+[microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)
 
 **Features**:
 
@@ -94,7 +105,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 - Form filling and workflow automation
 - Screenshot and PDF generation
 
-**Alternative Implementation**: ExecuteAutomation's Playwright MCP for extended features
+**Alternative Implementation**: ExecuteAutomation's Playwright MCP for extended
+features
 
 ---
 
@@ -141,7 +153,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 
 #### 1. **Official MCP Filesystem Server**
 
-**Repository**: [modelcontextprotocol/servers/filesystem](https://github.com/modelcontextprotocol/servers)
+**Repository**:
+[modelcontextprotocol/servers/filesystem](https://github.com/modelcontextprotocol/servers)
 
 **Features**:
 
@@ -239,7 +252,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 
 #### 1. **PostgreSQL MCP Server**
 
-**Repository**: [modelcontextprotocol/server-postgres](https://github.com/modelcontextprotocol/servers)
+**Repository**:
+[modelcontextprotocol/server-postgres](https://github.com/modelcontextprotocol/servers)
 
 **Features**:
 
@@ -285,7 +299,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 
 #### 3. **MongoDB Atlas MCP Server**
 
-**Repository**: [montumodi/mongodb-atlas-mcp-server](https://github.com/montumodi/mongodb-atlas-mcp-server)
+**Repository**:
+[montumodi/mongodb-atlas-mcp-server](https://github.com/montumodi/mongodb-atlas-mcp-server)
 
 **Features**:
 
@@ -310,7 +325,8 @@ The Model Context Protocol (MCP) is an open standard, open-source framework intr
 
 #### 5. **BigQuery MCP Server**
 
-**Repository**: [LucasHild/mcp-server-bigquery](https://github.com/LucasHild/mcp-server-bigquery)
+**Repository**:
+[LucasHild/mcp-server-bigquery](https://github.com/LucasHild/mcp-server-bigquery)
 
 **Features**:
 
@@ -1349,7 +1365,8 @@ which npx       # Should exist
 
 **Step 2: Generate API Tokens**
 
-- **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) → Create personal access token
+- **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) →
+  Create personal access token
 - **PostgreSQL**: Get connection string from your database provider
 
 **Step 3: Edit Configuration**
@@ -1525,7 +1542,8 @@ After installation, verify each server works:
 
 #### Issue 2: "Command Not Found" Error
 
-**Symptoms**: Error message: "command not found: npx" or "command not found: docker"
+**Symptoms**: Error message: "command not found: npx" or "command not found:
+docker"
 
 **Solutions**:
 
@@ -1745,7 +1763,8 @@ Check Claude Desktop logs for detailed error messages in:
 
 **Official Servers** (Anthropic):
 
-- [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) - Official example servers
+- [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) -
+  Official example servers
 
 **Browser Automation**:
 
@@ -1771,10 +1790,13 @@ Check Claude Desktop logs for detailed error messages in:
 
 ### Community Collections
 
-- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) - Comprehensive MCP server directory
-- [PipedreamHQ/awesome-mcp-servers](https://github.com/PipedreamHQ/awesome-mcp-servers) - Alternative collection
+- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) -
+  Comprehensive MCP server directory
+- [PipedreamHQ/awesome-mcp-servers](https://github.com/PipedreamHQ/awesome-mcp-servers) -
+  Alternative collection
 - [MCPServers.org](https://mcpservers.org) - Interactive server directory
-- [AIAgentsList - MCP Servers](https://aiagentslist.com/mcp-servers) - 593+ MCP servers catalog
+- [AIAgentsList - MCP Servers](https://aiagentslist.com/mcp-servers) - 593+ MCP
+  servers catalog
 - [Glama.ai MCP Servers](https://glama.ai/mcp/servers) - 12,000+ server registry
 - [MCP.so](https://mcp.so) - Server directory and browser
 
@@ -1808,7 +1830,9 @@ Check Claude Desktop logs for detailed error messages in:
 
 ## Summary
 
-Model Context Protocol (MCP) servers represent a paradigm shift in how AI agents interact with external systems. By December 2025, the ecosystem has matured significantly with:
+Model Context Protocol (MCP) servers represent a paradigm shift in how AI agents
+interact with external systems. By December 2025, the ecosystem has matured
+significantly with:
 
 - **12,000+ available servers** across multiple registries
 - **Industry-wide adoption** (OpenAI, Microsoft, AWS, Google)
@@ -1833,8 +1857,8 @@ Model Context Protocol (MCP) servers represent a paradigm shift in how AI agents
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: December 6, 2025
-**Status**: Production Ready
+**Document Version**: 1.0 **Last Updated**: December 6, 2025 **Status**:
+Production Ready
 
-For the latest updates and new MCPs, visit the [MCP Registry](https://glama.ai/mcp/servers).
+For the latest updates and new MCPs, visit the
+[MCP Registry](https://glama.ai/mcp/servers).

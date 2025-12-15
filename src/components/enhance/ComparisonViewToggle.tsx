@@ -30,7 +30,11 @@ export function ComparisonViewToggle({
   };
 
   return (
-    <Tabs defaultValue={defaultMode} onValueChange={handleModeChange} className="w-full">
+    <Tabs
+      defaultValue={defaultMode}
+      onValueChange={handleModeChange}
+      className="w-full"
+    >
       <div className="flex justify-end mb-4">
         <TabsList>
           <TabsTrigger value="slider" className="flex items-center gap-2">

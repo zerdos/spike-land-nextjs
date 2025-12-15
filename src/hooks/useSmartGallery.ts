@@ -224,7 +224,12 @@ export function useSmartGallery({
     }
 
     return clearAutoCycleTimer;
-  }, [autoSelectInterval, images.length, startAutoCycleTimer, clearAutoCycleTimer]);
+  }, [
+    autoSelectInterval,
+    images.length,
+    startAutoCycleTimer,
+    clearAutoCycleTimer,
+  ]);
 
   // Handle images prop changes
   useEffect(() => {

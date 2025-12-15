@@ -86,9 +86,12 @@ vi.mock("@/lib/prisma", () => ({
 
 // Helper to create mock request
 function createMockRequest(body: unknown): NextRequest {
-  const req = new NextRequest("http://localhost/api/albums/test-album/enhance", {
-    method: "POST",
-  });
+  const req = new NextRequest(
+    "http://localhost/api/albums/test-album/enhance",
+    {
+      method: "POST",
+    },
+  );
   req.json = vi.fn().mockResolvedValue(body);
   return req;
 }
@@ -317,7 +320,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.hasEnoughTokens).mockResolvedValueOnce(false);
 
     const req = createMockRequest({ tier: "TIER_2K" });
@@ -329,7 +334,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return 500 if token consumption fails", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
       success: false,
       error: "Database error",
@@ -345,7 +352,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   it("should start batch enhancement workflow in production", async () => {
     process.env.VERCEL = "1";
     const { start } = await import("workflow/api");
-    const { batchEnhanceImages } = await import("@/workflows/batch-enhance.workflow");
+    const { batchEnhanceImages } = await import(
+      "@/workflows/batch-enhance.workflow"
+    );
 
     const req = createMockRequest({ tier: "TIER_2K" });
     const res = await POST(req, mockRouteParams);
@@ -370,7 +379,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should run direct enhancement in dev mode", async () => {
-    const { batchEnhanceImagesDirect } = await import("@/workflows/batch-enhance.direct");
+    const { batchEnhanceImagesDirect } = await import(
+      "@/workflows/batch-enhance.direct"
+    );
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
@@ -413,7 +424,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should consume correct amount of tokens", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     const req = createMockRequest({ tier: "TIER_4K" });
     await POST(req, mockRouteParams);
@@ -428,7 +441,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should return new balance after token consumption", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
     vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
       success: true,
       balance: 85,
@@ -503,7 +518,9 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should handle unexpected errors", async () => {
-    mockPrisma.album.findUnique.mockRejectedValueOnce(new Error("Database connection lost"));
+    mockPrisma.album.findUnique.mockRejectedValueOnce(
+      new Error("Database connection lost"),
+    );
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
@@ -515,17 +532,23 @@ describe("POST /api/albums/[id]/enhance", () => {
   it("should refund tokens if workflow fails to start in production", async () => {
     process.env.VERCEL = "1";
     const { start } = await import("workflow/api");
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     // Mock workflow start to fail
-    vi.mocked(start).mockRejectedValueOnce(new Error("Workflow service unavailable"));
+    vi.mocked(start).mockRejectedValueOnce(
+      new Error("Workflow service unavailable"),
+    );
 
     const req = createMockRequest({ tier: "TIER_2K" });
     const res = await POST(req, mockRouteParams);
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Failed to start enhancement workflow. Tokens have been refunded.");
+    expect(data.error).toBe(
+      "Failed to start enhancement workflow. Tokens have been refunded.",
+    );
 
     // Verify refund was called with correct parameters
     expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
@@ -537,8 +560,12 @@ describe("POST /api/albums/[id]/enhance", () => {
   });
 
   it("should refund tokens if direct enhancement throws in dev mode", async () => {
-    const { batchEnhanceImagesDirect } = await import("@/workflows/batch-enhance.direct");
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { batchEnhanceImagesDirect } = await import(
+      "@/workflows/batch-enhance.direct"
+    );
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     // Mock direct enhancement to throw immediately (not in catch block)
     vi.mocked(batchEnhanceImagesDirect).mockImplementation(() => {
@@ -550,7 +577,9 @@ describe("POST /api/albums/[id]/enhance", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Failed to start enhancement workflow. Tokens have been refunded.");
+    expect(data.error).toBe(
+      "Failed to start enhancement workflow. Tokens have been refunded.",
+    );
 
     // Verify refund was called
     expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
@@ -563,7 +592,9 @@ describe("POST /api/albums/[id]/enhance", () => {
 
   it("should not refund tokens if workflow starts successfully", async () => {
     process.env.VERCEL = "1";
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     const req = createMockRequest({ tier: "TIER_1K" });
     const res = await POST(req, mockRouteParams);
@@ -637,7 +668,9 @@ describe("POST /api/albums/[id]/enhance", () => {
 
   it("should not consume tokens when rate limited", async () => {
     const { checkRateLimit } = await import("@/lib/rate-limiter");
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
       isLimited: true,

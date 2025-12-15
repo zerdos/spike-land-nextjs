@@ -24,7 +24,9 @@ describe("SettingsError (Settings Error Boundary)", () => {
     render(<SettingsError error={mockError} reset={mockReset} />);
 
     expect(screen.getByText("Error Loading Settings")).toBeInTheDocument();
-    expect(screen.getByText("We couldn't load your settings. Please try again."))
+    expect(
+      screen.getByText("We couldn't load your settings. Please try again."),
+    )
       .toBeInTheDocument();
   });
 
@@ -98,12 +100,16 @@ describe("SettingsError (Settings Error Boundary)", () => {
   it("should have both action buttons", () => {
     render(<SettingsError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /go home/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /go home/i }))
+      .toBeInTheDocument();
   });
 
   it("should re-log error if error changes", () => {
-    const { rerender } = render(<SettingsError error={mockError} reset={mockReset} />);
+    const { rerender } = render(
+      <SettingsError error={mockError} reset={mockReset} />,
+    );
 
     expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
 
@@ -114,7 +120,9 @@ describe("SettingsError (Settings Error Boundary)", () => {
   });
 
   it("should render within container", () => {
-    const { container } = render(<SettingsError error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <SettingsError error={mockError} reset={mockReset} />,
+    );
 
     expect(container.querySelector(".container")).toBeInTheDocument();
   });
@@ -127,7 +135,9 @@ describe("SettingsError (Settings Error Boundary)", () => {
   });
 
   it("should center card with max-width", () => {
-    const { container } = render(<SettingsError error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <SettingsError error={mockError} reset={mockReset} />,
+    );
 
     const card = container.querySelector(".max-w-2xl.mx-auto");
     expect(card).toBeInTheDocument();

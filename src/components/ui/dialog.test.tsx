@@ -147,7 +147,10 @@ describe("Dialog", () => {
     it("should apply custom className", () => {
       render(
         <Dialog open>
-          <DialogContent className="custom-content" data-testid="dialog-content">
+          <DialogContent
+            className="custom-content"
+            data-testid="dialog-content"
+          >
             Content
           </DialogContent>
         </Dialog>,
@@ -265,7 +268,9 @@ describe("Dialog", () => {
       render(
         <Dialog open>
           <DialogContent>
-            <DialogTitle className="custom-title" data-testid="dialog-title">Title</DialogTitle>
+            <DialogTitle className="custom-title" data-testid="dialog-title">
+              Title
+            </DialogTitle>
           </DialogContent>
         </Dialog>,
       );
@@ -291,7 +296,10 @@ describe("Dialog", () => {
       render(
         <Dialog open>
           <DialogContent>
-            <DialogDescription className="custom-desc" data-testid="dialog-description">
+            <DialogDescription
+              className="custom-desc"
+              data-testid="dialog-description"
+            >
               Description
             </DialogDescription>
           </DialogContent>
@@ -333,7 +341,8 @@ describe("Dialog", () => {
 
       // All components visible
       expect(screen.getByText("Are you sure?")).toBeInTheDocument();
-      expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
+      expect(screen.getByText("This action cannot be undone."))
+        .toBeInTheDocument();
       expect(screen.getByText("Cancel")).toBeInTheDocument();
       expect(screen.getByText("Continue")).toBeInTheDocument();
     });

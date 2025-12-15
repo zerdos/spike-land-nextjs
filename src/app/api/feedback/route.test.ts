@@ -135,7 +135,9 @@ describe("POST /api/feedback", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid feedback type. Must be one of: BUG, IDEA, OTHER");
+    expect(data.error).toBe(
+      "Invalid feedback type. Must be one of: BUG, IDEA, OTHER",
+    );
     expect(prisma.feedback.create).not.toHaveBeenCalled();
   });
 

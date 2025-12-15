@@ -7,7 +7,8 @@ describe("SpikeLandLogo", () => {
     it("renders the logo with default props", () => {
       render(<SpikeLandLogo />);
       expect(screen.getByText("spike.land")).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Spike Land logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Spike Land logo" }))
+        .toBeInTheDocument();
     });
 
     it("renders SVG element (Zap icon)", () => {
@@ -20,7 +21,8 @@ describe("SpikeLandLogo", () => {
     it("renders icon-only variant without text", () => {
       render(<SpikeLandLogo variant="icon" />);
       expect(screen.queryByText("spike.land")).not.toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Spike Land logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Spike Land logo" }))
+        .toBeInTheDocument();
     });
 
     it("renders horizontal variant with text", () => {
@@ -93,7 +95,9 @@ describe("SpikeLandLogo", () => {
     });
 
     it("merges custom className with default classes", () => {
-      const { container } = render(<SpikeLandLogo className="my-custom-class" />);
+      const { container } = render(
+        <SpikeLandLogo className="my-custom-class" />,
+      );
       expect(container.firstChild).toHaveClass("inline-flex");
       expect(container.firstChild).toHaveClass("my-custom-class");
     });
@@ -102,7 +106,8 @@ describe("SpikeLandLogo", () => {
   describe("accessibility", () => {
     it("has correct aria-label", () => {
       render(<SpikeLandLogo />);
-      expect(screen.getByRole("img", { name: "Spike Land logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Spike Land logo" }))
+        .toBeInTheDocument();
     });
 
     it("SVG has aria-hidden attribute", () => {

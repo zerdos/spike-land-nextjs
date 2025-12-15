@@ -34,7 +34,10 @@ function StatusOverlay({ status }: { status: BatchImageStatus["status"]; }) {
     case "COMPLETED":
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-green-500/30 backdrop-blur-[1px]">
-          <CheckCircle className="h-6 w-6 text-green-500 drop-shadow-md" aria-hidden="true" />
+          <CheckCircle
+            className="h-6 w-6 text-green-500 drop-shadow-md"
+            aria-hidden="true"
+          />
         </div>
       );
     case "PROCESSING":
@@ -49,14 +52,20 @@ function StatusOverlay({ status }: { status: BatchImageStatus["status"]; }) {
     case "FAILED":
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-red-500/30 backdrop-blur-[1px]">
-          <XCircle className="h-6 w-6 text-red-500 drop-shadow-md" aria-hidden="true" />
+          <XCircle
+            className="h-6 w-6 text-red-500 drop-shadow-md"
+            aria-hidden="true"
+          />
         </div>
       );
     case "PENDING":
     default:
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-500/20 backdrop-blur-[1px]">
-          <Circle className="h-6 w-6 text-gray-400 drop-shadow-md" aria-hidden="true" />
+          <Circle
+            className="h-6 w-6 text-gray-400 drop-shadow-md"
+            aria-hidden="true"
+          />
         </div>
       );
   }
@@ -90,7 +99,9 @@ export function BatchEnhanceProgress({
 
   const totalCount = images.length;
   const finishedCount = completedCount + failedCount;
-  const progressPercentage = totalCount > 0 ? Math.round((finishedCount / totalCount) * 100) : 0;
+  const progressPercentage = totalCount > 0
+    ? Math.round((finishedCount / totalCount) * 100)
+    : 0;
 
   const isComplete = finishedCount === totalCount && totalCount > 0;
 

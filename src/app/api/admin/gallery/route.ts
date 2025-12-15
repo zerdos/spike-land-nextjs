@@ -33,7 +33,11 @@ export async function GET(request: NextRequest) {
     const limit = Math.max(
       1,
       Math.min(
-        parseInt(searchParams.get("limit") || String(GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE), 10),
+        parseInt(
+          searchParams.get("limit") ||
+            String(GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE),
+          10,
+        ),
         GALLERY_CONSTANTS.MAX_PAGE_SIZE,
       ),
     );
@@ -252,9 +256,15 @@ export async function PATCH(request: NextRequest) {
     if (validatedData.description !== undefined) {
       data.description = validatedData.description || null;
     }
-    if (validatedData.category !== undefined) data.category = validatedData.category;
-    if (validatedData.sortOrder !== undefined) data.sortOrder = validatedData.sortOrder;
-    if (validatedData.isActive !== undefined) data.isActive = validatedData.isActive;
+    if (validatedData.category !== undefined) {
+      data.category = validatedData.category;
+    }
+    if (validatedData.sortOrder !== undefined) {
+      data.sortOrder = validatedData.sortOrder;
+    }
+    if (validatedData.isActive !== undefined) {
+      data.isActive = validatedData.isActive;
+    }
 
     const item = await prisma.featuredGalleryItem.update({
       where: { id: validatedData.id },

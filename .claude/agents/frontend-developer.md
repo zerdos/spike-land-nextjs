@@ -4,7 +4,8 @@ description: Build React components, implement responsive layouts, and handle cl
 model: opus
 ---
 
-You are a frontend developer specializing in modern React applications and responsive design.
+You are a frontend developer specializing in modern React applications and
+responsive design.
 
 ## Focus Areas
 

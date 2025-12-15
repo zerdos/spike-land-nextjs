@@ -125,7 +125,9 @@ describe("AdminPhotosPage", () => {
 
     expect(screen.getByText("Photo Gallery")).toBeInTheDocument();
     expect(
-      screen.getByText("View all uploaded photos with pagination and filtering"),
+      screen.getByText(
+        "View all uploaded photos with pagination and filtering",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -137,7 +139,8 @@ describe("AdminPhotosPage", () => {
 
     render(<AdminPhotosPage />);
 
-    expect(screen.getByRole("button", { name: "Refresh photos" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh photos" }))
+      .toBeInTheDocument();
   });
 
   it("should fetch and display photos on mount", async () => {
@@ -175,7 +178,8 @@ describe("AdminPhotosPage", () => {
     render(<AdminPhotosPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Error: Failed to fetch photos")).toBeInTheDocument();
+      expect(screen.getByText("Error: Failed to fetch photos"))
+        .toBeInTheDocument();
     });
   });
 
@@ -441,8 +445,10 @@ describe("AdminPhotosPage", () => {
       expect(screen.getByText("test1.jpg")).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("button", { name: "Previous" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Next" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Previous" })).not
+      .toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Next" })).not
+      .toBeInTheDocument();
   });
 
   it("should handle fetch error with generic message", async () => {
@@ -474,11 +480,15 @@ describe("AdminPhotosPage", () => {
 
     vi.mocked(fetch).mockClear();
 
-    const refreshButton = screen.getByRole("button", { name: "Refresh photos" });
+    const refreshButton = screen.getByRole("button", {
+      name: "Refresh photos",
+    });
     await user.click(refreshButton);
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/admin/photos"));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/admin/photos"),
+      );
     });
   });
 
@@ -745,7 +755,8 @@ describe("AdminPhotosPage", () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByText("View User Enhancement History")).toBeInTheDocument();
+      expect(screen.getByText("View User Enhancement History"))
+        .toBeInTheDocument();
     });
   });
 
@@ -774,7 +785,8 @@ describe("AdminPhotosPage", () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByText("View User Enhancement History")).toBeInTheDocument();
+      expect(screen.getByText("View User Enhancement History"))
+        .toBeInTheDocument();
     });
 
     const historyButton = screen.getByText("View User Enhancement History");

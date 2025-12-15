@@ -65,8 +65,12 @@ async function enhanceImageWithGemini(
     },
   ];
 
-  console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
-  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(
+    `Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`,
+  );
+  console.log(
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+  );
 
   const processStream = async (): Promise<Buffer> => {
     let response;
@@ -92,7 +96,8 @@ async function enhanceImageWithGemini(
       for await (const chunk of response) {
         chunkCount++;
         if (
-          !chunk.candidates || !chunk.candidates[0]?.content || !chunk.candidates[0]?.content.parts
+          !chunk.candidates || !chunk.candidates[0]?.content ||
+          !chunk.candidates[0]?.content.parts
         ) {
           continue;
         }
@@ -114,12 +119,19 @@ async function enhanceImageWithGemini(
     console.log("");
 
     if (imageChunks.length === 0) {
-      console.error(`No image data received after processing ${chunkCount} chunks`);
+      console.error(
+        `No image data received after processing ${chunkCount} chunks`,
+      );
       throw new Error("No image data received from Gemini API");
     }
 
-    const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    console.log(`Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes`);
+    const totalBytes = imageChunks.reduce(
+      (sum, chunk) => sum + chunk.length,
+      0,
+    );
+    console.log(
+      `Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes`,
+    );
 
     return Buffer.concat(imageChunks);
   };
@@ -144,7 +156,9 @@ async function main() {
   const tier = (process.argv[4] as "1K" | "2K" | "4K") || "2K";
 
   if (!inputPath) {
-    console.error("Usage: npx tsx scripts/enhance-image.ts <input-path> [output-path] [tier]");
+    console.error(
+      "Usage: npx tsx scripts/enhance-image.ts <input-path> [output-path] [tier]",
+    );
     console.error("Tiers: 1K, 2K, 4K (default: 2K)");
     process.exit(1);
   }
@@ -155,8 +169,13 @@ async function main() {
     process.exit(1);
   }
 
-  const defaultOutputPath = absoluteInputPath.replace(/(\.[^.]+)$/, `-enhanced-${tier}$1`);
-  const absoluteOutputPath = outputPath ? path.resolve(outputPath) : defaultOutputPath;
+  const defaultOutputPath = absoluteInputPath.replace(
+    /(\.[^.]+)$/,
+    `-enhanced-${tier}$1`,
+  );
+  const absoluteOutputPath = outputPath
+    ? path.resolve(outputPath)
+    : defaultOutputPath;
 
   console.log(`Input: ${absoluteInputPath}`);
   console.log(`Output: ${absoluteOutputPath}`);
@@ -208,7 +227,9 @@ async function main() {
     targetWidth = Math.round(tierResolution * aspectRatio);
   }
 
-  console.log(`Resizing to preserve aspect ratio: ${targetWidth}x${targetHeight}`);
+  console.log(
+    `Resizing to preserve aspect ratio: ${targetWidth}x${targetHeight}`,
+  );
 
   const enhancedBuffer = await sharp(geminiBuffer)
     .resize(targetWidth, targetHeight, {
@@ -223,8 +244,12 @@ async function main() {
   const finalMetadata = await sharp(enhancedBuffer).metadata();
   console.log("");
   console.log("Enhancement complete!");
-  console.log(`Final dimensions: ${finalMetadata.width}x${finalMetadata.height}`);
-  console.log(`File size: ${(enhancedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+  console.log(
+    `Final dimensions: ${finalMetadata.width}x${finalMetadata.height}`,
+  );
+  console.log(
+    `File size: ${(enhancedBuffer.length / 1024 / 1024).toFixed(2)} MB`,
+  );
   console.log(`Saved to: ${absoluteOutputPath}`);
 }
 

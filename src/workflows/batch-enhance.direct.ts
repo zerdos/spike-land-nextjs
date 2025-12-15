@@ -61,10 +61,14 @@ function validateBatchEnhanceInput(input: BatchEnhanceInput): void {
   for (let i = 0; i < input.images.length; i++) {
     const image = input.images[i];
     if (!image || !image.imageId || typeof image.imageId !== "string") {
-      throw new Error(`Invalid imageId at index ${i}: must be a non-empty string`);
+      throw new Error(
+        `Invalid imageId at index ${i}: must be a non-empty string`,
+      );
     }
     if (!image.originalR2Key || typeof image.originalR2Key !== "string") {
-      throw new Error(`Invalid originalR2Key at index ${i}: must be a non-empty string`);
+      throw new Error(
+        `Invalid originalR2Key at index ${i}: must be a non-empty string`,
+      );
     }
   }
 }
@@ -91,7 +95,9 @@ export async function batchEnhanceImagesDirect(
   const tokenCost = ENHANCEMENT_COSTS[tier];
   const results: BatchResult[] = [];
 
-  console.log(`[Dev Batch Enhancement] Starting batch ${batchId} with ${images.length} images`);
+  console.log(
+    `[Dev Batch Enhancement] Starting batch ${batchId} with ${images.length} images`,
+  );
 
   // Process each image sequentially to avoid rate limits
   for (const image of images) {
@@ -108,7 +114,9 @@ export async function batchEnhanceImagesDirect(
         },
       });
 
-      console.log(`[Dev Batch Enhancement] Processing image ${image.imageId} (job ${job.id})`);
+      console.log(
+        `[Dev Batch Enhancement] Processing image ${image.imageId} (job ${job.id})`,
+      );
 
       // Run the single image enhancement directly
       const result = await enhanceImageDirect({
@@ -128,7 +136,9 @@ export async function batchEnhanceImagesDirect(
         error: result.error,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       // Include full error stack trace for better debugging
       console.error(
         `[Dev Batch Enhancement] Failed to process image ${image.imageId}:`,

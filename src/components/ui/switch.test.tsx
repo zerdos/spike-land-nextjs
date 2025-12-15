@@ -96,7 +96,9 @@ describe("Switch Component", () => {
     it("should handle controlled mode with onCheckedChange", async () => {
       const user = userEvent.setup();
       const onCheckedChange = vi.fn();
-      const { container } = render(<Switch onCheckedChange={onCheckedChange} />);
+      const { container } = render(
+        <Switch onCheckedChange={onCheckedChange} />,
+      );
       const switchElement = container.querySelector('button[role="switch"]')!;
 
       await user.click(switchElement);
@@ -106,7 +108,9 @@ describe("Switch Component", () => {
     it("should call onCheckedChange with false when unchecking", async () => {
       const user = userEvent.setup();
       const onCheckedChange = vi.fn();
-      const { container } = render(<Switch checked={true} onCheckedChange={onCheckedChange} />);
+      const { container } = render(
+        <Switch checked={true} onCheckedChange={onCheckedChange} />,
+      );
       const switchElement = container.querySelector('button[role="switch"]')!;
 
       await user.click(switchElement);
@@ -130,7 +134,9 @@ describe("Switch Component", () => {
     it("should not toggle when disabled", async () => {
       const user = userEvent.setup();
       const onCheckedChange = vi.fn();
-      const { container } = render(<Switch disabled onCheckedChange={onCheckedChange} />);
+      const { container } = render(
+        <Switch disabled onCheckedChange={onCheckedChange} />,
+      );
       const switchElement = container.querySelector('button[role="switch"]')!;
 
       await user.click(switchElement);
@@ -203,9 +209,14 @@ describe("Switch Component", () => {
     });
 
     it("should have accessible name when aria-label is provided", () => {
-      const { container } = render(<Switch aria-label="Toggle notifications" />);
+      const { container } = render(
+        <Switch aria-label="Toggle notifications" />,
+      );
       const switchElement = container.querySelector('button[role="switch"]');
-      expect(switchElement).toHaveAttribute("aria-label", "Toggle notifications");
+      expect(switchElement).toHaveAttribute(
+        "aria-label",
+        "Toggle notifications",
+      );
     });
 
     it("should have accessible name when aria-labelledby is provided", () => {

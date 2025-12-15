@@ -73,7 +73,9 @@ describe("SideBySideComparison Component", () => {
       />,
     );
 
-    const imageContainers = container.querySelectorAll('[style*="aspect-ratio"]');
+    const imageContainers = container.querySelectorAll(
+      '[style*="aspect-ratio"]',
+    );
     expect(imageContainers.length).toBeGreaterThan(0);
     imageContainers.forEach((container) => {
       expect(container).toHaveStyle({ aspectRatio: "1920 / 1080" });
@@ -83,7 +85,9 @@ describe("SideBySideComparison Component", () => {
   it("should use default aspect ratio when width/height not provided", () => {
     const { container } = render(<SideBySideComparison {...defaultProps} />);
 
-    const imageContainers = container.querySelectorAll('[style*="aspect-ratio"]');
+    const imageContainers = container.querySelectorAll(
+      '[style*="aspect-ratio"]',
+    );
     expect(imageContainers.length).toBeGreaterThan(0);
     imageContainers.forEach((container) => {
       expect(container).toHaveStyle({ aspectRatio: "16 / 9" });
@@ -99,7 +103,9 @@ describe("SideBySideComparison Component", () => {
       />,
     );
 
-    const imageContainers = container.querySelectorAll('[style*="aspect-ratio"]');
+    const imageContainers = container.querySelectorAll(
+      '[style*="aspect-ratio"]',
+    );
     expect(imageContainers.length).toBeGreaterThan(0);
     imageContainers.forEach((container) => {
       expect(container).toHaveStyle({ aspectRatio: "16 / 9" });
@@ -112,7 +118,8 @@ describe("SideBySideComparison Component", () => {
     const originalImage = screen.getByAltText("Original");
     originalImage.dispatchEvent(new Event("error"));
 
-    expect(await screen.findByText("Original image failed to load")).toBeInTheDocument();
+    expect(await screen.findByText("Original image failed to load"))
+      .toBeInTheDocument();
   });
 
   it("should display error message when enhanced image fails to load", async () => {
@@ -121,7 +128,8 @@ describe("SideBySideComparison Component", () => {
     const enhancedImage = screen.getByAltText("Enhanced");
     enhancedImage.dispatchEvent(new Event("error"));
 
-    expect(await screen.findByText("Enhanced image failed to load")).toBeInTheDocument();
+    expect(await screen.findByText("Enhanced image failed to load"))
+      .toBeInTheDocument();
   });
 
   it("should log broken images to server when error occurs", async () => {

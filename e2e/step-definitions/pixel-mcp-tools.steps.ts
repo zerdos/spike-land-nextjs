@@ -56,7 +56,11 @@ async function _mockMcpApis(world: CustomWorld) {
       body: JSON.stringify({
         jobId: "new-generate-job",
         tier: body.tier || "TIER_1K",
-        tokensCost: body.tier === "TIER_4K" ? 10 : body.tier === "TIER_2K" ? 5 : 2,
+        tokensCost: body.tier === "TIER_4K"
+          ? 10
+          : body.tier === "TIER_2K"
+          ? 5
+          : 2,
       }),
     });
   });
@@ -70,7 +74,11 @@ async function _mockMcpApis(world: CustomWorld) {
       body: JSON.stringify({
         jobId: "new-modify-job",
         tier: body.tier || "TIER_1K",
-        tokensCost: body.tier === "TIER_4K" ? 10 : body.tier === "TIER_2K" ? 5 : 2,
+        tokensCost: body.tier === "TIER_4K"
+          ? 10
+          : body.tier === "TIER_2K"
+          ? 5
+          : 2,
       }),
     });
   });
@@ -95,49 +103,55 @@ async function _mockMcpApis(world: CustomWorld) {
 }
 
 // Setup steps
-Given("I mock token balance of {int} tokens", async function(this: CustomWorld, balance: number) {
-  await this.page.route("**/api/mcp/balance", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ balance }),
-    });
-  });
-});
-
-Given("I mock a successful MCP generate job", async function(this: CustomWorld) {
-  let pollCount = 0;
-
-  await this.page.route("**/api/mcp/generate", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        jobId: mockCompletedGenerateJob.id,
-        tier: "TIER_1K",
-        tokensCost: 2,
-      }),
-    });
-  });
-
-  await this.page.route("**/api/mcp/jobs/*", async (route) => {
-    pollCount++;
-    // Simulate processing for first poll, then complete
-    if (pollCount <= 1) {
+Given(
+  "I mock token balance of {int} tokens",
+  async function(this: CustomWorld, balance: number) {
+    await this.page.route("**/api/mcp/balance", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify(mockProcessingJob),
+        body: JSON.stringify({ balance }),
       });
-    } else {
+    });
+  },
+);
+
+Given(
+  "I mock a successful MCP generate job",
+  async function(this: CustomWorld) {
+    let pollCount = 0;
+
+    await this.page.route("**/api/mcp/generate", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify(mockCompletedGenerateJob),
+        body: JSON.stringify({
+          jobId: mockCompletedGenerateJob.id,
+          tier: "TIER_1K",
+          tokensCost: 2,
+        }),
       });
-    }
-  });
-});
+    });
+
+    await this.page.route("**/api/mcp/jobs/*", async (route) => {
+      pollCount++;
+      // Simulate processing for first poll, then complete
+      if (pollCount <= 1) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(mockProcessingJob),
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(mockCompletedGenerateJob),
+        });
+      }
+    });
+  },
+);
 
 Given("I mock a successful MCP modify job", async function(this: CustomWorld) {
   let pollCount = 0;
@@ -186,69 +200,84 @@ Given(
   },
 );
 
-Given("I mock a completed job status with output image", async function(this: CustomWorld) {
-  (this as CustomWorld & { mockJobId: string; }).mockJobId = mockCompletedGenerateJob.id;
+Given(
+  "I mock a completed job status with output image",
+  async function(this: CustomWorld) {
+    (this as CustomWorld & { mockJobId: string; }).mockJobId = mockCompletedGenerateJob.id;
 
-  await this.page.route("**/api/mcp/jobs/*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockCompletedGenerateJob),
-    });
-  });
-});
-
-Given("I mock a failed job status with error message", async function(this: CustomWorld) {
-  (this as CustomWorld & { failedJobId: string; }).failedJobId = mockFailedJob.id;
-
-  await this.page.route("**/api/mcp/jobs/*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockFailedJob),
-    });
-  });
-});
-
-Given("I mock a failed MCP generate response", async function(this: CustomWorld) {
-  await this.page.route("**/api/mcp/generate", async (route) => {
-    await route.fulfill({
-      status: 400,
-      contentType: "application/json",
-      body: JSON.stringify({ error: "Insufficient tokens" }),
-    });
-  });
-});
-
-Given("there is a valid API key {string}", async function(this: CustomWorld, apiKey: string) {
-  // Store the API key for later use
-  (this as CustomWorld & { testApiKey: string; }).testApiKey = apiKey;
-
-  // Mock balance endpoint to accept the API key
-  await this.page.route("**/api/mcp/balance", async (route) => {
-    const authHeader = route.request().headers()["authorization"];
-    if (authHeader === `Bearer ${apiKey}`) {
+    await this.page.route("**/api/mcp/jobs/*", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ balance: 50 }),
+        body: JSON.stringify(mockCompletedGenerateJob),
       });
-    } else {
+    });
+  },
+);
+
+Given(
+  "I mock a failed job status with error message",
+  async function(this: CustomWorld) {
+    (this as CustomWorld & { failedJobId: string; }).failedJobId = mockFailedJob.id;
+
+    await this.page.route("**/api/mcp/jobs/*", async (route) => {
       await route.fulfill({
-        status: 401,
+        status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ error: "Invalid API key" }),
+        body: JSON.stringify(mockFailedJob),
       });
-    }
-  });
-});
+    });
+  },
+);
+
+Given(
+  "I mock a failed MCP generate response",
+  async function(this: CustomWorld) {
+    await this.page.route("**/api/mcp/generate", async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Insufficient tokens" }),
+      });
+    });
+  },
+);
+
+Given(
+  "there is a valid API key {string}",
+  async function(this: CustomWorld, apiKey: string) {
+    // Store the API key for later use
+    (this as CustomWorld & { testApiKey: string; }).testApiKey = apiKey;
+
+    // Mock balance endpoint to accept the API key
+    await this.page.route("**/api/mcp/balance", async (route) => {
+      const authHeader = route.request().headers()["authorization"];
+      if (authHeader === `Bearer ${apiKey}`) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ balance: 50 }),
+        });
+      } else {
+        await route.fulfill({
+          status: 401,
+          contentType: "application/json",
+          body: JSON.stringify({ error: "Invalid API key" }),
+        });
+      }
+    });
+  },
+);
 
 // Navigation and interaction steps
-When("I click on {string} tab", async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") });
-  await tab.click();
-  await this.page.waitForTimeout(300);
-});
+When(
+  "I click on {string} tab",
+  async function(this: CustomWorld, tabName: string) {
+    const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") });
+    await tab.click();
+    await this.page.waitForTimeout(300);
+  },
+);
 
 When(
   "I enter {string} in the prompt textarea",
@@ -281,14 +310,18 @@ When(
 
     // Find the Quality Tier select within the visible tab panel
     const tabPanel = this.page.locator('[role="tabpanel"]');
-    const selectTrigger = tabPanel.locator('[role="combobox"], button[data-slot="trigger"]')
+    const selectTrigger = tabPanel.locator(
+      '[role="combobox"], button[data-slot="trigger"]',
+    )
       .first();
     await expect(selectTrigger).toBeVisible({ timeout: 10000 });
     await selectTrigger.click();
     // Wait for dropdown to open
     await this.page.waitForTimeout(300);
     // Select the option by its display text (e.g., "2K (2048px) - 5 tokens")
-    const option = this.page.getByRole("option", { name: new RegExp(tierText, "i") });
+    const option = this.page.getByRole("option", {
+      name: new RegExp(tierText, "i"),
+    });
     await expect(option).toBeVisible({ timeout: 5000 });
     await option.click();
     // Wait for dropdown to close
@@ -312,7 +345,9 @@ When("I upload a test image", async function(this: CustomWorld) {
 When(
   "I enter {string} in the job ID input",
   async function(this: CustomWorld, jobId: string) {
-    const input = this.page.getByLabel(/job id/i).or(this.page.locator("#job-id"));
+    const input = this.page.getByLabel(/job id/i).or(
+      this.page.locator("#job-id"),
+    );
     await input.fill(jobId);
   },
 );
@@ -320,20 +355,27 @@ When(
 When("I enter the job ID", async function(this: CustomWorld) {
   const jobId = (this as CustomWorld & { mockJobId?: string; }).mockJobId ||
     mockCompletedGenerateJob.id;
-  const input = this.page.getByLabel(/job id/i).or(this.page.locator("#job-id"));
+  const input = this.page.getByLabel(/job id/i).or(
+    this.page.locator("#job-id"),
+  );
   await input.fill(jobId);
 });
 
 When("I enter the failed job ID", async function(this: CustomWorld) {
-  const jobId = (this as CustomWorld & { failedJobId?: string; }).failedJobId || mockFailedJob.id;
-  const input = this.page.getByLabel(/job id/i).or(this.page.locator("#job-id"));
+  const jobId = (this as CustomWorld & { failedJobId?: string; }).failedJobId ||
+    mockFailedJob.id;
+  const input = this.page.getByLabel(/job id/i).or(
+    this.page.locator("#job-id"),
+  );
   await input.fill(jobId);
 });
 
 When(
   "I enter {string} in the API key input",
   async function(this: CustomWorld, apiKey: string) {
-    const input = this.page.getByLabel(/api key/i).or(this.page.locator("#manual-key"));
+    const input = this.page.getByLabel(/api key/i).or(
+      this.page.locator("#manual-key"),
+    );
     await input.fill(apiKey);
   },
 );
@@ -359,12 +401,15 @@ When(
 );
 
 // Assertion steps
-Then("I should see {string} card", async function(this: CustomWorld, cardTitle: string) {
-  const card = this.page.locator('[class*="card"]').filter({
-    has: this.page.getByText(new RegExp(cardTitle, "i")),
-  });
-  await expect(card).toBeVisible();
-});
+Then(
+  "I should see {string} card",
+  async function(this: CustomWorld, cardTitle: string) {
+    const card = this.page.locator('[class*="card"]').filter({
+      has: this.page.getByText(new RegExp(cardTitle, "i")),
+    });
+    await expect(card).toBeVisible();
+  },
+);
 
 Then("I should see optional API key input", async function(this: CustomWorld) {
   const apiKeyInput = this.page.getByLabel(/api key/i).or(
@@ -375,71 +420,98 @@ Then("I should see optional API key input", async function(this: CustomWorld) {
 
 // NOTE: "I should see {string} tab" is defined in common.steps.ts
 
-Then("I should see {string} textarea", async function(this: CustomWorld, labelText: string) {
-  const textarea = this.page.getByLabel(new RegExp(labelText, "i")).or(
-    this.page.locator(`textarea[placeholder*="${labelText.toLowerCase()}"]`),
-  );
-  await expect(textarea.first()).toBeVisible();
-});
+Then(
+  "I should see {string} textarea",
+  async function(this: CustomWorld, labelText: string) {
+    const textarea = this.page.getByLabel(new RegExp(labelText, "i")).or(
+      this.page.locator(`textarea[placeholder*="${labelText.toLowerCase()}"]`),
+    );
+    await expect(textarea.first()).toBeVisible();
+  },
+);
 
 Then("I should see tier cost display", async function(this: CustomWorld) {
   const costDisplay = this.page.getByText(/\d+\s*tokens?/i);
   await expect(costDisplay.first()).toBeVisible();
 });
 
-Then("I should see {string} input", async function(this: CustomWorld, labelText: string) {
-  const input = this.page.getByLabel(new RegExp(labelText, "i")).or(
-    this.page.locator(`input[placeholder*="${labelText.toLowerCase()}"]`),
-  );
-  await expect(input.first()).toBeVisible();
-});
+Then(
+  "I should see {string} input",
+  async function(this: CustomWorld, labelText: string) {
+    const input = this.page.getByLabel(new RegExp(labelText, "i")).or(
+      this.page.locator(`input[placeholder*="${labelText.toLowerCase()}"]`),
+    );
+    await expect(input.first()).toBeVisible();
+  },
+);
 
-Then("I should see tier pricing information", async function(this: CustomWorld) {
-  const tierInfo = this.page.getByText(/1k|2k|4k/i);
-  await expect(tierInfo.first()).toBeVisible();
-});
+Then(
+  "I should see tier pricing information",
+  async function(this: CustomWorld) {
+    const tierInfo = this.page.getByText(/1k|2k|4k/i);
+    await expect(tierInfo.first()).toBeVisible();
+  },
+);
 
-Then("I should see my current token balance displayed", async function(this: CustomWorld) {
-  // Verify the tokens available text is visible
-  await expect(this.page.getByText(/tokens available/i)).toBeVisible();
-});
+Then(
+  "I should see my current token balance displayed",
+  async function(this: CustomWorld) {
+    // Verify the tokens available text is visible
+    await expect(this.page.getByText(/tokens available/i)).toBeVisible();
+  },
+);
 
-Then("the balance should show {string} tokens", async function(this: CustomWorld, balance: string) {
-  const balanceText = this.page.getByText(balance);
-  await expect(balanceText).toBeVisible();
-});
+Then(
+  "the balance should show {string} tokens",
+  async function(this: CustomWorld, balance: string) {
+    const balanceText = this.page.getByText(balance);
+    await expect(balanceText).toBeVisible();
+  },
+);
 
 // NOTE: "the {string} button should be disabled" is defined in common.steps.ts
 // NOTE: "the {string} button should be enabled" is defined in common.steps.ts
 
-Then("I should see {string} loading state", async function(this: CustomWorld, loadingText: string) {
-  const loadingIndicator = this.page.getByText(new RegExp(loadingText, "i"));
-  await expect(loadingIndicator).toBeVisible();
-});
+Then(
+  "I should see {string} loading state",
+  async function(this: CustomWorld, loadingText: string) {
+    const loadingIndicator = this.page.getByText(new RegExp(loadingText, "i"));
+    await expect(loadingIndicator).toBeVisible();
+  },
+);
 
-Then("I should see the generated image in the result area", async function(this: CustomWorld) {
-  const resultImage = this.page.locator('[class*="card"]').filter({
-    has: this.page.getByRole("heading", { name: /result/i }),
-  }).locator("img");
-  await expect(resultImage).toBeVisible();
-});
+Then(
+  "I should see the generated image in the result area",
+  async function(this: CustomWorld) {
+    const resultImage = this.page.locator('[class*="card"]').filter({
+      has: this.page.getByRole("heading", { name: /result/i }),
+    }).locator("img");
+    await expect(resultImage).toBeVisible();
+  },
+);
 
-Then("I should see the modified image in the result area", async function(this: CustomWorld) {
-  const resultImage = this.page.locator('[class*="card"]').filter({
-    has: this.page.getByRole("heading", { name: /result/i }),
-  }).locator("img");
-  await expect(resultImage).toBeVisible();
-});
+Then(
+  "I should see the modified image in the result area",
+  async function(this: CustomWorld) {
+    const resultImage = this.page.locator('[class*="card"]').filter({
+      has: this.page.getByRole("heading", { name: /result/i }),
+    }).locator("img");
+    await expect(resultImage).toBeVisible();
+  },
+);
 
-Then("I should see {string} status badge", async function(this: CustomWorld, status: string) {
-  // Badge component uses inline-flex with rounded-md, look for text in any badge-like element
-  const badge = this.page.locator(
-    ".inline-flex.items-center.rounded-md, [class*='bg-green'], [class*='bg-destructive'], [class*='bg-blue']",
-  ).filter({
-    hasText: new RegExp(status, "i"),
-  });
-  await expect(badge.first()).toBeVisible({ timeout: 10000 });
-});
+Then(
+  "I should see {string} status badge",
+  async function(this: CustomWorld, status: string) {
+    // Badge component uses inline-flex with rounded-md, look for text in any badge-like element
+    const badge = this.page.locator(
+      ".inline-flex.items-center.rounded-md, [class*='bg-green'], [class*='bg-destructive'], [class*='bg-blue']",
+    ).filter({
+      hasText: new RegExp(status, "i"),
+    });
+    await expect(badge.first()).toBeVisible({ timeout: 10000 });
+  },
+);
 
 Then("I should see the job details", async function(this: CustomWorld) {
   const jobId = this.page.getByText(/job id/i);
@@ -491,33 +563,43 @@ Then("I should see the image dimensions", async function(this: CustomWorld) {
 // NOTE: "I should see the tokens used" is defined in common.steps.ts
 // NOTE: "I should see the error message" is defined in common.steps.ts
 
-Then("I should see {string} API example", async function(this: CustomWorld, apiName: string) {
-  // Map API names to their actual endpoint text in the code blocks
-  const endpointMap: Record<string, string> = {
-    "Generate Image": "mcp/generate",
-    "Modify Image": "mcp/modify",
-    "Check Job Status": "mcp/jobs",
-    "Check Balance": "mcp/balance",
-  };
-  const endpoint = endpointMap[apiName] || apiName.toLowerCase().replace(/\s+/g, "");
-  const example = this.page.locator("pre").filter({
-    hasText: new RegExp(endpoint, "i"),
-  });
-  await expect(example.first()).toBeVisible({ timeout: 10000 });
-});
+Then(
+  "I should see {string} API example",
+  async function(this: CustomWorld, apiName: string) {
+    // Map API names to their actual endpoint text in the code blocks
+    const endpointMap: Record<string, string> = {
+      "Generate Image": "mcp/generate",
+      "Modify Image": "mcp/modify",
+      "Check Job Status": "mcp/jobs",
+      "Check Balance": "mcp/balance",
+    };
+    const endpoint = endpointMap[apiName] ||
+      apiName.toLowerCase().replace(/\s+/g, "");
+    const example = this.page.locator("pre").filter({
+      hasText: new RegExp(endpoint, "i"),
+    });
+    await expect(example.first()).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("the command should be copied to clipboard", async function(this: CustomWorld) {
-  // This is verified by the button state change
-  await this.page.waitForTimeout(200);
-});
+Then(
+  "the command should be copied to clipboard",
+  async function(this: CustomWorld) {
+    // This is verified by the button state change
+    await this.page.waitForTimeout(200);
+  },
+);
 
-Then("I should see the copy confirmation icon", async function(this: CustomWorld) {
-  // Look for the check icon that appears after copying
-  const checkIcon = this.page.locator('[class*="text-green"]').or(
-    this.page.locator('svg[class*="check"]'),
-  );
-  await expect(checkIcon.first()).toBeVisible();
-});
+Then(
+  "I should see the copy confirmation icon",
+  async function(this: CustomWorld) {
+    // Look for the check icon that appears after copying
+    const checkIcon = this.page.locator('[class*="text-green"]').or(
+      this.page.locator('svg[class*="check"]'),
+    );
+    await expect(checkIcon.first()).toBeVisible();
+  },
+);
 
 Then(
   "I should see {string} documentation section",
@@ -527,10 +609,13 @@ Then(
   },
 );
 
-Then("I should see the npx installation command", async function(this: CustomWorld) {
-  const npxCommand = this.page.getByText(/npx @spike-land\/mcp-server/);
-  await expect(npxCommand).toBeVisible();
-});
+Then(
+  "I should see the npx installation command",
+  async function(this: CustomWorld) {
+    const npxCommand = this.page.getByText(/npx @spike-land\/mcp-server/);
+    await expect(npxCommand).toBeVisible();
+  },
+);
 
 // NOTE: "I should see {string} link" is defined in authentication.steps.ts
 
@@ -542,24 +627,33 @@ Then(
   },
 );
 
-Then("I should see the token balance for the API key", async function(this: CustomWorld) {
-  const balanceDisplay = this.page.getByText(/tokens available/i);
-  await expect(balanceDisplay).toBeVisible();
-});
+Then(
+  "I should see the token balance for the API key",
+  async function(this: CustomWorld) {
+    const balanceDisplay = this.page.getByText(/tokens available/i);
+    await expect(balanceDisplay).toBeVisible();
+  },
+);
 
 Then(
   "the cost should show {string} for {string}",
   async function(this: CustomWorld, cost: string, _tier: string) {
-    const costDisplay = this.page.getByText(new RegExp(`cost.*${cost}`, "i")).or(
-      this.page.getByText(cost),
-    );
+    const costDisplay = this.page.getByText(new RegExp(`cost.*${cost}`, "i"))
+      .or(
+        this.page.getByText(cost),
+      );
     await expect(costDisplay.first()).toBeVisible();
   },
 );
 
 Then(
   "I should see {string} with {string} and {string}",
-  async function(this: CustomWorld, quality: string, resolution: string, tokens: string) {
+  async function(
+    this: CustomWorld,
+    quality: string,
+    resolution: string,
+    tokens: string,
+  ) {
     const qualityText = this.page.getByText(quality);
     await expect(qualityText).toBeVisible();
     const resolutionText = this.page.getByText(resolution);
@@ -569,23 +663,32 @@ Then(
   },
 );
 
-Then("I should not be able to submit the form", async function(this: CustomWorld) {
-  const submitButton = this.page.getByRole("button", { name: /modify/i });
-  await expect(submitButton).toBeDisabled();
-});
+Then(
+  "I should not be able to submit the form",
+  async function(this: CustomWorld) {
+    const submitButton = this.page.getByRole("button", { name: /modify/i });
+    await expect(submitButton).toBeDisabled();
+  },
+);
 
-Then("I should see the image preview thumbnail", async function(this: CustomWorld) {
-  const preview = this.page.locator("img").filter({
-    has: this.page.locator('[alt*="modify"]'),
-  }).or(
-    this.page.locator('[class*="card"]').locator("img").first(),
-  );
-  await expect(preview.first()).toBeVisible();
-});
+Then(
+  "I should see the image preview thumbnail",
+  async function(this: CustomWorld) {
+    const preview = this.page.locator("img").filter({
+      has: this.page.locator('[alt*="modify"]'),
+    }).or(
+      this.page.locator('[class*="card"]').locator("img").first(),
+    );
+    await expect(preview.first()).toBeVisible();
+  },
+);
 
-Then("I should see an error message in the generate form", async function(this: CustomWorld) {
-  const errorMessage = this.page.locator('[class*="destructive"]').or(
-    this.page.getByText(/error|failed|insufficient/i),
-  );
-  await expect(errorMessage.first()).toBeVisible();
-});
+Then(
+  "I should see an error message in the generate form",
+  async function(this: CustomWorld) {
+    const errorMessage = this.page.locator('[class*="destructive"]').or(
+      this.page.getByText(/error|failed|insufficient/i),
+    );
+    await expect(errorMessage.first()).toBeVisible();
+  },
+);

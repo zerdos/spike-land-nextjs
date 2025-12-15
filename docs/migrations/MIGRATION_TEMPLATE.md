@@ -318,6 +318,4 @@ Help us improve this migration guide!
 
 ## Document Info
 
-**Created**: [DATE]
-**Last Updated**: [DATE]
-**Status**: [DRAFT/PUBLISHED]
+**Created**: [DATE] **Last Updated**: [DATE] **Status**: [DRAFT/PUBLISHED]

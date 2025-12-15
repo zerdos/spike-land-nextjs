@@ -43,7 +43,10 @@ export class VideoWallWorld extends World {
   /**
    * Create a new client context with camera/microphone permissions
    */
-  async createClientContext(clientId: string, name?: string): Promise<ClientContext> {
+  async createClientContext(
+    clientId: string,
+    name?: string,
+  ): Promise<ClientContext> {
     const context = await this.browser.newContext({
       baseURL: this.baseUrl,
       permissions: ["camera", "microphone"],
@@ -91,9 +94,10 @@ export class VideoWallWorld extends World {
         ctx.font = "48px Arial";
         ctx.fillText("Test Video", 200, 250);
 
-        const stream =
-          (canvas as HTMLCanvasElement & { captureStream: (frameRate?: number) => MediaStream; })
-            .captureStream(30);
+        const stream = (canvas as HTMLCanvasElement & {
+          captureStream: (frameRate?: number) => MediaStream;
+        })
+          .captureStream(30);
 
         // Add audio track if requested
         if (constraints?.audio) {
@@ -114,7 +118,10 @@ export class VideoWallWorld extends World {
       // Mock navigator.mediaDevices.getUserMedia
       if (navigator.mediaDevices) {
         navigator.mediaDevices.getUserMedia = async (constraints) => {
-          console.log("[Mock] getUserMedia called with constraints:", constraints);
+          console.log(
+            "[Mock] getUserMedia called with constraints:",
+            constraints,
+          );
           // Return fake stream instead of real camera
           return createFakeMediaStream(constraints);
         };
@@ -148,7 +155,10 @@ export class VideoWallWorld extends World {
 
         // Mock getDisplayMedia for screen sharing
         navigator.mediaDevices.getDisplayMedia = async (constraints) => {
-          console.log("[Mock] getDisplayMedia called with constraints:", constraints);
+          console.log(
+            "[Mock] getDisplayMedia called with constraints:",
+            constraints,
+          );
           const stream = createFakeMediaStream({ video: true });
           // Label the stream as screen share
           Object.defineProperty(stream, "__isScreenShare", { value: true });
@@ -170,7 +180,8 @@ export class VideoWallWorld extends World {
         private connections: Map<string, unknown> = new Map();
 
         constructor(id?: string) {
-          this.id = id || `mock-peer-${Math.random().toString(36).substr(2, 9)}`;
+          this.id = id ||
+            `mock-peer-${Math.random().toString(36).substr(2, 9)}`;
           console.log("[MockPeer] Created with id:", this.id);
 
           // Simulate connection open
@@ -190,7 +201,7 @@ export class VideoWallWorld extends World {
         emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
+            callbacks.forEach((cb) => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 
@@ -260,7 +271,7 @@ export class VideoWallWorld extends World {
           }
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
+            callbacks.forEach((cb) => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 
@@ -294,7 +305,7 @@ export class VideoWallWorld extends World {
         emit(event: string, ...args: unknown[]) {
           const callbacks = this.callbacks.get(event);
           if (callbacks) {
-            callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
+            callbacks.forEach((cb) => (cb as (...args: unknown[]) => void)(...args));
           }
         }
 

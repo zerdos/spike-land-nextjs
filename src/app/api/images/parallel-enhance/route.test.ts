@@ -746,7 +746,9 @@ describe("POST /api/images/parallel-enhance", () => {
         originalR2Key: "originals/img-1.jpg",
       });
 
-      mockPrisma.$transaction.mockRejectedValue(new Error("Database transaction failed"));
+      mockPrisma.$transaction.mockRejectedValue(
+        new Error("Database transaction failed"),
+      );
 
       const req = createMockRequest({
         imageId: "img-1",

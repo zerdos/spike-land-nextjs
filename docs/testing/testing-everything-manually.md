@@ -1,7 +1,6 @@
 # Spike Land - Complete Manual Testing Guide
 
-**Last Updated:** December 6, 2025
-**Production URL:** https://spike.land
+**Last Updated:** December 6, 2025 **Production URL:** https://spike.land
 **Pre-tested by:** Claude Code with Playwright MCP
 
 ---
@@ -226,7 +225,8 @@ Before testing, ensure you have:
 ### F.1 View Referral Link
 
 1. Navigate to https://spike.land/referrals
-2. **Expected:** Your unique referral link displayed (e.g., `https://spike.land?ref=XXXXXXXX`)
+2. **Expected:** Your unique referral link displayed (e.g.,
+   `https://spike.land?ref=XXXXXXXX`)
 
 ### F.2 Copy Referral Link
 
@@ -251,7 +251,8 @@ Before testing, ensure you have:
 ### F.5 View Referred Users
 
 1. Scroll to "Your Referrals" section
-2. **Expected:** List of users who signed up via your link (or empty state message)
+2. **Expected:** List of users who signed up via your link (or empty state
+   message)
 
 ---
 
@@ -412,32 +413,27 @@ Before testing, ensure you have:
 
 ### Issue 1: Job Cancellation Error
 
-**Status:** Bug identified, fix in progress
-**Error:** `invalid input value for enum "JobStatus": "CANCELLED"`
-**Impact:** Cannot cancel processing jobs
-**Workaround:** Wait for job to complete or fail
+**Status:** Bug identified, fix in progress **Error:**
+`invalid input value for enum "JobStatus": "CANCELLED"` **Impact:** Cannot
+cancel processing jobs **Workaround:** Wait for job to complete or fail
 
 ### Issue 2: Enhancement Pipeline Stuck
 
-**Status:** Under investigation
-**Symptoms:** Jobs stuck in "PROCESSING" state, never complete
-**Cause:** Gemini API timeouts (120000ms)
-**Impact:** New enhancements may not complete
-**Workaround:** Check System Health for job status
+**Status:** Under investigation **Symptoms:** Jobs stuck in "PROCESSING" state,
+never complete **Cause:** Gemini API timeouts (120000ms) **Impact:** New
+enhancements may not complete **Workaround:** Check System Health for job status
 
 ### Issue 3: React Hydration Warnings
 
-**Status:** Low priority
-**Error:** `Minified React error #418`
-**Impact:** Console warnings, no user-facing issues
-**Cause:** Text content mismatch between server and client
+**Status:** Low priority **Error:** `Minified React error #418` **Impact:**
+Console warnings, no user-facing issues **Cause:** Text content mismatch between
+server and client
 
 ### Issue 4: 405 Method Not Allowed Errors
 
-**Status:** Under investigation
-**Symptoms:** Console errors on page loads
-**Impact:** May affect some API functionality
-**Note:** Pages still render correctly
+**Status:** Under investigation **Symptoms:** Console errors on page loads
+**Impact:** May affect some API functionality **Note:** Pages still render
+correctly
 
 ---
 

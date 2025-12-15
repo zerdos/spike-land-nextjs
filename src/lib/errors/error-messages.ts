@@ -181,11 +181,16 @@ export function detectErrorCode(
     return "INSUFFICIENT_TOKENS";
   }
 
-  if (errorMessage.includes("unauthorized") || errorMessage.includes("unauthenticated")) {
+  if (
+    errorMessage.includes("unauthorized") ||
+    errorMessage.includes("unauthenticated")
+  ) {
     return "UNAUTHORIZED";
   }
 
-  if (errorMessage.includes("forbidden") || errorMessage.includes("access denied")) {
+  if (
+    errorMessage.includes("forbidden") || errorMessage.includes("access denied")
+  ) {
     return "FORBIDDEN";
   }
 
@@ -214,7 +219,10 @@ export function detectErrorCode(
     return "INVALID_INPUT";
   }
 
-  if (errorMessage.includes("upload failed") || errorMessage.includes("upload error")) {
+  if (
+    errorMessage.includes("upload failed") ||
+    errorMessage.includes("upload error")
+  ) {
     return "UPLOAD_FAILED";
   }
 
@@ -257,7 +265,10 @@ export function getUserFriendlyError(
 /**
  * Check if an error is retryable
  */
-export function isRetryableError(error: Error | string, statusCode?: number): boolean {
+export function isRetryableError(
+  error: Error | string,
+  statusCode?: number,
+): boolean {
   const errorCode = detectErrorCode(error, statusCode);
   return ERROR_MESSAGES[errorCode].retryable;
 }

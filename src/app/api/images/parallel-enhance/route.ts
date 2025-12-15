@@ -33,7 +33,10 @@ interface JobResponse {
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
-  const requestLogger = logger.child({ requestId, route: "/api/images/parallel-enhance" });
+  const requestLogger = logger.child({
+    requestId,
+    route: "/api/images/parallel-enhance",
+  });
 
   try {
     requestLogger.info("Parallel enhancement request received");
@@ -63,7 +66,9 @@ export async function POST(request: NextRequest) {
     if (rateLimitResult.isLimited) {
       requestLogger.warn("Rate limit exceeded", { userId: session.user.id });
       const errorMessage = getUserFriendlyError(new Error("Rate limit"), 429);
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -88,8 +93,14 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!imageId || !tiers || !Array.isArray(tiers)) {
-      requestLogger.warn("Missing or invalid required fields", { imageId, tiers });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      requestLogger.warn("Missing or invalid required fields", {
+        imageId,
+        tiers,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -102,8 +113,13 @@ export async function POST(request: NextRequest) {
 
     // Validate tiers array (1-3 unique tiers)
     if (tiers.length === 0 || tiers.length > 3) {
-      requestLogger.warn("Invalid tiers array length", { tierCount: tiers.length });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      requestLogger.warn("Invalid tiers array length", {
+        tierCount: tiers.length,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -118,7 +134,10 @@ export async function POST(request: NextRequest) {
     const uniqueTiers = Array.from(new Set(tiers));
     if (uniqueTiers.length !== tiers.length) {
       requestLogger.warn("Duplicate tiers detected", { tiers });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -134,7 +153,10 @@ export async function POST(request: NextRequest) {
     const invalidTiers = tiers.filter((tier) => !validTiers.includes(tier));
     if (invalidTiers.length > 0) {
       requestLogger.warn("Invalid tiers", { invalidTiers });
-      const errorMessage = getUserFriendlyError(new Error("Invalid input"), 400);
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
       return NextResponse.json(
         {
           error: errorMessage.message,
@@ -151,7 +173,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!image || image.userId !== session.user.id) {
-      requestLogger.warn("Image not found or access denied", { imageId, userId: session.user.id });
+      requestLogger.warn("Image not found or access denied", {
+        imageId,
+        userId: session.user.id,
+      });
       const errorMessage = getUserFriendlyError(new Error("Not found"), 404);
       return NextResponse.json(
         {
@@ -164,7 +189,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total token cost
-    const totalCost = tiers.reduce((sum, tier) => sum + ENHANCEMENT_COSTS[tier], 0);
+    const totalCost = tiers.reduce(
+      (sum, tier) => sum + ENHANCEMENT_COSTS[tier],
+      0,
+    );
 
     requestLogger.info("Calculated total cost", { totalCost, tiers });
 
@@ -306,7 +334,9 @@ export async function POST(request: NextRequest) {
           } catch (updateError) {
             requestLogger.error(
               "Failed to store workflowRunId - job may not be cancellable",
-              updateError instanceof Error ? updateError : new Error(String(updateError)),
+              updateError instanceof Error
+                ? updateError
+                : new Error(String(updateError)),
               { jobId: job.id, workflowRunId: workflowRun.runId },
             );
             // Continue - workflow is running, we just can't cancel it

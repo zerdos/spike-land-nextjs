@@ -8,7 +8,9 @@ export function CTASection() {
   return (
     <section className="bg-gradient-primary py-20 text-primary-foreground relative overflow-hidden">
       <div className="container mx-auto px-4 text-center relative z-10">
-        <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Ready to Transform Your Images?</h2>
+        <h2 className="mb-6 text-3xl font-bold sm:text-4xl">
+          Ready to Transform Your Images?
+        </h2>
         <p className="mx-auto mb-10 max-w-2xl text-lg opacity-95 leading-relaxed">
           Join thousands of creators using AI to enhance their photos. Get started for free with
           your first enhancement on us.

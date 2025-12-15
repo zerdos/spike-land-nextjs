@@ -1,8 +1,8 @@
 # Modern React Patterns and Best Practices
 
-> **Last Updated**: December 2025
-> **Audience**: React developers building production applications
-> **Framework Context**: Next.js 15, React 19+, TypeScript
+> **Last Updated**: December 2025 **Audience**: React developers building
+> production applications **Framework Context**: Next.js 15, React 19+,
+> TypeScript
 
 ---
 
@@ -21,14 +21,16 @@
 
 ## Component Patterns
 
-Modern React development has evolved significantly with the introduction of React 19 and the maturation of the ecosystem. Understanding different component patterns helps you choose the right approach for your use case.
+Modern React development has evolved significantly with the introduction of
+React 19 and the maturation of the ecosystem. Understanding different component
+patterns helps you choose the right approach for your use case.
 
 ### 1. Function Components (Modern Standard)
 
-**Status**: ✅ **Recommended**
-**Since**: React 16.8+ (Hooks)
+**Status**: ✅ **Recommended** **Since**: React 16.8+ (Hooks)
 
-Function components have become the de facto standard for React development, replacing class components for practically all use cases.
+Function components have become the de facto standard for React development,
+replacing class components for practically all use cases.
 
 ```typescript
 // ✅ Modern Function Component
@@ -52,10 +54,12 @@ export function UserProfile({ userId }: { userId: string; }) {
 
 ### 2. Compound Components Pattern
 
-**Status**: ✅ **Recommended for UI Libraries**
-**Use Case**: Flexible, declarative APIs for related components
+**Status**: ✅ **Recommended for UI Libraries** **Use Case**: Flexible,
+declarative APIs for related components
 
-Compound Components is a design pattern where components work together, sharing implicit state to provide a more expressive and flexible API. The best example is the HTML `<select>` and `<option>` elements.
+Compound Components is a design pattern where components work together, sharing
+implicit state to provide a more expressive and flexible API. The best example
+is the HTML `<select>` and `<option>` elements.
 
 ```typescript
 // Parent component with Context
@@ -137,10 +141,11 @@ function App() {
 
 ### 3. Higher-Order Components (HOC)
 
-**Status**: ⚠️ **Legacy Pattern** (Use Custom Hooks instead)
-**When to Use**: Rarely needed in modern React
+**Status**: ⚠️ **Legacy Pattern** (Use Custom Hooks instead) **When to Use**:
+Rarely needed in modern React
 
-A Higher-Order Component (HOC) takes in a component as an argument and returns a supercharged component with additional data or functionality.
+A Higher-Order Component (HOC) takes in a component as an argument and returns a
+supercharged component with additional data or functionality.
 
 ```typescript
 // ❌ Legacy pattern
@@ -152,7 +157,7 @@ function withTheme(Component: React.ComponentType<any>) {
       <Component
         {...props}
         theme={theme}
-        toggleTheme={() => setTheme(t => t === "light" ? "dark" : "light")}
+        toggleTheme={() => setTheme((t) => t === "light" ? "dark" : "light")}
       />
     );
   };
@@ -164,7 +169,7 @@ function useTheme() {
 
   return {
     theme,
-    toggleTheme: () => setTheme(t => t === "light" ? "dark" : "light"),
+    toggleTheme: () => setTheme((t) => t === "light" ? "dark" : "light"),
   };
 }
 ```
@@ -178,10 +183,11 @@ function useTheme() {
 
 ### 4. Render Props Pattern
 
-**Status**: ⚠️ **Legacy Pattern** (Use Custom Hooks instead)
-**When to Use**: Legacy codebases only
+**Status**: ⚠️ **Legacy Pattern** (Use Custom Hooks instead) **When to Use**:
+Legacy codebases only
 
-Render Props is a technique for sharing code between components using a prop whose value is a function.
+Render Props is a technique for sharing code between components using a prop
+whose value is a function.
 
 ```typescript
 // ❌ Legacy pattern - avoid
@@ -208,7 +214,9 @@ const data = useRenderPropsExample();
 
 ## State Management
 
-State management in React has matured from "one giant store" to a purpose-built, two-tool toolkit: **TanStack Query** for server state and **Zustand** for client state.
+State management in React has matured from "one giant store" to a purpose-built,
+two-tool toolkit: **TanStack Query** for server state and **Zustand** for client
+state.
 
 ### State Management Decision Tree
 
@@ -230,10 +238,11 @@ Do you need time-travel debugging or strict patterns?
 
 ### 1. Server State with TanStack Query
 
-**Status**: ✅ **Recommended**
-**Library**: `@tanstack/react-query`
+**Status**: ✅ **Recommended** **Library**: `@tanstack/react-query`
 
-TanStack Query replaces Redux boilerplate for managing remote state. It handles caching, deduplication, invalidation, retries, pagination, and optimistic updates.
+TanStack Query replaces Redux boilerplate for managing remote state. It handles
+caching, deduplication, invalidation, retries, pagination, and optimistic
+updates.
 
 ```typescript
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -306,11 +315,11 @@ function CreateUserForm() {
 
 ### 2. Client State with Zustand
 
-**Status**: ✅ **Recommended for Global UI State**
-**Library**: `zustand`
+**Status**: ✅ **Recommended for Global UI State** **Library**: `zustand`
 **Bundle Size**: ~1KB
 
-Zustand offers minimalist state management with a simple API and hooks-based approach.
+Zustand offers minimalist state management with a simple API and hooks-based
+approach.
 
 ```typescript
 import { create } from "zustand";
@@ -376,7 +385,8 @@ const usePersistedStore = create<AppStore>(
 
 **Status**: ✅ **For Simple Global State**
 
-For simple global state without external dependencies, React Context with `useReducer` works well.
+For simple global state without external dependencies, React Context with
+`useReducer` works well.
 
 ```typescript
 type ThemeAction =
@@ -431,8 +441,8 @@ export function useTheme() {
 
 ### 4. Redux Toolkit (Complex Enterprise Apps)
 
-**Status**: ✅ **For Large Applications**
-**When**: Strict patterns, team collaboration, complex logic
+**Status**: ✅ **For Large Applications** **When**: Strict patterns, team
+collaboration, complex logic
 
 Redux Toolkit modernizes Redux with:
 
@@ -497,7 +507,9 @@ export default usersSlice.reducer;
 
 ## Performance Optimization
 
-React 19 introduces the React Compiler, which eliminates the need for manual memoization in most cases. However, understanding these patterns is essential for optimization.
+React 19 introduces the React Compiler, which eliminates the need for manual
+memoization in most cases. However, understanding these patterns is essential
+for optimization.
 
 ### 1. React.memo - Component Memoization
 
@@ -563,12 +575,12 @@ function FilteredUsersList({ users, searchTerm }: {
 }) {
   const filteredUsers = useMemo(() => {
     console.log("Filtering users...");
-    return users.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    return users.filter((user) => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [users, searchTerm]);
 
   return (
     <ul>
-      {filteredUsers.map(user => <li key={user.id}>{user.name}</li>)}
+      {filteredUsers.map((user) => <li key={user.id}>{user.name}</li>)}
     </ul>
   );
 }
@@ -576,7 +588,8 @@ function FilteredUsersList({ users, searchTerm }: {
 
 ### 3. useCallback - Function Memoization
 
-**Purpose**: Stabilize function references to prevent unnecessary re-renders of memoized children
+**Purpose**: Stabilize function references to prevent unnecessary re-renders of
+memoized children
 
 ```typescript
 // ❌ Without memoization (new function on every render)
@@ -613,10 +626,12 @@ function Parent() {
   );
 }
 
-const MemoizedChild = memo(function Child({ onClick }: { onClick: () => void; }) {
-  console.log("Child rendered");
-  return <button onClick={onClick}>Child Button</button>;
-});
+const MemoizedChild = memo(
+  function Child({ onClick }: { onClick: () => void; }) {
+    console.log("Child rendered");
+    return <button onClick={onClick}>Child Button</button>;
+  },
+);
 ```
 
 **Common Pattern**: Combining memo + useCallback + useMemo
@@ -631,7 +646,7 @@ const UserList = memo(function UserList({
 }) {
   return (
     <ul>
-      {users.map(user => (
+      {users.map((user) => (
         <UserItem
           key={user.id}
           user={user}
@@ -695,7 +710,9 @@ function App() {
 import { FixedSizeList as List } from "react-window";
 
 function VirtualizedUsersList({ users }: { users: User[]; }) {
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties; }) => (
+  const Row = (
+    { index, style }: { index: number; style: React.CSSProperties; },
+  ) => (
     <div style={style}>
       {users[index].name}
     </div>
@@ -728,7 +745,8 @@ function VirtualizedUsersList({ users }: { users: User[]; }) {
 
 ## Custom Hooks Patterns
 
-Custom hooks are one of the most powerful patterns in React, enabling code reuse and separation of concerns.
+Custom hooks are one of the most powerful patterns in React, enabling code reuse
+and separation of concerns.
 
 ### 1. Basic Custom Hook
 
@@ -928,7 +946,8 @@ Modern React provides powerful patterns for handling errors and loading states.
 
 ### 1. Error Boundaries
 
-Error Boundaries catch errors during render, lifecycle methods, and constructors. They do NOT catch:
+Error Boundaries catch errors during render, lifecycle methods, and
+constructors. They do NOT catch:
 
 - Event handlers (use try/catch)
 - Async operations (use Suspense)
@@ -1012,7 +1031,8 @@ function App() {
 
 ### 2. Suspense for Loading States
 
-Suspense handles loading states for Suspense-enabled data sources (React Query, Relay, SWR, Server Components).
+Suspense handles loading states for Suspense-enabled data sources (React Query,
+Relay, SWR, Server Components).
 
 ```typescript
 import { Suspense } from "react";
@@ -1107,7 +1127,8 @@ Component Tree
 
 ## Accessibility Standards
 
-Building accessible React applications ensures your app works for everyone, including people with disabilities.
+Building accessible React applications ensures your app works for everyone,
+including people with disabilities.
 
 ### 1. Semantic HTML
 
@@ -1336,8 +1357,8 @@ function ProductsList({ products }: { products: Product[]; }) {
 
 ### 5. Using React Aria Library
 
-**Status**: ✅ **Recommended for Complex Components**
-**Library**: `@react-aria/button`, `@react-aria/menu`, etc.
+**Status**: ✅ **Recommended for Complex Components** **Library**:
+`@react-aria/button`, `@react-aria/menu`, etc.
 
 React Aria provides accessibility implementations out of the box.
 
@@ -1346,7 +1367,9 @@ import { useButton } from "@react-aria/button";
 import { useMenu } from "@react-aria/menu";
 
 // Accessible button with built-in keyboard handling
-function AccessibleButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function AccessibleButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>,
+) {
   const ref = useRef<HTMLButtonElement>(null);
   const { buttonProps } = useButton(props, ref);
 
@@ -1466,44 +1489,60 @@ yarn add --dev @axe-core/react
 
 ### Official Documentation
 
-- [React Documentation](https://react.dev) - Official React docs with interactive examples
+- [React Documentation](https://react.dev) - Official React docs with
+  interactive examples
 - [Next.js Documentation](https://nextjs.org/docs) - Framework-specific patterns
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/) - Type safety best practices
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/) - Type safety best
+  practices
 - [Web Content Accessibility Guidelines (WCAG 2.2)](https://www.w3.org/WAI/WCAG22/quickref/)
 
 ### State Management
 
-- [TanStack Query Documentation](https://tanstack.com/query/latest) - Server state management
-- [Zustand Documentation](https://github.com/pmndrs/zustand) - Minimal state management
-- [Redux Toolkit Documentation](https://redux-toolkit.js.org/) - Enterprise state management
-- [React Context API](https://react.dev/reference/react/createContext) - Built-in state sharing
+- [TanStack Query Documentation](https://tanstack.com/query/latest) - Server
+  state management
+- [Zustand Documentation](https://github.com/pmndrs/zustand) - Minimal state
+  management
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/) - Enterprise
+  state management
+- [React Context API](https://react.dev/reference/react/createContext) -
+  Built-in state sharing
 
 ### Performance & Optimization
 
-- [React DevTools Profiler Guide](https://react.dev/learn/render-and-commit) - Performance profiling
+- [React DevTools Profiler Guide](https://react.dev/learn/render-and-commit) -
+  Performance profiling
 - [Web Vitals](https://web.dev/vitals/) - Core Web Vitals metrics
-- [React 19 Compiler](https://react.dev/learn/react-compiler) - Automatic optimization
+- [React 19 Compiler](https://react.dev/learn/react-compiler) - Automatic
+  optimization
 
 ### Accessibility
 
-- [React Aria Library](https://react-spectrum.adobe.com/react-aria/) - Accessible components
+- [React Aria Library](https://react-spectrum.adobe.com/react-aria/) -
+  Accessible components
 - [ARIAKit](https://ariakit.org/) - Unstyled accessible primitives
-- [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) - ARIA usage guide
-- [Inclusive Components](https://inclusive-components.design/) - Component accessibility patterns
+- [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) - ARIA usage
+  guide
+- [Inclusive Components](https://inclusive-components.design/) - Component
+  accessibility patterns
 
 ### Testing
 
-- [React Testing Library Documentation](https://testing-library.com/docs/react-testing-library/intro/) - Component testing
+- [React Testing Library Documentation](https://testing-library.com/docs/react-testing-library/intro/) -
+  Component testing
 - [Playwright Documentation](https://playwright.dev/) - E2E testing
 - [Vitest Documentation](https://vitest.dev/) - Unit test framework
-- [Testing Library Best Practices](https://testing-library.com/docs/queries/about) - Query strategies
+- [Testing Library Best Practices](https://testing-library.com/docs/queries/about) -
+  Query strategies
 
 ### Design Patterns
 
-- [Patterns.dev React](https://www.patterns.dev/react/) - Comprehensive pattern guide
-- [Kent C. Dodds Blog](https://kentcdodds.com/) - React patterns and best practices
+- [Patterns.dev React](https://www.patterns.dev/react/) - Comprehensive pattern
+  guide
+- [Kent C. Dodds Blog](https://kentcdodds.com/) - React patterns and best
+  practices
 - [Dan Abramov Blog](https://overreacted.io/) - Deep dives into React concepts
-- [Smashing Magazine React](https://www.smashingmagazine.com/tag/react/) - In-depth articles
+- [Smashing Magazine React](https://www.smashingmagazine.com/tag/react/) -
+  In-depth articles
 
 ### Featured Articles & Publications
 
@@ -1579,6 +1618,5 @@ const UserCard = memo(function UserCard({ user }: Props) {
 
 ---
 
-**Last Updated**: December 6, 2025
-**Framework**: React 19+, Next.js 15+
+**Last Updated**: December 6, 2025 **Framework**: React 19+, Next.js 15+
 **TypeScript**: Strict Mode Required

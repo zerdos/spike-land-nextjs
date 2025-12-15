@@ -1,9 +1,9 @@
 # Image Enhancement API Endpoints
 
-Complete REST API documentation for image management and AI-powered enhancement operations in Spike Land.
+Complete REST API documentation for image management and AI-powered enhancement
+operations in Spike Land.
 
-Last Updated: December 2025
-Status: Production Ready
+Last Updated: December 2025 Status: Production Ready
 
 ---
 
@@ -22,7 +22,8 @@ Status: Production Ready
 
 ## Authentication
 
-All endpoints require authentication via NextAuth.js session cookie or Bearer token.
+All endpoints require authentication via NextAuth.js session cookie or Bearer
+token.
 
 ### Session Cookie (Default)
 
@@ -628,7 +629,7 @@ async function enhanceWithRetry(imageId, tier, maxRetries = 3) {
     const delay = retryAfter * 1000 * Math.pow(2, attempt);
 
     console.log(`Rate limited. Retrying in ${delay}ms...`);
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
   throw new Error("Max retries exceeded");
@@ -690,7 +691,7 @@ async function enhanceImage() {
       console.error(`Job failed: ${job.errorMessage}`);
       completed = true;
     } else {
-      await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds
+      await new Promise((r) => setTimeout(r, 2000)); // Wait 2 seconds
     }
   }
 }
@@ -756,7 +757,8 @@ class SpikeImageAPI {
 ## Best Practices
 
 1. **Batch Uploads**: Use batch-upload for multiple images to reduce latency
-2. **Parallel Enhancement**: Use parallel-enhance to process multiple tiers simultaneously
+2. **Parallel Enhancement**: Use parallel-enhance to process multiple tiers
+   simultaneously
 3. **Poll for Status**: Check job status by fetching the image regularly
 4. **Error Handling**: Implement exponential backoff for rate limit retries
 5. **Token Management**: Monitor token balance and warn users before depletion
@@ -768,20 +770,21 @@ class SpikeImageAPI {
 
 ## Troubleshooting
 
-**Q: I'm getting "Insufficient tokens" errors**
-A: Check user's token balance and offer to purchase more tokens. Tokens regenerate automatically (1 per 15 min, max 100).
+**Q: I'm getting "Insufficient tokens" errors** A: Check user's token balance
+and offer to purchase more tokens. Tokens regenerate automatically (1 per 15
+min, max 100).
 
-**Q: Rate limit errors**
-A: Implement exponential backoff retry logic. Check `Retry-After` header for wait time.
+**Q: Rate limit errors** A: Implement exponential backoff retry logic. Check
+`Retry-After` header for wait time.
 
-**Q: Enhancement job stuck in PROCESSING**
-A: Jobs should complete within 1-5 minutes depending on tier. Check logs for timeout errors.
+**Q: Enhancement job stuck in PROCESSING** A: Jobs should complete within 1-5
+minutes depending on tier. Check logs for timeout errors.
 
-**Q: File upload fails with validation error**
-A: Ensure file is < 10MB and in supported format (JPEG, PNG, WebP, HEIC).
+**Q: File upload fails with validation error** A: Ensure file is < 10MB and in
+supported format (JPEG, PNG, WebP, HEIC).
 
-**Q: Batch upload partial failures**
-A: This is expected behavior. Check `results` array for individual file status.
+**Q: Batch upload partial failures** A: This is expected behavior. Check
+`results` array for individual file status.
 
 ---
 

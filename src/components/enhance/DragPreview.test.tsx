@@ -100,7 +100,8 @@ describe("DragPreview Component", () => {
         />,
       );
       expect(screen.getByTestId("drag-preview-image-0")).toBeInTheDocument();
-      expect(screen.queryByTestId("drag-preview-count")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("drag-preview-count")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -163,7 +164,8 @@ describe("DragPreview Component", () => {
       expect(screen.getByTestId("drag-preview-image-0")).toBeInTheDocument();
       expect(screen.getByTestId("drag-preview-image-1")).toBeInTheDocument();
       expect(screen.getByTestId("drag-preview-image-2")).toBeInTheDocument();
-      expect(screen.queryByTestId("drag-preview-image-3")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("drag-preview-image-3")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -230,9 +232,15 @@ describe("DragPreview Component", () => {
       const secondImage = screen.getByTestId("drag-preview-image-1");
       const thirdImage = screen.getByTestId("drag-preview-image-2");
 
-      expect(firstImage).toHaveStyle({ transform: "translate(0px, 0px) rotate(0deg)" });
-      expect(secondImage).toHaveStyle({ transform: "translate(-4px, -2px) rotate(-6deg)" });
-      expect(thirdImage).toHaveStyle({ transform: "translate(4px, 2px) rotate(6deg)" });
+      expect(firstImage).toHaveStyle({
+        transform: "translate(0px, 0px) rotate(0deg)",
+      });
+      expect(secondImage).toHaveStyle({
+        transform: "translate(-4px, -2px) rotate(-6deg)",
+      });
+      expect(thirdImage).toHaveStyle({
+        transform: "translate(4px, 2px) rotate(6deg)",
+      });
     });
 
     it("should apply varying opacity to stacked images", () => {

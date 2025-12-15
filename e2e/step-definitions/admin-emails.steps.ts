@@ -56,79 +56,91 @@ Given("there are emails in the system", async function(this: CustomWorld) {
   });
 });
 
-Given("there are emails with different templates", async function(this: CustomWorld) {
-  await this.page.route("**/api/admin/emails**", async (route) => {
-    if (route.request().method() === "GET") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          emails: [
-            createMockEmail({ id: "e1", template: "welcome" }),
-            createMockEmail({ id: "e2", template: "notification" }),
-            createMockEmail({ id: "e3", template: "reminder" }),
-          ],
-          pagination: { page: 1, limit: 20, total: 3, totalPages: 1 },
-          templates: ["welcome", "notification", "reminder"],
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
-});
+Given(
+  "there are emails with different templates",
+  async function(this: CustomWorld) {
+    await this.page.route("**/api/admin/emails**", async (route) => {
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            emails: [
+              createMockEmail({ id: "e1", template: "welcome" }),
+              createMockEmail({ id: "e2", template: "notification" }),
+              createMockEmail({ id: "e3", template: "reminder" }),
+            ],
+            pagination: { page: 1, limit: 20, total: 3, totalPages: 1 },
+            templates: ["welcome", "notification", "reminder"],
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+  },
+);
 
-Given("there are emails of all statuses in the system", async function(this: CustomWorld) {
-  await this.page.route("**/api/admin/emails**", async (route) => {
-    if (route.request().method() === "GET") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          emails: [
-            createMockEmail({ id: "e1", status: "PENDING" }),
-            createMockEmail({ id: "e2", status: "SENT" }),
-            createMockEmail({ id: "e3", status: "DELIVERED" }),
-            createMockEmail({ id: "e4", status: "OPENED" }),
-            createMockEmail({ id: "e5", status: "CLICKED" }),
-            createMockEmail({ id: "e6", status: "BOUNCED" }),
-            createMockEmail({ id: "e7", status: "FAILED" }),
-          ],
-          pagination: { page: 1, limit: 20, total: 7, totalPages: 1 },
-          templates: ["welcome"],
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
-});
+Given(
+  "there are emails of all statuses in the system",
+  async function(this: CustomWorld) {
+    await this.page.route("**/api/admin/emails**", async (route) => {
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            emails: [
+              createMockEmail({ id: "e1", status: "PENDING" }),
+              createMockEmail({ id: "e2", status: "SENT" }),
+              createMockEmail({ id: "e3", status: "DELIVERED" }),
+              createMockEmail({ id: "e4", status: "OPENED" }),
+              createMockEmail({ id: "e5", status: "CLICKED" }),
+              createMockEmail({ id: "e6", status: "BOUNCED" }),
+              createMockEmail({ id: "e7", status: "FAILED" }),
+            ],
+            pagination: { page: 1, limit: 20, total: 7, totalPages: 1 },
+            templates: ["welcome"],
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+  },
+);
 
-Given("there are more than 20 emails in the system", async function(this: CustomWorld) {
-  const emails = Array.from({ length: 25 }, (_, i) => createMockEmail({ id: `e${i}` }));
+Given(
+  "there are more than 20 emails in the system",
+  async function(this: CustomWorld) {
+    const emails = Array.from(
+      { length: 25 },
+      (_, i) => createMockEmail({ id: `e${i}` }),
+    );
 
-  await this.page.route("**/api/admin/emails**", async (route) => {
-    if (route.request().method() === "GET") {
-      const url = new URL(route.request().url());
-      const page = parseInt(url.searchParams.get("page") || "1");
-      const limit = 20;
-      const start = (page - 1) * limit;
-      const end = start + limit;
+    await this.page.route("**/api/admin/emails**", async (route) => {
+      if (route.request().method() === "GET") {
+        const url = new URL(route.request().url());
+        const page = parseInt(url.searchParams.get("page") || "1");
+        const limit = 20;
+        const start = (page - 1) * limit;
+        const end = start + limit;
 
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          emails: emails.slice(start, end),
-          pagination: { page, limit, total: 25, totalPages: 2 },
-          templates: ["welcome"],
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
-});
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            emails: emails.slice(start, end),
+            pagination: { page, limit, total: 25, totalPages: 2 },
+            templates: ["welcome"],
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+  },
+);
 
 Given("there are no emails in the system", async function(this: CustomWorld) {
   await this.page.route("**/api/admin/emails**", async (route) => {
@@ -174,15 +186,21 @@ Given("the emails API returns an error", async function(this: CustomWorld) {
 });
 
 // When steps
-When("I enter {string} in the search field", async function(this: CustomWorld, text: string) {
-  const searchInput = this.page.locator('input[placeholder*="Search"]');
-  await searchInput.fill(text);
-});
+When(
+  "I enter {string} in the search field",
+  async function(this: CustomWorld, text: string) {
+    const searchInput = this.page.locator('input[placeholder*="Search"]');
+    await searchInput.fill(text);
+  },
+);
 
-When("I enter {string} in the test email field", async function(this: CustomWorld, email: string) {
-  const emailInput = this.page.locator('input[type="email"]');
-  await emailInput.fill(email);
-});
+When(
+  "I enter {string} in the test email field",
+  async function(this: CustomWorld, email: string) {
+    const emailInput = this.page.locator('input[type="email"]');
+    await emailInput.fill(email);
+  },
+);
 
 When(
   "I click {string} button without entering email",
@@ -197,15 +215,20 @@ When(
   async function(this: CustomWorld, status: string) {
     const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
     await statusSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: status }).click();
+    await this.page.locator('[role="option"]').filter({ hasText: status })
+      .click();
   },
 );
 
-When("I select a template from the template filter", async function(this: CustomWorld) {
-  const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
-  await templateSelect.click();
-  await this.page.locator('[role="option"]').filter({ hasText: "welcome" }).click();
-});
+When(
+  "I select a template from the template filter",
+  async function(this: CustomWorld) {
+    const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    await templateSelect.click();
+    await this.page.locator('[role="option"]').filter({ hasText: "welcome" })
+      .click();
+  },
+);
 
 When(
   "I click {string} button on an email row",
@@ -218,7 +241,9 @@ When(
 
 When("I click the modal overlay", async function(this: CustomWorld) {
   // Click on the overlay (background)
-  await this.page.locator(".fixed.inset-0.bg-black\\/50").click({ position: { x: 10, y: 10 } });
+  await this.page.locator(".fixed.inset-0.bg-black\\/50").click({
+    position: { x: 10, y: 10 },
+  });
 });
 
 // Then steps
@@ -238,7 +263,9 @@ Then("I should see email input field", async function(this: CustomWorld) {
 Then(
   "I should see search input with placeholder {string}",
   async function(this: CustomWorld, placeholder: string) {
-    const searchInput = this.page.locator(`input[placeholder*="${placeholder}"]`);
+    const searchInput = this.page.locator(
+      `input[placeholder*="${placeholder}"]`,
+    );
     await expect(searchInput).toBeVisible();
   },
 );
@@ -275,36 +302,53 @@ Then("I should see the email list", async function(this: CustomWorld) {
   await expect(table).toBeVisible();
 });
 
-Then("each email should display the recipient address", async function(this: CustomWorld) {
-  const rows = this.page.locator("tbody tr");
-  const count = await rows.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "each email should display the recipient address",
+  async function(this: CustomWorld) {
+    const rows = this.page.locator("tbody tr");
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("each email should display the subject", async function(this: CustomWorld) {
-  // Subject is in second column
-  const subjects = this.page.locator("tbody tr td:nth-child(2)");
-  const count = await subjects.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "each email should display the subject",
+  async function(this: CustomWorld) {
+    // Subject is in second column
+    const subjects = this.page.locator("tbody tr td:nth-child(2)");
+    const count = await subjects.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("each email should display the template name", async function(this: CustomWorld) {
-  const templates = this.page.locator("tbody [class*='Badge'][class*='outline']");
-  const count = await templates.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "each email should display the template name",
+  async function(this: CustomWorld) {
+    const templates = this.page.locator(
+      "tbody [class*='Badge'][class*='outline']",
+    );
+    const count = await templates.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("each email should display a status badge", async function(this: CustomWorld) {
-  const badges = this.page.locator("tbody [class*='Badge']");
-  const count = await badges.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "each email should display a status badge",
+  async function(this: CustomWorld) {
+    const badges = this.page.locator("tbody [class*='Badge']");
+    const count = await badges.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("each email should display the sent date", async function(this: CustomWorld) {
-  const dates = this.page.locator("tbody tr td:nth-child(5)");
-  const count = await dates.count();
-  expect(count).toBeGreaterThan(0);
-});
+Then(
+  "each email should display the sent date",
+  async function(this: CustomWorld) {
+    const dates = this.page.locator("tbody tr td:nth-child(5)");
+    const count = await dates.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
 Then(
   "the email list should only show emails to {string}",
@@ -320,33 +364,54 @@ Then(
   },
 );
 
-Then("the email list should only show PENDING status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show PENDING status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show SENT status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show SENT status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show DELIVERED status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show DELIVERED status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show OPENED status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show OPENED status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show CLICKED status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show CLICKED status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show BOUNCED status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show BOUNCED status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("the email list should only show FAILED status emails", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should only show FAILED status emails",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 Then(
   "the email list should only show emails with that template",
@@ -355,136 +420,207 @@ Then(
   },
 );
 
-Then("the email list should show filtered results", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-});
+Then(
+  "the email list should show filtered results",
+  async function(this: CustomWorld) {
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 Then("the search field should be empty", async function(this: CustomWorld) {
   const searchInput = this.page.locator('input[placeholder*="Search"]');
   await expect(searchInput).toHaveValue("");
 });
 
-Then("the status filter should show {string}", async function(this: CustomWorld, value: string) {
-  const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
-  await expect(statusSelect).toContainText(value);
-});
+Then(
+  "the status filter should show {string}",
+  async function(this: CustomWorld, value: string) {
+    const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+    await expect(statusSelect).toContainText(value);
+  },
+);
 
-Then("the template filter should show {string}", async function(this: CustomWorld, value: string) {
-  const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
-  await expect(templateSelect).toContainText(value);
-});
+Then(
+  "the template filter should show {string}",
+  async function(this: CustomWorld, value: string) {
+    const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    await expect(templateSelect).toContainText(value);
+  },
+);
 
-Then("I should see the email details modal", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
-  await expect(modal).toBeVisible();
-});
+Then(
+  "I should see the email details modal",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    await expect(modal).toBeVisible();
+  },
+);
 
 Then("I should see the recipient address", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const toField = modal.locator("text=To").first();
   await expect(toField).toBeVisible();
 });
 
 Then("I should see the subject", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const subjectField = modal.locator("text=Subject").first();
   await expect(subjectField).toBeVisible();
 });
 
 Then("I should see the template name", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const templateField = modal.locator("text=Template").first();
   await expect(templateField).toBeVisible();
 });
 
 Then("I should see the email status", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const statusField = modal.locator("text=Status").first();
   await expect(statusField).toBeVisible();
 });
 
 Then("I should see the Resend ID", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const resendField = modal.locator("text=Resend ID").first();
   await expect(resendField).toBeVisible();
 });
 
 Then("I should see the sent timestamp", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+  const modal = this.page.locator('[class*="Card"]').filter({
+    hasText: "Email Details",
+  });
   const sentField = modal.locator("text=Sent At").first();
   await expect(sentField).toBeVisible();
 });
 
-Then("I should see the opened timestamp or dash", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
-  const openedField = modal.locator("text=Opened At").first();
-  await expect(openedField).toBeVisible();
-});
+Then(
+  "I should see the opened timestamp or dash",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    const openedField = modal.locator("text=Opened At").first();
+    await expect(openedField).toBeVisible();
+  },
+);
 
-Then("I should see the clicked timestamp or dash", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
-  const clickedField = modal.locator("text=Clicked At").first();
-  await expect(clickedField).toBeVisible();
-});
+Then(
+  "I should see the clicked timestamp or dash",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    const clickedField = modal.locator("text=Clicked At").first();
+    await expect(clickedField).toBeVisible();
+  },
+);
 
-Then("I should see the bounced timestamp or dash", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
-  const bouncedField = modal.locator("text=Bounced At").first();
-  await expect(bouncedField).toBeVisible();
-});
+Then(
+  "I should see the bounced timestamp or dash",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    const bouncedField = modal.locator("text=Bounced At").first();
+    await expect(bouncedField).toBeVisible();
+  },
+);
 
 Then(
   "I should see {string} button in the modal",
   async function(this: CustomWorld, buttonText: string) {
-    const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
     const button = modal.getByRole("button", { name: buttonText });
     await expect(button).toBeVisible();
   },
 );
 
-Then("the email details modal should close", async function(this: CustomWorld) {
-  const modal = this.page.locator('[class*="Card"]').filter({ hasText: "Email Details" });
-  await expect(modal).not.toBeVisible();
-});
+Then(
+  "the email details modal should close",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    await expect(modal).not.toBeVisible();
+  },
+);
 
-Then("PENDING status badge should be yellow", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "PENDING" }).first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("yellow");
-});
+Then(
+  "PENDING status badge should be yellow",
+  async function(this: CustomWorld) {
+    const badge = this.page.locator('[class*="Badge"]').filter({
+      hasText: "PENDING",
+    }).first();
+    const className = await badge.getAttribute("class");
+    expect(className).toContain("yellow");
+  },
+);
 
 Then("SENT status badge should be blue", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "SENT" }).first();
+  const badge = this.page.locator('[class*="Badge"]').filter({
+    hasText: "SENT",
+  }).first();
   const className = await badge.getAttribute("class");
   expect(className).toContain("blue");
 });
 
-Then("DELIVERED status badge should be green", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "DELIVERED" }).first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("green");
-});
+Then(
+  "DELIVERED status badge should be green",
+  async function(this: CustomWorld) {
+    const badge = this.page.locator('[class*="Badge"]').filter({
+      hasText: "DELIVERED",
+    }).first();
+    const className = await badge.getAttribute("class");
+    expect(className).toContain("green");
+  },
+);
 
 Then("OPENED status badge should be cyan", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "OPENED" }).first();
+  const badge = this.page.locator('[class*="Badge"]').filter({
+    hasText: "OPENED",
+  }).first();
   const className = await badge.getAttribute("class");
   expect(className).toContain("cyan");
 });
 
-Then("CLICKED status badge should be purple", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "CLICKED" }).first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("purple");
-});
+Then(
+  "CLICKED status badge should be purple",
+  async function(this: CustomWorld) {
+    const badge = this.page.locator('[class*="Badge"]').filter({
+      hasText: "CLICKED",
+    }).first();
+    const className = await badge.getAttribute("class");
+    expect(className).toContain("purple");
+  },
+);
 
 Then("BOUNCED status badge should be red", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "BOUNCED" }).first();
+  const badge = this.page.locator('[class*="Badge"]').filter({
+    hasText: "BOUNCED",
+  }).first();
   const className = await badge.getAttribute("class");
   expect(className).toContain("red");
 });
 
 Then("FAILED status badge should be red", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "FAILED" }).first();
+  const badge = this.page.locator('[class*="Badge"]').filter({
+    hasText: "FAILED",
+  }).first();
   const className = await badge.getAttribute("class");
   expect(className).toContain("red");
 });
@@ -494,36 +630,51 @@ Then("I should see pagination controls", async function(this: CustomWorld) {
   await expect(pagination).toBeVisible();
 });
 
-Then("I should see a success alert with email ID", async function(this: CustomWorld) {
-  // Handle the alert dialog
-  this.page.on("dialog", async (dialog) => {
-    expect(dialog.message()).toContain("success");
-    await dialog.accept();
-  });
-});
+Then(
+  "I should see a success alert with email ID",
+  async function(this: CustomWorld) {
+    // Handle the alert dialog
+    this.page.on("dialog", async (dialog) => {
+      expect(dialog.message()).toContain("success");
+      await dialog.accept();
+    });
+  },
+);
 
-Then("the test email field should be cleared", async function(this: CustomWorld) {
-  const emailInput = this.page.locator('input[type="email"]');
-  await expect(emailInput).toHaveValue("");
-});
+Then(
+  "the test email field should be cleared",
+  async function(this: CustomWorld) {
+    const emailInput = this.page.locator('input[type="email"]');
+    await expect(emailInput).toHaveValue("");
+  },
+);
 
 Then("the email list should refresh", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-Then("I should see {string} alert", async function(this: CustomWorld, message: string) {
-  this.page.on("dialog", async (dialog) => {
-    expect(dialog.message()).toContain(message);
-    await dialog.accept();
-  });
-});
+Then(
+  "I should see {string} alert",
+  async function(this: CustomWorld, message: string) {
+    this.page.on("dialog", async (dialog) => {
+      expect(dialog.message()).toContain(message);
+      await dialog.accept();
+    });
+  },
+);
 
-Then("I should see {string} text in the table", async function(this: CustomWorld, text: string) {
-  const cell = this.page.locator("td").filter({ hasText: text });
-  await expect(cell).toBeVisible();
-});
+Then(
+  "I should see {string} text in the table",
+  async function(this: CustomWorld, text: string) {
+    const cell = this.page.locator("td").filter({ hasText: text });
+    await expect(cell).toBeVisible();
+  },
+);
 
-Then("I should see an error message in red", async function(this: CustomWorld) {
-  const error = this.page.locator('[class*="red"]');
-  await expect(error.first()).toBeVisible();
-});
+Then(
+  "I should see an error message in red",
+  async function(this: CustomWorld) {
+    const error = this.page.locator('[class*="red"]');
+    await expect(error.first()).toBeVisible();
+  },
+);

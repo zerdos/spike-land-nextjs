@@ -101,16 +101,21 @@ describe("JobsAdminClient", () => {
   });
 
   it("should render the page title and description", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
     expect(screen.getByText("Jobs Management")).toBeInTheDocument();
-    expect(screen.getByText("View and manage all enhancement jobs")).toBeInTheDocument();
+    expect(screen.getByText("View and manage all enhancement jobs"))
+      .toBeInTheDocument();
   });
 
   it("should render status filter tabs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -119,21 +124,29 @@ describe("JobsAdminClient", () => {
     });
 
     expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /running/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /completed/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /running/i }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /completed/i }))
+      .toBeInTheDocument();
     expect(screen.getByRole("button", { name: /failed/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cancelled/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /refunded/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /cancelled/i }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /refunded/i }))
+      .toBeInTheDocument();
   });
 
   it("should render search and refresh controls", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
-    expect(screen.getByPlaceholderText("Search by Job ID or email...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search by Job ID or email..."))
+      .toBeInTheDocument();
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /refresh/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /refresh/i }))
+      .toBeInTheDocument();
   });
 
   it("should display loading state", async () => {
@@ -152,7 +165,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should display job list after loading", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -195,7 +210,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should show job details when clicking a job", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -215,7 +232,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should show image comparison slider for completed jobs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -233,7 +252,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should show error message for failed jobs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -248,12 +269,15 @@ describe("JobsAdminClient", () => {
 
     await waitFor(() => {
       // Error message should appear in the detail panel
-      expect(screen.getAllByText("Gemini API quota exceeded").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Gemini API quota exceeded").length)
+        .toBeGreaterThan(0);
     });
   });
 
   it("should filter jobs when clicking status tabs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -272,7 +296,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should search when clicking search button", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -280,7 +306,9 @@ describe("JobsAdminClient", () => {
       expect(screen.getByText("Jobs (2)")).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText("Search by Job ID or email...");
+    const searchInput = screen.getByPlaceholderText(
+      "Search by Job ID or email...",
+    );
     fireEvent.change(searchInput, { target: { value: "test@example.com" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
@@ -292,7 +320,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should search when pressing Enter in search field", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -300,7 +330,9 @@ describe("JobsAdminClient", () => {
       expect(screen.getByText("Jobs (2)")).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText("Search by Job ID or email...");
+    const searchInput = screen.getByPlaceholderText(
+      "Search by Job ID or email...",
+    );
     fireEvent.change(searchInput, { target: { value: "job_123" } });
     fireEvent.keyDown(searchInput, { key: "Enter" });
 
@@ -312,7 +344,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should refresh when clicking refresh button", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -331,7 +365,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should display AI model information", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -345,13 +381,16 @@ describe("JobsAdminClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText("AI Model")).toBeInTheDocument();
-      expect(screen.getByText("gemini-3-pro-image-preview")).toBeInTheDocument();
+      expect(screen.getByText("gemini-3-pro-image-preview"))
+        .toBeInTheDocument();
       expect(screen.getByText("Default")).toBeInTheDocument(); // Temperature is null
     });
   });
 
   it("should display prompt for jobs with prompt", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -365,7 +404,8 @@ describe("JobsAdminClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Prompt")).toBeInTheDocument();
-      expect(screen.getByText("Enhance this image to high resolution")).toBeInTheDocument();
+      expect(screen.getByText("Enhance this image to high resolution"))
+        .toBeInTheDocument();
     });
   });
 
@@ -412,7 +452,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should display processing time for completed jobs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -435,7 +477,9 @@ describe("JobsAdminClient", () => {
   });
 
   it("should format file sizes correctly", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
@@ -455,13 +499,17 @@ describe("JobsAdminClient", () => {
   });
 
   it("should display status counts in tabs", async () => {
-    vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+    vi.mocked(global.fetch).mockResolvedValue(
+      mockFetchResponse(mockJobsResponse),
+    );
 
     render(<JobsAdminClient />);
 
     await waitFor(() => {
       // Expect counts in badge elements
-      const badges = document.querySelectorAll("[class*='rounded-md'][class*='border']");
+      const badges = document.querySelectorAll(
+        "[class*='rounded-md'][class*='border']",
+      );
       // Should have at least some badges with counts
       expect(badges.length).toBeGreaterThan(0);
     });

@@ -1,10 +1,13 @@
 # Job Cleanup System
 
-This document describes the automatic job timeout and cleanup mechanism for stuck enhancement jobs.
+This document describes the automatic job timeout and cleanup mechanism for
+stuck enhancement jobs.
 
 ## Overview
 
-The job cleanup system automatically detects and cleans up enhancement jobs that have been stuck in the `PROCESSING` state for too long. When a job is cleaned up:
+The job cleanup system automatically detects and cleans up enhancement jobs that
+have been stuck in the `PROCESSING` state for too long. When a job is cleaned
+up:
 
 1. The job status is changed from `PROCESSING` to `FAILED`
 2. An error message is added explaining the timeout
@@ -165,7 +168,8 @@ Jobs are considered "stuck" if:
 1. Status is `PROCESSING`, AND
 2. Either:
    - `processingStartedAt` is older than the timeout threshold, OR
-   - `processingStartedAt` is null and `updatedAt` is older than the timeout threshold
+   - `processingStartedAt` is null and `updatedAt` is older than the timeout
+     threshold
 
 ### Cleanup Process
 

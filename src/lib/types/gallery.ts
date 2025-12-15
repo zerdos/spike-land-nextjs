@@ -9,7 +9,12 @@ export const GALLERY_CONSTANTS = {
 } as const;
 
 // Gallery category enum matching Prisma
-export const GalleryCategoryEnum = z.enum(["PORTRAIT", "LANDSCAPE", "PRODUCT", "ARCHITECTURE"]);
+export const GalleryCategoryEnum = z.enum([
+  "PORTRAIT",
+  "LANDSCAPE",
+  "PRODUCT",
+  "ARCHITECTURE",
+]);
 export type GalleryCategory = z.infer<typeof GalleryCategoryEnum>;
 
 // Helper to sanitize text (strip HTML tags)
@@ -35,7 +40,7 @@ export const createGalleryItemSchema = z.object({
   description: z.string()
     .max(GALLERY_CONSTANTS.MAX_DESCRIPTION_LENGTH)
     .optional()
-    .transform(val => val ? sanitizeText(val) : undefined),
+    .transform((val) => val ? sanitizeText(val) : undefined),
   category: GalleryCategoryEnum,
   sourceImageId: idSchema,
   sourceJobId: idSchema,
@@ -63,9 +68,10 @@ export const updateGalleryItemSchema = z.object({
 
 export const browseQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(GALLERY_CONSTANTS.MAX_PAGE_SIZE).default(
-    GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE,
-  ),
+  limit: z.coerce.number().int().min(1).max(GALLERY_CONSTANTS.MAX_PAGE_SIZE)
+    .default(
+      GALLERY_CONSTANTS.DEFAULT_PAGE_SIZE,
+    ),
   userId: idSchema.optional(),
   shareToken: z.string().min(1).max(50).optional(),
 });

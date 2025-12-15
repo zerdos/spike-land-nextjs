@@ -147,7 +147,8 @@ export class ErrorBoundary extends Component<
                   </AlertDescription>
                 </Alert>
               )}
-              {this.props.showDetails && process.env.NODE_ENV === "development" && (
+              {this.props.showDetails &&
+                process.env.NODE_ENV === "development" && (
                 <Alert variant="destructive">
                   <AlertTitle>Technical Details (Development Only)</AlertTitle>
                   <AlertDescription className="mt-2 space-y-2">

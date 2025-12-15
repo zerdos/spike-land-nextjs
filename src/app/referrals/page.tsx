@@ -58,7 +58,9 @@ export default function ReferralsPage() {
       setStats(statsData.stats);
       setReferredUsers(statsData.referredUsers);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load referral data");
+      setError(
+        err instanceof Error ? err.message : "Failed to load referral data",
+      );
     } finally {
       setLoading(false);
     }
@@ -146,13 +148,25 @@ export default function ReferralsPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={shareOnTwitter} variant="outline" className="flex-1">
+            <Button
+              onClick={shareOnTwitter}
+              variant="outline"
+              className="flex-1"
+            >
               Share on Twitter
             </Button>
-            <Button onClick={shareOnFacebook} variant="outline" className="flex-1">
+            <Button
+              onClick={shareOnFacebook}
+              variant="outline"
+              className="flex-1"
+            >
               Share on Facebook
             </Button>
-            <Button onClick={shareOnLinkedIn} variant="outline" className="flex-1">
+            <Button
+              onClick={shareOnLinkedIn}
+              variant="outline"
+              className="flex-1"
+            >
               Share on LinkedIn
             </Button>
           </div>
@@ -239,7 +253,9 @@ export default function ReferralsPage() {
                   <tbody>
                     {referredUsers.map((user) => (
                       <tr key={user.id} className="border-b">
-                        <td className="py-3 px-4 font-mono text-sm">{user.email}</td>
+                        <td className="py-3 px-4 font-mono text-sm">
+                          {user.email}
+                        </td>
                         <td className="py-3 px-4">
                           <Badge
                             variant={user.status === "COMPLETED"
@@ -255,7 +271,9 @@ export default function ReferralsPage() {
                           {new Date(user.createdAt).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-4 text-right font-semibold">
-                          {user.tokensGranted > 0 ? `+${user.tokensGranted}` : "-"}
+                          {user.tokensGranted > 0
+                            ? `+${user.tokensGranted}`
+                            : "-"}
                         </td>
                       </tr>
                     ))}

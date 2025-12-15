@@ -135,7 +135,9 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
         <span
           className={cn(
             "text-sm font-medium",
-            isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
+            isSelected
+              ? "text-foreground"
+              : "text-muted-foreground group-hover:text-foreground",
           )}
         >
           {label}

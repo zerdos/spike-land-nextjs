@@ -1,6 +1,8 @@
 # Web Performance Optimization Best Practices 2025
 
-A comprehensive guide to optimizing web performance across Core Web Vitals, image delivery, JavaScript bundling, caching strategies, network optimization, and measurement tools.
+A comprehensive guide to optimizing web performance across Core Web Vitals,
+image delivery, JavaScript bundling, caching strategies, network optimization,
+and measurement tools.
 
 ---
 
@@ -20,7 +22,9 @@ A comprehensive guide to optimizing web performance across Core Web Vitals, imag
 
 ### Understanding Core Web Vitals (2025)
 
-Google's Core Web Vitals are three key metrics that measure real user experience and are used as ranking factors in search results. In March 2024, FID was officially replaced with INP (Interaction to Next Paint).
+Google's Core Web Vitals are three key metrics that measure real user experience
+and are used as ranking factors in search results. In March 2024, FID was
+officially replaced with INP (Interaction to Next Paint).
 
 #### The Three Core Web Vitals
 
@@ -37,7 +41,8 @@ Google's Core Web Vitals are three key metrics that measure real user experience
 - **Good Score:** Below 200 milliseconds
 - **Impact:** Page responsiveness to user interactions
 - **Replaced:** First Input Delay (FID), which only measured first interaction
-- **Why it matters:** INP considers all interactions and reports the worst one, giving a more complete picture
+- **Why it matters:** INP considers all interactions and reports the worst one,
+  giving a more complete picture
 
 **3. Cumulative Layout Shift (CLS)**
 
@@ -97,7 +102,12 @@ Google's Core Web Vitals are three key metrics that measure real user experience
 </style>
 
 <!-- Defer non-critical CSS -->
-<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'">
+<link
+  rel="stylesheet"
+  href="styles.css"
+  media="print"
+  onload="this.media='all'"
+>
 ```
 
 #### 4. Optimize Web Fonts
@@ -164,11 +174,11 @@ function processLargeData(data) {
 <!-- Option 3: Lazy load third-party scripts -->
 <script>
   // Load analytics only after page interaction
-  window.addEventListener('mousemove', loadAnalytics, { once: true });
+  window.addEventListener("mousemove", loadAnalytics, { once: true });
 
   function loadAnalytics() {
-    const script = document.createElement('script');
-    script.src = 'analytics.js';
+    const script = document.createElement("script");
+    script.src = "analytics.js";
     document.head.appendChild(script);
   }
 </script>
@@ -224,23 +234,23 @@ window.addEventListener(
   alt="Description"
   width="800"
   height="600"
-  style="aspect-ratio: 800 / 600;"
+  style="aspect-ratio: 800 / 600"
 >
 
 <!-- Use aspect-ratio for responsive images -->
 <img
   src="image.jpg"
   alt="Description"
-  style="aspect-ratio: 16 / 9; width: 100%; height: auto;"
+  style="aspect-ratio: 16 / 9; width: 100%; height: auto"
 >
 
 <!-- Reserve space for video embeds -->
-<div style="aspect-ratio: 16 / 9; width: 100%;">
+<div style="aspect-ratio: 16 / 9; width: 100%">
   <iframe
     width="100%"
     height="100%"
     src="https://www.youtube.com/embed/VIDEO_ID"
-    style="position: absolute; top: 0; left: 0;"
+    style="position: absolute; top: 0; left: 0"
   ></iframe>
 </div>
 ```
@@ -668,7 +678,7 @@ async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cache = await caches.open("v1");
   const cached = await cache.match(request);
 
-  const fetchPromise = fetch(request).then(response => {
+  const fetchPromise = fetch(request).then((response) => {
     cache.put(request, response.clone());
     return response;
   });
@@ -765,7 +775,7 @@ const CACHE_VERSION = "v1.0.0";
 
 self.addEventListener("install", (event: ExtendableEvent) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then(cache => {
+    caches.open(CACHE_VERSION).then((cache) => {
       return cache.addAll(["/index.html", "/main.js", "/styles.css"]);
     }),
   );
@@ -773,9 +783,9 @@ self.addEventListener("install", (event: ExtendableEvent) => {
 
 self.addEventListener("activate", (event: ExtendableEvent) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
+        cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_VERSION) {
             return caches.delete(cacheName);
           }
@@ -902,8 +912,8 @@ spdy.createServer(options, app).listen(3000);
 // Reduce connection overhead with connection hints
 // Link the font file with preconnect
 fetch("https://fonts.googleapis.com/css2?family=Inter:wght@400;700")
-  .then(res => res.text())
-  .then(css => {
+  .then((res) => res.text())
+  .then((css) => {
     const style = document.createElement("style");
     style.textContent = css;
     document.head.appendChild(style);
@@ -976,7 +986,13 @@ class RUMCollector {
     });
 
     observer.observe({
-      entryTypes: ["navigation", "resource", "paint", "largest-contentful-paint", "layout-shift"],
+      entryTypes: [
+        "navigation",
+        "resource",
+        "paint",
+        "largest-contentful-paint",
+        "layout-shift",
+      ],
     });
   }
 
@@ -1281,6 +1297,6 @@ This document synthesizes best practices from:
 
 ---
 
-**Last Updated:** December 2025
-**Target Audience:** Full-stack developers, DevOps engineers, performance specialists
-**Difficulty Level:** Intermediate to Advanced
+**Last Updated:** December 2025 **Target Audience:** Full-stack developers,
+DevOps engineers, performance specialists **Difficulty Level:** Intermediate to
+Advanced

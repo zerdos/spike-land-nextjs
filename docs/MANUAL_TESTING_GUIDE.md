@@ -1,8 +1,7 @@
 # Manual Testing Guide - Image Enhancement App
 
-**Version:** Phase 3-5 Release
-**Environment:** https://spike.land
-**Last Updated:** December 2024
+**Version:** Phase 3-5 Release **Environment:** https://spike.land **Last
+Updated:** December 2024
 
 ---
 
@@ -510,7 +509,8 @@ When reporting bugs, please include:
   - Success: `4242 4242 4242 4242`
   - Decline: `4000 0000 0000 0002`
   - Requires Auth: `4000 0025 0000 3155`
-- **Disposable Email Domains (blocked):** mailinator.com, tempmail.com, guerrillamail.com, etc.
+- **Disposable Email Domains (blocked):** mailinator.com, tempmail.com,
+  guerrillamail.com, etc.
 
 ---
 
@@ -522,4 +522,5 @@ When reporting bugs, please include:
 
 ---
 
-_Document maintained by the Spike Land team. For questions, contact the development team._
+_Document maintained by the Spike Land team. For questions, contact the
+development team._

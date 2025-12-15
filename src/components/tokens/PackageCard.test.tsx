@@ -44,7 +44,9 @@ describe("PackageCard", () => {
   });
 
   it("applies ring styling when popular", () => {
-    const { container } = render(<PackageCard {...defaultProps} popular={true} />);
+    const { container } = render(
+      <PackageCard {...defaultProps} popular={true} />,
+    );
     const card = container.querySelector('[class*="ring-2"]');
     expect(card).toBeInTheDocument();
   });

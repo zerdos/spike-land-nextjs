@@ -6,7 +6,11 @@ import { ApiKeysTab } from "./api-keys-tab";
 // Mock next/link
 vi.mock("next/link", () => ({
   default: (
-    { href, children, className }: { href: string; children: React.ReactNode; className?: string; },
+    { href, children, className }: {
+      href: string;
+      children: React.ReactNode;
+      className?: string;
+    },
   ) => <a href={href} className={className}>{children}</a>,
 }));
 
@@ -55,7 +59,9 @@ describe("ApiKeysTab", () => {
       });
 
       expect(
-        screen.getByText("Create an API key to use the MCP server or make programmatic requests."),
+        screen.getByText(
+          "Create an API key to use the MCP server or make programmatic requests.",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -187,7 +193,8 @@ describe("ApiKeysTab", () => {
       render(<ApiKeysTab />);
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to fetch API keys")).toBeInTheDocument();
+        expect(screen.getByText("Failed to fetch API keys"))
+          .toBeInTheDocument();
       });
     });
 
@@ -231,7 +238,9 @@ describe("ApiKeysTab", () => {
 
       expect(screen.getByText("Create New API Key")).toBeInTheDocument();
       expect(
-        screen.getByText("Give your API key a name to help you remember what it is used for."),
+        screen.getByText(
+          "Give your API key a name to help you remember what it is used for.",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -265,7 +274,8 @@ describe("ApiKeysTab", () => {
       await user.click(screen.getByText("Cancel"));
 
       await waitFor(() => {
-        expect(screen.queryByText("Create New API Key")).not.toBeInTheDocument();
+        expect(screen.queryByText("Create New API Key")).not
+          .toBeInTheDocument();
       });
     });
 
@@ -279,7 +289,9 @@ describe("ApiKeysTab", () => {
 
       await user.click(screen.getByText("Create API Key"));
 
-      const createKeyButton = screen.getByRole("button", { name: "Create Key" });
+      const createKeyButton = screen.getByRole("button", {
+        name: "Create Key",
+      });
       expect(createKeyButton).toBeDisabled();
     });
 
@@ -296,7 +308,9 @@ describe("ApiKeysTab", () => {
       const input = screen.getByLabelText("Key Name");
       await user.type(input, "   ");
 
-      const createKeyButton = screen.getByRole("button", { name: "Create Key" });
+      const createKeyButton = screen.getByRole("button", {
+        name: "Create Key",
+      });
       expect(createKeyButton).toBeDisabled();
     });
 
@@ -355,7 +369,9 @@ describe("ApiKeysTab", () => {
 
       expect(screen.getByText("sk_live_xyz_full_key_123")).toBeInTheDocument();
       expect(
-        screen.getByText("Copy your API key now. For security, it will not be shown again."),
+        screen.getByText(
+          "Copy your API key now. For security, it will not be shown again.",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -378,7 +394,8 @@ describe("ApiKeysTab", () => {
 
       await user.click(screen.getByRole("button", { name: "Create Key" }));
 
-      expect(screen.getByRole("button", { name: "Creating..." })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Creating..." }))
+        .toBeDisabled();
     });
 
     it("shows error when API key creation fails", async () => {
@@ -403,7 +420,8 @@ describe("ApiKeysTab", () => {
       await user.click(screen.getByRole("button", { name: "Create Key" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to create API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to create API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -426,7 +444,8 @@ describe("ApiKeysTab", () => {
       await user.click(screen.getByRole("button", { name: "Create Key" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to create API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to create API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -452,7 +471,8 @@ describe("ApiKeysTab", () => {
       await user.click(screen.getByRole("button", { name: "Create Key" }));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to create API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to create API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -559,7 +579,8 @@ describe("ApiKeysTab", () => {
 
         // After clicking, visual feedback shows checkmark icon with green color
         await waitFor(() => {
-          expect(copyButton.querySelector(".text-green-500")).toBeInTheDocument();
+          expect(copyButton.querySelector(".text-green-500"))
+            .toBeInTheDocument();
         });
       }
     });
@@ -652,7 +673,8 @@ describe("ApiKeysTab", () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to revoke API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to revoke API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -689,7 +711,8 @@ describe("ApiKeysTab", () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to revoke API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to revoke API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -729,7 +752,8 @@ describe("ApiKeysTab", () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to revoke API key")).toBeInTheDocument();
+        expect(screen.getByText("Failed to revoke API key"))
+          .toBeInTheDocument();
       });
     });
 
@@ -987,7 +1011,9 @@ describe("ApiKeysTab", () => {
       });
 
       expect(
-        screen.getByText("Manage your API keys for MCP server and programmatic access"),
+        screen.getByText(
+          "Manage your API keys for MCP server and programmatic access",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -999,7 +1025,9 @@ describe("ApiKeysTab", () => {
       });
 
       expect(
-        screen.getByText("Use your API key to authenticate with the MCP server or REST API:"),
+        screen.getByText(
+          "Use your API key to authenticate with the MCP server or REST API:",
+        ),
       ).toBeInTheDocument();
       expect(screen.getByText("REST API:")).toBeInTheDocument();
       expect(screen.getByText("MCP Server:")).toBeInTheDocument();
@@ -1014,10 +1042,14 @@ describe("ApiKeysTab", () => {
 
       expect(screen.getByText("View usage history")).toBeInTheDocument();
 
-      const testLink = screen.getByRole("link", { name: /Test your API keys/i });
+      const testLink = screen.getByRole("link", {
+        name: /Test your API keys/i,
+      });
       expect(testLink).toHaveAttribute("href", "/apps/pixel/mcp-tools");
 
-      const historyLink = screen.getByRole("link", { name: /View usage history/i });
+      const historyLink = screen.getByRole("link", {
+        name: /View usage history/i,
+      });
       expect(historyLink).toHaveAttribute("href", "/settings/mcp-history");
     });
   });
@@ -1083,7 +1115,8 @@ describe("ApiKeysTab", () => {
 
         // After clicking, should show green checkmark as visual feedback
         await waitFor(() => {
-          expect(copyButton.querySelector(".text-green-500")).toBeInTheDocument();
+          expect(copyButton.querySelector(".text-green-500"))
+            .toBeInTheDocument();
         });
       }
     });
@@ -1105,7 +1138,9 @@ describe("ApiKeysTab", () => {
       fireEvent.click(screen.getByText("Create API Key"));
 
       // The button should be disabled for empty input
-      const createKeyButton = screen.getByRole("button", { name: "Create Key" });
+      const createKeyButton = screen.getByRole("button", {
+        name: "Create Key",
+      });
       expect(createKeyButton).toBeDisabled();
 
       // Only 1 fetch call should have happened (initial load)

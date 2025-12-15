@@ -31,12 +31,12 @@ vi.mock("@/components/ui/card", () => ({
 }));
 
 vi.mock("@/components/ui/avatar", () => ({
-  Avatar: ({ children, className }: { children: React.ReactNode; className: string; }) => (
-    <div data-testid="avatar" className={className}>{children}</div>
-  ),
-  AvatarFallback: ({ children, className }: { children: React.ReactNode; className: string; }) => (
-    <div data-testid="avatar-fallback" className={className}>{children}</div>
-  ),
+  Avatar: (
+    { children, className }: { children: React.ReactNode; className: string; },
+  ) => <div data-testid="avatar" className={className}>{children}</div>,
+  AvatarFallback: (
+    { children, className }: { children: React.ReactNode; className: string; },
+  ) => <div data-testid="avatar-fallback" className={className}>{children}</div>,
   AvatarImage: ({ src, alt }: { src?: string; alt: string; }) => (
     // eslint-disable-next-line @next/next/no-img-element -- Mock component for testing
     <img data-testid="avatar-image" src={src} alt={alt} />
@@ -50,25 +50,35 @@ describe("ProfilePage", async () => {
     it("should redirect when no session exists", async () => {
       mockAuth.mockResolvedValue(null);
       await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
-      expect(redirect).toHaveBeenCalledWith("/auth/signin?callbackUrl=/profile");
+      expect(redirect).toHaveBeenCalledWith(
+        "/auth/signin?callbackUrl=/profile",
+      );
     });
 
     it("should redirect when session exists but user is missing", async () => {
       mockAuth.mockResolvedValue({ expires: "2024-12-31" } as Session);
       await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
-      expect(redirect).toHaveBeenCalledWith("/auth/signin?callbackUrl=/profile");
+      expect(redirect).toHaveBeenCalledWith(
+        "/auth/signin?callbackUrl=/profile",
+      );
     });
 
     it("should redirect when session user is null", async () => {
-      mockAuth.mockResolvedValue({ user: null, expires: "2024-12-31" } as unknown as Session);
+      mockAuth.mockResolvedValue(
+        { user: null, expires: "2024-12-31" } as unknown as Session,
+      );
       await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
-      expect(redirect).toHaveBeenCalledWith("/auth/signin?callbackUrl=/profile");
+      expect(redirect).toHaveBeenCalledWith(
+        "/auth/signin?callbackUrl=/profile",
+      );
     });
 
     it("should redirect with correct callback URL", async () => {
       mockAuth.mockResolvedValue(null);
       await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
-      expect(redirect).toHaveBeenCalledWith(expect.stringContaining("callbackUrl=/profile"));
+      expect(redirect).toHaveBeenCalledWith(
+        expect.stringContaining("callbackUrl=/profile"),
+      );
     });
   });
 
@@ -87,7 +97,8 @@ describe("ProfilePage", async () => {
       mockAuth.mockResolvedValue(mockSession);
       const page = await ProfilePage();
       render(page as React.ReactElement);
-      expect(screen.getByRole("heading", { name: "Profile", level: 1 })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Profile", level: 1 }))
+        .toBeInTheDocument();
     });
 
     it("should render user information card", async () => {
@@ -101,7 +112,11 @@ describe("ProfilePage", async () => {
       mockAuth.mockResolvedValue(mockSession);
       const page = await ProfilePage();
       render(page as React.ReactElement);
-      expect(screen.getByText("Your profile details from your authentication provider"))
+      expect(
+        screen.getByText(
+          "Your profile details from your authentication provider",
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -456,7 +471,11 @@ describe("ProfilePage", async () => {
       mockAuth.mockResolvedValue(session);
       const page = await ProfilePage();
       render(page as React.ReactElement);
-      expect(screen.getByText(/Additional profile features like bio, location, and social links/i))
+      expect(
+        screen.getByText(
+          /Additional profile features like bio, location, and social links/i,
+        ),
+      )
         .toBeInTheDocument();
     });
   });

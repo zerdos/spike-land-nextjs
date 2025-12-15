@@ -2,7 +2,12 @@ import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted to define mocks before vi.mock is called
-const { mockEnhanceImageDirect, mockRefundTokens, mockPrismaCreate, mockPrismaUpdate } = vi.hoisted(
+const {
+  mockEnhanceImageDirect,
+  mockRefundTokens,
+  mockPrismaCreate,
+  mockPrismaUpdate,
+} = vi.hoisted(
   () => ({
     mockEnhanceImageDirect: vi.fn(),
     mockRefundTokens: vi.fn(),

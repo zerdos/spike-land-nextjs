@@ -55,7 +55,7 @@ export function getBestEnhancement(
   jobs: ImageEnhancementJob[],
 ): ImageEnhancementJob | null {
   const completedJobs = jobs
-    .filter(job => job.status === "COMPLETED" && job.enhancedUrl !== null)
+    .filter((job) => job.status === "COMPLETED" && job.enhancedUrl !== null)
     .sort((a, b) => TIER_ORDER[b.tier] - TIER_ORDER[a.tier]);
 
   return completedJobs[0] ?? null;

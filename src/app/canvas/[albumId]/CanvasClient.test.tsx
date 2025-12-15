@@ -27,7 +27,12 @@ vi.mock("@/components/ui/button", () => ({
     className?: string;
     [key: string]: unknown;
   }) => (
-    <button onClick={onClick} disabled={disabled} className={className} {...props}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
+      {...props}
+    >
       {children}
     </button>
   ),
@@ -548,7 +553,10 @@ describe("CanvasClient", () => {
         configurable: true,
       });
       // Remove ontouchstart if it exists
-      const originalOntouchstart = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+      const originalOntouchstart = Object.getOwnPropertyDescriptor(
+        window,
+        "ontouchstart",
+      );
       delete (window as unknown as Record<string, unknown>).ontouchstart;
 
       render(
@@ -1147,7 +1155,8 @@ describe("CanvasClient", () => {
       );
 
       expect(screen.queryByTestId("pixel-logo")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("start-slideshow-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("start-slideshow-button")).not
+        .toBeInTheDocument();
     });
 
     it("renders play icon in Start Slideshow button", () => {

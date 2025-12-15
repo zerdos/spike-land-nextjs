@@ -70,7 +70,9 @@ export function PipelineCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base truncate">{pipeline.name}</CardTitle>
+              <CardTitle className="text-base truncate">
+                {pipeline.name}
+              </CardTitle>
               {pipeline.isSystemDefault && (
                 <Badge variant="secondary" className="text-xs">
                   System
@@ -135,7 +137,9 @@ export function PipelineCard({
           </Badge>
           <div className="flex items-center gap-1">
             {visibilityIcon[pipeline.visibility]}
-            <span className="capitalize">{pipeline.visibility.toLowerCase()}</span>
+            <span className="capitalize">
+              {pipeline.visibility.toLowerCase()}
+            </span>
           </div>
           <span className="text-xs">•</span>
           <span>{pipeline.usageCount} uses</span>

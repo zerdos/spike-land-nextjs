@@ -140,7 +140,11 @@ export function PixelLogo({
 
   if (variant === "icon" || !showText) {
     return (
-      <div className={cn("inline-flex items-center", className)} role="img" aria-label="Pixel logo">
+      <div
+        className={cn("inline-flex items-center", className)}
+        role="img"
+        aria-label="Pixel logo"
+      >
         {gridIcon}
       </div>
     );

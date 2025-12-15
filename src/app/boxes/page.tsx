@@ -67,9 +67,9 @@ export default async function BoxesPage() {
           : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {boxes
-                .filter((box): box is typeof box & { tier: NonNullable<typeof box.tier>; } =>
-                  box.tier !== null
-                )
+                .filter((
+                  box,
+                ): box is typeof box & { tier: NonNullable<typeof box.tier>; } => box.tier !== null)
                 .map((box) => <BoxCard key={box.id} box={box} />)}
             </div>
           )}

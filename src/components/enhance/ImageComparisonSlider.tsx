@@ -1,5 +1,6 @@
 "use client";
 
+import { GripVertical } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -141,7 +142,10 @@ export function ImageComparisonSlider({
       <div
         ref={containerRef}
         className="relative bg-muted rounded-lg overflow-hidden w-full select-none cursor-ew-resize"
-        style={{ aspectRatio: `${safeWidth} / ${safeHeight}`, touchAction: "none" }}
+        style={{
+          aspectRatio: `${safeWidth} / ${safeHeight}`,
+          touchAction: "none",
+        }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -159,7 +163,9 @@ export function ImageComparisonSlider({
           )
           : (
             <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-              <p className="text-sm text-destructive">Enhanced image failed to load</p>
+              <p className="text-sm text-destructive">
+                Enhanced image failed to load
+              </p>
             </div>
           )}
 
@@ -181,22 +187,29 @@ export function ImageComparisonSlider({
             )
             : (
               <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-                <p className="text-sm text-destructive">Original image failed to load</p>
+                <p className="text-sm text-destructive">
+                  Original image failed to load
+                </p>
               </div>
             )}
         </div>
 
-        {/* Divider line */}
+        {/* Divider line with cyan glow */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none"
+          className="absolute top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(0,229,255,0.6)] pointer-events-none"
           style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
-        />
+        >
+          {/* Handle circle */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-glow-cyan-sm transition-transform hover:scale-110">
+            <GripVertical className="h-5 w-5 text-primary-foreground" />
+          </div>
+        </div>
 
-        {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+        {/* Labels with brand styling */}
+        <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
           {originalLabel}
         </div>
-        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+        <div className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
           {enhancedLabel}
         </div>
       </div>

@@ -120,7 +120,9 @@ describe("McpHistoryClient", () => {
 
   describe("Page Layout", () => {
     it("should render the page title and description", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -131,7 +133,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should render filter section with type dropdown", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -140,7 +144,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should render MCP Tools link", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -150,7 +156,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should display total jobs count", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -208,7 +216,8 @@ describe("McpHistoryClient", () => {
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /try again/i }))
+          .toBeInTheDocument();
       });
     });
 
@@ -220,11 +229,14 @@ describe("McpHistoryClient", () => {
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /try again/i }))
+          .toBeInTheDocument();
       });
 
       // Mock successful retry
-      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValueOnce(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
@@ -284,9 +296,14 @@ describe("McpHistoryClient", () => {
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        const tryMcpToolsButton = screen.getByRole("link", { name: /try mcp tools/i });
+        const tryMcpToolsButton = screen.getByRole("link", {
+          name: /try mcp tools/i,
+        });
         expect(tryMcpToolsButton).toBeInTheDocument();
-        expect(tryMcpToolsButton).toHaveAttribute("href", "/apps/pixel/mcp-tools");
+        expect(tryMcpToolsButton).toHaveAttribute(
+          "href",
+          "/apps/pixel/mcp-tools",
+        );
       });
     });
   });
@@ -294,19 +311,28 @@ describe("McpHistoryClient", () => {
   describe("Job List Display", () => {
     it("should display job cards after loading", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
     });
 
     it("should display job tokens cost", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -317,20 +343,29 @@ describe("McpHistoryClient", () => {
     });
 
     it("should display job output image when available", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
         const images = screen.getAllByTestId("next-image");
         expect(images.length).toBeGreaterThan(0);
-        expect(images[0]).toHaveAttribute("src", "https://example.com/output.jpg");
+        expect(images[0]).toHaveAttribute(
+          "src",
+          "https://example.com/output.jpg",
+        );
       });
     });
 
     it("should show processing spinner when job is processing without output image", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockProcessingJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockProcessingJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -354,7 +389,11 @@ describe("McpHistoryClient", () => {
 
     it("should display API key name when available", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -367,7 +406,9 @@ describe("McpHistoryClient", () => {
 
   describe("Status Badges", () => {
     it("should render COMPLETED status badge", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -378,7 +419,11 @@ describe("McpHistoryClient", () => {
 
     it("should render PROCESSING status badge", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockProcessingJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockProcessingJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -402,7 +447,11 @@ describe("McpHistoryClient", () => {
 
     it("should render REFUNDED status badge", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockRefundedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockRefundedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -419,7 +468,11 @@ describe("McpHistoryClient", () => {
         status: "CANCELLED",
       });
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [jobWithUnknownStatus], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [jobWithUnknownStatus],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -433,7 +486,9 @@ describe("McpHistoryClient", () => {
 
   describe("Type Badges", () => {
     it("should render GENERATE type badge", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -456,7 +511,11 @@ describe("McpHistoryClient", () => {
 
     it("should render unknown type as-is", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockUnknownTypeJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockUnknownTypeJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -470,7 +529,9 @@ describe("McpHistoryClient", () => {
 
   describe("Type Filter", () => {
     it("should filter by GENERATE type", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -482,7 +543,8 @@ describe("McpHistoryClient", () => {
       fireEvent.click(screen.getByRole("combobox"));
 
       await waitFor(() => {
-        expect(screen.getByRole("option", { name: "Generate" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "Generate" }))
+          .toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole("option", { name: "Generate" }));
@@ -495,7 +557,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should filter by MODIFY type", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -506,7 +570,8 @@ describe("McpHistoryClient", () => {
       fireEvent.click(screen.getByRole("combobox"));
 
       await waitFor(() => {
-        expect(screen.getByRole("option", { name: "Modify" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "Modify" }))
+          .toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole("option", { name: "Modify" }));
@@ -519,7 +584,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should reset to All Types filter", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -531,14 +598,16 @@ describe("McpHistoryClient", () => {
       // First select Generate filter
       fireEvent.click(screen.getByRole("combobox"));
       await waitFor(() => {
-        expect(screen.getByRole("option", { name: "Generate" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "Generate" }))
+          .toBeInTheDocument();
       });
       fireEvent.click(screen.getByRole("option", { name: "Generate" }));
 
       // Then reset to All Types
       fireEvent.click(screen.getByRole("combobox"));
       await waitFor(() => {
-        expect(screen.getByRole("option", { name: "All Types" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "All Types" }))
+          .toBeInTheDocument();
       });
       fireEvent.click(screen.getByRole("option", { name: "All Types" }));
 
@@ -568,13 +637,16 @@ describe("McpHistoryClient", () => {
       fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("offset=12"));
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining("offset=12"),
+        );
       });
 
       // Change filter - should reset to page 0
       fireEvent.click(screen.getByRole("combobox"));
       await waitFor(() => {
-        expect(screen.getByRole("option", { name: "Generate" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "Generate" }))
+          .toBeInTheDocument();
       });
       fireEvent.click(screen.getByRole("option", { name: "Generate" }));
 
@@ -594,7 +666,9 @@ describe("McpHistoryClient", () => {
     };
 
     it("should display pagination when there are multiple pages", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(manyJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(manyJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -607,7 +681,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should not display pagination when there is only one page", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -619,7 +695,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should navigate to next page", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(manyJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(manyJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -637,7 +715,9 @@ describe("McpHistoryClient", () => {
     });
 
     it("should navigate to previous page", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(manyJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(manyJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -666,7 +746,9 @@ describe("McpHistoryClient", () => {
         ...manyJobsResponse,
         jobs: [createMockJob()],
       };
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(manyJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(manyJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 
@@ -680,7 +762,9 @@ describe("McpHistoryClient", () => {
         expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
       });
 
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(lastPageResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(lastPageResponse),
+      );
       fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
       await waitFor(() => {
@@ -693,41 +777,54 @@ describe("McpHistoryClient", () => {
   describe("Job Detail Dialog", () => {
     it("should open dialog when clicking a job card", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
       // Click on the job card
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
         expect(screen.getByText("Job ID")).toBeInTheDocument();
-        expect(screen.getByText("job_123456789012345678901234")).toBeInTheDocument();
+        expect(screen.getByText("job_123456789012345678901234"))
+          .toBeInTheDocument();
       });
     });
 
     it("should display job tier in dialog", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -738,18 +835,24 @@ describe("McpHistoryClient", () => {
 
     it("should display processing time in dialog", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -760,7 +863,11 @@ describe("McpHistoryClient", () => {
 
     it("should display 'In progress' when job is still processing", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockProcessingJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockProcessingJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -780,18 +887,24 @@ describe("McpHistoryClient", () => {
 
     it("should display dimensions when available", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -806,18 +919,24 @@ describe("McpHistoryClient", () => {
         outputHeight: undefined,
       });
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [jobWithoutDimensions], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [jobWithoutDimensions],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -827,18 +946,24 @@ describe("McpHistoryClient", () => {
 
     it("should display API key name in dialog when available", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -849,18 +974,24 @@ describe("McpHistoryClient", () => {
     it("should not display API key in dialog when not available", async () => {
       const jobWithoutApiKey = createMockJob({ apiKeyName: undefined });
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [jobWithoutApiKey], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [jobWithoutApiKey],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -872,18 +1003,24 @@ describe("McpHistoryClient", () => {
 
     it("should display output image in dialog when available", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -896,18 +1033,24 @@ describe("McpHistoryClient", () => {
 
     it("should display completion date when available", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -917,18 +1060,24 @@ describe("McpHistoryClient", () => {
 
     it("should close dialog when clicking close", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -949,7 +1098,11 @@ describe("McpHistoryClient", () => {
   describe("Date Formatting", () => {
     it("should format dates correctly", async () => {
       vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({ jobs: [mockCompletedJob], total: 1, hasMore: false }),
+        mockFetchResponse({
+          jobs: [mockCompletedJob],
+          total: 1,
+          hasMore: false,
+        }),
       );
 
       render(<McpHistoryClient />);
@@ -974,12 +1127,14 @@ describe("McpHistoryClient", () => {
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -999,12 +1154,14 @@ describe("McpHistoryClient", () => {
       render(<McpHistoryClient />);
 
       await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean")).toBeInTheDocument();
+        expect(screen.getByText("A beautiful sunset over the ocean"))
+          .toBeInTheDocument();
       });
 
-      const jobCard = screen.getByText("A beautiful sunset over the ocean").closest(
-        "[class*='cursor-pointer']",
-      );
+      const jobCard = screen.getByText("A beautiful sunset over the ocean")
+        .closest(
+          "[class*='cursor-pointer']",
+        );
       fireEvent.click(jobCard!);
 
       await waitFor(() => {
@@ -1015,7 +1172,9 @@ describe("McpHistoryClient", () => {
 
   describe("API Calls", () => {
     it("should call API with correct parameters on mount", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockJobsResponse));
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockFetchResponse(mockJobsResponse),
+      );
 
       render(<McpHistoryClient />);
 

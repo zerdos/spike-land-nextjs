@@ -77,7 +77,9 @@ export function PipelineForm({
   const [formData, setFormData] = useState<PipelineFormData>(() => ({
     ...DEFAULT_FORM_DATA,
     ...initialData,
-    name: mode === "fork" ? `${initialData?.name || ""} (Copy)` : initialData?.name || "",
+    name: mode === "fork"
+      ? `${initialData?.name || ""} (Copy)`
+      : initialData?.name || "",
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -161,9 +163,15 @@ export function PipelineForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="TIER_1K">1K (1024px) - 2 tokens</SelectItem>
-                    <SelectItem value="TIER_2K">2K (2048px) - 5 tokens</SelectItem>
-                    <SelectItem value="TIER_4K">4K (4096px) - 10 tokens</SelectItem>
+                    <SelectItem value="TIER_1K">
+                      1K (1024px) - 2 tokens
+                    </SelectItem>
+                    <SelectItem value="TIER_2K">
+                      2K (2048px) - 5 tokens
+                    </SelectItem>
+                    <SelectItem value="TIER_4K">
+                      4K (4096px) - 10 tokens
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -178,7 +186,9 @@ export function PipelineForm({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PRIVATE">Private (only you)</SelectItem>
-                    <SelectItem value="PUBLIC">Public (visible to all)</SelectItem>
+                    <SelectItem value="PUBLIC">
+                      Public (visible to all)
+                    </SelectItem>
                     <SelectItem value="LINK">Unlisted (via link)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -199,7 +209,9 @@ export function PipelineForm({
               <TabsContent value="analysis" className="space-y-4 pt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-sm font-medium">Enable Analysis</Label>
+                    <Label className="text-sm font-medium">
+                      Enable Analysis
+                    </Label>
                     <p className="text-xs text-muted-foreground">
                       AI analyzes the image to detect defects
                     </p>
@@ -245,7 +257,9 @@ export function PipelineForm({
               <TabsContent value="autocrop" className="space-y-4 pt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-sm font-medium">Enable Auto-Crop</Label>
+                    <Label className="text-sm font-medium">
+                      Enable Auto-Crop
+                    </Label>
                     <p className="text-xs text-muted-foreground">
                       Automatically crop detected problem areas
                     </p>
@@ -269,7 +283,8 @@ export function PipelineForm({
                         </p>
                       </div>
                       <Checkbox
-                        checked={formData.autoCropConfig.allowBlackBarRemoval ?? true}
+                        checked={formData.autoCropConfig.allowBlackBarRemoval ??
+                          true}
                         onCheckedChange={(checked) =>
                           updateField("autoCropConfig", {
                             ...formData.autoCropConfig,
@@ -285,7 +300,8 @@ export function PipelineForm({
                         </p>
                       </div>
                       <Checkbox
-                        checked={formData.autoCropConfig.allowUIElementCrop ?? true}
+                        checked={formData.autoCropConfig.allowUIElementCrop ??
+                          true}
                         onCheckedChange={(checked) =>
                           updateField("autoCropConfig", {
                             ...formData.autoCropConfig,
@@ -297,7 +313,10 @@ export function PipelineForm({
                       <Label className="text-sm">Minimum Crop Ratio</Label>
                       <div className="flex items-center gap-4">
                         <Slider
-                          value={[(formData.autoCropConfig.minCropRatio ?? 0.05) * 100]}
+                          value={[
+                            (formData.autoCropConfig.minCropRatio ?? 0.05) *
+                            100,
+                          ]}
                           onValueChange={(values) => {
                             const v = values[0] ?? 5;
                             updateField("autoCropConfig", {
@@ -311,7 +330,8 @@ export function PipelineForm({
                           className="flex-1"
                         />
                         <span className="text-sm w-12 text-right">
-                          {((formData.autoCropConfig.minCropRatio ?? 0.05) * 100).toFixed(0)}%
+                          {((formData.autoCropConfig.minCropRatio ?? 0.05) *
+                            100).toFixed(0)}%
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -324,7 +344,9 @@ export function PipelineForm({
 
               <TabsContent value="prompt" className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Custom Instructions</Label>
+                  <Label className="text-sm font-medium">
+                    Custom Instructions
+                  </Label>
                   <Textarea
                     value={formData.promptConfig.customInstructions ?? ""}
                     onChange={(e) =>
@@ -341,7 +363,9 @@ export function PipelineForm({
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Skip Corrections</Label>
+                  <Label className="text-sm font-medium">
+                    Skip Corrections
+                  </Label>
                   <p className="text-xs text-muted-foreground mb-2">
                     Disable automatic correction for specific defects
                   </p>
@@ -360,7 +384,8 @@ export function PipelineForm({
                       <div key={key} className="flex items-center gap-2">
                         <Checkbox
                           id={key}
-                          checked={formData.promptConfig.skipCorrections?.includes(key) ?? false}
+                          checked={formData.promptConfig.skipCorrections
+                            ?.includes(key) ?? false}
                           onCheckedChange={(checked) => {
                             const current = formData.promptConfig.skipCorrections ?? [];
                             const updated = checked
@@ -368,7 +393,9 @@ export function PipelineForm({
                               : current.filter((k) => k !== key);
                             updateField("promptConfig", {
                               ...formData.promptConfig,
-                              skipCorrections: updated.length > 0 ? updated : undefined,
+                              skipCorrections: updated.length > 0
+                                ? updated
+                                : undefined,
                             });
                           }}
                         />
@@ -387,11 +414,14 @@ export function PipelineForm({
                   ? (
                     <ReferenceImageUpload
                       pipelineId={initialData.id}
-                      referenceImages={formData.promptConfig.referenceImages ?? []}
+                      referenceImages={formData.promptConfig.referenceImages ??
+                        []}
                       onImagesChange={(images: ReferenceImage[]) =>
                         updateField("promptConfig", {
                           ...formData.promptConfig,
-                          referenceImages: images.length > 0 ? images : undefined,
+                          referenceImages: images.length > 0
+                            ? images
+                            : undefined,
                         })}
                       disabled={isSubmitting}
                     />
@@ -463,11 +493,19 @@ export function PipelineForm({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !formData.name.trim()}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={isSubmitting || !formData.name.trim()}
+            >
+              {isSubmitting &&
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "create"
                 ? "Create Pipeline"
                 : mode === "edit"

@@ -17,7 +17,10 @@ export default function DisplayPage() {
   const [displayId, setDisplayId] = useState<string>("");
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [videoStreams, setVideoStreams] = useState<VideoStream[]>([]);
-  const [displayDimensions, setDisplayDimensions] = useState({ width: 1920, height: 1080 });
+  const [displayDimensions, setDisplayDimensions] = useState({
+    width: 1920,
+    height: 1080,
+  });
 
   const peerRef = useRef<Peer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +69,10 @@ export default function DisplayPage() {
       peer.on("connection", (dataConnection) => {
         // Send a welcome message
         dataConnection.on("open", () => {
-          dataConnection.send({ type: "welcome", message: "Connected to display" });
+          dataConnection.send({
+            type: "welcome",
+            message: "Connected to display",
+          });
         });
       });
 
@@ -171,7 +177,10 @@ export default function DisplayPage() {
   });
 
   return (
-    <div ref={containerRef} className="relative h-screen w-full bg-black overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative h-screen w-full bg-black overflow-hidden"
+    >
       {/* Video Grid */}
       {videoStreams.length > 0
         ? (
@@ -195,8 +204,12 @@ export default function DisplayPage() {
         : (
           <div className="flex h-full w-full items-center justify-center">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-white mb-4">Smart Video Wall Display</h1>
-              <p className="text-xl text-gray-300 mb-8">Waiting for clients to connect...</p>
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Smart Video Wall Display
+              </h1>
+              <p className="text-xl text-gray-300 mb-8">
+                Waiting for clients to connect...
+              </p>
               {qrCodeUrl && displayId && (
                 <div className="bg-white p-6 rounded-lg inline-block">
                   <Image
@@ -229,7 +242,9 @@ export default function DisplayPage() {
       {videoStreams.length > 0 && qrCodeUrl && displayId && (
         <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg transition-opacity duration-300 hover:opacity-100 opacity-75">
           <Image src={qrCodeUrl} alt="QR Code" width={128} height={128} />
-          <p className="text-xs text-center mt-2 text-gray-600">Scan with mobile phone</p>
+          <p className="text-xs text-center mt-2 text-gray-600">
+            Scan with mobile phone
+          </p>
           <button
             onClick={() => {
               const clientUrl =
@@ -252,10 +267,16 @@ export default function DisplayPage() {
             }`}
           />
           <span className="text-sm">
-            {displayId ? `Display Ready (${videoStreams.length} clients)` : "Initializing..."}
+            {displayId
+              ? `Display Ready (${videoStreams.length} clients)`
+              : "Initializing..."}
           </span>
         </div>
-        {displayId && <p className="text-xs text-gray-300 mt-1 font-mono">ID: {displayId}</p>}
+        {displayId && (
+          <p className="text-xs text-gray-300 mt-1 font-mono">
+            ID: {displayId}
+          </p>
+        )}
       </div>
     </div>
   );

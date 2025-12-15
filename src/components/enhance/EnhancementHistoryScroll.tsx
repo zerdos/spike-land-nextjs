@@ -124,7 +124,8 @@ export function EnhancementHistoryScroll({
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-muted">
-                {version.status === "COMPLETED" && !failedImages.has(version.id) && (
+                {version.status === "COMPLETED" &&
+                  !failedImages.has(version.id) && (
                   <Image
                     src={version.enhancedUrl}
                     alt={`Enhanced version ${tierLabels[version.tier]}`}
@@ -133,12 +134,14 @@ export function EnhancementHistoryScroll({
                     onError={() => handleImageError(version.id)}
                   />
                 )}
-                {version.status === "COMPLETED" && failedImages.has(version.id) && (
+                {version.status === "COMPLETED" &&
+                  failedImages.has(version.id) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
                     <p className="text-xs text-destructive">Failed to load</p>
                   </div>
                 )}
-                {(version.status === "PROCESSING" || version.status === "PENDING") && (
+                {(version.status === "PROCESSING" ||
+                  version.status === "PENDING") && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500 mx-auto mb-1" />
@@ -205,7 +208,8 @@ export function EnhancementHistoryScroll({
                     </Button>
                   )}
 
-                  {(version.status === "PENDING" || version.status === "PROCESSING") &&
+                  {(version.status === "PENDING" ||
+                    version.status === "PROCESSING") &&
                     onJobCancel && (
                     <Button
                       variant="outline"

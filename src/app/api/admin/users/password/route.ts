@@ -24,10 +24,13 @@ export async function POST(request: NextRequest) {
     await requireAdminByUserId(session.user.id);
 
     // Rate limit password set operations (5 per hour per admin)
-    const rateLimitResult = await checkRateLimit(`password-set:${session.user.id}`, {
-      maxRequests: 5,
-      windowMs: 60 * 60 * 1000, // 1 hour
-    });
+    const rateLimitResult = await checkRateLimit(
+      `password-set:${session.user.id}`,
+      {
+        maxRequests: 5,
+        windowMs: 60 * 60 * 1000, // 1 hour
+      },
+    );
 
     if (rateLimitResult.isLimited) {
       return NextResponse.json(
@@ -124,7 +127,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "User not found. Set createIfNotExists: true to create a new user" },
+      {
+        error: "User not found. Set createIfNotExists: true to create a new user",
+      },
       { status: 404 },
     );
   } catch (error) {

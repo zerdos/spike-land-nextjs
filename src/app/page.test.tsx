@@ -16,7 +16,9 @@ vi.mock("next/navigation", () => ({
 // Mock all the landing page components
 vi.mock("@/components/landing/CTASection", () => ({
   CTASection: () => (
-    <section data-testid="cta-section" className="bg-gradient-primary">CTA</section>
+    <section data-testid="cta-section" className="bg-gradient-primary">
+      CTA
+    </section>
   ),
 }));
 
@@ -69,7 +71,11 @@ describe("Home Page - Authentication Redirect", () => {
 const MockPlatformHeader = () => <header data-testid="platform-header">Platform Header</header>;
 const MockPlatformHero = () => <section data-testid="hero-section">Platform Hero Section</section>;
 const MockFeaturedAppsSection = () => (
-  <section data-testid="featured-apps-section" id="apps" className="container mx-auto py-16 px-4">
+  <section
+    data-testid="featured-apps-section"
+    id="apps"
+    className="container mx-auto py-16 px-4"
+  >
     <h2>Featured Applications</h2>
     <p>Discover AI-powered apps built on Spike Land</p>
     <div data-testid="featured-app-card">
@@ -130,7 +136,8 @@ describe("Home Page", () => {
 
     it("should render PlatformFeatures component", () => {
       render(<TestableHome />);
-      expect(screen.getByTestId("platform-features-section")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-features-section"))
+        .toBeInTheDocument();
     });
 
     it("should render CTA section", () => {
@@ -159,7 +166,8 @@ describe("Home Page", () => {
 
     it("should render Pixel logo", () => {
       render(<TestableHome />);
-      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" }))
+        .toBeInTheDocument();
     });
 
     it("should render AI Image Enhancement tagline", () => {
@@ -182,17 +190,21 @@ describe("Home Page", () => {
   describe("Final CTA Section", () => {
     it("should render the CTA heading", () => {
       render(<TestableHome />);
-      expect(screen.getByText("Ready to Transform Your Images?")).toBeInTheDocument();
+      expect(screen.getByText("Ready to Transform Your Images?"))
+        .toBeInTheDocument();
     });
 
     it("should render the CTA description", () => {
       render(<TestableHome />);
-      expect(screen.getByText(/Join thousands of creators/)).toBeInTheDocument();
+      expect(screen.getByText(/Join thousands of creators/))
+        .toBeInTheDocument();
     });
 
     it("should render Start Enhancing Free button", () => {
       render(<TestableHome />);
-      const button = screen.getByRole("link", { name: /Start Enhancing Free/i });
+      const button = screen.getByRole("link", {
+        name: /Start Enhancing Free/i,
+      });
       expect(button).toBeInTheDocument();
       expect(button).toHaveAttribute("href", "/apps/pixel");
     });

@@ -65,7 +65,11 @@ export class AppCreationWizard {
 
   async fillBasicInfo(name: string, description: string) {
     await fillInputWithRetry(this.page, "app-name-input", name);
-    await fillInputWithRetry(this.page, "app-description-textarea", description);
+    await fillInputWithRetry(
+      this.page,
+      "app-description-textarea",
+      description,
+    );
   }
 
   async getNameErrorMessage() {
@@ -90,13 +94,19 @@ export class AppCreationWizard {
   }
 
   // Step 3: Monetization
-  async getMonetizationOption(option: "Free" | "Paid" | "Freemium" | "Subscription") {
+  async getMonetizationOption(
+    option: "Free" | "Paid" | "Freemium" | "Subscription",
+  ) {
     return this.page.getByTestId(`monetization-option-${option.toLowerCase()}`);
   }
 
-  async selectMonetizationOption(option: "Free" | "Paid" | "Freemium" | "Subscription") {
+  async selectMonetizationOption(
+    option: "Free" | "Paid" | "Freemium" | "Subscription",
+  ) {
     const testId = `monetization-option-${option.toLowerCase()}`;
-    await clickButtonWithRetry(this.page, testId, { timeout: TIMEOUTS.DEFAULT });
+    await clickButtonWithRetry(this.page, testId, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 
   async getPriceInput() {
@@ -108,17 +118,23 @@ export class AppCreationWizard {
   }
 
   // Step 4: Review
-  async getReviewSection(section: "Basic Info" | "Requirements" | "Monetization") {
+  async getReviewSection(
+    section: "Basic Info" | "Requirements" | "Monetization",
+  ) {
     return this.page.locator(
       `[data-testid="review-${section.toLowerCase().replace(/\s+/g, "-")}"]`,
     );
   }
 
   async getEditButton(section: "Basic Info" | "Requirements" | "Monetization") {
-    return this.page.locator(`[data-testid="edit-${section.toLowerCase().replace(/\s+/g, "-")}"]`);
+    return this.page.locator(
+      `[data-testid="edit-${section.toLowerCase().replace(/\s+/g, "-")}"]`,
+    );
   }
 
-  async clickEditButton(section: "Basic Info" | "Requirements" | "Monetization") {
+  async clickEditButton(
+    section: "Basic Info" | "Requirements" | "Monetization",
+  ) {
     const button = await this.getEditButton(section);
     await button.click();
   }
@@ -131,7 +147,10 @@ export class AppCreationWizard {
 
   // Draft management
   async verifyDraftSaved() {
-    const draftIndicator = await waitForTestId(this.page, "draft-saved-indicator");
+    const draftIndicator = await waitForTestId(
+      this.page,
+      "draft-saved-indicator",
+    );
     await expect(draftIndicator).toBeVisible();
   }
 
@@ -151,9 +170,13 @@ export class AppCreationWizard {
   // Progress verification
   async verifyProgress(percentage: number) {
     const progressBar = await this.getProgressBar();
-    await expect(progressBar).toHaveAttribute("aria-valuenow", percentage.toString(), {
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    await expect(progressBar).toHaveAttribute(
+      "aria-valuenow",
+      percentage.toString(),
+      {
+        timeout: TIMEOUTS.DEFAULT,
+      },
+    );
   }
 
   async verifyStep(_stepNumber: number, stepName: string) {
@@ -166,6 +189,8 @@ export class AppCreationWizard {
   }
 
   async verifyRedirectToMyApps() {
-    await expect(this.page).toHaveURL(/\/my-apps$/, { timeout: TIMEOUTS.DEFAULT });
+    await expect(this.page).toHaveURL(/\/my-apps$/, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 }

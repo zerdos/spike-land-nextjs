@@ -65,7 +65,11 @@ export function isValidEmail(email: string): boolean {
  * Check and update rate limit
  * @returns Object with allowed status and warning flag
  */
-function checkRateLimit(): { allowed: boolean; warning: boolean; remaining: number; } {
+function checkRateLimit(): {
+  allowed: boolean;
+  warning: boolean;
+  remaining: number;
+} {
   const now = Date.now();
 
   // Reset window if expired
@@ -94,15 +98,22 @@ function incrementRateLimit(): void {
  * Sleep for a specified duration
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
  * Get rate limit status (for monitoring)
  */
-export function getRateLimitStatus(): { count: number; remaining: number; resetIn: number; } {
+export function getRateLimitStatus(): {
+  count: number;
+  remaining: number;
+  resetIn: number;
+} {
   const now = Date.now();
-  const resetIn = Math.max(0, RATE_LIMIT_WINDOW_MS - (now - rateLimitState.windowStart));
+  const resetIn = Math.max(
+    0,
+    RATE_LIMIT_WINDOW_MS - (now - rateLimitState.windowStart),
+  );
   const remaining = Math.max(0, RATE_LIMIT_MAX - rateLimitState.count);
 
   return {
@@ -145,7 +156,9 @@ export function setRateLimitCount(count: number): void {
  * @param params Email parameters
  * @returns Result with success status and email ID or error
  */
-export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
+export async function sendEmail(
+  params: SendEmailParams,
+): Promise<SendEmailResult> {
   // Validate email format
   const recipients = Array.isArray(params.to) ? params.to : [params.to];
   for (const email of recipients) {
@@ -160,7 +173,10 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   // Check rate limit
   const rateLimit = checkRateLimit();
   if (!rateLimit.allowed) {
-    console.error("[Email] Rate limit exceeded. Remaining quota:", rateLimit.remaining);
+    console.error(
+      "[Email] Rate limit exceeded. Remaining quota:",
+      rateLimit.remaining,
+    );
     return {
       success: false,
       error: "Daily email limit exceeded. Please try again later.",
@@ -181,7 +197,8 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const resend = getResend();
-      const from = params.from || process.env.EMAIL_FROM || "noreply@spike.land";
+      const from = params.from || process.env.EMAIL_FROM ||
+        "noreply@spike.land";
 
       const result = await resend.emails.send({
         from,
@@ -208,7 +225,10 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
         // Retry on other errors
         if (attempt < MAX_RETRIES - 1) {
           const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
-          console.warn(`[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, lastError);
+          console.warn(
+            `[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`,
+            lastError,
+          );
           await sleep(delay);
           retriesUsed++;
           continue;
@@ -237,7 +257,9 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
       lastError = error instanceof Error ? error.message : "Unknown error";
 
       // Don't retry on configuration errors
-      if (lastError.includes("RESEND_API_KEY") || lastError.includes("configured")) {
+      if (
+        lastError.includes("RESEND_API_KEY") || lastError.includes("configured")
+      ) {
         return {
           success: false,
           error: lastError,
@@ -247,7 +269,10 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 
       if (attempt < MAX_RETRIES - 1) {
         const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
-        console.warn(`[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, lastError);
+        console.warn(
+          `[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`,
+          lastError,
+        );
         await sleep(delay);
         retriesUsed++;
       }

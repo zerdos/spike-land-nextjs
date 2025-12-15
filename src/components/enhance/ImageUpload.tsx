@@ -39,30 +39,42 @@ export function ImageUpload(
     }
   }, [onFilesSelected]);
 
-  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-    await handleFiles(files);
-  }, [handleFiles]);
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files) return;
+      await handleFiles(files);
+    },
+    [handleFiles],
+  );
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  }, []);
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(true);
+    },
+    [],
+  );
 
-  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  }, []);
+  const handleDragLeave = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(false);
+    },
+    [],
+  );
 
-  const handleDrop = useCallback(async (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
+  const handleDrop = useCallback(
+    async (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(false);
 
-    const files = event.dataTransfer.files;
-    if (!files) return;
-    await handleFiles(files);
-  }, [handleFiles]);
+      const files = event.dataTransfer.files;
+      if (!files) return;
+      await handleFiles(files);
+    },
+    [handleFiles],
+  );
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -72,9 +84,11 @@ export function ImageUpload(
 
   return (
     <Card
-      className={`border-dashed border-border bg-card/50 transition-colors ${
-        isDragging ? "border-primary bg-primary/5" : ""
-      }`}
+      className={`border-2 border-dashed border-border bg-card/50 transition-all duration-200 ${
+        isDragging
+          ? "border-primary bg-primary/5 shadow-glow-cyan scale-[1.01]"
+          : ""
+      } ${isUploading ? "animate-pulse-cyan border-primary/50" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}

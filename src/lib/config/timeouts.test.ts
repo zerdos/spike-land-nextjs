@@ -15,7 +15,9 @@ describe("timeouts config", () => {
   });
 
   it("should use default timeout of 300 when env var is not set", async () => {
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import("./timeouts");
+    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+      "./timeouts"
+    );
 
     expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(300);
     expect(maxDuration).toBe(300);
@@ -24,7 +26,9 @@ describe("timeouts config", () => {
   it("should parse timeout from environment variable", async () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "120";
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import("./timeouts");
+    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+      "./timeouts"
+    );
 
     expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(120);
     expect(maxDuration).toBe(120);
@@ -34,7 +38,9 @@ describe("timeouts config", () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "600";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import("./timeouts");
+    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+      "./timeouts"
+    );
 
     expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(600);
     expect(maxDuration).toBe(300);
@@ -47,7 +53,9 @@ describe("timeouts config", () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "300";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import("./timeouts");
+    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+      "./timeouts"
+    );
 
     expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(300);
     expect(maxDuration).toBe(300);
@@ -58,7 +66,9 @@ describe("timeouts config", () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "301";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import("./timeouts");
+    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+      "./timeouts"
+    );
 
     expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(301);
     expect(maxDuration).toBe(300);

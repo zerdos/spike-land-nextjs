@@ -109,9 +109,15 @@ describe("pipeline-types", () => {
     });
 
     it("should return true for all valid tiers", () => {
-      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_1K" })).toBe(true);
-      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_2K" })).toBe(true);
-      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_4K" })).toBe(true);
+      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_1K" })).toBe(
+        true,
+      );
+      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_2K" })).toBe(
+        true,
+      );
+      expect(isValidPipelineConfig({ ...validConfig, tier: "TIER_4K" })).toBe(
+        true,
+      );
     });
 
     it("should return false for null", () => {
@@ -129,7 +135,9 @@ describe("pipeline-types", () => {
     });
 
     it("should return false for invalid tier", () => {
-      expect(isValidPipelineConfig({ ...validConfig, tier: "INVALID" })).toBe(false);
+      expect(isValidPipelineConfig({ ...validConfig, tier: "INVALID" })).toBe(
+        false,
+      );
       expect(isValidPipelineConfig({ ...validConfig, tier: 123 })).toBe(false);
     });
 
@@ -139,7 +147,9 @@ describe("pipeline-types", () => {
     });
 
     it("should return false for null analysis", () => {
-      expect(isValidPipelineConfig({ ...validConfig, analysis: null })).toBe(false);
+      expect(isValidPipelineConfig({ ...validConfig, analysis: null })).toBe(
+        false,
+      );
     });
 
     it("should return false for missing analysis", () => {
@@ -148,7 +158,9 @@ describe("pipeline-types", () => {
     });
 
     it("should return false for null autoCrop", () => {
-      expect(isValidPipelineConfig({ ...validConfig, autoCrop: null })).toBe(false);
+      expect(isValidPipelineConfig({ ...validConfig, autoCrop: null })).toBe(
+        false,
+      );
     });
 
     it("should return false for missing autoCrop", () => {
@@ -157,7 +169,9 @@ describe("pipeline-types", () => {
     });
 
     it("should return false for null prompt", () => {
-      expect(isValidPipelineConfig({ ...validConfig, prompt: null })).toBe(false);
+      expect(isValidPipelineConfig({ ...validConfig, prompt: null })).toBe(
+        false,
+      );
     });
 
     it("should return false for missing prompt", () => {
@@ -166,7 +180,9 @@ describe("pipeline-types", () => {
     });
 
     it("should return false for null generation", () => {
-      expect(isValidPipelineConfig({ ...validConfig, generation: null })).toBe(false);
+      expect(isValidPipelineConfig({ ...validConfig, generation: null })).toBe(
+        false,
+      );
     });
 
     it("should return false for missing generation", () => {
@@ -214,8 +230,16 @@ describe("pipeline-types", () => {
     it("should accept multiple reference images (up to 3)", () => {
       const refs: ReferenceImage[] = [
         { url: "https://example.com/ref1.jpg", r2Key: "ref1.jpg" },
-        { url: "https://example.com/ref2.jpg", r2Key: "ref2.jpg", description: "Color palette" },
-        { url: "https://example.com/ref3.jpg", r2Key: "ref3.jpg", description: "Lighting" },
+        {
+          url: "https://example.com/ref2.jpg",
+          r2Key: "ref2.jpg",
+          description: "Color palette",
+        },
+        {
+          url: "https://example.com/ref3.jpg",
+          r2Key: "ref3.jpg",
+          description: "Lighting",
+        },
       ];
       const config: PipelineConfig = {
         tier: "TIER_2K",
@@ -277,7 +301,11 @@ describe("pipeline-types", () => {
         autoCropConfig: { enabled: false },
         promptConfig: {
           referenceImages: [
-            { url: "https://example.com/ref.jpg", r2Key: "ref.jpg", description: "Style ref" },
+            {
+              url: "https://example.com/ref.jpg",
+              r2Key: "ref.jpg",
+              description: "Style ref",
+            },
           ],
         },
         generationConfig: { retryAttempts: 5 },
@@ -286,7 +314,9 @@ describe("pipeline-types", () => {
       const result = parsePipelineConfig("TIER_2K", dbConfigs);
 
       expect(result.prompt.referenceImages).toHaveLength(1);
-      expect(result.prompt.referenceImages?.[0].url).toBe("https://example.com/ref.jpg");
+      expect(result.prompt.referenceImages?.[0].url).toBe(
+        "https://example.com/ref.jpg",
+      );
       expect(result.prompt.referenceImages?.[0].description).toBe("Style ref");
     });
 

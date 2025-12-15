@@ -1,8 +1,11 @@
 # Cloudflare DNS Setup for spike.land
 
-**Note:** This is archived documentation. Subdomain references (next.spike.land, pixel.spike.land) are now deprecated. All traffic should use the main domain: https://spike.land
+**Note:** This is archived documentation. Subdomain references (next.spike.land,
+pixel.spike.land) are now deprecated. All traffic should use the main domain:
+https://spike.land
 
-This guide explains how to configure DNS records in Cloudflare for the Spike Land platform domains.
+This guide explains how to configure DNS records in Cloudflare for the Spike
+Land platform domains.
 
 ## Prerequisites
 
@@ -39,7 +42,8 @@ This guide explains how to configure DNS records in Cloudflare for the Spike Lan
 
 ## Important: Cloudflare Proxy Setting
 
-**CRITICAL**: The CNAME record MUST be set to "DNS only" (gray cloud icon), NOT "Proxied" (orange cloud).
+**CRITICAL**: The CNAME record MUST be set to "DNS only" (gray cloud icon), NOT
+"Proxied" (orange cloud).
 
 Why?
 

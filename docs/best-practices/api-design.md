@@ -1,6 +1,7 @@
 # REST API Design Best Practices
 
-A comprehensive guide to building scalable, maintainable, and secure REST APIs with modern industry standards.
+A comprehensive guide to building scalable, maintainable, and secure REST APIs
+with modern industry standards.
 
 ---
 
@@ -20,7 +21,8 @@ A comprehensive guide to building scalable, maintainable, and secure REST APIs w
 
 ### Core Principles
 
-REST APIs should be designed around **nouns (resources)** rather than verbs (actions). HTTP methods define the operations.
+REST APIs should be designed around **nouns (resources)** rather than verbs
+(actions). HTTP methods define the operations.
 
 #### 1. Use Nouns, Not Verbs
 
@@ -273,8 +275,8 @@ Content-Type: application/json
 }
 ```
 
-**For Idempotency:**
-Use idempotency keys to prevent duplicate resource creation:
+**For Idempotency:** Use idempotency keys to prevent duplicate resource
+creation:
 
 ```bash
 POST /payments
@@ -334,7 +336,8 @@ Content-Type: application/json
 }
 ```
 
-**Important:** PUT must include all required fields. Omitted fields may be nullified.
+**Important:** PUT must include all required fields. Omitted fields may be
+nullified.
 
 **Response Codes:**
 
@@ -1568,7 +1571,8 @@ Pagination:    GET /products?page=2&limit=20
 ## Additional Resources
 
 - **OpenAPI Specification:** https://spec.openapis.org/
-- **HTTP Status Codes:** https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+- **HTTP Status Codes:**
+  https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 - **REST Best Practices:** https://restfulapi.net/
 - **JWT:** https://jwt.io/
 - **OAuth 2.0:** https://oauth.net/2/

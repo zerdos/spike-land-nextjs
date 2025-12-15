@@ -2,16 +2,20 @@
 
 ## Overview
 
-Optimized the album batch enhancement endpoint to handle large albums (>100 images) efficiently by implementing count-based checks before fetching data.
+Optimized the album batch enhancement endpoint to handle large albums (>100
+images) efficiently by implementing count-based checks before fetching data.
 
 ## Problem
 
 The previous implementation had performance issues with large albums:
 
-1. **Fetched all images immediately** - Used `findMany` with full `include` to get all album images and their enhancement jobs
-2. **Heavy query on large albums** - For a 100-image album, this would fetch 100+ rows with nested data
+1. **Fetched all images immediately** - Used `findMany` with full `include` to
+   get all album images and their enhancement jobs
+2. **Heavy query on large albums** - For a 100-image album, this would fetch
+   100+ rows with nested data
 3. **Late validation** - Checked batch size limit AFTER fetching all data
-4. **Over-fetching** - Included many fields that weren't needed (originalUrl, dimensions, format, etc.)
+4. **Over-fetching** - Included many fields that weren't needed (originalUrl,
+   dimensions, format, etc.)
 
 ## Solution
 
@@ -209,7 +213,8 @@ Added comprehensive tests covering:
 ## Files Modified
 
 - `/src/app/api/albums/[id]/enhance/route.ts` - Optimized implementation
-- `/src/app/api/albums/[id]/enhance/route.test.ts` - Updated tests with count mocks
+- `/src/app/api/albums/[id]/enhance/route.test.ts` - Updated tests with count
+  mocks
 
 ## Benchmarks
 
@@ -220,14 +225,17 @@ Added comprehensive tests covering:
 | 100 images | 250ms       | 6ms        | 98% faster   |
 | 500 images | 1200ms      | 5ms        | 99.6% faster |
 
-_Note: These are estimated based on typical Prisma query performance. Actual results may vary based on database load and network latency._
+_Note: These are estimated based on typical Prisma query performance. Actual
+results may vary based on database load and network latency._
 
 ## Future Improvements
 
 1. **Pagination Support** - Allow clients to request specific pages of images
 2. **Cursor-based Pagination** - For better performance with very large albums
-3. **Background Job Splitting** - Automatically split large albums into multiple jobs
-4. **Progressive Enhancement** - Allow enhancing in chunks with resume capability
+3. **Background Job Splitting** - Automatically split large albums into multiple
+   jobs
+4. **Progressive Enhancement** - Allow enhancing in chunks with resume
+   capability
 
 ## Related Documentation
 

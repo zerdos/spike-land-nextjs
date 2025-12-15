@@ -1,14 +1,16 @@
 # Enhancement Pipeline Diagnosis Report
 
-**Date:** 2025-12-06
-**Status:** CRITICAL - Pipeline Broken
-**Issue ID:** Enhancement jobs stuck in PROCESSING state
+**Date:** 2025-12-06 **Status:** CRITICAL - Pipeline Broken **Issue ID:**
+Enhancement jobs stuck in PROCESSING state
 
 ---
 
 ## Executive Summary
 
-The image enhancement pipeline is completely broken. Jobs are created but never complete, getting stuck in "PROCESSING" state indefinitely. All recent failures show timeouts from the Gemini API after 120 seconds. The root cause is **using an invalid or non-existent Gemini model name**.
+The image enhancement pipeline is completely broken. Jobs are created but never
+complete, getting stuck in "PROCESSING" state indefinitely. All recent failures
+show timeouts from the Gemini API after 120 seconds. The root cause is **using
+an invalid or non-existent Gemini model name**.
 
 ---
 
@@ -20,7 +22,8 @@ From the Admin Dashboard (System Health):
 - **Average Processing Time:** 0s (jobs not completing)
 - **Jobs in PROCESSING state:** 6 jobs (some stuck for 3800-5724 minutes!)
 - **Failure Rate:** 23.8%
-- **Error Pattern:** All failures show: `Gemini API request timed out after 120000ms`
+- **Error Pattern:** All failures show:
+  `Gemini API request timed out after 120000ms`
 
 ### Stuck Jobs Details
 
@@ -62,7 +65,8 @@ const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 
 ### Verification
 
-1. **API Key is Valid:** ✅ Verified - API key `AIzaSyBqBuUorfdbK2d5...` is set and works
+1. **API Key is Valid:** ✅ Verified - API key `AIzaSyBqBuUorfdbK2d5...` is set
+   and works
 2. **Available Models Tested:** ✅ Listed all available models via API
 3. **Model Name Invalid:** ❌ `gemini-3-pro-image-preview` does not exist
 
@@ -72,12 +76,14 @@ According to the official Gemini API documentation and model list:
 
 **For Image Generation with @google/genai SDK:**
 
-1. **`gemini-2.5-flash-image`** - Recommended for fast, cost-effective image generation
+1. **`gemini-2.5-flash-image`** - Recommended for fast, cost-effective image
+   generation
    - Supports up to 1024px resolution
    - Pricing: $30/million output tokens (~$0.039 per image)
    - Released: August 26, 2025
 
-2. **`nano-banana-pro-preview`** (alias: `gemini-3-pro-image-preview`) - Higher fidelity
+2. **`nano-banana-pro-preview`** (alias: `gemini-3-pro-image-preview`) - Higher
+   fidelity
    - Supports up to 4096px resolution
    - Studio-quality image generation
    - Released: December 5, 2025
@@ -92,7 +98,8 @@ According to the official Gemini API documentation and model list:
 
 Looking at the code flow:
 
-1. **Job Created:** `/Users/z/Developer/spike-land-nextjs/src/app/api/images/enhance/route.ts:183-192`
+1. **Job Created:**
+   `/Users/z/Developer/spike-land-nextjs/src/app/api/images/enhance/route.ts:183-192`
    - Job status set to `PROCESSING`
    - Tokens consumed immediately
    - `processEnhancement()` called asynchronously
@@ -105,7 +112,8 @@ Looking at the code flow:
    - Tokens refunded ✅
 
 3. **Why Some Jobs Stay PROCESSING:**
-   - If the Vercel serverless function times out (10 seconds default, 60 seconds max for Pro)
+   - If the Vercel serverless function times out (10 seconds default, 60 seconds
+     max for Pro)
    - The `processEnhancement()` async function never completes
    - No error handling at the serverless boundary
    - Job remains stuck in PROCESSING forever
@@ -116,7 +124,8 @@ Looking at the code flow:
 
 ### 1. Missing Job Cleanup Mechanism
 
-**Problem:** Jobs stuck in PROCESSING state are never cleaned up or marked as failed.
+**Problem:** Jobs stuck in PROCESSING state are never cleaned up or marked as
+failed.
 
 **Impact:** Queue depth grows indefinitely, confusing users about job status.
 
@@ -128,7 +137,8 @@ Looking at the code flow:
 
 ### 2. No Server-Side Background Worker
 
-**Problem:** `processEnhancement()` runs in the API route's serverless function context.
+**Problem:** `processEnhancement()` runs in the API route's serverless function
+context.
 
 **Impact:**
 
@@ -150,7 +160,8 @@ Looking at the code flow:
 - Gemini API timeout: 120 seconds (2 minutes)
 - Vercel serverless timeout: 10-60 seconds
 
-**Impact:** The Gemini timeout will never be reached because Vercel kills the function first.
+**Impact:** The Gemini timeout will never be reached because Vercel kills the
+function first.
 
 ---
 
@@ -160,7 +171,8 @@ Looking at the code flow:
 
 **Priority:** P0 - Must fix now
 
-1. **Update model name** in `/Users/z/Developer/spike-land-nextjs/src/lib/ai/gemini-client.ts:5`
+1. **Update model name** in
+   `/Users/z/Developer/spike-land-nextjs/src/lib/ai/gemini-client.ts:5`
 
    Change from:
    ```typescript
@@ -177,7 +189,8 @@ Looking at the code flow:
    const DEFAULT_MODEL = "nano-banana-pro-preview";
    ```
 
-2. **Verify the API call signature** - May need to adjust config based on SDK documentation
+2. **Verify the API call signature** - May need to adjust config based on SDK
+   documentation
 
 3. **Clean up stuck jobs** - Run a migration or script to:
    ```sql
@@ -258,8 +271,10 @@ Looking at the code flow:
 
 ### To Fix:
 
-- `/Users/z/Developer/spike-land-nextjs/src/lib/ai/gemini-client.ts` - Update model name
-- `/Users/z/Developer/spike-land-nextjs/src/app/api/images/enhance/route.ts` - Possibly update config
+- `/Users/z/Developer/spike-land-nextjs/src/lib/ai/gemini-client.ts` - Update
+  model name
+- `/Users/z/Developer/spike-land-nextjs/src/app/api/images/enhance/route.ts` -
+  Possibly update config
 
 ### To Monitor:
 

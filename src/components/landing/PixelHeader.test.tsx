@@ -53,7 +53,10 @@ describe("PixelHeader Component", () => {
     render(<PixelHeader />);
     const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-    expect(ctaButtons[0]).toHaveAttribute("href", "/auth/signin?callbackUrl=/apps/pixel");
+    expect(ctaButtons[0]).toHaveAttribute(
+      "href",
+      "/auth/signin?callbackUrl=/apps/pixel",
+    );
   });
 
   it("should have fixed positioning", () => {
@@ -126,7 +129,9 @@ describe("PixelHeader Component", () => {
     expect(dialog).toBeInTheDocument();
 
     // Find the Get Started button inside the dialog
-    const getStartedLinks = screen.getAllByRole("link", { name: /get started/i });
+    const getStartedLinks = screen.getAllByRole("link", {
+      name: /get started/i,
+    });
     const mobileMenuGetStarted = getStartedLinks.find((link) => dialog.contains(link));
     expect(mobileMenuGetStarted).toBeDefined();
     fireEvent.click(mobileMenuGetStarted!);

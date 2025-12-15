@@ -119,7 +119,8 @@ export function calculateOptimalLayout(options: LayoutOptions): GridLayout {
     cellHeight: displayHeight,
     videoWidth: displayWidth - minCellPadding * 2,
     videoHeight: displayHeight - minCellPadding * 2,
-    totalArea: (displayWidth - minCellPadding * 2) * (displayHeight - minCellPadding * 2),
+    totalArea: (displayWidth - minCellPadding * 2) *
+      (displayHeight - minCellPadding * 2),
   };
 }
 
@@ -127,7 +128,9 @@ export function calculateOptimalLayout(options: LayoutOptions): GridLayout {
  * Gets common grid configurations for specific client counts
  * This provides quick lookup for typical scenarios
  */
-export function getCommonGridConfig(numClients: number): { rows: number; cols: number; } {
+export function getCommonGridConfig(
+  numClients: number,
+): { rows: number; cols: number; } {
   const configs: Record<number, { rows: number; cols: number; }> = {
     1: { rows: 1, cols: 1 },
     2: { rows: 1, cols: 2 },

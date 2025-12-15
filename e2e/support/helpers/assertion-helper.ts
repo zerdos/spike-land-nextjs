@@ -65,7 +65,10 @@ export async function assertDropdownNotVisible(page: Page) {
   await expect(menu).not.toBeVisible();
 }
 
-export async function assertDropdownOptionVisible(page: Page, optionText: string) {
+export async function assertDropdownOptionVisible(
+  page: Page,
+  optionText: string,
+) {
   const option = page.getByRole("menuitem", { name: optionText });
   await expect(option).toBeVisible();
 }
@@ -106,7 +109,11 @@ export async function assertUrlContains(page: Page, fragment: string) {
   expect(page.url()).toContain(fragment);
 }
 
-export async function assertInputValue(page: Page, inputLabel: string, expectedValue: string) {
+export async function assertInputValue(
+  page: Page,
+  inputLabel: string,
+  expectedValue: string,
+) {
   const input = page.getByLabel(inputLabel);
   await expect(input).toHaveValue(expectedValue);
 }
@@ -116,17 +123,28 @@ export async function assertCheckboxChecked(page: Page, checkboxLabel: string) {
   await expect(checkbox).toBeChecked();
 }
 
-export async function assertCheckboxUnchecked(page: Page, checkboxLabel: string) {
+export async function assertCheckboxUnchecked(
+  page: Page,
+  checkboxLabel: string,
+) {
   const checkbox = page.getByLabel(checkboxLabel);
   await expect(checkbox).not.toBeChecked();
 }
 
-export async function assertElementCount(page: Page, selector: string, expectedCount: number) {
+export async function assertElementCount(
+  page: Page,
+  selector: string,
+  expectedCount: number,
+) {
   const elements = page.locator(selector);
   await expect(elements).toHaveCount(expectedCount);
 }
 
-export async function assertElementHasClass(page: Page, selector: string, className: string) {
+export async function assertElementHasClass(
+  page: Page,
+  selector: string,
+  className: string,
+) {
   const element = page.locator(selector);
   await expect(element).toHaveClass(new RegExp(className));
 }

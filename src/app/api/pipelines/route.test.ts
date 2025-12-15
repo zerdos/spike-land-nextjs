@@ -26,8 +26,12 @@ import prisma from "@/lib/prisma";
 // Helper to create GET request with pagination params
 function createGetRequest(params?: { page?: number; limit?: number; }): Request {
   const url = new URL("http://localhost/api/pipelines");
-  if (params?.page !== undefined) url.searchParams.set("page", String(params.page));
-  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
+  if (params?.page !== undefined) {
+    url.searchParams.set("page", String(params.page));
+  }
+  if (params?.limit !== undefined) {
+    url.searchParams.set("limit", String(params.limit));
+  }
   return new Request(url.toString());
 }
 
@@ -292,7 +296,9 @@ describe("Pipelines API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid tier. Must be one of: TIER_1K, TIER_2K, TIER_4K");
+      expect(data.error).toBe(
+        "Invalid tier. Must be one of: TIER_1K, TIER_2K, TIER_4K",
+      );
     });
 
     it("returns 400 for invalid visibility", async () => {
@@ -309,7 +315,9 @@ describe("Pipelines API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid visibility. Must be one of: PRIVATE, PUBLIC, LINK");
+      expect(data.error).toBe(
+        "Invalid visibility. Must be one of: PRIVATE, PUBLIC, LINK",
+      );
     });
 
     it("creates pipeline successfully with defaults", async () => {
@@ -449,7 +457,11 @@ describe("Pipelines API", () => {
 
       const request = new NextRequest("http://localhost:3000/api/pipelines", {
         method: "POST",
-        body: JSON.stringify({ name: "Public Pipeline", visibility: "PUBLIC", tier: "TIER_2K" }),
+        body: JSON.stringify({
+          name: "Public Pipeline",
+          visibility: "PUBLIC",
+          tier: "TIER_2K",
+        }),
       });
 
       const response = await POST(request);

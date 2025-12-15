@@ -101,7 +101,9 @@ describe("ImageComparisonSlider", () => {
 
   it("updates slider position on mouse down", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     // Mock getBoundingClientRect
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
@@ -120,13 +122,17 @@ describe("ImageComparisonSlider", () => {
     fireEvent.mouseDown(sliderContainer, { clientX: 250 });
 
     // Check that the divider moved (the divider uses left style with percentage)
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("25%");
   });
 
   it("updates slider position on touch start", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -145,13 +151,17 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 750 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("75%");
   });
 
   it("clamps slider position between 0 and 100", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 100,
@@ -167,31 +177,39 @@ describe("ImageComparisonSlider", () => {
 
     // Try to drag beyond left boundary
     fireEvent.mouseDown(sliderContainer, { clientX: 0 });
-    let divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    let divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("0%");
 
     // Try to drag beyond right boundary
     fireEvent.mouseDown(sliderContainer, { clientX: 2000 });
-    divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    divider = container.querySelector('[class*="bg-primary"]') as HTMLElement;
     expect(divider.style.left).toBe("100%");
   });
 
   it("has correct cursor style for dragging", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]');
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    );
     expect(sliderContainer?.className).toContain("cursor-ew-resize");
   });
 
   it("has correct touch-action style", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
     expect(sliderContainer).toBeDefined();
     expect(sliderContainer?.style.touchAction).toBe("none");
   });
 
   it("renders divider line at slider position", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
 
     expect(divider).toBeDefined();
     expect(divider.style.left).toBe("50%");
@@ -218,7 +236,7 @@ describe("ImageComparisonSlider", () => {
 
   it("has pointer-events-none on divider", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const divider = container.querySelector('[class*="bg-white"]');
+    const divider = container.querySelector('[class*="bg-primary"]');
     expect(divider?.className).toContain("pointer-events-none");
   });
 
@@ -230,7 +248,9 @@ describe("ImageComparisonSlider", () => {
 
   it("handles drag move after mouse down", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -250,13 +270,17 @@ describe("ImageComparisonSlider", () => {
     // Simulate mouse move at document level
     fireEvent.mouseMove(document, { clientX: 500 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("50%");
   });
 
   it("handles touch move after touch start", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -280,13 +304,17 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 600 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("60%");
   });
 
   it("handles mouse up to end dragging", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -309,14 +337,18 @@ describe("ImageComparisonSlider", () => {
     // After mouseup, move should not update position
     fireEvent.mouseMove(document, { clientX: 800 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     // Should remain at 25% since dragging ended
     expect(divider.style.left).toBe("25%");
   });
 
   it("handles touch end to end dragging", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -343,14 +375,18 @@ describe("ImageComparisonSlider", () => {
       touches: [{ clientX: 900 }],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     // Should remain at 30% since touch ended
     expect(divider.style.left).toBe("30%");
   });
 
   it("does not update position when not dragging", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -367,13 +403,17 @@ describe("ImageComparisonSlider", () => {
     // Move without starting drag
     fireEvent.mouseMove(document, { clientX: 700 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     // Should remain at default 50%
     expect(divider.style.left).toBe("50%");
   });
 
   it("logs error to console when fetch fails", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const fetchError = new Error("Network error");
     vi.mocked(global.fetch).mockRejectedValueOnce(fetchError);
 
@@ -398,21 +438,27 @@ describe("ImageComparisonSlider", () => {
 
   it("handles touch start with no touches", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     // Simulate touch start with empty touches array
     fireEvent.touchStart(sliderContainer, {
       touches: [],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     // Position should remain at default 50%
     expect(divider.style.left).toBe("50%");
   });
 
   it("handles touch move with no touches when dragging", () => {
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -436,7 +482,9 @@ describe("ImageComparisonSlider", () => {
       touches: [],
     });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     // Should remain at 25% since no valid touch in move event
     expect(divider.style.left).toBe("25%");
   });
@@ -472,8 +520,12 @@ describe("ImageComparisonSlider", () => {
   it("cleans up event listeners on unmount", () => {
     const removeEventListenerSpy = vi.spyOn(document, "removeEventListener");
 
-    const { container, unmount } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const { container, unmount } = render(
+      <ImageComparisonSlider {...defaultProps} />,
+    );
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -494,10 +546,22 @@ describe("ImageComparisonSlider", () => {
     unmount();
 
     // Should have removed event listeners
-    expect(removeEventListenerSpy).toHaveBeenCalledWith("mousemove", expect.any(Function));
-    expect(removeEventListenerSpy).toHaveBeenCalledWith("mouseup", expect.any(Function));
-    expect(removeEventListenerSpy).toHaveBeenCalledWith("touchmove", expect.any(Function));
-    expect(removeEventListenerSpy).toHaveBeenCalledWith("touchend", expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "mousemove",
+      expect.any(Function),
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "mouseup",
+      expect.any(Function),
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "touchmove",
+      expect.any(Function),
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "touchend",
+      expect.any(Function),
+    );
 
     removeEventListenerSpy.mockRestore();
   });
@@ -508,8 +572,14 @@ describe("ImageComparisonSlider", () => {
     render(<ImageComparisonSlider {...defaultProps} />);
 
     // Should not have added drag-related event listeners
-    expect(addEventListenerSpy).not.toHaveBeenCalledWith("mousemove", expect.any(Function));
-    expect(addEventListenerSpy).not.toHaveBeenCalledWith("mouseup", expect.any(Function));
+    expect(addEventListenerSpy).not.toHaveBeenCalledWith(
+      "mousemove",
+      expect.any(Function),
+    );
+    expect(addEventListenerSpy).not.toHaveBeenCalledWith(
+      "mouseup",
+      expect.any(Function),
+    );
 
     addEventListenerSpy.mockRestore();
   });
@@ -520,7 +590,9 @@ describe("ImageComparisonSlider", () => {
     // The component always has the ref attached to the container div, so we just verify
     // the normal flow works correctly
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
-    const sliderContainer = container.querySelector('[class*="cursor-ew-resize"]') as HTMLElement;
+    const sliderContainer = container.querySelector(
+      '[class*="cursor-ew-resize"]',
+    ) as HTMLElement;
 
     sliderContainer.getBoundingClientRect = vi.fn(() => ({
       left: 0,
@@ -537,7 +609,9 @@ describe("ImageComparisonSlider", () => {
     // Verify normal flow works
     fireEvent.mouseDown(sliderContainer, { clientX: 500 });
 
-    const divider = container.querySelector('[class*="bg-white"]') as HTMLElement;
+    const divider = container.querySelector(
+      '[class*="bg-primary"]',
+    ) as HTMLElement;
     expect(divider.style.left).toBe("50%");
   });
 });

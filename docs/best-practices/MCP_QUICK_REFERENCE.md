@@ -292,8 +292,8 @@ console.log("Debug message");
 
 ### "Only write JSON-RPC to stdout"
 
-**Problem**: Using `console.log()` for debug messages
-**Fix**: Route logs to `console.error()` instead
+**Problem**: Using `console.log()` for debug messages **Fix**: Route logs to
+`console.error()` instead
 
 ```typescript
 console.error("debug"); // OK
@@ -302,8 +302,7 @@ console.log("debug"); // BREAKS PROTOCOL
 
 ### Tool not visible in Inspector
 
-**Problem**: ListToolsRequest handler not registered
-**Fix**: Add handler:
+**Problem**: ListToolsRequest handler not registered **Fix**: Add handler:
 
 ```typescript
 server.setRequestHandler(ListToolsRequest, async () => ({
@@ -313,8 +312,7 @@ server.setRequestHandler(ListToolsRequest, async () => ({
 
 ### "Invalid token"
 
-**Problem**: JWT secret mismatch
-**Fix**: Verify JWT_SECRET is set correctly:
+**Problem**: JWT secret mismatch **Fix**: Verify JWT_SECRET is set correctly:
 
 ```bash
 echo $JWT_SECRET  # Check value
@@ -323,8 +321,8 @@ echo $JWT_SECRET  # Check value
 
 ### Slow responses
 
-**Problem**: N+1 queries or unoptimized logic
-**Fix**: Add monitoring, use profiler, implement caching
+**Problem**: N+1 queries or unoptimized logic **Fix**: Add monitoring, use
+profiler, implement caching
 
 ```bash
 node --prof dist/server.js  # CPU profile
@@ -472,6 +470,5 @@ Availability
 
 ---
 
-**Last Updated**: December 2025
-**Spec Version**: 2025-06-18
-**SDK Version**: v1.18.1+
+**Last Updated**: December 2025 **Spec Version**: 2025-06-18 **SDK Version**:
+v1.18.1+

@@ -34,7 +34,11 @@ describe("AuthHeader Component", () => {
     const { container } = render(<AuthHeader />);
     const loadingElement = container.querySelector(".animate-pulse");
     expect(loadingElement).toBeInTheDocument();
-    expect(loadingElement).toHaveClass("animate-pulse", "rounded-full", "bg-white/10");
+    expect(loadingElement).toHaveClass(
+      "animate-pulse",
+      "rounded-full",
+      "bg-white/10",
+    );
   });
 
   it("should render loading state with correct dimensions", () => {

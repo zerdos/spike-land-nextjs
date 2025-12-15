@@ -158,7 +158,9 @@ describe("POST /api/images/enhance", () => {
   });
 
   it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
     mockPrisma.enhancedImage.findUnique.mockResolvedValue({
       id: "img-1",

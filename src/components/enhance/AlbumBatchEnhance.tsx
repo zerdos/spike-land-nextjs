@@ -50,8 +50,16 @@ const TIER_INFO: Record<
   EnhancementTier,
   { label: string; cost: number; description: string; }
 > = {
-  TIER_1K: { label: "1K (1024px)", cost: 2, description: "Fast, good for previews" },
-  TIER_2K: { label: "2K (2048px)", cost: 5, description: "Balanced quality and speed" },
+  TIER_1K: {
+    label: "1K (1024px)",
+    cost: 2,
+    description: "Fast, good for previews",
+  },
+  TIER_2K: {
+    label: "2K (2048px)",
+    cost: 5,
+    description: "Balanced quality and speed",
+  },
   TIER_4K: { label: "4K (4096px)", cost: 10, description: "Maximum quality" },
 };
 
@@ -172,7 +180,9 @@ export function AlbumBatchEnhance({
 
           const data = await response.json();
           const statusChecks = (data.jobs || []).map(
-            (job: { id: string; status: string; errorMessage: string | null; }) => ({
+            (
+              job: { id: string; status: string; errorMessage: string | null; },
+            ) => ({
               jobId: job.id,
               status: job.status,
               error: job.errorMessage,
@@ -294,7 +304,9 @@ export function AlbumBatchEnhance({
           if (result) {
             return {
               ...img,
-              status: result.success ? ("enhancing" as const) : ("error" as const),
+              status: result.success
+                ? ("enhancing" as const)
+                : ("error" as const),
               jobId: result.jobId,
               error: result.error,
             };
@@ -386,7 +398,10 @@ export function AlbumBatchEnhance({
 
         <div className="space-y-4 py-4">
           {/* Enhanced counts summary */}
-          <div className="rounded-md bg-muted p-3 space-y-2" data-testid="enhancement-summary">
+          <div
+            className="rounded-md bg-muted p-3 space-y-2"
+            data-testid="enhancement-summary"
+          >
             <p className="text-sm font-medium">Already enhanced:</p>
             <div className="flex flex-wrap gap-2">
               {TIER_ORDER.map((tier) => (
@@ -409,7 +424,12 @@ export function AlbumBatchEnhance({
               <span className="text-sm font-medium">Your Balance</span>
             </div>
             {isLoadingBalance
-              ? <Loader2 className="h-4 w-4 animate-spin" data-testid="balance-loader" />
+              ? (
+                <Loader2
+                  className="h-4 w-4 animate-spin"
+                  data-testid="balance-loader"
+                />
+              )
               : (
                 <span className="text-lg font-bold" data-testid="user-balance">
                   {userBalance ?? 0} tokens
@@ -452,8 +472,12 @@ export function AlbumBatchEnhance({
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium">{info.cost} tokens</p>
-                            <p className="text-xs text-muted-foreground">per image</p>
+                            <p className="text-sm font-medium">
+                              {info.cost} tokens
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              per image
+                            </p>
                           </div>
                         </div>
                       </Label>
@@ -466,7 +490,10 @@ export function AlbumBatchEnhance({
 
           {/* Cost summary */}
           {enhancingImages.length === 0 && imagesToEnhance > 0 && (
-            <div className="p-3 bg-muted rounded-lg space-y-2" data-testid="cost-summary">
+            <div
+              className="p-3 bg-muted rounded-lg space-y-2"
+              data-testid="cost-summary"
+            >
               <div className="flex justify-between text-sm">
                 <span>Images to enhance:</span>
                 <span className="font-medium">{imagesToEnhance}</span>
@@ -512,7 +539,9 @@ export function AlbumBatchEnhance({
           {enhancingImages.length > 0 && (
             <div className="space-y-3" data-testid="enhancement-progress">
               <div className="flex items-center gap-4 text-sm flex-wrap">
-                <Badge variant="secondary">{enhancingImages.length} images</Badge>
+                <Badge variant="secondary">
+                  {enhancingImages.length} images
+                </Badge>
                 {pendingCount > 0 && <Badge variant="outline">{pendingCount} pending</Badge>}
                 {enhancingCount > 0 && <Badge variant="default">{enhancingCount} enhancing</Badge>}
                 {completedCount > 0 && (
@@ -527,7 +556,9 @@ export function AlbumBatchEnhance({
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Overall Progress</span>
-                    <span data-testid="progress-percent">{progressPercent}%</span>
+                    <span data-testid="progress-percent">
+                      {progressPercent}%
+                    </span>
                   </div>
                   <Progress value={progressPercent} className="h-2" />
                 </div>
@@ -548,7 +579,9 @@ export function AlbumBatchEnhance({
                   ? (
                     <div className="flex flex-col items-center gap-2">
                       <CheckCircle className="h-8 w-8 text-green-500" />
-                      <p className="text-sm text-green-600">All enhancements complete!</p>
+                      <p className="text-sm text-green-600">
+                        All enhancements complete!
+                      </p>
                     </div>
                   )
                   : errorCount > 0

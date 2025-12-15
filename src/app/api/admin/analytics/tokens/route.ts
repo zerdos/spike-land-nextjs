@@ -25,7 +25,9 @@ export async function GET() {
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Token transactions by type
-    let tokensByType: Array<{ type: TokenTransactionType; _sum: { amount: number | null; }; }> = [];
+    let tokensByType: Array<
+      { type: TokenTransactionType; _sum: { amount: number | null; }; }
+    > = [];
     try {
       const result = await prisma.tokenTransaction.groupBy({
         by: ["type"],
@@ -63,7 +65,9 @@ export async function GET() {
     }
 
     // Revenue from token purchases
-    let revenue: { _sum: { amountUSD: number | null; }; } = { _sum: { amountUSD: null } };
+    let revenue: { _sum: { amountUSD: number | null; }; } = {
+      _sum: { amountUSD: null },
+    };
     try {
       const result = await prisma.stripePayment.aggregate({
         where: {
@@ -75,7 +79,9 @@ export async function GET() {
       });
       revenue = {
         _sum: {
-          amountUSD: result._sum.amountUSD ? Number(result._sum.amountUSD) : null,
+          amountUSD: result._sum.amountUSD
+            ? Number(result._sum.amountUSD)
+            : null,
         },
       };
     } catch (error) {
@@ -84,7 +90,10 @@ export async function GET() {
     }
 
     // Average tokens per user
-    let tokenBalances: { _avg: { balance: number | null; }; _sum: { balance: number | null; }; } = {
+    let tokenBalances: {
+      _avg: { balance: number | null; };
+      _sum: { balance: number | null; };
+    } = {
       _avg: { balance: null },
       _sum: { balance: null },
     };
@@ -124,8 +133,9 @@ export async function GET() {
     const avgTokensPerUser = tokenBalances._avg.balance || 0;
 
     // Token purchase packages breakdown
-    let packageSales: Array<{ name: string; tokens: number; stripePayments: { id: string; }[]; }> =
-      [];
+    let packageSales: Array<
+      { name: string; tokens: number; stripePayments: { id: string; }[]; }
+    > = [];
     try {
       packageSales = await prisma.tokensPackage.findMany({
         select: {
@@ -156,7 +166,9 @@ export async function GET() {
         }))
         : [],
       dailyTokens: Array.isArray(dailyTokens)
-        ? dailyTokens.map((row: { date: Date; purchased: bigint; spent: bigint; }) => ({
+        ? dailyTokens.map((
+          row: { date: Date; purchased: bigint; spent: bigint; },
+        ) => ({
           date: row.date.toISOString().split("T")[0],
           purchased: Number(row.purchased || 0),
           spent: Number(row.spent || 0),
@@ -172,7 +184,11 @@ export async function GET() {
       regenerationCount,
       packageSales: Array.isArray(packageSales)
         ? packageSales.map((
-          pkg: { name: string; tokens: number; stripePayments: { id: string; }[]; },
+          pkg: {
+            name: string;
+            tokens: number;
+            stripePayments: { id: string; }[];
+          },
         ) => ({
           name: pkg.name,
           tokens: pkg.tokens,

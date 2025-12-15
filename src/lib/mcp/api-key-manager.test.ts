@@ -110,7 +110,9 @@ describe("api-key-manager", () => {
       process.env.NODE_ENV = "production";
 
       try {
-        const result = await validateApiKey("sk_test_validkey123456789012345678");
+        const result = await validateApiKey(
+          "sk_test_validkey123456789012345678",
+        );
 
         expect(result.isValid).toBe(false);
         expect(result.error).toBe("Development keys not allowed in production");
@@ -547,7 +549,9 @@ describe("api-key-manager", () => {
 
       mockApiKey.findUnique.mockResolvedValue(mockKeyRecord);
       // Simulate an error during the lastUsedAt update
-      mockApiKey.update.mockRejectedValue(new Error("Database connection lost"));
+      mockApiKey.update.mockRejectedValue(
+        new Error("Database connection lost"),
+      );
 
       // Should not throw - the error is caught silently
       const result = await validateApiKey(fullKey);

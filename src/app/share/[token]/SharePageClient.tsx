@@ -47,11 +47,15 @@ export function SharePageClient({
   const tierLabel = tierLabels[tier] || tier.replace("TIER_", "");
 
   const handleDownload = async (type: "original" | "enhanced") => {
-    const setLoading = type === "original" ? setDownloadingOriginal : setDownloadingEnhanced;
+    const setLoading = type === "original"
+      ? setDownloadingOriginal
+      : setDownloadingEnhanced;
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/share/${shareToken}/download?type=${type}`);
+      const response = await fetch(
+        `/api/share/${shareToken}/download?type=${type}`,
+      );
 
       if (!response.ok) {
         throw new Error("Download failed");

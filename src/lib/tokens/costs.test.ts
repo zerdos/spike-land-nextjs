@@ -57,16 +57,20 @@ describe("Token Costs", () => {
 
   describe("Cost consistency", () => {
     it("should ensure tier progression maintains pricing structure", () => {
-      const costDifference1k2k = ENHANCEMENT_COSTS.TIER_2K - ENHANCEMENT_COSTS.TIER_1K;
-      const costDifference2k4k = ENHANCEMENT_COSTS.TIER_4K - ENHANCEMENT_COSTS.TIER_2K;
+      const costDifference1k2k = ENHANCEMENT_COSTS.TIER_2K -
+        ENHANCEMENT_COSTS.TIER_1K;
+      const costDifference2k4k = ENHANCEMENT_COSTS.TIER_4K -
+        ENHANCEMENT_COSTS.TIER_2K;
 
       expect(costDifference1k2k).toBeGreaterThan(0);
       expect(costDifference2k4k).toBeGreaterThan(0);
     });
 
     it("should have meaningful cost differences between tiers", () => {
-      expect(ENHANCEMENT_COSTS.TIER_2K / ENHANCEMENT_COSTS.TIER_1K).toBeGreaterThan(1.5);
-      expect(ENHANCEMENT_COSTS.TIER_4K / ENHANCEMENT_COSTS.TIER_2K).toBeGreaterThan(1.5);
+      expect(ENHANCEMENT_COSTS.TIER_2K / ENHANCEMENT_COSTS.TIER_1K)
+        .toBeGreaterThan(1.5);
+      expect(ENHANCEMENT_COSTS.TIER_4K / ENHANCEMENT_COSTS.TIER_2K)
+        .toBeGreaterThan(1.5);
     });
   });
 });

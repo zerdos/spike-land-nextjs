@@ -250,7 +250,9 @@ describe("usePeer", () => {
   });
 
   it("should not initialize if WebRTC is not supported", async () => {
-    const { isWebRTCSupported } = await import("@apps/display/lib/webrtc/utils");
+    const { isWebRTCSupported } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     vi.mocked(isWebRTCSupported).mockReturnValue(false);
 
     const config: PeerConfig = { role: "host" };
@@ -411,7 +413,7 @@ describe("usePeer", () => {
     result.current.reconnect();
 
     // Wait a bit to ensure no new peer is created
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Should not create a new peer instance
     expect(MockPeer.mock.calls.length).toBe(initialCallCount);

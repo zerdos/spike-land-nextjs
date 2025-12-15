@@ -234,7 +234,11 @@ export function McpHistoryClient() {
               <div className="flex flex-col items-center justify-center text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
                 <p className="text-destructive">{error}</p>
-                <Button onClick={fetchHistory} variant="outline" className="mt-4">
+                <Button
+                  onClick={fetchHistory}
+                  variant="outline"
+                  className="mt-4"
+                >
                   Try Again
                 </Button>
               </div>
@@ -310,7 +314,9 @@ export function McpHistoryClient() {
                         {formatDate(job.createdAt)}
                       </span>
                       {job.apiKeyName && (
-                        <span className="truncate max-w-[100px]">{job.apiKeyName}</span>
+                        <span className="truncate max-w-[100px]">
+                          {job.apiKeyName}
+                        </span>
                       )}
                     </div>
                   </CardContent>
@@ -419,7 +425,9 @@ export function McpHistoryClient() {
                 <div className="text-xs text-muted-foreground">
                   Created: {formatDate(selectedJob.createdAt)}
                   {selectedJob.processingCompletedAt && (
-                    <>| Completed: {formatDate(selectedJob.processingCompletedAt)}</>
+                    <>
+                      | Completed: {formatDate(selectedJob.processingCompletedAt)}
+                    </>
                   )}
                 </div>
               </div>

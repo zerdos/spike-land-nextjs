@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedCode = code.trim();
-    if (trimmedCode.length === 0 || trimmedCode.length > MAX_VOUCHER_CODE_LENGTH) {
+    if (
+      trimmedCode.length === 0 || trimmedCode.length > MAX_VOUCHER_CODE_LENGTH
+    ) {
       return NextResponse.json(
         { error: "Invalid voucher code format" },
         { status: 400 },

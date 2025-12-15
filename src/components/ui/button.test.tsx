@@ -6,7 +6,8 @@ import { Button, buttonVariants } from "./button";
 describe("Button Component", () => {
   it("should render button with children", () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Click me" }))
+      .toBeInTheDocument();
   });
 
   it("should apply default variant classes", () => {

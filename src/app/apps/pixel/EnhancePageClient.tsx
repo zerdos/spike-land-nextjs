@@ -72,7 +72,11 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
   };
 
   const handleDelete = async (imageId: string) => {
-    if (!confirm("Are you sure you want to delete this image and all its enhancements?")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this image and all its enhancements?",
+      )
+    ) {
       return;
     }
 
@@ -163,10 +167,13 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
               )}
             </div>
             <div className="hidden lg:block">
-              <div className="text-foreground/80 text-lg font-semibold mb-4">Your Images</div>
+              <div className="text-foreground/80 text-lg font-semibold mb-4">
+                Your Images
+              </div>
               <div className="text-muted-foreground text-sm">
                 Upload one or multiple images to get started with AI enhancement.
-                {albums.length > 0 && " Select an album below to upload directly to it."}
+                {albums.length > 0 &&
+                  " Select an album below to upload directly to it."}
               </div>
             </div>
           </div>
@@ -175,7 +182,9 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
         {/* Albums Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-foreground">Your Albums</h2>
+            <h2 className="text-2xl font-semibold text-foreground">
+              Your Albums
+            </h2>
             <CreateAlbumDialog onAlbumCreated={handleAlbumCreated} />
           </div>
           {albumsLoading
@@ -202,12 +211,14 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-foreground">Your Images</h2>
+            <h2 className="text-2xl font-semibold text-foreground">
+              Your Images
+            </h2>
             <ThumbnailViewToggle
               showEnhanced={showEnhanced}
               onToggle={setShowEnhanced}
-              hasEnhancedImages={images.some(img =>
-                img.enhancementJobs.some(job => job.status === "COMPLETED")
+              hasEnhancedImages={images.some((img) =>
+                img.enhancementJobs.some((job) => job.status === "COMPLETED")
               )}
             />
           </div>
@@ -235,7 +246,9 @@ export function EnhancePageClient(props: EnhancePageClientProps) {
   const router = useRouter();
 
   const handleMoveComplete = (targetAlbumId: string, imageIds: string[]) => {
-    console.log(`Successfully moved ${imageIds.length} images to album ${targetAlbumId}`);
+    console.log(
+      `Successfully moved ${imageIds.length} images to album ${targetAlbumId}`,
+    );
     router.refresh();
   };
 

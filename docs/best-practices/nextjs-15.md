@@ -1,6 +1,7 @@
 # Next.js 15 App Router Best Practices Guide
 
-Comprehensive documentation covering modern Next.js 15 patterns, optimization techniques, and production-ready implementations.
+Comprehensive documentation covering modern Next.js 15 patterns, optimization
+techniques, and production-ready implementations.
 
 **Last Updated:** December 2025 | **Next.js Version:** 15+
 
@@ -25,7 +26,8 @@ Comprehensive documentation covering modern Next.js 15 patterns, optimization te
 
 ### Core Concepts
 
-The App Router in Next.js 15 is a modern, performance-first full-stack model that treats the server as your primary rendering surface. Key principles:
+The App Router in Next.js 15 is a modern, performance-first full-stack model
+that treats the server as your primary rendering surface. Key principles:
 
 - **Server by Default:** Every component is a Server Component by default
 - **Minimal Client JS:** Ship only interactive code to the browser
@@ -104,9 +106,13 @@ src/
 **Key Principles:**
 
 - **Don't overcomplicate:** Avoid 200+ files in a single folder
-- **Avoid deep nesting:** If your path looks like `src/components/features/dashboard/widgets/weather/current/small/index.tsx`, refactor
-- **Separate concerns:** Keep `utils.ts` focused; break large files into logical groups
-- **Organize by feature:** Group related components, hooks, and utilities together
+- **Avoid deep nesting:** If your path looks like
+  `src/components/features/dashboard/widgets/weather/current/small/index.tsx`,
+  refactor
+- **Separate concerns:** Keep `utils.ts` focused; break large files into logical
+  groups
+- **Organize by feature:** Group related components, hooks, and utilities
+  together
 
 ### Special Files
 
@@ -183,7 +189,8 @@ export default function NotFound() {
 
 ### When to Use Server Components
 
-Use Server Components as the default. Only add `'use client'` when you need interactivity.
+Use Server Components as the default. Only add `'use client'` when you need
+interactivity.
 
 **✅ Perfect for:**
 
@@ -193,7 +200,7 @@ export default async function ProductList() {
   const products = await db.products.findMany();
   return (
     <ul>
-      {products.map(p => <li key={p.id}>{p.name}</li>)}
+      {products.map((p) => <li key={p.id}>{p.name}</li>)}
     </ul>
   );
 }
@@ -245,10 +252,12 @@ export default function Counter() {
 "use client";
 
 export default function LocationDetector() {
-  const [coords, setCoords] = useState<{ lat: number; lng: number; } | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number; } | null>(
+    null,
+  );
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.getCurrentPosition((pos) => {
       setCoords({
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
@@ -256,7 +265,9 @@ export default function LocationDetector() {
     });
   }, []);
 
-  return coords ? <p>Your location: {coords.lat}, {coords.lng}</p> : <p>Detecting...</p>;
+  return coords
+    ? <p>Your location: {coords.lat}, {coords.lng}</p>
+    : <p>Detecting...</p>;
 }
 
 // Local state and event handlers
@@ -328,7 +339,7 @@ export function ClientFilter({ children }: ClientFilterProps) {
 
   return (
     <div>
-      <input value={filter} onChange={e => setFilter(e.target.value)} />
+      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
       <div>{/* Server component children are passed through */}</div>
     </div>
   );
@@ -369,11 +380,11 @@ export default async function ProductsPage() {
     {
       next: { revalidate: 3600 }, // ISR: Revalidate every hour
     },
-  ).then(res => res.json());
+  ).then((res) => res.json());
 
   return (
     <ul>
-      {products.map(product => <li key={product.id}>{product.name}</li>)}
+      {products.map((product) => <li key={product.id}>{product.name}</li>)}
     </ul>
   );
 }
@@ -440,7 +451,8 @@ export const dynamicParams = true; // Allow unknown dynamic segments
 
 ### Server Actions
 
-Server Actions are asynchronous functions that run on the server and can be called from Client Components.
+Server Actions are asynchronous functions that run on the server and can be
+called from Client Components.
 
 ```typescript
 // lib/actions.ts
@@ -517,7 +529,7 @@ For client-only needs, use community libraries like SWR or TanStack Query:
 
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function UserProfile() {
   const { data, error, isLoading } = useSWR("/api/user", fetcher);
@@ -737,7 +749,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 // Generate static routes at build time
 export async function generateStaticParams() {
   const products = await db.products.findMany();
-  return products.map(p => ({ id: p.id }));
+  return products.map((p) => ({ id: p.id }));
 }
 
 // Generate metadata for each product
@@ -747,7 +759,9 @@ interface MetadataProps {
   params: { id: string; };
 }
 
-export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: MetadataProps,
+): Promise<Metadata> {
   const product = await db.products.findById(params.id);
   return {
     title: product.name,
@@ -918,7 +932,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
   // Protect admin routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
@@ -1083,7 +1100,9 @@ Time-based revalidation:
 // app/blog/[slug]/page.tsx
 export const revalidate = 3600; // Revalidate every hour
 
-export default async function BlogPost({ params }: { params: { slug: string; }; }) {
+export default async function BlogPost(
+  { params }: { params: { slug: string; }; },
+) {
   const post = await db.posts.findBySlug(params.slug);
   return <article>{post.content}</article>;
 }
@@ -1199,7 +1218,7 @@ async function ProductList() {
   const products = await db.products.findMany();
   return (
     <ul>
-      {products.map(p => <li key={p.id}>{p.name}</li>)}
+      {products.map((p) => <li key={p.id}>{p.name}</li>)}
     </ul>
   );
 }
@@ -1368,7 +1387,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 ### Learning Resources
 
 - [Next.js Learn](https://nextjs.org/learn) - Interactive tutorials
-- [React Foundations](https://nextjs.org/learn/react-foundations/server-and-client-components) - Server/Client Components
+- [React Foundations](https://nextjs.org/learn/react-foundations/server-and-client-components) -
+  Server/Client Components
 - [Building Your Application](https://nextjs.org/docs/app/building-your-application)
 
 ### Advanced Routing
@@ -1411,7 +1431,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
 ## Summary of Key Takeaways
 
-1. **Default to Server Components** - They reduce JavaScript and improve performance
+1. **Default to Server Components** - They reduce JavaScript and improve
+   performance
 2. **Use ISR for most content** - Perfect balance between static and dynamic
 3. **Optimize images and fonts** - Biggest performance wins are from media
 4. **Middleware for global logic** - Auth, redirects, headers at the edge
@@ -1424,7 +1445,5 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** December 2025
-**Next.js Version:** 15+
-**Maintained by:** Spike Land Development Team
+**Document Version:** 1.0 **Last Updated:** December 2025 **Next.js Version:**
+15+ **Maintained by:** Spike Land Development Team

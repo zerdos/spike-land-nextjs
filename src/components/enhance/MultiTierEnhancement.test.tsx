@@ -139,7 +139,9 @@ describe("MultiTierEnhancement Component", () => {
 
       // The button should now show the cost
       expect(
-        screen.getByRole("button", { name: /Enhance Selected Tiers \(2 tokens\)/i }),
+        screen.getByRole("button", {
+          name: /Enhance Selected Tiers \(2 tokens\)/i,
+        }),
       ).toBeInTheDocument();
     });
 
@@ -151,7 +153,9 @@ describe("MultiTierEnhancement Component", () => {
 
       // Total should be 2 + 5 = 7
       expect(
-        screen.getByRole("button", { name: /Enhance Selected Tiers \(7 tokens\)/i }),
+        screen.getByRole("button", {
+          name: /Enhance Selected Tiers \(7 tokens\)/i,
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -175,7 +179,9 @@ describe("MultiTierEnhancement Component", () => {
     it("disables enhance button when no tiers selected", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(enhanceButton).toBeDisabled();
     });
 
@@ -184,7 +190,9 @@ describe("MultiTierEnhancement Component", () => {
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(enhanceButton).not.toBeDisabled();
     });
 
@@ -239,7 +247,9 @@ describe("MultiTierEnhancement Component", () => {
       fireEvent.click(screen.getByRole("checkbox", { name: /4K/i }));
 
       // Button should NOT be disabled since 17 = 17
-      const enhanceButton = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(enhanceButton).not.toBeDisabled();
     });
 
@@ -249,7 +259,9 @@ describe("MultiTierEnhancement Component", () => {
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
 
       expect(
-        screen.getByRole("button", { name: /Enhance Selected Tiers \(2 tokens\)/i }),
+        screen.getByRole("button", {
+          name: /Enhance Selected Tiers \(2 tokens\)/i,
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -267,7 +279,9 @@ describe("MultiTierEnhancement Component", () => {
     it("disables enhance button when disabled prop is true", () => {
       render(<MultiTierEnhancement {...defaultProps} disabled={true} />);
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(enhanceButton).toBeDisabled();
     });
   });
@@ -288,7 +302,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementStart).toHaveBeenCalledWith(["TIER_1K"]);
@@ -311,7 +327,9 @@ describe("MultiTierEnhancement Component", () => {
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
       fireEvent.click(screen.getByRole("checkbox", { name: /2K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementStart).toHaveBeenCalled();
@@ -345,7 +363,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       expect(screen.getByText("Enhancing...")).toBeInTheDocument();
     });
@@ -374,7 +394,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       const checkboxes = screen.getAllByRole("checkbox");
       checkboxes.forEach((checkbox) => {
@@ -397,7 +419,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/images/parallel-enhance", {
@@ -431,7 +455,9 @@ describe("MultiTierEnhancement Component", () => {
       fireEvent.click(checkbox);
       expect(checkbox).toBeChecked();
 
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       // When there are no jobs returned, processing should stop
       await waitFor(() => {
@@ -442,7 +468,9 @@ describe("MultiTierEnhancement Component", () => {
 
   describe("Error Handling", () => {
     it("calls onEnhancementComplete with failed status on API error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -452,7 +480,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
@@ -465,14 +495,18 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("handles network errors gracefully", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
@@ -485,14 +519,18 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("handles generic error message when error has no message", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockRejectedValueOnce("String error");
 
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
@@ -505,7 +543,9 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("handles API error with default error message", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -515,7 +555,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
@@ -537,7 +579,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -546,14 +593,20 @@ describe("MultiTierEnhancement Component", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              jobs: [{ id: "job_1", status: "COMPLETED", enhancedUrl: "/enhanced.jpg" }],
+              jobs: [{
+                id: "job_1",
+                status: "COMPLETED",
+                enhancedUrl: "/enhanced.jpg",
+              }],
             }),
         });
 
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       // Wait for initial API call
       await vi.waitFor(() => {
@@ -585,7 +638,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -594,14 +652,20 @@ describe("MultiTierEnhancement Component", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              jobs: [{ id: "job_1", status: "FAILED", errorMessage: "Enhancement failed" }],
+              jobs: [{
+                id: "job_1",
+                status: "FAILED",
+                errorMessage: "Enhancement failed",
+              }],
             }),
         });
 
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -628,7 +692,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -644,7 +713,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -663,7 +734,9 @@ describe("MultiTierEnhancement Component", () => {
 
     it("handles poll API error", async () => {
       vi.useFakeTimers();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch
         .mockResolvedValueOnce({
@@ -671,7 +744,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -684,7 +762,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -711,7 +791,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -727,14 +812,20 @@ describe("MultiTierEnhancement Component", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              jobs: [{ id: "job_1", status: "COMPLETED", enhancedUrl: "/enhanced.jpg" }],
+              jobs: [{
+                id: "job_1",
+                status: "COMPLETED",
+                enhancedUrl: "/enhanced.jpg",
+              }],
             }),
         });
 
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       // Wait for initial API call
       await vi.waitFor(() => {
@@ -766,7 +857,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -790,7 +886,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -815,7 +913,12 @@ describe("MultiTierEnhancement Component", () => {
         json: () =>
           Promise.resolve({
             success: true,
-            jobs: [{ jobId: "job_1", tier: "INVALID_TIER", tokenCost: 2, status: "PROCESSING" }],
+            jobs: [{
+              jobId: "job_1",
+              tier: "INVALID_TIER",
+              tokenCost: 2,
+              status: "PROCESSING",
+            }],
             totalCost: 2,
             newBalance: 23,
           }),
@@ -824,7 +927,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       // Should not start polling since no valid jobs
       await waitFor(() => {
@@ -845,7 +950,10 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       const tier1kCheckbox = screen.getByRole("checkbox", { name: /1K/i });
-      expect(tier1kCheckbox).toHaveAttribute("aria-describedby", "tier-TIER_1K-description");
+      expect(tier1kCheckbox).toHaveAttribute(
+        "aria-describedby",
+        "tier-TIER_1K-description",
+      );
     });
 
     it("does not show alert when balance is sufficient for selection", () => {
@@ -875,7 +983,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(screen.queryByText("Enhancing...")).not.toBeInTheDocument();
@@ -916,7 +1026,9 @@ describe("MultiTierEnhancement Component", () => {
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
 
-      const enhanceButton = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const enhanceButton = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       fireEvent.click(enhanceButton);
       fireEvent.click(enhanceButton);
 
@@ -935,7 +1047,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       // Button is disabled when no tiers selected, so we test via direct button disabled state
-      const button = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const button = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(button).toBeDisabled();
 
       // Force click even though disabled - this tests the early return in handleEnhance
@@ -949,7 +1063,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} userBalance={0} />);
 
       // All checkboxes disabled
-      const button = screen.getByRole("button", { name: /Enhance Selected Tiers/i });
+      const button = screen.getByRole("button", {
+        name: /Enhance Selected Tiers/i,
+      });
       expect(button).toBeDisabled();
 
       // Even if we force click
@@ -972,7 +1088,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(screen.queryByText("Enhancing...")).not.toBeInTheDocument();
@@ -1002,7 +1120,9 @@ describe("MultiTierEnhancement Component", () => {
       );
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -1030,7 +1150,9 @@ describe("MultiTierEnhancement Component", () => {
       );
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhancementStart).toHaveBeenCalled();
@@ -1052,7 +1174,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement imageId="img_123" userBalance={25} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -1060,14 +1184,18 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("works without callbacks when error occurs", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       render(<MultiTierEnhancement imageId="img_123" userBalance={25} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await waitFor(() => {
         expect(screen.queryByText("Enhancing...")).not.toBeInTheDocument();
@@ -1085,7 +1213,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -1101,7 +1234,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement imageId="img_123" userBalance={25} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -1118,7 +1253,9 @@ describe("MultiTierEnhancement Component", () => {
 
     it("works without callbacks during polling error", async () => {
       vi.useFakeTimers();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch
         .mockResolvedValueOnce({
@@ -1126,7 +1263,12 @@ describe("MultiTierEnhancement Component", () => {
           json: () =>
             Promise.resolve({
               success: true,
-              jobs: [{ jobId: "job_1", tier: "TIER_1K", tokenCost: 2, status: "PROCESSING" }],
+              jobs: [{
+                jobId: "job_1",
+                tier: "TIER_1K",
+                tokenCost: 2,
+                status: "PROCESSING",
+              }],
               totalCost: 2,
               newBalance: 23,
             }),
@@ -1139,7 +1281,9 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement imageId="img_123" userBalance={25} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Enhance Selected Tiers/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Enhance Selected Tiers/i }),
+      );
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(1);

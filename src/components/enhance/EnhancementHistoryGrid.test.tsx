@@ -12,7 +12,13 @@ vi.mock("next/image", () => ({
     },
   ) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} onError={onError} data-testid="next-image" {...props} />
+    <img
+      src={src}
+      alt={alt}
+      onError={onError}
+      data-testid="next-image"
+      {...props}
+    />
   ),
 }));
 
@@ -77,7 +83,9 @@ describe("EnhancementHistoryGrid", () => {
     );
 
     expect(
-      screen.getByText("No enhancement versions yet. Create your first enhancement above."),
+      screen.getByText(
+        "No enhancement versions yet. Create your first enhancement above.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -508,7 +516,9 @@ describe("EnhancementHistoryGrid", () => {
   });
 
   it("handles fetch error when logging broken image", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
     render(

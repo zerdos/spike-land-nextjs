@@ -71,13 +71,22 @@ export default async function MyAppsPage() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     All
                   </Badge>
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     Active
                   </Badge>
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     Draft
                   </Badge>
                 </div>
@@ -121,14 +130,23 @@ export default async function MyAppsPage() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     All ({apps.length})
                   </Badge>
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     Active ({apps.filter((app: { status: string; }) => app.status === "ACTIVE")
                       .length})
                   </Badge>
-                  <Badge variant="outline" className="cursor-not-allowed opacity-50">
+                  <Badge
+                    variant="outline"
+                    className="cursor-not-allowed opacity-50"
+                  >
                     Draft ({apps.filter((app: { status: string; }) => app.status === "DRAFT")
                       .length})
                   </Badge>
@@ -150,7 +168,11 @@ export default async function MyAppsPage() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-xl">{app.name}</CardTitle>
-                        <Badge variant={app.status === "ACTIVE" ? "default" : "secondary"}>
+                        <Badge
+                          variant={app.status === "ACTIVE"
+                            ? "default"
+                            : "secondary"}
+                        >
                           {app.status}
                         </Badge>
                       </div>

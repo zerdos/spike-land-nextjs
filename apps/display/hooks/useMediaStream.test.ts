@@ -55,7 +55,9 @@ describe("useMediaStream", () => {
   });
 
   it("should start camera stream successfully", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     const stream = await result.current.startStream("camera");
@@ -70,7 +72,9 @@ describe("useMediaStream", () => {
   });
 
   it("should start camera stream with custom constraints", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     const constraints = {
@@ -84,7 +88,9 @@ describe("useMediaStream", () => {
   });
 
   it("should start screen stream successfully", async () => {
-    const { getDisplayMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getDisplayMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     const stream = await result.current.startStream("screen");
@@ -99,12 +105,18 @@ describe("useMediaStream", () => {
   });
 
   it("should get stream metadata after starting stream", async () => {
-    const { getStreamMetadata } = await import("@apps/display/lib/webrtc/utils");
+    const { getStreamMetadata } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     await result.current.startStream("camera");
 
-    expect(vi.mocked(getStreamMetadata)).toHaveBeenCalledWith(mockStream, "peer-123", "video");
+    expect(vi.mocked(getStreamMetadata)).toHaveBeenCalledWith(
+      mockStream,
+      "peer-123",
+      "video",
+    );
 
     await waitFor(() => {
       expect(result.current.metadata).toEqual(mockMetadata);
@@ -112,7 +124,9 @@ describe("useMediaStream", () => {
   });
 
   it("should monitor stream health after starting", async () => {
-    const { monitorStreamHealth } = await import("@apps/display/lib/webrtc/utils");
+    const { monitorStreamHealth } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     await result.current.startStream("camera");
@@ -124,7 +138,9 @@ describe("useMediaStream", () => {
   });
 
   it("should call onInactive when stream becomes inactive", async () => {
-    const { monitorStreamHealth } = await import("@apps/display/lib/webrtc/utils");
+    const { monitorStreamHealth } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
     await result.current.startStream("camera");
@@ -151,13 +167,17 @@ describe("useMediaStream", () => {
   });
 
   it("should handle stream start error", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const error = new Error("Permission denied");
     vi.mocked(getUserMediaStream).mockRejectedValue(error);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
-    await expect(result.current.startStream("camera")).rejects.toThrow("Permission denied");
+    await expect(result.current.startStream("camera")).rejects.toThrow(
+      "Permission denied",
+    );
 
     await waitFor(() => {
       expect(result.current.error).toBe("Permission denied");
@@ -166,12 +186,16 @@ describe("useMediaStream", () => {
   });
 
   it("should handle non-Error object in catch", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     vi.mocked(getUserMediaStream).mockRejectedValue("String error");
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
-    await expect(result.current.startStream("camera")).rejects.toBe("String error");
+    await expect(result.current.startStream("camera")).rejects.toBe(
+      "String error",
+    );
 
     await waitFor(() => {
       expect(result.current.error).toBe("Failed to start media stream");
@@ -179,7 +203,9 @@ describe("useMediaStream", () => {
   });
 
   it("should stop stream and cleanup", async () => {
-    const { monitorStreamHealth, stopMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { monitorStreamHealth, stopMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const mockCleanup = vi.fn();
     vi.mocked(monitorStreamHealth).mockReturnValue(mockCleanup);
 
@@ -275,7 +301,9 @@ describe("useMediaStream", () => {
   });
 
   it("should replace video track from camera to screen", async () => {
-    const { getDisplayMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getDisplayMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const newStream = {
       getVideoTracks: vi.fn(() => [{ id: "new-track" }]),
     } as unknown as MediaStream;
@@ -296,7 +324,9 @@ describe("useMediaStream", () => {
   });
 
   it("should replace video track from screen to camera", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const newStream = {
       getVideoTracks: vi.fn(() => [{ id: "camera-track" }]),
     } as unknown as MediaStream;
@@ -311,7 +341,9 @@ describe("useMediaStream", () => {
   });
 
   it("should set stream when replacing track without existing stream", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const newStream = {
       getVideoTracks: vi.fn(() => [{ id: "new-track" }]),
     } as unknown as MediaStream;
@@ -328,7 +360,9 @@ describe("useMediaStream", () => {
   });
 
   it("should handle replace video track error", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const error = new Error("Failed to get media");
     vi.mocked(getUserMediaStream).mockRejectedValue(error);
 
@@ -336,7 +370,9 @@ describe("useMediaStream", () => {
 
     await result.current.startStream("screen");
 
-    await expect(result.current.replaceVideoTrack("camera")).rejects.toThrow("Failed to get media");
+    await expect(result.current.replaceVideoTrack("camera")).rejects.toThrow(
+      "Failed to get media",
+    );
 
     await waitFor(() => {
       expect(result.current.error).toBe("Failed to get media");
@@ -344,12 +380,16 @@ describe("useMediaStream", () => {
   });
 
   it("should handle non-Error in replaceVideoTrack catch", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     vi.mocked(getUserMediaStream).mockRejectedValue("String error");
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
-    await expect(result.current.replaceVideoTrack("camera")).rejects.toBe("String error");
+    await expect(result.current.replaceVideoTrack("camera")).rejects.toBe(
+      "String error",
+    );
 
     await waitFor(() => {
       expect(result.current.error).toBe("Failed to replace video track");
@@ -357,7 +397,9 @@ describe("useMediaStream", () => {
   });
 
   it("should cleanup on unmount", async () => {
-    const { monitorStreamHealth, stopMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { monitorStreamHealth, stopMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const mockCleanup = vi.fn();
     vi.mocked(monitorStreamHealth).mockReturnValue(mockCleanup);
 
@@ -378,12 +420,18 @@ describe("useMediaStream", () => {
   });
 
   it("should clear error when starting new stream", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
-    vi.mocked(getUserMediaStream).mockRejectedValueOnce(new Error("First error"));
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
+    vi.mocked(getUserMediaStream).mockRejectedValueOnce(
+      new Error("First error"),
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
-    await expect(result.current.startStream("camera")).rejects.toThrow("First error");
+    await expect(result.current.startStream("camera")).rejects.toThrow(
+      "First error",
+    );
 
     await waitFor(() => {
       expect(result.current.error).toBe("First error");
@@ -398,7 +446,9 @@ describe("useMediaStream", () => {
   });
 
   it("should handle replaceVideoTrack when no new video track exists", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
     const newStream = {
       getVideoTracks: vi.fn(() => []), // No video tracks
     } as unknown as MediaStream;
@@ -431,7 +481,9 @@ describe("useMediaStream", () => {
   });
 
   it("should update state with streamRef.current when replacing video track with existing stream", async () => {
-    const { getUserMediaStream } = await import("@apps/display/lib/webrtc/utils");
+    const { getUserMediaStream } = await import(
+      "@apps/display/lib/webrtc/utils"
+    );
 
     const oldVideoTrack = { stop: vi.fn(), enabled: true };
     const newVideoTrack = { id: "new-track", enabled: true };

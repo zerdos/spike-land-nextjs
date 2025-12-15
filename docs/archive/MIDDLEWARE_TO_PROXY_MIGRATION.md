@@ -2,18 +2,22 @@
 
 ## Overview
 
-This document records the migration from the deprecated `middleware.ts` convention to the new `proxy.ts` convention for Next.js 16 compatibility.
+This document records the migration from the deprecated `middleware.ts`
+convention to the new `proxy.ts` convention for Next.js 16 compatibility.
 
 ## Migration Details
 
 - **Migration Date**: December 2024
 - **Next.js Version**: 16.x
 - **PR**: [#145](https://github.com/zerdos/spike-land-nextjs/pull/145)
-- **Follow-up Documentation PR**: [#146](https://github.com/zerdos/spike-land-nextjs/issues/146)
+- **Follow-up Documentation PR**:
+  [#146](https://github.com/zerdos/spike-land-nextjs/issues/146)
 
 ## Reason for Migration
 
-Next.js 16 deprecated the `middleware.ts` file convention in favor of `proxy.ts`. This change aligns with Next.js's evolving architecture and runtime model:
+Next.js 16 deprecated the `middleware.ts` file convention in favor of
+`proxy.ts`. This change aligns with Next.js's evolving architecture and runtime
+model:
 
 - **Old Convention**: `src/middleware.ts` with `export function middleware()`
 - **New Convention**: `src/proxy.ts` with `export function proxy()`
@@ -133,8 +137,10 @@ After deployment, monitor:
 
 - **Migration PR**: https://github.com/zerdos/spike-land-nextjs/pull/145
 - **Code Review**: https://github.com/zerdos/spike-land-nextjs/issues/146
-- **Next.js 16 Documentation**: https://nextjs.org/docs/app/building-your-application/routing/middleware
-- **Proxy Convention**: https://nextjs.org/docs/app/api-reference/file-conventions/proxy
+- **Next.js 16 Documentation**:
+  https://nextjs.org/docs/app/building-your-application/routing/middleware
+- **Proxy Convention**:
+  https://nextjs.org/docs/app/api-reference/file-conventions/proxy
 
 ## Verification Checklist
 

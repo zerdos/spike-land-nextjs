@@ -47,7 +47,9 @@ function createFallbackImage(): ImageResponse {
   );
 }
 
-export default async function Image({ params }: ImageProps): Promise<ImageResponse> {
+export default async function Image(
+  { params }: ImageProps,
+): Promise<ImageResponse> {
   try {
     const { token } = await params;
 

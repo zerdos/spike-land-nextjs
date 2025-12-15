@@ -120,7 +120,9 @@ export async function GET(
       const sendEvent = (data: JobStreamData) => {
         if (isStreamClosed) return;
         try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+          );
         } catch {
           // Stream was closed
           isStreamClosed = true;
@@ -140,7 +142,10 @@ export async function GET(
             Math.pow(1.2, pollCount - BACKOFF_THRESHOLD),
             MAX_POLL_INTERVAL / baseInterval,
           );
-          baseInterval = Math.min(baseInterval * backoffMultiplier, MAX_POLL_INTERVAL);
+          baseInterval = Math.min(
+            baseInterval * backoffMultiplier,
+            MAX_POLL_INTERVAL,
+          );
         }
 
         return Math.round(baseInterval);

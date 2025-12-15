@@ -43,7 +43,12 @@ export interface UseMultiFileUploadReturn {
 
 const DEFAULT_MAX_FILES = 20;
 const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
 
 /**
  * Custom hook for uploading multiple files with progress tracking
@@ -90,7 +95,10 @@ export function useMultiFileUpload(
    * Update a file's status by its unique ID
    */
   const updateFileById = useCallback(
-    (fileId: string, update: Partial<Omit<FileUploadStatus, "id" | "file">>) => {
+    (
+      fileId: string,
+      update: Partial<Omit<FileUploadStatus, "id" | "file">>,
+    ) => {
       setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, ...update } : f)));
     },
     [],
@@ -121,7 +129,10 @@ export function useMultiFileUpload(
    * Upload a single file
    */
   const uploadSingleFile = useCallback(
-    async (fileStatus: FileUploadStatus, signal: AbortSignal): Promise<void> => {
+    async (
+      fileStatus: FileUploadStatus,
+      signal: AbortSignal,
+    ): Promise<void> => {
       const fileId = fileStatus.id;
 
       // Skip files that already failed validation or are cancelled
@@ -170,7 +181,9 @@ export function useMultiFileUpload(
           return;
         }
 
-        const errorMessage = error instanceof Error ? error.message : "Upload failed";
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Upload failed";
 
         updateFileById(fileId, {
           status: "failed",
@@ -301,16 +314,14 @@ export function useMultiFileUpload(
   /**
    * Calculate overall progress (0-100)
    */
-  const progress = files.length === 0
-    ? 0
-    : Math.round(
-      files.reduce((sum, f) => {
-        if (f.status === "completed") return sum + 100;
-        if (f.status === "failed") return sum + 100;
-        if (f.status === "cancelled") return sum + 100; // Treat cancelled as complete for progress
-        return sum + f.progress;
-      }, 0) / files.length,
-    );
+  const progress = files.length === 0 ? 0 : Math.round(
+    files.reduce((sum, f) => {
+      if (f.status === "completed") return sum + 100;
+      if (f.status === "failed") return sum + 100;
+      if (f.status === "cancelled") return sum + 100; // Treat cancelled as complete for progress
+      return sum + f.progress;
+    }, 0) / files.length,
+  );
 
   /**
    * Count completed files

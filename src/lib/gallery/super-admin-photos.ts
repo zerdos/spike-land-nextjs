@@ -65,7 +65,10 @@ export async function getSuperAdminPublicPhotos(
     for (const albumImage of album.albumImages) {
       const latestJob = albumImage.image.enhancementJobs[0];
 
-      if (latestJob?.enhancedUrl && latestJob.enhancedWidth && latestJob.enhancedHeight) {
+      if (
+        latestJob?.enhancedUrl && latestJob.enhancedWidth &&
+        latestJob.enhancedHeight
+      ) {
         photos.push({
           id: albumImage.image.id,
           title: albumImage.image.name,

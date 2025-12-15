@@ -1,6 +1,7 @@
 # Spike Land API Documentation
 
-This directory contains comprehensive API documentation for the Spike Land platform using OpenAPI 3.0 specification.
+This directory contains comprehensive API documentation for the Spike Land
+platform using OpenAPI 3.0 specification.
 
 ## Overview
 
@@ -22,7 +23,8 @@ Complete OpenAPI 3.0 specification including:
 - Common components and schemas
 - Reusable response objects and parameters
 
-This base specification is designed to be extended with individual endpoint definitions for each API route.
+This base specification is designed to be extended with individual endpoint
+definitions for each API route.
 
 ## Using the OpenAPI Specification
 
@@ -366,7 +368,8 @@ curl https://spike.land/api/jobs/{jobId}/stream \
 For questions or issues:
 
 - Email: support@spike.land
-- GitHub Issues: [Report bug](https://github.com/zerdos/spike-land-nextjs/issues)
+- GitHub Issues:
+  [Report bug](https://github.com/zerdos/spike-land-nextjs/issues)
 - Documentation: [spike.land/docs](https://spike.land/docs)
 
 ## Specification Compliance
@@ -378,4 +381,6 @@ For questions or issues:
 
 ---
 
-**Note**: This is the base OpenAPI specification. Individual endpoint definitions should be added to the `paths:` section as endpoints are documented. See "Extending the Specification" section for guidance.
+**Note**: This is the base OpenAPI specification. Individual endpoint
+definitions should be added to the `paths:` section as endpoints are documented.
+See "Extending the Specification" section for guidance.

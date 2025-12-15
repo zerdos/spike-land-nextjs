@@ -26,11 +26,15 @@ export default function TestEnhancementPage() {
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
+    null,
+  );
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
-  const [selectedTier, setSelectedTier] = useState<"TIER_1K" | "TIER_2K" | "TIER_4K">("TIER_2K");
+  const [selectedTier, setSelectedTier] = useState<
+    "TIER_1K" | "TIER_2K" | "TIER_4K"
+  >("TIER_2K");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -172,8 +176,12 @@ export default function TestEnhancementPage() {
       <Card className="p-4 mb-6 bg-blue-50">
         <div className="flex justify-between items-center">
           <div>
-            <p className="font-medium">Token Balance: {tokenBalance ?? "..."}</p>
-            <p className="text-sm text-gray-600">+1 token every 15 minutes (max 100)</p>
+            <p className="font-medium">
+              Token Balance: {tokenBalance ?? "..."}
+            </p>
+            <p className="text-sm text-gray-600">
+              +1 token every 15 minutes (max 100)
+            </p>
           </div>
           <Button onClick={fetchTokenBalance} variant="outline" size="sm">
             Refresh
@@ -206,7 +214,11 @@ export default function TestEnhancementPage() {
             disabled={!file || uploading || !!uploadedImage}
             className="w-full"
           >
-            {uploading ? "Uploading..." : uploadedImage ? "Uploaded ✓" : "Upload to R2"}
+            {uploading
+              ? "Uploading..."
+              : uploadedImage
+              ? "Uploaded ✓"
+              : "Upload to R2"}
           </Button>
           {uploadedImage && (
             <div className="mt-4 p-3 bg-green-50 rounded text-sm">
@@ -220,17 +232,21 @@ export default function TestEnhancementPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">2. Enhance Image</h2>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Select Quality Tier:</label>
+            <label className="block text-sm font-medium mb-2">
+              Select Quality Tier:
+            </label>
             <div className="space-y-2">
               {(["TIER_1K", "TIER_2K", "TIER_4K"] as const).map((tier) => (
-                <label key={tier} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={tier}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
                     type="radio"
                     name="tier"
                     value={tier}
                     checked={selectedTier === tier}
-                    onChange={(e) =>
-                      setSelectedTier(e.target.value as typeof tier)}
+                    onChange={(e) => setSelectedTier(e.target.value as typeof tier)}
                     disabled={!uploadedImage || enhancing}
                   />
                   <span>
@@ -246,9 +262,12 @@ export default function TestEnhancementPage() {
               (tokenBalance !== null && tokenBalance < tierCosts[selectedTier])}
             className="w-full"
           >
-            {enhancing ? "Enhancing..." : `Enhance (${tierCosts[selectedTier]} tokens)`}
+            {enhancing
+              ? "Enhancing..."
+              : `Enhance (${tierCosts[selectedTier]} tokens)`}
           </Button>
-          {tokenBalance !== null && tokenBalance < tierCosts[selectedTier] && uploadedImage && (
+          {tokenBalance !== null && tokenBalance < tierCosts[selectedTier] &&
+            uploadedImage && (
             <p className="mt-2 text-sm text-red-600">
               Insufficient tokens. Need {tierCosts[selectedTier]}, have {tokenBalance}
             </p>
@@ -258,7 +277,9 @@ export default function TestEnhancementPage() {
         {/* Job Status */}
         {job && (
           <Card className="p-6 md:col-span-2">
-            <h2 className="text-xl font-semibold mb-4">3. Enhancement Result</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              3. Enhancement Result
+            </h2>
             <div className="mb-4">
               <p>
                 <strong>Status:</strong> {job.status}
@@ -272,8 +293,12 @@ export default function TestEnhancementPage() {
             </div>
             {job.status === "COMPLETED" && job.enhancedUrl && (
               <div>
-                <p className="mb-2 font-medium text-green-600">✓ Enhancement Complete!</p>
-                <p className="mb-2">Enhanced: {job.enhancedWidth}x{job.enhancedHeight}px</p>
+                <p className="mb-2 font-medium text-green-600">
+                  ✓ Enhancement Complete!
+                </p>
+                <p className="mb-2">
+                  Enhanced: {job.enhancedWidth}x{job.enhancedHeight}px
+                </p>
                 <div className="bg-gray-100 p-4 rounded">
                   <p className="text-sm mb-2">Enhanced Image URL:</p>
                   <code className="text-xs break-all">{job.enhancedUrl}</code>
@@ -282,7 +307,9 @@ export default function TestEnhancementPage() {
             )}
             {job.status === "FAILED" && (
               <div className="p-4 bg-red-50 rounded">
-                <p className="text-red-600">Enhancement failed: {job.errorMessage}</p>
+                <p className="text-red-600">
+                  Enhancement failed: {job.errorMessage}
+                </p>
                 <p className="text-sm mt-2">Tokens have been refunded.</p>
               </div>
             )}

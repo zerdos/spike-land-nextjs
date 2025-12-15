@@ -51,16 +51,22 @@ const expectedMetadata = {
 describe("Pixel Landing Page (/apps/pixel)", () => {
   describe("Metadata Contract", () => {
     it("should expect title to be 'Pixel - AI Image Enhancement | Spike Land'", () => {
-      expect(expectedMetadata.title).toBe("Pixel - AI Image Enhancement | Spike Land");
+      expect(expectedMetadata.title).toBe(
+        "Pixel - AI Image Enhancement | Spike Land",
+      );
     });
 
     it("should expect description to mention AI image enhancement", () => {
-      expect(expectedMetadata.description).toContain("Enhance your photos in seconds with AI");
+      expect(expectedMetadata.description).toContain(
+        "Enhance your photos in seconds with AI",
+      );
     });
 
     it("should expect OpenGraph metadata", () => {
       expect(expectedMetadata.openGraph).toBeDefined();
-      expect(expectedMetadata.openGraph?.title).toBe("Pixel - AI Image Enhancement | Spike Land");
+      expect(expectedMetadata.openGraph?.title).toBe(
+        "Pixel - AI Image Enhancement | Spike Land",
+      );
     });
   });
 
@@ -117,7 +123,9 @@ describe("Pixel Landing Page (/apps/pixel)", () => {
   describe("CTA Section Links", () => {
     it("should have Start Enhancing Free link pointing to /apps/pixel", () => {
       render(<TestableLandingPage />);
-      const button = screen.getByRole("link", { name: /Start Enhancing Free/i });
+      const button = screen.getByRole("link", {
+        name: /Start Enhancing Free/i,
+      });
       expect(button).toBeInTheDocument();
       expect(button).toHaveAttribute("href", "/apps/pixel");
     });

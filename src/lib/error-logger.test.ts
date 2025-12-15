@@ -138,7 +138,9 @@ describe("ErrorLogger", () => {
       const call = consoleErrorSpy.mock.calls[0];
       const errorInfo = call[1] as { timestamp: string; };
 
-      expect(errorInfo.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(errorInfo.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+      );
     });
   });
 

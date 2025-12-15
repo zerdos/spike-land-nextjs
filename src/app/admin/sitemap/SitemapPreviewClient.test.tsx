@@ -381,7 +381,7 @@ describe("SitemapPreviewClient", () => {
     );
 
     const buttons = screen.getAllByRole("button");
-    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    const deleteButton = buttons.find((btn) => btn.title === "Delete custom path");
     expect(deleteButton).toBeDefined();
   });
 
@@ -396,7 +396,11 @@ describe("SitemapPreviewClient", () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
-        trackedPaths={[{ id: "path-123", path: "/custom-page", isActive: true }]}
+        trackedPaths={[{
+          id: "path-123",
+          path: "/custom-page",
+          isActive: true,
+        }]}
         origin={defaultOrigin}
       />,
     );
@@ -404,7 +408,7 @@ describe("SitemapPreviewClient", () => {
     expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
 
     const buttons = screen.getAllByRole("button");
-    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    const deleteButton = buttons.find((btn) => btn.title === "Delete custom path");
     expect(deleteButton).toBeDefined();
 
     if (deleteButton) {
@@ -420,7 +424,8 @@ describe("SitemapPreviewClient", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText("visible", { exact: false })).toBeInTheDocument();
+        expect(screen.getByText("visible", { exact: false }))
+          .toBeInTheDocument();
       });
     }
   });
@@ -435,7 +440,7 @@ describe("SitemapPreviewClient", () => {
     );
 
     const buttons = screen.getAllByRole("button");
-    const deleteButton = buttons.find(btn => btn.title === "Delete custom path");
+    const deleteButton = buttons.find((btn) => btn.title === "Delete custom path");
     expect(deleteButton).toBeUndefined();
   });
 

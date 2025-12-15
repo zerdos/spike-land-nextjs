@@ -16,22 +16,30 @@ describe("FAQ Component", () => {
 
   it("should render all FAQ questions", () => {
     render(<FAQ />);
-    expect(screen.getByText("What types of images can I enhance?")).toBeInTheDocument();
+    expect(screen.getByText("What types of images can I enhance?"))
+      .toBeInTheDocument();
     expect(screen.getByText("How do tokens work?")).toBeInTheDocument();
-    expect(screen.getByText("What resolution options are available?")).toBeInTheDocument();
-    expect(screen.getByText("How long does enhancement take?")).toBeInTheDocument();
+    expect(screen.getByText("What resolution options are available?"))
+      .toBeInTheDocument();
+    expect(screen.getByText("How long does enhancement take?"))
+      .toBeInTheDocument();
     expect(screen.getByText("Is my data secure?")).toBeInTheDocument();
-    expect(screen.getByText("Can I get a refund if I'm not satisfied?")).toBeInTheDocument();
+    expect(screen.getByText("Can I get a refund if I'm not satisfied?"))
+      .toBeInTheDocument();
   });
 
   it("should expand answer when question is clicked", async () => {
     const user = userEvent.setup();
     render(<FAQ />);
 
-    const firstQuestion = screen.getByText("What types of images can I enhance?");
+    const firstQuestion = screen.getByText(
+      "What types of images can I enhance?",
+    );
     await user.click(firstQuestion);
 
-    expect(screen.getByText(/Our AI enhancement works with all common image types/)).toBeVisible();
+    expect(
+      screen.getByText(/Our AI enhancement works with all common image types/),
+    ).toBeVisible();
   });
 
   it("should show token explanation when clicked", async () => {
@@ -41,18 +49,22 @@ describe("FAQ Component", () => {
     const tokenQuestion = screen.getByText("How do tokens work?");
     await user.click(tokenQuestion);
 
-    expect(screen.getByText(/Tokens are our flexible payment system/)).toBeVisible();
+    expect(screen.getByText(/Tokens are our flexible payment system/))
+      .toBeVisible();
   });
 
   it("should show resolution options when clicked", async () => {
     const user = userEvent.setup();
     render(<FAQ />);
 
-    const resolutionQuestion = screen.getByText("What resolution options are available?");
+    const resolutionQuestion = screen.getByText(
+      "What resolution options are available?",
+    );
     await user.click(resolutionQuestion);
 
     expect(screen.getByText(/We offer three resolution tiers/)).toBeVisible();
-    expect(screen.getByText(/1K \(1024px\), 2K \(2048px\), and 4K \(4096px\)/)).toBeVisible();
+    expect(screen.getByText(/1K \(1024px\), 2K \(2048px\), and 4K \(4096px\)/))
+      .toBeVisible();
   });
 
   it("should show processing time when clicked", async () => {
@@ -80,7 +92,9 @@ describe("FAQ Component", () => {
     const user = userEvent.setup();
     render(<FAQ />);
 
-    const refundQuestion = screen.getByText("Can I get a refund if I'm not satisfied?");
+    const refundQuestion = screen.getByText(
+      "Can I get a refund if I'm not satisfied?",
+    );
     await user.click(refundQuestion);
 
     expect(screen.getByText(/refund the tokens used/)).toBeVisible();
@@ -90,11 +104,15 @@ describe("FAQ Component", () => {
     const user = userEvent.setup();
     render(<FAQ />);
 
-    const firstQuestion = screen.getByText("What types of images can I enhance?");
+    const firstQuestion = screen.getByText(
+      "What types of images can I enhance?",
+    );
 
     // Expand
     await user.click(firstQuestion);
-    expect(screen.getByText(/Our AI enhancement works with all common image types/)).toBeVisible();
+    expect(
+      screen.getByText(/Our AI enhancement works with all common image types/),
+    ).toBeVisible();
 
     // Collapse
     await user.click(firstQuestion);
@@ -108,11 +126,14 @@ describe("FAQ Component", () => {
 
     // Open first question
     await user.click(screen.getByText("What types of images can I enhance?"));
-    expect(screen.getByText(/Our AI enhancement works with all common image types/)).toBeVisible();
+    expect(
+      screen.getByText(/Our AI enhancement works with all common image types/),
+    ).toBeVisible();
 
     // Open second question
     await user.click(screen.getByText("How do tokens work?"));
-    expect(screen.getByText(/Tokens are our flexible payment system/)).toBeVisible();
+    expect(screen.getByText(/Tokens are our flexible payment system/))
+      .toBeVisible();
     // First should close due to single mode
   });
 
