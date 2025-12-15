@@ -16,6 +16,14 @@ describe("Skeleton", () => {
     expect(element).toHaveClass("bg-primary/10");
   });
 
+  it("applies shimmer variant classes", () => {
+    const { container } = render(<Skeleton variant="shimmer" />);
+    const element = container.firstChild as HTMLElement;
+    expect(element).toHaveClass("bg-skeleton-shimmer");
+    expect(element).toHaveClass("animate-skeleton-shimmer");
+    expect(element).toHaveClass("rounded-md");
+  });
+
   it("accepts custom className", () => {
     const { container } = render(<Skeleton className="custom-class" />);
     const element = container.firstChild as HTMLElement;

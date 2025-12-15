@@ -55,9 +55,14 @@ export function BeforeAfterGalleryClient({ items }: BeforeAfterGalleryClientProp
             <TabsContent key={category.value} value={category.value}>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {(category.value === "all" ? items : filteredItems).map(item => (
-                  <Card key={item.id} className="overflow-hidden">
+                  <Card
+                    key={item.id}
+                    className="overflow-hidden transition-all duration-300 hover:shadow-glow-cyan-sm hover:border-primary/30 group"
+                  >
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                        {item.title}
+                      </CardTitle>
                       <CardDescription>{item.description}</CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
