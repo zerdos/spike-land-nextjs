@@ -86,6 +86,11 @@
     --chart-3: 30 80% 50%; /* Orange */
     --chart-4: 240 38% 30%; /* Surface Blue lighter */
     --chart-5: 340 75% 50%; /* Pink */
+
+    /* Animation Duration Tokens */
+    --animation-fast: 150ms; /* Quick transitions (tooltips, hovers) */
+    --animation-normal: 200ms; /* Standard transitions (buttons, cards) */
+    --animation-slow: 300ms; /* Longer transitions (modals, accordions) */
   }
 
   .dark {
