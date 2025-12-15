@@ -21,7 +21,8 @@ async function mockApiError(
   });
 }
 
-async function mockApiSuccess(world: CustomWorld, pattern: string, body: object) {
+// Helper for future use
+async function _mockApiSuccess(world: CustomWorld, pattern: string, body: object) {
   await world.page.route(pattern, async (route) => {
     await route.fulfill({
       status: 200,

@@ -86,9 +86,12 @@ Then("I should see platform feature cards", async function(this: CustomWorld) {
 });
 
 Then("I should see a bottom CTA section", async function(this: CustomWorld) {
-  // CTASection is typically at the bottom
-  const ctaSection = this.page.locator("section").last();
-  await expect(ctaSection).toBeVisible({ timeout: 10000 });
+  // CTASection contains a call-to-action - look for sections with buttons/links
+  // Exclude notification/toast sections which use aria-live
+  const ctaSection = this.page.locator("section:not([aria-live])").filter({
+    has: this.page.locator("a, button"),
+  });
+  await expect(ctaSection.last()).toBeVisible({ timeout: 10000 });
 });
 
 Then("I should see the platform header", async function(this: CustomWorld) {

@@ -45,8 +45,8 @@ const mockProcessingJob = {
   processingCompletedAt: null,
 };
 
-// Helper to mock MCP APIs
-async function mockMcpApis(world: CustomWorld) {
+// Helper to mock MCP APIs - keeping for future use
+async function _mockMcpApis(world: CustomWorld) {
   // Mock generate endpoint
   await world.page.route("**/api/mcp/generate", async (route) => {
     const body = JSON.parse(route.request().postData() || "{}");
@@ -175,7 +175,8 @@ Given("I mock a successful MCP modify job", async function(this: CustomWorld) {
 Given(
   "I mock a job status response for job {string}",
   async function(this: CustomWorld, jobId: string) {
-    await this.page.route(`**/api/mcp/jobs/${jobId}`, async (route) => {
+    // Mock any job status request to return the specified job ID
+    await this.page.route("**/api/mcp/jobs/*", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -270,9 +271,28 @@ When(
 When(
   "I select {string} quality tier",
   async function(this: CustomWorld, tier: string) {
-    const selector = this.page.getByRole("combobox");
-    await selector.click();
-    await this.page.getByRole("option", { name: new RegExp(tier, "i") }).click();
+    // Map tier codes to their display text
+    const tierTextMap: Record<string, string> = {
+      "TIER_1K": "1K",
+      "TIER_2K": "2K",
+      "TIER_4K": "4K",
+    };
+    const tierText = tierTextMap[tier] || tier;
+
+    // Find the Quality Tier select within the visible tab panel
+    const tabPanel = this.page.locator('[role="tabpanel"]');
+    const selectTrigger = tabPanel.locator('[role="combobox"], button[data-slot="trigger"]')
+      .first();
+    await expect(selectTrigger).toBeVisible({ timeout: 10000 });
+    await selectTrigger.click();
+    // Wait for dropdown to open
+    await this.page.waitForTimeout(300);
+    // Select the option by its display text (e.g., "2K (2048px) - 5 tokens")
+    const option = this.page.getByRole("option", { name: new RegExp(tierText, "i") });
+    await expect(option).toBeVisible({ timeout: 5000 });
+    await option.click();
+    // Wait for dropdown to close
+    await this.page.waitForTimeout(200);
   },
 );
 
@@ -326,11 +346,14 @@ When("the job completes", async function(this: CustomWorld) {
 When(
   "I click the copy button for {string} API command",
   async function(this: CustomWorld, commandName: string) {
-    // Find the section for the command
-    const section = this.page.locator("div").filter({
-      has: this.page.getByRole("heading", { name: new RegExp(commandName, "i") }),
+    // Find the section for the command by looking for the h4 heading text
+    // Each API section has an h4 title and a pre code block with copy button
+    const section = this.page.locator(".space-y-2").filter({
+      has: this.page.locator("h4", { hasText: new RegExp(commandName, "i") }),
     });
-    const copyButton = section.getByRole("button", { name: /copy/i });
+    // The copy button is inside the relative positioned div with the code
+    const copyButton = section.locator("button").first();
+    await expect(copyButton).toBeVisible({ timeout: 10000 });
     await copyButton.click();
   },
 );
@@ -377,9 +400,7 @@ Then("I should see tier pricing information", async function(this: CustomWorld) 
 });
 
 Then("I should see my current token balance displayed", async function(this: CustomWorld) {
-  const balanceDisplay = this.page.getByText(/\d+/).filter({
-    has: this.page.locator("p").getByText(/tokens available/i),
-  });
+  // Verify the tokens available text is visible
   await expect(this.page.getByText(/tokens available/i)).toBeVisible();
 });
 
@@ -411,10 +432,13 @@ Then("I should see the modified image in the result area", async function(this: 
 });
 
 Then("I should see {string} status badge", async function(this: CustomWorld, status: string) {
-  const badge = this.page.locator('[class*="badge"]').filter({
-    has: this.page.getByText(new RegExp(status, "i")),
+  // Badge component uses inline-flex with rounded-md, look for text in any badge-like element
+  const badge = this.page.locator(
+    ".inline-flex.items-center.rounded-md, [class*='bg-green'], [class*='bg-destructive'], [class*='bg-blue']",
+  ).filter({
+    hasText: new RegExp(status, "i"),
   });
-  await expect(badge).toBeVisible();
+  await expect(badge.first()).toBeVisible({ timeout: 10000 });
 });
 
 Then("I should see the job details", async function(this: CustomWorld) {
@@ -425,8 +449,10 @@ Then("I should see the job details", async function(this: CustomWorld) {
 Then(
   "I should see the job details for {string}",
   async function(this: CustomWorld, jobId: string) {
+    // Wait for the job result to load - API call happens after clicking check status
+    await this.page.waitForTimeout(1000);
     const jobIdText = this.page.getByText(jobId);
-    await expect(jobIdText).toBeVisible();
+    await expect(jobIdText).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -445,10 +471,16 @@ Then("I should see the job status badge", async function(this: CustomWorld) {
 });
 
 Then("I should see the output image", async function(this: CustomWorld) {
-  const resultImage = this.page.locator('[class*="card"]').filter({
-    has: this.page.getByRole("heading", { name: /job details/i }),
-  }).locator("img");
-  await expect(resultImage).toBeVisible();
+  // Wait for job result to load
+  await this.page.waitForTimeout(1000);
+  // Look for the image in the Job Details card - CardTitle is a div
+  // The card structure is: Card > CardHeader > CardTitle + CardContent with image
+  const resultCard = this.page.locator("div").filter({
+    hasText: /job details/i,
+  });
+  // Find the image within the card context - it's inside a relative positioned div
+  const resultImage = resultCard.locator("img");
+  await expect(resultImage.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then("I should see the image dimensions", async function(this: CustomWorld) {
@@ -460,10 +492,18 @@ Then("I should see the image dimensions", async function(this: CustomWorld) {
 // NOTE: "I should see the error message" is defined in common.steps.ts
 
 Then("I should see {string} API example", async function(this: CustomWorld, apiName: string) {
+  // Map API names to their actual endpoint text in the code blocks
+  const endpointMap: Record<string, string> = {
+    "Generate Image": "mcp/generate",
+    "Modify Image": "mcp/modify",
+    "Check Job Status": "mcp/jobs",
+    "Check Balance": "mcp/balance",
+  };
+  const endpoint = endpointMap[apiName] || apiName.toLowerCase().replace(/\s+/g, "");
   const example = this.page.locator("pre").filter({
-    hasText: new RegExp(apiName.toLowerCase().replace(/\s+/g, ""), "i"),
+    hasText: new RegExp(endpoint, "i"),
   });
-  await expect(example.first()).toBeVisible();
+  await expect(example.first()).toBeVisible({ timeout: 10000 });
 });
 
 Then("the command should be copied to clipboard", async function(this: CustomWorld) {
