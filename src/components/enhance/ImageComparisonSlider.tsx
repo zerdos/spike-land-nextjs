@@ -28,34 +28,56 @@ interface ImageComparisonSliderProps {
   enhancedUrl: string;
   originalLabel?: string;
   enhancedLabel?: string;
-  /** Width of the original image. Used to calculate aspect ratio. Defaults to 16. */
+  /** Width of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   width?: number;
-  /** Height of the original image. Used to calculate aspect ratio. Defaults to 9. */
+  /** Height of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   height?: number;
 }
 
 /**
  * A slider component to compare original and enhanced images.
  * Uses object-cover to ensure images fill the container, and dynamic aspect ratio
- * to match the original image dimensions.
+ * to match the original image dimensions. When width/height are omitted, the component
+ * auto-detects the image dimensions for natural aspect ratio display.
  */
 export function ImageComparisonSlider({
   originalUrl,
   enhancedUrl,
   originalLabel = "Original",
   enhancedLabel = "Enhanced",
-  width = 16,
-  height = 9,
+  width,
+  height,
 }: ImageComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [enhancedError, setEnhancedError] = useState(false);
   const [originalError, setOriginalError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [detectedDimensions, setDetectedDimensions] = useState<
+    { width: number; height: number; } | null
+  >(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Ensure valid dimensions to prevent CSS errors
-  const safeWidth = Math.max(1, Number(width) || 16);
-  const safeHeight = Math.max(1, Number(height) || 9);
+  // Auto-detect dimensions if not provided (or invalid)
+  const shouldAutoDetect = width === undefined || height === undefined || !Number.isFinite(width) ||
+    !Number.isFinite(height) || width <= 0 || height <= 0;
+
+  useEffect(() => {
+    if (!shouldAutoDetect) return;
+
+    const img = new window.Image();
+    img.onload = () => {
+      setDetectedDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.src = originalUrl;
+  }, [originalUrl, shouldAutoDetect]);
+
+  // Use provided dimensions if valid, detected dimensions if available, or default 16:9
+  const safeWidth = (Number.isFinite(width) && width && width > 0)
+    ? width
+    : (detectedDimensions?.width ?? 16);
+  const safeHeight = (Number.isFinite(height) && height && height > 0)
+    ? height
+    : (detectedDimensions?.height ?? 9);
 
   const updatePosition = useCallback((clientX: number) => {
     if (!containerRef.current) return;
