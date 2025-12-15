@@ -1,9 +1,12 @@
 "use client";
 
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MASONRY_BREAKPOINTS_LANDING, MASONRY_CLASSES, MASONRY_ITEM_MARGIN } from "@/lib/canvas";
 import { useState } from "react";
+import Masonry from "react-masonry-css";
+
 import type { GalleryItem } from "./gallery-fallback-data";
 
 const categories = [
@@ -55,31 +58,27 @@ export function BeforeAfterGalleryClient(
 
           {categories.map((category) => (
             <TabsContent key={category.value} value={category.value}>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {(category.value === "all" ? items : filteredItems).map(
-                  (item) => (
-                    <Card
-                      key={item.id}
-                      className="overflow-hidden transition-all duration-300 hover:shadow-glow-cyan-sm hover:border-primary/30 group"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {item.title}
-                        </CardTitle>
-                        <CardDescription>{item.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <ImageComparisonSlider
-                          originalUrl={item.originalUrl}
-                          enhancedUrl={item.enhancedUrl}
-                          width={item.width}
-                          height={item.height}
-                        />
-                      </CardContent>
-                    </Card>
-                  ),
-                )}
-              </div>
+              <Masonry
+                breakpointCols={MASONRY_BREAKPOINTS_LANDING}
+                className={MASONRY_CLASSES.container}
+                columnClassName={MASONRY_CLASSES.column}
+              >
+                {filteredItems.map((item) => (
+                  <Card
+                    key={item.id}
+                    className={`${MASONRY_ITEM_MARGIN} overflow-hidden transition-all duration-300 hover:shadow-glow-cyan-sm hover:border-primary/30 group`}
+                  >
+                    <CardContent className="p-0">
+                      <ImageComparisonSlider
+                        originalUrl={item.originalUrl}
+                        enhancedUrl={item.enhancedUrl}
+                        width={item.width}
+                        height={item.height}
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </Masonry>
             </TabsContent>
           ))}
         </Tabs>

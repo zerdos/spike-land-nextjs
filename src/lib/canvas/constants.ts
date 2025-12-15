@@ -1,5 +1,29 @@
 import type { CanvasOrder, CanvasRotation } from "./types";
 
+// Masonry layout breakpoints
+export const MASONRY_BREAKPOINTS_GALLERY = {
+  default: 4, // Desktop: 4 columns
+  1024: 3, // Large tablet: 3 columns
+  768: 2, // Tablet: 2 columns
+  640: 2, // Mobile: 2 columns
+};
+
+export const MASONRY_BREAKPOINTS_LANDING = {
+  default: 3, // Desktop: 3 columns
+  1024: 3, // Large tablet: 3 columns
+  768: 2, // Tablet: 2 columns
+  640: 1, // Mobile: 1 column
+};
+
+// Masonry CSS class configuration
+export const MASONRY_CLASSES = {
+  container: "flex -ml-4 w-auto",
+  column: "pl-4 bg-clip-padding",
+} as const;
+
+// Consistent vertical spacing for masonry items
+export const MASONRY_ITEM_MARGIN = "mb-4";
+
 export const DEFAULT_INTERVAL = 10;
 export const MIN_INTERVAL = 5;
 export const MAX_INTERVAL = 60;
