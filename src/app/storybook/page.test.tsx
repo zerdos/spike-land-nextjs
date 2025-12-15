@@ -18,6 +18,20 @@ vi.mock("@/components/brand", () => ({
   ),
 }));
 
+// Mock EnhancementSettings component
+vi.mock("@/components/enhance/EnhancementSettings", () => ({
+  EnhancementSettings: ({
+    trigger,
+  }: {
+    trigger?: React.ReactNode;
+  }) => (
+    <div data-testid="enhancement-settings-mock">
+      {trigger}
+      <div>Enhancement Settings Mock</div>
+    </div>
+  ),
+}));
+
 import StorybookPage from "./page";
 
 describe("StorybookPage", () => {
@@ -283,6 +297,57 @@ describe("StorybookPage", () => {
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter text/i)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/disabled/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("modals tab", () => {
+    it("should show modals content when tab is clicked", async () => {
+      const user = userEvent.setup();
+      render(<StorybookPage />);
+      await user.click(screen.getByRole("tab", { name: /modals/i }));
+      await waitFor(() => {
+        expect(screen.getByText(/dialog, sheet, and alert dialog components/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should show enhancement settings dialog section", async () => {
+      const user = userEvent.setup();
+      render(<StorybookPage />);
+      await user.click(screen.getByRole("tab", { name: /modals/i }));
+      await waitFor(() => {
+        expect(screen.getByText(/enhancement settings dialog/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/modal dialog with card-based tier selection for image enhancement/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should render EnhancementSettings component", async () => {
+      const user = userEvent.setup();
+      render(<StorybookPage />);
+      await user.click(screen.getByRole("tab", { name: /modals/i }));
+      await waitFor(() => {
+        expect(screen.getByTestId("enhancement-settings-mock")).toBeInTheDocument();
+      });
+    });
+
+    it("should show sheet section", async () => {
+      const user = userEvent.setup();
+      render(<StorybookPage />);
+      await user.click(screen.getByRole("tab", { name: /modals/i }));
+      await waitFor(() => {
+        expect(screen.getByText(/slide-out panel for navigation or settings/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should show alert dialog section", async () => {
+      const user = userEvent.setup();
+      render(<StorybookPage />);
+      await user.click(screen.getByRole("tab", { name: /modals/i }));
+      await waitFor(() => {
+        expect(screen.getByText(/confirmation dialog for destructive actions/i))
+          .toBeInTheDocument();
       });
     });
   });
