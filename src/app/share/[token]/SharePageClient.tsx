@@ -1,8 +1,9 @@
 "use client";
 
+import { PixelLogo } from "@/components/brand";
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, Sparkles } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -94,10 +95,9 @@ export function SharePageClient({
       <header className="p-4 md:p-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xl font-bold text-white hover:opacity-80 transition-opacity"
+          className="inline-flex items-center hover:opacity-80 transition-opacity"
         >
-          <Sparkles className="h-6 w-6 text-cyan-400" />
-          <span>pixel</span>
+          <PixelLogo size="sm" variant="horizontal" />
         </Link>
       </header>
 
