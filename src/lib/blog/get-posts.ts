@@ -16,9 +16,11 @@ export function getPostSlugs(): string[] {
   }
 
   const files = fs.readdirSync(BLOG_DIR);
+  const slugSafePattern = /^[a-zA-Z0-9_-]+$/;
   return files
     .filter((file) => file.endsWith(".mdx"))
-    .map((file) => file.replace(/\.mdx$/, ""));
+    .map((file) => file.replace(/\.mdx$/, ""))
+    .filter((slug) => slugSafePattern.test(slug));
 }
 
 /**
