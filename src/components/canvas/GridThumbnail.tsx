@@ -75,11 +75,11 @@ export const GridThumbnail = forwardRef<HTMLDivElement, GridThumbnailProps>(
         className={cn(
           "relative aspect-square cursor-pointer overflow-hidden rounded-xl",
           "transition-all duration-200 ease-out",
-          "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-background",
+          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           isSelected && [
-            "ring-2 ring-green-500",
-            "shadow-[0_0_20px_rgba(34,197,94,0.5)]",
-            "animate-pulse-glow",
+            "ring-2 ring-primary",
+            "shadow-glow-cyan",
+            "animate-pulse-cyan",
           ],
           className,
         )}

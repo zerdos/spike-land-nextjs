@@ -1,5 +1,6 @@
 "use client";
 
+import { GripVertical } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -186,17 +187,22 @@ export function ImageComparisonSlider({
             )}
         </div>
 
-        {/* Divider line */}
+        {/* Divider line with cyan glow */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none"
+          className="absolute top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(0,229,255,0.6)] pointer-events-none"
           style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
-        />
+        >
+          {/* Handle circle */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-glow-cyan-sm transition-transform hover:scale-110">
+            <GripVertical className="h-5 w-5 text-primary-foreground" />
+          </div>
+        </div>
 
-        {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+        {/* Labels with brand styling */}
+        <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
           {originalLabel}
         </div>
-        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+        <div className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
           {enhancedLabel}
         </div>
       </div>

@@ -72,9 +72,11 @@ export function ImageUpload(
 
   return (
     <Card
-      className={`border-dashed border-border bg-card/50 transition-colors ${
-        isDragging ? "border-primary bg-primary/5" : ""
-      }`}
+      className={`border-2 border-dashed border-border bg-card/50 transition-all duration-200 ${
+        isDragging
+          ? "border-primary bg-primary/5 shadow-glow-cyan scale-[1.01]"
+          : ""
+      } ${isUploading ? "animate-pulse-cyan border-primary/50" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
