@@ -9,6 +9,10 @@ import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering for blog posts with interactive MDX components
+// next-mdx-remote uses React hooks that require client-side rendering
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string; }>;
 }
@@ -53,8 +57,9 @@ export async function generateMetadata({
 }
 
 /**
- * Generate static params for all blog posts at build time
- * This enables static generation instead of server-side rendering
+ * Generate static params for all blog posts.
+ * Used for path discovery (sitemap, SEO) even with dynamic rendering.
+ * Static generation is disabled due to next-mdx-remote hook requirements.
  */
 export async function generateStaticParams() {
   const slugs = getPostSlugs();
