@@ -277,7 +277,7 @@ model UserTokenBalance {
 }
 ```
 
-For complete schema documentation, see [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md).
+For complete Pixel-specific schema documentation including extended models, see [archive/IMAGE_ENHANCEMENT_SCHEMA.md](./archive/IMAGE_ENHANCEMENT_SCHEMA.md). For core Spike Land platform schema (User, App, Requirement, MonetizationModel), see [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md).
 
 ---
 
