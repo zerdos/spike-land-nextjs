@@ -120,7 +120,25 @@ Then("I should see the error message", async function(this: CustomWorld) {
 // Common link click (variant without "the")
 When("I click {string} link", async function(this: CustomWorld, linkText: string) {
   const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
-  await expect(link.first()).toBeVisible();
+  await expect(link.first()).toBeVisible({ timeout: 10000 });
+  // Click and wait for URL to change (handles both server and client-side navigation)
+  const currentUrl = this.page.url();
   await link.first().click();
+  // Wait for URL to change
+  await this.page.waitForFunction((oldUrl) => window.location.href !== oldUrl, currentUrl, {
+    timeout: 10000,
+  });
+  // Wait for page to settle
   await this.page.waitForLoadState("networkidle");
 });
+
+// Check link href attribute
+Then(
+  "the {string} link should point to {string}",
+  async function(this: CustomWorld, linkText: string, expectedPath: string) {
+    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
+    await expect(link.first()).toBeVisible();
+    const href = await link.first().getAttribute("href");
+    expect(href).toContain(expectedPath);
+  },
+);

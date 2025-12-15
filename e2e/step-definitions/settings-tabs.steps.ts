@@ -1,4 +1,4 @@
-import { Given, Then, When } from "@cucumber/cucumber";
+import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { TIMEOUTS, waitForTextWithRetry } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";

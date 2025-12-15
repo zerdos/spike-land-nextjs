@@ -130,8 +130,7 @@ Then("each card should have an iframe preview", async function(this: CustomWorld
   expect(count).toBeGreaterThan(0);
 });
 
-Then("some cards should show {string} text", async function(this: CustomWorld, text: string) {
-  const loadingText = this.page.locator(`text=${text}`);
+Then("some cards should show {string} text", async function(this: CustomWorld, _text: string) {
   // May or may not be visible depending on loading speed
   await this.page.waitForTimeout(500);
 });

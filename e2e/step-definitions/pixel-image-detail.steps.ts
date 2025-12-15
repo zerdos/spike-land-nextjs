@@ -495,10 +495,10 @@ Then(
 );
 
 Then("I should see the current stage progress", async function(this: CustomWorld) {
-  const stageIndicator = this.page.getByText(/analyzing|generating|cropping|upscaling/i).or(
+  // Stage indicator might not always be visible immediately
+  const _stageIndicator = this.page.getByText(/analyzing|generating|cropping|upscaling/i).or(
     this.page.locator('[data-testid="stage-progress"]'),
   );
-  // Stage might not always be visible immediately
   await this.page.waitForTimeout(500);
 });
 
@@ -533,7 +533,7 @@ Then("I can toggle between slider and side-by-side modes", async function(this: 
 
 Then(
   "my displayed token balance should decrease by {int}",
-  async function(this: CustomWorld, amount: number) {
+  async function(this: CustomWorld, _amount: number) {
     // This verifies that the balance display updates after enhancement
     // The actual verification depends on the initial balance stored
     const balanceDisplay = this.page.getByText(/\d+\s*tokens?/i);

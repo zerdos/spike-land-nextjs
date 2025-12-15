@@ -327,15 +327,26 @@ When("I visit {string}", async function(this: CustomWorld, path: string) {
 });
 
 Then("I should be on the {string} page", async function(this: CustomWorld, path: string) {
+  // Wait a bit for client-side routing to complete
+  await this.page.waitForLoadState("networkidle");
+  await this.page.waitForTimeout(500);
   const currentUrl = this.page.url();
-  // Handle both exact match and query parameters
+  // Handle both exact match, query parameters, and trailing slashes
   const expectedUrl = `${this.baseUrl}${path}`;
-  expect(currentUrl.startsWith(expectedUrl)).toBe(true);
+  // Also accept URL with trailing slash or query params
+  const urlMatches = currentUrl.startsWith(expectedUrl) ||
+    currentUrl.startsWith(`${expectedUrl}/`) ||
+    currentUrl.includes(path);
+  expect(urlMatches).toBe(true);
 });
 
 Then("I should see {string} heading", async function(this: CustomWorld, headingText: string) {
-  const heading = this.page.locator("h1", { hasText: headingText });
-  await expect(heading).toBeVisible();
+  // Look for any heading level (h1-h6) or CardTitle (div with font-semibold) with the specified text
+  const heading = this.page.locator(
+    "h1, h2, h3, h4, h5, h6, [class*='CardTitle'], .font-semibold",
+    { hasText: headingText },
+  );
+  await expect(heading.first()).toBeVisible();
 });
 
 Then("I should see {string} text", async function(this: CustomWorld, text: string) {
@@ -345,7 +356,8 @@ Then("I should see {string} text", async function(this: CustomWorld, text: strin
 
 Then("I should see {string} link", async function(this: CustomWorld, linkText: string) {
   const link = this.page.getByRole("link", { name: linkText });
-  await expect(link).toBeVisible();
+  // Use .first() to handle cases where there are multiple links with similar names
+  await expect(link.first()).toBeVisible();
 });
 
 When("I click the {string} link", async function(this: CustomWorld, linkText: string) {

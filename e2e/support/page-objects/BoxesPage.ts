@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { TIMEOUTS, waitForPageLoad, waitForTestId } from "../helpers/retry-helper";
+import { TIMEOUTS, waitForPageLoad } from "../helpers/retry-helper";
 
 export class BoxesPage {
   constructor(private page: Page) {}

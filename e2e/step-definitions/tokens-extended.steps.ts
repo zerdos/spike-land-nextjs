@@ -33,7 +33,7 @@ Then("the balance should show warning styling", async function(this: CustomWorld
 
 When(
   "I perform an action that costs {int} tokens",
-  async function(this: CustomWorld, cost: number) {
+  async function(this: CustomWorld, _cost: number) {
     // Mock a token-consuming action
     await this.page.route("**/api/tokens/balance", async (route) => {
       await route.fulfill({
@@ -234,9 +234,10 @@ Then("after retry I should see the balance", async function(this: CustomWorld) {
 });
 
 Given("I switch to another tab", async function(this: CustomWorld) {
-  // Create a new page/tab
+  // Simulate switching away from the page by triggering visibility change
   await this.page.evaluate(() => {
-    document.hidden;
+    // Trigger visibility change event (can't actually hide document in test)
+    window.dispatchEvent(new Event("blur"));
   });
 });
 
@@ -309,7 +310,7 @@ Then("only one operation should succeed", async function(this: CustomWorld) {
 
 Then(
   "the other should show {string} or be queued",
-  async function(this: CustomWorld, message: string) {
+  async function(this: CustomWorld, _message: string) {
     // Verify page is still functional
     await expect(this.page).toHaveURL(/.+/, { timeout: TIMEOUTS.DEFAULT });
   },
@@ -322,7 +323,7 @@ Then("the balance should display correctly formatted", async function(this: Cust
 
 Then(
   "the balance should show {string} or abbreviated",
-  async function(this: CustomWorld, expected: string) {
+  async function(this: CustomWorld, _expected: string) {
     // Look for either formatted or abbreviated number
     const balance = this.page.getByText(/\d+.*tokens?/i);
     await expect(balance.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });

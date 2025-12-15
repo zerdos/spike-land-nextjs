@@ -359,7 +359,7 @@ Then("I should see the user agent string", async function(this: CustomWorld) {
 
 Then(
   "the feedback status should change to {string}",
-  async function(this: CustomWorld, status: string) {
+  async function(this: CustomWorld, _status: string) {
     // Status change is handled by API mock
     await this.page.waitForLoadState("networkidle");
   },
