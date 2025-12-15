@@ -1,7 +1,9 @@
 "use client";
 
 import { PixelLogo } from "@/components/brand";
+import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +45,162 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+// WCAG Contrast ratio calculator
+function getLuminance(r: number, g: number, b: number): number {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    const sRGB = c / 255;
+    return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number; } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
+    : null;
+}
+
+function getContrastRatio(hex1: string, hex2: string): number {
+  const rgb1 = hexToRgb(hex1);
+  const rgb2 = hexToRgb(hex2);
+  if (!rgb1 || !rgb2) return 0;
+
+  const l1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+  const l2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Demo component for Contrast Checker
+function ContrastCheckerDemo() {
+  const [foreground, setForeground] = useState("#FFFFFF");
+  const [background, setBackground] = useState("#08081C");
+  const ratio = getContrastRatio(foreground, background);
+  const passAA = ratio >= 4.5;
+  const passAALarge = ratio >= 3;
+  const passAAA = ratio >= 7;
+  const passAAALarge = ratio >= 4.5;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="foreground">Foreground Color</Label>
+          <div className="flex gap-2">
+            <Input
+              id="foreground"
+              type="text"
+              value={foreground}
+              onChange={(e) => setForeground(e.target.value)}
+              placeholder="#FFFFFF"
+              className="font-mono"
+            />
+            <input
+              type="color"
+              value={foreground}
+              onChange={(e) => setForeground(e.target.value)}
+              className="w-12 h-10 rounded-lg cursor-pointer border border-border"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="background">Background Color</Label>
+          <div className="flex gap-2">
+            <Input
+              id="background"
+              type="text"
+              value={background}
+              onChange={(e) => setBackground(e.target.value)}
+              placeholder="#08081C"
+              className="font-mono"
+            />
+            <input
+              type="color"
+              value={background}
+              onChange={(e) => setBackground(e.target.value)}
+              className="w-12 h-10 rounded-lg cursor-pointer border border-border"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="p-8 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: background }}
+      >
+        <span className="text-2xl font-bold" style={{ color: foreground }}>
+          Sample Text
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+          <span className="font-medium">Contrast Ratio</span>
+          <span className="font-mono text-lg">{ratio.toFixed(2)}:1</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div
+            className={`p-3 rounded-lg border ${
+              passAA ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm">WCAG AA (Normal)</span>
+              <Badge variant={passAA ? "default" : "destructive"}>{passAA ? "Pass" : "Fail"}</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Requires 4.5:1</p>
+          </div>
+          <div
+            className={`p-3 rounded-lg border ${
+              passAALarge ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm">WCAG AA (Large)</span>
+              <Badge variant={passAALarge ? "default" : "destructive"}>
+                {passAALarge ? "Pass" : "Fail"}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Requires 3:1</p>
+          </div>
+          <div
+            className={`p-3 rounded-lg border ${
+              passAAA ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm">WCAG AAA (Normal)</span>
+              <Badge variant={passAAA ? "default" : "destructive"}>
+                {passAAA ? "Pass" : "Fail"}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Requires 7:1</p>
+          </div>
+          <div
+            className={`p-3 rounded-lg border ${
+              passAAALarge ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm">WCAG AAA (Large)</span>
+              <Badge variant={passAAALarge ? "default" : "destructive"}>
+                {passAAALarge ? "Pass" : "Fail"}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Requires 4.5:1</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Demo component for EnhancementSettings dialog showcase
 function EnhancementSettingsDemo() {
@@ -211,15 +369,27 @@ export default function StorybookPage() {
         </div>
 
         <Tabs defaultValue="brand" className="space-y-8">
-          <TabsList className="flex flex-wrap gap-1 h-auto lg:inline-flex">
-            <TabsTrigger value="brand">Brand</TabsTrigger>
-            <TabsTrigger value="colors">Colors</TabsTrigger>
-            <TabsTrigger value="typography">Typography</TabsTrigger>
-            <TabsTrigger value="buttons">Buttons</TabsTrigger>
-            <TabsTrigger value="components">Components</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="loading">Loading</TabsTrigger>
-            <TabsTrigger value="modals">Modals</TabsTrigger>
+          <TabsList className="flex flex-wrap gap-0 h-auto bg-transparent p-0">
+            {[
+              { value: "brand", label: "Brand" },
+              { value: "colors", label: "Colors" },
+              { value: "typography", label: "Typography" },
+              { value: "buttons", label: "Buttons" },
+              { value: "components", label: "Components" },
+              { value: "comparison", label: "Comparison" },
+              { value: "feedback", label: "Feedback" },
+              { value: "loading", label: "Loading" },
+              { value: "modals", label: "Modals" },
+              { value: "accessibility", label: "Accessibility" },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="relative px-5 py-3 rounded-t-lg bg-transparent text-muted-foreground hover:text-foreground/80 transition-all duration-200 data-[state=active]:text-white data-[state=active]:bg-[#1a2744] data-[state=active]:border-b-[3px] data-[state=active]:border-primary data-[state=active]:shadow-[inset_0_-3px_0_0_hsl(var(--primary)),0_4px_12px_-2px_rgba(0,229,255,0.3)]"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Brand Tab */}
@@ -594,7 +764,38 @@ export default function StorybookPage() {
                   <div className="flex flex-wrap gap-4">
                     <Button>Default</Button>
                     <Button disabled>Disabled</Button>
+                    <Button loading>Loading</Button>
                     <Button className="opacity-80">Hover (simulated)</Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Loading States */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Loading States</CardTitle>
+                  <CardDescription>
+                    Buttons with loading indicator for async operations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex flex-wrap gap-4">
+                    <Button loading>Default Loading</Button>
+                    <Button loading variant="secondary">Secondary Loading</Button>
+                    <Button loading variant="outline">Outline Loading</Button>
+                    <Button loading variant="destructive">Destructive Loading</Button>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Loading with different sizes
+                    </Label>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <Button loading size="sm">Small</Button>
+                      <Button loading size="default">Default</Button>
+                      <Button loading size="lg">Large</Button>
+                      <Button loading size="icon" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -651,6 +852,92 @@ export default function StorybookPage() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </Section>
+          </TabsContent>
+
+          {/* Comparison Tab */}
+          <TabsContent value="comparison" className="space-y-12">
+            <Section
+              title="Image Comparison"
+              description="Before/after comparison components for showcasing image enhancements"
+            >
+              {/* Image Comparison Slider */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Image Comparison Slider</CardTitle>
+                  <CardDescription>
+                    Drag the handle to compare original and enhanced images
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="max-w-2xl">
+                    <ImageComparisonSlider
+                      originalUrl="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&q=60"
+                      enhancedUrl="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&q=90&sat=20"
+                      originalLabel="Original"
+                      enhancedLabel="Enhanced"
+                      width={16}
+                      height={9}
+                    />
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Different Aspect Ratios
+                    </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Badge variant="outline">16:9</Badge>
+                        <ImageComparisonSlider
+                          originalUrl="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=225&fit=crop&q=60"
+                          enhancedUrl="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=225&fit=crop&q=90&sat=20"
+                          width={16}
+                          height={9}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Badge variant="outline">4:3</Badge>
+                        <ImageComparisonSlider
+                          originalUrl="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop&q=60"
+                          enhancedUrl="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop&q=90&sat=20"
+                          width={4}
+                          height={3}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Badge variant="outline">1:1</Badge>
+                        <ImageComparisonSlider
+                          originalUrl="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=400&fit=crop&q=60"
+                          enhancedUrl="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=400&fit=crop&q=90&sat=20"
+                          width={1}
+                          height={1}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Comparison View Toggle */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Comparison View Toggle</CardTitle>
+                  <CardDescription>
+                    Switch between different comparison modes: slider, side-by-side, or split view
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-w-3xl">
+                    <ComparisonViewToggle
+                      originalUrl="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&h=400&fit=crop&q=60"
+                      enhancedUrl="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&h=400&fit=crop&q=90&sat=20"
+                      width={16}
+                      height={9}
+                      defaultMode="slider"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -1147,6 +1434,169 @@ export default function StorybookPage() {
                   <p className="text-sm text-muted-foreground">
                     Content below separator
                   </p>
+                </CardContent>
+              </Card>
+            </Section>
+          </TabsContent>
+
+          {/* Accessibility Tab */}
+          <TabsContent value="accessibility" className="space-y-12">
+            <Section
+              title="Accessibility Tools"
+              description="Tools and guidelines for ensuring accessible components"
+            >
+              {/* Contrast Checker */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Color Contrast Checker</CardTitle>
+                  <CardDescription>
+                    Test color combinations against WCAG 2.1 guidelines
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ContrastCheckerDemo />
+                </CardContent>
+              </Card>
+
+              {/* Keyboard Navigation */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Keyboard Navigation</CardTitle>
+                  <CardDescription>
+                    Expected keyboard behavior for interactive components
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <Badge variant="outline" className="font-mono">Tab</Badge>
+                      <span className="text-sm">Move focus to next interactive element</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <Badge variant="outline" className="font-mono">Shift + Tab</Badge>
+                      <span className="text-sm">Move focus to previous interactive element</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <Badge variant="outline" className="font-mono">Enter / Space</Badge>
+                      <span className="text-sm">Activate buttons, links, and form controls</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <Badge variant="outline" className="font-mono">Escape</Badge>
+                      <span className="text-sm">Close modals, dialogs, and dropdowns</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <Badge variant="outline" className="font-mono">Arrow Keys</Badge>
+                      <span className="text-sm">
+                        Navigate within tabs, radio groups, and sliders
+                      </span>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Test Area</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Try navigating through these elements using only your keyboard:
+                    </p>
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      <Button>Button 1</Button>
+                      <Button variant="outline">Button 2</Button>
+                      <Button variant="secondary">Button 3</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* ARIA Guidelines */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>ARIA Attributes</CardTitle>
+                  <CardDescription>
+                    Key ARIA attributes used in our components
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <Badge variant="outline" className="font-mono text-xs">aria-label</Badge>
+                      <p className="text-sm text-muted-foreground">
+                        Provides accessible name for elements without visible text
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <Badge variant="outline" className="font-mono text-xs">aria-busy</Badge>
+                      <p className="text-sm text-muted-foreground">
+                        Indicates an element is being modified (e.g., loading button)
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <Badge variant="outline" className="font-mono text-xs">aria-expanded</Badge>
+                      <p className="text-sm text-muted-foreground">
+                        Indicates whether an accordion or dropdown is open
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <Badge variant="outline" className="font-mono text-xs">aria-hidden</Badge>
+                      <p className="text-sm text-muted-foreground">
+                        Hides decorative content from screen readers
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Animation Tokens */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Animation Tokens</CardTitle>
+                  <CardDescription>
+                    CSS custom properties for consistent animation durations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          --animation-fast
+                        </Badge>
+                        <span className="font-mono text-sm">150ms</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Quick transitions: tooltips, hovers
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          --animation-normal
+                        </Badge>
+                        <span className="font-mono text-sm">200ms</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Standard: buttons, cards
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          --animation-slow
+                        </Badge>
+                        <span className="font-mono text-sm">300ms</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Longer: modals, accordions
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted">
+                    <p className="text-sm">
+                      <span className="font-medium">Note:</span> All animations respect{" "}
+                      <code className="font-mono text-xs bg-background px-1.5 py-0.5 rounded">
+                        prefers-reduced-motion
+                      </code>{" "}
+                      to ensure accessibility for users who are sensitive to motion.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </Section>
