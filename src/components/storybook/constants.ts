@@ -1,3 +1,29 @@
+import {
+  Accessibility,
+  Bell,
+  Component,
+  Loader,
+  MousePointerClick,
+  Palette,
+  PanelTop,
+  Sparkles,
+  SplitSquareHorizontal,
+  Type,
+} from "lucide-react";
+
+export const storybookIconMap = {
+  Sparkles,
+  Palette,
+  Type,
+  MousePointerClick,
+  Component,
+  SplitSquareHorizontal,
+  Bell,
+  Loader,
+  PanelTop,
+  Accessibility,
+};
+
 export const colorPalette = {
   brand: [
     {

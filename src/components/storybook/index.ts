@@ -5,6 +5,7 @@ export {
   colorPalette,
   logoSizes,
   logoVariants,
+  storybookIconMap,
   type StorybookSectionId,
   storybookSections,
 } from "./constants";

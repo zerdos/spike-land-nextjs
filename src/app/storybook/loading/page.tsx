@@ -1,5 +1,3 @@
-"use client";
-
 import { Section } from "@/components/storybook";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,19 +5,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 export default function LoadingPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div className="space-y-12">
       <Section title="Loading States" description="Skeleton loaders, progress bars, and spinners">

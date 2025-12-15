@@ -1,40 +1,15 @@
 "use client";
 
-import { storybookSections } from "@/components/storybook";
+import { storybookIconMap, storybookSections } from "@/components/storybook";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import {
-  Accessibility,
-  Bell,
-  Component,
-  Loader,
-  Menu,
-  MousePointerClick,
-  Palette,
-  PanelTop,
-  Sparkles,
-  SplitSquareHorizontal,
-  Type,
-} from "lucide-react";
+import { Component, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-
-const iconMap = {
-  Sparkles,
-  Palette,
-  Type,
-  MousePointerClick,
-  Component,
-  SplitSquareHorizontal,
-  Bell,
-  Loader,
-  PanelTop,
-  Accessibility,
-};
 
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
   const pathname = usePathname();
@@ -68,7 +43,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
         <Separator className="my-3" />
 
         {storybookSections.map((section) => {
-          const Icon = iconMap[section.icon as keyof typeof iconMap];
+          const Icon = storybookIconMap[section.icon as keyof typeof storybookIconMap];
           const isActive = pathname === `/storybook/${section.id}`;
 
           return (

@@ -1,22 +1,9 @@
-"use client";
-
 import { PixelLogo } from "@/components/brand";
 import { logoSizes, logoVariants, Section } from "@/components/storybook";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
 
 export default function BrandPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div className="space-y-12">
       <Section

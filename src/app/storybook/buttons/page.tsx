@@ -1,24 +1,11 @@
-"use client";
-
 import { buttonSizes, buttonVariants, Section } from "@/components/storybook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
 
 export default function ButtonsPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div className="space-y-12">
       <Section title="Buttons" description="Interactive button components with various styles">

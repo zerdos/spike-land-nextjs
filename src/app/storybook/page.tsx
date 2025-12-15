@@ -1,47 +1,9 @@
-"use client";
-
-import { storybookSections } from "@/components/storybook";
+import { storybookIconMap, storybookSections } from "@/components/storybook";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Accessibility,
-  Bell,
-  Component,
-  Loader,
-  MousePointerClick,
-  Palette,
-  PanelTop,
-  Sparkles,
-  SplitSquareHorizontal,
-  Type,
-} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-const iconMap = {
-  Sparkles,
-  Palette,
-  Type,
-  MousePointerClick,
-  Component,
-  SplitSquareHorizontal,
-  Bell,
-  Loader,
-  PanelTop,
-  Accessibility,
-};
 
 export default function StorybookPage() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -59,7 +21,7 @@ export default function StorybookPage() {
       {/* Section Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {storybookSections.map((section) => {
-          const Icon = iconMap[section.icon as keyof typeof iconMap];
+          const Icon = storybookIconMap[section.icon as keyof typeof storybookIconMap];
 
           return (
             <Link key={section.id} href={`/storybook/${section.id}`}>
