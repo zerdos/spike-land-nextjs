@@ -27,6 +27,7 @@ import {
   Wallet,
   Wand2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -57,6 +58,10 @@ interface McpToolsClientProps {
 }
 
 export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
+  // Check both server-side prop and client-side session for E2E test compatibility
+  const { data: session } = useSession();
+  const isAuthenticated = isLoggedIn || !!session?.user;
+
   // API keys state - unused for now but kept for future API key selection feature
   const [_apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [_selectedApiKey, _setSelectedApiKey] = useState<string>("");
@@ -120,8 +125,8 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   ) => {
     const apiKey = getApiKey();
 
-    // If not logged in and no API key provided, show error
-    if (!isLoggedIn && !apiKey) {
+    // If not authenticated and no API key provided, show error
+    if (!isAuthenticated && !apiKey) {
       throw new Error("Please enter an API key to test the API");
     }
 
@@ -156,7 +161,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
     }
 
     return data;
-  }, [getApiKey, isLoggedIn]);
+  }, [getApiKey, isAuthenticated]);
 
   const handleGenerate = async () => {
     if (!generatePrompt.trim()) return;
@@ -345,10 +350,10 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">
-            {isLoggedIn ? "Authentication" : "API Key Required"}
+            {isAuthenticated ? "Authentication" : "API Key Required"}
           </CardTitle>
           <CardDescription>
-            {isLoggedIn
+            {isAuthenticated
               ? (
                 <>
                   You&apos;re signed in and can use the tools directly with your session.
@@ -370,7 +375,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isLoggedIn
+          {isAuthenticated
             ? (
               <>
                 <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
@@ -477,7 +482,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   <Button
                     onClick={handleGenerate}
                     disabled={!generatePrompt.trim() || isGenerating ||
-                      (!isLoggedIn && !getApiKey())}
+                      (!isAuthenticated && !getApiKey())}
                   >
                     {isGenerating
                       ? (
@@ -610,7 +615,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   <Button
                     onClick={handleModify}
                     disabled={!modifyPrompt.trim() || !modifyImage || isModifying ||
-                      (!isLoggedIn && !getApiKey())}
+                      (!isAuthenticated && !getApiKey())}
                   >
                     {isModifying
                       ? (
@@ -703,7 +708,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
 
                 <Button
                   onClick={handleCheckJob}
-                  disabled={!jobId.trim() || isCheckingJob || (!isLoggedIn && !getApiKey())}
+                  disabled={!jobId.trim() || isCheckingJob || (!isAuthenticated && !getApiKey())}
                   className="w-full"
                 >
                   {isCheckingJob
