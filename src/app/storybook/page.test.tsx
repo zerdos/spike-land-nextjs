@@ -1,395 +1,93 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-// Mock PixelLogo component
-vi.mock("@/components/brand", () => ({
-  PixelLogo: (
-    { size, variant, showText }: {
-      size?: string;
-      variant?: string;
-      showText?: boolean;
-    },
-  ) => (
-    <div
-      data-testid="pixel-logo"
-      data-size={size}
-      data-variant={variant}
-      data-show-text={showText}
-    >
-      PixelLogo
-    </div>
-  ),
-}));
-
-// Mock EnhancementSettings component
-vi.mock("@/components/enhance/EnhancementSettings", () => ({
-  EnhancementSettings: ({
-    trigger,
+// Mock next/link
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
   }: {
-    trigger?: React.ReactNode;
-  }) => (
-    <div data-testid="enhancement-settings-mock">
-      {trigger}
-      <div>Enhancement Settings Mock</div>
-    </div>
-  ),
+    children: React.ReactNode;
+    href: string;
+  }) => <a href={href}>{children}</a>,
 }));
 
 import StorybookPage from "./page";
 
-describe("StorybookPage", () => {
+describe("StorybookPage (Overview)", () => {
   describe("rendering", () => {
     it("should render the page title", () => {
       render(<StorybookPage />);
-      expect(screen.getByRole("heading", { name: /design system/i }))
-        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /design system/i })).toBeInTheDocument();
     });
 
     it("should render the page description", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel brand guidelines & component library/i))
-        .toBeInTheDocument();
-    });
-
-    it("should render all tab triggers", () => {
-      render(<StorybookPage />);
-      expect(screen.getByRole("tab", { name: /brand/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /colors/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /typography/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /buttons/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /components/i }))
-        .toBeInTheDocument();
+      expect(screen.getByText(/pixel brand guidelines & component library/i)).toBeInTheDocument();
     });
 
     it("should render footer content", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel design system v1\.0/i))
-        .toBeInTheDocument();
-      expect(screen.getByText(/part of the spike land platform/i))
-        .toBeInTheDocument();
+      expect(screen.getByText(/pixel design system v1\.0/i)).toBeInTheDocument();
+      expect(screen.getByText(/part of the spike land platform/i)).toBeInTheDocument();
     });
   });
 
-  describe("brand tab", () => {
-    it("should show brand tab content by default", () => {
+  describe("section cards", () => {
+    it("should render all 10 section links", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/logo - the ai spark/i)).toBeInTheDocument();
+      const links = screen.getAllByRole("link");
+      // Filter links that point to storybook sections
+      const sectionLinks = links.filter((link) =>
+        link.getAttribute("href")?.startsWith("/storybook/")
+      );
+      expect(sectionLinks).toHaveLength(10);
     });
 
-    it("should render logo sizes section", () => {
+    it("should have correct links to section pages", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/available logo sizes for different contexts/i))
-        .toBeInTheDocument();
+      // Check specific hrefs exist
+      const links = screen.getAllByRole("link");
+      const hrefs = links.map((link) => link.getAttribute("href"));
+
+      expect(hrefs).toContain("/storybook/brand");
+      expect(hrefs).toContain("/storybook/colors");
+      expect(hrefs).toContain("/storybook/typography");
+      expect(hrefs).toContain("/storybook/buttons");
+      expect(hrefs).toContain("/storybook/components");
+      expect(hrefs).toContain("/storybook/comparison");
+      expect(hrefs).toContain("/storybook/feedback");
+      expect(hrefs).toContain("/storybook/loading");
+      expect(hrefs).toContain("/storybook/modals");
+      expect(hrefs).toContain("/storybook/accessibility");
     });
 
-    it("should render logo variants section", () => {
+    it("should display section titles", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/different layout options for the logo/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Brand")).toBeInTheDocument();
+      expect(screen.getByText("Colors")).toBeInTheDocument();
+      expect(screen.getByText("Typography")).toBeInTheDocument();
+      expect(screen.getByText("Buttons")).toBeInTheDocument();
+      expect(screen.getByText("Components")).toBeInTheDocument();
+      expect(screen.getByText("Comparison")).toBeInTheDocument();
+      expect(screen.getByText("Feedback")).toBeInTheDocument();
+      expect(screen.getByText("Loading")).toBeInTheDocument();
+      expect(screen.getByText("Modals")).toBeInTheDocument();
+      expect(screen.getByText("Accessibility")).toBeInTheDocument();
     });
 
-    it("should render complete matrix section", () => {
+    it("should display section descriptions", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/all size and variant combinations/i))
-        .toBeInTheDocument();
-    });
-
-    it("should render icon only section", () => {
-      render(<StorybookPage />);
-      expect(screen.getByText(/icon only \(showtext=false\)/i))
-        .toBeInTheDocument();
-    });
-
-    it("should render PixelLogo components", () => {
-      render(<StorybookPage />);
-      const logos = screen.getAllByTestId("pixel-logo");
-      expect(logos.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe("colors tab", () => {
-    it("should show color palette when colors tab is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            /brand colors optimized for both light and dark modes/i,
-          ),
-        )
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show brand colors section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/primary brand accent colors/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show dark mode palette section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/dark mode palette/i)).toBeInTheDocument();
-      });
-    });
-
-    it("should show light mode palette section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/light mode palette/i)).toBeInTheDocument();
-      });
-    });
-
-    it("should show glow effects section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/glow effects/i)).toBeInTheDocument();
-      });
-    });
-
-    it("should display Pixel Cyan color swatch", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /colors/i }));
-      await waitFor(() => {
-        expect(screen.getByText("Pixel Cyan")).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("typography tab", () => {
-    it("should show typography content when tab is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /typography/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/font families and text styles/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show font families section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /typography/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/montserrat for headers, geist for body/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show heading scale section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /typography/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/all headings use montserrat font/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show text colors section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /typography/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/semantic text color classes/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should display all heading levels", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /typography/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/heading level 1/i)).toBeInTheDocument();
-        expect(screen.getByText(/heading level 2/i)).toBeInTheDocument();
-        expect(screen.getByText(/heading level 3/i)).toBeInTheDocument();
-        expect(screen.getByText(/heading level 4/i)).toBeInTheDocument();
-        expect(screen.getByText(/heading level 5/i)).toBeInTheDocument();
-        expect(screen.getByText(/heading level 6/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("buttons tab", () => {
-    it("should show button content when tab is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /buttons/i }));
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            /interactive button components with various styles/i,
-          ),
-        )
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show button variants section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /buttons/i }));
-      await waitFor(() => {
-        expect(
-          screen.getByText(/different button styles for various contexts/i),
-        )
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show button sizes section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /buttons/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/button size options/i)).toBeInTheDocument();
-      });
-    });
-
-    it("should show button states section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /buttons/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/button interaction states/i))
-          .toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("components tab", () => {
-    it("should show components content when tab is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/ui component library showcase/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show cards section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/container components with glass-morphism/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show badges section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/small status indicators/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show form elements section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/input fields and form controls/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show separators section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/visual dividers for content sections/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should render input fields", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /components/i }));
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter text/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/disabled/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("modals tab", () => {
-    it("should show modals content when tab is clicked", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /modals/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/dialog, sheet, and alert dialog components/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show enhancement settings dialog section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /modals/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/enhancement settings dialog/i))
-          .toBeInTheDocument();
-        expect(
-          screen.getByText(
-            /modal dialog with card-based tier selection for image enhancement/i,
-          ),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("should render EnhancementSettings component", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /modals/i }));
-      await waitFor(() => {
-        expect(screen.getByTestId("enhancement-settings-mock"))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show sheet section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /modals/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/slide-out panel for navigation or settings/i))
-          .toBeInTheDocument();
-      });
-    });
-
-    it("should show alert dialog section", async () => {
-      const user = userEvent.setup();
-      render(<StorybookPage />);
-      await user.click(screen.getByRole("tab", { name: /modals/i }));
-      await waitFor(() => {
-        expect(screen.getByText(/confirmation dialog for destructive actions/i))
-          .toBeInTheDocument();
-      });
+      expect(
+        screen.getByText(/logo variants, sizes, and the pixel ai spark logo/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/color palette, brand colors, dark\/light modes/i),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/font families, heading scale, text colors/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/button variants, sizes, states, loading indicators/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -398,12 +96,6 @@ describe("StorybookPage", () => {
       render(<StorybookPage />);
       const h1 = screen.getByRole("heading", { level: 1 });
       expect(h1).toHaveTextContent(/design system/i);
-    });
-
-    it("should have accessible tab navigation", () => {
-      render(<StorybookPage />);
-      const tablist = screen.getByRole("tablist");
-      expect(tablist).toBeInTheDocument();
     });
   });
 });

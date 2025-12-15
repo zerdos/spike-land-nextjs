@@ -4,17 +4,17 @@ import { CustomWorld } from "../support/world";
 
 // Storybook page steps
 Then(
-  "I should see the storybook tabs:",
+  "I should see the storybook navigation links:",
   async function(this: CustomWorld, dataTable: DataTable) {
     const rows = dataTable.hashes();
 
     for (const row of rows) {
-      const tabName = row.Tab;
-      // Tabs are rendered as buttons with role="tab" or as TabsTrigger components
-      const tab = this.page.getByRole("tab", {
-        name: new RegExp(tabName, "i"),
+      const linkName = row.Link;
+      // Navigation links are rendered in the sidebar or as cards on the overview page
+      const link = this.page.getByRole("link", {
+        name: new RegExp(linkName, "i"),
       });
-      await expect(tab).toBeVisible({ timeout: 10000 });
+      await expect(link.first()).toBeVisible({ timeout: 10000 });
     }
   },
 );
