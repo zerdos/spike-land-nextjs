@@ -3,7 +3,7 @@
 import { storybookSections } from "@/components/storybook";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import {
   Accessibility,
@@ -119,6 +119,7 @@ export default function StorybookLayout({ children }: { children: React.ReactNod
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
+              <SheetTitle className="sr-only">Design System Navigation</SheetTitle>
               <SidebarContent onLinkClick={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
