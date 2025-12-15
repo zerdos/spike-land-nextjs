@@ -62,10 +62,10 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true, // In CI, run all tests to get full report\
-    retry: 3, // Retry once in CI to handle transient issues
+    failFast: false, // In CI, run all tests to get full report\
+    retry: 1, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @requires-db", // Skip db-dependent tests (no seeded test data in CI)
-    timeout: 5000, // 30 second timeout for CI
+    timeout: 10000, // 30 second timeout for CI
     parallel: 8, // Run 4 scenarios in parallel
   },
   // Coverage profile - collect V8 coverage during E2E tests

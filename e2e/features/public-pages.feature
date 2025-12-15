@@ -12,11 +12,11 @@ Feature: Public Pages - Storybook and Easter Eggs
     And I should see "Pixel Brand Guidelines" text
 
   @fast
-  Scenario: Storybook page shows tab navigation
+  Scenario: Storybook page shows navigation links
     When I visit "/storybook"
     Then the page should load successfully
-    And I should see the storybook tabs:
-      | Tab         |
+    And I should see the storybook navigation links:
+      | Link        |
       | Brand       |
       | Colors      |
       | Typography  |
@@ -24,41 +24,41 @@ Feature: Public Pages - Storybook and Easter Eggs
       | Components  |
 
   @fast
-  Scenario: Storybook brand tab displays logo variants
-    When I visit "/storybook"
+  Scenario: Storybook brand page displays logo variants
+    When I visit "/storybook/brand"
     Then the page should load successfully
     And I should see "Logo - The AI Spark" text
     And I should see "Sizes" text
     And I should see "Variants" text
 
   @fast
-  Scenario: Storybook colors tab displays color palette
-    When I visit "/storybook"
-    And I click the "Colors" tab
-    Then I should see "Color Palette" text
+  Scenario: Storybook colors page displays color palette
+    When I visit "/storybook/colors"
+    Then the page should load successfully
+    And I should see "Color Palette" text
     And I should see "Brand Colors" text
     And I should see "Pixel Cyan" text
 
   @fast
-  Scenario: Storybook typography tab displays fonts
-    When I visit "/storybook"
-    And I click the "Typography" tab
-    Then I should see "Typography" text
+  Scenario: Storybook typography page displays fonts
+    When I visit "/storybook/typography"
+    Then the page should load successfully
+    And I should see "Typography" text
     And I should see "Font Families" text
     And I should see "Montserrat" text
 
   @fast
-  Scenario: Storybook buttons tab displays button variants
-    When I visit "/storybook"
-    And I click the "Buttons" tab
-    Then I should see "Buttons" text
+  Scenario: Storybook buttons page displays button variants
+    When I visit "/storybook/buttons"
+    Then the page should load successfully
+    And I should see "Buttons" text
     And I should see "Variants" text
 
   @fast
-  Scenario: Storybook components tab displays UI components
-    When I visit "/storybook"
-    And I click the "Components" tab
-    Then I should see "Components" text
+  Scenario: Storybook components page displays UI components
+    When I visit "/storybook/components"
+    Then the page should load successfully
+    And I should see "Components" text
     And I should see "Cards" text
     And I should see "Badges" text
     And I should see "Form Elements" text
