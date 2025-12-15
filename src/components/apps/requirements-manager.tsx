@@ -20,13 +20,15 @@ import type {
 import { Check, Edit2, GripVertical, Plus, Trash2, X } from "lucide-react";
 import * as React from "react";
 
-const priorityColors: Record<RequirementPriority, string> = {
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
+
+const priorityColors: Record<RequirementPriority, BadgeVariant> = {
   high: "destructive",
   medium: "default",
   low: "secondary",
 };
 
-const statusColors: Record<RequirementStatus, string> = {
+const statusColors: Record<RequirementStatus, BadgeVariant> = {
   pending: "outline",
   "in-progress": "default",
   completed: "secondary",
@@ -306,15 +308,13 @@ export function RequirementsManager({
                         </SelectContent>
                       </Select>
 
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <Badge
-                        variant={priorityColors[requirement.priority] as any}
+                        variant={priorityColors[requirement.priority]}
                       >
                         {requirement.priority}
                       </Badge>
 
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Badge variant={statusColors[requirement.status] as any}>
+                      <Badge variant={statusColors[requirement.status]}>
                         {statusLabels[requirement.status]}
                       </Badge>
                     </div>
