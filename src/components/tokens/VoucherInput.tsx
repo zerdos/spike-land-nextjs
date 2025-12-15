@@ -76,6 +76,7 @@ export function VoucherInput({ onRedeemed }: VoucherInputProps) {
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             disabled={isLoading}
             className="flex-1"
+            autoComplete="off"
           />
           <Button
             onClick={handleRedeem}

@@ -9,7 +9,7 @@ import { Component, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
   const pathname = usePathname();
@@ -77,6 +77,11 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
 
 export default function StorybookLayout({ children }: { children: React.ReactNode; }) {
   const [open, setOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#08081C] via-[#0c1020] to-[#08081C]">
@@ -86,18 +91,27 @@ export default function StorybookLayout({ children }: { children: React.ReactNod
           <Link href="/storybook">
             <span className="font-bold font-heading">Design System</span>
           </Link>
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+          {isMounted
+            ? (
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 p-0">
+                  <SheetTitle className="sr-only">Design System Navigation</SheetTitle>
+                  <SidebarContent onLinkClick={() => setOpen(false)} />
+                </SheetContent>
+              </Sheet>
+            )
+            : (
+              <Button variant="ghost" size="icon" aria-label="Toggle menu">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
-              <SheetTitle className="sr-only">Design System Navigation</SheetTitle>
-              <SidebarContent onLinkClick={() => setOpen(false)} />
-            </SheetContent>
-          </Sheet>
+            )}
         </div>
       </div>
 
