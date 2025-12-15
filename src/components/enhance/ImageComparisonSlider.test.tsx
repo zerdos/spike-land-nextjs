@@ -499,8 +499,8 @@ describe("ImageComparisonSlider", () => {
     );
 
     const wrapper = container.firstChild?.firstChild as HTMLElement;
-    // width=0 is falsy so defaults to 16, height=-5 is truthy but Math.max(1, -5) = 1
-    expect(wrapper.style.aspectRatio).toBe("16 / 1");
+    // Invalid values (0, negative) default to 16:9 when auto-detection not available
+    expect(wrapper.style.aspectRatio).toBe("16 / 9");
   });
 
   it("handles NaN dimensions", () => {
