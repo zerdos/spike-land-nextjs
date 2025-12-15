@@ -388,7 +388,8 @@ describe("SplitPreview", () => {
     );
 
     const container = screen.getByTestId("split-preview-container");
-    expect(container.style.aspectRatio).toBe("16 / 1");
+    // Invalid values (0, negative) default to 16:9 when auto-detection not available
+    expect(container.style.aspectRatio).toBe("16 / 9");
   });
 
   it("handles NaN width and height values", () => {

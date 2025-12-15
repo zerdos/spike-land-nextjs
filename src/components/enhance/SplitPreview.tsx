@@ -27,9 +27,9 @@ interface SplitPreviewProps {
   enhancedUrl: string;
   originalLabel?: string;
   enhancedLabel?: string;
-  /** Width of the original image. Used to calculate aspect ratio. Defaults to 16. */
+  /** Width of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   width?: number;
-  /** Height of the original image. Used to calculate aspect ratio. Defaults to 9. */
+  /** Height of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   height?: number;
   className?: string;
 }
@@ -39,23 +39,47 @@ interface SplitPreviewProps {
  * is always at the middle of the physical screen. As the user scrolls:
  * - The portion of the image above the screen's center shows the ENHANCED image
  * - The portion below the screen's center shows the ORIGINAL image
+ *
+ * When width/height are omitted, the component auto-detects dimensions for natural aspect ratio.
  */
 export function SplitPreview({
   originalUrl,
   enhancedUrl,
   originalLabel = "Original",
   enhancedLabel = "Enhanced",
-  width = 16,
-  height = 9,
+  width,
+  height,
   className,
 }: SplitPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [clipY, setClipY] = useState(50);
   const [enhancedError, setEnhancedError] = useState(false);
   const [originalError, setOriginalError] = useState(false);
+  const [detectedDimensions, setDetectedDimensions] = useState<
+    { width: number; height: number; } | null
+  >(null);
 
-  const safeWidth = Math.max(1, Number(width) || 16);
-  const safeHeight = Math.max(1, Number(height) || 9);
+  // Auto-detect dimensions if not provided (or invalid)
+  const shouldAutoDetect = width === undefined || height === undefined || !Number.isFinite(width) ||
+    !Number.isFinite(height) || width <= 0 || height <= 0;
+
+  useEffect(() => {
+    if (!shouldAutoDetect) return;
+
+    const img = new window.Image();
+    img.onload = () => {
+      setDetectedDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.src = originalUrl;
+  }, [originalUrl, shouldAutoDetect]);
+
+  // Use provided dimensions if valid, detected dimensions if available, or default 16:9
+  const safeWidth = (Number.isFinite(width) && width && width > 0)
+    ? width
+    : (detectedDimensions?.width ?? 16);
+  const safeHeight = (Number.isFinite(height) && height && height > 0)
+    ? height
+    : (detectedDimensions?.height ?? 9);
 
   useEffect(() => {
     const updateSplit = () => {

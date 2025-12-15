@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
+import { SplitPreview } from "@/components/enhance/SplitPreview";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -285,6 +286,7 @@ export const mdxComponents: MDXComponents = {
 
   // Custom components for MDX
   ImageComparisonSlider,
+  SplitPreview,
   Button,
   Callout,
   Gallery,
