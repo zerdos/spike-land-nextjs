@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { SessionProvider } from "next-auth/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { McpToolsClient } from "./McpToolsClient";
 
@@ -28,6 +29,15 @@ class MockFileReader {
 
 global.FileReader = MockFileReader as unknown as typeof FileReader;
 
+// Helper to wrap component with SessionProvider
+const renderWithSession = (ui: React.ReactElement) => {
+  return render(
+    <SessionProvider session={null}>
+      {ui}
+    </SessionProvider>,
+  );
+};
+
 describe("McpToolsClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,29 +49,29 @@ describe("McpToolsClient", () => {
 
   describe("Initial Rendering", () => {
     it("renders the MCP Tools heading", () => {
-      render(<McpToolsClient isLoggedIn={false} />);
+      renderWithSession(<McpToolsClient isLoggedIn={false} />);
       expect(screen.getByText("MCP Tools")).toBeDefined();
     });
 
     it("shows API key required message when not logged in", () => {
-      render(<McpToolsClient isLoggedIn={false} />);
+      renderWithSession(<McpToolsClient isLoggedIn={false} />);
       expect(screen.getByText("API Key Required")).toBeDefined();
     });
 
     it("shows authentication message when logged in", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(screen.getByText("Authentication")).toBeDefined();
     });
 
     it("shows session authentication success message when logged in", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(
         screen.getByText("Using session authentication (no API key needed)"),
       ).toBeDefined();
     });
 
     it("renders all tab triggers", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(screen.getAllByText("Generate").length).toBeGreaterThan(0);
       expect(screen.getByText("Modify")).toBeDefined();
       expect(screen.getByText("Job Status")).toBeDefined();
@@ -69,14 +79,14 @@ describe("McpToolsClient", () => {
     });
 
     it("renders API documentation section", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(screen.getByText("API Documentation")).toBeDefined();
     });
   });
 
   describe("Authentication", () => {
     it("shows optional API key input when logged in", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       const apiKeyInput = screen.getByPlaceholderText(
         /sk_live_.*leave empty to use session/,
       );
@@ -84,7 +94,7 @@ describe("McpToolsClient", () => {
     });
 
     it("requires API key when not logged in", () => {
-      render(<McpToolsClient isLoggedIn={false} />);
+      renderWithSession(<McpToolsClient isLoggedIn={false} />);
       const apiKeyInput = screen.getByPlaceholderText(/sk_live_.../);
       expect(apiKeyInput).toBeDefined();
     });
@@ -92,21 +102,21 @@ describe("McpToolsClient", () => {
 
   describe("Token Costs Display", () => {
     it("displays tier costs in pricing information", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       // Token costs are shown in badges in the Balance tab
       const badges = screen.getAllByText(/tokens/i);
       expect(badges.length).toBeGreaterThan(0);
     });
 
     it("displays tier cost in Generate tab", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(screen.getByText(/Cost:.*tokens/)).toBeDefined();
     });
   });
 
   describe("API Documentation", () => {
     it("shows curl examples for all endpoints", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       // These headers appear in the API documentation section
       expect(screen.getAllByText(/Generate Image/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Modify Image/i).length).toBeGreaterThan(0);
@@ -115,7 +125,7 @@ describe("McpToolsClient", () => {
     });
 
     it("includes MCP server installation instructions", () => {
-      render(<McpToolsClient isLoggedIn={true} />);
+      renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(screen.getAllByText(/MCP Server/i).length).toBeGreaterThan(0);
     });
   });
