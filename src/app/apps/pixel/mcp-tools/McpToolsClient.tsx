@@ -810,7 +810,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
               <CardContent className="space-y-4">
                 <Button
                   onClick={handleCheckBalance}
-                  disabled={isLoadingBalance || (!isLoggedIn && !getApiKey())}
+                  disabled={isLoadingBalance || (!isAuthenticated && !getApiKey())}
                   className="w-full"
                 >
                   {isLoadingBalance
