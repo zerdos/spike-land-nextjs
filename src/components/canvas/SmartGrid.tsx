@@ -1,8 +1,10 @@
 "use client";
 
+import { MASONRY_BREAKPOINTS_GALLERY, MASONRY_CLASSES } from "@/lib/canvas";
 import type { GalleryImage } from "@/lib/canvas/types";
 import { cn } from "@/lib/utils";
 import { forwardRef, useCallback, useRef } from "react";
+import Masonry from "react-masonry-css";
 import { GridThumbnail } from "./GridThumbnail";
 
 export interface SmartGridProps {
@@ -16,10 +18,10 @@ export interface SmartGridProps {
 }
 
 /**
- * SmartGrid component displays a responsive grid of gallery images.
+ * SmartGrid component displays a responsive masonry grid of gallery images.
  *
  * Features:
- * - Responsive grid layout (2 cols mobile, 3 cols tablet, 4 cols desktop)
+ * - Responsive masonry layout (2 cols mobile, 3 cols tablet, 4 cols desktop)
  * - Fade in/out animation when transitioning to/from slideshow
  * - CSS rotation support
  * - Accessible with proper ARIA attributes
@@ -43,12 +45,11 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
     const handleDoubleClick = useCallback(
       (id: string) => {
         // Select the image first, then enter slideshow
-        // The element is guaranteed to exist since this callback
-        // is only called from rendered GridThumbnail components
         const element = thumbnailRefs.current.get(id);
-        // Use non-null assertion since the element must exist when this is called
-        onImageSelect(id, element!);
-        onEnterSlideshow();
+        if (element) {
+          onImageSelect(id, element);
+          onEnterSlideshow();
+        }
       },
       [onImageSelect, onEnterSlideshow],
     );
@@ -91,22 +92,28 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
           transform: rotationTransform,
         }}
         className={cn(
-          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4",
+          "p-4",
           isBlurred && "animate-grid-fade-out",
           !isBlurred && "animate-grid-fade-in",
           className,
         )}
       >
-        {images.map((image) => (
-          <GridThumbnail
-            key={image.id}
-            ref={setThumbnailRef(image.id)}
-            image={image}
-            isSelected={selectedImageId === image.id}
-            onSelect={onImageSelect}
-            onDoubleClick={handleDoubleClick}
-          />
-        ))}
+        <Masonry
+          breakpointCols={MASONRY_BREAKPOINTS_GALLERY}
+          className={MASONRY_CLASSES.container}
+          columnClassName={MASONRY_CLASSES.column}
+        >
+          {images.map((image) => (
+            <GridThumbnail
+              key={image.id}
+              ref={setThumbnailRef(image.id)}
+              image={image}
+              isSelected={selectedImageId === image.id}
+              onSelect={onImageSelect}
+              onDoubleClick={handleDoubleClick}
+            />
+          ))}
+        </Masonry>
       </div>
     );
   },

@@ -81,9 +81,9 @@ describe("HeroSection Component", () => {
     expect(slider).toHaveAttribute("data-enhanced-label", "Enhanced by Pixel");
   });
 
-  it("should render primary CTA button linking to enhance page", () => {
+  it("should render primary CTA button linking to sign in page", () => {
     render(<HeroSection />);
-    const ctaLink = screen.getByRole("link", { name: /Try it Free/i });
+    const ctaLink = screen.getByRole("link", { name: /Start here!/i });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute(
       "href",

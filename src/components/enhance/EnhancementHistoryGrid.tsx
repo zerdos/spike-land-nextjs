@@ -3,11 +3,13 @@
 import { PipelineStageLabel } from "@/components/enhance/PipelineProgress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MASONRY_BREAKPOINTS_GALLERY, MASONRY_CLASSES, MASONRY_ITEM_MARGIN } from "@/lib/canvas";
 import { formatFileSize } from "@/lib/utils";
 import type { EnhancementTier, JobStatus, PipelineStage } from "@prisma/client";
 import { Loader2, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import Masonry from "react-masonry-css";
 
 async function logBrokenImage(versionId: string, tier: string, url: string) {
   try {
@@ -115,7 +117,11 @@ export function EnhancementHistoryGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <Masonry
+      breakpointCols={MASONRY_BREAKPOINTS_GALLERY}
+      className={MASONRY_CLASSES.container}
+      columnClassName={MASONRY_CLASSES.column}
+    >
       {versions.map((version) => {
         const isSelected = selectedVersionId === version.id;
         const isProcessing = version.status === "PROCESSING" ||
@@ -126,10 +132,15 @@ export function EnhancementHistoryGrid({
         const isDeletable = isCompleted || isFailed || isCancelled ||
           version.status === "REFUNDED";
 
+        // Calculate aspect ratio padding for natural image dimensions
+        const aspectRatioPadding = version.width && version.height
+          ? (version.height / version.width) * 100
+          : 100; // Default to square if dimensions not available
+
         return (
           <div
             key={version.id}
-            className={`relative rounded-lg overflow-hidden border bg-card cursor-pointer transition-all hover:shadow-lg ${
+            className={`relative rounded-lg overflow-hidden border bg-card cursor-pointer transition-all hover:shadow-lg ${MASONRY_ITEM_MARGIN} ${
               isSelected ? "ring-2 ring-primary" : "border-white/10"
             }`}
             onClick={() => onVersionSelect(version.id)}
@@ -144,7 +155,10 @@ export function EnhancementHistoryGrid({
             aria-pressed={isSelected}
           >
             {/* Thumbnail */}
-            <div className="relative aspect-square bg-muted">
+            <div
+              className="relative bg-muted"
+              style={{ paddingBottom: `${aspectRatioPadding}%` }}
+            >
               {isCompleted && !failedImages.has(version.id) && (
                 <Image
                   src={version.enhancedUrl}
@@ -261,6 +275,6 @@ export function EnhancementHistoryGrid({
           </div>
         );
       })}
-    </div>
+    </Masonry>
   );
 }

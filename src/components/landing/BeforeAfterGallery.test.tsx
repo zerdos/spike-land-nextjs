@@ -98,21 +98,6 @@ describe("BeforeAfterGalleryClient Component", () => {
     expect(screen.getAllByTestId("comparison-slider").length).toBe(6);
   });
 
-  it("should render cards with titles", () => {
-    render(<BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />);
-    expect(screen.getByText("Portrait Enhancement")).toBeInTheDocument();
-    expect(screen.getByText("Landscape Upscaling")).toBeInTheDocument();
-    expect(screen.getByText("Product Photo")).toBeInTheDocument();
-  });
-
-  it("should render cards with descriptions", () => {
-    render(<BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />);
-    expect(screen.getByText("Skin smoothing and detail enhancement"))
-      .toBeInTheDocument();
-    expect(screen.getByText("4K resolution with enhanced colors"))
-      .toBeInTheDocument();
-  });
-
   it("should have the gallery section id", () => {
     const { container } = render(
       <BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />,
@@ -121,13 +106,13 @@ describe("BeforeAfterGalleryClient Component", () => {
     expect(section).toBeInTheDocument();
   });
 
-  it("should have responsive grid classes", () => {
+  it("should use masonry layout", () => {
     const { container } = render(
       <BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />,
     );
-    const grid = container.querySelector(".grid");
-    expect(grid).toHaveClass("sm:grid-cols-2");
-    expect(grid).toHaveClass("lg:grid-cols-3");
+    // Masonry uses flexbox layout
+    const masonryContainer = container.querySelector(".flex.-ml-4");
+    expect(masonryContainer).toBeInTheDocument();
   });
 
   it("should handle empty items array", () => {
@@ -150,8 +135,11 @@ describe("BeforeAfterGalleryClient Component", () => {
       },
     ];
     render(<BeforeAfterGalleryClient items={customItems} />);
-    expect(screen.getByText("Custom Title")).toBeInTheDocument();
-    expect(screen.getByText("Custom Description")).toBeInTheDocument();
+    // Gallery cards now only show the image comparison slider, no title/description
+    const slider = screen.getByTestId("comparison-slider");
+    expect(slider).toBeInTheDocument();
+    expect(slider).toHaveAttribute("data-original", "https://example.com/original.jpg");
+    expect(slider).toHaveAttribute("data-enhanced", "https://example.com/enhanced.jpg");
   });
 });
 
