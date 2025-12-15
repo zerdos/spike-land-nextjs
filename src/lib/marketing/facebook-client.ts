@@ -83,6 +83,7 @@ export class FacebookMarketingClient implements IMarketingClient {
 
   /**
    * Make authenticated request to Facebook Graph API
+   * Uses Authorization header for secure token transmission (not URL params)
    */
   private async request<T>(
     endpoint: string,
@@ -93,11 +94,11 @@ export class FacebookMarketingClient implements IMarketingClient {
     }
 
     const url = new URL(`${FACEBOOK_GRAPH_API_BASE}${endpoint}`);
-    url.searchParams.set("access_token", this.accessToken);
 
     const response = await fetch(url.toString(), {
       ...options,
       headers: {
+        Authorization: `Bearer ${this.accessToken}`,
         "Content-Type": "application/json",
         ...options.headers,
       },

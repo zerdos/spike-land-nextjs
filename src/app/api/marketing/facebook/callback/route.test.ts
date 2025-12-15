@@ -242,8 +242,9 @@ describe("GET /api/marketing/facebook/callback", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(307);
+    // Error messages are sanitized - don't expose internal details to client
     expect(response.headers.get("location")).toContain(
-      "error=Token%20exchange%20failed",
+      "error=Failed%20to%20connect%20Facebook%20account.",
     );
 
     consoleSpy.mockRestore();

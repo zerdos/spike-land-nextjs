@@ -6,6 +6,7 @@
 
 import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import { Campaign, createMarketingClient, MarketingPlatform } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -65,10 +66,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     for (const account of accounts) {
       try {
+        // Decrypt the access token before using it
+        const decryptedAccessToken = safeDecryptToken(account.accessToken);
+
         const client = createMarketingClient(
           account.platform as MarketingPlatform,
           {
-            accessToken: account.accessToken,
+            accessToken: decryptedAccessToken,
             customerId: account.accountId,
           },
         );
@@ -86,10 +90,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           `Failed to fetch campaigns for ${account.platform}/${account.accountId}:`,
           error,
         );
+        // Don't expose internal error details
         errors.push({
           platform: account.platform,
           accountId: account.accountId,
-          error: error instanceof Error ? error.message : "Failed to fetch campaigns",
+          error: "Failed to fetch campaigns for this account",
         });
       }
     }

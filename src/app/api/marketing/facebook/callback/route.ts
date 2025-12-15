@@ -6,6 +6,7 @@
  */
 
 import { auth } from "@/auth";
+import { safeEncryptToken } from "@/lib/crypto/token-encryption";
 import { FacebookMarketingClient } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify state
-    let stateData: { userId: string; timestamp: number; };
+    let stateData: { userId: string; timestamp: number; nonce?: string; };
     try {
       stateData = JSON.parse(
         Buffer.from(state, "base64url").toString("utf-8"),
@@ -69,14 +70,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Verify nonce from cookie to prevent replay attacks
+    const storedNonce = request.cookies.get("facebook_oauth_nonce")?.value;
+    if (stateData.nonce && stateData.nonce !== storedNonce) {
+      return NextResponse.redirect(
+        new URL("/admin/marketing?error=Invalid security token", request.url),
+      );
+    }
+
     // Exchange code for tokens
     const client = new FacebookMarketingClient();
-    const baseUrl = process.env.NEXTAUTH_URL ||
-      process.env.VERCEL_URL ||
-      "http://localhost:3000";
-    const redirectUri = `${
-      baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
-    }/api/marketing/facebook/callback`;
+    // Use explicit callback URL if set, otherwise compute from base URL
+    const redirectUri = process.env.FACEBOOK_CALLBACK_URL || (() => {
+      const baseUrl = process.env.NEXTAUTH_URL ||
+        process.env.VERCEL_URL ||
+        "http://localhost:3000";
+      return `${
+        baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+      }/api/marketing/facebook/callback`;
+    })();
 
     const tokens = await client.exchangeCodeForTokens(code, redirectUri);
 
@@ -93,6 +105,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Encrypt token before storing
+    const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
+
     // Save accounts to database
     for (const account of accounts) {
       await prisma.marketingAccount.upsert({
@@ -105,7 +120,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
         update: {
           accountName: account.accountName,
-          accessToken: tokens.accessToken,
+          accessToken: encryptedAccessToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
           updatedAt: new Date(),
@@ -115,28 +130,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           platform: "FACEBOOK",
           accountId: account.accountId,
           accountName: account.accountName,
-          accessToken: tokens.accessToken,
+          accessToken: encryptedAccessToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
         },
       });
     }
 
-    return NextResponse.redirect(
+    // Clear the nonce cookie after successful use
+    const response = NextResponse.redirect(
       new URL(
         `/admin/marketing?success=Connected ${accounts.length} Facebook ad account(s)`,
         request.url,
       ),
     );
+    response.cookies.delete("facebook_oauth_nonce");
+    return response;
   } catch (error) {
     console.error("Facebook callback error:", error);
-    return NextResponse.redirect(
+    // Don't expose internal error details to client
+    const response = NextResponse.redirect(
       new URL(
-        `/admin/marketing?error=${
-          encodeURIComponent(error instanceof Error ? error.message : "Failed to connect Facebook")
-        }`,
+        "/admin/marketing?error=Failed to connect Facebook account. Please try again.",
         request.url,
       ),
     );
+    response.cookies.delete("facebook_oauth_nonce");
+    return response;
   }
 }

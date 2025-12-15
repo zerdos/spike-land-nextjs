@@ -6,6 +6,7 @@
  */
 
 import { auth } from "@/auth";
+import { safeEncryptToken } from "@/lib/crypto/token-encryption";
 import { GoogleAdsClient } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify state
-    let stateData: { userId: string; timestamp: number; };
+    let stateData: { userId: string; timestamp: number; nonce?: string; };
     try {
       stateData = JSON.parse(
         Buffer.from(state, "base64url").toString("utf-8"),
@@ -69,14 +70,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Verify nonce from cookie to prevent replay attacks
+    const storedNonce = request.cookies.get("google_oauth_nonce")?.value;
+    if (stateData.nonce && stateData.nonce !== storedNonce) {
+      return NextResponse.redirect(
+        new URL("/admin/marketing?error=Invalid security token", request.url),
+      );
+    }
+
     // Exchange code for tokens
     const client = new GoogleAdsClient();
-    const baseUrl = process.env.NEXTAUTH_URL ||
-      process.env.VERCEL_URL ||
-      "http://localhost:3000";
-    const redirectUri = `${
-      baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
-    }/api/marketing/google/callback`;
+    // Use explicit callback URL if set, otherwise compute from base URL
+    const redirectUri = process.env.GOOGLE_ADS_CALLBACK_URL || (() => {
+      const baseUrl = process.env.NEXTAUTH_URL ||
+        process.env.VERCEL_URL ||
+        "http://localhost:3000";
+      return `${
+        baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+      }/api/marketing/google/callback`;
+    })();
 
     const tokens = await client.exchangeCodeForTokens(code, redirectUri);
 
@@ -93,6 +105,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       // Save a placeholder account that user can configure manually
       const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.trim() || "pending";
 
+      // Encrypt tokens before storing
+      const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
+      const encryptedRefreshToken = tokens.refreshToken
+        ? safeEncryptToken(tokens.refreshToken)
+        : null;
+
       await prisma.marketingAccount.upsert({
         where: {
           userId_platform_accountId: {
@@ -102,8 +120,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
         update: {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
           updatedAt: new Date(),
@@ -113,8 +131,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           platform: "GOOGLE_ADS",
           accountId: customerId,
           accountName: "Google Ads (Setup Required)",
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
         },
@@ -137,6 +155,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Encrypt tokens before storing
+    const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
+    const encryptedRefreshToken = tokens.refreshToken
+      ? safeEncryptToken(tokens.refreshToken)
+      : null;
+
     // Save accounts to database
     for (const account of accounts) {
       await prisma.marketingAccount.upsert({
@@ -149,8 +173,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
         update: {
           accountName: account.accountName,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
           updatedAt: new Date(),
@@ -160,31 +184,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           platform: "GOOGLE_ADS",
           accountId: account.accountId,
           accountName: account.accountName,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           expiresAt: tokens.expiresAt,
           isActive: true,
         },
       });
     }
 
-    return NextResponse.redirect(
+    // Clear the nonce cookie after successful use
+    const response = NextResponse.redirect(
       new URL(
         `/admin/marketing?success=Connected ${accounts.length} Google Ads account(s)`,
         request.url,
       ),
     );
+    response.cookies.delete("google_oauth_nonce");
+    return response;
   } catch (error) {
     console.error("Google callback error:", error);
-    return NextResponse.redirect(
+    // Don't expose internal error details to client
+    const response = NextResponse.redirect(
       new URL(
-        `/admin/marketing?error=${
-          encodeURIComponent(
-            error instanceof Error ? error.message : "Failed to connect Google Ads",
-          )
-        }`,
+        "/admin/marketing?error=Failed to connect Google Ads account. Please try again.",
         request.url,
       ),
     );
+    response.cookies.delete("google_oauth_nonce");
+    return response;
   }
 }

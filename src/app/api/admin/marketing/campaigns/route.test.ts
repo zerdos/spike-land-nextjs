@@ -222,7 +222,8 @@ describe("GET /api/admin/marketing/campaigns", () => {
     expect(response.status).toBe(200);
     expect(data.campaigns).toEqual([]);
     expect(data.errors).toHaveLength(1);
-    expect(data.errors[0].error).toBe("API Error");
+    // Error messages are sanitized - don't expose internal details to client
+    expect(data.errors[0].error).toBe("Failed to fetch campaigns for this account");
 
     consoleSpy.mockRestore();
   });
