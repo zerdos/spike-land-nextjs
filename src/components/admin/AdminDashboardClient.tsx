@@ -165,9 +165,9 @@ export function AdminDashboardClient(
           <div className="text-right text-sm text-neutral-500">
             <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
             {isPolling && (
-              <p className="text-xs">
+              <span className="text-xs block">
                 <Badge variant="secondary" className="text-xs">Live</Badge>
-              </p>
+              </span>
             )}
           </div>
         </div>

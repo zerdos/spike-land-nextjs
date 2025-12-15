@@ -401,19 +401,19 @@ export default function EmailLogsPage() {
                 <label className="text-sm font-medium text-neutral-500">
                   Template
                 </label>
-                <p>
+                <div>
                   <Badge variant="outline">{selectedEmail.template}</Badge>
-                </p>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-neutral-500">
                   Status
                 </label>
-                <p>
+                <div>
                   <Badge className={STATUS_COLORS[selectedEmail.status] || ""}>
                     {selectedEmail.status}
                   </Badge>
-                </p>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-neutral-500">
