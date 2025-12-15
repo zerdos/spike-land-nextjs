@@ -57,6 +57,23 @@ describe("sitemap", () => {
     expect(urls).toContain("https://spike.land/admin/users");
   });
 
+  it("includes all storybook pages", () => {
+    const result = sitemap();
+    const urls = result.map((entry) => entry.url);
+
+    expect(urls).toContain("https://spike.land/storybook");
+    expect(urls).toContain("https://spike.land/storybook/brand");
+    expect(urls).toContain("https://spike.land/storybook/colors");
+    expect(urls).toContain("https://spike.land/storybook/typography");
+    expect(urls).toContain("https://spike.land/storybook/buttons");
+    expect(urls).toContain("https://spike.land/storybook/components");
+    expect(urls).toContain("https://spike.land/storybook/comparison");
+    expect(urls).toContain("https://spike.land/storybook/feedback");
+    expect(urls).toContain("https://spike.land/storybook/loading");
+    expect(urls).toContain("https://spike.land/storybook/modals");
+    expect(urls).toContain("https://spike.land/storybook/accessibility");
+  });
+
   it("sets home page with highest priority", () => {
     const result = sitemap();
     const homePage = result.find(
@@ -124,7 +141,7 @@ describe("sitemap", () => {
 
   it("has expected total number of pages", () => {
     const result = sitemap();
-    // 9 public + 5 protected + 6 admin = 20 total
-    expect(result.length).toBe(20);
+    // 9 public + 5 protected + 6 admin + 11 storybook = 31 total
+    expect(result.length).toBe(31);
   });
 });
