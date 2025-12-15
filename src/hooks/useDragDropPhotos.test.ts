@@ -173,7 +173,10 @@ describe("useDragDropPhotos", () => {
 
       expect(result.current.dragState.dragOverAlbumId).toBe(null);
       expect(result.current.dragState.isDragging).toBe(true);
-      expect(result.current.dragState.draggedImageIds).toEqual(["img1", "img2"]);
+      expect(result.current.dragState.draggedImageIds).toEqual([
+        "img1",
+        "img2",
+      ]);
     });
   });
 

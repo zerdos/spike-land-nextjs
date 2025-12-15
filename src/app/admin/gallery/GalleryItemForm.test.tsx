@@ -36,7 +36,8 @@ describe("GalleryItemForm", () => {
     render(<GalleryItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
     expect(screen.getByLabelText(/Title/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter a title for this gallery item")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter a title for this gallery item"))
+      .toBeInTheDocument();
   });
 
   it("should render description input", () => {
@@ -86,7 +87,9 @@ describe("GalleryItemForm", () => {
     const descriptionInput = screen.getByLabelText("Description");
 
     fireEvent.change(titleInput, { target: { value: "New Gallery Item" } });
-    fireEvent.change(descriptionInput, { target: { value: "New description" } });
+    fireEvent.change(descriptionInput, {
+      target: { value: "New description" },
+    });
 
     const submitButton = screen.getByRole("button", { name: /Add to Gallery/ });
     fireEvent.click(submitButton);
@@ -137,7 +140,13 @@ describe("GalleryItemForm", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
-    render(<GalleryItemForm item={mockItem} onSubmit={onSubmit} onCancel={onCancel} />);
+    render(
+      <GalleryItemForm
+        item={mockItem}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+      />,
+    );
 
     expect(screen.getByText("Image Preview")).toBeInTheDocument();
     expect(screen.getByText("Original")).toBeInTheDocument();
@@ -153,28 +162,46 @@ describe("GalleryItemForm", () => {
 
     render(<GalleryItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
-    expect(screen.getByRole("button", { name: /Add to Gallery/ })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Save Changes/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add to Gallery/ }))
+      .toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Save Changes/ })).not
+      .toBeInTheDocument();
   });
 
   it("should handle edit mode (with initial item)", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
-    render(<GalleryItemForm item={mockItem} onSubmit={onSubmit} onCancel={onCancel} />);
+    render(
+      <GalleryItemForm
+        item={mockItem}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+      />,
+    );
 
-    expect(screen.getByRole("button", { name: /Save Changes/ })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Add to Gallery/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save Changes/ }))
+      .toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add to Gallery/ })).not
+      .toBeInTheDocument();
   });
 
   it("should populate form with item data in edit mode", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
-    render(<GalleryItemForm item={mockItem} onSubmit={onSubmit} onCancel={onCancel} />);
+    render(
+      <GalleryItemForm
+        item={mockItem}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+      />,
+    );
 
     const titleInput = screen.getByLabelText(/Title/) as HTMLInputElement;
-    const descriptionInput = screen.getByLabelText("Description") as HTMLTextAreaElement;
+    const descriptionInput = screen.getByLabelText(
+      "Description",
+    ) as HTMLTextAreaElement;
 
     expect(titleInput.value).toBe("Test Title");
     expect(descriptionInput.value).toBe("Test description");
@@ -213,7 +240,9 @@ describe("GalleryItemForm", () => {
     const descriptionInput = screen.getByLabelText("Description");
 
     fireEvent.change(titleInput, { target: { value: "  Trimmed Title  " } });
-    fireEvent.change(descriptionInput, { target: { value: "  Trimmed Description  " } });
+    fireEvent.change(descriptionInput, {
+      target: { value: "  Trimmed Description  " },
+    });
 
     const submitButton = screen.getByRole("button", { name: /Add to Gallery/ });
     fireEvent.click(submitButton);
@@ -231,7 +260,13 @@ describe("GalleryItemForm", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
-    render(<GalleryItemForm onSubmit={onSubmit} onCancel={onCancel} isSubmitting={true} />);
+    render(
+      <GalleryItemForm
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        isSubmitting={true}
+      />,
+    );
 
     const submitButton = screen.getByRole("button", { name: /Saving.../ });
     const cancelButton = screen.getByRole("button", { name: "Cancel" });

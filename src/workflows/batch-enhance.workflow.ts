@@ -135,7 +135,9 @@ export async function batchEnhanceImages(
         error: result.error,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       results.push({
         imageId: image.imageId,
         success: false,

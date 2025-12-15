@@ -84,7 +84,9 @@ export async function GET(
   } catch (error) {
     console.error("Error in GET image API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch image" },
+      {
+        error: error instanceof Error ? error.message : "Failed to fetch image",
+      },
       { status: 500 },
     );
   }
@@ -131,14 +133,14 @@ export async function DELETE(
 
     // Step 2: Delete all R2 files first
     const deleteResults = await Promise.all(
-      r2KeysToDelete.map(key => deleteFromR2(key)),
+      r2KeysToDelete.map((key) => deleteFromR2(key)),
     );
 
     // Step 3: Check if any deletions failed
-    const failedDeletions = deleteResults.filter(result => !result.success);
+    const failedDeletions = deleteResults.filter((result) => !result.success);
     if (failedDeletions.length > 0) {
       const errors = failedDeletions
-        .map(result => `${result.key}: ${result.error}`)
+        .map((result) => `${result.key}: ${result.error}`)
         .join(", ");
       return NextResponse.json(
         { error: `Failed to delete R2 files: ${errors}` },

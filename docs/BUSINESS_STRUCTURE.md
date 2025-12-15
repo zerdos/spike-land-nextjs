@@ -1,7 +1,6 @@
 # Spike Land - Business Structure Documentation
 
-> **Last Updated**: December 2025
-> **Decision**: Form UK Limited Company
+> **Last Updated**: December 2025 **Decision**: Form UK Limited Company
 > **Company Name**: Spike Land Ltd (pending registration)
 
 ---
@@ -22,8 +21,10 @@
 
 ### Key Drivers
 
-1. **Limited Liability** - Personal assets protected from business debts/lawsuits
-2. **GDPR Protection** - Fines against company, not personally (up to £17.5m or 4% revenue)
+1. **Limited Liability** - Personal assets protected from business
+   debts/lawsuits
+2. **GDPR Protection** - Fines against company, not personally (up to £17.5m or
+   4% revenue)
 3. **Tax Efficiency** - Corporation Tax (19-25%) vs Income Tax + NI (up to 47%)
 4. **Professional Credibility** - "Spike Land Ltd" for B2B and user trust
 5. **Investment Ready** - Can issue shares to investors if needed

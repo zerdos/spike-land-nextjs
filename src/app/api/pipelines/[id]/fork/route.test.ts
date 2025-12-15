@@ -29,9 +29,12 @@ describe("Pipeline Fork API", () => {
     it("returns 401 when not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("abc"));
       const data = await response.json();
 
@@ -45,9 +48,12 @@ describe("Pipeline Fork API", () => {
       });
       (prisma.enhancementPipeline.findUnique as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("abc"));
       const data = await response.json();
 
@@ -73,9 +79,12 @@ describe("Pipeline Fork API", () => {
         generationConfig: { retryAttempts: 3 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -116,9 +125,12 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -163,9 +175,12 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -207,9 +222,12 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/system_default/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/system_default/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("system_default"));
       const data = await response.json();
 
@@ -325,10 +343,13 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-        body: JSON.stringify({ name: "  My Custom Name  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "  My Custom Name  " }),
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -377,9 +398,12 @@ describe("Pipeline Fork API", () => {
       });
 
       // Request without body
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -420,9 +444,12 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       await POST(request, createParams("pipeline_1"));
 
       // Verify the create call includes PRIVATE visibility
@@ -442,7 +469,10 @@ describe("Pipeline Fork API", () => {
       const sourceConfigs = {
         analysisConfig: { enabled: false, temperature: 0.5 },
         autoCropConfig: { enabled: true, minCropRatio: 0.1 },
-        promptConfig: { customInstructions: "Test", skipCorrections: ["isDark"] },
+        promptConfig: {
+          customInstructions: "Test",
+          skipCorrections: ["isDark"],
+        },
         generationConfig: { retryAttempts: 10 },
       };
       (prisma.enhancementPipeline.findUnique as Mock).mockResolvedValue({
@@ -468,9 +498,12 @@ describe("Pipeline Fork API", () => {
         updatedAt: new Date("2025-01-01"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       await POST(request, createParams("pipeline_1"));
 
       expect(prisma.enhancementPipeline.create).toHaveBeenCalledWith(
@@ -508,9 +541,12 @@ describe("Pipeline Fork API", () => {
         new Error("Database error"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1/fork", {
-        method: "POST",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1/fork",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request, createParams("pipeline_1"));
       const data = await response.json();
 

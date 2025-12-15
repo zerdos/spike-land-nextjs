@@ -1,6 +1,7 @@
 # Album Drag and Drop E2E Tests
 
-This document provides comprehensive documentation for the album drag-drop E2E tests.
+This document provides comprehensive documentation for the album drag-drop E2E
+tests.
 
 ## Overview
 
@@ -15,19 +16,22 @@ The album drag-drop functionality allows users to:
 
 ### Feature File
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/features/album-drag-drop.feature`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/features/album-drag-drop.feature`
 - **Format**: Gherkin (BDD syntax)
 - **Purpose**: Human-readable test scenarios
 
 ### Step Definitions
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/album-drag-drop.steps.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/album-drag-drop.steps.ts`
 - **Framework**: Playwright + Cucumber
 - **Purpose**: Implementation of test steps with Playwright actions
 
 ### Unit Tests
 
-- **Location**: `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/album-drag-drop.steps.test.ts`
+- **Location**:
+  `/Users/z/Developer/spike-land-nextjs/e2e/step-definitions/album-drag-drop.steps.test.ts`
 - **Framework**: Vitest
 - **Purpose**: Validate step definition patterns and configuration
 

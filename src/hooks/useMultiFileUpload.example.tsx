@@ -13,14 +13,21 @@ import { useMultiFileUpload } from "./useMultiFileUpload";
 export function BasicUploadExample() {
   const { upload, files, isUploading, progress } = useMultiFileUpload();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const selectedFiles = Array.from(event.target.files || []);
     await upload(selectedFiles);
   };
 
   return (
     <div>
-      <input type="file" multiple onChange={handleFileSelect} disabled={isUploading} />
+      <input
+        type="file"
+        multiple
+        onChange={handleFileSelect}
+        disabled={isUploading}
+      />
       {isUploading && <p>Uploading... {progress}%</p>}
       <ul>
         {files.map((file, index) => (
@@ -47,7 +54,9 @@ export function ParallelUploadExample() {
     onUploadComplete: (results) => {
       const successful = results.filter((r) => r.status === "completed");
       const failed = results.filter((r) => r.status === "failed");
-      console.log(`Upload complete! ${successful.length} succeeded, ${failed.length} failed`);
+      console.log(
+        `Upload complete! ${successful.length} succeeded, ${failed.length} failed`,
+      );
     },
   });
 
@@ -115,7 +124,9 @@ export function CustomValidationExample() {
     maxFiles: 5,
   });
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const selectedFiles = Array.from(event.target.files || []);
 
     // Additional custom validation can be done here before upload
@@ -133,10 +144,18 @@ export function CustomValidationExample() {
 
   return (
     <div>
-      <input type="file" multiple accept="image/jpeg" onChange={handleFileSelect} />
+      <input
+        type="file"
+        multiple
+        accept="image/jpeg"
+        onChange={handleFileSelect}
+      />
       <ul>
         {files.map((file, index) => (
-          <li key={index} style={{ color: file.status === "failed" ? "red" : "black" }}>
+          <li
+            key={index}
+            style={{ color: file.status === "failed" ? "red" : "black" }}
+          >
             {file.file.name} - {file.status}
             {file.error && <div>Error: {file.error}</div>}
             {file.imageId && <div>Image ID: {file.imageId}</div>}

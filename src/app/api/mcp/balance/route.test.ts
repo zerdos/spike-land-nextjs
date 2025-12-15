@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies using vi.hoisted
-const { mockAuthenticateMcpOrSession, mockCheckRateLimit, mockTokenBalanceManager } = vi.hoisted(
+const {
+  mockAuthenticateMcpOrSession,
+  mockCheckRateLimit,
+  mockTokenBalanceManager,
+} = vi.hoisted(
   () => ({
     mockAuthenticateMcpOrSession: vi.fn(),
     mockCheckRateLimit: vi.fn(),
@@ -129,7 +133,9 @@ describe("GET /api/mcp/balance", () => {
       expect(response.status).toBe(200);
       expect(body.balance).toBe(50);
       expect(body.lastRegeneration).toBe(mockDate.toISOString());
-      expect(mockTokenBalanceManager.getBalance).toHaveBeenCalledWith(testUserId);
+      expect(mockTokenBalanceManager.getBalance).toHaveBeenCalledWith(
+        testUserId,
+      );
     });
   });
 
@@ -142,7 +148,9 @@ describe("GET /api/mcp/balance", () => {
       mockCheckRateLimit.mockResolvedValue({
         isLimited: false,
       });
-      mockTokenBalanceManager.getBalance.mockRejectedValue(new Error("Database error"));
+      mockTokenBalanceManager.getBalance.mockRejectedValue(
+        new Error("Database error"),
+      );
 
       const request = createMockRequest({
         Authorization: "Bearer sk_test_validkey",

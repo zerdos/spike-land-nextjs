@@ -155,7 +155,8 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("One-time purchase. No subscription required.")).toBeDefined();
+    expect(screen.getByText("One-time purchase. No subscription required."))
+      .toBeDefined();
   });
 
   it("shows tokens never expire message", () => {
@@ -267,7 +268,9 @@ describe("PricingPage", () => {
     fireEvent.click(buyButton);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Failed to create checkout session");
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Failed to create checkout session",
+      );
     });
   });
 
@@ -330,10 +333,22 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByTestId("buy-button-starter")).toHaveProperty("disabled", true);
-    expect(screen.getByTestId("buy-button-basic")).toHaveProperty("disabled", true);
-    expect(screen.getByTestId("buy-button-pro")).toHaveProperty("disabled", true);
-    expect(screen.getByTestId("buy-button-power")).toHaveProperty("disabled", true);
+    expect(screen.getByTestId("buy-button-starter")).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByTestId("buy-button-basic")).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByTestId("buy-button-pro")).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByTestId("buy-button-power")).toHaveProperty(
+      "disabled",
+      true,
+    );
   });
 
   it("shows Processing text while purchase is loading", async () => {

@@ -278,7 +278,9 @@ export async function listR2StorageStats(): Promise<ListStorageResult> {
 
     // Calculate average
     if (stats.totalFiles > 0) {
-      stats.averageSizeBytes = Math.round(stats.totalSizeBytes / stats.totalFiles);
+      stats.averageSizeBytes = Math.round(
+        stats.totalSizeBytes / stats.totalFiles,
+      );
     }
 
     return {

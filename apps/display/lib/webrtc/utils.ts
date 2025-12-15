@@ -31,7 +31,11 @@ export async function getUserMediaStream(
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     return stream;
   } catch (error) {
-    throw createWebRTCError("permission-denied", "Failed to access media devices", error as Error);
+    throw createWebRTCError(
+      "permission-denied",
+      "Failed to access media devices",
+      error as Error,
+    );
   }
 }
 
@@ -46,7 +50,11 @@ export async function getDisplayMediaStream(): Promise<MediaStream> {
     } as DisplayMediaStreamOptions);
     return stream;
   } catch (error) {
-    throw createWebRTCError("permission-denied", "Failed to access screen sharing", error as Error);
+    throw createWebRTCError(
+      "permission-denied",
+      "Failed to access screen sharing",
+      error as Error,
+    );
   }
 }
 
@@ -122,7 +130,9 @@ export function generatePeerId(prefix: string = "peer"): string {
 /**
  * Validate if a peer ID is in correct format
  */
-export function isValidPeerId(peerId: string | null | undefined): peerId is string {
+export function isValidPeerId(
+  peerId: string | null | undefined,
+): peerId is string {
   if (!peerId) return false;
   // Peer IDs should be alphanumeric with hyphens/underscores
   return /^[a-zA-Z0-9-_]+$/.test(peerId);
@@ -132,7 +142,8 @@ export function isValidPeerId(peerId: string | null | undefined): peerId is stri
  * Create QR code data URL for a peer ID
  */
 export function createConnectionUrl(peerId: string, baseUrl?: string): string {
-  const base = baseUrl || (typeof window !== "undefined" ? window.location.origin : "");
+  const base = baseUrl ||
+    (typeof window !== "undefined" ? window.location.origin : "");
   return `${base}/client?hostId=${peerId}`;
 }
 

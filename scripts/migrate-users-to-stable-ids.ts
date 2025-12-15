@@ -75,7 +75,9 @@ async function checkNoActiveSessions(force: boolean): Promise<boolean> {
     console.error("This indicates the application may still be running.");
     console.error("\nTo prevent race conditions, please:");
     console.error("1. Stop the application");
-    console.error("2. Wait for sessions to expire, or clear the sessions table");
+    console.error(
+      "2. Wait for sessions to expire, or clear the sessions table",
+    );
     console.error("3. Run this script again");
     console.error("\nOr use --force to skip this check (not recommended)");
     return false;
@@ -184,7 +186,9 @@ async function migrateUsers(dryRun = false): Promise<MigrationStats> {
               console.warn(`  WARNING: ${warning}`);
               stats.warnings.push(warning);
             }
-          } else if (user.stripeCustomerId && !existingStableUser.stripeCustomerId) {
+          } else if (
+            user.stripeCustomerId && !existingStableUser.stripeCustomerId
+          ) {
             // Migrate Stripe customer ID to stable user
             await tx.user.update({
               where: { id: stableId },
@@ -334,14 +338,22 @@ async function main() {
   // Check for salt (USER_ID_SALT or AUTH_SECRET)
   const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET;
   if (!salt) {
-    console.error("\nERROR: Neither USER_ID_SALT nor AUTH_SECRET environment variable is set!");
-    console.error("This is required to generate stable user IDs that match the application.");
+    console.error(
+      "\nERROR: Neither USER_ID_SALT nor AUTH_SECRET environment variable is set!",
+    );
+    console.error(
+      "This is required to generate stable user IDs that match the application.",
+    );
     console.error("\nSet one using:");
-    console.error("  export USER_ID_SALT=<your-user-id-salt>  # Preferred (never rotate)");
+    console.error(
+      "  export USER_ID_SALT=<your-user-id-salt>  # Preferred (never rotate)",
+    );
     console.error("  export AUTH_SECRET=<your-auth-secret>   # Fallback");
     process.exit(1);
   }
-  console.log(`Using salt from: ${process.env.USER_ID_SALT ? "USER_ID_SALT" : "AUTH_SECRET"}`);
+  console.log(
+    `Using salt from: ${process.env.USER_ID_SALT ? "USER_ID_SALT" : "AUTH_SECRET"}`,
+  );
 
   // Check for active sessions (migration lock)
   const canProceed = await checkNoActiveSessions(force);
@@ -359,7 +371,9 @@ async function main() {
   console.log(`Images migrated: ${stats.imagesMigrated}`);
   console.log(`Jobs migrated: ${stats.jobsMigrated}`);
   console.log(`Token balances migrated: ${stats.tokenBalancesMigrated}`);
-  console.log(`Token transactions migrated: ${stats.tokenTransactionsMigrated}`);
+  console.log(
+    `Token transactions migrated: ${stats.tokenTransactionsMigrated}`,
+  );
   console.log(`Albums migrated: ${stats.albumsMigrated}`);
   console.log(`Stripe customer IDs migrated: ${stats.stripeIdsMigrated}`);
 

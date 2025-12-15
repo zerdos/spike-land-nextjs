@@ -128,7 +128,9 @@ async function saveAnalysisToDb(
   await prisma.imageEnhancementJob.update({
     where: { id: jobId },
     data: {
-      analysisResult: JSON.parse(JSON.stringify(analysisResult.structuredAnalysis)),
+      analysisResult: JSON.parse(
+        JSON.stringify(analysisResult.structuredAnalysis),
+      ),
       analysisSource: DEFAULT_MODEL,
     },
   });
@@ -151,7 +153,9 @@ async function autoCropStep(
   width: number;
   height: number;
   wasCropped: boolean;
-  cropDimensions: { left: number; top: number; width: number; height: number; } | null;
+  cropDimensions:
+    | { left: number; top: number; width: number; height: number; }
+    | null;
 }> {
   "use step";
 
@@ -481,7 +485,10 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
     let currentHeight = metadata.height;
 
     // Step 3: Analyze image with vision model
-    const analysisResult = await analyzeImageStep(metadata.imageBase64, metadata.mimeType);
+    const analysisResult = await analyzeImageStep(
+      metadata.imageBase64,
+      metadata.mimeType,
+    );
 
     // Step 4: Save analysis to database
     await saveAnalysisToDb(jobId, analysisResult);
@@ -507,10 +514,16 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
     // === STAGE 3: DYNAMIC PROMPT & ENHANCEMENT ===
 
     // Step 6: Pad image to square for Gemini
-    const paddedBase64 = await padImageForGemini(imageBuffer, currentWidth, currentHeight);
+    const paddedBase64 = await padImageForGemini(
+      imageBuffer,
+      currentWidth,
+      currentHeight,
+    );
 
     // Build dynamic enhancement prompt based on analysis
-    const dynamicPrompt = buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
+    const dynamicPrompt = buildDynamicEnhancementPrompt(
+      analysisResult.structuredAnalysis,
+    );
 
     // Step 7: Enhance with Gemini using dynamic prompt
     const enhancedBuffer = await enhanceWithGemini(

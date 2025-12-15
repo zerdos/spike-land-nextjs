@@ -100,9 +100,15 @@ export async function PATCH(
       name?: string;
       description?: string;
       requirements?: {
-        create: { description: string; priority: RequirementPriority; status: RequirementStatus; };
+        create: {
+          description: string;
+          priority: RequirementPriority;
+          status: RequirementStatus;
+        };
       };
-      monetizationModels?: { create: { type: MonetizationType; features: string[]; }; };
+      monetizationModels?: {
+        create: { type: MonetizationType; features: string[]; };
+      };
     } = {};
 
     if (validatedData.name !== undefined) {

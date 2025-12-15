@@ -32,7 +32,7 @@ export async function BeforeAfterGallery() {
     const photos = await getSuperAdminPublicPhotos();
 
     if (photos.length > 0) {
-      galleryItems = photos.map(photo => ({
+      galleryItems = photos.map((photo) => ({
         id: photo.id,
         title: photo.title,
         description: `Enhanced with ${photo.tier} from ${photo.albumName}`,

@@ -92,7 +92,9 @@ export class SettingsPage {
     return this.page.locator('[data-testid="profile-visibility-select"]');
   }
 
-  async selectProfileVisibility(visibility: "Public" | "Private" | "Friends Only") {
+  async selectProfileVisibility(
+    visibility: "Public" | "Private" | "Friends Only",
+  ) {
     const select = await this.getProfileVisibilitySelect();
     await select.selectOption(visibility);
   }

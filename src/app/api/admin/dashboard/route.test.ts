@@ -152,7 +152,9 @@ describe("GET /api/admin/dashboard", () => {
     } as never);
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
 
-    vi.mocked(prisma.user.count).mockRejectedValueOnce(new Error("Database error"));
+    vi.mocked(prisma.user.count).mockRejectedValueOnce(
+      new Error("Database error"),
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 

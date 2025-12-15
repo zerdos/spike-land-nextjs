@@ -35,7 +35,8 @@ curl -X POST http://localhost:3000/api/albums \
   }'
 ```
 
-**Response**: `{ album: { id, name, description, privacy, shareToken, createdAt } }`
+**Response**:
+`{ album: { id, name, description, privacy, shareToken, createdAt } }`
 
 ### Get Album
 
@@ -78,7 +79,8 @@ curl -X POST http://localhost:3000/api/albums/ALBUM_ID/enhance \
   }'
 ```
 
-**Response**: `{ success: true, totalImages: 5, queued: 3, totalCost: 15, newBalance: 85, jobs: [] }`
+**Response**:
+`{ success: true, totalImages: 5, queued: 3, totalCost: 15, newBalance: 85, jobs: [] }`
 
 ## Status Codes
 
@@ -115,34 +117,34 @@ Max 20 images per batch.
 
 ```javascript
 // List
-await fetch("/api/albums").then(r => r.json());
+await fetch("/api/albums").then((r) => r.json());
 
 // Create
 fetch("/api/albums", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ name: "Album" }),
-}).then(r => r.json());
+}).then((r) => r.json());
 
 // Get
-await fetch("/api/albums/ID").then(r => r.json());
+await fetch("/api/albums/ID").then((r) => r.json());
 
 // Update
 fetch("/api/albums/ID", {
   method: "PATCH",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ privacy: "UNLISTED" }),
-}).then(r => r.json());
+}).then((r) => r.json());
 
 // Delete
-await fetch("/api/albums/ID", { method: "DELETE" }).then(r => r.json());
+await fetch("/api/albums/ID", { method: "DELETE" }).then((r) => r.json());
 
 // Enhance
 fetch("/api/albums/ID/enhance", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ tier: "TIER_2K" }),
-}).then(r => r.json());
+}).then((r) => r.json());
 ```
 
 ## Error Examples

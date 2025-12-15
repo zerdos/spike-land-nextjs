@@ -134,7 +134,8 @@ describe("AlbumsClient", () => {
 
     const submitButton = screen.getAllByText("Create Album").find(
       (btn) =>
-        btn.closest('button[type="button"]') !== null || btn.closest('div[role="dialog"]') !== null,
+        btn.closest('button[type="button"]') !== null ||
+        btn.closest('div[role="dialog"]') !== null,
     );
     if (submitButton) {
       fireEvent.click(submitButton);
@@ -207,7 +208,9 @@ describe("AlbumsClient", () => {
       expect(screen.getByText("Test Album")).toBeDefined();
     });
 
-    const deleteButton = document.querySelector("button:has(svg.lucide-trash-2)");
+    const deleteButton = document.querySelector(
+      "button:has(svg.lucide-trash-2)",
+    );
     if (deleteButton) {
       fireEvent.click(deleteButton);
     }

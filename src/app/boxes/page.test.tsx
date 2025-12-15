@@ -219,7 +219,8 @@ describe("BoxesPage", () => {
 
       // Only the box with tier should be rendered
       expect(screen.getByTestId("box-card-box-123")).toBeInTheDocument();
-      expect(screen.queryByTestId("box-card-box-null-tier")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("box-card-box-null-tier")).not
+        .toBeInTheDocument();
     });
 
     it("should not render empty state when boxes exist", async () => {

@@ -71,7 +71,10 @@ describe("GET /api/apps/[id]", () => {
     };
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(
-      mockApp as App & { requirements: Requirement[]; monetizationModels: MonetizationModel[]; },
+      mockApp as App & {
+        requirements: Requirement[];
+        monetizationModels: MonetizationModel[];
+      },
     );
 
     const request = new NextRequest("http://localhost/api/apps/app-1");
@@ -89,7 +92,9 @@ describe("GET /api/apps/[id]", () => {
       user: { id: "user-1", email: "test@example.com" },
     } as Session);
 
-    vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"));
+    vi.mocked(prisma.app.findFirst).mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const request = new NextRequest("http://localhost/api/apps/app-1");
     const context = { params: Promise.resolve({ id: "app-1" }) };
@@ -216,7 +221,9 @@ describe("PATCH /api/apps/[id]", () => {
       user: { id: "user-1", email: "test@example.com" },
     } as Session);
 
-    vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"));
+    vi.mocked(prisma.app.findFirst).mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "PATCH",
@@ -306,7 +313,9 @@ describe("DELETE /api/apps/[id]", () => {
       user: { id: "user-1", email: "test@example.com" },
     } as Session);
 
-    vi.mocked(prisma.app.findFirst).mockRejectedValue(new Error("Database error"));
+    vi.mocked(prisma.app.findFirst).mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "DELETE",

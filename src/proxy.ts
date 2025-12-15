@@ -88,12 +88,14 @@ const PUBLIC_PATHS = [
  */
 export function isProtectedPath(pathname: string): boolean {
   // First check if path is explicitly public
-  if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"))) {
+  if (
+    PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/"))
+  ) {
     return false;
   }
 
   // Check if path matches any protected patterns
-  return PROTECTED_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"));
+  return PROTECTED_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/"));
 }
 
 /**

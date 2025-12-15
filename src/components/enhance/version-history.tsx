@@ -80,7 +80,11 @@ const formatFileSize = (bytes: number | null): string => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const handleDownload = (url: string | null, imageName: string, tier: string): void => {
+const handleDownload = (
+  url: string | null,
+  imageName: string,
+  tier: string,
+): void => {
   if (!url) return;
   const link = document.createElement("a");
   link.href = url;
@@ -89,7 +93,9 @@ const handleDownload = (url: string | null, imageName: string, tier: string): vo
   link.click();
 };
 
-export function VersionHistory({ imageId, imageName, originalUrl, versions }: VersionHistoryProps) {
+export function VersionHistory(
+  { imageId, imageName, originalUrl, versions }: VersionHistoryProps,
+) {
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [selectedVersions, setSelectedVersions] = useState<{
     version1: Version | null;
@@ -112,7 +118,9 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
       <Card>
         <CardHeader>
           <CardTitle>Version History</CardTitle>
-          <CardDescription>No enhancement versions available yet</CardDescription>
+          <CardDescription>
+            No enhancement versions available yet
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -153,7 +161,10 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={getTierColor(version.tier)} variant="outline">
+                      <Badge
+                        className={getTierColor(version.tier)}
+                        variant="outline"
+                      >
                         {getTierLabel(version.tier)}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
@@ -168,7 +179,9 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4" />
-                        <span>{formatProcessingTime(version.processingTimeMs)}</span>
+                        <span>
+                          {formatProcessingTime(version.processingTimeMs)}
+                        </span>
                       </div>
                     </div>
 
@@ -188,7 +201,12 @@ export function VersionHistory({ imageId, imageName, originalUrl, versions }: Ve
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDownload(version.resultUrl, imageName, version.tier)}
+                      onClick={() =>
+                        handleDownload(
+                          version.resultUrl,
+                          imageName,
+                          version.tier,
+                        )}
                       disabled={!version.resultUrl}
                       data-testid={`download-button-${index}`}
                     >

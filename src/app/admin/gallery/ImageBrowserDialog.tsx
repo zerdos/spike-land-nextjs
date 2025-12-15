@@ -44,7 +44,12 @@ interface BrowseImage {
 interface ImageBrowserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (imageId: string, jobId: string, originalUrl: string, enhancedUrl: string) => void;
+  onSelect: (
+    imageId: string,
+    jobId: string,
+    originalUrl: string,
+    enhancedUrl: string,
+  ) => void;
 }
 
 export function ImageBrowserDialog({
@@ -53,7 +58,9 @@ export function ImageBrowserDialog({
   onSelect,
 }: ImageBrowserDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState<"shareToken" | "userId">("shareToken");
+  const [searchType, setSearchType] = useState<"shareToken" | "userId">(
+    "shareToken",
+  );
   const [images, setImages] = useState<BrowseImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,7 +172,9 @@ export function ImageBrowserDialog({
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    variant={searchType === "shareToken" ? "default" : "outline"}
+                    variant={searchType === "shareToken"
+                      ? "default"
+                      : "outline"}
                     onClick={() => setSearchType("shareToken")}
                     size="sm"
                   >
@@ -264,7 +273,9 @@ export function ImageBrowserDialog({
                       <Card
                         key={job.id}
                         className={`cursor-pointer overflow-hidden transition-all hover:ring-2 hover:ring-primary ${
-                          selectedJob?.id === job.id ? "ring-2 ring-primary" : ""
+                          selectedJob?.id === job.id
+                            ? "ring-2 ring-primary"
+                            : ""
                         }`}
                         onClick={() => handleJobClick(job)}
                       >

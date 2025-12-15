@@ -19,13 +19,17 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    return NextResponse.json({ error: "Missing stripe-signature header" }, {
+      status: 400,
+    });
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error("STRIPE_WEBHOOK_SECRET is not configured");
-    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+    return NextResponse.json({ error: "Webhook secret not configured" }, {
+      status: 500,
+    });
   }
 
   let event: Stripe.Event;
@@ -34,7 +38,10 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
-    return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Webhook signature verification failed" },
+      { status: 400 },
+    );
   }
 
   try {
@@ -74,9 +81,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.Session) {
-  const { userId, type, tokens, packageId, planId, tokensPerMonth, maxRollover } =
-    session.metadata || {};
+async function handleCheckoutCompleted(
+  stripe: Stripe,
+  session: Stripe.Checkout.Session,
+) {
+  const {
+    userId,
+    type,
+    tokens,
+    packageId,
+    planId,
+    tokensPerMonth,
+    maxRollover,
+  } = session.metadata || {};
 
   if (!userId) {
     console.error("No userId in checkout session metadata");
@@ -140,7 +157,8 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
             packageId: pkg.id,
             tokensGranted: tokenAmount,
             amountUSD: (session.amount_total || 0) / 100,
-            stripePaymentIntentId: session.payment_intent as string || session.id,
+            stripePaymentIntentId: session.payment_intent as string ||
+              session.id,
             status: "SUCCEEDED",
             metadata: { packageId, sessionId: session.id },
           },
@@ -154,7 +172,9 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
   if (type === "subscription" && planId && tokensPerMonth) {
     // Create subscription record
     const stripeSubscriptionId = session.subscription as string;
-    const subscriptionData = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+    const subscriptionData = await stripe.subscriptions.retrieve(
+      stripeSubscriptionId,
+    );
 
     // Stripe v20+: billing period is on subscription item, not subscription level
     const firstItem = subscriptionData.items.data[0];
@@ -242,12 +262,16 @@ async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
     ? subscriptionId
     : subscriptionId?.id;
 
-  if (!subscriptionIdString || invoice.billing_reason === "subscription_create") {
+  if (
+    !subscriptionIdString || invoice.billing_reason === "subscription_create"
+  ) {
     // Skip initial subscription invoice (handled in checkout.session.completed)
     return;
   }
 
-  const subscription = await stripe.subscriptions.retrieve(subscriptionIdString);
+  const subscription = await stripe.subscriptions.retrieve(
+    subscriptionIdString,
+  );
   const customerId = invoice.customer as string;
 
   // Stripe v20+: billing period is on subscription item, not subscription level

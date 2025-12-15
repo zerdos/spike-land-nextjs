@@ -26,32 +26,43 @@ declare module "../support/world" {
   }
 }
 
-Given("I navigate to the app creation wizard", async function(this: CustomWorld) {
-  const wizard = getWizard(this);
-  await wizard.navigate();
-  await waitForPageLoad(this.page);
-});
+Given(
+  "I navigate to the app creation wizard",
+  async function(this: CustomWorld) {
+    const wizard = getWizard(this);
+    await wizard.navigate();
+    await waitForPageLoad(this.page);
+  },
+);
 
-Then("I should see the wizard step {string}", async function(this: CustomWorld, stepName: string) {
-  const wizard = getWizard(this);
-  const stepTitle = await wizard.getStepTitle();
-  await expect(stepTitle).toContainText(stepName, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the wizard step {string}",
+  async function(this: CustomWorld, stepName: string) {
+    const wizard = getWizard(this);
+    const stepTitle = await wizard.getStepTitle();
+    await expect(stepTitle).toContainText(stepName, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
-Then("I should see the {string} input field", async function(this: CustomWorld, fieldName: string) {
-  // Wait for the form to be fully rendered and interactive
-  await this.page.waitForLoadState("networkidle");
+Then(
+  "I should see the {string} input field",
+  async function(this: CustomWorld, fieldName: string) {
+    // Wait for the form to be fully rendered and interactive
+    await this.page.waitForLoadState("networkidle");
 
-  // Try to find by testid first, fall back to label for backward compatibility
-  try {
-    const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-input";
-    const field = this.page.getByTestId(testId);
-    await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
-  } catch {
-    const label = this.page.getByLabel(new RegExp(fieldName, "i"));
-    await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  }
-});
+    // Try to find by testid first, fall back to label for backward compatibility
+    try {
+      const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-input";
+      const field = this.page.getByTestId(testId);
+      await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
+    } catch {
+      const label = this.page.getByLabel(new RegExp(fieldName, "i"));
+      await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    }
+  },
+);
 
 Then(
   "I should see the {string} textarea field",
@@ -71,16 +82,22 @@ Then(
   },
 );
 
-Then("the progress bar should show {int}%", async function(this: CustomWorld, percentage: number) {
-  const wizard = getWizard(this);
-  await wizard.verifyProgress(percentage);
-});
+Then(
+  "the progress bar should show {int}%",
+  async function(this: CustomWorld, percentage: number) {
+    const wizard = getWizard(this);
+    await wizard.verifyProgress(percentage);
+  },
+);
 
-Then("the progress text should say {string}", async function(this: CustomWorld, text: string) {
-  const wizard = getWizard(this);
-  const progressText = await wizard.getProgressText();
-  await expect(progressText).toHaveText(text);
-});
+Then(
+  "the progress text should say {string}",
+  async function(this: CustomWorld, text: string) {
+    const wizard = getWizard(this);
+    const progressText = await wizard.getProgressText();
+    await expect(progressText).toHaveText(text);
+  },
+);
 
 Then(
   "I should see the error message {string}",
@@ -89,12 +106,15 @@ Then(
   },
 );
 
-Then("I should remain on step {int}", async function(this: CustomWorld, _stepNumber: number) {
-  // Verify we haven't navigated away - the step title should still be visible
-  const wizard = getWizard(this);
-  const stepTitle = await wizard.getStepTitle();
-  await expect(stepTitle).toBeVisible();
-});
+Then(
+  "I should remain on step {int}",
+  async function(this: CustomWorld, _stepNumber: number) {
+    // Verify we haven't navigated away - the step title should still be visible
+    const wizard = getWizard(this);
+    const stepTitle = await wizard.getStepTitle();
+    await expect(stepTitle).toBeVisible();
+  },
+);
 
 When(
   "I type {string} in the {string} field",
@@ -142,7 +162,10 @@ When(
 
 Given("I complete step 1 with valid data", async function(this: CustomWorld) {
   const wizard = getWizard(this);
-  await wizard.fillBasicInfo("Test App", "This is a valid test app description");
+  await wizard.fillBasicInfo(
+    "Test App",
+    "This is a valid test app description",
+  );
   await wizard.clickNext();
   await waitForPageLoad(this.page);
 });
@@ -164,7 +187,10 @@ When(
     if (step === 1) {
       const wizard = getWizard(this);
       await wizard.fillBasicInfo(name, "Test description for step 1");
-      this.wizardFormData = { name, description: "Test description for step 1" };
+      this.wizardFormData = {
+        name,
+        description: "Test description for step 1",
+      };
       await wizard.clickNext();
       await waitForPageLoad(this.page);
     }
@@ -179,23 +205,34 @@ Then(
   },
 );
 
-Given("I complete step 1 and 2 with valid data", async function(this: CustomWorld) {
-  const wizard = getWizard(this);
-  await wizard.fillBasicInfo("Test App", "This is a valid test app description");
-  await wizard.clickNext();
-  await waitForPageLoad(this.page);
-  await wizard.fillRequirements("The app should have authentication and a dashboard");
-  await wizard.clickNext();
-  await waitForPageLoad(this.page);
-});
+Given(
+  "I complete step 1 and 2 with valid data",
+  async function(this: CustomWorld) {
+    const wizard = getWizard(this);
+    await wizard.fillBasicInfo(
+      "Test App",
+      "This is a valid test app description",
+    );
+    await wizard.clickNext();
+    await waitForPageLoad(this.page);
+    await wizard.fillRequirements(
+      "The app should have authentication and a dashboard",
+    );
+    await wizard.clickNext();
+    await waitForPageLoad(this.page);
+  },
+);
 
-Then("the requirements data should be preserved", async function(this: CustomWorld) {
-  const wizard = getWizard(this);
-  const requirementsField = await wizard.getRequirementsTextarea();
-  const value = await requirementsField.inputValue();
-  expect(value).toBeTruthy();
-  expect(value.length).toBeGreaterThan(0);
-});
+Then(
+  "the requirements data should be preserved",
+  async function(this: CustomWorld) {
+    const wizard = getWizard(this);
+    const requirementsField = await wizard.getRequirementsTextarea();
+    const value = await requirementsField.inputValue();
+    expect(value).toBeTruthy();
+    expect(value.length).toBeGreaterThan(0);
+  },
+);
 
 Then(
   "I should see the {string} monetization option",
@@ -216,21 +253,26 @@ When(
   "I select the {string} monetization option",
   async function(this: CustomWorld, option: string) {
     const wizard = getWizard(this);
-    await wizard.selectMonetizationOption(option as "Free" | "Paid" | "Freemium" | "Subscription");
+    await wizard.selectMonetizationOption(
+      option as "Free" | "Paid" | "Freemium" | "Subscription",
+    );
   },
 );
 
-Then("the {string} option should be selected", async function(this: CustomWorld, option: string) {
-  // Try testid first, fall back to role selector
-  try {
-    const testId = `monetization-option-${option.toLowerCase()}`;
-    const radio = this.page.getByTestId(testId);
-    await expect(radio).toBeChecked({ timeout: TIMEOUTS.SHORT });
-  } catch {
-    const radio = this.page.getByRole("radio", { name: option });
-    await expect(radio).toBeChecked({ timeout: TIMEOUTS.DEFAULT });
-  }
-});
+Then(
+  "the {string} option should be selected",
+  async function(this: CustomWorld, option: string) {
+    // Try testid first, fall back to role selector
+    try {
+      const testId = `monetization-option-${option.toLowerCase()}`;
+      const radio = this.page.getByTestId(testId);
+      await expect(radio).toBeChecked({ timeout: TIMEOUTS.SHORT });
+    } catch {
+      const radio = this.page.getByRole("radio", { name: option });
+      await expect(radio).toBeChecked({ timeout: TIMEOUTS.DEFAULT });
+    }
+  },
+);
 
 Then("I should see the price input field", async function(this: CustomWorld) {
   const wizard = getWizard(this);
@@ -238,26 +280,32 @@ Then("I should see the price input field", async function(this: CustomWorld) {
   await expect(priceInput).toBeVisible();
 });
 
-Given("I complete all wizard steps with valid data", async function(this: CustomWorld) {
-  const wizard = getWizard(this);
+Given(
+  "I complete all wizard steps with valid data",
+  async function(this: CustomWorld) {
+    const wizard = getWizard(this);
 
-  // Step 1
-  await wizard.fillBasicInfo("Complete Test App", "This is a complete test app description");
-  await wizard.clickNext();
-  await waitForPageLoad(this.page);
+    // Step 1
+    await wizard.fillBasicInfo(
+      "Complete Test App",
+      "This is a complete test app description",
+    );
+    await wizard.clickNext();
+    await waitForPageLoad(this.page);
 
-  // Step 2
-  await wizard.fillRequirements(
-    "The app should have full authentication system and user dashboard",
-  );
-  await wizard.clickNext();
-  await waitForPageLoad(this.page);
+    // Step 2
+    await wizard.fillRequirements(
+      "The app should have full authentication system and user dashboard",
+    );
+    await wizard.clickNext();
+    await waitForPageLoad(this.page);
 
-  // Step 3
-  await wizard.selectMonetizationOption("Free");
-  await wizard.clickNext();
-  await waitForPageLoad(this.page);
-});
+    // Step 3
+    await wizard.selectMonetizationOption("Free");
+    await wizard.clickNext();
+    await waitForPageLoad(this.page);
+  },
+);
 
 Given(
   "I complete all wizard steps with name {string} and description {string}",
@@ -292,24 +340,34 @@ Then(
   },
 );
 
-Then("the review should show app name {string}", async function(this: CustomWorld, name: string) {
-  const nameValue = this.page.getByTestId("review-value-app-name");
-  await expect(nameValue).toHaveText(name, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the review should show app name {string}",
+  async function(this: CustomWorld, name: string) {
+    const nameValue = this.page.getByTestId("review-value-app-name");
+    await expect(nameValue).toHaveText(name, { timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Then(
   "the review should show description {string}",
   async function(this: CustomWorld, description: string) {
     const descValue = this.page.getByTestId("review-value-description");
-    await expect(descValue).toHaveText(description, { timeout: TIMEOUTS.DEFAULT });
+    await expect(descValue).toHaveText(description, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
-When("I click the edit button for {string}", async function(this: CustomWorld, section: string) {
-  const wizard = getWizard(this);
-  await wizard.clickEditButton(section as "Basic Info" | "Requirements" | "Monetization");
-  await waitForPageLoad(this.page);
-});
+When(
+  "I click the edit button for {string}",
+  async function(this: CustomWorld, section: string) {
+    const wizard = getWizard(this);
+    await wizard.clickEditButton(
+      section as "Basic Info" | "Requirements" | "Monetization",
+    );
+    await waitForPageLoad(this.page);
+  },
+);
 
 Then("the form data should be preserved", async function(this: CustomWorld) {
   // Data should be visible in form fields
@@ -322,40 +380,55 @@ Then("the form data should be preserved", async function(this: CustomWorld) {
 
 // Removed duplicate - using common.steps.ts
 
-Then("the new app should appear in my apps list", async function(this: CustomWorld) {
-  // After redirect to /my-apps, check for app card
-  const appCards = this.page.locator('[data-testid="app-card"]');
-  await expect(appCards).toHaveCount(1, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the new app should appear in my apps list",
+  async function(this: CustomWorld) {
+    // After redirect to /my-apps, check for app card
+    const appCards = this.page.locator('[data-testid="app-card"]');
+    await expect(appCards).toHaveCount(1, { timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("the app should be saved in localStorage", async function(this: CustomWorld) {
-  const apps = await this.page.evaluate(() => {
-    const data = localStorage.getItem("user-apps");
-    return data ? JSON.parse(data) : [];
-  });
-  expect(apps.length).toBeGreaterThan(0);
-});
+Then(
+  "the app should be saved in localStorage",
+  async function(this: CustomWorld) {
+    const apps = await this.page.evaluate(() => {
+      const data = localStorage.getItem("user-apps");
+      return data ? JSON.parse(data) : [];
+    });
+    expect(apps.length).toBeGreaterThan(0);
+  },
+);
 
-Then("the localStorage should contain the app data", async function(this: CustomWorld) {
-  const apps = await this.page.evaluate(() => {
-    const data = localStorage.getItem("user-apps");
-    return data ? JSON.parse(data) : [];
-  });
-  expect(apps[0]).toHaveProperty("name");
-  expect(apps[0]).toHaveProperty("description");
-});
+Then(
+  "the localStorage should contain the app data",
+  async function(this: CustomWorld) {
+    const apps = await this.page.evaluate(() => {
+      const data = localStorage.getItem("user-apps");
+      return data ? JSON.parse(data) : [];
+    });
+    expect(apps[0]).toHaveProperty("name");
+    expect(apps[0]).toHaveProperty("description");
+  },
+);
 
-Then("the draft should be saved to localStorage", async function(this: CustomWorld) {
-  const draft = await this.page.evaluate(() => {
-    return localStorage.getItem("app-creation-draft");
-  });
-  expect(draft).toBeTruthy();
-});
+Then(
+  "the draft should be saved to localStorage",
+  async function(this: CustomWorld) {
+    const draft = await this.page.evaluate(() => {
+      return localStorage.getItem("app-creation-draft");
+    });
+    expect(draft).toBeTruthy();
+  },
+);
 
-Then("the draft indicator should show {string}", async function(this: CustomWorld, text: string) {
-  const indicator = this.page.getByTestId("draft-saved-indicator");
-  await expect(indicator).toContainText(text, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the draft indicator should show {string}",
+  async function(this: CustomWorld, text: string) {
+    const indicator = this.page.getByTestId("draft-saved-indicator");
+    await expect(indicator).toContainText(text, { timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 When("I navigate to step 2", async function(this: CustomWorld) {
   const wizard = getWizard(this);
@@ -363,32 +436,41 @@ When("I navigate to step 2", async function(this: CustomWorld) {
   await waitForPageLoad(this.page);
 });
 
-Then("the draft should contain step 1 and step 2 data", async function(this: CustomWorld) {
-  const draft = await this.page.evaluate(() => {
-    const data = localStorage.getItem("app-creation-draft");
-    return data ? JSON.parse(data) : null;
-  });
-  expect(draft).toBeTruthy();
-  expect(draft.step1).toBeDefined();
-  expect(draft.step2).toBeDefined();
-});
+Then(
+  "the draft should contain step 1 and step 2 data",
+  async function(this: CustomWorld) {
+    const draft = await this.page.evaluate(() => {
+      const data = localStorage.getItem("app-creation-draft");
+      return data ? JSON.parse(data) : null;
+    });
+    expect(draft).toBeTruthy();
+    expect(draft.step1).toBeDefined();
+    expect(draft.step2).toBeDefined();
+  },
+);
 
 When("I reload the page", async function(this: CustomWorld) {
   await this.page.reload();
   await waitForPageLoad(this.page);
 });
 
-Then("the draft should be removed from localStorage", async function(this: CustomWorld) {
-  const draft = await this.page.evaluate(() => {
-    return localStorage.getItem("app-creation-draft");
-  });
-  expect(draft).toBeNull();
-});
+Then(
+  "the draft should be removed from localStorage",
+  async function(this: CustomWorld) {
+    const draft = await this.page.evaluate(() => {
+      return localStorage.getItem("app-creation-draft");
+    });
+    expect(draft).toBeNull();
+  },
+);
 
-Then("the draft indicator should not be visible", async function(this: CustomWorld) {
-  const indicator = this.page.getByTestId("draft-saved-indicator");
-  await expect(indicator).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the draft indicator should not be visible",
+  async function(this: CustomWorld) {
+    const indicator = this.page.getByTestId("draft-saved-indicator");
+    await expect(indicator).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Given(
   "I start creating an app as {string} with name {string}",
@@ -408,18 +490,24 @@ When(
   },
 );
 
-Then("the draft should only contain {string}", async function(this: CustomWorld, appName: string) {
-  const draft = await this.page.evaluate(() => {
-    const data = localStorage.getItem("app-creation-draft");
-    return data ? JSON.parse(data) : null;
-  });
-  expect(draft.step1?.name).toBe(appName);
-});
+Then(
+  "the draft should only contain {string}",
+  async function(this: CustomWorld, appName: string) {
+    const draft = await this.page.evaluate(() => {
+      const data = localStorage.getItem("app-creation-draft");
+      return data ? JSON.parse(data) : null;
+    });
+    expect(draft.step1?.name).toBe(appName);
+  },
+);
 
-Then("the draft should not contain {string}", async function(this: CustomWorld, appName: string) {
-  const draft = await this.page.evaluate(() => {
-    const data = localStorage.getItem("app-creation-draft");
-    return data ? JSON.parse(data) : null;
-  });
-  expect(draft?.step1?.name).not.toBe(appName);
-});
+Then(
+  "the draft should not contain {string}",
+  async function(this: CustomWorld, appName: string) {
+    const draft = await this.page.evaluate(() => {
+      const data = localStorage.getItem("app-creation-draft");
+      return data ? JSON.parse(data) : null;
+    });
+    expect(draft?.step1?.name).not.toBe(appName);
+  },
+);

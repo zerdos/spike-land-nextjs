@@ -147,7 +147,9 @@ export async function POST(request: NextRequest) {
     console.error("Error in export API:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to export image",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to export image",
       },
       { status: 500 },
     );

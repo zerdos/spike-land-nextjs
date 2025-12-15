@@ -65,7 +65,9 @@ export function GalleryAdminClient() {
   const [showBrowseDialog, setShowBrowseDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<GalleryItem | null>(null);
-  const [selectedImageData, setSelectedImageData] = useState<SelectedImageData | null>(null);
+  const [selectedImageData, setSelectedImageData] = useState<
+    SelectedImageData | null
+  >(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchItems = useCallback(async () => {
@@ -135,7 +137,9 @@ export function GalleryAdminClient() {
 
       await fetchItems();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to reorder item");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to reorder item",
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -166,7 +170,9 @@ export function GalleryAdminClient() {
 
       await fetchItems();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to reorder item");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to reorder item",
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -284,7 +290,10 @@ export function GalleryAdminClient() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((n) => (
-            <Card key={n} className="h-64 animate-pulse bg-neutral-100 dark:bg-neutral-800" />
+            <Card
+              key={n}
+              className="h-64 animate-pulse bg-neutral-100 dark:bg-neutral-800"
+            />
           ))}
         </div>
       </div>
@@ -324,8 +333,12 @@ export function GalleryAdminClient() {
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base truncate">{item.title}</CardTitle>
-                      <Badge className={`mt-1 ${CATEGORY_COLORS[item.category]}`}>
+                      <CardTitle className="text-base truncate">
+                        {item.title}
+                      </CardTitle>
+                      <Badge
+                        className={`mt-1 ${CATEGORY_COLORS[item.category]}`}
+                      >
                         {item.category}
                       </Badge>
                     </div>
@@ -334,7 +347,9 @@ export function GalleryAdminClient() {
                         checked={item.isActive}
                         onCheckedChange={() => handleToggleActive(item)}
                         disabled={isUpdating}
-                        aria-label={item.isActive ? "Deactivate item" : "Activate item"}
+                        aria-label={item.isActive
+                          ? "Deactivate item"
+                          : "Activate item"}
                       />
                     </div>
                   </div>
@@ -440,7 +455,10 @@ export function GalleryAdminClient() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={(open) => !open && setShowDeleteDialog(false)}>
+      <Dialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Gallery Item</DialogTitle>

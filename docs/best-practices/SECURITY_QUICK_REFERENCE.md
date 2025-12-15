@@ -1,6 +1,7 @@
 # Web Security Quick Reference
 
-A fast lookup guide for the most critical security implementations. For detailed information, see [web-security.md](./web-security.md).
+A fast lookup guide for the most critical security implementations. For detailed
+information, see [web-security.md](./web-security.md).
 
 ---
 
@@ -41,7 +42,10 @@ res.cookie("__Host-sessionId", sessionId, {
 
 ```javascript
 // Minimum required headers
-res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+res.setHeader(
+  "Strict-Transport-Security",
+  "max-age=31536000; includeSubDomains; preload",
+);
 res.setHeader(
   "Content-Security-Policy",
   "default-src 'self'; script-src 'nonce-<random>'; frame-ancestors 'none'",
@@ -259,10 +263,14 @@ const query = `SELECT * FROM users WHERE id = ${req.params.id}`;
 
 ```javascript
 // With Prisma (ORM - auto-parameterized)
-const user = await prisma.user.findUnique({ where: { id: parseInt(req.params.id) } });
+const user = await prisma.user.findUnique({
+  where: { id: parseInt(req.params.id) },
+});
 
 // With MySQL2 (parameterized)
-const [rows] = await connection.execute("SELECT * FROM users WHERE id = ?", [req.params.id]);
+const [rows] = await connection.execute("SELECT * FROM users WHERE id = ?", [
+  req.params.id,
+]);
 
 // With Sequelize (parameterized)
 const user = await User.findByPk(req.params.id);
@@ -433,7 +441,9 @@ describe("SQL Injection Prevention", () => {
 // Test XSS protection
 describe("XSS Prevention", () => {
   test("should escape HTML in output", async () => {
-    const html = await renderUserProfile({ name: '<script>alert("XSS")</script>' });
+    const html = await renderUserProfile({
+      name: '<script>alert("XSS")</script>',
+    });
     expect(html).not.toContain("<script>");
   });
 });
@@ -450,6 +460,4 @@ describe("XSS Prevention", () => {
 
 ---
 
-**Version**: 1.0
-**Updated**: December 2024
-**Status**: Ready for Use
+**Version**: 1.0 **Updated**: December 2024 **Status**: Ready for Use

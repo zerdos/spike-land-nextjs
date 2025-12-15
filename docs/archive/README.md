@@ -1,10 +1,12 @@
 # Documentation Archive
 
-This directory contains historical documentation files generated during the development of Spike Land.
+This directory contains historical documentation files generated during the
+development of Spike Land.
 
 ## Purpose
 
-These files were moved from the project root to keep the repository organized. They serve as:
+These files were moved from the project root to keep the repository organized.
+They serve as:
 
 - Historical reference for past decisions and implementations
 - Source material for blog posts and articles
@@ -42,9 +44,11 @@ For current project guidelines and instructions, see:
 
 ## Note
 
-These files are preserved for historical reference and may contain outdated information. Always refer to the active documentation in the project root and `/docs/` directory for current instructions and guidelines.
+These files are preserved for historical reference and may contain outdated
+information. Always refer to the active documentation in the project root and
+`/docs/` directory for current instructions and guidelines.
 
 ---
 
-Last Updated: 2025-10-30
-Moved from project root to maintain clean repository structure.
+Last Updated: 2025-10-30 Moved from project root to maintain clean repository
+structure.

@@ -101,7 +101,10 @@ export function SplitPreview({
     <div
       ref={containerRef}
       data-testid="split-preview-container"
-      className={cn("relative bg-muted rounded-lg overflow-hidden w-full", className)}
+      className={cn(
+        "relative bg-muted rounded-lg overflow-hidden w-full",
+        className,
+      )}
       style={{ aspectRatio: `${safeWidth} / ${safeHeight}` }}
     >
       {/* Original image (full, behind) */}
@@ -118,7 +121,9 @@ export function SplitPreview({
         )
         : (
           <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-            <p className="text-sm text-destructive">Original image failed to load</p>
+            <p className="text-sm text-destructive">
+              Original image failed to load
+            </p>
           </div>
         )}
 
@@ -141,7 +146,9 @@ export function SplitPreview({
           )
           : (
             <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-              <p className="text-sm text-destructive">Enhanced image failed to load</p>
+              <p className="text-sm text-destructive">
+                Enhanced image failed to load
+              </p>
             </div>
           )}
       </div>

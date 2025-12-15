@@ -36,24 +36,34 @@ export default async function ProfilePage() {
                   src={session.user.image || undefined}
                   alt={session.user.name || "User"}
                 />
-                <AvatarFallback className="text-2xl">{userInitials}</AvatarFallback>
+                <AvatarFallback className="text-2xl">
+                  {userInitials}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-2xl font-semibold">{session.user.name || "User"}</h2>
-                <p className="text-muted-foreground">{session.user.email || "No email"}</p>
+                <h2 className="text-2xl font-semibold">
+                  {session.user.name || "User"}
+                </h2>
+                <p className="text-muted-foreground">
+                  {session.user.email || "No email"}
+                </p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">User ID</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  User ID
+                </label>
                 <p className="mt-1 text-sm font-mono bg-muted p-2 rounded">
                   {session.user.id || "Not available"}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Account Type</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Account Type
+                </label>
                 <p className="mt-1">OAuth Provider Account</p>
               </div>
             </div>

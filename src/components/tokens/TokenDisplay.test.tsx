@@ -80,7 +80,9 @@ describe("TokenDisplay Component", () => {
 
     render(<TokenDisplay />);
 
-    expect(screen.getByTestId("purchase-button")).toHaveTextContent("Get Tokens");
+    expect(screen.getByTestId("purchase-button")).toHaveTextContent(
+      "Get Tokens",
+    );
   });
 
   it("shows correct button text for low balance", () => {

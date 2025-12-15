@@ -31,7 +31,9 @@ describe("LowBalanceEmail", () => {
   });
 
   it("display current balance with plural tokens", async () => {
-    const html = await render(<LowBalanceEmail {...defaultProps} currentBalance={3} />);
+    const html = await render(
+      <LowBalanceEmail {...defaultProps} currentBalance={3} />,
+    );
 
     expect(html).toContain("Current Balance");
     expect(html).toContain("3");
@@ -40,7 +42,9 @@ describe("LowBalanceEmail", () => {
   });
 
   it("display singular token for balance of 1", async () => {
-    const html = await render(<LowBalanceEmail {...defaultProps} currentBalance={1} />);
+    const html = await render(
+      <LowBalanceEmail {...defaultProps} currentBalance={1} />,
+    );
 
     expect(html).toContain("1");
     expect(html).toContain("token");
@@ -109,7 +113,9 @@ describe("LowBalanceEmail", () => {
   });
 
   it("handle balance of 0", async () => {
-    const html = await render(<LowBalanceEmail {...defaultProps} currentBalance={0} />);
+    const html = await render(
+      <LowBalanceEmail {...defaultProps} currentBalance={0} />,
+    );
 
     expect(html).toContain("0");
     expect(html).toContain("token");
@@ -117,7 +123,9 @@ describe("LowBalanceEmail", () => {
   });
 
   it("handle balance of 4 or less (trigger threshold)", async () => {
-    const html = await render(<LowBalanceEmail {...defaultProps} currentBalance={4} />);
+    const html = await render(
+      <LowBalanceEmail {...defaultProps} currentBalance={4} />,
+    );
 
     expect(html).toContain("4");
     expect(html).toContain("token");

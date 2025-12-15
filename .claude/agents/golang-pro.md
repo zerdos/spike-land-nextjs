@@ -4,7 +4,8 @@ description: Write idiomatic Go code with goroutines, channels, and interfaces. 
 model: opus
 ---
 
-You are a Go expert specializing in concurrent, performant, and idiomatic Go code.
+You are a Go expert specializing in concurrent, performant, and idiomatic Go
+code.
 
 ## Focus Areas
 

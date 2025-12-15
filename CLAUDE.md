@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ---
 
@@ -12,7 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Domain**  | spike.land          |
 | **Owner**   | Zoltan Erdos        |
 
-See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company documentation.
+See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company
+documentation.
 
 ---
 
@@ -33,7 +35,8 @@ See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company 
 
 ## 🎫 Ticket-Driven Development (BLOCKING REQUIREMENT)
 
-**CRITICAL**: No code changes without a ticket. Every PR must trace back to documented requirements.
+**CRITICAL**: No code changes without a ticket. Every PR must trace back to
+documented requirements.
 
 ### Phase 0: Ticket Governance (BLOCKING)
 
@@ -107,7 +110,8 @@ gh issue create --repo zerdos/spike-land-nextjs \
 
 **IMPORTANT FOR CLAUDE CODE AGENTS:**
 
-When working on this repository, you **MUST** follow this process for every code change:
+When working on this repository, you **MUST** follow this process for every code
+change:
 
 1. **Push your changes** to a feature branch
 2. **Create a Pull Request** (or push to existing PR)
@@ -158,7 +162,8 @@ Document the result in PR comments before merging.
 
 ## 🔧 GitHub CLI Orchestration
 
-**CRITICAL**: This project uses GitHub as the single source of truth for all project management.
+**CRITICAL**: This project uses GitHub as the single source of truth for all
+project management.
 
 ### Essential gh Commands
 
@@ -209,7 +214,8 @@ gh pr checks <PR-NUMBER>
 
 ### Resolving Project Issues
 
-1. **Fetch open issues**: `gh issue list --state open --json number,title,author,body,url`
+1. **Fetch open issues**:
+   `gh issue list --state open --json number,title,author,body,url`
 
 2. **Check authorship**:
    - **If created by `zerdos`**: Proceed automatically

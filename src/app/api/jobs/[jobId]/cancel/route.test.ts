@@ -45,7 +45,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
   it("returns 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -62,7 +64,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -84,7 +88,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       tokensCost: 10,
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -106,7 +112,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       tokensCost: 10,
     } as any);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -143,7 +151,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       transaction: {} as any,
     });
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -190,7 +200,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       transaction: {} as any,
     });
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -228,7 +240,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       error: "Refund failed",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -248,7 +262,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       new Error("Database error"),
     );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -268,7 +284,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
       "string error",
     );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -308,7 +326,9 @@ describe("/api/jobs/[jobId]/cancel", () => {
 
     mockCancelFn.mockResolvedValue(undefined);
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });
@@ -350,9 +370,13 @@ describe("/api/jobs/[jobId]/cancel", () => {
     // Simulate workflow cancel failure
     mockCancelFn.mockRejectedValue(new Error("Workflow already completed"));
 
-    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(
+      () => {},
+    );
 
-    const request = new NextRequest("http://localhost:3000/api/jobs/test-job-id/cancel");
+    const request = new NextRequest(
+      "http://localhost:3000/api/jobs/test-job-id/cancel",
+    );
     const response = await POST(request, {
       params: Promise.resolve({ jobId: mockJobId }),
     });

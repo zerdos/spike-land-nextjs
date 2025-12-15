@@ -14,12 +14,14 @@ describe("CreateAlbumDialog", () => {
   describe("rendering", () => {
     it("renders default trigger button", () => {
       render(<CreateAlbumDialog />);
-      expect(screen.getByRole("button", { name: /new album/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /new album/i }))
+        .toBeInTheDocument();
     });
 
     it("renders custom trigger", () => {
       render(<CreateAlbumDialog trigger={<button>Custom Trigger</button>} />);
-      expect(screen.getByRole("button", { name: /custom trigger/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /custom trigger/i }))
+        .toBeInTheDocument();
     });
 
     it("opens dialog when trigger is clicked", async () => {
@@ -40,8 +42,10 @@ describe("CreateAlbumDialog", () => {
 
       expect(screen.getByLabelText(/album name/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/privacy/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /create album/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /cancel/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /create album/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -52,7 +56,9 @@ describe("CreateAlbumDialog", () => {
 
       await user.click(screen.getByRole("button", { name: /new album/i }));
 
-      const createButton = screen.getByRole("button", { name: /create album/i });
+      const createButton = screen.getByRole("button", {
+        name: /create album/i,
+      });
       expect(createButton).toBeDisabled();
     });
 
@@ -63,7 +69,9 @@ describe("CreateAlbumDialog", () => {
       await user.click(screen.getByRole("button", { name: /new album/i }));
       await user.type(screen.getByLabelText(/album name/i), "My Test Album");
 
-      const createButton = screen.getByRole("button", { name: /create album/i });
+      const createButton = screen.getByRole("button", {
+        name: /create album/i,
+      });
       expect(createButton).not.toBeDisabled();
     });
 
@@ -115,7 +123,10 @@ describe("CreateAlbumDialog", () => {
     it("calls API with correct data on create", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test Album", privacy: "PRIVATE" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test Album", privacy: "PRIVATE" },
+          }),
       });
 
       const user = userEvent.setup();
@@ -130,13 +141,21 @@ describe("CreateAlbumDialog", () => {
         expect(mockFetch).toHaveBeenCalledWith("/api/albums", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "Test Album", privacy: "PRIVATE", defaultTier: "TIER_1K" }),
+          body: JSON.stringify({
+            name: "Test Album",
+            privacy: "PRIVATE",
+            defaultTier: "TIER_1K",
+          }),
         });
       });
     });
 
     it("calls onAlbumCreated callback on success", async () => {
-      const createdAlbum = { id: "1", name: "Test Album", privacy: "PRIVATE" as const };
+      const createdAlbum = {
+        id: "1",
+        name: "Test Album",
+        privacy: "PRIVATE" as const,
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ album: createdAlbum }),
@@ -158,7 +177,10 @@ describe("CreateAlbumDialog", () => {
     it("closes dialog on successful creation", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test Album", privacy: "PRIVATE" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test Album", privacy: "PRIVATE" },
+          }),
       });
 
       const user = userEvent.setup();
@@ -183,7 +205,8 @@ describe("CreateAlbumDialog", () => {
       await user.type(screen.getByLabelText(/album name/i), "Test Album");
       await user.click(screen.getByRole("button", { name: /create album/i }));
 
-      expect(screen.getByRole("button", { name: /create album/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /create album/i }))
+        .toBeDisabled();
       expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
     });
   });
@@ -203,7 +226,8 @@ describe("CreateAlbumDialog", () => {
       await user.click(screen.getByRole("button", { name: /create album/i }));
 
       await waitFor(() => {
-        expect(screen.getByText("Album name already exists")).toBeInTheDocument();
+        expect(screen.getByText("Album name already exists"))
+          .toBeInTheDocument();
       });
     });
 
@@ -245,7 +269,10 @@ describe("CreateAlbumDialog", () => {
     it("defaults to PRIVATE privacy", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test", privacy: "PRIVATE" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test", privacy: "PRIVATE" },
+          }),
       });
 
       const user = userEvent.setup();
@@ -268,7 +295,10 @@ describe("CreateAlbumDialog", () => {
     it("can select PUBLIC privacy", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test", privacy: "PUBLIC" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test", privacy: "PUBLIC" },
+          }),
       });
 
       const user = userEvent.setup();
@@ -298,7 +328,10 @@ describe("CreateAlbumDialog", () => {
     it("can select UNLISTED privacy", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test", privacy: "UNLISTED" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test", privacy: "UNLISTED" },
+          }),
       });
 
       const user = userEvent.setup();
@@ -330,7 +363,10 @@ describe("CreateAlbumDialog", () => {
     it("submits on Enter key when name is filled", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ album: { id: "1", name: "Test", privacy: "PRIVATE" } }),
+        json: () =>
+          Promise.resolve({
+            album: { id: "1", name: "Test", privacy: "PRIVATE" },
+          }),
       });
 
       const user = userEvent.setup();

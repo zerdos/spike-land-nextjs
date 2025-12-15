@@ -34,7 +34,9 @@ describe("Pipeline Detail API", () => {
     it("returns 401 when not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+      );
       const response = await GET(request, createParams("abc"));
       const data = await response.json();
 
@@ -48,7 +50,9 @@ describe("Pipeline Detail API", () => {
       });
       (prisma.enhancementPipeline.findUnique as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+      );
       const response = await GET(request, createParams("abc"));
       const data = await response.json();
 
@@ -78,7 +82,9 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 2, jobs: 15 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+      );
       const response = await GET(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -112,7 +118,9 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 5, jobs: 100 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+      );
       const response = await GET(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -143,7 +151,9 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 100, jobs: 10000 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/system_default");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/system_default",
+      );
       const response = await GET(request, createParams("system_default"));
       const data = await response.json();
 
@@ -206,7 +216,9 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 0, jobs: 0 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+      );
       const response = await GET(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -254,7 +266,9 @@ describe("Pipeline Detail API", () => {
         new Error("Database error"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc");
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+      );
       const response = await GET(request, createParams("abc"));
       const data = await response.json();
 
@@ -267,10 +281,13 @@ describe("Pipeline Detail API", () => {
     it("returns 401 when not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "Updated" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "Updated" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -284,10 +301,13 @@ describe("Pipeline Detail API", () => {
       });
       (prisma.enhancementPipeline.findUnique as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "Updated" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "Updated" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -303,10 +323,13 @@ describe("Pipeline Detail API", () => {
         userId: "user_123",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "Updated" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "Updated" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -322,10 +345,13 @@ describe("Pipeline Detail API", () => {
         userId: "user_123",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "  " }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -341,10 +367,13 @@ describe("Pipeline Detail API", () => {
         userId: "user_123",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "a".repeat(101) }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "a".repeat(101) }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -360,15 +389,20 @@ describe("Pipeline Detail API", () => {
         userId: "user_123",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ tier: "INVALID_TIER" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ tier: "INVALID_TIER" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid tier. Must be one of: TIER_1K, TIER_2K, TIER_4K");
+      expect(data.error).toBe(
+        "Invalid tier. Must be one of: TIER_1K, TIER_2K, TIER_4K",
+      );
     });
 
     it("returns 400 for invalid visibility", async () => {
@@ -379,15 +413,20 @@ describe("Pipeline Detail API", () => {
         userId: "user_123",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ visibility: "INVALID" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ visibility: "INVALID" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid visibility. Must be one of: PRIVATE, PUBLIC, LINK");
+      expect(data.error).toBe(
+        "Invalid visibility. Must be one of: PRIVATE, PUBLIC, LINK",
+      );
     });
 
     it("updates name successfully", async () => {
@@ -414,10 +453,13 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "  Updated Name  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "  Updated Name  " }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -456,10 +498,13 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({ tier: "TIER_4K" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ tier: "TIER_4K" }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -491,15 +536,18 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({
-          analysisConfig: { enabled: false },
-          autoCropConfig: { enabled: false },
-          promptConfig: { customInstructions: "New instructions" },
-          generationConfig: { retryAttempts: 5 },
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            analysisConfig: { enabled: false },
+            autoCropConfig: { enabled: false },
+            promptConfig: { customInstructions: "New instructions" },
+            generationConfig: { retryAttempts: 5 },
+          }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -538,10 +586,13 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({ visibility: "LINK" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ visibility: "LINK" }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -580,10 +631,13 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({ visibility: "LINK" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ visibility: "LINK" }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -617,10 +671,13 @@ describe("Pipeline Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "PATCH",
-        body: JSON.stringify({ description: "  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ description: "  " }),
+        },
+      );
       const response = await PATCH(request, createParams("pipeline_1"));
 
       expect(response.status).toBe(200);
@@ -644,10 +701,13 @@ describe("Pipeline Detail API", () => {
         new Error("Database error"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "Updated" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "Updated" }),
+        },
+      );
       const response = await PATCH(request, createParams("abc"));
       const data = await response.json();
 
@@ -660,9 +720,12 @@ describe("Pipeline Detail API", () => {
     it("returns 401 when not authenticated", async () => {
       (auth as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("abc"));
       const data = await response.json();
 
@@ -676,9 +739,12 @@ describe("Pipeline Detail API", () => {
       });
       (prisma.enhancementPipeline.findUnique as Mock).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("abc"));
       const data = await response.json();
 
@@ -695,9 +761,12 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 0 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("abc"));
       const data = await response.json();
 
@@ -714,9 +783,12 @@ describe("Pipeline Detail API", () => {
         _count: { albums: 3 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("abc"));
       const data = await response.json();
 
@@ -736,9 +808,12 @@ describe("Pipeline Detail API", () => {
       });
       (prisma.enhancementPipeline.delete as Mock).mockResolvedValue({});
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/pipeline_1", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/pipeline_1",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("pipeline_1"));
       const data = await response.json();
 
@@ -761,9 +836,12 @@ describe("Pipeline Detail API", () => {
         new Error("Database error"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/pipelines/abc", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/pipelines/abc",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("abc"));
       const data = await response.json();
 

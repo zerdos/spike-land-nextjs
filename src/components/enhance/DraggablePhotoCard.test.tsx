@@ -53,7 +53,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       expect(onDragStart).toHaveBeenCalledWith(["test-image-1"]);
       expect(dataTransfer.setData).toHaveBeenCalledWith(
@@ -82,7 +86,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       expect(onDragStart).toHaveBeenCalledWith(selectedImageIds);
       expect(dataTransfer.setData).toHaveBeenCalledWith(
@@ -109,7 +117,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       expect(onDragStart).toHaveBeenCalledWith(["test-image-1"]);
     });
@@ -123,7 +135,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       expect(wrapper).toHaveAttribute("data-is-dragging", "true");
       expect(wrapper).toHaveAttribute("aria-grabbed", "true");
@@ -139,7 +155,11 @@ describe("DraggablePhotoCard", () => {
       };
 
       expect(() => {
-        fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+        fireEvent.dragStart(wrapper, {
+          dataTransfer,
+          clientX: 100,
+          clientY: 100,
+        });
       }).not.toThrow();
     });
   });
@@ -157,7 +177,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
       fireEvent.dragEnd(wrapper);
 
       expect(onDragEnd).toHaveBeenCalledTimes(1);
@@ -172,7 +196,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
       expect(wrapper).toHaveAttribute("data-is-dragging", "true");
 
       fireEvent.dragEnd(wrapper);
@@ -189,7 +217,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
       expect(() => {
         fireEvent.dragEnd(wrapper);
       }).not.toThrow();
@@ -206,7 +238,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
       fireEvent.drag(wrapper, { clientX: 150, clientY: 150 });
       fireEvent.drag(wrapper, { clientX: 200, clientY: 200 });
 
@@ -228,7 +264,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       // With default isSelected=false, should only drag single image
       expect(onDragStart).toHaveBeenCalledWith(["test-image-1"]);
@@ -250,7 +290,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       // With empty selectedImageIds, should just use single imageId
       expect(onDragStart).toHaveBeenCalledWith(["test-image-1"]);
@@ -273,7 +317,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
 
       expect(wrapper).toHaveClass("cursor-grabbing");
     });
@@ -287,7 +335,11 @@ describe("DraggablePhotoCard", () => {
         effectAllowed: "",
       };
 
-      fireEvent.dragStart(wrapper, { dataTransfer, clientX: 100, clientY: 100 });
+      fireEvent.dragStart(wrapper, {
+        dataTransfer,
+        clientX: 100,
+        clientY: 100,
+      });
       expect(wrapper).toHaveClass("cursor-grabbing");
 
       fireEvent.dragEnd(wrapper);

@@ -1,6 +1,7 @@
 # Database Migration Rollback Guide
 
-This document outlines procedures for rolling back database migrations, particularly for the voucher system tables.
+This document outlines procedures for rolling back database migrations,
+particularly for the voucher system tables.
 
 ## Voucher System Tables
 

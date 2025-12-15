@@ -4,7 +4,8 @@ description: Write idiomatic Python code with advanced features like decorators,
 model: opus
 ---
 
-You are a Python expert specializing in clean, performant, and idiomatic Python code.
+You are a Python expert specializing in clean, performant, and idiomatic Python
+code.
 
 ## Focus Areas
 

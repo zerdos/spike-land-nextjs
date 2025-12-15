@@ -91,7 +91,10 @@ describe("Tabs Component", () => {
           </TabsList>
         </Tabs>,
       );
-      expect(container.firstChild).toHaveAttribute("data-orientation", "vertical");
+      expect(container.firstChild).toHaveAttribute(
+        "data-orientation",
+        "vertical",
+      );
     });
 
     it("should render with className prop", () => {

@@ -242,14 +242,26 @@ describe("coverage-helper", () => {
         "file1.js": {
           path: "file1.js",
           statementMap: {
-            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 50 } },
-            "1": { start: { line: 1, column: 60 }, end: { line: 1, column: 100 } },
+            "0": {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 50 },
+            },
+            "1": {
+              start: { line: 1, column: 60 },
+              end: { line: 1, column: 100 },
+            },
           },
           fnMap: {
             "0": {
               name: "fn1",
-              decl: { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
-              loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 50 } },
+              decl: {
+                start: { line: 1, column: 0 },
+                end: { line: 1, column: 10 },
+              },
+              loc: {
+                start: { line: 1, column: 0 },
+                end: { line: 1, column: 50 },
+              },
               line: 1,
             },
           },
@@ -321,21 +333,42 @@ describe("coverage-helper", () => {
         "test.js": {
           path: "test.js",
           statementMap: {
-            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
-            "1": { start: { line: 1, column: 20 }, end: { line: 1, column: 30 } },
-            "2": { start: { line: 1, column: 40 }, end: { line: 1, column: 50 } },
+            "0": {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 10 },
+            },
+            "1": {
+              start: { line: 1, column: 20 },
+              end: { line: 1, column: 30 },
+            },
+            "2": {
+              start: { line: 1, column: 40 },
+              end: { line: 1, column: 50 },
+            },
           },
           fnMap: {
             "0": {
               name: "fn1",
-              decl: { start: { line: 1, column: 0 }, end: { line: 1, column: 5 } },
-              loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
+              decl: {
+                start: { line: 1, column: 0 },
+                end: { line: 1, column: 5 },
+              },
+              loc: {
+                start: { line: 1, column: 0 },
+                end: { line: 1, column: 10 },
+              },
               line: 1,
             },
             "1": {
               name: "fn2",
-              decl: { start: { line: 1, column: 20 }, end: { line: 1, column: 25 } },
-              loc: { start: { line: 1, column: 20 }, end: { line: 1, column: 30 } },
+              decl: {
+                start: { line: 1, column: 20 },
+                end: { line: 1, column: 25 },
+              },
+              loc: {
+                start: { line: 1, column: 20 },
+                end: { line: 1, column: 30 },
+              },
               line: 1,
             },
           },

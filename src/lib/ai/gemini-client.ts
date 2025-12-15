@@ -228,7 +228,8 @@ export function buildDynamicEnhancementPrompt(
 
   // Noise & Resolution
   if (
-    !skipCorrections.has("hasNoise") && !skipCorrections.has("isLowResolution") &&
+    !skipCorrections.has("hasNoise") &&
+    !skipCorrections.has("isLowResolution") &&
     (defects.hasNoise || defects.isLowResolution)
   ) {
     instruction +=
@@ -236,7 +237,10 @@ export function buildDynamicEnhancementPrompt(
   }
 
   // Color Correction
-  if (!skipCorrections.has("hasColorCast") && defects.hasColorCast && defects.colorCastType) {
+  if (
+    !skipCorrections.has("hasColorCast") && defects.hasColorCast &&
+    defects.colorCastType
+  ) {
     instruction +=
       `- Neutralize the strong ${defects.colorCastType} color cast to restore natural, accurate colors.\n`;
   }
@@ -252,7 +256,9 @@ export function buildDynamicEnhancementPrompt(
   }
 
   // Add reference image instructions if provided
-  if (promptConfig?.referenceImages && promptConfig.referenceImages.length > 0) {
+  if (
+    promptConfig?.referenceImages && promptConfig.referenceImages.length > 0
+  ) {
     instruction += `\nStyle Reference:\n`;
     instruction +=
       `- Match the visual style, color grading, and overall aesthetic of the provided reference image${
@@ -305,8 +311,16 @@ function getDefaultAnalysis(): AnalysisDetailedResult {
  * Validates the imageStyle field from analysis response.
  * @internal
  */
-function validateImageStyle(style: unknown): AnalysisDetailedResult["imageStyle"] {
-  const validStyles = ["photograph", "sketch", "painting", "screenshot", "other"];
+function validateImageStyle(
+  style: unknown,
+): AnalysisDetailedResult["imageStyle"] {
+  const validStyles = [
+    "photograph",
+    "sketch",
+    "painting",
+    "screenshot",
+    "other",
+  ];
   if (typeof style === "string" && validStyles.includes(style)) {
     return style as AnalysisDetailedResult["imageStyle"];
   }
@@ -317,7 +331,9 @@ function validateImageStyle(style: unknown): AnalysisDetailedResult["imageStyle"
  * Validates the colorCastType field from analysis response.
  * @internal
  */
-function validateColorCastType(type: unknown): AnalysisDetailedResult["defects"]["colorCastType"] {
+function validateColorCastType(
+  type: unknown,
+): AnalysisDetailedResult["defects"]["colorCastType"] {
   const validTypes = ["yellow", "blue", "green", "red", "magenta", "cyan"];
   if (typeof type === "string" && validTypes.includes(type)) {
     return type as AnalysisDetailedResult["defects"]["colorCastType"];
@@ -369,7 +385,9 @@ function parseAnalysisResponse(text: string): AnalysisDetailedResult {
           height: Number(parsed.cropping.suggestedCrop.height) || 1,
         }
         : undefined,
-      cropReason: parsed.cropping?.cropReason ? String(parsed.cropping.cropReason) : undefined,
+      cropReason: parsed.cropping?.cropReason
+        ? String(parsed.cropping.cropReason)
+        : undefined,
     },
   };
 }
@@ -459,12 +477,17 @@ export async function analyzeImageV2(
     );
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
-        reject(new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`));
+        reject(
+          new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`),
+        );
       }, ANALYSIS_TIMEOUT_MS);
     });
 
     structuredAnalysis = await Promise.race([analysisPromise, timeoutPromise]);
-    console.log("Vision analysis successful:", JSON.stringify(structuredAnalysis.defects));
+    console.log(
+      "Vision analysis successful:",
+      JSON.stringify(structuredAnalysis.defects),
+    );
   } catch (error) {
     console.warn(
       "Vision analysis failed, using fallback:",
@@ -516,14 +539,18 @@ export async function analyzeImage(
   if (defects.isBlurry) suggestedImprovements.push("sharpening");
   if (defects.hasNoise) suggestedImprovements.push("noise reduction");
   if (defects.hasVHSArtifacts) suggestedImprovements.push("artifact removal");
-  if (defects.isLowResolution) suggestedImprovements.push("resolution enhancement");
+  if (defects.isLowResolution) {
+    suggestedImprovements.push("resolution enhancement");
+  }
   if (defects.hasColorCast) suggestedImprovements.push("color correction");
 
   // Always add standard improvements
   suggestedImprovements.push("color optimization", "detail enhancement");
 
   // Build enhancement prompt using dynamic prompt builder
-  const enhancementPrompt = buildDynamicEnhancementPrompt(v2Result.structuredAnalysis);
+  const enhancementPrompt = buildDynamicEnhancementPrompt(
+    v2Result.structuredAnalysis,
+  );
 
   return {
     description: v2Result.description,
@@ -570,7 +597,9 @@ export async function enhanceImageWithGemini(
   };
 
   // Build content parts - include reference images if provided
-  const parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string; }; }> = [];
+  const parts: Array<
+    { text?: string; inlineData?: { mimeType: string; data: string; }; }
+  > = [];
 
   // Add the original image to enhance first
   parts.push({
@@ -582,7 +611,9 @@ export async function enhanceImageWithGemini(
 
   // Add reference images if provided (for style guidance)
   if (params.referenceImages && params.referenceImages.length > 0) {
-    console.log(`Including ${params.referenceImages.length} reference image(s) for style guidance`);
+    console.log(
+      `Including ${params.referenceImages.length} reference image(s) for style guidance`,
+    );
     for (const refImg of params.referenceImages) {
       parts.push({
         inlineData: {
@@ -605,8 +636,12 @@ export async function enhanceImageWithGemini(
     },
   ];
 
-  console.log(`Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`);
-  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(
+    `Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`,
+  );
+  console.log(
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+  );
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
 
   // Process streaming response with timeout
@@ -662,7 +697,9 @@ export async function enhanceImageWithGemini(
             !chunk.candidates || !chunk.candidates[0]?.content ||
             !chunk.candidates[0]?.content.parts
           ) {
-            console.log(`Skipping chunk ${chunkCount}: no valid candidates (${elapsed}s elapsed)`);
+            console.log(
+              `Skipping chunk ${chunkCount}: no valid candidates (${elapsed}s elapsed)`,
+            );
             continue;
           }
 
@@ -686,11 +723,16 @@ export async function enhanceImageWithGemini(
       }
 
       if (imageChunks.length === 0) {
-        console.error(`No image data received after processing ${chunkCount} chunks`);
+        console.error(
+          `No image data received after processing ${chunkCount} chunks`,
+        );
         throw new Error("No image data received from Gemini API");
       }
 
-      const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const totalBytes = imageChunks.reduce(
+        (sum, chunk) => sum + chunk.length,
+        0,
+      );
       const totalTime = Math.round((Date.now() - startTime) / 1000);
       console.log(
         `Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes in ${totalTime}s`,
@@ -784,7 +826,9 @@ export async function generateImageWithGemini(
   ];
 
   console.log(`Generating image with Gemini API using model: ${DEFAULT_MODEL}`);
-  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+  );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
 
@@ -839,7 +883,9 @@ export async function modifyImageWithGemini(
   ];
 
   console.log(`Modifying image with Gemini API using model: ${DEFAULT_MODEL}`);
-  console.log(`Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`);
+  console.log(
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+  );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
 
@@ -854,7 +900,9 @@ async function processGeminiStream(
   config: { responseModalities: string[]; imageConfig: { imageSize: string; }; },
   contents: {
     role: "user";
-    parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string; }; }>;
+    parts: Array<
+      { text?: string; inlineData?: { mimeType: string; data: string; }; }
+    >;
   }[],
 ): Promise<Buffer> {
   let response;
@@ -932,11 +980,16 @@ async function processGeminiStream(
     }
 
     if (imageChunks.length === 0) {
-      console.error(`No image data received after processing ${chunkCount} chunks`);
+      console.error(
+        `No image data received after processing ${chunkCount} chunks`,
+      );
       throw new Error("No image data received from Gemini API");
     }
 
-    const totalBytes = imageChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    const totalBytes = imageChunks.reduce(
+      (sum, chunk) => sum + chunk.length,
+      0,
+    );
     const totalTime = Math.round((Date.now() - startTime) / 1000);
     console.log(
       `Successfully received ${imageChunks.length} chunks, total ${totalBytes} bytes in ${totalTime}s`,

@@ -40,7 +40,8 @@ describe("PlatformFeatures Component", () => {
   it("should render Easy Deployment feature", () => {
     render(<PlatformFeatures />);
     expect(screen.getByText("Easy Deployment")).toBeInTheDocument();
-    expect(screen.getByText(/Deploy your apps with one click/)).toBeInTheDocument();
+    expect(screen.getByText(/Deploy your apps with one click/))
+      .toBeInTheDocument();
   });
 
   it("should render Secure & Compliant feature", () => {

@@ -57,7 +57,13 @@ export function HeroSection({
 
       {/* Decorative spark elements */}
       <div className="absolute top-20 right-10 opacity-20 pointer-events-none hidden lg:block">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-primary">
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          className="text-primary"
+        >
           <path
             d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
             fill="currentColor"
@@ -65,7 +71,13 @@ export function HeroSection({
         </svg>
       </div>
       <div className="absolute bottom-32 left-10 opacity-10 pointer-events-none hidden lg:block">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" className="text-primary">
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          className="text-primary"
+        >
           <path
             d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
             fill="currentColor"

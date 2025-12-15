@@ -80,7 +80,7 @@ open e2e/reports/cucumber-report.html
 await page.pause();
 
 // View console
-page.on("console", msg => console.log(msg.text()));
+page.on("console", (msg) => console.log(msg.text()));
 
 // Slow motion
 const browser = await chromium.launch({ slowMo: 1000 });

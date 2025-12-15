@@ -52,7 +52,12 @@ export function TokenDisplay({
     >
       <Coins className="h-4 w-4" />
       {isLoading
-        ? <RefreshCw className="h-3 w-3 animate-spin" data-testid="loading-spinner" />
+        ? (
+          <RefreshCw
+            className="h-3 w-3 animate-spin"
+            data-testid="loading-spinner"
+          />
+        )
         : (
           <>
             <span>{balance ?? 0} tokens</span>
@@ -89,7 +94,11 @@ export function TokenDisplay({
           trigger={
             <Button
               size="sm"
-              variant={isCriticalBalance ? "default" : isLowBalance ? "secondary" : "outline"}
+              variant={isCriticalBalance
+                ? "default"
+                : isLowBalance
+                ? "secondary"
+                : "outline"}
               data-testid="purchase-button"
             >
               {isCriticalBalance ? "Get Tokens" : isLowBalance ? "Top Up" : "+"}

@@ -114,7 +114,9 @@ describe("admin-middleware", () => {
     });
 
     it("should handle errors gracefully", async () => {
-      vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("DB error"));
+      vi.mocked(prisma.user.findUnique).mockRejectedValue(
+        new Error("DB error"),
+      );
 
       const result = await isAdminByUserId("user_123");
 
@@ -230,7 +232,9 @@ describe("admin-middleware", () => {
     });
 
     it("should handle errors gracefully", async () => {
-      vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("DB error"));
+      vi.mocked(prisma.user.findUnique).mockRejectedValue(
+        new Error("DB error"),
+      );
 
       const result = await isSuperAdmin("user_123");
 

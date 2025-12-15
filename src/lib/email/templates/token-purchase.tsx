@@ -78,7 +78,10 @@ export function TokenPurchaseEmail({
 
       <Text style={emailStyles.text}>
         Need a receipt? You can download it from your{" "}
-        <Link href="https://spike.land/account/billing" style={emailStyles.link}>
+        <Link
+          href="https://spike.land/account/billing"
+          style={emailStyles.link}
+        >
           billing history
         </Link>
         .

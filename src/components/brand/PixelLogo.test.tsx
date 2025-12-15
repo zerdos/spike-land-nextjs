@@ -7,7 +7,8 @@ describe("PixelLogo", () => {
     it("renders the logo with default props", () => {
       render(<PixelLogo />);
       expect(screen.getByText("pixel")).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" }))
+        .toBeInTheDocument();
     });
 
     it("renders SVG element", () => {
@@ -26,7 +27,8 @@ describe("PixelLogo", () => {
     it("renders icon-only variant without text", () => {
       render(<PixelLogo variant="icon" />);
       expect(screen.queryByText("pixel")).not.toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" }))
+        .toBeInTheDocument();
     });
 
     it("renders horizontal variant with text", () => {
@@ -108,7 +110,8 @@ describe("PixelLogo", () => {
   describe("accessibility", () => {
     it("has correct aria-label", () => {
       render(<PixelLogo />);
-      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" }))
+        .toBeInTheDocument();
     });
 
     it("SVG has aria-hidden attribute", () => {

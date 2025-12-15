@@ -200,7 +200,9 @@ export function AlbumsGrid({
           <div
             key={album.id}
             className={cn("block", onAlbumClick && "cursor-pointer")}
-            onClick={onAlbumClick ? (e) => handleClick(album.id, e) : undefined}
+            onClick={onAlbumClick
+              ? (e) => handleClick(album.id, e)
+              : undefined}
           >
             {cardContent}
           </div>

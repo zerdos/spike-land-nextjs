@@ -64,7 +64,9 @@ describe("GET /api/share/[token]/download", () => {
   });
 
   it("should return 400 if type parameter is missing", async () => {
-    const request = new NextRequest("http://localhost/api/share/test-token/download");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -75,7 +77,9 @@ describe("GET /api/share/[token]/download", () => {
   });
 
   it("should return 400 if type parameter is invalid", async () => {
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=invalid");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=invalid",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -105,9 +109,13 @@ describe("GET /api/share/[token]/download", () => {
       ...mockImage,
       enhancementJobs: [],
     };
-    mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithoutEnhancement);
+    mockPrisma.enhancedImage.findUnique.mockResolvedValue(
+      imageWithoutEnhancement,
+    );
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=enhanced");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=enhanced",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -126,15 +134,21 @@ describe("GET /api/share/[token]/download", () => {
       headers: new Headers({ "Content-Type": "image/jpeg" }),
     } as Response);
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("image/jpeg");
-    expect(response.headers.get("Content-Disposition")).toContain("Test_Image_original");
-    expect(global.fetch).toHaveBeenCalledWith("https://example.com/original.jpg");
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "Test_Image_original",
+    );
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://example.com/original.jpg",
+    );
   });
 
   it("should proxy enhanced image download", async () => {
@@ -146,15 +160,21 @@ describe("GET /api/share/[token]/download", () => {
       headers: new Headers({ "Content-Type": "image/jpeg" }),
     } as Response);
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=enhanced");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=enhanced",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("image/jpeg");
-    expect(response.headers.get("Content-Disposition")).toContain("Test_Image_enhanced_4k");
-    expect(global.fetch).toHaveBeenCalledWith("https://example.com/enhanced.jpg");
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "Test_Image_enhanced_4k",
+    );
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://example.com/enhanced.jpg",
+    );
   });
 
   it("should return 502 if upstream fetch fails", async () => {
@@ -165,7 +185,9 @@ describe("GET /api/share/[token]/download", () => {
       status: 500,
     } as Response);
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -184,7 +206,9 @@ describe("GET /api/share/[token]/download", () => {
       headers: new Headers({ "Content-Type": "image/png" }),
     } as Response);
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -199,7 +223,9 @@ describe("GET /api/share/[token]/download", () => {
       ...mockImage,
       name: "Test Image!@#$%",
     };
-    mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithSpecialChars);
+    mockPrisma.enhancedImage.findUnique.mockResolvedValue(
+      imageWithSpecialChars,
+    );
 
     vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
@@ -207,13 +233,17 @@ describe("GET /api/share/[token]/download", () => {
       headers: new Headers({ "Content-Type": "image/jpeg" }),
     } as Response);
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Disposition")).toContain("Test_Image______original");
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "Test_Image______original",
+    );
   });
 
   it("should return 429 when rate limited", async () => {
@@ -223,7 +253,9 @@ describe("GET /api/share/[token]/download", () => {
       resetAt: Date.now() + 60000,
     });
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);
@@ -234,9 +266,13 @@ describe("GET /api/share/[token]/download", () => {
   });
 
   it("should return 500 on unexpected error", async () => {
-    mockPrisma.enhancedImage.findUnique.mockRejectedValue(new Error("Database error"));
+    mockPrisma.enhancedImage.findUnique.mockRejectedValue(
+      new Error("Database error"),
+    );
 
-    const request = new NextRequest("http://localhost/api/share/test-token/download?type=original");
+    const request = new NextRequest(
+      "http://localhost/api/share/test-token/download?type=original",
+    );
     const context = { params: Promise.resolve({ token: "test-token" }) };
 
     const response = await GET(request, context);

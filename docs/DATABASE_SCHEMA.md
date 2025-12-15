@@ -1,6 +1,7 @@
 # Database Schema Documentation
 
-This document provides a detailed overview of the Spike Land database schema, including models, relationships, and design decisions.
+This document provides a detailed overview of the Spike Land database schema,
+including models, relationships, and design decisions.
 
 ## Schema Version
 
@@ -62,7 +63,8 @@ This document provides a detailed overview of the Spike Land database schema, in
 
 ### User
 
-Represents a user account in the system. Integrated with NextAuth.js for authentication.
+Represents a user account in the system. Integrated with NextAuth.js for
+authentication.
 
 **Table Name**: `users`
 
@@ -618,4 +620,5 @@ ORDER BY idx_scan DESC;
 
 ## Version History
 
-- **v1.0.0** (2025-01-23): Initial schema with User, App, Requirement, MonetizationModel
+- **v1.0.0** (2025-01-23): Initial schema with User, App, Requirement,
+  MonetizationModel

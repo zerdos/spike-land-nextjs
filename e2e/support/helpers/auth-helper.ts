@@ -44,7 +44,12 @@ export async function mockSession(page: Page, user: MockUser | null) {
   });
 }
 
-export async function mockLogin(page: Page, name: string, email: string, image?: string) {
+export async function mockLogin(
+  page: Page,
+  name: string,
+  email: string,
+  image?: string,
+) {
   await mockSession(page, { name, email, image });
   await page.reload();
   await page.waitForLoadState("networkidle");
@@ -66,7 +71,11 @@ export async function mockSignInRoutes(page: Page) {
   });
 }
 
-export async function mockAuthCallback(page: Page, user: MockUser, callbackUrl?: string) {
+export async function mockAuthCallback(
+  page: Page,
+  user: MockUser,
+  callbackUrl?: string,
+) {
   await mockSession(page, user);
 
   const redirectUrl = callbackUrl || "/";

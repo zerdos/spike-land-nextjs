@@ -224,7 +224,9 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
-    const pixelLink = screen.getByRole("menuitem", { name: /pixel - ai photo enhance/i });
+    const pixelLink = screen.getByRole("menuitem", {
+      name: /pixel - ai photo enhance/i,
+    });
     expect(pixelLink).toHaveAttribute("href", "/apps/pixel");
   });
 
@@ -245,7 +247,9 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
-    const tokensLink = screen.getByRole("menuitem", { name: /token management/i });
+    const tokensLink = screen.getByRole("menuitem", {
+      name: /token management/i,
+    });
     expect(tokensLink).toHaveAttribute("href", "/tokens");
   });
 
@@ -399,7 +403,9 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
-    const profileItem = screen.getByText("Profile").closest('[role="menuitem"]');
+    const profileItem = screen.getByText("Profile").closest(
+      '[role="menuitem"]',
+    );
     const icon = profileItem?.querySelector("svg");
     expect(icon).toBeInTheDocument();
   });
@@ -421,7 +427,9 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
-    const settingsItem = screen.getByText("Settings").closest('[role="menuitem"]');
+    const settingsItem = screen.getByText("Settings").closest(
+      '[role="menuitem"]',
+    );
     const icon = settingsItem?.querySelector("svg");
     expect(icon).toBeInTheDocument();
   });

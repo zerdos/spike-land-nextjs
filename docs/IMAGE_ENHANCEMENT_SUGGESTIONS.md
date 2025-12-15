@@ -1,6 +1,7 @@
 # Image Enhancement App - Vision Suggestions
 
-> **Purpose**: These are suggestions to further specify and expand the vision. Let's discuss each one to decide what to include.
+> **Purpose**: These are suggestions to further specify and expand the vision.
+> Let's discuss each one to decide what to include.
 
 ---
 
@@ -252,29 +253,39 @@ POST /api/v1/webhook/subscribe
 
 ### MVP Priorities (Phase 1-2)
 
-**1. Subscriptions** - Provides predictable revenue and user retention. Complements token model.
+**1. Subscriptions** - Provides predictable revenue and user retention.
+Complements token model.
 
-**3. Batch Processing** - High user value, differentiates from competitors. Part of roadmap Phase 3.
+**3. Batch Processing** - High user value, differentiates from competitors. Part
+of roadmap Phase 3.
 
-**6. Smart Suggestions** - Low effort, high UX impact. Can be done with prompt engineering.
+**6. Smart Suggestions** - Low effort, high UX impact. Can be done with prompt
+engineering.
 
 ### Phase 2 Priorities (Phase 3-4)
 
-**2. AI Model Selection** - Wait until we understand user preferences from MVP usage data.
+**2. AI Model Selection** - Wait until we understand user preferences from MVP
+usage data.
 
-**4. Social/Gallery** - Album sharing (Phase 3) provides foundation. Full social can follow.
+**4. Social/Gallery** - Album sharing (Phase 3) provides foundation. Full social
+can follow.
 
-**5. API Access** - Enterprise tier requirement. Build after subscriptions validate B2B interest.
+**5. API Access** - Enterprise tier requirement. Build after subscriptions
+validate B2B interest.
 
-**9. Team Accounts** - B2B expansion. Requires subscription infrastructure first.
+**9. Team Accounts** - B2B expansion. Requires subscription infrastructure
+first.
 
 ### Not Now
 
-**7. Editing Tools** - Risk of scope creep. Core value is AI enhancement, not editing.
+**7. Editing Tools** - Risk of scope creep. Core value is AI enhancement, not
+editing.
 
-**8. Mobile App** - Responsive web + PWA sufficient. Native apps require dedicated team.
+**8. Mobile App** - Responsive web + PWA sufficient. Native apps require
+dedicated team.
 
-**10. Gamification** - Added complexity without proven ROI. Simple referral program first.
+**10. Gamification** - Added complexity without proven ROI. Simple referral
+program first.
 
 ---
 
@@ -298,11 +309,11 @@ Album Sharing (existing)
 ## Related Documentation
 
 - [Vision Document](./IMAGE_ENHANCEMENT_VISION.md) - Core product vision
-- [Implementation Roadmap](./IMAGE_ENHANCEMENT_ROADMAP.md) - Phased development plan
+- [Implementation Roadmap](./IMAGE_ENHANCEMENT_ROADMAP.md) - Phased development
+  plan
 - [Database Schema](./IMAGE_ENHANCEMENT_SCHEMA.md) - Data models
 - [Privacy & Compliance](./IMAGE_ENHANCEMENT_PRIVACY.md) - Legal requirements
 
 ---
 
-_Created: December 2024_
-_Updated: December 2024 (Priority decisions added)_
+_Created: December 2024_ _Updated: December 2024 (Priority decisions added)_

@@ -25,14 +25,16 @@ describe("EnhancementSettings Component", () => {
     render(<EnhancementSettings {...defaultProps} />);
 
     expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
-    expect(screen.getByText("Choose the quality tier for AI enhancement")).toBeInTheDocument();
+    expect(screen.getByText("Choose the quality tier for AI enhancement"))
+      .toBeInTheDocument();
   });
 
   it("displays current balance", () => {
     render(<EnhancementSettings {...defaultProps} />);
 
     expect(screen.getByText("Your Balance")).toBeInTheDocument();
-    const balanceSection = screen.getByText("Your Balance").parentElement?.parentElement;
+    const balanceSection = screen.getByText("Your Balance").parentElement
+      ?.parentElement;
     expect(balanceSection?.textContent).toContain("10 tokens");
   });
 
@@ -76,7 +78,9 @@ describe("EnhancementSettings Component", () => {
 
     render(<EnhancementSettings {...defaultProps} />);
 
-    const enhanceButton = screen.getByRole("button", { name: /Start Enhancement/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Start Enhancement/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -101,20 +105,24 @@ describe("EnhancementSettings Component", () => {
     render(<EnhancementSettings {...defaultProps} currentBalance={3} />);
 
     expect(screen.getByText("Insufficient Tokens")).toBeInTheDocument();
-    expect(screen.getByText(/You need 5 tokens but only have 3/i)).toBeInTheDocument();
+    expect(screen.getByText(/You need 5 tokens but only have 3/i))
+      .toBeInTheDocument();
   });
 
   it("disables enhance button when balance is insufficient", () => {
     render(<EnhancementSettings {...defaultProps} currentBalance={3} />);
 
-    const enhanceButton = screen.getByRole("button", { name: /Start Enhancement/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Start Enhancement/i,
+    });
     expect(enhanceButton).toBeDisabled();
   });
 
   it("shows Get Tokens button when balance is insufficient", () => {
     render(<EnhancementSettings {...defaultProps} currentBalance={3} />);
 
-    expect(screen.getByRole("button", { name: /Get Tokens/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Get Tokens/i }))
+      .toBeInTheDocument();
   });
 
   it("disables tier options when balance is insufficient", () => {
@@ -179,7 +187,9 @@ describe("EnhancementSettings Component", () => {
     const ultraRadio = screen.getByRole("radio", { name: /Ultra/i });
     fireEvent.click(ultraRadio);
 
-    const enhanceButton = screen.getByRole("button", { name: /Start Enhancement \(10 tokens\)/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Start Enhancement \(10 tokens\)/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -193,7 +203,9 @@ describe("EnhancementSettings Component", () => {
     const standardRadio = screen.getByRole("radio", { name: /Standard/i });
     fireEvent.click(standardRadio);
 
-    expect(screen.getByRole("button", { name: /Start Enhancement \(2 tokens\)/i }))
+    expect(
+      screen.getByRole("button", { name: /Start Enhancement \(2 tokens\)/i }),
+    )
       .toBeInTheDocument();
   });
 
@@ -216,7 +228,9 @@ describe("EnhancementSettings Component", () => {
 
     render(<EnhancementSettings {...defaultProps} />);
 
-    const enhanceButton = screen.getByRole("button", { name: /Start Enhancement/i });
+    const enhanceButton = screen.getByRole("button", {
+      name: /Start Enhancement/i,
+    });
     fireEvent.click(enhanceButton);
 
     await waitFor(() => {
@@ -231,20 +245,23 @@ describe("EnhancementSettings Component", () => {
       render(<EnhancementSettings {...defaultProps} />);
 
       expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
-      expect(screen.getByText("Choose the quality tier for AI enhancement")).toBeInTheDocument();
+      expect(screen.getByText("Choose the quality tier for AI enhancement"))
+        .toBeInTheDocument();
     });
 
     it("renders with Card wrapper when asCard is true", () => {
       render(<EnhancementSettings {...defaultProps} asCard={true} />);
 
       expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
-      expect(screen.getByText("Choose the quality tier for AI enhancement")).toBeInTheDocument();
+      expect(screen.getByText("Choose the quality tier for AI enhancement"))
+        .toBeInTheDocument();
     });
 
     it("renders without Card wrapper when asCard is false", () => {
       render(<EnhancementSettings {...defaultProps} asCard={false} />);
 
-      expect(screen.queryByText("Choose the quality tier for AI enhancement")).not
+      expect(screen.queryByText("Choose the quality tier for AI enhancement"))
+        .not
         .toBeInTheDocument();
       expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
     });
@@ -272,11 +289,18 @@ describe("EnhancementSettings Component", () => {
     it("still shows enhance button when asCard is false", () => {
       render(<EnhancementSettings {...defaultProps} asCard={false} />);
 
-      expect(screen.getByRole("button", { name: /Start Enhancement/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Start Enhancement/i }))
+        .toBeInTheDocument();
     });
 
     it("still shows insufficient warning when asCard is false", () => {
-      render(<EnhancementSettings {...defaultProps} asCard={false} currentBalance={3} />);
+      render(
+        <EnhancementSettings
+          {...defaultProps}
+          asCard={false}
+          currentBalance={3}
+        />,
+      );
 
       expect(screen.getByText("Insufficient Tokens")).toBeInTheDocument();
     });
@@ -291,7 +315,8 @@ describe("EnhancementSettings Component", () => {
         />,
       );
 
-      expect(screen.getByRole("button", { name: /Open Dialog/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Open Dialog/i }))
+        .toBeInTheDocument();
     });
 
     it("opens dialog on trigger click", () => {
@@ -302,12 +327,16 @@ describe("EnhancementSettings Component", () => {
         />,
       );
 
-      const triggerButton = screen.getByRole("button", { name: /Open Dialog/i });
+      const triggerButton = screen.getByRole("button", {
+        name: /Open Dialog/i,
+      });
       fireEvent.click(triggerButton);
 
       expect(screen.getByText("Enhancement Settings")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Start Enhancement/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Cancel/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Start Enhancement/i }))
+        .toBeInTheDocument();
     });
 
     it("shows Cancel and Start Enhancement buttons in dialog footer", () => {
@@ -320,8 +349,10 @@ describe("EnhancementSettings Component", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /Open Dialog/i }));
 
-      expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Start Enhancement/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Cancel/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Start Enhancement/i }))
+        .toBeInTheDocument();
     });
 
     it("calls onCancel when Cancel button clicked", () => {
@@ -352,7 +383,9 @@ describe("EnhancementSettings Component", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: /Open Dialog/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Start Enhancement/i }));
+      fireEvent.click(
+        screen.getByRole("button", { name: /Start Enhancement/i }),
+      );
 
       await waitFor(() => {
         expect(mockOnEnhance).toHaveBeenCalledWith("TIER_2K");
@@ -456,7 +489,8 @@ describe("EnhancementSettings Component", () => {
       );
 
       // Dialog content should not be visible when open is false
-      expect(screen.queryByRole("button", { name: /Cancel/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Cancel/i })).not
+        .toBeInTheDocument();
 
       rerender(
         <EnhancementSettings
@@ -467,7 +501,8 @@ describe("EnhancementSettings Component", () => {
       );
 
       // Dialog content should be visible when open is true
-      expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Cancel/i }))
+        .toBeInTheDocument();
     });
 
     it("calls onOpenChange when dialog state changes", () => {

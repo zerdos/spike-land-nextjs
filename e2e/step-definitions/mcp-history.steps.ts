@@ -77,7 +77,9 @@ function createMockJobs(count: number): MockMcpJob[] {
       tokensCost: (i + 1) * 5,
       status: statuses[i % statuses.length],
       prompt: `Test prompt for job ${i + 1}`,
-      outputImageUrl: i % 4 === 0 ? undefined : `https://example.com/image-${i + 1}.jpg`,
+      outputImageUrl: i % 4 === 0
+        ? undefined
+        : `https://example.com/image-${i + 1}.jpg`,
       outputWidth: 1024,
       outputHeight: 768,
       createdAt: new Date(Date.now() - i * 3600000).toISOString(),
@@ -96,13 +98,16 @@ When("I navigate to the MCP history page", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-When("I navigate to the MCP history page with slow API", async function(this: CustomWorld) {
-  const mockJobs = createMockJobs(5);
-  await mockMcpHistoryApi(this, mockJobs, mockJobs.length, { delay: 2000 });
-  await this.page.goto(`${this.baseUrl}/settings/mcp-history`);
-  // Don't wait for networkidle to catch loading state
-  await this.page.waitForLoadState("domcontentloaded");
-});
+When(
+  "I navigate to the MCP history page with slow API",
+  async function(this: CustomWorld) {
+    const mockJobs = createMockJobs(5);
+    await mockMcpHistoryApi(this, mockJobs, mockJobs.length, { delay: 2000 });
+    await this.page.goto(`${this.baseUrl}/settings/mcp-history`);
+    // Don't wait for networkidle to catch loading state
+    await this.page.waitForLoadState("domcontentloaded");
+  },
+);
 
 // Given steps
 Given("I have MCP job history", async function(this: CustomWorld) {
@@ -119,9 +124,12 @@ Given("I have more than 12 MCP jobs", async function(this: CustomWorld) {
   await mockMcpHistoryApi(this, mockJobs, mockJobs.length);
 });
 
-Given("the MCP history API returns an error", async function(this: CustomWorld) {
-  await mockMcpHistoryApi(this, [], 0, { error: true });
-});
+Given(
+  "the MCP history API returns an error",
+  async function(this: CustomWorld) {
+    await mockMcpHistoryApi(this, [], 0, { error: true });
+  },
+);
 
 Given("the API is fixed", async function(this: CustomWorld) {
   // Remove the error route and set up successful response
@@ -131,14 +139,24 @@ Given("the API is fixed", async function(this: CustomWorld) {
 });
 
 // Page content verification
-Then("I should see the MCP history page title", async function(this: CustomWorld) {
-  await waitForTextWithRetry(this.page, "MCP Usage History", { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the MCP history page title",
+  async function(this: CustomWorld) {
+    await waitForTextWithRetry(this.page, "MCP Usage History", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
-Then("I should see the type filter dropdown", async function(this: CustomWorld) {
-  const filter = this.page.locator('[data-testid="type-filter"], [role="combobox"]').first();
-  await expect(filter).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the type filter dropdown",
+  async function(this: CustomWorld) {
+    const filter = this.page.locator(
+      '[data-testid="type-filter"], [role="combobox"]',
+    ).first();
+    await expect(filter).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Then("I should see the MCP Tools link", async function(this: CustomWorld) {
   const link = this.page.getByRole("link", { name: /MCP Tools/i });
@@ -153,10 +171,13 @@ When("I click the type filter dropdown", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-Then("I should see {string} option", async function(this: CustomWorld, optionText: string) {
-  const option = this.page.getByRole("option", { name: optionText });
-  await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see {string} option",
+  async function(this: CustomWorld, optionText: string) {
+    const option = this.page.getByRole("option", { name: optionText });
+    await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 When(
   "I select {string} from the type filter",
@@ -171,14 +192,19 @@ When(
   },
 );
 
-Then("I should only see Generate type jobs", async function(this: CustomWorld) {
-  // Check that only Generate badges are visible
-  const generateBadges = this.page.locator("text=Generate");
-  const modifyBadges = this.page.locator("text=Modify");
+Then(
+  "I should only see Generate type jobs",
+  async function(this: CustomWorld) {
+    // Check that only Generate badges are visible
+    const generateBadges = this.page.locator("text=Generate");
+    const modifyBadges = this.page.locator("text=Modify");
 
-  await expect(generateBadges.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await expect(modifyBadges).not.toBeVisible();
-});
+    await expect(generateBadges.first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+    await expect(modifyBadges).not.toBeVisible();
+  },
+);
 
 Then("I should only see Modify type jobs", async function(this: CustomWorld) {
   // Check that only Modify badges are visible
@@ -189,16 +215,24 @@ Then("I should only see Modify type jobs", async function(this: CustomWorld) {
   await expect(generateBadges).not.toBeVisible();
 });
 
-Then("the filter should show {string}", async function(this: CustomWorld, filterText: string) {
-  const filter = this.page.locator('[role="combobox"]').first();
-  await expect(filter).toContainText(filterText, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the filter should show {string}",
+  async function(this: CustomWorld, filterText: string) {
+    const filter = this.page.locator('[role="combobox"]').first();
+    await expect(filter).toContainText(filterText, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+  },
+);
 
 // Empty state
-Then("I should see the Try MCP Tools button", async function(this: CustomWorld) {
-  const button = this.page.getByRole("button", { name: /Try MCP Tools/i });
-  await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the Try MCP Tools button",
+  async function(this: CustomWorld) {
+    const button = this.page.getByRole("button", { name: /Try MCP Tools/i });
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 // Job details modal
 When("I click on a job card", async function(this: CustomWorld) {
@@ -238,40 +272,56 @@ When("I close the job details modal", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-Then("the job details modal should be closed", async function(this: CustomWorld) {
-  const modal = this.page.locator('[role="dialog"]');
-  await expect(modal).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "the job details modal should be closed",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[role="dialog"]');
+    await expect(modal).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 // Status badges
-Then("I should see job cards with status badges", async function(this: CustomWorld) {
-  const badges = this.page.locator(
-    '[class*="bg-green"], [class*="bg-blue"], [class*="destructive"]',
-  );
-  await expect(badges.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see job cards with status badges",
+  async function(this: CustomWorld) {
+    const badges = this.page.locator(
+      '[class*="bg-green"], [class*="bg-blue"], [class*="destructive"]',
+    );
+    await expect(badges.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
-Then("completed jobs should show green badge", async function(this: CustomWorld) {
-  const completedBadge = this.page.locator('[class*="bg-green"]').filter({ hasText: "Completed" });
-  // At least one completed job should show green badge
-  const count = await completedBadge.count();
-  expect(count).toBeGreaterThanOrEqual(0); // May or may not have completed jobs
-});
+Then(
+  "completed jobs should show green badge",
+  async function(this: CustomWorld) {
+    const completedBadge = this.page.locator('[class*="bg-green"]').filter({
+      hasText: "Completed",
+    });
+    // At least one completed job should show green badge
+    const count = await completedBadge.count();
+    expect(count).toBeGreaterThanOrEqual(0); // May or may not have completed jobs
+  },
+);
 
 Then("failed jobs should show red badge", async function(this: CustomWorld) {
-  const failedBadge = this.page.locator('[class*="destructive"]').filter({ hasText: "Failed" });
+  const failedBadge = this.page.locator('[class*="destructive"]').filter({
+    hasText: "Failed",
+  });
   // At least one failed job should show red badge
   const count = await failedBadge.count();
   expect(count).toBeGreaterThanOrEqual(0); // May or may not have failed jobs
 });
 
 // Pagination
-Then("I should see the pagination controls", async function(this: CustomWorld) {
-  const prevButton = this.page.getByRole("button", { name: /Previous/i });
-  const nextButton = this.page.getByRole("button", { name: /Next/i });
-  await expect(prevButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should see the pagination controls",
+  async function(this: CustomWorld) {
+    const prevButton = this.page.getByRole("button", { name: /Previous/i });
+    const nextButton = this.page.getByRole("button", { name: /Next/i });
+    await expect(prevButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 Then(
   "I should see the {string} button disabled",
@@ -289,10 +339,15 @@ Then(
   },
 );
 
-Then("I should be on page {int}", async function(this: CustomWorld, pageNum: number) {
-  const pageIndicator = this.page.getByText(new RegExp(`Page ${pageNum} of`, "i"));
-  await expect(pageIndicator).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should be on page {int}",
+  async function(this: CustomWorld, pageNum: number) {
+    const pageIndicator = this.page.getByText(
+      new RegExp(`Page ${pageNum} of`, "i"),
+    );
+    await expect(pageIndicator).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  },
+);
 
 // Total jobs count
 Then("I should see the total jobs count", async function(this: CustomWorld) {
@@ -306,11 +361,14 @@ Then("I should see the loading spinner", async function(this: CustomWorld) {
   await expect(spinner).toBeVisible({ timeout: TIMEOUTS.SHORT });
 });
 
-Then("the loading spinner should disappear when data loads", async function(this: CustomWorld) {
-  // Wait for spinner to disappear
-  const spinner = this.page.locator(".animate-spin");
-  await expect(spinner).not.toBeVisible({ timeout: TIMEOUTS.LONG });
-});
+Then(
+  "the loading spinner should disappear when data loads",
+  async function(this: CustomWorld) {
+    // Wait for spinner to disappear
+    const spinner = this.page.locator(".animate-spin");
+    await expect(spinner).not.toBeVisible({ timeout: TIMEOUTS.LONG });
+  },
+);
 
 // Error state
 // NOTE: "I should see the error message" is defined in common.steps.ts
@@ -322,6 +380,9 @@ Then("I should see the job history", async function(this: CustomWorld) {
 });
 
 // Protected route
-Then("I should be redirected to the signin page", async function(this: CustomWorld) {
-  await this.page.waitForURL(/\/auth\/signin/, { timeout: TIMEOUTS.DEFAULT });
-});
+Then(
+  "I should be redirected to the signin page",
+  async function(this: CustomWorld) {
+    await this.page.waitForURL(/\/auth\/signin/, { timeout: TIMEOUTS.DEFAULT });
+  },
+);

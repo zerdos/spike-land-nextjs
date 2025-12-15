@@ -5,12 +5,14 @@ import { FeatureShowcase } from "./FeatureShowcase";
 describe("FeatureShowcase Component", () => {
   it("should render the section heading", () => {
     render(<FeatureShowcase />);
-    expect(screen.getByText("Why Choose Our AI Enhancement")).toBeInTheDocument();
+    expect(screen.getByText("Why Choose Our AI Enhancement"))
+      .toBeInTheDocument();
   });
 
   it("should render the section description", () => {
     render(<FeatureShowcase />);
-    expect(screen.getByText(/Powerful features designed to make/)).toBeInTheDocument();
+    expect(screen.getByText(/Powerful features designed to make/))
+      .toBeInTheDocument();
   });
 
   it("should render all 8 feature cards", () => {
@@ -22,7 +24,8 @@ describe("FeatureShowcase Component", () => {
   it("should render AI-Powered Enhancement feature", () => {
     render(<FeatureShowcase />);
     expect(screen.getByText("AI-Powered Enhancement")).toBeInTheDocument();
-    expect(screen.getByText(/Advanced machine learning models/)).toBeInTheDocument();
+    expect(screen.getByText(/Advanced machine learning models/))
+      .toBeInTheDocument();
   });
 
   it("should render Multiple Resolutions feature", () => {
@@ -40,25 +43,29 @@ describe("FeatureShowcase Component", () => {
   it("should render Secure & Private feature", () => {
     render(<FeatureShowcase />);
     expect(screen.getByText("Secure & Private")).toBeInTheDocument();
-    expect(screen.getByText(/encrypted and automatically deleted/)).toBeInTheDocument();
+    expect(screen.getByText(/encrypted and automatically deleted/))
+      .toBeInTheDocument();
   });
 
   it("should render Easy Downloads feature", () => {
     render(<FeatureShowcase />);
     expect(screen.getByText("Easy Downloads")).toBeInTheDocument();
-    expect(screen.getByText(/No watermarks, no restrictions/)).toBeInTheDocument();
+    expect(screen.getByText(/No watermarks, no restrictions/))
+      .toBeInTheDocument();
   });
 
   it("should render Pay As You Go feature", () => {
     render(<FeatureShowcase />);
     expect(screen.getByText("Pay As You Go")).toBeInTheDocument();
-    expect(screen.getByText(/Flexible token-based pricing/)).toBeInTheDocument();
+    expect(screen.getByText(/Flexible token-based pricing/))
+      .toBeInTheDocument();
   });
 
   it("should render All Image Types feature", () => {
     render(<FeatureShowcase />);
     expect(screen.getByText("All Image Types")).toBeInTheDocument();
-    expect(screen.getByText(/portraits, landscapes, products/)).toBeInTheDocument();
+    expect(screen.getByText(/portraits, landscapes, products/))
+      .toBeInTheDocument();
   });
 
   it("should render Simple Controls feature", () => {

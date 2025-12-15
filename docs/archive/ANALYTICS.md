@@ -4,13 +4,17 @@ This document describes the analytics and monitoring setup for Spike Land.
 
 ## Overview
 
-Spike Land uses Vercel Analytics and Speed Insights to track user behavior, monitor application performance, and make data-informed decisions. The implementation follows GDPR compliance requirements with cookie consent management.
+Spike Land uses Vercel Analytics and Speed Insights to track user behavior,
+monitor application performance, and make data-informed decisions. The
+implementation follows GDPR compliance requirements with cookie consent
+management.
 
 ## Features
 
 ### Phase 1 (MVP) - Implemented ✅
 
-- **Vercel Analytics** - Built-in analytics for tracking page views and user interactions
+- **Vercel Analytics** - Built-in analytics for tracking page views and user
+  interactions
 - **Vercel Speed Insights** - Performance monitoring for Core Web Vitals
 - **Cookie Consent Banner** - GDPR-compliant consent management
 - **Event Tracking Utilities** - Structured event tracking system
@@ -38,7 +42,8 @@ npm install @vercel/analytics @vercel/speed-insights
 
 ### Root Layout Integration
 
-Analytics components are automatically loaded in the root layout (`src/app/layout.tsx`):
+Analytics components are automatically loaded in the root layout
+(`src/app/layout.tsx`):
 
 - **Analytics** - Tracks page views and custom events
 - **SpeedInsights** - Monitors performance metrics
@@ -195,7 +200,8 @@ To view analytics:
 
 ### Environment Variables
 
-No environment variables required for basic functionality. Vercel Analytics works automatically when deployed to Vercel.
+No environment variables required for basic functionality. Vercel Analytics
+works automatically when deployed to Vercel.
 
 ## Testing
 
@@ -268,5 +274,6 @@ npm run test:coverage
 
 For issues or questions:
 
-- GitHub Issues: [spike-land-nextjs/issues](https://github.com/zerdos/spike-land-nextjs/issues)
+- GitHub Issues:
+  [spike-land-nextjs/issues](https://github.com/zerdos/spike-land-nextjs/issues)
 - Related Issue: #29

@@ -2,15 +2,18 @@
 
 ## Overview
 
-Spike Land's image enhancement system uses tokens for AI-powered image processing. This document explains the refund policy for failed enhancements.
+Spike Land's image enhancement system uses tokens for AI-powered image
+processing. This document explains the refund policy for failed enhancements.
 
 ## Automatic Refunds
 
 ### When Refunds Occur
 
-1. **Workflow Start Failure**: If the enhancement workflow fails to start, tokens are refunded immediately.
+1. **Workflow Start Failure**: If the enhancement workflow fails to start,
+   tokens are refunded immediately.
 
-2. **Processing Failure**: If the Gemini AI service encounters an error during enhancement:
+2. **Processing Failure**: If the Gemini AI service encounters an error during
+   enhancement:
    - Service errors (not user errors) trigger automatic refunds
    - Refunds are processed within 24 hours per our Terms of Service
 
@@ -55,7 +58,8 @@ Refund operations are logged with:
 - Failure reason
 - Timestamp
 
-Administrators can view refund metrics in the Admin Dashboard under Token Economy analytics.
+Administrators can view refund metrics in the Admin Dashboard under Token
+Economy analytics.
 
 ## Contact
 

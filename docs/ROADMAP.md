@@ -1,8 +1,8 @@
 # Spike Land - Development Roadmap
 
-> **Last Updated**: December 2025
-> **Current Phase**: Phase 2 Complete - Preparing for Phase 3
-> **Business Structure**: UK Limited Company (Spike Land Ltd) - Formation in progress
+> **Last Updated**: December 2025 **Current Phase**: Phase 2 Complete -
+> Preparing for Phase 3 **Business Structure**: UK Limited Company (Spike Land
+> Ltd) - Formation in progress
 
 ---
 
@@ -69,7 +69,8 @@ See [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) for full analysis.
 
 ### Pixel App - Demonstration of Platform Capabilities
 
-The Pixel AI image enhancement app (https://spike.land/apps/pixel) demonstrates the complete platform functionality:
+The Pixel AI image enhancement app (https://spike.land/apps/pixel) demonstrates
+the complete platform functionality:
 
 **Phase 1: MVP** ✅ Complete
 

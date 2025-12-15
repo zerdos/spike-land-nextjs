@@ -43,7 +43,8 @@ export async function GET(
         {
           status: 429,
           headers: {
-            "X-RateLimit-Limit": rateLimitConfigs.general.maxRequests.toString(),
+            "X-RateLimit-Limit": rateLimitConfigs.general.maxRequests
+              .toString(),
             "X-RateLimit-Remaining": "0",
             "X-RateLimit-Reset": rateLimitResult.resetAt.toString(),
           },
@@ -79,7 +80,8 @@ export async function GET(
       .filter((job: EnhancementJob) => job.status === "COMPLETED")
       .map((job: EnhancementJob) => {
         const processingTimeMs = job.processingStartedAt && job.processingCompletedAt
-          ? job.processingCompletedAt.getTime() - job.processingStartedAt.getTime()
+          ? job.processingCompletedAt.getTime() -
+            job.processingStartedAt.getTime()
           : null;
 
         return {
@@ -115,7 +117,11 @@ export async function GET(
   } catch (error) {
     console.error("Error in GET versions API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch versions" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to fetch versions",
+      },
       { status: 500 },
     );
   }

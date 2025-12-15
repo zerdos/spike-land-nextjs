@@ -690,4 +690,5 @@ sleep $WAIT
 
 ---
 
-For more information, see [API Reference](../API_REFERENCE.md) and [Integration Guide](./INTEGRATION_GUIDE.md)
+For more information, see [API Reference](../API_REFERENCE.md) and
+[Integration Guide](./INTEGRATION_GUIDE.md)

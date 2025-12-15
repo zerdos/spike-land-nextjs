@@ -1,6 +1,7 @@
 # Database Quick Start
 
-This is a condensed guide to get the database up and running quickly. For comprehensive documentation, see [DATABASE_SETUP.md](./DATABASE_SETUP.md).
+This is a condensed guide to get the database up and running quickly. For
+comprehensive documentation, see [DATABASE_SETUP.md](./DATABASE_SETUP.md).
 
 ## Quick Setup (5 Minutes)
 
@@ -122,7 +123,9 @@ import prisma from "@/lib/prisma";
 
 // Query examples
 const users = await prisma.user.findMany();
-const user = await prisma.user.findUnique({ where: { email: "user@example.com" } });
+const user = await prisma.user.findUnique({
+  where: { email: "user@example.com" },
+});
 
 // Create with relations
 const app = await prisma.app.create({
@@ -224,4 +227,5 @@ Before deploying to production:
 4. Set up monitoring and alerts
 5. Test disaster recovery procedures
 
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for complete production setup guide.
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for complete production setup
+guide.

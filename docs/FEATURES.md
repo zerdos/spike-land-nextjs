@@ -1,7 +1,7 @@
 # Spike Land - Feature Documentation
 
-> **Last Updated**: December 2025
-> **Status**: Pixel App Complete (Phases 1-5) | Platform Phase 2 Complete
+> **Last Updated**: December 2025 **Status**: Pixel App Complete (Phases 1-5) |
+> Platform Phase 2 Complete
 
 ---
 
@@ -18,7 +18,9 @@
 
 ## Platform Overview
 
-**Spike Land** is an AI-powered app platform that democratizes software development by enabling anyone to create, modify, and deploy applications using natural language requirements and AI agents.
+**Spike Land** is an AI-powered app platform that democratizes software
+development by enabling anyone to create, modify, and deploy applications using
+natural language requirements and AI agents.
 
 ### Core Vision
 
@@ -34,7 +36,8 @@
 
 **URL**: [spike.land/apps/pixel](https://spike.land/apps/pixel)
 
-Pixel is the flagship AI-powered image enhancement application on the Spike Land platform. All 5 implementation phases are complete.
+Pixel is the flagship AI-powered image enhancement application on the Spike Land
+platform. All 5 implementation phases are complete.
 
 ### Phase 1: MVP ✅ Complete
 
@@ -201,7 +204,8 @@ Structured feedback system for bug reports and feature ideas:
 
 ### Token Economy (Platform-Level)
 
-The token system is core platform infrastructure that all apps on Spike Land can use.
+The token system is core platform infrastructure that all apps on Spike Land can
+use.
 
 | Feature              | Status      | Description                            |
 | -------------------- | ----------- | -------------------------------------- |

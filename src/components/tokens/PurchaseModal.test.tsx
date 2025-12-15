@@ -4,15 +4,17 @@ import { PurchaseModal } from "./PurchaseModal";
 
 // Mock the PackageCard component
 vi.mock("./PackageCard", () => ({
-  PackageCard: ({ id, name, tokens, price, currencySymbol, onSelect, isLoading }: {
-    id: string;
-    name: string;
-    tokens: number;
-    price: number;
-    currencySymbol: string;
-    onSelect: (id: string) => void;
-    isLoading: boolean;
-  }) => (
+  PackageCard: (
+    { id, name, tokens, price, currencySymbol, onSelect, isLoading }: {
+      id: string;
+      name: string;
+      tokens: number;
+      price: number;
+      currencySymbol: string;
+      onSelect: (id: string) => void;
+      isLoading: boolean;
+    },
+  ) => (
     <div data-testid={`package-card-${id}`}>
       <div>{name}</div>
       <div>{tokens} tokens</div>
@@ -147,7 +149,10 @@ describe("PurchaseModal", () => {
 
     const originalLocation = window.location;
     delete (window as { location?: typeof window.location; }).location;
-    window.location = { ...originalLocation, href: "" } as typeof window.location;
+    window.location = {
+      ...originalLocation,
+      href: "",
+    } as typeof window.location;
 
     render(<PurchaseModal />);
     fireEvent.click(screen.getByText("Get Tokens"));
@@ -165,7 +170,9 @@ describe("PurchaseModal", () => {
   });
 
   it("handles checkout error gracefully", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
     global.fetch = mockFetch;
 
@@ -178,14 +185,19 @@ describe("PurchaseModal", () => {
     });
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Checkout error:", expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Checkout error:",
+        expect.any(Error),
+      );
     });
 
     consoleErrorSpy.mockRestore();
   });
 
   it("handles missing checkout URL gracefully", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const mockFetch = vi.fn().mockResolvedValue({
       json: async () => ({}),
     });
@@ -245,7 +257,9 @@ describe("PurchaseModal", () => {
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      expect(screen.getByText("Choose a token package or redeem a voucher code"))
+      expect(
+        screen.getByText("Choose a token package or redeem a voucher code"),
+      )
         .toBeInTheDocument();
     });
   });

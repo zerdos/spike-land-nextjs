@@ -35,13 +35,17 @@ export async function generateUniqueReferralCode(): Promise<string> {
     }
   }
 
-  throw new Error("Failed to generate unique referral code after maximum retries");
+  throw new Error(
+    "Failed to generate unique referral code after maximum retries",
+  );
 }
 
 /**
  * Assign a referral code to a user if they don't have one
  */
-export async function assignReferralCodeToUser(userId: string): Promise<string> {
+export async function assignReferralCodeToUser(
+  userId: string,
+): Promise<string> {
   // Check if user already has a referral code
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -67,7 +71,9 @@ export async function assignReferralCodeToUser(userId: string): Promise<string> 
 /**
  * Get user ID by referral code
  */
-export async function getUserByReferralCode(code: string): Promise<string | null> {
+export async function getUserByReferralCode(
+  code: string,
+): Promise<string | null> {
   const user = await prisma.user.findUnique({
     where: { referralCode: code },
     select: { id: true },

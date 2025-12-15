@@ -74,7 +74,9 @@ describe("AlbumsGrid", () => {
     render(<AlbumsGrid albums={[]} />);
 
     expect(
-      screen.getByText("No albums yet. Create your first album to organize your images."),
+      screen.getByText(
+        "No albums yet. Create your first album to organize your images.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -144,7 +146,9 @@ describe("AlbumsGrid", () => {
     const mockOnAlbumClick = vi.fn();
     render(<AlbumsGrid albums={mockAlbums} onAlbumClick={mockOnAlbumClick} />);
 
-    const albumCard = screen.getByText("Vacation Photos").closest("div[class*='block']");
+    const albumCard = screen.getByText("Vacation Photos").closest(
+      "div[class*='block']",
+    );
     fireEvent.click(albumCard!);
 
     expect(mockOnAlbumClick).toHaveBeenCalledWith("album-1");
@@ -154,7 +158,9 @@ describe("AlbumsGrid", () => {
     const mockOnAlbumClick = vi.fn();
     render(<AlbumsGrid albums={mockAlbums} onAlbumClick={mockOnAlbumClick} />);
 
-    const albumCard = screen.getByText("Vacation Photos").closest("div[class*='block']");
+    const albumCard = screen.getByText("Vacation Photos").closest(
+      "div[class*='block']",
+    );
     const clickEvent = new MouseEvent("click", { bubbles: true });
     const preventDefaultSpy = vi.spyOn(clickEvent, "preventDefault");
 
@@ -174,7 +180,9 @@ describe("AlbumsGrid", () => {
     const mockOnDragOver = vi.fn();
     render(<AlbumsGrid albums={mockAlbums} onDragOver={mockOnDragOver} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     fireEvent.dragOver(card!);
 
     expect(mockOnDragOver).toHaveBeenCalledWith("album-1");
@@ -184,7 +192,9 @@ describe("AlbumsGrid", () => {
     const mockOnDragLeave = vi.fn();
     render(<AlbumsGrid albums={mockAlbums} onDragLeave={mockOnDragLeave} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     fireEvent.dragLeave(card!);
 
     expect(mockOnDragLeave).toHaveBeenCalled();
@@ -194,7 +204,9 @@ describe("AlbumsGrid", () => {
     const mockOnDrop = vi.fn();
     render(<AlbumsGrid albums={mockAlbums} onDrop={mockOnDrop} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     fireEvent.drop(card!);
 
     expect(mockOnDrop).toHaveBeenCalledWith("album-1");
@@ -295,7 +307,9 @@ describe("AlbumsGrid", () => {
       />,
     );
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
 
     const dragOverEvent = new Event("dragover", { bubbles: true });
     const stopPropagationSpy = vi.spyOn(dragOverEvent, "stopPropagation");
@@ -314,7 +328,11 @@ describe("AlbumsGrid", () => {
   it("falls back to 'Album image' when image name is empty", () => {
     const albumWithEmptyName = {
       ...mockAlbums[0],
-      previewImages: [{ id: "img-1", url: "https://example.com/img1.jpg", name: "" }],
+      previewImages: [{
+        id: "img-1",
+        url: "https://example.com/img1.jpg",
+        name: "",
+      }],
     };
 
     render(<AlbumsGrid albums={[albumWithEmptyName]} />);
@@ -326,7 +344,9 @@ describe("AlbumsGrid", () => {
   it("does not call onDragOver when handler is not provided", () => {
     render(<AlbumsGrid albums={mockAlbums} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     // Should not throw when dragging without handler
     expect(() => fireEvent.dragOver(card!)).not.toThrow();
   });
@@ -334,7 +354,9 @@ describe("AlbumsGrid", () => {
   it("does not call onDragLeave when handler is not provided", () => {
     render(<AlbumsGrid albums={mockAlbums} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     // Should not throw when leaving without handler
     expect(() => fireEvent.dragLeave(card!)).not.toThrow();
   });
@@ -342,7 +364,9 @@ describe("AlbumsGrid", () => {
   it("does not call onDrop when handler is not provided", () => {
     render(<AlbumsGrid albums={mockAlbums} />);
 
-    const card = screen.getByText("Vacation Photos").closest("[class*='overflow-hidden']");
+    const card = screen.getByText("Vacation Photos").closest(
+      "[class*='overflow-hidden']",
+    );
     // Should not throw when dropping without handler
     expect(() => fireEvent.drop(card!)).not.toThrow();
   });
@@ -350,7 +374,9 @@ describe("AlbumsGrid", () => {
   it("does not call onClick when onAlbumClick is not provided", () => {
     render(<AlbumsGrid albums={mockAlbums} />);
 
-    const albumCard = screen.getByText("Vacation Photos").closest("div[class*='block']");
+    const albumCard = screen.getByText("Vacation Photos").closest(
+      "div[class*='block']",
+    );
     // Should not throw when clicking without handler
     expect(() => fireEvent.click(albumCard!)).not.toThrow();
   });
@@ -375,7 +401,9 @@ describe("AlbumsGrid", () => {
   });
 
   it("does not apply drag-over styles when dragOverAlbumId is null", () => {
-    const { container } = render(<AlbumsGrid albums={mockAlbums} dragOverAlbumId={null} />);
+    const { container } = render(
+      <AlbumsGrid albums={mockAlbums} dragOverAlbumId={null} />,
+    );
 
     // Check that no Card elements have the ring-primary class (drag-over style)
     const cardsWithRing = container.querySelectorAll(".ring-primary");

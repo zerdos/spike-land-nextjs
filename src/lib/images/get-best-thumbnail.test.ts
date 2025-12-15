@@ -66,7 +66,10 @@ describe("getBestThumbnail", () => {
     const image: ImageWithJobs = {
       ...createMockImage(),
       enhancementJobs: [
-        createMockJob({ tier: "TIER_4K", enhancedUrl: "https://example.com/enhanced-4k.jpg" }),
+        createMockJob({
+          tier: "TIER_4K",
+          enhancedUrl: "https://example.com/enhanced-4k.jpg",
+        }),
       ],
     };
 

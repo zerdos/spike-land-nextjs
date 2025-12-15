@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks });
   } catch (error) {
     console.error("Failed to fetch agent tasks:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }
 
@@ -60,11 +62,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, task: updatedTask });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid request body", details: error.flatten() }, {
+      return NextResponse.json({
+        error: "Invalid request body",
+        details: error.flatten(),
+      }, {
         status: 400,
       });
     }
     console.error("Failed to update agent task:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

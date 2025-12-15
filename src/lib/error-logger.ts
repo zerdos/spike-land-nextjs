@@ -23,7 +23,8 @@ class ErrorLogger {
   constructor(config?: Partial<ErrorLoggerConfig>) {
     this.config = {
       enabled: true,
-      environment: (process.env.NODE_ENV as "development" | "production" | "test") || "development",
+      environment: (process.env.NODE_ENV as "development" | "production" | "test") ||
+        "development",
       ...config,
     };
   }
@@ -59,10 +60,16 @@ class ErrorLogger {
    * Send error to production logging
    * Uses structured logging for Vercel log aggregation and monitoring
    */
-  private sendToErrorTracking(_error: Error, errorInfo: Record<string, unknown>): void {
+  private sendToErrorTracking(
+    _error: Error,
+    errorInfo: Record<string, unknown>,
+  ): void {
     // Production errors are logged in structured JSON format
     // These can be monitored via Vercel Analytics and log aggregation
-    console.error("[ErrorLogger] Production error:", JSON.stringify(errorInfo, null, 2));
+    console.error(
+      "[ErrorLogger] Production error:",
+      JSON.stringify(errorInfo, null, 2),
+    );
   }
 
   /**

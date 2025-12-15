@@ -38,7 +38,9 @@ vi.mock("./BulkDeleteDialog", () => ({
     onCancel,
     disabled,
   }: {
-    selectedVersions: Array<{ id: string; tier: string; sizeBytes?: number | null; }>;
+    selectedVersions: Array<
+      { id: string; tier: string; sizeBytes?: number | null; }
+    >;
     onDelete: (ids: string[]) => Promise<void>;
     onCancel: () => void;
     disabled?: boolean;
@@ -57,12 +59,16 @@ vi.mock("./BulkDeleteDialog", () => ({
               <button data-testid="cancel-delete">Cancel</button>
             `;
             document.body.appendChild(dialog);
-            const confirmBtn = dialog.querySelector("[data-testid='confirm-delete']");
+            const confirmBtn = dialog.querySelector(
+              "[data-testid='confirm-delete']",
+            );
             confirmBtn?.addEventListener("click", () => {
               onDelete(selectedVersions.map((v) => v.id));
               document.body.removeChild(dialog);
             });
-            const cancelBtn = dialog.querySelector("[data-testid='cancel-delete']");
+            const cancelBtn = dialog.querySelector(
+              "[data-testid='cancel-delete']",
+            );
             cancelBtn?.addEventListener("click", () => {
               onCancel();
               document.body.removeChild(dialog);
@@ -114,7 +120,9 @@ describe("VersionGrid Component", () => {
     render(<VersionGrid versions={[]} />);
 
     expect(
-      screen.getByText("No enhancement versions yet. Create your first enhancement above."),
+      screen.getByText(
+        "No enhancement versions yet. Create your first enhancement above.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -160,12 +168,15 @@ describe("VersionGrid Component", () => {
     render(<VersionGrid versions={versions} />);
 
     // Date formatted depends on locale - look for the expected formatted date
-    const expectedDate = new Date("2024-01-15T10:30:00Z").toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const expectedDate = new Date("2024-01-15T10:30:00Z").toLocaleDateString(
+      undefined,
+      {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    );
     expect(screen.getByText(expectedDate)).toBeInTheDocument();
   });
 
@@ -173,9 +184,12 @@ describe("VersionGrid Component", () => {
     const onVersionSelect = vi.fn();
     const versions = [createMockVersion()];
 
-    render(<VersionGrid versions={versions} onVersionSelect={onVersionSelect} />);
+    render(
+      <VersionGrid versions={versions} onVersionSelect={onVersionSelect} />,
+    );
 
-    const card = screen.getByTestId("next-image").closest("div")?.parentElement?.parentElement;
+    const card = screen.getByTestId("next-image").closest("div")?.parentElement
+      ?.parentElement;
     if (card) {
       fireEvent.click(card);
     }
@@ -194,7 +208,7 @@ describe("VersionGrid Component", () => {
     );
 
     const cards = screen.getAllByTestId("next-image").map(
-      img => img.closest("div")?.parentElement?.parentElement,
+      (img) => img.closest("div")?.parentElement?.parentElement,
     );
 
     // Check if selected card has the ring class
@@ -324,10 +338,12 @@ describe("VersionGrid Component", () => {
       createMockVersion({ id: "version-2" }),
     ];
 
-    render(<VersionGrid versions={versions} onVersionSelect={onVersionSelect} />);
+    render(
+      <VersionGrid versions={versions} onVersionSelect={onVersionSelect} />,
+    );
 
     const cards = screen.getAllByTestId("next-image").map(
-      img => img.closest("div")?.parentElement?.parentElement,
+      (img) => img.closest("div")?.parentElement?.parentElement,
     );
 
     if (cards[0]) fireEvent.click(cards[0]);
@@ -344,7 +360,8 @@ describe("VersionGrid Component", () => {
 
     render(<VersionGrid versions={versions} />);
 
-    const card = screen.getByTestId("next-image").closest("div")?.parentElement?.parentElement;
+    const card = screen.getByTestId("next-image").closest("div")?.parentElement
+      ?.parentElement;
 
     // Should not throw error when clicking without callback
     expect(() => {
@@ -659,7 +676,8 @@ describe("VersionGrid Component", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /select all/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /select all/i }))
+      .toBeInTheDocument();
   });
 
   it("hides bulk select controls when enableBulkSelect is false", () => {
@@ -667,7 +685,8 @@ describe("VersionGrid Component", () => {
 
     render(<VersionGrid versions={versions} enableBulkSelect={false} />);
 
-    expect(screen.queryByRole("button", { name: /select all/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /select all/i })).not
+      .toBeInTheDocument();
   });
 
   it("shows checkbox for deletable versions when bulk select is enabled", () => {
@@ -751,11 +770,14 @@ describe("VersionGrid Component", () => {
     fireEvent.click(selectAllButton);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /deselect all/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /deselect all/i }))
+        .toBeInTheDocument();
     });
 
     // Then deselect all
-    const deselectAllButton = screen.getByRole("button", { name: /deselect all/i });
+    const deselectAllButton = screen.getByRole("button", {
+      name: /deselect all/i,
+    });
     fireEvent.click(deselectAllButton);
 
     await waitFor(() => {
@@ -782,7 +804,8 @@ describe("VersionGrid Component", () => {
     fireEvent.click(checkbox);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /delete selected/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete selected/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -802,10 +825,13 @@ describe("VersionGrid Component", () => {
     fireEvent.click(checkbox);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /delete selected/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete selected/i }))
+        .toBeInTheDocument();
     });
 
-    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    const deleteButton = screen.getByRole("button", {
+      name: /delete selected/i,
+    });
     fireEvent.click(deleteButton);
 
     // Now confirm in dialog
@@ -813,7 +839,9 @@ describe("VersionGrid Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    const confirmButton = screen.getByRole("button", { name: /delete 1 version/i });
+    const confirmButton = screen.getByRole("button", {
+      name: /delete 1 version/i,
+    });
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
@@ -837,7 +865,9 @@ describe("VersionGrid Component", () => {
     fireEvent.click(checkbox);
 
     await waitFor(() => {
-      const selectedCard = container.querySelector("[class*='ring-destructive']");
+      const selectedCard = container.querySelector(
+        "[class*='ring-destructive']",
+      );
       expect(selectedCard).toBeInTheDocument();
     });
   });
@@ -893,14 +923,18 @@ describe("VersionGrid Component", () => {
       expect(checkbox).toHaveAttribute("data-state", "checked");
     });
 
-    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    const deleteButton = screen.getByRole("button", {
+      name: /delete selected/i,
+    });
     fireEvent.click(deleteButton);
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    const confirmButton = screen.getByRole("button", { name: /delete 1 version/i });
+    const confirmButton = screen.getByRole("button", {
+      name: /delete 1 version/i,
+    });
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
@@ -942,13 +976,15 @@ describe("VersionGrid Component", () => {
   it("calls onJobDelete for completed job when delete button is clicked", async () => {
     const onJobDelete = vi.fn().mockResolvedValue(undefined);
     vi.spyOn(window, "confirm").mockReturnValue(true);
-    const versions = [createMockVersion({ id: "completed-1", status: "COMPLETED" })];
+    const versions = [
+      createMockVersion({ id: "completed-1", status: "COMPLETED" }),
+    ];
 
     render(<VersionGrid versions={versions} onJobDelete={onJobDelete} />);
 
     // Find the delete button (it's a ghost button with Trash2 icon for COMPLETED status)
     const buttons = screen.getAllByRole("button");
-    const deleteBtn = buttons.find(btn => btn.querySelector("svg"));
+    const deleteBtn = buttons.find((btn) => btn.querySelector("svg"));
     expect(deleteBtn).toBeInTheDocument();
 
     if (deleteBtn) {
@@ -1016,7 +1052,9 @@ describe("VersionGrid Component", () => {
     });
 
     // Open the bulk delete dialog
-    const deleteButton = screen.getByRole("button", { name: /delete selected/i });
+    const deleteButton = screen.getByRole("button", {
+      name: /delete selected/i,
+    });
     fireEvent.click(deleteButton);
 
     await waitFor(() => {
@@ -1070,7 +1108,8 @@ describe("VersionGrid Component", () => {
     );
 
     // Select All button should not appear
-    expect(screen.queryByRole("button", { name: /select all/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /select all/i })).not
+      .toBeInTheDocument();
     // Checkboxes should not appear
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });

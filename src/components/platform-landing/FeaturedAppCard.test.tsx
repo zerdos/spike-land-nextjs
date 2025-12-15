@@ -5,7 +5,13 @@ import { FeaturedAppCard } from "./FeaturedAppCard";
 
 // Mock next/image for ImageComparisonSlider
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown; }) => (
+  default: (
+    { src, alt, ...props }: {
+      src: string;
+      alt: string;
+      [key: string]: unknown;
+    },
+  ) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
@@ -141,7 +147,8 @@ describe("FeaturedAppCard Component", () => {
   describe("PixelLogo integration", () => {
     it("should render PixelLogo when usePixelLogo is true", () => {
       render(<FeaturedAppCard {...defaultProps} usePixelLogo />);
-      expect(screen.getByRole("img", { name: "Pixel logo" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Pixel logo" }))
+        .toBeInTheDocument();
     });
 
     it("should not render icon when usePixelLogo is true", () => {
@@ -157,17 +164,22 @@ describe("FeaturedAppCard Component", () => {
 
   describe("Tagline feature", () => {
     it("should render tagline when provided", () => {
-      render(<FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />);
+      render(
+        <FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />,
+      );
       expect(screen.getByText("AI Image Enhancement")).toBeInTheDocument();
     });
 
     it("should not render tagline when not provided", () => {
       render(<FeaturedAppCard {...defaultProps} />);
-      expect(screen.queryByText("AI Image Enhancement")).not.toBeInTheDocument();
+      expect(screen.queryByText("AI Image Enhancement")).not
+        .toBeInTheDocument();
     });
 
     it("should render tagline with primary color styling", () => {
-      render(<FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />);
+      render(
+        <FeaturedAppCard {...defaultProps} tagline="AI Image Enhancement" />,
+      );
       const tagline = screen.getByText("AI Image Enhancement");
       expect(tagline).toHaveClass("text-primary");
     });

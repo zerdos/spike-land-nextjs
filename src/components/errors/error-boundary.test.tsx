@@ -29,7 +29,9 @@ describe("ErrorBoundary", () => {
 
   it("should catch errors and display error UI", () => {
     // Suppress console.error for this test
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     render(
       <ErrorBoundary>
@@ -45,7 +47,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should display user-friendly error message", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     render(
       <ErrorBoundary>
@@ -53,13 +57,16 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>,
     );
 
-    expect(screen.getByText("An unexpected error occurred.")).toBeInTheDocument();
+    expect(screen.getByText("An unexpected error occurred."))
+      .toBeInTheDocument();
 
     consoleErrorSpy.mockRestore();
   });
 
   it("should call onError callback when error occurs", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const onError = vi.fn();
 
     render(
@@ -80,7 +87,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should render custom fallback if provided", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     render(
       <ErrorBoundary fallback={<div>Custom Error UI</div>}>
@@ -95,7 +104,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should reset error when Try again button is clicked", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const user = userEvent.setup();
 
     render(
@@ -118,7 +129,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should reset error when resetKeys change", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const { rerender } = render(
       <ErrorBoundary resetKeys={["key1"]}>
@@ -141,7 +154,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should not reset when resetKeys remain the same", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const { rerender } = render(
       <ErrorBoundary resetKeys={["key1"]}>
@@ -165,7 +180,9 @@ describe("ErrorBoundary", () => {
   });
 
   it("should show technical details in development mode", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const originalEnv = process.env.NODE_ENV;
 
     // Set to development mode
@@ -199,7 +216,9 @@ describe("withErrorBoundary", () => {
   });
 
   it("should catch errors in wrapped component", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const WrappedComponent = withErrorBoundary(ThrowError);
 
@@ -211,7 +230,9 @@ describe("withErrorBoundary", () => {
   });
 
   it("should pass errorBoundaryProps to error boundary", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const onError = vi.fn();
 
     const WrappedComponent = withErrorBoundary(ThrowError, { onError });
@@ -226,15 +247,23 @@ describe("withErrorBoundary", () => {
   it("should set display name for wrapped component", () => {
     const WrappedComponent = withErrorBoundary(TestComponent);
 
-    expect(WrappedComponent.displayName).toBe("withErrorBoundary(TestComponent)");
+    expect(WrappedComponent.displayName).toBe(
+      "withErrorBoundary(TestComponent)",
+    );
   });
 
   it("should fallback to 'Component' when displayName and name are not available", () => {
     // Create an anonymous component without displayName or name
     const AnonymousComponent = (() => <div>Anonymous</div>) as React.ComponentType;
     // Remove name property by creating a fresh object
-    Object.defineProperty(AnonymousComponent, "name", { value: "", writable: true });
-    Object.defineProperty(AnonymousComponent, "displayName", { value: undefined, writable: true });
+    Object.defineProperty(AnonymousComponent, "name", {
+      value: "",
+      writable: true,
+    });
+    Object.defineProperty(AnonymousComponent, "displayName", {
+      value: undefined,
+      writable: true,
+    });
 
     const WrappedComponent = withErrorBoundary(AnonymousComponent);
 
@@ -244,7 +273,9 @@ describe("withErrorBoundary", () => {
 
 describe("ErrorBoundary - Additional Edge Cases", () => {
   it("should handle Go home button click", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const user = userEvent.setup();
 
     // Mock window.location
@@ -275,7 +306,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should reset when resetKeys length changes", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const { rerender } = render(
       <ErrorBoundary resetKeys={["key1", "key2"]}>
@@ -320,7 +353,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should not reset when resetKeys are not provided in componentDidUpdate", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const { rerender } = render(
       <ErrorBoundary>
@@ -344,7 +379,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should not reset when previous resetKeys are undefined", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const { rerender } = render(
       <ErrorBoundary>
@@ -368,7 +405,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should display error without suggestion", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     // Use a basic error that won't have a suggestion
     function ThrowBasicError() {
@@ -387,7 +426,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should handle error without stack trace in development mode", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "development";
 
@@ -416,7 +457,9 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
   });
 
   it("should handle componentStack being null in componentDidCatch", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     const onError = vi.fn();
 
     render(

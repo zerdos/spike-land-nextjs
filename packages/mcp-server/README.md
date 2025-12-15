@@ -1,6 +1,8 @@
 # @spike-land/mcp-server
 
-MCP (Model Context Protocol) server for Spike Land image generation and modification. Use this server to generate and modify images with AI directly from Claude Desktop or Claude Code.
+MCP (Model Context Protocol) server for Spike Land image generation and
+modification. Use this server to generate and modify images with AI directly
+from Claude Desktop or Claude Code.
 
 ## Installation
 
@@ -46,7 +48,8 @@ Edit your Claude Desktop configuration file:
 
 ### 3. Configure Claude Code
 
-Add to your project's `.claude/settings.json` or global `~/.claude/settings.json`:
+Add to your project's `.claude/settings.json` or global
+`~/.claude/settings.json`:
 
 ```json
 {
@@ -77,7 +80,8 @@ Generate a new image from a text prompt.
 **Parameters:**
 
 - `prompt` (required): Text description of the image to generate
-- `tier` (optional): Quality tier - `TIER_1K` (1024px), `TIER_2K` (2048px), or `TIER_4K` (4096px)
+- `tier` (optional): Quality tier - `TIER_1K` (1024px), `TIER_2K` (2048px), or
+  `TIER_4K` (4096px)
 - `negative_prompt` (optional): Things to avoid in the generated image
 - `wait_for_completion` (optional): Wait for job completion (default: true)
 
@@ -126,7 +130,8 @@ Get your current token balance.
 | TIER_2K | 2048px     | 5      |
 | TIER_4K | 4096px     | 10     |
 
-Tokens regenerate automatically (1 per 15 minutes, max 100). You can also purchase more at [spike.land/settings](https://spike.land/settings).
+Tokens regenerate automatically (1 per 15 minutes, max 100). You can also
+purchase more at [spike.land/settings](https://spike.land/settings).
 
 ## Environment Variables
 
@@ -149,13 +154,15 @@ Simply ask Claude to generate or modify images:
 
 Use the MCP tools in your development workflow:
 
-> "Generate a placeholder hero image for the landing page - something abstract and modern"
+> "Generate a placeholder hero image for the landing page - something abstract
+> and modern"
 
 > "Create a logo concept for my project - minimalist, uses geometric shapes"
 
 ## Testing
 
-You can test the API directly in your browser at [spike.land/apps/pixel/mcp-tools](https://spike.land/apps/pixel/mcp-tools).
+You can test the API directly in your browser at
+[spike.land/apps/pixel/mcp-tools](https://spike.land/apps/pixel/mcp-tools).
 
 ## Support
 

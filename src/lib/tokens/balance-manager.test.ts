@@ -939,7 +939,9 @@ describe("TokenBalanceManager", () => {
       ];
       mockTokenTransaction.findMany.mockResolvedValue(mockTransactions);
 
-      const result = await TokenBalanceManager.getTransactionHistory(testUserId);
+      const result = await TokenBalanceManager.getTransactionHistory(
+        testUserId,
+      );
 
       expect(result).toEqual(mockTransactions);
       expect(mockTokenTransaction.findMany).toHaveBeenCalledWith({
@@ -1009,7 +1011,9 @@ describe("TokenBalanceManager", () => {
 
   describe("error handling", () => {
     it("should handle database errors in consumeTokens with context", async () => {
-      mockTransaction.mockRejectedValue(new Error("Database connection failed"));
+      mockTransaction.mockRejectedValue(
+        new Error("Database connection failed"),
+      );
 
       const result = await TokenBalanceManager.consumeTokens({
         userId: testUserId,

@@ -147,7 +147,10 @@ export function AddToAlbumModal({
               </div>
             )
             : (
-              <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
+              <Select
+                value={selectedAlbumId}
+                onValueChange={setSelectedAlbumId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select an album" />
                 </SelectTrigger>

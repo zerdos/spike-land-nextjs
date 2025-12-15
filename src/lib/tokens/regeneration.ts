@@ -11,7 +11,9 @@ export interface RegenerationStats {
  * Process token regeneration for all eligible users
  * This should be run as a cron job every 15 minutes
  */
-export async function processAllUserRegenerations(): Promise<RegenerationStats> {
+export async function processAllUserRegenerations(): Promise<
+  RegenerationStats
+> {
   const stats: RegenerationStats = {
     totalUsersProcessed: 0,
     totalTokensRegenerated: 0,

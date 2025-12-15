@@ -51,11 +51,16 @@ describe("GET /api/v1/agent/tasks", () => {
       },
     ];
 
-    vi.mocked(prisma.agentTask.findMany).mockResolvedValue(mockTasks as AgentTask[]);
+    vi.mocked(prisma.agentTask.findMany).mockResolvedValue(
+      mockTasks as AgentTask[],
+    );
 
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks?boxId=box-1", {
-      method: "GET",
-    });
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-1",
+      {
+        method: "GET",
+      },
+    );
 
     const response = await GET(request);
     const data = await response.json();
@@ -78,9 +83,12 @@ describe("GET /api/v1/agent/tasks", () => {
   it("should return empty array when no pending tasks", async () => {
     vi.mocked(prisma.agentTask.findMany).mockResolvedValue([]);
 
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks?boxId=box-2", {
-      method: "GET",
-    });
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-2",
+      {
+        method: "GET",
+      },
+    );
 
     const response = await GET(request);
     const data = await response.json();
@@ -90,13 +98,20 @@ describe("GET /api/v1/agent/tasks", () => {
   });
 
   it("should handle server errors", async () => {
-    vi.mocked(prisma.agentTask.findMany).mockRejectedValue(new Error("Database error"));
+    vi.mocked(prisma.agentTask.findMany).mockRejectedValue(
+      new Error("Database error"),
+    );
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks?boxId=box-1", {
-      method: "GET",
-    });
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-1",
+      {
+        method: "GET",
+      },
+    );
 
     const response = await GET(request);
     const data = await response.json();
@@ -127,7 +142,9 @@ describe("POST /api/v1/agent/tasks", () => {
       result: { output: "file1.txt" },
     };
 
-    vi.mocked(prisma.agentTask.update).mockResolvedValue(mockUpdatedTask as AgentTask);
+    vi.mocked(prisma.agentTask.update).mockResolvedValue(
+      mockUpdatedTask as AgentTask,
+    );
 
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",
@@ -164,7 +181,9 @@ describe("POST /api/v1/agent/tasks", () => {
       error: "Command not found",
     };
 
-    vi.mocked(prisma.agentTask.update).mockResolvedValue(mockUpdatedTask as AgentTask);
+    vi.mocked(prisma.agentTask.update).mockResolvedValue(
+      mockUpdatedTask as AgentTask,
+    );
 
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",
@@ -200,7 +219,9 @@ describe("POST /api/v1/agent/tasks", () => {
       status: "PROCESSING",
     };
 
-    vi.mocked(prisma.agentTask.update).mockResolvedValue(mockUpdatedTask as AgentTask);
+    vi.mocked(prisma.agentTask.update).mockResolvedValue(
+      mockUpdatedTask as AgentTask,
+    );
 
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",
@@ -276,9 +297,13 @@ describe("POST /api/v1/agent/tasks", () => {
   });
 
   it("should handle server errors during update", async () => {
-    vi.mocked(prisma.agentTask.update).mockRejectedValue(new Error("Database connection failed"));
+    vi.mocked(prisma.agentTask.update).mockRejectedValue(
+      new Error("Database connection failed"),
+    );
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",
@@ -306,7 +331,9 @@ describe("POST /api/v1/agent/tasks", () => {
       new Error("Record to update not found"),
     );
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",

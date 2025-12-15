@@ -45,7 +45,10 @@ export type { EnhanceImageInput };
  * Safely update the job's current stage with error handling.
  * Stage updates are non-critical - failures are logged but don't block processing.
  */
-async function updateJobStage(jobId: string, stage: PipelineStage): Promise<void> {
+async function updateJobStage(
+  jobId: string,
+  stage: PipelineStage,
+): Promise<void> {
   try {
     await prisma.imageEnhancementJob.update({
       where: { id: jobId },
@@ -99,13 +102,18 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     console.log(`[Dev Enhancement] Stage 1: Analyzing image with vision model`);
     await updateJobStage(jobId, PipelineStage.ANALYZING);
     const imageBase64ForAnalysis = imageBuffer.toString("base64");
-    const analysisResult = await analyzeImageV2(imageBase64ForAnalysis, mimeType);
+    const analysisResult = await analyzeImageV2(
+      imageBase64ForAnalysis,
+      mimeType,
+    );
 
     // Save analysis to database
     await prisma.imageEnhancementJob.update({
       where: { id: jobId },
       data: {
-        analysisResult: JSON.parse(JSON.stringify(analysisResult.structuredAnalysis)),
+        analysisResult: JSON.parse(
+          JSON.stringify(analysisResult.structuredAnalysis),
+        ),
         analysisSource: DEFAULT_MODEL,
       },
     });
@@ -124,7 +132,9 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     if (
       analysisResult.structuredAnalysis.cropping.isCroppingNeeded &&
       analysisResult.structuredAnalysis.cropping.suggestedCrop &&
-      validateCropDimensions(analysisResult.structuredAnalysis.cropping.suggestedCrop)
+      validateCropDimensions(
+        analysisResult.structuredAnalysis.cropping.suggestedCrop,
+      )
     ) {
       console.log(
         `[Dev Enhancement] Stage 2: Auto-cropping image (reason: ${analysisResult.structuredAnalysis.cropping.cropReason})`,
@@ -165,7 +175,10 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
             `[Dev Enhancement] Auto-crop applied: ${cropRegion.width}x${cropRegion.height}`,
           );
         } catch (cropError) {
-          console.warn(`[Dev Enhancement] Auto-crop failed, continuing with original:`, cropError);
+          console.warn(
+            `[Dev Enhancement] Auto-crop failed, continuing with original:`,
+            cropError,
+          );
         }
       }
     }
@@ -184,9 +197,13 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     }
 
     // Step 5: STAGE 3 - Build dynamic enhancement prompt
-    console.log(`[Dev Enhancement] Stage 3: Building dynamic enhancement prompt`);
+    console.log(
+      `[Dev Enhancement] Stage 3: Building dynamic enhancement prompt`,
+    );
     await updateJobStage(jobId, PipelineStage.PROMPTING);
-    const dynamicPrompt = buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
+    const dynamicPrompt = buildDynamicEnhancementPrompt(
+      analysisResult.structuredAnalysis,
+    );
 
     // Step 6: Prepare image for Gemini (pad to square)
     console.log(`[Dev Enhancement] Preparing image for Gemini`);
@@ -231,7 +248,11 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     );
 
     // Calculate target dimensions based on tier
-    const { targetWidth, targetHeight } = calculateTargetDimensions(tier, width, height);
+    const { targetWidth, targetHeight } = calculateTargetDimensions(
+      tier,
+      width,
+      height,
+    );
 
     // Crop and resize
     const finalBuffer = await sharp(enhancedBuffer)
@@ -301,7 +322,10 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     );
 
     if (!refundResult.success) {
-      console.error("[Dev Enhancement] Failed to refund tokens:", refundResult.error);
+      console.error(
+        "[Dev Enhancement] Failed to refund tokens:",
+        refundResult.error,
+      );
     }
 
     // Update job as failed and refunded

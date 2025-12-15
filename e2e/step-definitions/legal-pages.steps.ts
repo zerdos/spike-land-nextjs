@@ -3,13 +3,16 @@ import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
 // Click anchor links in table of contents
-When("I click the {string} anchor link", async function(this: CustomWorld, linkText: string) {
-  const link = this.page.getByRole("link", { name: linkText });
-  await expect(link).toBeVisible();
-  await link.click();
-  // Wait a moment for smooth scroll
-  await this.page.waitForTimeout(500);
-});
+When(
+  "I click the {string} anchor link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: linkText });
+    await expect(link).toBeVisible();
+    await link.click();
+    // Wait a moment for smooth scroll
+    await this.page.waitForTimeout(500);
+  },
+);
 
 // Verify page scrolled to section
 Then(

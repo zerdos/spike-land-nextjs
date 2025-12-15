@@ -49,7 +49,8 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Platform overview and quick actions")).toBeInTheDocument();
+    expect(screen.getByText("Platform overview and quick actions"))
+      .toBeInTheDocument();
   });
 
   it("should render metrics cards with initial values", () => {
@@ -135,14 +136,16 @@ describe("AdminDashboardClient", () => {
   it("should render Pause button and Live badge when polling is active", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    expect(screen.getByRole("button", { name: "Pause auto-refresh" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pause auto-refresh" }))
+      .toBeInTheDocument();
     expect(screen.getAllByText("Live")).toHaveLength(2);
   });
 
   it("should render Refresh button", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    expect(screen.getByRole("button", { name: "Refresh data" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh data" }))
+      .toBeInTheDocument();
   });
 
   it("should toggle polling when Pause/Resume button is clicked", async () => {
@@ -150,16 +153,22 @@ describe("AdminDashboardClient", () => {
 
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    const pauseButton = screen.getByRole("button", { name: "Pause auto-refresh" });
+    const pauseButton = screen.getByRole("button", {
+      name: "Pause auto-refresh",
+    });
     await user.click(pauseButton);
 
-    expect(screen.getByRole("button", { name: "Resume auto-refresh" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Resume auto-refresh" }))
+      .toBeInTheDocument();
     expect(screen.queryAllByText("Live")).toHaveLength(0);
 
-    const resumeButton = screen.getByRole("button", { name: "Resume auto-refresh" });
+    const resumeButton = screen.getByRole("button", {
+      name: "Resume auto-refresh",
+    });
     await user.click(resumeButton);
 
-    expect(screen.getByRole("button", { name: "Pause auto-refresh" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pause auto-refresh" }))
+      .toBeInTheDocument();
     expect(screen.getAllByText("Live")).toHaveLength(2);
   });
 
@@ -247,7 +256,9 @@ describe("AdminDashboardClient", () => {
 
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    const pauseButton = screen.getByRole("button", { name: "Pause auto-refresh" });
+    const pauseButton = screen.getByRole("button", {
+      name: "Pause auto-refresh",
+    });
     await user.click(pauseButton);
 
     vi.mocked(fetch).mockClear();
@@ -345,30 +356,36 @@ describe("AdminDashboardClient", () => {
   it("should have correct href for each quick link", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    expect(screen.getByRole("link", { name: /User Analytics/i })).toHaveAttribute(
-      "href",
-      "/admin/analytics",
-    );
-    expect(screen.getByRole("link", { name: /Token Economics/i })).toHaveAttribute(
-      "href",
-      "/admin/tokens",
-    );
-    expect(screen.getByRole("link", { name: /System Health/i })).toHaveAttribute(
-      "href",
-      "/admin/system",
-    );
-    expect(screen.getByRole("link", { name: /Voucher Management/i })).toHaveAttribute(
-      "href",
-      "/admin/vouchers",
-    );
-    expect(screen.getByRole("link", { name: /User Management/i })).toHaveAttribute(
-      "href",
-      "/admin/users",
-    );
-    expect(screen.getByRole("link", { name: /Photo Gallery/i })).toHaveAttribute(
-      "href",
-      "/admin/photos",
-    );
+    expect(screen.getByRole("link", { name: /User Analytics/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/analytics",
+      );
+    expect(screen.getByRole("link", { name: /Token Economics/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/tokens",
+      );
+    expect(screen.getByRole("link", { name: /System Health/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/system",
+      );
+    expect(screen.getByRole("link", { name: /Voucher Management/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/vouchers",
+      );
+    expect(screen.getByRole("link", { name: /User Management/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/users",
+      );
+    expect(screen.getByRole("link", { name: /Photo Gallery/i }))
+      .toHaveAttribute(
+        "href",
+        "/admin/photos",
+      );
   });
 
   it("should handle unknown error type", async () => {

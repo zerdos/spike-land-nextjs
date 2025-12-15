@@ -15,7 +15,8 @@ describe("SignInButton Component", () => {
 
   it("should render button with default content", () => {
     render(<SignInButton />);
-    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in/i }))
+      .toBeInTheDocument();
   });
 
   it("should render LogIn icon with default content", () => {
@@ -27,7 +28,8 @@ describe("SignInButton Component", () => {
 
   it("should render custom children when provided", () => {
     render(<SignInButton>Custom Sign In Text</SignInButton>);
-    expect(screen.getByRole("button", { name: "Custom Sign In Text" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Custom Sign In Text" }))
+      .toBeInTheDocument();
   });
 
   it("should apply custom className", () => {

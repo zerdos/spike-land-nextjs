@@ -2,7 +2,8 @@
 
 ## Overview
 
-Successfully implemented dual camera streaming feature that allows clients to stream both front and back cameras simultaneously to the display.
+Successfully implemented dual camera streaming feature that allows clients to
+stream both front and back cameras simultaneously to the display.
 
 ## Implementation Details
 
@@ -29,7 +30,8 @@ interface CameraStream {
 - **`frontCamera`**: Manages front camera ('user' facing mode) state
 - **`backCamera`**: Manages back camera ('environment' facing mode) state
 - **`isDualCameraMode`**: Boolean flag to toggle dual camera mode
-- **`frontVideoRef` / `backVideoRef`**: Separate video element refs for each camera
+- **`frontVideoRef` / `backVideoRef`**: Separate video element refs for each
+  camera
 
 ### 2. Core Functionality
 
@@ -40,7 +42,8 @@ interface CameraStream {
 - **Storage**: Preference saved to `localStorage` with key `dualCameraMode`
 - **Behavior**:
   - When enabled: Starts both front and back cameras simultaneously
-  - When disabled: Switches back to single camera mode (respects previous `preferredCamera` setting)
+  - When disabled: Switches back to single camera mode (respects previous
+    `preferredCamera` setting)
 
 #### Multiple Stream Management
 
@@ -107,7 +110,10 @@ When dual camera mode is enabled, UI shows separate control sections:
 #### PeerJS Call Creation
 
 ```typescript
-const createCameraCall = (stream: MediaStream, cameraType: "front" | "back") => {
+const createCameraCall = (
+  stream: MediaStream,
+  cameraType: "front" | "back",
+) => {
   const call = peerRef.current.call(displayId, stream);
 
   call.on("close", () => {
@@ -144,20 +150,23 @@ const createCameraCall = (stream: MediaStream, cameraType: "front" | "back") => 
 
 - Existing users: Default to single camera mode
 - No breaking changes to API or display page
-- Display page already supports multiple clients, so dual streams work seamlessly
+- Display page already supports multiple clients, so dual streams work
+  seamlessly
 
 ### 6. Error Handling
 
 #### Camera-Specific Errors
 
-- Connection failures show which camera failed: "Front camera connection failed" / "Back camera connection failed"
+- Connection failures show which camera failed: "Front camera connection failed"
+  / "Back camera connection failed"
 - Graceful degradation: If one camera fails, the other continues working
 - Permission errors detected and displayed to user
 
 #### Error States
 
 - No cameras available: Shows full-screen error
-- One camera fails in dual mode: Error banner with dismiss option, other camera continues
+- One camera fails in dual mode: Error banner with dismiss option, other camera
+  continues
 - Screen share fails: Error banner, returns to previous mode
 
 ### 7. localStorage Keys Used
@@ -173,11 +182,14 @@ const createCameraCall = (stream: MediaStream, cameraType: "front" | "back") => 
 
 ### 9. Display Page Compatibility
 
-The display page (`/display`) already supports multiple concurrent client connections. Each camera stream from a client is treated as a separate connection:
+The display page (`/display`) already supports multiple concurrent client
+connections. Each camera stream from a client is treated as a separate
+connection:
 
 - Display shows each stream in the optimized grid layout
 - Peer IDs are used to track connections
-- When dual camera mode is enabled, one client sends two streams (appearing as two separate videos on display)
+- When dual camera mode is enabled, one client sends two streams (appearing as
+  two separate videos on display)
 - The display page requires **no changes** to support this feature
 
 ## Usage Instructions
@@ -271,7 +283,8 @@ open http://localhost:3000/display
 
 ## Next Steps
 
-1. **Update Unit Tests**: Rewrite tests in `src/app/client/page.test.tsx` to cover:
+1. **Update Unit Tests**: Rewrite tests in `src/app/client/page.test.tsx` to
+   cover:
    - Dual camera mode toggle
    - Independent camera controls
    - Multiple PeerJS calls
@@ -296,7 +309,8 @@ open http://localhost:3000/display
 
 ## Breaking Changes
 
-**None** - This is a fully backward-compatible addition. Existing single-camera functionality is preserved.
+**None** - This is a fully backward-compatible addition. Existing single-camera
+functionality is preserved.
 
 ## API Changes
 

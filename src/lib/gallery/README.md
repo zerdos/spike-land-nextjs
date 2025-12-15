@@ -1,20 +1,26 @@
 # Gallery Utilities
 
-This directory contains utilities for working with the featured gallery and public photo collections.
+This directory contains utilities for working with the featured gallery and
+public photo collections.
 
 ## Super Admin Public Photos
 
 ### `getSuperAdminPublicPhotos(limit?: number): Promise<FeaturedPhoto[]>`
 
-Fetches public album photos from the super admin user for display in featured galleries or public showcases.
+Fetches public album photos from the super admin user for display in featured
+galleries or public showcases.
 
 #### Features
 
 - **Server-side only**: Intended for use in Server Components or API routes
-- **Public albums only**: Only fetches photos from albums with `PUBLIC` privacy setting
-- **Completed enhancements only**: Only returns photos with successfully enhanced versions
-- **Latest enhancement**: Uses the most recent completed enhancement job for each image
-- **Configurable limit**: Optional parameter to limit the number of photos returned
+- **Public albums only**: Only fetches photos from albums with `PUBLIC` privacy
+  setting
+- **Completed enhancements only**: Only returns photos with successfully
+  enhanced versions
+- **Latest enhancement**: Uses the most recent completed enhancement job for
+  each image
+- **Configurable limit**: Optional parameter to limit the number of photos
+  returned
 - **Graceful fallback**: Returns empty array if super admin doesn't exist
 
 #### Return Type
@@ -148,7 +154,8 @@ For a photo to be included in the results:
 1. Must be in a PUBLIC album owned by the super admin
 2. Must have at least one COMPLETED enhancement job
 3. Enhancement job must have a non-null `enhancedUrl`
-4. Enhancement job must have valid dimensions (`enhancedWidth` and `enhancedHeight`)
+4. Enhancement job must have valid dimensions (`enhancedWidth` and
+   `enhancedHeight`)
 
 **Performance Considerations**
 

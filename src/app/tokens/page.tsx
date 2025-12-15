@@ -23,11 +23,15 @@ import { useState } from "react";
 
 // Calculate value comparison for packages
 function getPackageValueInfo(id: TokenPackageId) {
-  const basePrice = TOKEN_PACKAGES.starter.price / TOKEN_PACKAGES.starter.tokens;
+  const basePrice = TOKEN_PACKAGES.starter.price /
+    TOKEN_PACKAGES.starter.tokens;
   const currentPrice = TOKEN_PACKAGES[id].price / TOKEN_PACKAGES[id].tokens;
   const savings = Math.round((1 - currentPrice / basePrice) * 100);
 
-  const badges: { label: string; variant: "default" | "secondary" | "outline"; }[] = [];
+  const badges: {
+    label: string;
+    variant: "default" | "secondary" | "outline";
+  }[] = [];
 
   if (id === "pro") {
     badges.push({ label: "Most Popular", variant: "default" });
@@ -127,7 +131,9 @@ export default function TokensPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-5xl font-bold text-primary">
-                  {balanceLoading ? <RefreshCw className="h-10 w-10 animate-spin" /> : balance}
+                  {balanceLoading
+                    ? <RefreshCw className="h-10 w-10 animate-spin" />
+                    : balance}
                 </div>
                 <p className="text-muted-foreground mt-1">tokens available</p>
                 {timeUntilNextRegeneration && (
@@ -151,16 +157,28 @@ export default function TokensPage() {
                 </p>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-2xl font-bold">{estimatedEnhancements.tier1K}</div>
-                    <div className="text-xs text-muted-foreground">1K quality</div>
+                    <div className="text-2xl font-bold">
+                      {estimatedEnhancements.tier1K}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      1K quality
+                    </div>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-2xl font-bold">{estimatedEnhancements.tier2K}</div>
-                    <div className="text-xs text-muted-foreground">2K quality</div>
+                    <div className="text-2xl font-bold">
+                      {estimatedEnhancements.tier2K}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      2K quality
+                    </div>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-2xl font-bold">{estimatedEnhancements.tier4K}</div>
-                    <div className="text-xs text-muted-foreground">4K quality</div>
+                    <div className="text-2xl font-bold">
+                      {estimatedEnhancements.tier4K}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      4K quality
+                    </div>
                   </div>
                 </div>
               </div>
@@ -179,15 +197,21 @@ export default function TokensPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Total Spent</p>
-              <p className="text-xl font-semibold">{stats?.totalSpent ?? 0} tokens</p>
+              <p className="text-xl font-semibold">
+                {stats?.totalSpent ?? 0} tokens
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Earned</p>
-              <p className="text-xl font-semibold">{stats?.totalEarned ?? 0} tokens</p>
+              <p className="text-xl font-semibold">
+                {stats?.totalEarned ?? 0} tokens
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Transactions</p>
-              <p className="text-xl font-semibold">{stats?.transactionCount ?? 0}</p>
+              <p className="text-xl font-semibold">
+                {stats?.transactionCount ?? 0}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -198,7 +222,9 @@ export default function TokensPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Redeem Voucher</CardTitle>
-            <CardDescription>Have a voucher code? Enter it below to add tokens.</CardDescription>
+            <CardDescription>
+              Have a voucher code? Enter it below to add tokens.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <VoucherInput onRedeemed={() => refetch()} />

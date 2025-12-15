@@ -64,7 +64,9 @@ export async function GET() {
     }
 
     // Failure rate by tier (last 7 days)
-    let failuresByTier: Array<{ tier: EnhancementTier; status: JobStatus; _count: number; }> = [];
+    let failuresByTier: Array<
+      { tier: EnhancementTier; status: JobStatus; _count: number; }
+    > = [];
     try {
       const result = await prisma.imageEnhancementJob.groupBy({
         by: ["tier", "status"],
@@ -145,12 +147,19 @@ export async function GET() {
     }
 
     // Calculate failure rates
-    type FailureByTier = { tier: EnhancementTier; status: JobStatus; _count: number; };
+    type FailureByTier = {
+      tier: EnhancementTier;
+      status: JobStatus;
+      _count: number;
+    };
     const tierStats = Object.values(EnhancementTier).map((tier) => {
       const tierJobs = Array.isArray(failuresByTier)
         ? failuresByTier.filter((f: FailureByTier) => f.tier === tier)
         : [];
-      const total = tierJobs.reduce((sum: number, j: FailureByTier) => sum + j._count, 0);
+      const total = tierJobs.reduce(
+        (sum: number, j: FailureByTier) => sum + j._count,
+        0,
+      );
       const failed = tierJobs.find((j: FailureByTier) => j.status === JobStatus.FAILED)?._count ||
         0;
       return {
@@ -169,7 +178,9 @@ export async function GET() {
         }))
         : [],
       avgProcessingTime: Array.isArray(avgProcessingTime)
-        ? avgProcessingTime.map((row: { tier: string; avg_seconds: number; }) => ({
+        ? avgProcessingTime.map((
+          row: { tier: string; avg_seconds: number; },
+        ) => ({
           tier: row.tier,
           seconds: Math.round(row.avg_seconds || 0),
         }))
@@ -184,7 +195,12 @@ export async function GET() {
         : [],
       recentFailures: Array.isArray(recentFailures)
         ? recentFailures.map((
-          job: { id: string; tier: EnhancementTier; errorMessage: string | null; createdAt: Date; },
+          job: {
+            id: string;
+            tier: EnhancementTier;
+            errorMessage: string | null;
+            createdAt: Date;
+          },
         ) => ({
           id: job.id,
           tier: job.tier,

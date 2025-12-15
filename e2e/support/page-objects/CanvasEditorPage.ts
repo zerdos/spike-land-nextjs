@@ -36,7 +36,9 @@ export class CanvasEditorPage {
 
   // Canvas Container Elements
   async getCanvasContainer() {
-    return this.page.locator('[data-testid="canvas-container"], .canvas-container, div.bg-black')
+    return this.page.locator(
+      '[data-testid="canvas-container"], .canvas-container, div.bg-black',
+    )
       .first();
   }
 
@@ -58,15 +60,21 @@ export class CanvasEditorPage {
   }
 
   async getZoomInButton() {
-    return this.page.locator('[data-testid="zoom-in-button"], button[aria-label*="zoom in" i]');
+    return this.page.locator(
+      '[data-testid="zoom-in-button"], button[aria-label*="zoom in" i]',
+    );
   }
 
   async getZoomOutButton() {
-    return this.page.locator('[data-testid="zoom-out-button"], button[aria-label*="zoom out" i]');
+    return this.page.locator(
+      '[data-testid="zoom-out-button"], button[aria-label*="zoom out" i]',
+    );
   }
 
   async getResetZoomButton() {
-    return this.page.locator('[data-testid="reset-zoom-button"], button[aria-label*="reset" i]');
+    return this.page.locator(
+      '[data-testid="reset-zoom-button"], button[aria-label*="reset" i]',
+    );
   }
 
   async getZoomLevelIndicator() {
@@ -74,11 +82,15 @@ export class CanvasEditorPage {
   }
 
   async getNextArrowButton() {
-    return this.page.locator('[data-testid="next-button"], button[aria-label*="next" i]');
+    return this.page.locator(
+      '[data-testid="next-button"], button[aria-label*="next" i]',
+    );
   }
 
   async getPreviousArrowButton() {
-    return this.page.locator('[data-testid="prev-button"], button[aria-label*="previous" i]');
+    return this.page.locator(
+      '[data-testid="prev-button"], button[aria-label*="previous" i]',
+    );
   }
 
   async getImageCounter() {
@@ -99,11 +111,15 @@ export class CanvasEditorPage {
 
   // Slideshow Controls
   async getPlayButton() {
-    return this.page.locator('[data-testid="play-button"], button[aria-label*="play" i]');
+    return this.page.locator(
+      '[data-testid="play-button"], button[aria-label*="play" i]',
+    );
   }
 
   async getPauseButton() {
-    return this.page.locator('[data-testid="pause-button"], button[aria-label*="pause" i]');
+    return this.page.locator(
+      '[data-testid="pause-button"], button[aria-label*="pause" i]',
+    );
   }
 
   async getSlideshowSettings() {
@@ -111,7 +127,9 @@ export class CanvasEditorPage {
   }
 
   async getIntervalSelector() {
-    return this.page.locator('[data-testid="interval-selector"], [data-testid="interval-input"]');
+    return this.page.locator(
+      '[data-testid="interval-selector"], [data-testid="interval-input"]',
+    );
   }
 
   async getSlideshowControls() {
@@ -120,16 +138,22 @@ export class CanvasEditorPage {
 
   // Rotation Controls
   async getRotateClockwiseButton() {
-    return this.page.locator('[data-testid="rotate-cw-button"], button[aria-label*="clockwise" i]');
+    return this.page.locator(
+      '[data-testid="rotate-cw-button"], button[aria-label*="clockwise" i]',
+    );
   }
 
   async getRotateCounterClockwiseButton() {
-    return this.page.locator('[data-testid="rotate-ccw-button"], button[aria-label*="counter" i]');
+    return this.page.locator(
+      '[data-testid="rotate-ccw-button"], button[aria-label*="counter" i]',
+    );
   }
 
   // Share Elements
   async getShareButton() {
-    return this.page.locator('[data-testid="share-button"], button[aria-label*="share" i]');
+    return this.page.locator(
+      '[data-testid="share-button"], button[aria-label*="share" i]',
+    );
   }
 
   async getShareDialog() {
@@ -146,7 +170,9 @@ export class CanvasEditorPage {
 
   // Loading States
   async getLoadingIndicator() {
-    return this.page.locator('[data-testid="loading-indicator"], .loading, .spinner');
+    return this.page.locator(
+      '[data-testid="loading-indicator"], .loading, .spinner',
+    );
   }
 
   async getImageErrorPlaceholder() {
@@ -171,7 +197,9 @@ export class CanvasEditorPage {
   }
 
   async pressArrowKey(direction: "left" | "right") {
-    await this.page.keyboard.press(direction === "left" ? "ArrowLeft" : "ArrowRight");
+    await this.page.keyboard.press(
+      direction === "left" ? "ArrowLeft" : "ArrowRight",
+    );
     await this.page.waitForTimeout(300);
   }
 
@@ -275,9 +303,16 @@ export class CanvasEditorPage {
     const canvas = await this.getCanvasContainer();
     const box = await canvas.boundingBox();
     if (box) {
-      await this.page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2);
+      await this.page.mouse.move(
+        box.x + box.width * 0.8,
+        box.y + box.height / 2,
+      );
       await this.page.mouse.down();
-      await this.page.mouse.move(box.x + box.width * 0.2, box.y + box.height / 2, { steps: 10 });
+      await this.page.mouse.move(
+        box.x + box.width * 0.2,
+        box.y + box.height / 2,
+        { steps: 10 },
+      );
       await this.page.mouse.up();
     }
     await this.page.waitForTimeout(300);
@@ -287,9 +322,16 @@ export class CanvasEditorPage {
     const canvas = await this.getCanvasContainer();
     const box = await canvas.boundingBox();
     if (box) {
-      await this.page.mouse.move(box.x + box.width * 0.2, box.y + box.height / 2);
+      await this.page.mouse.move(
+        box.x + box.width * 0.2,
+        box.y + box.height / 2,
+      );
       await this.page.mouse.down();
-      await this.page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2, { steps: 10 });
+      await this.page.mouse.move(
+        box.x + box.width * 0.8,
+        box.y + box.height / 2,
+        { steps: 10 },
+      );
       await this.page.mouse.up();
     }
     await this.page.waitForTimeout(300);
@@ -327,7 +369,9 @@ export class CanvasEditorPage {
 
   async verifyImageCounter(expected: string) {
     const counter = await this.getImageCounter();
-    await expect(counter).toContainText(expected, { timeout: TIMEOUTS.DEFAULT });
+    await expect(counter).toContainText(expected, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 
   async verifyZoomLevel(level: string) {
@@ -346,7 +390,8 @@ export class CanvasEditorPage {
     const image = await this.getMainImage();
     const transform = await image.evaluate((el) => window.getComputedStyle(el).transform);
     // Original size either has no transform or matrix(1, 0, 0, 1, 0, 0)
-    expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1")).toBeTruthy();
+    expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1"))
+      .toBeTruthy();
   }
 
   async verifyImageRotation(degrees: number) {
@@ -354,7 +399,8 @@ export class CanvasEditorPage {
     const transform = await image.evaluate((el) => window.getComputedStyle(el).transform);
     // Rotation transforms create matrix values
     if (degrees === 0) {
-      expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1")).toBeTruthy();
+      expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1"))
+        .toBeTruthy();
     } else {
       expect(transform).toContain("matrix");
     }

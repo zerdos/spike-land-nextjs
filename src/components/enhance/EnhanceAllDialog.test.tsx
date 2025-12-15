@@ -56,7 +56,8 @@ describe("EnhanceAllDialog Component", () => {
   it("should display tier descriptions", () => {
     render(<EnhanceAllDialog {...defaultProps} />);
 
-    expect(screen.getByText("Fast processing, good for previews")).toBeInTheDocument();
+    expect(screen.getByText("Fast processing, good for previews"))
+      .toBeInTheDocument();
     expect(screen.getByText("Balanced quality and speed")).toBeInTheDocument();
     expect(screen.getByText("Maximum quality output")).toBeInTheDocument();
   });
@@ -90,7 +91,8 @@ describe("EnhanceAllDialog Component", () => {
     render(<EnhanceAllDialog {...defaultProps} />);
 
     expect(screen.getByRole("checkbox")).toBeInTheDocument();
-    expect(screen.getByText(/skip already enhanced at this tier/i)).toBeInTheDocument();
+    expect(screen.getByText(/skip already enhanced at this tier/i))
+      .toBeInTheDocument();
   });
 
   it("should show already enhanced count when greater than 0", () => {
@@ -177,7 +179,8 @@ describe("EnhanceAllDialog Component", () => {
       />,
     );
 
-    expect(screen.getByText(/all photos have already been enhanced/i)).toBeInTheDocument();
+    expect(screen.getByText(/all photos have already been enhanced/i))
+      .toBeInTheDocument();
   });
 
   it("should disable confirm button when no images to enhance", () => {
@@ -188,7 +191,9 @@ describe("EnhanceAllDialog Component", () => {
       />,
     );
 
-    const confirmButton = screen.getByRole("button", { name: /enhance 0 photos/i });
+    const confirmButton = screen.getByRole("button", {
+      name: /enhance 0 photos/i,
+    });
     expect(confirmButton).toBeDisabled();
   });
 
@@ -197,7 +202,9 @@ describe("EnhanceAllDialog Component", () => {
     const onConfirm = vi.fn();
     render(<EnhanceAllDialog {...defaultProps} onConfirm={onConfirm} />);
 
-    const confirmButton = screen.getByRole("button", { name: /enhance 7 photos/i });
+    const confirmButton = screen.getByRole("button", {
+      name: /enhance 7 photos/i,
+    });
     await user.click(confirmButton);
 
     expect(onConfirm).toHaveBeenCalledWith("TIER_2K", true);
@@ -214,7 +221,9 @@ describe("EnhanceAllDialog Component", () => {
     const checkbox = screen.getByRole("checkbox");
     await user.click(checkbox);
 
-    const confirmButton = screen.getByRole("button", { name: /enhance 10 photos/i });
+    const confirmButton = screen.getByRole("button", {
+      name: /enhance 10 photos/i,
+    });
     await user.click(confirmButton);
 
     expect(onConfirm).toHaveBeenCalledWith("TIER_1K", false);
@@ -287,12 +296,14 @@ describe("EnhanceAllDialog Component", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /enhance 1 photo$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /enhance 1 photo$/i }))
+      .toBeInTheDocument();
   });
 
   it("should display dialog description", () => {
     render(<EnhanceAllDialog {...defaultProps} />);
 
-    expect(screen.getByText("Batch enhance all photos in this album with AI")).toBeInTheDocument();
+    expect(screen.getByText("Batch enhance all photos in this album with AI"))
+      .toBeInTheDocument();
   });
 });

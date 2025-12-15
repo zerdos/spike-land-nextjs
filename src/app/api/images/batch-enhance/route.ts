@@ -38,7 +38,9 @@ export async function POST(request: NextRequest) {
 
     if (imageIds.length > MAX_BATCH_SIZE) {
       return NextResponse.json(
-        { error: `Maximum ${MAX_BATCH_SIZE} images allowed per batch enhancement` },
+        {
+          error: `Maximum ${MAX_BATCH_SIZE} images allowed per batch enhancement`,
+        },
         { status: 400 },
       );
     }
@@ -141,7 +143,9 @@ export async function POST(request: NextRequest) {
     console.error("Error in batch enhance API:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Batch enhancement failed",
+        error: error instanceof Error
+          ? error.message
+          : "Batch enhancement failed",
       },
       { status: 500 },
     );

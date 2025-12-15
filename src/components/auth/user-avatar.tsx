@@ -35,15 +35,23 @@ export function UserAvatar({ className }: UserAvatarProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className={`cursor-pointer ${className}`} data-testid="user-avatar">
-          <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+        <Avatar
+          className={`cursor-pointer ${className}`}
+          data-testid="user-avatar"
+        >
+          <AvatarImage
+            src={session.user.image || undefined}
+            alt={session.user.name || "User"}
+          />
           <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{session.user.name || "User"}</p>
+            <p className="text-sm font-medium leading-none">
+              {session.user.name || "User"}
+            </p>
             <p className="text-xs leading-none text-muted-foreground">
               {session.user.email || "No email"}
             </p>

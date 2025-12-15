@@ -4,7 +4,9 @@ Complete reference for album management endpoints in the Spike Land API.
 
 ## Overview
 
-The Album API provides endpoints for creating, managing, and enhancing image albums. All protected endpoints require authentication via session cookie (NextAuth.js).
+The Album API provides endpoints for creating, managing, and enhancing image
+albums. All protected endpoints require authentication via session cookie
+(NextAuth.js).
 
 **Base URL**:
 
@@ -13,7 +15,8 @@ The Album API provides endpoints for creating, managing, and enhancing image alb
 
 ## Authentication
 
-All protected endpoints require a valid session. Authentication is handled via NextAuth.js session cookies automatically included in requests.
+All protected endpoints require a valid session. Authentication is handled via
+NextAuth.js session cookies automatically included in requests.
 
 ### Making Authenticated Requests
 
@@ -348,7 +351,8 @@ console.log(`Share link: ${album.shareToken}`);
 
 **Important Notes**:
 
-- When changing privacy from PRIVATE to UNLISTED/PUBLIC, a share token is automatically generated if it doesn't exist
+- When changing privacy from PRIVATE to UNLISTED/PUBLIC, a share token is
+  automatically generated if it doesn't exist
 - When changing privacy to PRIVATE, the share token is removed
 - The cover image must be an image that already exists in the album
 
@@ -405,7 +409,8 @@ if (success) {
 }
 ```
 
-**Warning**: This operation permanently deletes the album and all associated images. This action cannot be undone.
+**Warning**: This operation permanently deletes the album and all associated
+images. This action cannot be undone.
 
 **Error Responses**:
 
@@ -534,7 +539,8 @@ if (response.status === 402) {
 - Enhancement is asynchronous. Images will be enhanced in the background.
 - Tokens are consumed immediately (upfront) when the batch is queued.
 - If enhancement fails, tokens are refunded to the user.
-- Skips already enhanced images by default (use `skipAlreadyEnhanced: false` to re-enhance).
+- Skips already enhanced images by default (use `skipAlreadyEnhanced: false` to
+  re-enhance).
 
 **Error Responses**:
 
@@ -693,4 +699,5 @@ All endpoints return error responses in this format:
 
 ## API Versioning
 
-This documentation covers API v1.0.0. The API uses semantic versioning. Breaking changes will only be introduced in major version updates (v2.0.0, etc.).
+This documentation covers API v1.0.0. The API uses semantic versioning. Breaking
+changes will only be introduced in major version updates (v2.0.0, etc.).

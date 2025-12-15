@@ -60,7 +60,9 @@ describe("Album Detail API", () => {
         _count: { albumImages: 0 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+      );
       const response = await GET(request, createParams("album_1"));
       const data = await response.json();
 
@@ -86,7 +88,9 @@ describe("Album Detail API", () => {
         _count: { albumImages: 0 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+      );
       const response = await GET(request, createParams("album_1"));
       const data = await response.json();
 
@@ -113,7 +117,9 @@ describe("Album Detail API", () => {
         _count: { albumImages: 0 },
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1");
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+      );
       const response = await GET(request, createParams("album_1"));
       const data = await response.json();
 
@@ -193,10 +199,13 @@ describe("Album Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "Updated Name" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "Updated Name" }),
+        },
+      );
       const response = await PATCH(request, createParams("album_1"));
       const data = await response.json();
 
@@ -213,10 +222,13 @@ describe("Album Detail API", () => {
         shareToken: null,
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1", {
-        method: "PATCH",
-        body: JSON.stringify({ name: "  " }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: "  " }),
+        },
+      );
       const response = await PATCH(request, createParams("album_1"));
       const data = await response.json();
 
@@ -242,10 +254,13 @@ describe("Album Detail API", () => {
         updatedAt: new Date("2025-01-02"),
       });
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1", {
-        method: "PATCH",
-        body: JSON.stringify({ privacy: "PUBLIC" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ privacy: "PUBLIC" }),
+        },
+      );
       const response = await PATCH(request, createParams("album_1"));
       const data = await response.json();
 
@@ -311,15 +326,20 @@ describe("Album Detail API", () => {
       });
       (prisma.album.delete as Mock).mockResolvedValue({});
 
-      const request = new NextRequest("http://localhost:3000/api/albums/album_1", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/albums/album_1",
+        {
+          method: "DELETE",
+        },
+      );
       const response = await DELETE(request, createParams("album_1"));
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(prisma.album.delete).toHaveBeenCalledWith({ where: { id: "album_1" } });
+      expect(prisma.album.delete).toHaveBeenCalledWith({
+        where: { id: "album_1" },
+      });
     });
   });
 });

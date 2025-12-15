@@ -21,7 +21,8 @@ describe("ExportSelector", () => {
     render(<ExportSelector {...mockProps} />);
 
     expect(screen.getByText("Export Enhanced Image")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Download JPEG/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Download JPEG/i }))
+      .toBeInTheDocument();
   });
 
   it("should handle successful export", async () => {
@@ -36,7 +37,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     expect(screen.getByText("Exporting...")).toBeInTheDocument();
@@ -68,7 +71,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     await waitFor(() => {
@@ -81,7 +86,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     await waitFor(() => {
@@ -99,7 +106,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     expect(downloadButton).toBeDisabled();
@@ -126,7 +135,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     await waitFor(() => {
@@ -146,7 +157,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     await waitFor(() => {
@@ -164,7 +177,9 @@ describe("ExportSelector", () => {
 
     render(<ExportSelector {...mockProps} />);
 
-    const downloadButton = screen.getByRole("button", { name: /Download JPEG/i });
+    const downloadButton = screen.getByRole("button", {
+      name: /Download JPEG/i,
+    });
     fireEvent.click(downloadButton);
 
     await waitFor(() => {

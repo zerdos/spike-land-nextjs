@@ -1,7 +1,6 @@
 # Image Enhancement Feature Documentation
 
-> **Last Updated**: December 2025
-> **Status**: MVP Release
+> **Last Updated**: December 2025 **Status**: MVP Release
 
 ---
 
@@ -20,13 +19,19 @@
 
 ## Feature Overview
 
-The Image Enhancement feature enables users to upscale and improve the quality of their images using AI-powered enhancement through Google Gemini API. Users can enhance images at multiple quality tiers, each consuming a different number of tokens.
+The Image Enhancement feature enables users to upscale and improve the quality
+of their images using AI-powered enhancement through Google Gemini API. Users
+can enhance images at multiple quality tiers, each consuming a different number
+of tokens.
 
 ### Key Capabilities
 
-- **AI-Powered Enhancement**: Uses Google Gemini API for intelligent image upscaling
-- **Multiple Quality Tiers**: Three enhancement tiers offering different output resolutions
-- **Aspect Ratio Preservation**: Original image aspect ratio is maintained during enhancement
+- **AI-Powered Enhancement**: Uses Google Gemini API for intelligent image
+  upscaling
+- **Multiple Quality Tiers**: Three enhancement tiers offering different output
+  resolutions
+- **Aspect Ratio Preservation**: Original image aspect ratio is maintained
+  during enhancement
 - **Token-Based Pricing**: Transparent token consumption model
 - **Progress Tracking**: Track enhancement jobs in real-time
 - **Error Recovery**: Automatic token refund on failed enhancements
@@ -65,7 +70,8 @@ R2 Bucket Structure:
 
 ### 2. Enhancement Selection
 
-User selects an enhancement tier based on desired output quality and token budget.
+User selects an enhancement tier based on desired output quality and token
+budget.
 
 **Available Tiers:**
 
@@ -102,7 +108,8 @@ The backend processes the image through the enhancement pipeline.
 
 ### 4. Comparison & Export
 
-Users can compare original and enhanced versions side-by-side using a comparison slider tool.
+Users can compare original and enhanced versions side-by-side using a comparison
+slider tool.
 
 **Features:**
 
@@ -519,17 +526,19 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
       });
 
       if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get("Retry-After") || "30");
+        const retryAfter = parseInt(
+          response.headers.get("Retry-After") || "30",
+        );
         const backoffMs = retryAfter * 1000 * Math.pow(2, attempt - 1);
 
-        await new Promise(resolve => setTimeout(resolve, backoffMs));
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
         continue;
       }
 
       return response.json();
     } catch (error) {
       if (attempt === maxRetries) throw error;
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
     }
   }
 }
@@ -579,7 +588,8 @@ async function enhanceImageWithRetry(imageId, tier, maxRetries = 3) {
 
 ### Timeout Handling
 
-To ensure jobs don't get stuck indefinitely, the system implements timeout protection:
+To ensure jobs don't get stuck indefinitely, the system implements timeout
+protection:
 
 **Current Implementation:**
 
@@ -587,8 +597,8 @@ To ensure jobs don't get stuck indefinitely, the system implements timeout prote
 - All enhancement tiers share the same Vercel timeout limit
 - No tier-specific timeouts currently implemented
 
-**Planned Enhancements:**
-Future improvements may include tier-specific timeouts:
+**Planned Enhancements:** Future improvements may include tier-specific
+timeouts:
 
 - TIER_1K: 60 seconds (planned)
 - TIER_2K: 90 seconds (planned)

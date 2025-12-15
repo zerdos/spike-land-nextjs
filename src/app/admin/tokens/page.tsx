@@ -201,7 +201,8 @@ export default function TokenEconomicsPage() {
                   <div key={item.type}>
                     <div className="mb-1 flex justify-between text-sm">
                       <span className="capitalize">
-                        {item.type.replace("EARN_", "").replace("_", " ").toLowerCase()}
+                        {item.type.replace("EARN_", "").replace("_", " ")
+                          .toLowerCase()}
                       </span>
                       <span className="font-medium">
                         {item.total.toLocaleString()}
@@ -251,7 +252,8 @@ export default function TokenEconomicsPage() {
               Average Purchase Value
             </p>
             <p className="mt-1 text-2xl font-semibold">
-              ${(data.revenue.total / (data.packageSales.reduce((sum, p) => sum + p.sales, 0) || 1))
+              ${(data.revenue.total /
+                (data.packageSales.reduce((sum, p) => sum + p.sales, 0) || 1))
                 .toFixed(2)}
             </p>
           </div>

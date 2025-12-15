@@ -94,7 +94,9 @@ describe("GET /api/mcp/history", () => {
         hasMore: false,
       });
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -122,7 +124,9 @@ describe("GET /api/mcp/history", () => {
         resetAt: Date.now() + 30000,
       });
 
-      const request = createMockRequest({ Authorization: "Bearer sk_test_validkey" });
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
       const response = await GET(request);
       const body = await response.json();
 

@@ -266,7 +266,10 @@ describe("validateFiles", () => {
   it("should reject when exceeding max files", () => {
     const files = Array.from(
       { length: 25 },
-      (_, i) => new File([new ArrayBuffer(1024)], `test${i}.jpg`, { type: "image/jpeg" }),
+      (_, i) =>
+        new File([new ArrayBuffer(1024)], `test${i}.jpg`, {
+          type: "image/jpeg",
+        }),
     );
     const result = validateFiles(files);
     expect(result.valid).toBe(false);
@@ -276,7 +279,10 @@ describe("validateFiles", () => {
   it("should accept files within custom max files limit", () => {
     const files = Array.from(
       { length: 30 },
-      (_, i) => new File([new ArrayBuffer(1024)], `test${i}.jpg`, { type: "image/jpeg" }),
+      (_, i) =>
+        new File([new ArrayBuffer(1024)], `test${i}.jpg`, {
+          type: "image/jpeg",
+        }),
     );
     const result = validateFiles(files, { maxFiles: 30 });
     expect(result.valid).toBe(true);

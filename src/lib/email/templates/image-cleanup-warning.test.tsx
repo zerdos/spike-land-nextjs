@@ -53,7 +53,9 @@ describe("ImageCleanupWarningEmail", () => {
     const html = await render(<ImageCleanupWarningEmail {...defaultProps} />);
 
     expect(html).toContain("90-day image retention policy");
-    expect(html).toContain("automatically remove images that are older than 90 days");
+    expect(html).toContain(
+      "automatically remove images that are older than 90 days",
+    );
   });
 
   it("provide action items for users", async () => {

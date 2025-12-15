@@ -44,9 +44,13 @@ export function PipelinesClient({ initialPipelines }: PipelinesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<FormMode>("create");
-  const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
+  const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(
+    null,
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pipelineToDelete, setPipelineToDelete] = useState<PipelineData | null>(null);
+  const [pipelineToDelete, setPipelineToDelete] = useState<PipelineData | null>(
+    null,
+  );
 
   const filteredPipelines = pipelines.filter(
     (p) =>
@@ -107,7 +111,9 @@ export function PipelinesClient({ initialPipelines }: PipelinesClientProps) {
       setPipelineToDelete(null);
     } catch (error) {
       console.error("Delete error:", error);
-      alert(error instanceof Error ? error.message : "Failed to delete pipeline");
+      alert(
+        error instanceof Error ? error.message : "Failed to delete pipeline",
+      );
     }
   };
 
@@ -173,7 +179,11 @@ export function PipelinesClient({ initialPipelines }: PipelinesClientProps) {
     }
   };
 
-  const renderSection = (title: string, items: Pipeline[], showEmpty = true) => {
+  const renderSection = (
+    title: string,
+    items: Pipeline[],
+    showEmpty = true,
+  ) => {
     if (items.length === 0 && !showEmpty) return null;
 
     return (
@@ -274,8 +284,8 @@ export function PipelinesClient({ initialPipelines }: PipelinesClientProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Pipeline</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{pipelineToDelete?.name}&quot;? This action
-              cannot be undone.
+              Are you sure you want to delete &quot;{pipelineToDelete
+                ?.name}&quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

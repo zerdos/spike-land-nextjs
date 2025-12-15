@@ -125,7 +125,9 @@ export function useDragDropPhotos(
         // Success - notify parent component
         options?.onMoveComplete?.(draggedImageIds, albumId);
       } catch (error) {
-        const errorObj = error instanceof Error ? error : new Error("Unknown error");
+        const errorObj = error instanceof Error
+          ? error
+          : new Error("Unknown error");
 
         // Notify parent component of error (for rollback)
         options?.onMoveError?.(errorObj);

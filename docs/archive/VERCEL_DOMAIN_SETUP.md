@@ -1,6 +1,7 @@
 # Vercel Domain Setup for spike.land
 
-This guide explains how to configure custom domains for the Spike Land platform on Vercel.
+This guide explains how to configure custom domains for the Spike Land platform
+on Vercel.
 
 ## Domain Structure
 
@@ -36,10 +37,13 @@ Redirects are configured in `vercel.json` at the project root:
 
 ## Important Notes
 
-- **Production Deployment**: The main branch automatically deploys to `spike.land`
+- **Production Deployment**: The main branch automatically deploys to
+  `spike.land`
 - **Preview Deployments**: All other branches get unique preview URLs
-- **SSL Certificate**: Vercel automatically provisions and renews SSL certificates
-- **Propagation Time**: DNS changes may take up to 48 hours globally (usually faster)
+- **SSL Certificate**: Vercel automatically provisions and renews SSL
+  certificates
+- **Propagation Time**: DNS changes may take up to 48 hours globally (usually
+  faster)
 
 ## Verification
 
@@ -49,12 +53,16 @@ After adding the DNS records in Cloudflare (see CLOUDFLARE_DNS_SETUP.md):
 2. Vercel will automatically verify the domains
 3. Once verified, you'll see a green checkmark next to each domain
 4. Test the redirects:
-   - `https://pixel.spike.land` → should redirect to `https://spike.land/apps/pixel`
+   - `https://pixel.spike.land` → should redirect to
+     `https://spike.land/apps/pixel`
    - `https://spike.land` → should redirect to `https://spike.land`
 
 ## Troubleshooting
 
-- **Domain verification fails**: Double-check DNS records in Cloudflare match Vercel's requirements
-- **SSL certificate issues**: Ensure Cloudflare SSL mode is set to "Full" or "Full (strict)"
+- **Domain verification fails**: Double-check DNS records in Cloudflare match
+  Vercel's requirements
+- **SSL certificate issues**: Ensure Cloudflare SSL mode is set to "Full" or
+  "Full (strict)"
 - **Redirects not working**: Ensure `vercel.json` is committed and deployed
-- **Deployment not showing on custom domain**: Ensure the domain is set as "Production Domain" in Vercel settings
+- **Deployment not showing on custom domain**: Ensure the domain is set as
+  "Production Domain" in Vercel settings

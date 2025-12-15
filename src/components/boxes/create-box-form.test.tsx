@@ -85,7 +85,8 @@ describe("CreateBoxForm", () => {
       expect(screen.getByText("1. Select a Tier")).toBeInTheDocument();
       expect(screen.getByText("2. Name your Box")).toBeInTheDocument();
       expect(screen.getByLabelText("Box Name")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /create box/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /create box/i }))
+        .toBeInTheDocument();
     });
 
     it("renders all tier cards", () => {
@@ -99,9 +100,12 @@ describe("CreateBoxForm", () => {
     it("displays tier descriptions", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
-      expect(screen.getByText("Basic tier for simple tasks")).toBeInTheDocument();
-      expect(screen.getByText("Standard tier for moderate tasks")).toBeInTheDocument();
-      expect(screen.getByText("Premium tier for demanding tasks")).toBeInTheDocument();
+      expect(screen.getByText("Basic tier for simple tasks"))
+        .toBeInTheDocument();
+      expect(screen.getByText("Standard tier for moderate tasks"))
+        .toBeInTheDocument();
+      expect(screen.getByText("Premium tier for demanding tasks"))
+        .toBeInTheDocument();
     });
 
     it("displays tier specifications correctly", () => {
@@ -126,7 +130,9 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
       // The first tier should be selected and have the check icon
-      const basicTierCard = screen.getByText("Basic").closest("div[class*='cursor-pointer']");
+      const basicTierCard = screen.getByText("Basic").closest(
+        "div[class*='cursor-pointer']",
+      );
       expect(basicTierCard).toHaveClass("border-primary");
     });
 
@@ -134,7 +140,8 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={[]} />);
 
       expect(screen.getByText("1. Select a Tier")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /create box/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /create box/i }))
+        .toBeDisabled();
     });
   });
 
@@ -143,7 +150,9 @@ describe("CreateBoxForm", () => {
       const user = userEvent.setup();
       render(<CreateBoxForm tiers={mockTiers} />);
 
-      const standardTierCard = screen.getByText("Standard").closest("div[class*='cursor-pointer']");
+      const standardTierCard = screen.getByText("Standard").closest(
+        "div[class*='cursor-pointer']",
+      );
       await user.click(standardTierCard!);
 
       // Check mark should move to Standard tier
@@ -163,7 +172,9 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
       // Click on Premium tier
-      const premiumTierCard = screen.getByText("Premium").closest("div[class*='cursor-pointer']");
+      const premiumTierCard = screen.getByText("Premium").closest(
+        "div[class*='cursor-pointer']",
+      );
       await user.click(premiumTierCard!);
 
       // Check that Premium tier has the selection styling
@@ -186,7 +197,10 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
       const nameInput = screen.getByLabelText("Box Name");
-      expect(nameInput).toHaveAttribute("placeholder", "e.g. Chrome Research Agent");
+      expect(nameInput).toHaveAttribute(
+        "placeholder",
+        "e.g. Chrome Research Agent",
+      );
     });
 
     it("has required attribute", () => {
@@ -333,7 +347,9 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
       // Select Standard tier
-      const standardTierCard = screen.getByText("Standard").closest("div[class*='cursor-pointer']");
+      const standardTierCard = screen.getByText("Standard").closest(
+        "div[class*='cursor-pointer']",
+      );
       await user.click(standardTierCard!);
 
       const nameInput = screen.getByLabelText("Box Name");
@@ -355,7 +371,9 @@ describe("CreateBoxForm", () => {
   describe("Form Submission - Error Handling", () => {
     it("shows error toast when API returns non-ok response", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         text: async () => "Insufficient tokens",
@@ -370,7 +388,9 @@ describe("CreateBoxForm", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Failed to create box. Please try again.");
+        expect(toast.error).toHaveBeenCalledWith(
+          "Failed to create box. Please try again.",
+        );
       });
 
       consoleErrorSpy.mockRestore();
@@ -378,7 +398,9 @@ describe("CreateBoxForm", () => {
 
     it("logs error to console when API fails", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         text: async () => "Server error",
@@ -401,8 +423,12 @@ describe("CreateBoxForm", () => {
 
     it("shows error toast when fetch throws an error", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network error"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Network error"),
+      );
 
       render(<CreateBoxForm tiers={mockTiers} />);
 
@@ -413,7 +439,9 @@ describe("CreateBoxForm", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Failed to create box. Please try again.");
+        expect(toast.error).toHaveBeenCalledWith(
+          "Failed to create box. Please try again.",
+        );
       });
 
       consoleErrorSpy.mockRestore();
@@ -421,7 +449,9 @@ describe("CreateBoxForm", () => {
 
     it("does not navigate when API fails", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         text: async () => "Error",
@@ -504,7 +534,9 @@ describe("CreateBoxForm", () => {
 
     it("re-enables submit button after submission completes", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         text: async () => "Error",
@@ -531,7 +563,9 @@ describe("CreateBoxForm", () => {
       render(<CreateBoxForm tiers={mockTiers} />);
 
       // Try to submit with empty name via form submission
-      const form = screen.getByRole("button", { name: /create box/i }).closest("form");
+      const form = screen.getByRole("button", { name: /create box/i }).closest(
+        "form",
+      );
       fireEvent.submit(form!);
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -544,7 +578,9 @@ describe("CreateBoxForm", () => {
       const nameInput = screen.getByLabelText("Box Name");
       await user.type(nameInput, "Test Box");
 
-      const form = screen.getByRole("button", { name: /create box/i }).closest("form");
+      const form = screen.getByRole("button", { name: /create box/i }).closest(
+        "form",
+      );
       fireEvent.submit(form!);
 
       expect(global.fetch).not.toHaveBeenCalled();

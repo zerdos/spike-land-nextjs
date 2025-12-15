@@ -52,7 +52,9 @@ describe("error-messages", () => {
     });
 
     it("should detect INSUFFICIENT_TOKENS from status code 402", () => {
-      expect(detectErrorCode(new Error("test"), 402)).toBe("INSUFFICIENT_TOKENS");
+      expect(detectErrorCode(new Error("test"), 402)).toBe(
+        "INSUFFICIENT_TOKENS",
+      );
     });
 
     it("should detect RATE_LIMIT from status code 429", () => {
@@ -60,9 +62,15 @@ describe("error-messages", () => {
     });
 
     it("should detect EXTERNAL_SERVICE_ERROR from 5xx status codes", () => {
-      expect(detectErrorCode(new Error("test"), 500)).toBe("EXTERNAL_SERVICE_ERROR");
-      expect(detectErrorCode(new Error("test"), 502)).toBe("EXTERNAL_SERVICE_ERROR");
-      expect(detectErrorCode(new Error("test"), 503)).toBe("EXTERNAL_SERVICE_ERROR");
+      expect(detectErrorCode(new Error("test"), 500)).toBe(
+        "EXTERNAL_SERVICE_ERROR",
+      );
+      expect(detectErrorCode(new Error("test"), 502)).toBe(
+        "EXTERNAL_SERVICE_ERROR",
+      );
+      expect(detectErrorCode(new Error("test"), 503)).toBe(
+        "EXTERNAL_SERVICE_ERROR",
+      );
     });
 
     it("should detect NETWORK_ERROR from error message", () => {
@@ -78,18 +86,30 @@ describe("error-messages", () => {
     });
 
     it("should detect RATE_LIMIT from error message", () => {
-      expect(detectErrorCode(new Error("rate limit exceeded"))).toBe("RATE_LIMIT");
-      expect(detectErrorCode(new Error("too many requests"))).toBe("RATE_LIMIT");
+      expect(detectErrorCode(new Error("rate limit exceeded"))).toBe(
+        "RATE_LIMIT",
+      );
+      expect(detectErrorCode(new Error("too many requests"))).toBe(
+        "RATE_LIMIT",
+      );
     });
 
     it("should detect INSUFFICIENT_TOKENS from error message", () => {
-      expect(detectErrorCode(new Error("insufficient tokens"))).toBe("INSUFFICIENT_TOKENS");
-      expect(detectErrorCode(new Error("not enough tokens"))).toBe("INSUFFICIENT_TOKENS");
+      expect(detectErrorCode(new Error("insufficient tokens"))).toBe(
+        "INSUFFICIENT_TOKENS",
+      );
+      expect(detectErrorCode(new Error("not enough tokens"))).toBe(
+        "INSUFFICIENT_TOKENS",
+      );
     });
 
     it("should detect FILE_TOO_LARGE from error message", () => {
-      expect(detectErrorCode(new Error("file too large"))).toBe("FILE_TOO_LARGE");
-      expect(detectErrorCode(new Error("exceeds maximum size"))).toBe("FILE_TOO_LARGE");
+      expect(detectErrorCode(new Error("file too large"))).toBe(
+        "FILE_TOO_LARGE",
+      );
+      expect(detectErrorCode(new Error("exceeds maximum size"))).toBe(
+        "FILE_TOO_LARGE",
+      );
     });
 
     it("should detect UNSUPPORTED_FILE_TYPE from error message", () => {
@@ -106,31 +126,49 @@ describe("error-messages", () => {
         "DATABASE_ERROR",
       );
       expect(detectErrorCode(new Error("prisma error"))).toBe("DATABASE_ERROR");
-      expect(detectErrorCode(new Error("transaction failed"))).toBe("DATABASE_ERROR");
+      expect(detectErrorCode(new Error("transaction failed"))).toBe(
+        "DATABASE_ERROR",
+      );
     });
 
     it("should detect UNAUTHORIZED from error message", () => {
-      expect(detectErrorCode(new Error("unauthorized access"))).toBe("UNAUTHORIZED");
-      expect(detectErrorCode(new Error("unauthenticated request"))).toBe("UNAUTHORIZED");
+      expect(detectErrorCode(new Error("unauthorized access"))).toBe(
+        "UNAUTHORIZED",
+      );
+      expect(detectErrorCode(new Error("unauthenticated request"))).toBe(
+        "UNAUTHORIZED",
+      );
     });
 
     it("should detect FORBIDDEN from error message", () => {
-      expect(detectErrorCode(new Error("forbidden resource"))).toBe("FORBIDDEN");
-      expect(detectErrorCode(new Error("access denied to resource"))).toBe("FORBIDDEN");
+      expect(detectErrorCode(new Error("forbidden resource"))).toBe(
+        "FORBIDDEN",
+      );
+      expect(detectErrorCode(new Error("access denied to resource"))).toBe(
+        "FORBIDDEN",
+      );
     });
 
     it("should detect NOT_FOUND from error message", () => {
-      expect(detectErrorCode(new Error("resource not found"))).toBe("NOT_FOUND");
+      expect(detectErrorCode(new Error("resource not found"))).toBe(
+        "NOT_FOUND",
+      );
     });
 
     it("should detect UPLOAD_FAILED from error message", () => {
       expect(detectErrorCode(new Error("upload failed"))).toBe("UPLOAD_FAILED");
-      expect(detectErrorCode(new Error("upload error occurred"))).toBe("UPLOAD_FAILED");
+      expect(detectErrorCode(new Error("upload error occurred"))).toBe(
+        "UPLOAD_FAILED",
+      );
     });
 
     it("should detect DOWNLOAD_FAILED from error message", () => {
-      expect(detectErrorCode(new Error("download failed"))).toBe("DOWNLOAD_FAILED");
-      expect(detectErrorCode(new Error("failed to download file"))).toBe("DOWNLOAD_FAILED");
+      expect(detectErrorCode(new Error("download failed"))).toBe(
+        "DOWNLOAD_FAILED",
+      );
+      expect(detectErrorCode(new Error("failed to download file"))).toBe(
+        "DOWNLOAD_FAILED",
+      );
     });
 
     it("should detect PROCESSING_FAILED from error message", () => {
@@ -164,7 +202,10 @@ describe("error-messages", () => {
     });
 
     it("should return user-friendly error for INSUFFICIENT_TOKENS", () => {
-      const result = getUserFriendlyError(new Error("insufficient tokens"), 402);
+      const result = getUserFriendlyError(
+        new Error("insufficient tokens"),
+        402,
+      );
       expect(result.title).toBe("Not Enough Tokens");
       expect(result.message).toContain("don't have enough tokens");
       expect(result.retryable).toBe(false);
@@ -198,7 +239,9 @@ describe("error-messages", () => {
 
     it("should return false for non-retryable errors", () => {
       expect(isRetryableError(new Error("unauthorized"), 401)).toBe(false);
-      expect(isRetryableError(new Error("insufficient tokens"), 402)).toBe(false);
+      expect(isRetryableError(new Error("insufficient tokens"), 402)).toBe(
+        false,
+      );
       expect(isRetryableError(new Error("not found"), 404)).toBe(false);
       expect(isRetryableError(new Error("invalid input"), 400)).toBe(false);
     });

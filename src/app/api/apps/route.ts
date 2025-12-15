@@ -107,13 +107,15 @@ export async function GET() {
 }
 
 function mapMonetizationModelToEnum(model: string) {
-  const mapping: Record<string, "FREE" | "FREEMIUM" | "SUBSCRIPTION" | "ONE_TIME" | "USAGE_BASED"> =
-    {
-      "free": "FREE",
-      "freemium": "FREEMIUM",
-      "subscription": "SUBSCRIPTION",
-      "one-time": "ONE_TIME",
-      "usage-based": "USAGE_BASED",
-    };
+  const mapping: Record<
+    string,
+    "FREE" | "FREEMIUM" | "SUBSCRIPTION" | "ONE_TIME" | "USAGE_BASED"
+  > = {
+    "free": "FREE",
+    "freemium": "FREEMIUM",
+    "subscription": "SUBSCRIPTION",
+    "one-time": "ONE_TIME",
+    "usage-based": "USAGE_BASED",
+  };
   return mapping[model] || "FREE";
 }

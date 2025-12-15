@@ -437,7 +437,9 @@ Get more tokens at: https://spike.land/settings`,
           };
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Unknown error";
       return {
         content: [
           {

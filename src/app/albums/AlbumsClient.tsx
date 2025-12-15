@@ -249,7 +249,8 @@ export function AlbumsClient() {
                 onClick={handleCreateAlbum}
                 disabled={!newAlbumName.trim() || isCreating}
               >
-                {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isCreating &&
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Album
               </Button>
             </DialogFooter>

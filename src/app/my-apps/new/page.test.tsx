@@ -107,7 +107,9 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        const errors = screen.getAllByText("App name must be at least 3 characters");
+        const errors = screen.getAllByText(
+          "App name must be at least 3 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -121,7 +123,9 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        const errors = screen.getAllByText("Description must be at least 10 characters");
+        const errors = screen.getAllByText(
+          "Description must be at least 10 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -139,7 +143,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
 
       expect(screen.getByTestId("requirements-textarea")).toBeInTheDocument();
@@ -158,7 +163,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
     });
 
@@ -195,7 +201,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
     });
 
@@ -210,7 +217,9 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        const errors = screen.getAllByText("Requirements must be at least 20 characters");
+        const errors = screen.getAllByText(
+          "Requirements must be at least 20 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -255,7 +264,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
 
       await user.type(
@@ -281,7 +291,9 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        const errors = screen.getAllByText("Please select a monetization model");
+        const errors = screen.getAllByText(
+          "Please select a monetization model",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -312,7 +324,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("monetization-select"));
 
       await waitFor(() => {
-        expect(screen.getAllByText("Free - No charge for users").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Free - No charge for users").length)
+          .toBeGreaterThan(0);
         expect(
           screen.getAllByText("Freemium - Free with premium features").length,
         ).toBeGreaterThan(0);
@@ -322,7 +335,8 @@ describe("NewAppPage", () => {
         expect(
           screen.getAllByText("One-time Purchase - Single payment").length,
         ).toBeGreaterThan(0);
-        expect(screen.getAllByText("Usage-based - Pay per use").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Usage-based - Pay per use").length)
+          .toBeGreaterThan(0);
       });
     });
   });
@@ -355,10 +369,14 @@ describe("NewAppPage", () => {
 
       await user.click(screen.getByTestId("monetization-select"));
       await waitFor(() => {
-        const options = screen.getAllByText("Subscription - Recurring payments");
+        const options = screen.getAllByText(
+          "Subscription - Recurring payments",
+        );
         expect(options.length).toBeGreaterThan(0);
       });
-      const subscriptionOptions = screen.getAllByText("Subscription - Recurring payments");
+      const subscriptionOptions = screen.getAllByText(
+        "Subscription - Recurring payments",
+      );
       await user.click(subscriptionOptions[subscriptionOptions.length - 1]);
 
       await user.click(screen.getByTestId("wizard-next-button"));
@@ -370,7 +388,9 @@ describe("NewAppPage", () => {
 
     it("should display all entered data", async () => {
       await waitFor(() => {
-        expect(screen.getByTestId("review-name")).toHaveTextContent("My Test App");
+        expect(screen.getByTestId("review-name")).toHaveTextContent(
+          "My Test App",
+        );
       }, { timeout: 5000 });
       expect(screen.getByTestId("review-description")).toHaveTextContent(
         "This is my test app description",
@@ -384,7 +404,9 @@ describe("NewAppPage", () => {
     });
 
     it("should show Create App button on final step", () => {
-      expect(screen.getByTestId("wizard-submit-button")).toHaveTextContent("Create App");
+      expect(screen.getByTestId("wizard-submit-button")).toHaveTextContent(
+        "Create App",
+      );
     });
 
     it("should create app and navigate on submit", async () => {
@@ -586,7 +608,9 @@ describe("NewAppPage", () => {
       });
 
       await waitFor(() => {
-        const nameInput = screen.getByTestId("app-name-input") as HTMLInputElement;
+        const nameInput = screen.getByTestId(
+          "app-name-input",
+        ) as HTMLInputElement;
         expect(nameInput.value).toBe("Test App");
       });
     });
@@ -657,7 +681,9 @@ describe("NewAppPage", () => {
 
       await waitFor(
         () => {
-          const freeOptions = screen.queryAllByText("Free - No charge for users");
+          const freeOptions = screen.queryAllByText(
+            "Free - No charge for users",
+          );
           if (freeOptions.length > 0) {
             return true;
           }
@@ -703,7 +729,9 @@ describe("NewAppPage", () => {
       await user.tab();
 
       await waitFor(() => {
-        const errors = screen.getAllByText("App name must be at least 3 characters");
+        const errors = screen.getAllByText(
+          "App name must be at least 3 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -717,7 +745,9 @@ describe("NewAppPage", () => {
       await user.tab();
 
       await waitFor(() => {
-        const errors = screen.getAllByText("Description must be at least 10 characters");
+        const errors = screen.getAllByText(
+          "Description must be at least 10 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -746,7 +776,7 @@ describe("NewAppPage", () => {
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter");
-        const nameCounter = counters.find(c => c.textContent?.includes("4 / 50"));
+        const nameCounter = counters.find((c) => c.textContent?.includes("4 / 50"));
         expect(nameCounter).toBeInTheDocument();
       });
     });
@@ -767,11 +797,14 @@ describe("NewAppPage", () => {
       const user = userEvent.setup();
       render(<NewAppPage />);
 
-      await user.type(screen.getByTestId("app-description-textarea"), "Test desc");
+      await user.type(
+        screen.getByTestId("app-description-textarea"),
+        "Test desc",
+      );
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter");
-        const descCounter = counters.find(c => c.textContent?.includes("9 / 500"));
+        const descCounter = counters.find((c) => c.textContent?.includes("9 / 500"));
         expect(descCounter).toBeInTheDocument();
       });
     });
@@ -796,7 +829,7 @@ describe("NewAppPage", () => {
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter");
-        const reqCounter = counters.find(c => c.textContent?.includes("8 / 2000"));
+        const reqCounter = counters.find((c) => c.textContent?.includes("8 / 2000"));
         expect(reqCounter).toBeInTheDocument();
       });
     });
@@ -903,7 +936,9 @@ describe("NewAppPage", () => {
         const summary = screen.getByTestId("error-summary");
         expect(summary).toHaveTextContent("Validation Errors");
         expect(summary).toHaveTextContent("App Name:");
-        const errors = screen.getAllByText("App name must be at least 3 characters");
+        const errors = screen.getAllByText(
+          "App name must be at least 3 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -985,7 +1020,9 @@ describe("NewAppPage", () => {
       await user.tab();
 
       await waitFor(() => {
-        const errors = screen.getAllByText("Requirements must be at least 20 characters");
+        const errors = screen.getAllByText(
+          "Requirements must be at least 20 characters",
+        );
         expect(errors.length).toBeGreaterThan(0);
       });
     });
@@ -1008,7 +1045,7 @@ describe("NewAppPage", () => {
 
       await waitFor(() => {
         const counters = screen.getAllByTestId("char-counter");
-        const nameCounter = counters.find(c => c.textContent?.includes("51 / 50"));
+        const nameCounter = counters.find((c) => c.textContent?.includes("51 / 50"));
         expect(nameCounter).toHaveClass("text-destructive");
       });
     });
@@ -1043,7 +1080,10 @@ describe("NewAppPage", () => {
 
       // Navigate to review step
       await user.type(screen.getByTestId("app-name-input"), "Test App");
-      await user.type(screen.getByTestId("app-description-textarea"), "Valid description");
+      await user.type(
+        screen.getByTestId("app-description-textarea"),
+        "Valid description",
+      );
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
@@ -1087,7 +1127,9 @@ describe("NewAppPage", () => {
   describe("API Error Handling", () => {
     it("should handle API error response and not navigate", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       // Mock fetch to return an error response
       fetchMock.mockResolvedValueOnce({
@@ -1106,7 +1148,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
 
       await user.type(
@@ -1116,7 +1159,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 3 of 4: Monetization/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 3 of 4: Monetization/))
+          .toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId("monetization-select"));
@@ -1151,7 +1195,9 @@ describe("NewAppPage", () => {
 
     it("should handle network error and log it", async () => {
       const user = userEvent.setup();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       // Mock fetch to throw a network error
       const networkError = new Error("Network error");
@@ -1168,7 +1214,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 2 of 4: Requirements/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 2 of 4: Requirements/))
+          .toBeInTheDocument();
       });
 
       await user.type(
@@ -1178,7 +1225,8 @@ describe("NewAppPage", () => {
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
-        expect(screen.getByText(/Step 3 of 4: Monetization/)).toBeInTheDocument();
+        expect(screen.getByText(/Step 3 of 4: Monetization/))
+          .toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId("monetization-select"));

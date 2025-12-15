@@ -39,7 +39,9 @@ export default function PrivacyPage() {
         <Card className="mb-12">
           <CardHeader>
             <CardTitle>Table of Contents</CardTitle>
-            <CardDescription>Quick navigation to our privacy policy sections</CardDescription>
+            <CardDescription>
+              Quick navigation to our privacy policy sections
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -100,11 +102,15 @@ export default function PrivacyPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Data Collection</CardTitle>
-                <CardDescription>What information we collect and why</CardDescription>
+                <CardDescription>
+                  What information we collect and why
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Information You Provide</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Information You Provide
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Account Information</h4>
@@ -155,7 +161,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">What We Don&apos;t Collect</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    What We Don&apos;t Collect
+                  </h3>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
                     <li>Images are NOT used for AI model training</li>
                     <li>No biometric or facial recognition data extracted</li>
@@ -163,7 +171,9 @@ export default function PrivacyPage() {
                       No EXIF metadata retained from images (automatically stripped on upload)
                     </li>
                     <li>No precise geolocation data</li>
-                    <li>No credit card data (Stripe handles all payment processing)</li>
+                    <li>
+                      No credit card data (Stripe handles all payment processing)
+                    </li>
                   </ul>
                 </div>
               </CardContent>
@@ -174,12 +184,18 @@ export default function PrivacyPage() {
           <section id="data-storage">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Data Storage & Retention</CardTitle>
-                <CardDescription>Where we store your data and how long we keep it</CardDescription>
+                <CardTitle className="text-2xl">
+                  Data Storage & Retention
+                </CardTitle>
+                <CardDescription>
+                  Where we store your data and how long we keep it
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Storage Locations</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Storage Locations
+                  </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="border-b border-border">
@@ -216,7 +232,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Retention Periods</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    Retention Periods
+                  </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="border-b border-border">
@@ -253,7 +271,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Automatic Image Cleanup</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Automatic Image Cleanup
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-muted-foreground text-sm">
                       Images inactive for 90 days are automatically deleted:
@@ -268,10 +288,14 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Account Deletion</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Account Deletion
+                  </h3>
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Immediate (within 24 hours)</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Immediate (within 24 hours)
+                      </h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-2">
                         <li>Session tokens invalidated</li>
                         <li>OAuth connections revoked</li>
@@ -279,12 +303,16 @@ export default function PrivacyPage() {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Within 30 days</h4>
+                      <h4 className="font-semibold text-sm mb-2">
+                        Within 30 days
+                      </h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-2">
                         <li>All images deleted from storage</li>
                         <li>User record anonymized</li>
                         <li>Albums removed</li>
-                        <li>Transaction records retained (legal requirement)</li>
+                        <li>
+                          Transaction records retained (legal requirement)
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -298,46 +326,60 @@ export default function PrivacyPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Your Privacy Rights</CardTitle>
-                <CardDescription>Rights granted under GDPR, UK GDPR, and CCPA</CardDescription>
+                <CardDescription>
+                  Rights granted under GDPR, UK GDPR, and CCPA
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg mb-4">Your Rights</h3>
                   <div className="space-y-4">
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right of Access (GDPR Art. 15)</h4>
+                      <h4 className="font-semibold">
+                        Right of Access (GDPR Art. 15)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can request a copy of all personal data we hold about you.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right to Rectification (GDPR Art. 16)</h4>
+                      <h4 className="font-semibold">
+                        Right to Rectification (GDPR Art. 16)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can request correction of inaccurate personal data.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right to Erasure (GDPR Art. 17)</h4>
+                      <h4 className="font-semibold">
+                        Right to Erasure (GDPR Art. 17)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can request deletion of your personal data (subject to legal
                         obligations).
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right to Restrict Processing (GDPR Art. 18)</h4>
+                      <h4 className="font-semibold">
+                        Right to Restrict Processing (GDPR Art. 18)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can request that we limit how we use your data.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right to Data Portability (GDPR Art. 20)</h4>
+                      <h4 className="font-semibold">
+                        Right to Data Portability (GDPR Art. 20)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can request your data in a portable format for transfer to another
                         service.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">Right to Object (GDPR Art. 21)</h4>
+                      <h4 className="font-semibold">
+                        Right to Object (GDPR Art. 21)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         You can object to processing of your data based on legitimate interests.
                       </p>
@@ -346,7 +388,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">How to Exercise Your Rights</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    How to Exercise Your Rights
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-muted-foreground text-sm">
                       To exercise any of these rights, contact us at{" "}
@@ -362,7 +406,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">California Privacy Rights (CCPA)</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    California Privacy Rights (CCPA)
+                  </h3>
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
                       California residents have the right to know what personal information is
@@ -380,7 +426,9 @@ export default function PrivacyPage() {
                       <thead className="border-b border-border">
                         <tr>
                           <th className="text-left py-2">Request Type</th>
-                          <th className="text-left py-2">Maximum Response Time</th>
+                          <th className="text-left py-2">
+                            Maximum Response Time
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="space-y-2">
@@ -413,11 +461,15 @@ export default function PrivacyPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Third-Party Services</CardTitle>
-                <CardDescription>Services we use to operate the platform</CardDescription>
+                <CardDescription>
+                  Services we use to operate the platform
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Google Gemini API</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Google Gemini API
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
                     <p>
                       <strong>Purpose:</strong> AI image enhancement processing
@@ -439,7 +491,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Stripe (Payment Processing)</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Stripe (Payment Processing)
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
                     <p>
                       <strong>Purpose:</strong> Secure payment processing
@@ -476,7 +530,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Neon PostgreSQL</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Neon PostgreSQL
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
                     <p>
                       <strong>Purpose:</strong> User account and transaction database
@@ -503,7 +559,9 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Data Processing Agreements</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Data Processing Agreements
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     We have Data Processing Agreements (DPAs) in place with all sub-processors. For
                     cross-border transfers outside the EEA, we use Standard Contractual Clauses
@@ -523,15 +581,21 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Technical Security</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Technical Security
+                  </h3>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">TLS 1.3:</span>
-                      <span className="text-muted-foreground">All data in transit encrypted</span>
+                      <span className="text-muted-foreground">
+                        All data in transit encrypted
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">AES-256:</span>
-                      <span className="text-muted-foreground">All data at rest encrypted</span>
+                      <span className="text-muted-foreground">
+                        All data at rest encrypted
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-semibold mr-2">OAuth 2.0:</span>
@@ -552,7 +616,9 @@ export default function PrivacyPage() {
                       </span>
                     </li>
                     <li className="flex items-start">
-                      <span className="font-semibold mr-2">File Validation:</span>
+                      <span className="font-semibold mr-2">
+                        File Validation:
+                      </span>
                       <span className="text-muted-foreground">
                         Type checking and size limits on uploads
                       </span>
@@ -561,18 +627,24 @@ export default function PrivacyPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Organizational Security</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Organizational Security
+                  </h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>Access control and role-based permissions</li>
                     <li>Audit logging of all administrative actions</li>
                     <li>72-hour data breach notification requirement</li>
                     <li>Annual security training and updates</li>
-                    <li>Regular security assessments and penetration testing</li>
+                    <li>
+                      Regular security assessments and penetration testing
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Rate Limiting Policy</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Rate Limiting Policy
+                  </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="border-b border-border">
@@ -615,7 +687,9 @@ export default function PrivacyPage() {
           <section id="children">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Children&apos;s Privacy</CardTitle>
+                <CardTitle className="text-2xl">
+                  Children&apos;s Privacy
+                </CardTitle>
                 <CardDescription>COPPA Compliance (US)</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -655,7 +729,9 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Privacy Inquiries</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Privacy Inquiries
+                  </h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p>
                       Email:{" "}
@@ -666,19 +742,25 @@ export default function PrivacyPage() {
                         hello@spike.land
                       </a>
                     </p>
-                    <p className="text-muted-foreground text-sm mt-2">Response time: 72 hours</p>
+                    <p className="text-muted-foreground text-sm mt-2">
+                      Response time: 72 hours
+                    </p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Data Protection Officer</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Data Protection Officer
+                  </h3>
                   <p className="text-muted-foreground text-sm">
                     We maintain records of our data processing activities per GDPR Article 30.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Regulatory Authorities</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Regulatory Authorities
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-3">
                     If you believe your privacy rights have been violated, you can lodge a complaint
                     with:

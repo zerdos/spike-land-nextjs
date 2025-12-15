@@ -44,18 +44,27 @@ describe("SplitPreview", () => {
     const originalAddEventListener = window.addEventListener;
     const originalRemoveEventListener = window.removeEventListener;
 
-    vi.spyOn(window, "addEventListener").mockImplementation((event, handler, options) => {
-      if (event === "scroll") {
-        scrollHandler = handler as EventListener;
-      } else if (event === "resize") {
-        resizeHandler = handler as EventListener;
-      }
-      return originalAddEventListener.call(window, event, handler, options);
-    });
+    vi.spyOn(window, "addEventListener").mockImplementation(
+      (event, handler, options) => {
+        if (event === "scroll") {
+          scrollHandler = handler as EventListener;
+        } else if (event === "resize") {
+          resizeHandler = handler as EventListener;
+        }
+        return originalAddEventListener.call(window, event, handler, options);
+      },
+    );
 
-    vi.spyOn(window, "removeEventListener").mockImplementation((event, handler, options) => {
-      return originalRemoveEventListener.call(window, event, handler, options);
-    });
+    vi.spyOn(window, "removeEventListener").mockImplementation(
+      (event, handler, options) => {
+        return originalRemoveEventListener.call(
+          window,
+          event,
+          handler,
+          options,
+        );
+      },
+    );
   });
 
   afterEach(() => {
@@ -82,7 +91,9 @@ describe("SplitPreview", () => {
   });
 
   it("uses default aspect ratio if width/height missing", () => {
-    render(<SplitPreview originalUrl="/original.jpg" enhancedUrl="/enhanced.jpg" />);
+    render(
+      <SplitPreview originalUrl="/original.jpg" enhancedUrl="/enhanced.jpg" />,
+    );
 
     const container = screen.getByTestId("split-preview-container");
     expect(container.style.aspectRatio).toBe("16 / 9");
@@ -205,7 +216,10 @@ describe("SplitPreview", () => {
       toJSON: () => {},
     });
 
-    Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      writable: true,
+    });
 
     act(() => {
       if (scrollHandler) {
@@ -213,7 +227,9 @@ describe("SplitPreview", () => {
       }
     });
 
-    const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
+    const splitLine = container.querySelector(
+      '[data-testid="split-line"]',
+    ) as HTMLElement;
     expect(splitLine.style.top).toBe("0%");
   });
 
@@ -233,7 +249,10 @@ describe("SplitPreview", () => {
       toJSON: () => {},
     });
 
-    Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      writable: true,
+    });
 
     act(() => {
       if (scrollHandler) {
@@ -241,7 +260,9 @@ describe("SplitPreview", () => {
       }
     });
 
-    const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
+    const splitLine = container.querySelector(
+      '[data-testid="split-line"]',
+    ) as HTMLElement;
     expect(splitLine.style.top).toBe("100%");
   });
 
@@ -261,7 +282,10 @@ describe("SplitPreview", () => {
       toJSON: () => {},
     });
 
-    Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      writable: true,
+    });
 
     act(() => {
       if (scrollHandler) {
@@ -269,7 +293,9 @@ describe("SplitPreview", () => {
       }
     });
 
-    const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
+    const splitLine = container.querySelector(
+      '[data-testid="split-line"]',
+    ) as HTMLElement;
     expect(splitLine.style.top).toBe("50%");
   });
 
@@ -289,7 +315,10 @@ describe("SplitPreview", () => {
       toJSON: () => {},
     });
 
-    Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      writable: true,
+    });
 
     act(() => {
       if (resizeHandler) {
@@ -297,7 +326,9 @@ describe("SplitPreview", () => {
       }
     });
 
-    const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
+    const splitLine = container.querySelector(
+      '[data-testid="split-line"]',
+    ) as HTMLElement;
     expect(splitLine.style.top).toBe("75%");
   });
 
@@ -323,7 +354,9 @@ describe("SplitPreview", () => {
       }
     });
 
-    const splitLine = container.querySelector('[data-testid="split-line"]') as HTMLElement;
+    const splitLine = container.querySelector(
+      '[data-testid="split-line"]',
+    ) as HTMLElement;
     expect(splitLine).toBeDefined();
   });
 
@@ -331,10 +364,12 @@ describe("SplitPreview", () => {
     const originalCreateElement = document.createElement.bind(document);
     let callCount = 0;
 
-    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
-      callCount++;
-      return originalCreateElement(tagName);
-    });
+    vi.spyOn(document, "createElement").mockImplementation(
+      (tagName: string) => {
+        callCount++;
+        return originalCreateElement(tagName);
+      },
+    );
 
     render(<SplitPreview {...defaultProps} />);
 
@@ -392,7 +427,9 @@ describe("SplitPreview", () => {
 
   it("handles fetch error silently when logging broken image", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network error"));
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error("Network error"),
+    );
 
     render(<SplitPreview {...defaultProps} />);
 

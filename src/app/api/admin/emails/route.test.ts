@@ -273,7 +273,10 @@ describe("Admin Email Logs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/emails", {
         method: "POST",
-        body: JSON.stringify({ action: "sendTestEmail", to: "test@example.com" }),
+        body: JSON.stringify({
+          action: "sendTestEmail",
+          to: "test@example.com",
+        }),
       });
       const response = await POST(request);
       const data = await response.json();
@@ -297,7 +300,10 @@ describe("Admin Email Logs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/emails", {
         method: "POST",
-        body: JSON.stringify({ action: "sendTestEmail", to: "test@example.com" }),
+        body: JSON.stringify({
+          action: "sendTestEmail",
+          to: "test@example.com",
+        }),
       });
       const response = await POST(request);
       const data = await response.json();
@@ -354,7 +360,10 @@ describe("Admin Email Logs API", () => {
 
       const request = new NextRequest("http://localhost/api/admin/emails", {
         method: "POST",
-        body: JSON.stringify({ action: "sendTestEmail", to: "test@example.com" }),
+        body: JSON.stringify({
+          action: "sendTestEmail",
+          to: "test@example.com",
+        }),
       });
       const response = await POST(request);
       const data = await response.json();

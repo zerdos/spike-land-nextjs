@@ -103,14 +103,19 @@ export async function POST(
 
     if (pipeline.userId !== session.user.id) {
       return NextResponse.json(
-        { success: false, error: "You can only upload reference images to your own pipelines" },
+        {
+          success: false,
+          error: "You can only upload reference images to your own pipelines",
+        },
         { status: 403 },
       );
     }
 
     // Check current reference image count
-    const promptConfig = (pipeline.promptConfig as Record<string, unknown>) || {};
-    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) || [];
+    const promptConfig = (pipeline.promptConfig as Record<string, unknown>) ||
+      {};
+    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) ||
+      [];
 
     if (existingRefs.length >= MAX_REFERENCE_IMAGES) {
       return NextResponse.json(
@@ -139,7 +144,9 @@ export async function POST(
     const MAX_REF_DIMENSION = 1024;
     let processedBuffer: Buffer = buffer;
 
-    if (metadata.width > MAX_REF_DIMENSION || metadata.height > MAX_REF_DIMENSION) {
+    if (
+      metadata.width > MAX_REF_DIMENSION || metadata.height > MAX_REF_DIMENSION
+    ) {
       processedBuffer = await sharp(buffer)
         .resize(MAX_REF_DIMENSION, MAX_REF_DIMENSION, {
           fit: "inside",
@@ -167,7 +174,10 @@ export async function POST(
 
     if (!uploadResult.success) {
       return NextResponse.json(
-        { success: false, error: uploadResult.error || "Failed to upload image" },
+        {
+          success: false,
+          error: uploadResult.error || "Failed to upload image",
+        },
         { status: 500 },
       );
     }
@@ -179,7 +189,10 @@ export async function POST(
       ...(description && { description }),
     };
 
-    const updatedReferenceImages: ReferenceImage[] = [...existingRefs, newReferenceImage];
+    const updatedReferenceImages: ReferenceImage[] = [
+      ...existingRefs,
+      newReferenceImage,
+    ];
 
     await prisma.enhancementPipeline.update({
       where: { id: pipelineId },
@@ -200,7 +213,9 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to upload reference image",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to upload reference image",
       },
       { status: 500 },
     );
@@ -254,7 +269,10 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     if (pipeline.userId !== session.user.id) {
       return NextResponse.json(
-        { success: false, error: "You can only delete reference images from your own pipelines" },
+        {
+          success: false,
+          error: "You can only delete reference images from your own pipelines",
+        },
         { status: 403 },
       );
     }
@@ -267,8 +285,10 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update pipeline's promptConfig to remove the reference image
-    const promptConfig = (pipeline.promptConfig as Record<string, unknown>) || {};
-    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) || [];
+    const promptConfig = (pipeline.promptConfig as Record<string, unknown>) ||
+      {};
+    const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) ||
+      [];
     const updatedRefs = existingRefs.filter((ref) => ref.r2Key !== r2Key);
 
     await prisma.enhancementPipeline.update({
@@ -287,7 +307,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to delete reference image",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to delete reference image",
       },
       { status: 500 },
     );

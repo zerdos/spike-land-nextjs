@@ -1,6 +1,7 @@
 # Database Setup Guide
 
-This guide covers the complete database setup for Spike Land platform using Prisma ORM with PostgreSQL.
+This guide covers the complete database setup for Spike Land platform using
+Prisma ORM with PostgreSQL.
 
 ## Overview
 
@@ -203,8 +204,8 @@ model Requirement {
 }
 ```
 
-**Priority Levels:** LOW, MEDIUM, HIGH, CRITICAL
-**Status Types:** PENDING, IN_PROGRESS, COMPLETED, REJECTED
+**Priority Levels:** LOW, MEDIUM, HIGH, CRITICAL **Status Types:** PENDING,
+IN_PROGRESS, COMPLETED, REJECTED
 
 #### MonetizationModel
 
@@ -693,8 +694,8 @@ systemctl restart spike-land-app
 
 ### Scenario 1: Database Corruption
 
-**Detection:** Application errors, data inconsistencies
-**RTO:** 1 hour | **RPO:** Last backup (24 hours max)
+**Detection:** Application errors, data inconsistencies **RTO:** 1 hour |
+**RPO:** Last backup (24 hours max)
 
 1. Stop application to prevent further corruption
 2. Identify corruption extent with `SELECT * FROM [table]`
@@ -707,8 +708,8 @@ systemctl restart spike-land-app
 
 ### Scenario 2: Accidental Data Deletion
 
-**Detection:** User reports, monitoring alerts
-**RTO:** 30 minutes | **RPO:** Point-in-time (if enabled)
+**Detection:** User reports, monitoring alerts **RTO:** 30 minutes | **RPO:**
+Point-in-time (if enabled)
 
 1. Identify deletion timestamp
 2. If PITR available: Restore to point before deletion
@@ -719,8 +720,8 @@ systemctl restart spike-land-app
 
 ### Scenario 3: Database Server Failure
 
-**Detection:** Connection failures, health checks failing
-**RTO:** 15 minutes | **RPO:** 0 (with replication)
+**Detection:** Connection failures, health checks failing **RTO:** 15 minutes |
+**RPO:** 0 (with replication)
 
 1. Check if replica is available and healthy
 2. Promote replica to primary (automatic with RDS Multi-AZ)
@@ -731,8 +732,8 @@ systemctl restart spike-land-app
 
 ### Scenario 4: Complete Data Center Outage
 
-**Detection:** All services unavailable
-**RTO:** 2 hours | **RPO:** Last backup (24 hours max)
+**Detection:** All services unavailable **RTO:** 2 hours | **RPO:** Last backup
+(24 hours max)
 
 1. Activate disaster recovery site
 2. Restore latest backup to new database instance
@@ -849,7 +850,8 @@ SELECT pg_cancel_backend(<pid>);
 - **Prisma Documentation**: https://www.prisma.io/docs
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs
 - **NextAuth.js Prisma Adapter**: https://next-auth.js.org/adapters/prisma
-- **Database Performance Tuning**: https://wiki.postgresql.org/wiki/Performance_Optimization
+- **Database Performance Tuning**:
+  https://wiki.postgresql.org/wiki/Performance_Optimization
 
 ## Support and Maintenance Contacts
 

@@ -42,7 +42,9 @@ export function AlbumSelector({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">
-            <span className="text-muted-foreground">No album (loose images)</span>
+            <span className="text-muted-foreground">
+              No album (loose images)
+            </span>
           </SelectItem>
           {albums.map((album) => (
             <SelectItem key={album.id} value={album.id}>

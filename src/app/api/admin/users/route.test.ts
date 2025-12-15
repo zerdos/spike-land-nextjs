@@ -82,7 +82,9 @@ describe("User Management API", () => {
         },
       ] as any);
 
-      const request = new NextRequest("http://localhost/api/admin/users?search=test");
+      const request = new NextRequest(
+        "http://localhost/api/admin/users?search=test",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -110,7 +112,9 @@ describe("User Management API", () => {
         createdAt: new Date("2025-01-01"),
       } as any);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`);
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -125,7 +129,9 @@ describe("User Management API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/users?userId=invalid");
+      const request = new NextRequest(
+        "http://localhost/api/admin/users?userId=invalid",
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -141,7 +147,9 @@ describe("User Management API", () => {
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`);
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -156,7 +164,9 @@ describe("User Management API", () => {
       } as any);
 
       const longSearch = "a".repeat(101);
-      const request = new NextRequest(`http://localhost/api/admin/users?search=${longSearch}`);
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?search=${longSearch}`,
+      );
 
       const response = await GET(request);
       const data = await response.json();
@@ -444,9 +454,12 @@ describe("User Management API", () => {
     it("should return 401 if not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -476,9 +489,12 @@ describe("User Management API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest("http://localhost/api/admin/users?userId=invalid", {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        "http://localhost/api/admin/users?userId=invalid",
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -492,9 +508,12 @@ describe("User Management API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_ADMIN_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_ADMIN_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -510,9 +529,12 @@ describe("User Management API", () => {
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -538,9 +560,12 @@ describe("User Management API", () => {
       const { isSuperAdmin } = await import("@/lib/auth/admin-middleware");
       vi.mocked(isSuperAdmin).mockResolvedValue(false);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -568,9 +593,12 @@ describe("User Management API", () => {
       const { AuditLogger } = await import("@/lib/audit/logger");
       vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -623,9 +651,12 @@ describe("User Management API", () => {
       const { AuditLogger } = await import("@/lib/audit/logger");
       vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -656,9 +687,12 @@ describe("User Management API", () => {
       const { AuditLogger } = await import("@/lib/audit/logger");
       vi.mocked(AuditLogger.logUserDelete).mockResolvedValue(undefined);
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -681,11 +715,16 @@ describe("User Management API", () => {
         tokenBalance: null,
       } as any);
 
-      vi.mocked(prisma.user.delete).mockRejectedValue(new Error("Database error"));
+      vi.mocked(prisma.user.delete).mockRejectedValue(
+        new Error("Database error"),
+      );
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();
@@ -699,14 +738,19 @@ describe("User Management API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
+      const { requireAdminByUserId } = await import(
+        "@/lib/auth/admin-middleware"
+      );
       vi.mocked(requireAdminByUserId).mockRejectedValue(
         new Error("Forbidden: Admin access required"),
       );
 
-      const request = new NextRequest(`http://localhost/api/admin/users?userId=${VALID_USER_ID}`, {
-        method: "DELETE",
-      });
+      const request = new NextRequest(
+        `http://localhost/api/admin/users?userId=${VALID_USER_ID}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await DELETE(request);
       const data = await response.json();

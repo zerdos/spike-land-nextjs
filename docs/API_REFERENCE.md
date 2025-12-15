@@ -1,8 +1,7 @@
 # API Reference
 
-> **Last Updated**: December 2025
-> **Status**: MVP Release
-> **Base URL**: `https://spike.land` (Production) or `http://localhost:3000` (Development)
+> **Last Updated**: December 2025 **Status**: MVP Release **Base URL**:
+> `https://spike.land` (Production) or `http://localhost:3000` (Development)
 
 ---
 
@@ -25,7 +24,8 @@
 
 ## Authentication
 
-All protected endpoints require authentication via Bearer token (session cookie or JWT).
+All protected endpoints require authentication via Bearer token (session cookie
+or JWT).
 
 ### Authentication Methods
 
@@ -843,7 +843,9 @@ const response = await fetch("/api/tokens/balance");
 const data = await response.json();
 
 console.log(`Balance: ${data.balance} tokens`);
-console.log(`Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`);
+console.log(
+  `Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`,
+);
 ```
 
 **Error Responses**:
@@ -1463,7 +1465,7 @@ async function retryWithBackoff(fn, maxRetries = 3) {
       if (attempt === maxRetries) throw error;
 
       const delayMs = 1000 * Math.pow(2, attempt - 1);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 }
@@ -1523,7 +1525,7 @@ async function fetchWithRateLimit(url, options = {}) {
     );
     console.log(`Rate limited. Retry after ${retryAfter}s`);
 
-    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
 
     return fetchWithRateLimit(url, options); // Retry
   }
@@ -1549,7 +1551,9 @@ async function enhanceImage(imageId, tier = "TIER_2K") {
     const cost = tierCosts[tier];
 
     if (balance.balance < cost) {
-      console.error(`Insufficient tokens. Need ${cost}, have ${balance.balance}`);
+      console.error(
+        `Insufficient tokens. Need ${cost}, have ${balance.balance}`,
+      );
       return null;
     }
 
@@ -1573,7 +1577,7 @@ async function enhanceImage(imageId, tier = "TIER_2K") {
     let attempts = 0;
 
     while (!completed && attempts < 60) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const statusRes = await fetch(`/api/jobs/${job.jobId}`);
       const status = await statusRes.json();

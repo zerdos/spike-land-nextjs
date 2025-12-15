@@ -9,7 +9,11 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
   ImageComparisonSlider: (
     { originalUrl, enhancedUrl }: { originalUrl: string; enhancedUrl: string; },
   ) => (
-    <div data-testid="comparison-slider" data-original={originalUrl} data-enhanced={enhancedUrl}>
+    <div
+      data-testid="comparison-slider"
+      data-original={originalUrl}
+      data-enhanced={enhancedUrl}
+    >
       Mock Slider
     </div>
   ),
@@ -32,7 +36,8 @@ describe("BeforeAfterGalleryClient Component", () => {
     expect(screen.getByRole("tab", { name: "Portrait" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Landscape" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Product" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Architecture" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Architecture" }))
+      .toBeInTheDocument();
   });
 
   it("should show all items by default", () => {
@@ -102,18 +107,24 @@ describe("BeforeAfterGalleryClient Component", () => {
 
   it("should render cards with descriptions", () => {
     render(<BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />);
-    expect(screen.getByText("Skin smoothing and detail enhancement")).toBeInTheDocument();
-    expect(screen.getByText("4K resolution with enhanced colors")).toBeInTheDocument();
+    expect(screen.getByText("Skin smoothing and detail enhancement"))
+      .toBeInTheDocument();
+    expect(screen.getByText("4K resolution with enhanced colors"))
+      .toBeInTheDocument();
   });
 
   it("should have the gallery section id", () => {
-    const { container } = render(<BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />);
+    const { container } = render(
+      <BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />,
+    );
     const section = container.querySelector("#gallery");
     expect(section).toBeInTheDocument();
   });
 
   it("should have responsive grid classes", () => {
-    const { container } = render(<BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />);
+    const { container } = render(
+      <BeforeAfterGalleryClient items={FALLBACK_GALLERY_ITEMS} />,
+    );
     const grid = container.querySelector(".grid");
     expect(grid).toHaveClass("sm:grid-cols-2");
     expect(grid).toHaveClass("lg:grid-cols-3");
@@ -150,7 +161,9 @@ describe("BeforeAfterGallery Server Component", () => {
   const mockGetSuperAdminPublicPhotos = vi.fn();
 
   // Mock BeforeAfterGalleryClient for server component tests
-  const mockBeforeAfterGalleryClient = vi.fn(({ items }: { items: unknown[]; }) => (
+  const mockBeforeAfterGalleryClient = vi.fn((
+    { items }: { items: unknown[]; },
+  ) => (
     <div data-testid="gallery-client" data-items-count={items.length}>
       Gallery Client Mock
     </div>
@@ -202,18 +215,26 @@ describe("BeforeAfterGallery Server Component", () => {
 
     expect(screen.getByTestId("gallery-client")).toBeInTheDocument();
     // FALLBACK_GALLERY_ITEMS has 6 items
-    expect(screen.getByTestId("gallery-client")).toHaveAttribute("data-items-count", "6");
+    expect(screen.getByTestId("gallery-client")).toHaveAttribute(
+      "data-items-count",
+      "6",
+    );
   });
 
   it("should use fallback items when database throws error", async () => {
-    mockGetSuperAdminPublicPhotos.mockRejectedValue(new Error("Database error"));
+    mockGetSuperAdminPublicPhotos.mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const { BeforeAfterGallery } = await import("./BeforeAfterGallery");
     const Component = await BeforeAfterGallery();
     render(Component);
 
     expect(screen.getByTestId("gallery-client")).toBeInTheDocument();
-    expect(screen.getByTestId("gallery-client")).toHaveAttribute("data-items-count", "6");
+    expect(screen.getByTestId("gallery-client")).toHaveAttribute(
+      "data-items-count",
+      "6",
+    );
   });
 
   it("should infer portrait category for tall images", async () => {

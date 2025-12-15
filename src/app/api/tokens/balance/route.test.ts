@@ -70,7 +70,9 @@ describe("GET /api/tokens/balance", () => {
     expect(processUserRegeneration).toHaveBeenCalledWith("user-123");
     expect(TokenBalanceManager.getBalance).toHaveBeenCalledWith("user-123");
     expect(getTimeUntilNextRegeneration).toHaveBeenCalledWith("user-123");
-    expect(TokenBalanceManager.getConsumptionStats).toHaveBeenCalledWith("user-123");
+    expect(TokenBalanceManager.getConsumptionStats).toHaveBeenCalledWith(
+      "user-123",
+    );
   });
 
   it("should return 401 if user is not authenticated", async () => {
@@ -124,7 +126,9 @@ describe("GET /api/tokens/balance", () => {
       user: { id: "user-123" },
     } as any);
 
-    vi.mocked(processUserRegeneration).mockRejectedValue(new Error("Database error"));
+    vi.mocked(processUserRegeneration).mockRejectedValue(
+      new Error("Database error"),
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -147,7 +151,9 @@ describe("GET /api/tokens/balance", () => {
     } as any);
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
-    vi.mocked(TokenBalanceManager.getBalance).mockRejectedValue(new Error("Balance lookup failed"));
+    vi.mocked(TokenBalanceManager.getBalance).mockRejectedValue(
+      new Error("Balance lookup failed"),
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -171,7 +177,9 @@ describe("GET /api/tokens/balance", () => {
       balance: 50,
       lastRegeneration: mockDate,
     });
-    vi.mocked(getTimeUntilNextRegeneration).mockRejectedValue(new Error("Regeneration time error"));
+    vi.mocked(getTimeUntilNextRegeneration).mockRejectedValue(
+      new Error("Regeneration time error"),
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -196,7 +204,9 @@ describe("GET /api/tokens/balance", () => {
       lastRegeneration: mockDate,
     });
     vi.mocked(getTimeUntilNextRegeneration).mockResolvedValue(600000);
-    vi.mocked(TokenBalanceManager.getConsumptionStats).mockRejectedValue(new Error("Stats error"));
+    vi.mocked(TokenBalanceManager.getConsumptionStats).mockRejectedValue(
+      new Error("Stats error"),
+    );
 
     const response = await GET();
     const data = await response.json();

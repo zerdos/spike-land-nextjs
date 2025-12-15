@@ -1,6 +1,8 @@
 # Stripe Integration Best Practices
 
-Comprehensive guide to integrating Stripe payments securely and reliably. This document covers checkout integration, subscription management, webhook handling, security, testing, and error handling.
+Comprehensive guide to integrating Stripe payments securely and reliably. This
+document covers checkout integration, subscription management, webhook handling,
+security, testing, and error handling.
 
 ## Table of Contents
 
@@ -19,7 +21,8 @@ Comprehensive guide to integrating Stripe payments securely and reliably. This d
 
 ### Integration Options Overview
 
-Stripe offers five main integration approaches, ordered by ease of implementation:
+Stripe offers five main integration approaches, ordered by ease of
+implementation:
 
 | Integration                  | Customization | Complexity  | Use Case                            |
 | ---------------------------- | ------------- | ----------- | ----------------------------------- |
@@ -31,7 +34,8 @@ Stripe offers five main integration approaches, ordered by ease of implementatio
 
 ### Stripe Checkout (Recommended)
 
-Stripe Checkout is the recommended solution for most integrations due to its balance of features, security, and ease of implementation.
+Stripe Checkout is the recommended solution for most integrations due to its
+balance of features, security, and ease of implementation.
 
 #### Key Advantages
 
@@ -117,7 +121,8 @@ async function retrieveCheckoutSession(sessionId: string) {
 
 ### Dynamic Payment Methods
 
-Best Practice: Let Stripe dynamically determine which payment methods to display based on transaction context.
+Best Practice: Let Stripe dynamically determine which payment methods to display
+based on transaction context.
 
 ```typescript
 async function createCheckoutSession(customerId: string) {
@@ -234,7 +239,8 @@ async function createSubscription(
 
 ### Customer Portal Integration
 
-The customer portal allows self-service management of subscriptions, payment methods, and invoices.
+The customer portal allows self-service management of subscriptions, payment
+methods, and invoices.
 
 ```typescript
 async function createPortalSession(customerId: string) {
@@ -345,7 +351,8 @@ async function cancelSubscription(
 
 ### Webhook Architecture Overview
 
-Webhooks enable real-time updates to your system when Stripe events occur. Proper implementation is critical for data consistency.
+Webhooks enable real-time updates to your system when Stripe events occur.
+Proper implementation is critical for data consistency.
 
 ```
 Stripe Event → Your Webhook Endpoint → Process Event → Update Database
@@ -394,7 +401,8 @@ export async function POST(req: Request) {
 
 ### Idempotent Event Processing
 
-The most critical aspect of webhook handling is idempotency: handling duplicate events safely.
+The most critical aspect of webhook handling is idempotency: handling duplicate
+events safely.
 
 ```typescript
 // Database schema for tracking webhook events
@@ -501,7 +509,8 @@ async function processEvent(event: Stripe.Event) {
 
 ### Using Idempotency Keys for API Requests
 
-When creating or updating Stripe objects, use idempotency keys to ensure safe retries:
+When creating or updating Stripe objects, use idempotency keys to ensure safe
+retries:
 
 ```typescript
 import { v4 as uuidv4 } from "uuid";

@@ -1,12 +1,15 @@
 # Smart Video Wall E2E Tests - Quick Start
 
-This directory contains comprehensive E2E tests for the Smart Video Wall application using Playwright and Cucumber BDD framework.
+This directory contains comprehensive E2E tests for the Smart Video Wall
+application using Playwright and Cucumber BDD framework.
 
 ## Status
 
-**IMPORTANT: These tests are ready but require the implementation to be completed first.**
+**IMPORTANT: These tests are ready but require the implementation to be
+completed first.**
 
-The video wall application (`/display` and `/client/[id]` pages) needs to be implemented before these tests can run successfully.
+The video wall application (`/display` and `/client/[id]` pages) needs to be
+implemented before these tests can run successfully.
 
 ## What's Included
 
@@ -263,7 +266,8 @@ e2e/
 
 **Tests are ready but will fail until implementation is complete.**
 
-Once the `/display` and `/client/[id]` pages are implemented with the required test IDs, run:
+Once the `/display` and `/client/[id]` pages are implemented with the required
+test IDs, run:
 
 ```bash
 npm run test:e2e:local
@@ -321,7 +325,7 @@ await page.pause(); // Opens Playwright Inspector
 ### View console logs
 
 ```typescript
-page.on("console", msg => console.log("PAGE LOG:", msg.text()));
+page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
 ```
 
 ## Questions?
@@ -336,7 +340,8 @@ See `VIDEO_WALL_TESTING.md` for:
 
 ## Summary
 
-**50+ comprehensive E2E test scenarios ready for the Smart Video Wall application.**
+**50+ comprehensive E2E test scenarios ready for the Smart Video Wall
+application.**
 
 Key strengths:
 

@@ -308,7 +308,12 @@ describe("BeforeAfterPeek", () => {
     });
 
     it("uses default label when not provided", () => {
-      render(<BeforeAfterPeek originalUrl={defaultProps.originalUrl} isActive={true} />);
+      render(
+        <BeforeAfterPeek
+          originalUrl={defaultProps.originalUrl}
+          isActive={true}
+        />,
+      );
 
       expect(screen.getByTestId("before-after-peek-label")).toHaveTextContent(
         "Original",

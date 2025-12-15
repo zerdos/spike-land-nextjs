@@ -163,7 +163,9 @@ async function main() {
   console.log("\nTest data created:");
   console.log(`  User ID: ${TEST_USER_ID}`);
   console.log(`  User Email: ${TEST_USER_EMAIL}`);
-  console.log(`  Unlisted Album: /canvas/${unlistedAlbum.id}?token=${unlistedAlbum.shareToken}`);
+  console.log(
+    `  Unlisted Album: /canvas/${unlistedAlbum.id}?token=${unlistedAlbum.shareToken}`,
+  );
   console.log(`  Private Album: /albums/${privateAlbum.id}`);
   console.log(`  Token Balance: 100`);
 }

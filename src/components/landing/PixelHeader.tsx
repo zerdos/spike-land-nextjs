@@ -38,7 +38,9 @@ export function PixelHeader() {
               </Link>
             ))}
             <Button asChild className="shadow-glow-cyan-sm">
-              <Link href="/auth/signin?callbackUrl=/apps/pixel">Get Started</Link>
+              <Link href="/auth/signin?callbackUrl=/apps/pixel">
+                Get Started
+              </Link>
             </Button>
           </nav>
 

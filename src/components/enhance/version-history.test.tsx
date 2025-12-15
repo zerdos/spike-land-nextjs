@@ -86,7 +86,8 @@ describe("VersionHistory", () => {
     );
 
     expect(screen.getByText("Version History")).toBeInTheDocument();
-    expect(screen.getByText("No enhancement versions available yet")).toBeInTheDocument();
+    expect(screen.getByText("No enhancement versions available yet"))
+      .toBeInTheDocument();
   });
 
   it("should render all versions in timeline", () => {
@@ -230,14 +231,15 @@ describe("VersionHistory", () => {
     } as unknown as HTMLAnchorElement;
 
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation(
-      (tagName: string) => {
-        if (tagName === "a") {
-          return mockAnchor;
-        }
-        return originalCreateElement(tagName);
-      },
-    );
+    const createElementSpy = vi.spyOn(document, "createElement")
+      .mockImplementation(
+        (tagName: string) => {
+          if (tagName === "a") {
+            return mockAnchor;
+          }
+          return originalCreateElement(tagName);
+        },
+      );
 
     render(
       <VersionHistory
@@ -356,7 +358,8 @@ describe("VersionHistory", () => {
 
     expect(screen.getByTestId("compare-next-button-0")).toBeInTheDocument();
     expect(screen.getByTestId("compare-next-button-1")).toBeInTheDocument();
-    expect(screen.queryByTestId("compare-next-button-2")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("compare-next-button-2")).not
+      .toBeInTheDocument();
   });
 
   it("should open compare modal with correct versions when compare-next is clicked", () => {
@@ -540,14 +543,15 @@ describe("VersionHistory", () => {
     } as unknown as HTMLAnchorElement;
 
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation(
-      (tagName: string) => {
-        if (tagName === "a") {
-          return mockAnchor;
-        }
-        return originalCreateElement(tagName);
-      },
-    );
+    const createElementSpy = vi.spyOn(document, "createElement")
+      .mockImplementation(
+        (tagName: string) => {
+          if (tagName === "a") {
+            return mockAnchor;
+          }
+          return originalCreateElement(tagName);
+        },
+      );
 
     const versionsWithNullUrl: Version[] = [
       {

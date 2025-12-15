@@ -4,7 +4,8 @@ description: Optimize SQL queries, design efficient indexes, and handle database
 model: opus
 ---
 
-You are a database optimization expert specializing in query performance and schema design.
+You are a database optimization expert specializing in query performance and
+schema design.
 
 ## Focus Areas
 

@@ -35,7 +35,10 @@ export async function GET(request: Request) {
     const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
     const limit = Math.min(
       MAX_PAGE_SIZE,
-      Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10)),
+      Math.max(
+        1,
+        parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10),
+      ),
     );
     const skip = page * limit;
 
@@ -172,10 +175,16 @@ export async function POST(request: Request) {
     }
 
     // Validate visibility
-    const validVisibilities: PipelineVisibility[] = ["PRIVATE", "PUBLIC", "LINK"];
+    const validVisibilities: PipelineVisibility[] = [
+      "PRIVATE",
+      "PUBLIC",
+      "LINK",
+    ];
     if (!validVisibilities.includes(visibility)) {
       return NextResponse.json(
-        { error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}` },
+        {
+          error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}`,
+        },
         { status: 400 },
       );
     }
@@ -209,7 +218,8 @@ export async function POST(request: Request) {
         analysisConfig: analysisConfig ?? SYSTEM_DEFAULT_PIPELINE.analysis,
         autoCropConfig: autoCropConfig ?? SYSTEM_DEFAULT_PIPELINE.autoCrop,
         promptConfig: promptConfig ?? SYSTEM_DEFAULT_PIPELINE.prompt,
-        generationConfig: generationConfig ?? SYSTEM_DEFAULT_PIPELINE.generation,
+        generationConfig: generationConfig ??
+          SYSTEM_DEFAULT_PIPELINE.generation,
         // Generate share token for LINK visibility
         shareToken: visibility === "LINK" ? crypto.randomUUID() : null,
       },

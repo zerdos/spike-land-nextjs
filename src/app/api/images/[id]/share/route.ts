@@ -53,7 +53,11 @@ export async function POST(
   } catch (error) {
     console.error("Error in POST share API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to generate share link" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to generate share link",
+      },
       { status: 500 },
     );
   }
@@ -99,7 +103,11 @@ export async function GET(
   } catch (error) {
     console.error("Error in GET share API:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to get share link" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to get share link",
+      },
       { status: 500 },
     );
   }

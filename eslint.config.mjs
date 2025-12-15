@@ -42,7 +42,10 @@ const eslintConfig = tseslint.config(
     },
     rules: {
       // TypeScript rules
-      ...tseslint.configs.recommended.reduce((acc, config) => ({ ...acc, ...config.rules }), {}),
+      ...tseslint.configs.recommended.reduce(
+        (acc, config) => ({ ...acc, ...config.rules }),
+        {},
+      ),
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

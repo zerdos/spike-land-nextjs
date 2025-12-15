@@ -75,7 +75,10 @@ export function DropZoneIndicator({
             "shadow-glow-cyan-sm",
           )}
         >
-          <Upload className="h-6 w-6 text-primary" data-testid="drop-zone-icon" />
+          <Upload
+            className="h-6 w-6 text-primary"
+            data-testid="drop-zone-icon"
+          />
         </div>
         <span
           data-testid="drop-zone-label"

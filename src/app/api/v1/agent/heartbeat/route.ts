@@ -34,14 +34,22 @@ export async function POST(req: NextRequest) {
     // In a real system, we'd store the heartbeat/load metric in a time-series DB or separate table.
     // For Phase 1, we just acknowledge.
 
-    return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid request body", details: error.flatten() }, {
+      return NextResponse.json({
+        error: "Invalid request body",
+        details: error.flatten(),
+      }, {
         status: 400,
       });
     }
     console.error("Heartbeat error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

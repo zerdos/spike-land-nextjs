@@ -1,6 +1,7 @@
 # Vercel Analytics Setup Guide
 
-This document explains how to configure Vercel Analytics and Speed Insights for spike.land.
+This document explains how to configure Vercel Analytics and Speed Insights for
+spike.land.
 
 ## Overview
 
@@ -24,7 +25,8 @@ Both packages are installed and configured:
 
 ### Integration in Layout
 
-The Analytics and SpeedInsights components are properly integrated in the root layout:
+The Analytics and SpeedInsights components are properly integrated in the root
+layout:
 
 ```tsx
 // src/app/layout.tsx
@@ -49,7 +51,8 @@ export default function RootLayout({ children }) {
 The project includes a custom analytics wrapper in `src/lib/analytics.ts` that:
 
 - Respects user cookie consent preferences
-- Provides typed event tracking for wizard, auth, app management, and error events
+- Provides typed event tracking for wizard, auth, app management, and error
+  events
 - Filters out undefined values to match Vercel Analytics requirements
 
 ## Content Security Policy Configuration
@@ -66,9 +69,11 @@ The CSP has been updated to allow Vercel Analytics and Speed Insights:
 
 ### Enabling Analytics
 
-The 404 error for `/_vercel/insights/script.js` occurs when Analytics is not enabled in the Vercel dashboard. To fix this:
+The 404 error for `/_vercel/insights/script.js` occurs when Analytics is not
+enabled in the Vercel dashboard. To fix this:
 
-1. Go to your project on Vercel dashboard: https://vercel.com/your-team/spike-land-nextjs
+1. Go to your project on Vercel dashboard:
+   https://vercel.com/your-team/spike-land-nextjs
 2. Navigate to **Settings** → **Analytics**
 3. Enable **Analytics** if not already enabled
 4. Enable **Audiences** if you want visitor segmentation
@@ -88,7 +93,8 @@ Similarly, ensure Speed Insights is enabled:
 - Analytics and Speed Insights are **production-only features** by default
 - Preview deployments may have limited analytics tracking
 - After enabling in the dashboard, you must redeploy for changes to take effect
-- The `/_vercel/insights/script.js` endpoint is automatically injected by Vercel's platform during deployment
+- The `/_vercel/insights/script.js` endpoint is automatically injected by
+  Vercel's platform during deployment
 
 ## Troubleshooting
 
@@ -150,8 +156,10 @@ Events respect cookie consent and only fire when consent is "accepted".
 - [Vercel Analytics Documentation](https://vercel.com/docs/analytics)
 - [Vercel Speed Insights Documentation](https://vercel.com/docs/speed-insights)
 - [Next.js Analytics Guide](https://nextjs.org/docs/app/guides/analytics)
-- [GitHub Issue #49](https://github.com/vercel/analytics/issues/49) - Common 404 error
-- [GitHub Issue #83](https://github.com/vercel/analytics/issues/83) - HTTP 404 for script.js
+- [GitHub Issue #49](https://github.com/vercel/analytics/issues/49) - Common 404
+  error
+- [GitHub Issue #83](https://github.com/vercel/analytics/issues/83) - HTTP 404
+  for script.js
 
 ## Summary
 

@@ -142,7 +142,10 @@ export function ImageComparisonSlider({
       <div
         ref={containerRef}
         className="relative bg-muted rounded-lg overflow-hidden w-full select-none cursor-ew-resize"
-        style={{ aspectRatio: `${safeWidth} / ${safeHeight}`, touchAction: "none" }}
+        style={{
+          aspectRatio: `${safeWidth} / ${safeHeight}`,
+          touchAction: "none",
+        }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -160,7 +163,9 @@ export function ImageComparisonSlider({
           )
           : (
             <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-              <p className="text-sm text-destructive">Enhanced image failed to load</p>
+              <p className="text-sm text-destructive">
+                Enhanced image failed to load
+              </p>
             </div>
           )}
 
@@ -182,7 +187,9 @@ export function ImageComparisonSlider({
             )
             : (
               <div className="absolute inset-0 flex items-center justify-center bg-destructive/10">
-                <p className="text-sm text-destructive">Original image failed to load</p>
+                <p className="text-sm text-destructive">
+                  Original image failed to load
+                </p>
               </div>
             )}
         </div>

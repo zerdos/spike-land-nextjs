@@ -62,7 +62,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       const result = await findStuckJobs(5 * 60 * 1000); // 5 minute timeout
 
@@ -92,7 +94,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       const result = await findStuckJobs(5 * 60 * 1000);
 
@@ -172,7 +176,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       const result = await cleanupStuckJobs({ dryRun: true });
 
@@ -198,7 +204,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       const result = await cleanupStuckJobs({ dryRun: true });
 
@@ -226,7 +234,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       // Mock transaction to execute the callback immediately
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
@@ -312,13 +322,17 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(prisma);
       });
 
-      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue({} as never);
+      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
+        {} as never,
+      );
 
       vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
         success: true,
@@ -366,13 +380,17 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(prisma);
       });
 
-      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue({} as never);
+      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
+        {} as never,
+      );
 
       // First refund succeeds, second fails
       vi.mocked(TokenBalanceManager.refundTokens)
@@ -444,13 +462,17 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(prisma);
       });
 
-      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue({} as never);
+      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
+        {} as never,
+      );
 
       vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
         success: true,
@@ -489,13 +511,17 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(prisma);
       });
 
-      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue({} as never);
+      vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
+        {} as never,
+      );
 
       const errorMessage = "Database connection failed";
       vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
@@ -524,7 +550,9 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       // Mock transaction failure
       vi.mocked(prisma.$transaction).mockRejectedValue(
@@ -542,11 +570,15 @@ describe("Job Cleanup Utilities", () => {
       const dbError = new Error("Database connection lost");
       vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(dbError);
 
-      await expect(cleanupStuckJobs()).rejects.toThrow("Database connection lost");
+      await expect(cleanupStuckJobs()).rejects.toThrow(
+        "Database connection lost",
+      );
     });
 
     it("should rethrow non-Error types when findStuckJobs fails", async () => {
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue("String error");
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(
+        "String error",
+      );
 
       await expect(cleanupStuckJobs()).rejects.toBe("String error");
     });
@@ -565,10 +597,14 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       // Mock transaction to throw a non-Error type
-      vi.mocked(prisma.$transaction).mockRejectedValue("Non-Error string thrown");
+      vi.mocked(prisma.$transaction).mockRejectedValue(
+        "Non-Error string thrown",
+      );
 
       const result = await cleanupStuckJobs();
 
@@ -599,23 +635,29 @@ describe("Job Cleanup Utilities", () => {
         },
       ];
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(mockJobs);
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs,
+      );
 
       // Mock Promise.all to return fewer results than jobs
       // This simulates the defensive check scenario
-      const promiseAllSpy = vi.spyOn(Promise, "all").mockImplementationOnce(async () => {
-        // Return only one result for two jobs to trigger the defensive check
-        return [
-          {
-            success: true,
-            tokensRefunded: 10,
-            processingDuration: 1000,
-          },
-          // Second result is undefined to trigger the check
-        ] as never;
-      });
+      const promiseAllSpy = vi.spyOn(Promise, "all").mockImplementationOnce(
+        async () => {
+          // Return only one result for two jobs to trigger the defensive check
+          return [
+            {
+              success: true,
+              tokensRefunded: 10,
+              processingDuration: 1000,
+            },
+            // Second result is undefined to trigger the check
+          ] as never;
+        },
+      );
 
-      await expect(cleanupStuckJobs()).rejects.toThrow("Missing result for job job2");
+      await expect(cleanupStuckJobs()).rejects.toThrow(
+        "Missing result for job job2",
+      );
 
       promiseAllSpy.mockRestore();
     });

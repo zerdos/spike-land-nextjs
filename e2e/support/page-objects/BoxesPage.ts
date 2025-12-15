@@ -51,7 +51,9 @@ export class BoxesPage {
 
   // Page Elements - Creation Page
   async getTierCard(tierName: string) {
-    return this.page.locator('[data-testid="tier-card"]', { hasText: tierName });
+    return this.page.locator('[data-testid="tier-card"]', {
+      hasText: tierName,
+    });
   }
 
   async getTierSelectionCards() {
@@ -71,7 +73,9 @@ export class BoxesPage {
   }
 
   async getValidationError() {
-    return this.page.locator('[data-testid="validation-error"], .error-message, [role="alert"]');
+    return this.page.locator(
+      '[data-testid="validation-error"], .error-message, [role="alert"]',
+    );
   }
 
   // Page Elements - Detail Page
@@ -213,7 +217,9 @@ export class BoxesPage {
 
   // Verification Methods
   async verifyOnBoxesListPage() {
-    await expect(await this.getPageTitle()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(await this.getPageTitle()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
     await expect(this.page).toHaveURL(/\/boxes$/);
   }
 
@@ -230,7 +236,9 @@ export class BoxesPage {
 
   async verifyTierIsHighlighted(tierName: string) {
     const tierCard = await this.getTierCard(tierName);
-    await expect(tierCard).toHaveClass(/selected|active|ring/, { timeout: TIMEOUTS.DEFAULT });
+    await expect(tierCard).toHaveClass(/selected|active|ring/, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 
   async verifyBoxInList(boxName: string) {
@@ -250,7 +258,9 @@ export class BoxesPage {
 
   async verifyBoxStatus(status: string) {
     const statusIndicator = await this.getStatusIndicator();
-    await expect(statusIndicator).toContainText(status, { timeout: TIMEOUTS.LONG });
+    await expect(statusIndicator).toContainText(status, {
+      timeout: TIMEOUTS.LONG,
+    });
   }
 
   async verifyValidationError(message: string) {
@@ -265,7 +275,9 @@ export class BoxesPage {
   }
 
   // Helper to create a box via localStorage for testing
-  async seedBox(boxData: { id: string; name: string; tier: string; status: string; }) {
+  async seedBox(
+    boxData: { id: string; name: string; tier: string; status: string; },
+  ) {
     await this.page.evaluate((data) => {
       const boxes = JSON.parse(localStorage.getItem("user-boxes") || "[]");
       boxes.push(data);

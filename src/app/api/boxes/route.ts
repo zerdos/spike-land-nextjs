@@ -59,9 +59,14 @@ export async function POST(req: Request) {
     const cost = tier.pricePerHour; // Charge 1 hour upfront
 
     // Lazy import to avoid circular dependencies if any
-    const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+    const { TokenBalanceManager } = await import(
+      "@/lib/tokens/balance-manager"
+    );
 
-    const hasBalance = await TokenBalanceManager.hasEnoughTokens(session.user.id, cost);
+    const hasBalance = await TokenBalanceManager.hasEnoughTokens(
+      session.user.id,
+      cost,
+    );
     if (!hasBalance) {
       return new NextResponse("Insufficient Tokens", { status: 402 });
     }

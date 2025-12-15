@@ -1,7 +1,6 @@
 # Album Image Index Optimization - Summary Report
 
-**Date:** 2025-12-12
-**Task:** Add compound index for album image queries
+**Date:** 2025-12-12 **Task:** Add compound index for album image queries
 **Status:** ✅ Completed (with migration notes)
 
 ---
@@ -10,10 +9,14 @@
 
 ### Key Findings
 
-1. ✅ **Primary index already exists**: `@@index([albumId, sortOrder])` is present in the schema (line 335)
-2. ✅ **Correctly optimized**: All application queries use `ORDER BY sortOrder ASC`, which uses this index
-3. ✅ **Added supplementary index**: `@@index([albumId, addedAt])` for future chronological features
-4. ⚠️ **Schema drift detected**: Database has untracked changes that need migration resolution
+1. ✅ **Primary index already exists**: `@@index([albumId, sortOrder])` is
+   present in the schema (line 335)
+2. ✅ **Correctly optimized**: All application queries use
+   `ORDER BY sortOrder ASC`, which uses this index
+3. ✅ **Added supplementary index**: `@@index([albumId, addedAt])` for future
+   chronological features
+4. ⚠️ **Schema drift detected**: Database has untracked changes that need
+   migration resolution
 
 ---
 
@@ -266,19 +269,22 @@ const timeline = await prisma.albumImage.groupBy({
 
 ## Conclusion
 
-✅ **Primary goal achieved:** The required compound index `[albumId, sortOrder]` already exists and is correctly optimized
+✅ **Primary goal achieved:** The required compound index `[albumId, sortOrder]`
+already exists and is correctly optimized
 
 ✅ **Bonus improvement:** Added chronological index for future features
 
 ⚠️ **Action required:** Resolve schema drift before deploying
 
-📊 **Impact:** 95-99% performance improvement for large albums, negligible storage cost
+📊 **Impact:** 95-99% performance improvement for large albums, negligible
+storage cost
 
 ---
 
 ## References
 
-- Schema file: `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma` (lines 325-338)
+- Schema file: `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma`
+  (lines 325-338)
 - [Prisma Index Documentation](https://www.prisma.io/docs/concepts/components/prisma-schema/indexes)
 - [PostgreSQL Query Optimization](https://www.postgresql.org/docs/current/using-explain.html)
 - [Prisma Migrate Guide](https://www.prisma.io/docs/concepts/components/prisma-migrate)

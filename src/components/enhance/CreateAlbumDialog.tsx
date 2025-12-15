@@ -25,11 +25,15 @@ import { useState } from "react";
 type AlbumPrivacy = "PRIVATE" | "UNLISTED" | "PUBLIC";
 
 interface CreateAlbumDialogProps {
-  onAlbumCreated?: (album: { id: string; name: string; privacy: AlbumPrivacy; }) => void;
+  onAlbumCreated?: (
+    album: { id: string; name: string; privacy: AlbumPrivacy; },
+  ) => void;
   trigger?: React.ReactNode;
 }
 
-export function CreateAlbumDialog({ onAlbumCreated, trigger }: CreateAlbumDialogProps) {
+export function CreateAlbumDialog(
+  { onAlbumCreated, trigger }: CreateAlbumDialogProps,
+) {
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState("");

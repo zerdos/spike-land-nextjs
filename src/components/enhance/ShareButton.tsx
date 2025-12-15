@@ -59,7 +59,9 @@ export function ShareButton({
     } catch (error) {
       console.error("Failed to generate share link:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to generate share link",
+        error instanceof Error
+          ? error.message
+          : "Failed to generate share link",
       );
       return null;
     } finally {

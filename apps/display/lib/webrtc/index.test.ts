@@ -17,7 +17,9 @@ describe("lib/webrtc/index barrel exports", () => {
 
     // Verify they match the actual utils exports
     expect(webrtcIndex.getUserMediaStream).toBe(webrtcUtils.getUserMediaStream);
-    expect(webrtcIndex.getDisplayMediaStream).toBe(webrtcUtils.getDisplayMediaStream);
+    expect(webrtcIndex.getDisplayMediaStream).toBe(
+      webrtcUtils.getDisplayMediaStream,
+    );
     expect(webrtcIndex.stopMediaStream).toBe(webrtcUtils.stopMediaStream);
     expect(webrtcIndex.getStreamMetadata).toBe(webrtcUtils.getStreamMetadata);
   });
@@ -29,7 +31,9 @@ describe("lib/webrtc/index barrel exports", () => {
     expect(webrtcIndex.getAppBaseUrl).toBeDefined();
 
     // Verify they match the actual config exports
-    expect(webrtcIndex.getPeerServerConfig).toBe(webrtcConfig.getPeerServerConfig);
+    expect(webrtcIndex.getPeerServerConfig).toBe(
+      webrtcConfig.getPeerServerConfig,
+    );
     expect(webrtcIndex.createPeerConfig).toBe(webrtcConfig.createPeerConfig);
     expect(webrtcIndex.getAppBaseUrl).toBe(webrtcConfig.getAppBaseUrl);
   });

@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 // Use vi.hoisted to define mocks before they are used
-const { mockSession, mockAuth, mockVoucherManager, mockCheckRateLimit, mockResetRateLimit } = vi
+const {
+  mockSession,
+  mockAuth,
+  mockVoucherManager,
+  mockCheckRateLimit,
+  mockResetRateLimit,
+} = vi
   .hoisted(() => ({
     mockSession: {
       user: {
@@ -37,7 +43,10 @@ vi.mock("@/lib/rate-limiter", () => ({
 }));
 
 // Helper to create mock request
-function createMockRequest(body: object, options?: { contentLength?: string; }): NextRequest {
+function createMockRequest(
+  body: object,
+  options?: { contentLength?: string; },
+): NextRequest {
   const headers = new Headers();
   if (options?.contentLength) {
     headers.set("content-length", options.contentLength);
@@ -210,7 +219,10 @@ describe("POST /api/vouchers/redeem", () => {
     const req = createMockRequest({ code: "TEST2024" });
     await POST(req);
 
-    expect(mockVoucherManager.redeem).toHaveBeenCalledWith("TEST2024", "user-123");
+    expect(mockVoucherManager.redeem).toHaveBeenCalledWith(
+      "TEST2024",
+      "user-123",
+    );
   });
 
   it("should update token balance correctly for FIXED_TOKENS", async () => {
@@ -350,7 +362,10 @@ describe("POST /api/vouchers/redeem", () => {
     const req = createMockRequest({ code: "TEST2024" });
     await POST(req);
 
-    expect(mockVoucherManager.redeem).toHaveBeenCalledWith("TEST2024", "custom-user-456");
+    expect(mockVoucherManager.redeem).toHaveBeenCalledWith(
+      "TEST2024",
+      "custom-user-456",
+    );
   });
 
   it("should return 429 when rate limited", async () => {
@@ -365,7 +380,9 @@ describe("POST /api/vouchers/redeem", () => {
     const data = await res.json();
 
     expect(res.status).toBe(429);
-    expect(data.error).toBe("Too many redemption attempts. Please try again later.");
+    expect(data.error).toBe(
+      "Too many redemption attempts. Please try again later.",
+    );
     expect(mockVoucherManager.redeem).not.toHaveBeenCalled();
   });
 
@@ -385,7 +402,9 @@ describe("POST /api/vouchers/redeem", () => {
   });
 
   it("should return 413 when content-length exceeds maximum", async () => {
-    const req = createMockRequest({ code: "TEST2024" }, { contentLength: "2048" });
+    const req = createMockRequest({ code: "TEST2024" }, {
+      contentLength: "2048",
+    });
     const res = await POST(req);
     const data = await res.json();
 

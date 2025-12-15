@@ -31,7 +31,10 @@ describe("format-utils", () => {
     });
 
     it("should return original size for unknown format", () => {
-      const estimated = estimateFileSize(originalSize, "unknown" as ExportFormat);
+      const estimated = estimateFileSize(
+        originalSize,
+        "unknown" as ExportFormat,
+      );
       expect(estimated).toBe(originalSize);
     });
   });

@@ -306,7 +306,9 @@ describe("MyAppsPage", () => {
 
       const requirementsText = screen.getByText(/Requirements:/);
       expect(requirementsText).toBeInTheDocument();
-      expect(requirementsText.parentElement?.textContent).toContain("Requirements: 2");
+      expect(requirementsText.parentElement?.textContent).toContain(
+        "Requirements: 2",
+      );
     });
 
     it("should display monetization model", async () => {

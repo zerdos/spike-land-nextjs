@@ -2,7 +2,12 @@ import { JobStatus, McpJobType } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock all external dependencies - CRITICAL: Mock AI APIs to prevent real calls
-const { mockMcpGenerationJob, mockTokenBalanceManager, mockGeminiClient, mockUploadToR2 } = vi
+const {
+  mockMcpGenerationJob,
+  mockTokenBalanceManager,
+  mockGeminiClient,
+  mockUploadToR2,
+} = vi
   .hoisted(() => ({
     mockMcpGenerationJob: {
       create: vi.fn(),
@@ -80,7 +85,9 @@ describe("generation-service", () => {
   describe("createGenerationJob", () => {
     it("should create a generation job when user has enough tokens", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0); // No concurrent jobs
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -142,7 +149,9 @@ describe("generation-service", () => {
 
     it("should use correct token costs for each tier", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         status: JobStatus.PROCESSING,
@@ -162,7 +171,9 @@ describe("generation-service", () => {
 
       // Test TIER_2K = 5 tokens
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         status: JobStatus.PROCESSING,
@@ -181,7 +192,9 @@ describe("generation-service", () => {
 
       // Test TIER_4K = 10 tokens
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         status: JobStatus.PROCESSING,
@@ -201,7 +214,9 @@ describe("generation-service", () => {
   describe("createModificationJob", () => {
     it("should create a modification job when user has enough tokens", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -369,7 +384,9 @@ describe("generation-service", () => {
     it("should allow job when under concurrent limit", async () => {
       // Test with 2 concurrent jobs (should be allowed)
       mockMcpGenerationJob.count.mockResolvedValue(2);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         status: JobStatus.PROCESSING,
@@ -390,7 +407,9 @@ describe("generation-service", () => {
       // This test verifies that the mock is in place
       // If the real API was called, we would get actual network errors
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         status: JobStatus.PROCESSING,
@@ -415,7 +434,9 @@ describe("generation-service", () => {
     it("should process generation job successfully and update job status", async () => {
       const mockImageBuffer = Buffer.from("fake-image-data");
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -424,8 +445,12 @@ describe("generation-service", () => {
         tokensCost: 2,
         status: JobStatus.PROCESSING,
       });
-      mockGeminiClient.generateImageWithGemini.mockResolvedValue(mockImageBuffer);
-      mockUploadToR2.mockResolvedValue({ url: "https://r2.example.com/image.jpg" });
+      mockGeminiClient.generateImageWithGemini.mockResolvedValue(
+        mockImageBuffer,
+      );
+      mockUploadToR2.mockResolvedValue({
+        url: "https://r2.example.com/image.jpg",
+      });
       mockMcpGenerationJob.update.mockResolvedValue({});
 
       await createGenerationJob({
@@ -448,7 +473,9 @@ describe("generation-service", () => {
 
       // Verify R2 upload was called
       expect(mockUploadToR2).toHaveBeenCalledWith({
-        key: expect.stringContaining(`mcp-generated/${testUserId}/${testJobId}`),
+        key: expect.stringContaining(
+          `mcp-generated/${testUserId}/${testJobId}`,
+        ),
         buffer: mockImageBuffer,
         contentType: "image/jpeg",
       });
@@ -465,7 +492,9 @@ describe("generation-service", () => {
 
     it("should handle generation job failure and refund tokens", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -521,7 +550,9 @@ describe("generation-service", () => {
 
     it("should not refund when job not found after failure", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -565,7 +596,9 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -595,7 +628,9 @@ describe("generation-service", () => {
 
       // Verify input image was uploaded to R2
       expect(mockUploadToR2).toHaveBeenCalledWith({
-        key: expect.stringContaining(`mcp-input/${testUserId}/${testJobId}.png`),
+        key: expect.stringContaining(
+          `mcp-input/${testUserId}/${testJobId}.png`,
+        ),
         buffer: expect.any(Buffer),
         contentType: "image/png",
       });
@@ -619,7 +654,9 @@ describe("generation-service", () => {
 
       // Verify output was uploaded
       expect(mockUploadToR2).toHaveBeenCalledWith({
-        key: expect.stringContaining(`mcp-modified/${testUserId}/${testJobId}.jpg`),
+        key: expect.stringContaining(
+          `mcp-modified/${testUserId}/${testJobId}.jpg`,
+        ),
         buffer: mockImageBuffer,
         contentType: "image/jpeg",
       });
@@ -638,7 +675,9 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -648,7 +687,9 @@ describe("generation-service", () => {
         status: JobStatus.PROCESSING,
       });
       // Input upload succeeds
-      mockUploadToR2.mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" });
+      mockUploadToR2.mockResolvedValueOnce({
+        url: "https://r2.example.com/input.jpg",
+      });
       mockMcpGenerationJob.update.mockResolvedValue({});
       // Modification fails with content policy error
       mockGeminiClient.modifyImageWithGemini.mockRejectedValue(
@@ -701,7 +742,9 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -738,10 +781,14 @@ describe("generation-service", () => {
 
   describe("outer catch handlers for background processing", () => {
     it("should log error when generation job throws unexpected error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -780,11 +827,15 @@ describe("generation-service", () => {
     });
 
     it("should log error when modification job throws unexpected error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -860,7 +911,9 @@ describe("generation-service", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Insufficient token balance. Required: 5 tokens");
+      expect(result.error).toBe(
+        "Insufficient token balance. Required: 5 tokens",
+      );
     });
 
     it("should use default error for modification when consumeTokens returns no error", async () => {
@@ -879,14 +932,18 @@ describe("generation-service", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Insufficient token balance. Required: 10 tokens");
+      expect(result.error).toBe(
+        "Insufficient token balance. Required: 10 tokens",
+      );
     });
   });
 
   describe("job creation without apiKeyId", () => {
     it("should create generation job with null apiKeyId when not provided", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
@@ -912,7 +969,9 @@ describe("generation-service", () => {
 
     it("should create modification job with null apiKeyId when not provided", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+        success: true,
+      });
       mockMcpGenerationJob.create.mockResolvedValue({
         id: testJobId,
         userId: testUserId,

@@ -197,7 +197,9 @@ export function useMediaStream(peerId: string) {
         stream: streamRef.current,
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to replace video track";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Failed to replace video track";
       setState((prev) => ({
         ...prev,
         error: errorMessage,

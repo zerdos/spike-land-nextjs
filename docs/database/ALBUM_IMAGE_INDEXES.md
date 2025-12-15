@@ -2,7 +2,8 @@
 
 ## Summary
 
-Added compound index on `(albumId, addedAt)` to optimize chronological album queries.
+Added compound index on `(albumId, addedAt)` to optimize chronological album
+queries.
 
 ## Current Index Structure
 
@@ -36,7 +37,8 @@ model AlbumImage {
 INSERT INTO album_images (albumId, imageId, ...) VALUES (?, ?, ...)
 ```
 
-**Benefit:** Enforces data integrity at database level, prevents duplicate entries.
+**Benefit:** Enforces data integrity at database level, prevents duplicate
+entries.
 
 ### 2. `@@index([albumId, sortOrder])` - Custom Sort Order Queries
 
@@ -60,8 +62,8 @@ SELECT * FROM album_images
 WHERE imageId = ?
 ```
 
-**Use Case:** Find all albums containing a specific image
-**Performance:** O(log n) lookup
+**Use Case:** Find all albums containing a specific image **Performance:** O(log
+n) lookup
 
 ### 4. `@@index([albumId, addedAt])` - Chronological Queries (NEW)
 
@@ -149,13 +151,15 @@ Index Scan using album_images_albumId_addedAt_idx on album_images
 
 ## Storage Overhead
 
-- **Index Size:** ~16 bytes per row (8 bytes for albumId cuid, 8 bytes for timestamp)
+- **Index Size:** ~16 bytes per row (8 bytes for albumId cuid, 8 bytes for
+  timestamp)
 - **For 100,000 images:** ~1.6 MB additional storage
 - **Trade-off:** Minimal storage cost for significant query performance gain
 
 ## Application Code Impact
 
-No application code changes required. Queries automatically use the index when appropriate.
+No application code changes required. Queries automatically use the index when
+appropriate.
 
 ### Example Queries That Will Benefit
 

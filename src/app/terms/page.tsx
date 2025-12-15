@@ -42,7 +42,9 @@ export default function TermsPage() {
         <Card className="mb-12">
           <CardHeader>
             <CardTitle>Table of Contents</CardTitle>
-            <CardDescription>Quick navigation to our terms of service sections</CardDescription>
+            <CardDescription>
+              Quick navigation to our terms of service sections
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,7 +86,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Age Requirement</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Age Requirement
+                  </h3>
                   <p>
                     You must be at least 13 years of age to use this Service. If you are under 13,
                     you may not create an account or use the Service. By using the Service, you
@@ -94,7 +98,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Capacity to Agree</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Capacity to Agree
+                  </h3>
                   <p>
                     You represent and warrant that you have the legal capacity to enter into these
                     Terms and are not prohibited by law from using the Service. If you are using the
@@ -128,11 +134,15 @@ export default function TermsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Account Terms</CardTitle>
-                <CardDescription>Your account rights and responsibilities</CardDescription>
+                <CardDescription>
+                  Your account rights and responsibilities
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Account Creation</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Account Creation
+                  </h3>
                   <p>
                     You can create an account using OAuth authentication providers, including GitHub
                     and Google. We collect only the information necessary to operate your account:
@@ -145,13 +155,17 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Account Security</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Account Security
+                  </h3>
                   <div className="space-y-3">
                     <p>
                       You are solely responsible for:
                     </p>
                     <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
-                      <li>Maintaining the confidentiality of your OAuth credentials</li>
+                      <li>
+                        Maintaining the confidentiality of your OAuth credentials
+                      </li>
                       <li>Preventing unauthorized access to your account</li>
                       <li>Notifying us immediately of unauthorized access</li>
                       <li>All activities that occur under your account</li>
@@ -164,7 +178,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">One Account Per Person</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    One Account Per Person
+                  </h3>
                   <p>
                     You may maintain only one personal account on the Service. Creating multiple
                     accounts to circumvent token limits, rate limits, or other restrictions is
@@ -173,7 +189,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Account Termination</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Account Termination
+                  </h3>
                   <div className="space-y-3">
                     <p>
                       We reserve the right to terminate or suspend your account at any time for:
@@ -182,7 +200,9 @@ export default function TermsPage() {
                       <li>Violation of these Terms</li>
                       <li>Violation of our Acceptable Use Policy</li>
                       <li>Suspicious activity indicating fraud or misuse</li>
-                      <li>Failure to pay for services within 30 days of invoice</li>
+                      <li>
+                        Failure to pay for services within 30 days of invoice
+                      </li>
                       <li>Non-compliance with legal requirements</li>
                     </ul>
                     <p className="pt-2">
@@ -200,35 +220,55 @@ export default function TermsPage() {
           <section id="user-responsibilities">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">User Responsibilities</CardTitle>
-                <CardDescription>Your obligations when using the Service</CardDescription>
+                <CardTitle className="text-2xl">
+                  User Responsibilities
+                </CardTitle>
+                <CardDescription>
+                  Your obligations when using the Service
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">General Obligations</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    General Obligations
+                  </h3>
                   <p>
                     As a user of the Pixel (Spike Land), you are responsible for:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
-                    <li>Ensuring all images you upload comply with our Acceptable Use Policy</li>
-                    <li>Maintaining the security of your account credentials</li>
+                    <li>
+                      Ensuring all images you upload comply with our Acceptable Use Policy
+                    </li>
+                    <li>
+                      Maintaining the security of your account credentials
+                    </li>
                     <li>
                       Using the Service in accordance with all applicable laws and regulations
                     </li>
-                    <li>Respecting the intellectual property rights of others</li>
-                    <li>Reporting any security vulnerabilities or bugs you discover</li>
+                    <li>
+                      Respecting the intellectual property rights of others
+                    </li>
+                    <li>
+                      Reporting any security vulnerabilities or bugs you discover
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Content Responsibility</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Content Responsibility
+                  </h3>
                   <p>
                     You are solely responsible for all content you upload, enhance, or share through
                     the Service. This includes:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
-                    <li>Ensuring you have the right to upload and modify images</li>
-                    <li>Verifying that content does not violate third-party rights</li>
+                    <li>
+                      Ensuring you have the right to upload and modify images
+                    </li>
+                    <li>
+                      Verifying that content does not violate third-party rights
+                    </li>
                     <li>Backing up your original images before enhancement</li>
                     <li>Not uploading malicious files or content</li>
                   </ul>
@@ -251,11 +291,15 @@ export default function TermsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Token Economy</CardTitle>
-                <CardDescription>How tokens work and token policies</CardDescription>
+                <CardDescription>
+                  How tokens work and token policies
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">What Are Tokens</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    What Are Tokens
+                  </h3>
                   <p>
                     Tokens are the currency used to purchase image enhancement services on the Spike
                     Land platform. Tokens are non-refundable and non-transferable digital units with
@@ -264,7 +308,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Free Token Generation</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Free Token Generation
+                  </h3>
                   <div className="space-y-3">
                     <p>
                       All users receive free tokens according to the following schedule:
@@ -289,7 +335,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Purchased Tokens</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Purchased Tokens
+                  </h3>
                   <div className="space-y-3">
                     <div className="border-l-4 border-primary pl-4">
                       <h4 className="font-semibold">Never Expire</h4>
@@ -397,7 +445,9 @@ export default function TermsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Service Description</CardTitle>
-                <CardDescription>What the Service provides and its limitations</CardDescription>
+                <CardDescription>
+                  What the Service provides and its limitations
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -410,23 +460,31 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Enhancement Tiers</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Enhancement Tiers
+                  </h3>
                   <div className="space-y-4">
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">1K Enhancement (1024x1024)</h4>
+                      <h4 className="font-semibold">
+                        1K Enhancement (1024x1024)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         Standard resolution enhancement suitable for web use. Requires 5 tokens.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">2K Enhancement (2048x2048)</h4>
+                      <h4 className="font-semibold">
+                        2K Enhancement (2048x2048)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         High-resolution enhancement suitable for printing and professional use.
                         Requires 10 tokens.
                       </p>
                     </div>
                     <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold">4K Enhancement (4096x4096)</h4>
+                      <h4 className="font-semibold">
+                        4K Enhancement (4096x4096)
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         Ultra-high resolution enhancement for premium quality. Requires 20 tokens.
                       </p>
@@ -435,7 +493,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Processing Technology</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Processing Technology
+                  </h3>
                   <p>
                     Image enhancements are processed using Google Gemini API. When you request an
                     enhancement, your image is sent to Google&apos;s servers for processing. By
@@ -444,7 +504,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">No Guarantee of Specific Results</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    No Guarantee of Specific Results
+                  </h3>
                   <p>
                     The Service is provided &quot;as is&quot; without any warranty regarding the
                     quality, accuracy, or suitability of enhanced images. AI-powered image
@@ -459,7 +521,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Service Availability</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Service Availability
+                  </h3>
                   <p>
                     We do not guarantee uninterrupted or error-free service. The Service may be
                     unavailable due to:
@@ -480,12 +544,18 @@ export default function TermsPage() {
           <section id="acceptable-use">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Acceptable Use Policy</CardTitle>
-                <CardDescription>What you cannot do with the Service</CardDescription>
+                <CardTitle className="text-2xl">
+                  Acceptable Use Policy
+                </CardTitle>
+                <CardDescription>
+                  What you cannot do with the Service
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Prohibited Content</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Prohibited Content
+                  </h3>
                   <p className="mb-4">
                     You agree not to upload, enhance, or share images that contain:
                   </p>
@@ -521,7 +591,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Copyright Compliance</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Copyright Compliance
+                  </h3>
                   <p>
                     You represent and warrant that you own or have all necessary rights to use
                     images you upload. You are solely responsible for ensuring your uploaded images
@@ -539,22 +611,38 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Misuse Prevention</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Misuse Prevention
+                  </h3>
                   <p>
                     You agree not to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
-                    <li>Circumvent rate limits or token limits by creating multiple accounts</li>
-                    <li>Attempt to gain unauthorized access to the Service or other accounts</li>
-                    <li>Use automated tools to scrape or bulk download content</li>
-                    <li>Interfere with the Service&apos;s operation or infrastructure</li>
-                    <li>Reverse engineer or attempt to extract proprietary technology</li>
-                    <li>Use the Service for commercial purposes without permission</li>
+                    <li>
+                      Circumvent rate limits or token limits by creating multiple accounts
+                    </li>
+                    <li>
+                      Attempt to gain unauthorized access to the Service or other accounts
+                    </li>
+                    <li>
+                      Use automated tools to scrape or bulk download content
+                    </li>
+                    <li>
+                      Interfere with the Service&apos;s operation or infrastructure
+                    </li>
+                    <li>
+                      Reverse engineer or attempt to extract proprietary technology
+                    </li>
+                    <li>
+                      Use the Service for commercial purposes without permission
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Rate Limiting Enforcement</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Rate Limiting Enforcement
+                  </h3>
                   <p>
                     We enforce strict rate limits to maintain service quality for all users.
                     Violating rate limits will result in temporary account suspension. Limits
@@ -568,12 +656,16 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Enforcement and Termination</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Enforcement and Termination
+                  </h3>
                   <p>
                     We reserve the right to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
-                    <li>Immediately suspend or terminate your account for policy violations</li>
+                    <li>
+                      Immediately suspend or terminate your account for policy violations
+                    </li>
                     <li>Delete prohibited content without notice</li>
                     <li>Refuse service to repeat violators</li>
                     <li>Report illegal content to appropriate authorities</li>
@@ -588,12 +680,18 @@ export default function TermsPage() {
           <section id="intellectual-property">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Intellectual Property</CardTitle>
-                <CardDescription>Ownership of images and content</CardDescription>
+                <CardTitle className="text-2xl">
+                  Intellectual Property
+                </CardTitle>
+                <CardDescription>
+                  Ownership of images and content
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">User Image Ownership</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    User Image Ownership
+                  </h3>
                   <p>
                     You retain all intellectual property rights and ownership of images you upload
                     to the Service. We do not claim ownership of your images.
@@ -601,7 +699,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Platform License Grant</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Platform License Grant
+                  </h3>
                   <p>
                     By uploading images, you grant the Operator a limited, non-exclusive, revocable
                     license to:
@@ -624,10 +724,18 @@ export default function TermsPage() {
                     We explicitly guarantee that:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
-                    <li>Your images are NOT used to train AI models (ours or third parties)</li>
-                    <li>Your images are NOT used for machine learning research</li>
-                    <li>Your images are NOT sold or shared for commercial purposes</li>
-                    <li>Your images are NOT analyzed for facial recognition training</li>
+                    <li>
+                      Your images are NOT used to train AI models (ours or third parties)
+                    </li>
+                    <li>
+                      Your images are NOT used for machine learning research
+                    </li>
+                    <li>
+                      Your images are NOT sold or shared for commercial purposes
+                    </li>
+                    <li>
+                      Your images are NOT analyzed for facial recognition training
+                    </li>
                   </ul>
                   <p className="pt-4">
                     Google Gemini processes your images according to their own privacy terms.
@@ -637,7 +745,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Service Intellectual Property</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Service Intellectual Property
+                  </h3>
                   <p>
                     The Spike Land platform, including but not limited to:
                   </p>
@@ -661,11 +771,15 @@ export default function TermsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Payment Terms</CardTitle>
-                <CardDescription>Pricing, billing, and refund policies</CardDescription>
+                <CardDescription>
+                  Pricing, billing, and refund policies
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Currency and Pricing</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Currency and Pricing
+                  </h3>
                   <p>
                     All prices are displayed in British Pounds Sterling (GBP). Prices are subject to
                     change without notice. Significant price changes will be communicated via email
@@ -674,7 +788,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Payment Processing</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Payment Processing
+                  </h3>
                   <p>
                     Token purchases are processed through Stripe, a PCI DSS Level 1 compliant
                     payment processor. We do not store your credit card information. Stripe handles
@@ -687,7 +803,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Automatic Subscription Renewal</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Automatic Subscription Renewal
+                  </h3>
                   <p>
                     If you enable automatic token renewals (if offered), your payment method will be
                     charged automatically at the interval you select. You can cancel automatic
@@ -724,14 +842,18 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Payment Disputes</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Payment Disputes
+                  </h3>
                   <p>
                     If you dispute a charge with your card issuer (chargeback), we reserve the right
                     to:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Suspend your account pending investigation</li>
-                    <li>Demand repayment of any chargeback fees (typically £20-50)</li>
+                    <li>
+                      Demand repayment of any chargeback fees (typically £20-50)
+                    </li>
                     <li>Terminate your account permanently</li>
                     <li>Refuse future service to you</li>
                   </ul>
@@ -753,12 +875,16 @@ export default function TermsPage() {
           <section id="limitation-liability">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Limitation of Liability</CardTitle>
+                <CardTitle className="text-2xl">
+                  Limitation of Liability
+                </CardTitle>
                 <CardDescription>Our liability and disclaimers</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Service Provided &quot;As Is&quot;</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Service Provided &quot;As Is&quot;
+                  </h3>
                   <p>
                     The Service is provided &quot;AS IS&quot; without warranties of any kind,
                     express or implied. We make no representations about the accuracy, reliability,
@@ -767,13 +893,17 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">No Warranty of Results</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    No Warranty of Results
+                  </h3>
                   <p>
                     We do not warrant that:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Image enhancements will meet your expectations</li>
-                    <li>Enhanced images will be suitable for your intended use</li>
+                    <li>
+                      Enhanced images will be suitable for your intended use
+                    </li>
                     <li>The Service will be error-free or uninterrupted</li>
                     <li>Defects in the Service will be corrected</li>
                     <li>The Service will be compatible with your equipment</li>
@@ -792,13 +922,19 @@ export default function TermsPage() {
                     <li>Lost profits or revenue</li>
                     <li>Lost business opportunities</li>
                     <li>Lost data or data corruption</li>
-                    <li>Indirect, incidental, special, or consequential damages</li>
-                    <li>Damages arising from use or inability to use the Service</li>
+                    <li>
+                      Indirect, incidental, special, or consequential damages
+                    </li>
+                    <li>
+                      Damages arising from use or inability to use the Service
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Maximum Liability</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Maximum Liability
+                  </h3>
                   <p>
                     Our total liability under these Terms shall not exceed the total amount you have
                     paid to us in the 12 months preceding the event giving rise to liability, or
@@ -821,13 +957,17 @@ export default function TermsPage() {
                     <li>War, terrorism, civil unrest</li>
                     <li>Pandemics or epidemics</li>
                     <li>Government actions or restrictions</li>
-                    <li>Third-party service outages (Google, Stripe, Cloudflare)</li>
+                    <li>
+                      Third-party service outages (Google, Stripe, Cloudflare)
+                    </li>
                     <li>Internet infrastructure failures</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Indemnification</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Indemnification
+                  </h3>
                   <p>
                     You agree to indemnify and hold harmless the Operator from any claims, damages,
                     or costs (including attorney fees) arising from:
@@ -861,7 +1001,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Informal Resolution</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Informal Resolution
+                  </h3>
                   <p>
                     Before pursuing any legal action, both parties agree to attempt to resolve
                     disputes through informal negotiation. Please contact us at hello@spike.land
@@ -878,7 +1020,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Jurisdiction and Venue</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Jurisdiction and Venue
+                  </h3>
                   <p>
                     Any legal action or proceeding arising under these Terms shall be brought
                     exclusively in the courts of England and Wales, and both parties consent to the
@@ -916,7 +1060,9 @@ export default function TermsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Right to Modify</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Right to Modify
+                  </h3>
                   <p>
                     We reserve the right to modify these Terms at any time. Changes are effective
                     immediately upon posting to the Service.
@@ -924,14 +1070,18 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Notice of Changes</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Notice of Changes
+                  </h3>
                   <p>
                     For material changes, we will provide notice by:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground mt-3">
                     <li>Emailing you at your registered email address</li>
                     <li>Displaying a prominent notice on the Service</li>
-                    <li>Updating the &quot;Last Updated&quot; date at the top of this page</li>
+                    <li>
+                      Updating the &quot;Last Updated&quot; date at the top of this page
+                    </li>
                   </ul>
                 </div>
 
@@ -947,7 +1097,9 @@ export default function TermsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Material Changes</h3>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Material Changes
+                  </h3>
                   <p>
                     Material changes include those that:
                   </p>

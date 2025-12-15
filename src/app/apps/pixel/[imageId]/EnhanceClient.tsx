@@ -54,7 +54,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     }
   }, [searchParams, refetchBalance]);
 
-  type ImageWithJobs = EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; };
+  type ImageWithJobs = EnhancedImage & {
+    enhancementJobs: ImageEnhancementJob[];
+  };
 
   // Use SSE for real-time job status updates (replaces polling)
   const { job: streamJob } = useJobStream({
@@ -64,7 +66,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       (completedJob: any) => {
         setImage((prev: ImageWithJobs) => ({
           ...prev,
-          enhancementJobs: prev.enhancementJobs.map((job: ImageEnhancementJob) =>
+          enhancementJobs: prev.enhancementJobs.map((
+            job: ImageEnhancementJob,
+          ) =>
             job.id === completedJob.id
               ? {
                 ...job,
@@ -266,7 +270,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           <Card>
             <CardHeader>
               <CardTitle>
-                {selectedVersion ? "Before & After Comparison" : "Original Image"}
+                {selectedVersion
+                  ? "Before & After Comparison"
+                  : "Original Image"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -298,7 +304,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             </CardHeader>
             <CardContent>
               <EnhancementHistoryGrid
-                versions={image.enhancementJobs.map((job: ImageEnhancementJob) => ({
+                versions={image.enhancementJobs.map((
+                  job: ImageEnhancementJob,
+                ) => ({
                   id: job.id,
                   tier: job.tier,
                   enhancedUrl: job.enhancedUrl || "",
@@ -338,7 +346,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                 onEnhance={handleEnhance}
                 currentBalance={balance}
                 isProcessing={activeJobId !== null}
-                completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
+                completedVersions={completedVersions.map((
+                  job: ImageEnhancementJob,
+                ) => ({
                   tier: job.tier,
                   url: job.enhancedUrl || "",
                 }))}
@@ -355,7 +365,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                   <ExportSelector
                     imageId={selectedVersion.id}
                     fileName={image.name}
-                    originalSizeBytes={selectedVersion.enhancedSizeBytes || undefined}
+                    originalSizeBytes={selectedVersion.enhancedSizeBytes ||
+                      undefined}
                   />
                 )}
                 <ShareButton

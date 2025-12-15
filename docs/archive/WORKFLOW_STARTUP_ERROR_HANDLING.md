@@ -1,19 +1,24 @@
 # Workflow Startup Error Handling Implementation
 
-**Date**: December 12, 2025
-**Feature**: Token Rollback on Workflow Startup Failure
+**Date**: December 12, 2025 **Feature**: Token Rollback on Workflow Startup
+Failure
 
 ## Summary
 
-Added error handling to the album batch enhancement API route to refund tokens if the workflow fails to start. This prevents users from losing tokens when the enhancement workflow cannot be initialized.
+Added error handling to the album batch enhancement API route to refund tokens
+if the workflow fails to start. This prevents users from losing tokens when the
+enhancement workflow cannot be initialized.
 
 ## Problem
 
-Previously, tokens were consumed before starting the workflow. If the workflow failed to start (e.g., Vercel workflow service unavailable, initialization error), users would lose their tokens without any enhancement being attempted.
+Previously, tokens were consumed before starting the workflow. If the workflow
+failed to start (e.g., Vercel workflow service unavailable, initialization
+error), users would lose their tokens without any enhancement being attempted.
 
 ## Solution
 
-Implemented try-catch error handling around workflow startup with automatic token refund on failure.
+Implemented try-catch error handling around workflow startup with automatic
+token refund on failure.
 
 ### Changes Made
 
@@ -70,7 +75,9 @@ try {
   );
 
   return NextResponse.json(
-    { error: "Failed to start enhancement workflow. Tokens have been refunded." },
+    {
+      error: "Failed to start enhancement workflow. Tokens have been refunded.",
+    },
     { status: 500 },
   );
 }
@@ -112,7 +119,8 @@ Added three new tests:
 3. System tries to start workflow (wrapped in try-catch)
 4. **Workflow fails to start**
 5. System immediately refunds tokens
-6. User receives error message: "Failed to start enhancement workflow. Tokens have been refunded."
+6. User receives error message: "Failed to start enhancement workflow. Tokens
+   have been refunded."
 7. Token balance restored to pre-request amount
 
 ## Error Scenarios Covered
@@ -142,16 +150,22 @@ Total album-related tests: **183 passed**
 
 ## Related Files
 
-- `/Users/z/Developer/spike-land-nextjs/src/app/api/albums/[id]/enhance/route.ts` - Implementation
-- `/Users/z/Developer/spike-land-nextjs/src/app/api/albums/[id]/enhance/route.test.ts` - Tests
-- `/Users/z/Developer/spike-land-nextjs/src/lib/tokens/balance-manager.ts` - Token refund method
+- `/Users/z/Developer/spike-land-nextjs/src/app/api/albums/[id]/enhance/route.ts` -
+  Implementation
+- `/Users/z/Developer/spike-land-nextjs/src/app/api/albums/[id]/enhance/route.test.ts` -
+  Tests
+- `/Users/z/Developer/spike-land-nextjs/src/lib/tokens/balance-manager.ts` -
+  Token refund method
 
 ## Future Improvements
 
-This implementation handles workflow startup failures. Additional scenarios already handled elsewhere:
+This implementation handles workflow startup failures. Additional scenarios
+already handled elsewhere:
 
-1. **Individual job failures**: Handled by workflow completion callback (refunds per failed job)
-2. **Partial batch failures**: Handled by batch summary (refunds only failed jobs)
+1. **Individual job failures**: Handled by workflow completion callback (refunds
+   per failed job)
+2. **Partial batch failures**: Handled by batch summary (refunds only failed
+   jobs)
 3. **Token consumption failures**: Already handled before this change
 
 ## API Contract
@@ -180,4 +194,5 @@ This implementation handles workflow startup failures. Additional scenarios alre
 
 ## Conclusion
 
-This implementation ensures users never lose tokens due to workflow startup failures, improving reliability and user trust in the platform's token system.
+This implementation ensures users never lose tokens due to workflow startup
+failures, improving reliability and user trust in the platform's token system.

@@ -34,7 +34,9 @@ export class CustomWorld extends World {
 
     this.context = await this.browser.newContext({
       baseURL: this.baseUrl,
-      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0 ? extraHTTPHeaders : undefined,
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
+        ? extraHTTPHeaders
+        : undefined,
     });
     this.page = await this.context.newPage();
 

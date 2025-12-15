@@ -1,12 +1,14 @@
 # MCP Development Documentation Index
 
-This index provides a comprehensive overview of the Model Context Protocol (MCP) server development documentation and related resources.
+This index provides a comprehensive overview of the Model Context Protocol (MCP)
+server development documentation and related resources.
 
 ## Quick Start
 
 **New to MCP?** Start here:
 
-1. Read: [MCP Architecture & Overview](#mcp-architecture--overview) in `mcp-server-development.md`
+1. Read: [MCP Architecture & Overview](#mcp-architecture--overview) in
+   `mcp-server-development.md`
 2. Build: Simple Tool Server example from `mcp-server-development.md`
 3. Test: Run MCP Inspector locally
 4. Deploy: Choose your transport (stdio, Streamable HTTP, or Docker)
@@ -84,7 +86,8 @@ A comprehensive guide covering:
 
 ### Related Best Practices
 
-The `docs/best-practices/` directory contains additional guides that complement MCP development:
+The `docs/best-practices/` directory contains additional guides that complement
+MCP development:
 
 | Document                | Focus Area                             | Use Case                      |
 | ----------------------- | -------------------------------------- | ----------------------------- |
@@ -128,7 +131,8 @@ Resources      → Read-only data exposure (application-driven)
 Prompts        → Instruction templates (user-driven)
 ```
 
-Each has distinct purposes and interaction patterns. Use the right primitive for your use case.
+Each has distinct purposes and interaction patterns. Use the right primitive for
+your use case.
 
 ### Security Layers (Production)
 
@@ -190,9 +194,12 @@ Target production metrics:
 
 ### Development Tools
 
-- [MCP Inspector](https://github.com/modelcontextprotocol/inspector) - Visual testing and debugging
-- [MCP Testing Framework](https://github.com/haakco/mcp-testing-framework) - Unit and integration testing
-- [NPM SDK Package](https://www.npmjs.com/package/@modelcontextprotocol/sdk) - Latest SDK version
+- [MCP Inspector](https://github.com/modelcontextprotocol/inspector) - Visual
+  testing and debugging
+- [MCP Testing Framework](https://github.com/haakco/mcp-testing-framework) -
+  Unit and integration testing
+- [NPM SDK Package](https://www.npmjs.com/package/@modelcontextprotocol/sdk) -
+  Latest SDK version
 
 ### Community & Learning
 
@@ -212,7 +219,8 @@ Target production metrics:
 
 ## Code Examples Included
 
-The `mcp-server-development.md` documentation includes three complete, runnable examples:
+The `mcp-server-development.md` documentation includes three complete, runnable
+examples:
 
 ### 1. Simple Calculator Server (STDIO)
 
@@ -421,11 +429,10 @@ try {
 5. **Deploy**: Choose your deployment strategy
 6. **Monitor**: Implement observability and alerting
 
-For questions or additional resources, refer to the official MCP documentation and community resources linked above.
+For questions or additional resources, refer to the official MCP documentation
+and community resources linked above.
 
 ---
 
-**Last Updated**: December 2025
-**Documentation Version**: 1.0
-**Spec Version**: 2025-06-18
-**TypeScript SDK**: v1.18.1+
+**Last Updated**: December 2025 **Documentation Version**: 1.0 **Spec Version**:
+2025-06-18 **TypeScript SDK**: v1.18.1+

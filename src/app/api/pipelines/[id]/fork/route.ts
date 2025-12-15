@@ -40,7 +40,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     });
 
     if (!source) {
-      return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+      return NextResponse.json({ error: "Pipeline not found" }, {
+        status: 404,
+      });
     }
 
     // Check access - can fork if:
@@ -80,10 +82,16 @@ export async function POST(request: Request, { params }: RouteParams) {
         userId: session.user.id,
         tier: source.tier,
         visibility: PipelineVisibility.PRIVATE, // Always private initially
-        analysisConfig: source.analysisConfig as Prisma.InputJsonValue | undefined,
-        autoCropConfig: source.autoCropConfig as Prisma.InputJsonValue | undefined,
+        analysisConfig: source.analysisConfig as
+          | Prisma.InputJsonValue
+          | undefined,
+        autoCropConfig: source.autoCropConfig as
+          | Prisma.InputJsonValue
+          | undefined,
         promptConfig: source.promptConfig as Prisma.InputJsonValue | undefined,
-        generationConfig: source.generationConfig as Prisma.InputJsonValue | undefined,
+        generationConfig: source.generationConfig as
+          | Prisma.InputJsonValue
+          | undefined,
       },
       select: {
         id: true,

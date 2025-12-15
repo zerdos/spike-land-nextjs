@@ -111,7 +111,8 @@ describe("VersionCompareModal", () => {
     );
 
     expect(screen.getByText("Compare Versions")).toBeInTheDocument();
-    expect(screen.getByText(/Compare different enhancement versions/)).toBeInTheDocument();
+    expect(screen.getByText(/Compare different enhancement versions/))
+      .toBeInTheDocument();
     expect(screen.getByText(/Test Image/)).toBeInTheDocument();
   });
 
@@ -278,14 +279,15 @@ describe("VersionCompareModal", () => {
     } as unknown as HTMLAnchorElement;
 
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation(
-      (tagName: string) => {
-        if (tagName === "a") {
-          return mockAnchor;
-        }
-        return originalCreateElement(tagName);
-      },
-    );
+    const createElementSpy = vi.spyOn(document, "createElement")
+      .mockImplementation(
+        (tagName: string) => {
+          if (tagName === "a") {
+            return mockAnchor;
+          }
+          return originalCreateElement(tagName);
+        },
+      );
 
     render(
       <VersionCompareModal
@@ -385,14 +387,18 @@ describe("VersionCompareModal", () => {
       fireEvent.click(version1Select);
     });
 
-    const originalOption = await screen.findByRole("option", { name: "Original" });
+    const originalOption = await screen.findByRole("option", {
+      name: "Original",
+    });
     fireEvent.click(originalOption);
 
     await waitFor(() => {
       expect(screen.getByTestId("original-url")).toHaveTextContent(
         "https://example.com/original.jpg",
       );
-      expect(screen.getByTestId("original-label")).toHaveTextContent("Original");
+      expect(screen.getByTestId("original-label")).toHaveTextContent(
+        "Original",
+      );
     });
   });
 
@@ -486,14 +492,18 @@ describe("VersionCompareModal", () => {
     const version1Select = screen.getByTestId("version1-select");
     fireEvent.click(version1Select);
 
-    const originalOption = await screen.findByRole("option", { name: "Original" });
+    const originalOption = await screen.findByRole("option", {
+      name: "Original",
+    });
     fireEvent.click(originalOption);
 
     await waitFor(() => {
       expect(screen.getByTestId("original-url")).toHaveTextContent(
         "https://example.com/original.jpg",
       );
-      expect(screen.getByTestId("original-label")).toHaveTextContent("Original");
+      expect(screen.getByTestId("original-label")).toHaveTextContent(
+        "Original",
+      );
     });
   });
 
@@ -580,14 +590,15 @@ describe("VersionCompareModal", () => {
     } as unknown as HTMLAnchorElement;
 
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation(
-      (tagName: string) => {
-        if (tagName === "a") {
-          return mockAnchor;
-        }
-        return originalCreateElement(tagName);
-      },
-    );
+    const createElementSpy = vi.spyOn(document, "createElement")
+      .mockImplementation(
+        (tagName: string) => {
+          if (tagName === "a") {
+            return mockAnchor;
+          }
+          return originalCreateElement(tagName);
+        },
+      );
 
     const versionsWithNullUrl: Version[] = [
       {

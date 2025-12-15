@@ -2,7 +2,8 @@
 
 ## Overview
 
-The voucher system allows users to redeem promotional codes for tokens and other benefits. This document describes the database schema and setup process.
+The voucher system allows users to redeem promotional codes for tokens and other
+benefits. This document describes the database schema and setup process.
 
 ## Database Schema
 
@@ -66,7 +67,8 @@ Tracks user redemptions of vouchers.
 
 **Constraints:**
 
-- Unique constraint on `[voucherId, userId]` - Users can only redeem each voucher once
+- Unique constraint on `[voucherId, userId]` - Users can only redeem each
+  voucher once
 
 **Indexes:**
 
@@ -105,7 +107,8 @@ Three launch vouchers have been created:
 
 ### Applied Changes
 
-The schema has been updated using `prisma db push` (no migration created due to database drift).
+The schema has been updated using `prisma db push` (no migration created due to
+database drift).
 
 ### Scripts
 
@@ -115,7 +118,8 @@ The schema has been updated using `prisma db push` (no migration created due to 
 npm run db:seed-vouchers
 ```
 
-This script creates/updates the initial launch vouchers using `prisma/seed-vouchers.ts`.
+This script creates/updates the initial launch vouchers using
+`prisma/seed-vouchers.ts`.
 
 #### Verify Vouchers
 
@@ -123,7 +127,8 @@ This script creates/updates the initial launch vouchers using `prisma/seed-vouch
 npx tsx prisma/verify-vouchers.ts
 ```
 
-This utility script displays all vouchers in the database with their current status.
+This utility script displays all vouchers in the database with their current
+status.
 
 ## Usage Examples
 
@@ -161,8 +166,12 @@ const voucher = await prisma.voucher.findUnique({
 
 if (!voucher) throw new Error("Voucher not found");
 if (voucher.status !== "ACTIVE") throw new Error("Voucher inactive");
-if (voucher.expiresAt && voucher.expiresAt < new Date()) throw new Error("Voucher expired");
-if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) throw new Error("Voucher depleted");
+if (voucher.expiresAt && voucher.expiresAt < new Date()) {
+  throw new Error("Voucher expired");
+}
+if (voucher.maxUses && voucher.currentUses >= voucher.maxUses) {
+  throw new Error("Voucher depleted");
+}
 if (voucher.redemptions.length > 0) throw new Error("Already redeemed");
 
 // Redeem voucher
@@ -229,7 +238,9 @@ const voucher = await prisma.voucher.findUnique({
   },
 });
 
-console.log(`${voucher.code}: ${voucher._count.redemptions} / ${voucher.maxUses || "∞"} uses`);
+console.log(
+  `${voucher.code}: ${voucher._count.redemptions} / ${voucher.maxUses || "∞"} uses`,
+);
 ```
 
 ## Next Steps
@@ -261,7 +272,8 @@ To implement the voucher redemption feature in the application:
 
 ## Security Considerations
 
-- Voucher codes should be case-insensitive or uppercase-only for user convenience
+- Voucher codes should be case-insensitive or uppercase-only for user
+  convenience
 - Implement rate limiting on redemption attempts to prevent abuse
 - Log all redemption attempts (successful and failed) for audit purposes
 - Consider adding IP-based restrictions for high-value vouchers

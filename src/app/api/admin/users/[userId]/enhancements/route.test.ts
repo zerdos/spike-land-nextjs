@@ -87,7 +87,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
   it("should return 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValueOnce(null);
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -98,7 +100,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
   it("should return 401 when user has no id", async () => {
     vi.mocked(auth).mockResolvedValueOnce({ user: {} } as never);
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -114,7 +118,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       new Error("Forbidden: Admin access required"),
     );
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -128,8 +134,12 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     } as never);
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
 
-    const request = createRequest("http://localhost/api/admin/users//enhancements");
-    const response = await GET(request, { params: Promise.resolve({ userId: "" }) });
+    const request = createRequest(
+      "http://localhost/api/admin/users//enhancements",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ userId: "" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -175,7 +185,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -194,7 +206,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       mockEnhancements as never,
     );
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -218,7 +232,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       mockEnhancements as never,
     );
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -246,7 +262,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       mockEnhancements as never,
     );
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -262,7 +280,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser as never);
     vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValueOnce(50);
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce([] as never);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce(
+      [] as never,
+    );
 
     const request = createRequest(
       "http://localhost/api/admin/users/user123/enhancements?page=2&limit=10",
@@ -291,7 +311,9 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser as never);
     vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValueOnce(200);
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce([] as never);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce(
+      [] as never,
+    );
 
     const request = createRequest(
       "http://localhost/api/admin/users/user123/enhancements?limit=500",
@@ -314,11 +336,15 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       user: { id: "admin123" },
     } as never);
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
-    vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(new Error("Database error"));
+    vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(
+      new Error("Database error"),
+    );
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 
@@ -336,9 +362,13 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     vi.mocked(requireAdminByUserId).mockResolvedValueOnce(undefined);
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser as never);
     vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValueOnce(10);
-    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce([] as never);
+    vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValueOnce(
+      [] as never,
+    );
 
-    const request = createRequest("http://localhost/api/admin/users/user123/enhancements");
+    const request = createRequest(
+      "http://localhost/api/admin/users/user123/enhancements",
+    );
     const response = await GET(request, { params: createParams("user123") });
     const data = await response.json();
 

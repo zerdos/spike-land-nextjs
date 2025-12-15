@@ -84,7 +84,11 @@ export function useHeroAnimation({
     }
 
     const targetRect = element.getBoundingClientRect();
-    const scale = calculateScale(originRect, targetRect.width, targetRect.height);
+    const scale = calculateScale(
+      originRect,
+      targetRect.width,
+      targetRect.height,
+    );
     const translation = calculateTranslation(originRect, targetRect);
 
     if (direction === "expand") {

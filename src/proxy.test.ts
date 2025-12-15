@@ -296,7 +296,10 @@ describe("proxy", () => {
     describe("E2E test bypass with secret header", () => {
       let originalEnv: string | undefined;
 
-      const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
+      const createMockRequestWithHeader = (
+        pathname: string,
+        headerValue?: string,
+      ): NextRequest => {
         const baseUrl = `http://localhost:3000${pathname}`;
         const headers = new Headers();
         if (headerValue !== undefined) {
@@ -325,7 +328,10 @@ describe("proxy", () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         expect(response.status).toBe(200);
@@ -372,7 +378,12 @@ describe("proxy", () => {
       it("should bypass auth for all protected paths with correct secret", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
 
-        const protectedPaths = ["/my-apps", "/my-apps/app-123", "/settings", "/profile"];
+        const protectedPaths = [
+          "/my-apps",
+          "/my-apps/app-123",
+          "/settings",
+          "/profile",
+        ];
 
         for (const path of protectedPaths) {
           vi.mocked(auth).mockResolvedValue(null);
@@ -414,7 +425,10 @@ describe("proxy", () => {
       let originalVercelEnv: string | undefined;
       let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 
-      const createMockRequestWithHeader = (pathname: string, headerValue?: string): NextRequest => {
+      const createMockRequestWithHeader = (
+        pathname: string,
+        headerValue?: string,
+      ): NextRequest => {
         const baseUrl = `http://localhost:3000${pathname}`;
         const headers = new Headers();
         if (headerValue !== undefined) {
@@ -459,7 +473,10 @@ describe("proxy", () => {
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         // Should redirect (bypass blocked)
@@ -475,7 +492,10 @@ describe("proxy", () => {
         delete process.env.VERCEL_ENV;
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         // Should allow bypass
@@ -499,7 +519,10 @@ describe("proxy", () => {
         process.env.VERCEL_ENV = "preview";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         // Should allow bypass (not full production)
@@ -514,7 +537,10 @@ describe("proxy", () => {
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         // Should allow bypass (not full production)
@@ -529,7 +555,10 @@ describe("proxy", () => {
         process.env.VERCEL_ENV = "preview";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps/app-123", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps/app-123",
+          "test-secret-123",
+        );
         const response = await proxy(request);
 
         expect(response.status).toBe(200);
@@ -549,7 +578,10 @@ describe("proxy", () => {
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);
-        const request = createMockRequestWithHeader("/my-apps", "test-secret-123");
+        const request = createMockRequestWithHeader(
+          "/my-apps",
+          "test-secret-123",
+        );
         await proxy(request);
 
         expect(consoleWarnSpy).not.toHaveBeenCalled();
@@ -558,7 +590,9 @@ describe("proxy", () => {
 
     describe("edge cases", () => {
       it("should handle session without user object", async () => {
-        vi.mocked(auth).mockResolvedValue({ expires: new Date().toISOString() } as never);
+        vi.mocked(auth).mockResolvedValue(
+          { expires: new Date().toISOString() } as never,
+        );
         const request = createMockRequest("/my-apps");
         const response = await proxy(request);
 

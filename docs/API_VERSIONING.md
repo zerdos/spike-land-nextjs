@@ -1,8 +1,7 @@
 # Spike Land API Versioning Strategy
 
-> **Last Updated**: December 2025
-> **Status**: MVP Release - No explicit versioning yet
-> **Document Version**: 1.0
+> **Last Updated**: December 2025 **Status**: MVP Release - No explicit
+> versioning yet **Document Version**: 1.0
 
 ## Table of Contents
 
@@ -48,10 +47,12 @@ POST   /api/vouchers/apply
 
 Explicit API versioning will be implemented when:
 
-1. **External API Availability** - Third-party developers integrate with Spike Land API
+1. **External API Availability** - Third-party developers integrate with Spike
+   Land API
 2. **Enterprise Customers** - B2B customers require stability guarantees
 3. **Breaking Changes Required** - Fundamental API redesigns needed
-4. **Multiple Product Versions** - Spike Land platform has multiple deployed versions
+4. **Multiple Product Versions** - Spike Land platform has multiple deployed
+   versions
 
 ### Triggers for Versioning
 
@@ -89,12 +90,14 @@ When versioning becomes necessary, we will adopt **URL-based versioning**:
 | Debugging     | Easy to see in logs             | Requires header inspection | Not visible in URL |
 | Adoption      | Common in REST APIs             | Less common                | Rare               |
 
-**Decision**: URL-based versioning is the industry standard and easiest for developers to understand and adopt.
+**Decision**: URL-based versioning is the industry standard and easiest for
+developers to understand and adopt.
 
 ### Version Numbering
 
 - **Major versions**: `/api/v1`, `/api/v2` (breaking changes)
-- **Minor versions**: No minor versioning in URL (shipped as improvements to major version)
+- **Minor versions**: No minor versioning in URL (shipped as improvements to
+  major version)
 - **Patch updates**: No patch versioning in URL (transparent fixes)
 
 ### Backward Compatibility Strategy
@@ -671,4 +674,5 @@ If (external_developers > 0) {
 - [API Reference](./API_REFERENCE.md) - Complete endpoint documentation
 - [API Changelog](./API_CHANGELOG.md) - Historical changes (when created)
 - [Authentication Guide](./API_REFERENCE.md#authentication) - Auth mechanisms
-- [Error Handling](./API_REFERENCE.md#error-handling) - Error codes and responses
+- [Error Handling](./API_REFERENCE.md#error-handling) - Error codes and
+  responses

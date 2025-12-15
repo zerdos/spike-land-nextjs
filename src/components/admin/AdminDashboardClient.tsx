@@ -36,7 +36,9 @@ interface AdminDashboardClientProps {
 // Increased polling interval from 10s to 30s for reduced database load
 const POLLING_INTERVAL = 30000;
 
-export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientProps) {
+export function AdminDashboardClient(
+  { initialMetrics }: AdminDashboardClientProps,
+) {
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics);
   const [isPolling, setIsPolling] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -144,7 +146,9 @@ export function AdminDashboardClient({ initialMetrics }: AdminDashboardClientPro
               variant="outline"
               size="sm"
               onClick={() => setIsPolling(!isPolling)}
-              aria-label={isPolling ? "Pause auto-refresh" : "Resume auto-refresh"}
+              aria-label={isPolling
+                ? "Pause auto-refresh"
+                : "Resume auto-refresh"}
             >
               {isPolling ? "Pause" : "Resume"}
             </Button>

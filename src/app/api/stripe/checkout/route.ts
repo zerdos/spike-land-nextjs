@@ -32,11 +32,15 @@ export async function POST(request: NextRequest) {
     const { packageId, planId, mode } = body;
 
     if (mode === "payment" && !packageId) {
-      return NextResponse.json({ error: "Package ID required for payment" }, { status: 400 });
+      return NextResponse.json({ error: "Package ID required for payment" }, {
+        status: 400,
+      });
     }
 
     if (mode === "subscription" && !planId) {
-      return NextResponse.json({ error: "Plan ID required for subscription" }, { status: 400 });
+      return NextResponse.json({ error: "Plan ID required for subscription" }, {
+        status: 400,
+      });
     }
 
     // Get or create Stripe customer
@@ -69,13 +73,22 @@ export async function POST(request: NextRequest) {
     if (mode === "payment" && packageId) {
       const pkg = TOKEN_PACKAGES[packageId];
       if (!pkg) {
-        return NextResponse.json({ error: "Invalid package ID" }, { status: 400 });
+        return NextResponse.json({ error: "Invalid package ID" }, {
+          status: 400,
+        });
       }
 
       // Validate price is a positive number
-      if (typeof pkg.price !== "number" || pkg.price <= 0 || !Number.isFinite(pkg.price)) {
-        console.error(`Invalid price configuration for package ${packageId}: ${pkg.price}`);
-        return NextResponse.json({ error: "Invalid package configuration" }, { status: 500 });
+      if (
+        typeof pkg.price !== "number" || pkg.price <= 0 ||
+        !Number.isFinite(pkg.price)
+      ) {
+        console.error(
+          `Invalid price configuration for package ${packageId}: ${pkg.price}`,
+        );
+        return NextResponse.json({ error: "Invalid package configuration" }, {
+          status: 500,
+        });
       }
 
       const checkoutSession = await stripe.checkout.sessions.create({
@@ -120,10 +133,15 @@ export async function POST(request: NextRequest) {
 
       // Validate price is a positive number
       if (
-        typeof plan.priceGBP !== "number" || plan.priceGBP <= 0 || !Number.isFinite(plan.priceGBP)
+        typeof plan.priceGBP !== "number" || plan.priceGBP <= 0 ||
+        !Number.isFinite(plan.priceGBP)
       ) {
-        console.error(`Invalid price configuration for plan ${planId}: ${plan.priceGBP}`);
-        return NextResponse.json({ error: "Invalid plan configuration" }, { status: 500 });
+        console.error(
+          `Invalid price configuration for plan ${planId}: ${plan.priceGBP}`,
+        );
+        return NextResponse.json({ error: "Invalid plan configuration" }, {
+          status: 500,
+        });
       }
 
       // Check if user already has an active subscription
@@ -133,7 +151,9 @@ export async function POST(request: NextRequest) {
 
       if (existingSubscription && existingSubscription.status === "ACTIVE") {
         return NextResponse.json(
-          { error: "You already have an active subscription. Please cancel it first." },
+          {
+            error: "You already have an active subscription. Please cancel it first.",
+          },
           { status: 400 },
         );
       }

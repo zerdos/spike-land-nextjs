@@ -135,7 +135,9 @@ describe("Fraud Detection", () => {
     it("should detect when referrer exceeds daily limit", async () => {
       vi.mocked(prisma.referral.count).mockResolvedValue(10);
 
-      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
+      const result = await fraudDetection.checkReferralRateLimit(
+        "referrer-123",
+      );
 
       expect(result).toBe(true);
     });
@@ -143,7 +145,9 @@ describe("Fraud Detection", () => {
     it("should allow referrals within daily limit", async () => {
       vi.mocked(prisma.referral.count).mockResolvedValue(5);
 
-      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
+      const result = await fraudDetection.checkReferralRateLimit(
+        "referrer-123",
+      );
 
       expect(result).toBe(false);
     });
@@ -151,7 +155,9 @@ describe("Fraud Detection", () => {
     it("should allow exactly 10 referrals", async () => {
       vi.mocked(prisma.referral.count).mockResolvedValue(9);
 
-      const result = await fraudDetection.checkReferralRateLimit("referrer-123");
+      const result = await fraudDetection.checkReferralRateLimit(
+        "referrer-123",
+      );
 
       expect(result).toBe(false);
     });
@@ -368,7 +374,9 @@ describe("Fraud Detection", () => {
 
       vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
-      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+      const result = await fraudDetection.validateReferralAfterVerification(
+        "referee-456",
+      );
 
       expect(result.success).toBe(true);
       expect(result.shouldGrantRewards).toBe(true);
@@ -392,7 +400,9 @@ describe("Fraud Detection", () => {
 
       vi.mocked(prisma.referral.count).mockResolvedValue(0);
 
-      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+      const result = await fraudDetection.validateReferralAfterVerification(
+        "referee-456",
+      );
 
       expect(result.success).toBe(true);
       expect(result.shouldGrantRewards).toBe(false);
@@ -406,7 +416,9 @@ describe("Fraud Detection", () => {
     it("should handle no pending referral", async () => {
       vi.mocked(prisma.referral.findFirst).mockResolvedValue(null);
 
-      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+      const result = await fraudDetection.validateReferralAfterVerification(
+        "referee-456",
+      );
 
       expect(result.success).toBe(false);
       expect(result.shouldGrantRewards).toBe(false);
@@ -414,25 +426,38 @@ describe("Fraud Detection", () => {
     });
 
     it("should handle database errors gracefully", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       vi.mocked(prisma.referral.findFirst).mockRejectedValue(
         new Error("Database connection failed"),
       );
 
-      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+      const result = await fraudDetection.validateReferralAfterVerification(
+        "referee-456",
+      );
 
       expect(result.success).toBe(false);
       expect(result.shouldGrantRewards).toBe(false);
       expect(result.error).toBe("Database connection failed");
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to validate referral:", expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to validate referral:",
+        expect.any(Error),
+      );
       consoleSpy.mockRestore();
     });
 
     it("should handle unknown errors gracefully", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(prisma.referral.findFirst).mockRejectedValue("Unknown error type");
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      vi.mocked(prisma.referral.findFirst).mockRejectedValue(
+        "Unknown error type",
+      );
 
-      const result = await fraudDetection.validateReferralAfterVerification("referee-456");
+      const result = await fraudDetection.validateReferralAfterVerification(
+        "referee-456",
+      );
 
       expect(result.success).toBe(false);
       expect(result.shouldGrantRewards).toBe(false);

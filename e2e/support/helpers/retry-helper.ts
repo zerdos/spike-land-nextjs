@@ -54,7 +54,9 @@ async function withRetry<T>(
       lastError = error as Error;
       // Log on final retry attempt
       if (Date.now() - startTime >= timeout - retryInterval) {
-        console.error(`Final retry failed for ${context}: ${lastError.message}`);
+        console.error(
+          `Final retry failed for ${context}: ${lastError.message}`,
+        );
       }
       // Wait for frame to be painted before next retry
       await page.waitForTimeout(retryInterval);
@@ -107,7 +109,9 @@ export async function waitForElementWithRetry(
       lastError = error as Error;
       // Log retry attempts for debugging
       if (Date.now() - startTime >= timeout - retryInterval) {
-        console.error(`Final retry failed for selector "${selector}": ${lastError.message}`);
+        console.error(
+          `Final retry failed for selector "${selector}": ${lastError.message}`,
+        );
       }
       // Wait for a frame to be painted before retrying
       await page.waitForTimeout(retryInterval);
@@ -158,8 +162,12 @@ export async function clickButtonWithRetry(
     page,
     async () => {
       const button = page.getByTestId(testId);
-      await expect(button).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
-      await expect(button).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await expect(button).toBeVisible({
+        timeout: TIMEOUTS.RETRY_INTERVAL * 2,
+      });
+      await expect(button).toBeEnabled({
+        timeout: TIMEOUTS.RETRY_INTERVAL * 2,
+      });
       await button.click();
     },
     { timeout: options.timeout },
@@ -239,7 +247,9 @@ export async function waitForTextWithRetry(
     page,
     async () => {
       const element = page.getByText(text, { exact });
-      await expect(element).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+      await expect(element).toBeVisible({
+        timeout: TIMEOUTS.RETRY_INTERVAL * 2,
+      });
       return element;
     },
     { timeout: options.timeout },

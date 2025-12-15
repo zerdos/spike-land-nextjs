@@ -98,12 +98,16 @@ describe("NewAppError (New App Creation Error Boundary)", () => {
   it("should have both action buttons", () => {
     render(<NewAppError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /back to my apps/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /back to my apps/i }))
+      .toBeInTheDocument();
   });
 
   it("should re-log error if error changes", () => {
-    const { rerender } = render(<NewAppError error={mockError} reset={mockReset} />);
+    const { rerender } = render(
+      <NewAppError error={mockError} reset={mockReset} />,
+    );
 
     expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
 
@@ -114,7 +118,9 @@ describe("NewAppError (New App Creation Error Boundary)", () => {
   });
 
   it("should render within container", () => {
-    const { container } = render(<NewAppError error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <NewAppError error={mockError} reset={mockReset} />,
+    );
 
     expect(container.querySelector(".container")).toBeInTheDocument();
   });
@@ -127,7 +133,9 @@ describe("NewAppError (New App Creation Error Boundary)", () => {
   });
 
   it("should center card with max-width", () => {
-    const { container } = render(<NewAppError error={mockError} reset={mockReset} />);
+    const { container } = render(
+      <NewAppError error={mockError} reset={mockReset} />,
+    );
 
     const card = container.querySelector(".max-w-2xl.mx-auto");
     expect(card).toBeInTheDocument();

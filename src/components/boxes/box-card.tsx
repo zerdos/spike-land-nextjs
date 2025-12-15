@@ -68,7 +68,10 @@ export function BoxCard({ box }: BoxCardProps) {
   };
 
   const handleClone = async () => {
-    const newName = prompt(`Enter name for clone of ${box.name}:`, `Clone of ${box.name}`);
+    const newName = prompt(
+      `Enter name for clone of ${box.name}:`,
+      `Clone of ${box.name}`,
+    );
     if (newName === null) return; // Cancelled
 
     setIsLoading(true);
@@ -87,7 +90,9 @@ export function BoxCard({ box }: BoxCardProps) {
       toast.success("Box cloned successfully");
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to clone box");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to clone box",
+      );
       console.error(error);
     } finally {
       setIsLoading(false);

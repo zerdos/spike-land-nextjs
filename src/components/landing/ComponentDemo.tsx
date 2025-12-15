@@ -38,7 +38,7 @@ export function ComponentDemo() {
   const handleProgressDemo = () => {
     setProgress(0);
     const interval = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
@@ -125,7 +125,11 @@ export function ComponentDemo() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="demo-input">Text Input</Label>
-                      <Input id="demo-input" placeholder="Enter your email" type="email" />
+                      <Input
+                        id="demo-input"
+                        placeholder="Enter your email"
+                        type="email"
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -177,7 +181,11 @@ export function ComponentDemo() {
                       <span>{progress}%</span>
                     </div>
                     <Progress value={progress} />
-                    <Button size="sm" variant="outline" onClick={handleProgressDemo}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleProgressDemo}
+                    >
                       Animate Progress
                     </Button>
                   </div>
@@ -247,7 +255,10 @@ export function ComponentDemo() {
                         </p>
                       </div>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setDialogOpen(false)}
+                        >
                           Cancel
                         </Button>
                         <Button onClick={() => setDialogOpen(false)}>

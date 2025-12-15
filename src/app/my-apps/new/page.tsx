@@ -86,7 +86,10 @@ function CharacterCounter({
         {current} / {max} characters
       </span>
       {min !== undefined && current > 0 && current < min && (
-        <span className="text-destructive text-xs" data-testid="char-counter-warning">
+        <span
+          className="text-destructive text-xs"
+          data-testid="char-counter-warning"
+        >
           (minimum {min})
         </span>
       )}
@@ -108,7 +111,12 @@ function FieldStatusIcon({
   }
 
   if (value && isDirty) {
-    return <CheckCircle2 className="h-4 w-4 text-green-600" data-testid="success-icon" />;
+    return (
+      <CheckCircle2
+        className="h-4 w-4 text-green-600"
+        data-testid="success-icon"
+      />
+    );
   }
 
   return null;
@@ -245,13 +253,22 @@ export default function NewAppPage() {
       errorList.push({ field: "App Name", message: errors.name.message });
     }
     if (errors.description?.message) {
-      errorList.push({ field: "Description", message: errors.description.message });
+      errorList.push({
+        field: "Description",
+        message: errors.description.message,
+      });
     }
     if (errors.requirements?.message) {
-      errorList.push({ field: "Requirements", message: errors.requirements.message });
+      errorList.push({
+        field: "Requirements",
+        message: errors.requirements.message,
+      });
     }
     if (errors.monetizationModel?.message) {
-      errorList.push({ field: "Monetization Model", message: errors.monetizationModel.message });
+      errorList.push({
+        field: "Monetization Model",
+        message: errors.monetizationModel.message,
+      });
     }
 
     return errorList;
@@ -297,7 +314,11 @@ export default function NewAppPage() {
                     <FormDescription>
                       Choose a unique name for your application
                     </FormDescription>
-                    <CharacterCounter current={formState.name.length} max={50} min={3} />
+                    <CharacterCounter
+                      current={formState.name.length}
+                      max={50}
+                      min={3}
+                    />
                   </div>
                   <FormMessage />
                 </FormItem>
@@ -336,7 +357,11 @@ export default function NewAppPage() {
                     <FormDescription>
                       Provide a brief description of your application
                     </FormDescription>
-                    <CharacterCounter current={formState.description.length} max={500} min={10} />
+                    <CharacterCounter
+                      current={formState.description.length}
+                      max={500}
+                      min={10}
+                    />
                   </div>
                   <FormMessage />
                 </FormItem>
@@ -381,7 +406,11 @@ export default function NewAppPage() {
                     Describe the features and functionality you want in your app. Use bullet points
                     (•) for clarity.
                   </FormDescription>
-                  <CharacterCounter current={formState.requirements.length} max={2000} min={20} />
+                  <CharacterCounter
+                    current={formState.requirements.length}
+                    max={2000}
+                    min={20}
+                  />
                 </div>
                 <FormMessage />
               </FormItem>
@@ -440,7 +469,10 @@ export default function NewAppPage() {
             </div>
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground" data-testid="review-description">
+              <p
+                className="text-muted-foreground"
+                data-testid="review-description"
+              >
                 {formState.description}
               </p>
             </div>
@@ -455,7 +487,10 @@ export default function NewAppPage() {
             </div>
             <div>
               <h3 className="font-semibold mb-2">Monetization Model</h3>
-              <p className="text-muted-foreground" data-testid="review-monetization">
+              <p
+                className="text-muted-foreground"
+                data-testid="review-monetization"
+              >
                 {formState.monetizationModel
                   ? MONETIZATION_LABELS[formState.monetizationModel]
                   : ""}
@@ -480,7 +515,10 @@ export default function NewAppPage() {
           </CardDescription>
           <div className="pt-2">
             <Progress value={progressValue} data-testid="wizard-progress" />
-            <p className="text-xs text-muted-foreground mt-1" data-testid="wizard-progress-text">
+            <p
+              className="text-xs text-muted-foreground mt-1"
+              data-testid="wizard-progress-text"
+            >
               Step {currentStep + 1} of {STEPS.length}
             </p>
           </div>

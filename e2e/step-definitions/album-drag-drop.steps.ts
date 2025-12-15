@@ -60,7 +60,12 @@ function createMockImage(index: number, albumId: string): AlbumImage {
   };
 }
 
-function createMockAlbum(id: string, name: string, images: AlbumImage[], isOwner = true): Album {
+function createMockAlbum(
+  id: string,
+  name: string,
+  images: AlbumImage[],
+  isOwner = true,
+): Album {
   return {
     id,
     name,
@@ -147,7 +152,7 @@ async function mockAlbumDetailAPI(world: CustomWorld) {
       if (mockAlbum && albumId === mockAlbum.id) {
         const reorderedImages = imageOrder
           .map((id, index) => {
-            const img = mockAlbum!.images.find(i => i.id === id);
+            const img = mockAlbum!.images.find((i) => i.id === id);
             return img ? { ...img, sortOrder: index } : null;
           })
           .filter((img): img is AlbumImage => img !== null);
@@ -174,7 +179,7 @@ async function mockAlbumDetailAPI(world: CustomWorld) {
       // Add images to target album
       if (mockAlbum2 && albumId === mockAlbum2.id) {
         // Find images from source album
-        const imagesToAdd = mockAlbum?.images.filter(img => imageIds.includes(img.id)) || [];
+        const imagesToAdd = mockAlbum?.images.filter((img) => imageIds.includes(img.id)) || [];
         mockAlbum2.images = [...mockAlbum2.images, ...imagesToAdd];
         mockAlbum2.imageCount += imagesToAdd.length;
       }
@@ -185,7 +190,7 @@ async function mockAlbumDetailAPI(world: CustomWorld) {
         body: JSON.stringify({
           success: true,
           added: imageIds.length,
-          results: imageIds.map(id => ({ imageId: id, success: true })),
+          results: imageIds.map((id) => ({ imageId: id, success: true })),
         }),
       });
       return;
@@ -198,7 +203,7 @@ async function mockAlbumDetailAPI(world: CustomWorld) {
 
       // Remove from album
       if (mockAlbum && albumId === mockAlbum.id) {
-        mockAlbum.images = mockAlbum.images.filter(img => !imageIds.includes(img.id));
+        mockAlbum.images = mockAlbum.images.filter((img) => !imageIds.includes(img.id));
         mockAlbum.imageCount -= imageIds.length;
       }
 
@@ -230,9 +235,12 @@ async function mockTokenBalance(world: CustomWorld, balance: number) {
 }
 
 // Given steps
-Given("I have token balance of {int}", async function(this: CustomWorld, balance: number) {
-  await mockTokenBalance(this, balance);
-});
+Given(
+  "I have token balance of {int}",
+  async function(this: CustomWorld, balance: number) {
+    await mockTokenBalance(this, balance);
+  },
+);
 
 Given(
   "I have an album with {int} images for drag-drop testing",
@@ -247,7 +255,7 @@ Given(
 
     // Create mock album
     mockAlbum = createMockAlbum("album-1", "Test Album", albumImages);
-    originalImageOrder = albumImages.map(img => img.id);
+    originalImageOrder = albumImages.map((img) => img.id);
 
     // Setup API mocks
     await mockAlbumDetailAPI(this);
@@ -291,7 +299,7 @@ Given("the {string} album has {int} images", async function(
   // Update album
   if (isFirstAlbum && mockAlbum) {
     mockAlbum = createMockAlbum(mockAlbum.id, mockAlbum.name, albumImages);
-    originalImageOrder = albumImages.map(img => img.id);
+    originalImageOrder = albumImages.map((img) => img.id);
   } else if (mockAlbum2) {
     mockAlbum2 = createMockAlbum(mockAlbum2.id, mockAlbum2.name, albumImages2);
   }
@@ -300,9 +308,12 @@ Given("the {string} album has {int} images", async function(
   await mockAlbumDetailAPI(this);
 });
 
-Given("the album order save endpoint will fail", async function(this: CustomWorld) {
-  shouldFailOrderSave = true;
-});
+Given(
+  "the album order save endpoint will fail",
+  async function(this: CustomWorld) {
+    shouldFailOrderSave = true;
+  },
+);
 
 Given("I am on a touch device", async function(this: CustomWorld) {
   // Set viewport and user agent for touch device
@@ -314,31 +325,44 @@ Given("I am on a touch device", async function(this: CustomWorld) {
   });
 });
 
-Given("I am viewing a shared album that I do not own", async function(this: CustomWorld) {
-  // Create album with isOwner=false
-  albumImages.length = 0;
-  for (let i = 1; i <= 3; i++) {
-    albumImages.push(createMockImage(i, "shared-album"));
-  }
+Given(
+  "I am viewing a shared album that I do not own",
+  async function(this: CustomWorld) {
+    // Create album with isOwner=false
+    albumImages.length = 0;
+    for (let i = 1; i <= 3; i++) {
+      albumImages.push(createMockImage(i, "shared-album"));
+    }
 
-  mockAlbum = createMockAlbum("shared-album", "Shared Album", albumImages, false);
-  originalImageOrder = albumImages.map(img => img.id);
+    mockAlbum = createMockAlbum(
+      "shared-album",
+      "Shared Album",
+      albumImages,
+      false,
+    );
+    originalImageOrder = albumImages.map((img) => img.id);
 
-  await mockAlbumDetailAPI(this);
-});
+    await mockAlbumDetailAPI(this);
+  },
+);
 
 // When steps
-When("I navigate to my album detail page for drag-drop testing", async function(this: CustomWorld) {
-  if (!mockAlbum) throw new Error("No album created");
-  await this.page.goto(`/albums/${mockAlbum.id}`);
-  await this.page.waitForLoadState("networkidle");
+When(
+  "I navigate to my album detail page for drag-drop testing",
+  async function(this: CustomWorld) {
+    if (!mockAlbum) throw new Error("No album created");
+    await this.page.goto(`/albums/${mockAlbum.id}`);
+    await this.page.waitForLoadState("networkidle");
 
-  // Wait for images to load
-  const imageCards = this.page.locator("[data-draggable-photo-card]").or(
-    this.page.locator("div[draggable]").filter({ has: this.page.locator("img") }),
-  );
-  await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
-});
+    // Wait for images to load
+    const imageCards = this.page.locator("[data-draggable-photo-card]").or(
+      this.page.locator("div[draggable]").filter({
+        has: this.page.locator("img"),
+      }),
+    );
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+  },
+);
 
 When("I navigate to the {string} album detail page", async function(
   this: CustomWorld,
@@ -352,7 +376,9 @@ When("I navigate to the {string} album detail page", async function(
 
   // Wait for images to load
   const imageCards = this.page.locator("[data-draggable-photo-card]").or(
-    this.page.locator("div[draggable]").filter({ has: this.page.locator("img") }),
+    this.page.locator("div[draggable]").filter({
+      has: this.page.locator("img"),
+    }),
   );
   await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
 });
@@ -363,41 +389,47 @@ When("I navigate to the shared album page", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-When("I drag the first image to the third position", async function(this: CustomWorld) {
-  // Find all image cards
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+When(
+  "I drag the first image to the third position",
+  async function(this: CustomWorld) {
+    // Find all image cards
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  const firstCard = imageCards.nth(0);
-  const thirdCard = imageCards.nth(2);
+    const firstCard = imageCards.nth(0);
+    const thirdCard = imageCards.nth(2);
 
-  // Perform drag and drop
-  await firstCard.dragTo(thirdCard, {
-    force: true,
-    targetPosition: { x: 10, y: 10 },
-  });
+    // Perform drag and drop
+    await firstCard.dragTo(thirdCard, {
+      force: true,
+      targetPosition: { x: 10, y: 10 },
+    });
 
-  // Wait for potential save operation
-  await this.page.waitForTimeout(500);
-});
+    // Wait for potential save operation
+    await this.page.waitForTimeout(500);
+  },
+);
 
-When("I drag the first image to the last position", async function(this: CustomWorld) {
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+When(
+  "I drag the first image to the last position",
+  async function(this: CustomWorld) {
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  const count = await imageCards.count();
-  const firstCard = imageCards.nth(0);
-  const lastCard = imageCards.nth(count - 1);
+    const count = await imageCards.count();
+    const firstCard = imageCards.nth(0);
+    const lastCard = imageCards.nth(count - 1);
 
-  await firstCard.dragTo(lastCard, {
-    force: true,
-    targetPosition: { x: 10, y: 10 },
-  });
+    await firstCard.dragTo(lastCard, {
+      force: true,
+      targetPosition: { x: 10, y: 10 },
+    });
 
-  await this.page.waitForTimeout(500);
-});
+    await this.page.waitForTimeout(500);
+  },
+);
 
 When("I start dragging the first image", async function(this: CustomWorld) {
   const imageCards = this.page.locator('div[draggable="true"]').filter({
@@ -413,7 +445,10 @@ When("I start dragging the first image", async function(this: CustomWorld) {
   // Start drag (mouse down and move slightly)
   await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await this.page.mouse.down();
-  await this.page.mouse.move(box.x + box.width / 2 + 10, box.y + box.height / 2 + 10);
+  await this.page.mouse.move(
+    box.x + box.width / 2 + 10,
+    box.y + box.height / 2 + 10,
+  );
 
   // Don't release - keep dragging state
   await this.page.waitForTimeout(100);
@@ -457,15 +492,18 @@ When("I disable selection mode", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-When("I select the first and second images", async function(this: CustomWorld) {
-  const checkboxes = this.page.locator('input[type="checkbox"]').filter({
-    has: this.page.locator(".."),
-  });
+When(
+  "I select the first and second images",
+  async function(this: CustomWorld) {
+    const checkboxes = this.page.locator('input[type="checkbox"]').filter({
+      has: this.page.locator(".."),
+    });
 
-  await checkboxes.nth(0).check({ force: true });
-  await checkboxes.nth(1).check({ force: true });
-  await this.page.waitForTimeout(200);
-});
+    await checkboxes.nth(0).check({ force: true });
+    await checkboxes.nth(1).check({ force: true });
+    await this.page.waitForTimeout(200);
+  },
+);
 
 When("I select the first image", async function(this: CustomWorld) {
   const checkboxes = this.page.locator('input[type="checkbox"]').filter({
@@ -476,22 +514,25 @@ When("I select the first image", async function(this: CustomWorld) {
   await this.page.waitForTimeout(200);
 });
 
-When("I drag one of the selected images to the fourth position", async function(this: CustomWorld) {
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+When(
+  "I drag one of the selected images to the fourth position",
+  async function(this: CustomWorld) {
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  // Drag first selected image
-  const firstCard = imageCards.nth(0);
-  const fourthCard = imageCards.nth(3);
+    // Drag first selected image
+    const firstCard = imageCards.nth(0);
+    const fourthCard = imageCards.nth(3);
 
-  await firstCard.dragTo(fourthCard, {
-    force: true,
-    targetPosition: { x: 10, y: 10 },
-  });
+    await firstCard.dragTo(fourthCard, {
+      force: true,
+      targetPosition: { x: 10, y: 10 },
+    });
 
-  await this.page.waitForTimeout(500);
-});
+    await this.page.waitForTimeout(500);
+  },
+);
 
 When("I click the Move button", async function(this: CustomWorld) {
   const moveButton = this.page.getByRole("button", { name: /move \(\d+\)/i });
@@ -512,7 +553,9 @@ When("I select the {string} album from the dropdown", async function(
   await this.page.waitForTimeout(200);
 
   // Select the album
-  const albumOption = this.page.getByRole("option", { name: new RegExp(albumName, "i") }).or(
+  const albumOption = this.page.getByRole("option", {
+    name: new RegExp(albumName, "i"),
+  }).or(
     this.page.getByText(new RegExp(`${albumName}`, "i")),
   );
   await albumOption.click();
@@ -526,25 +569,28 @@ When("I confirm the move operation", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 });
 
-When("I perform a touch drag on the first image to the third position", async function(
-  this: CustomWorld,
-) {
-  // On touch devices, we'll use touchscreen API or simulate with mouse
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+When(
+  "I perform a touch drag on the first image to the third position",
+  async function(
+    this: CustomWorld,
+  ) {
+    // On touch devices, we'll use touchscreen API or simulate with mouse
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  const firstCard = imageCards.nth(0);
-  const thirdCard = imageCards.nth(2);
+    const firstCard = imageCards.nth(0);
+    const thirdCard = imageCards.nth(2);
 
-  // Use standard drag API which works for touch
-  await firstCard.dragTo(thirdCard, {
-    force: true,
-    targetPosition: { x: 10, y: 10 },
-  });
+    // Use standard drag API which works for touch
+    await firstCard.dragTo(thirdCard, {
+      force: true,
+      targetPosition: { x: 10, y: 10 },
+    });
 
-  await this.page.waitForTimeout(500);
-});
+    await this.page.waitForTimeout(500);
+  },
+);
 
 // Then steps
 Then("the images should be reordered", async function(this: CustomWorld) {
@@ -563,40 +609,49 @@ Then("the images should be reordered", async function(this: CustomWorld) {
   await expect(imageCards.first()).toBeVisible();
 });
 
-Then("the new order should be saved to the server", async function(this: CustomWorld) {
-  // Check that PATCH request was made
-  // The mock API handler already updated the order if the request was made
-  // We verify by checking the mock album state
-  if (mockAlbum) {
-    const currentOrder = mockAlbum.images.map(img => img.id);
-    // Order should be different from original
-    const orderChanged = currentOrder.some((id, idx) => id !== originalImageOrder[idx]);
-    expect(orderChanged).toBeTruthy();
-  }
-});
+Then(
+  "the new order should be saved to the server",
+  async function(this: CustomWorld) {
+    // Check that PATCH request was made
+    // The mock API handler already updated the order if the request was made
+    // We verify by checking the mock album state
+    if (mockAlbum) {
+      const currentOrder = mockAlbum.images.map((img) => img.id);
+      // Order should be different from original
+      const orderChanged = currentOrder.some((id, idx) => id !== originalImageOrder[idx]);
+      expect(orderChanged).toBeTruthy();
+    }
+  },
+);
 
-Then("the new order should persist after page refresh", async function(this: CustomWorld) {
-  // Reload the page
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
+Then(
+  "the new order should persist after page refresh",
+  async function(this: CustomWorld) {
+    // Reload the page
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
 
-  // Verify images are still visible
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
-  await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    // Verify images are still visible
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
 
-  // The mock album maintains the new order, so it should persist
-});
+    // The mock album maintains the new order, so it should persist
+  },
+);
 
-Then("the dragged image should show reduced opacity", async function(this: CustomWorld) {
-  // Check for dragging state indicator
-  const draggingCard = this.page.locator('[data-is-dragging="true"]').or(
-    this.page.locator('[aria-grabbed="true"]'),
-  );
+Then(
+  "the dragged image should show reduced opacity",
+  async function(this: CustomWorld) {
+    // Check for dragging state indicator
+    const draggingCard = this.page.locator('[data-is-dragging="true"]').or(
+      this.page.locator('[aria-grabbed="true"]'),
+    );
 
-  await expect(draggingCard).toBeVisible();
-});
+    await expect(draggingCard).toBeVisible();
+  },
+);
 
 Then("I should see the drag handle cursor", async function(this: CustomWorld) {
   // Check for cursor-grabbing class or cursor style
@@ -609,53 +664,66 @@ Then("I should see the drag handle cursor", async function(this: CustomWorld) {
   expect(count).toBeGreaterThan(0);
 });
 
-Then("the second image should show a drop indicator", async function(this: CustomWorld) {
-  // Look for ring or highlight on hover target
-  const highlightedCard = this.page.locator(".ring-2.ring-primary").or(
-    this.page.locator('[data-drag-over="true"]'),
-  );
+Then(
+  "the second image should show a drop indicator",
+  async function(this: CustomWorld) {
+    // Look for ring or highlight on hover target
+    const highlightedCard = this.page.locator(".ring-2.ring-primary").or(
+      this.page.locator('[data-drag-over="true"]'),
+    );
 
-  // Should have visual indicator
-  const count = await highlightedCard.count();
-  expect(count).toBeGreaterThanOrEqual(0); // May or may not be visible depending on timing
-});
+    // Should have visual indicator
+    const count = await highlightedCard.count();
+    expect(count).toBeGreaterThanOrEqual(0); // May or may not be visible depending on timing
+  },
+);
 
-Then("all visual indicators should be removed", async function(this: CustomWorld) {
-  // Wait for drag to complete
-  await this.page.waitForTimeout(300);
+Then(
+  "all visual indicators should be removed",
+  async function(this: CustomWorld) {
+    // Wait for drag to complete
+    await this.page.waitForTimeout(300);
 
-  // No elements should be in dragging state
-  const draggingElements = this.page.locator('[data-is-dragging="true"]');
-  const count = await draggingElements.count();
-  expect(count).toBe(0);
-});
+    // No elements should be in dragging state
+    const draggingElements = this.page.locator('[data-is-dragging="true"]');
+    const count = await draggingElements.count();
+    expect(count).toBe(0);
+  },
+);
 
-Then("the images should be in the new order", async function(this: CustomWorld) {
-  // Verify reorder happened (same as "images should be reordered")
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+Then(
+  "the images should be in the new order",
+  async function(this: CustomWorld) {
+    // Verify reorder happened (same as "images should be reordered")
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  await expect(imageCards.first()).toBeVisible();
-});
+    await expect(imageCards.first()).toBeVisible();
+  },
+);
 
-Then("both selected images should move together", async function(this: CustomWorld) {
-  // In the actual implementation, multi-select drag might not be fully implemented
-  // We verify that the images are still visible and reordered
-  const imageCards = this.page.locator('div[draggable="true"]').filter({
-    has: this.page.locator("img"),
-  });
+Then(
+  "both selected images should move together",
+  async function(this: CustomWorld) {
+    // In the actual implementation, multi-select drag might not be fully implemented
+    // We verify that the images are still visible and reordered
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
 
-  const count = await imageCards.count();
-  expect(count).toBeGreaterThan(0);
-});
+    const count = await imageCards.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
 Then("the new order should be saved", async function(this: CustomWorld) {
   // Same as "new order should be saved to the server"
   if (mockAlbum) {
-    const currentOrder = mockAlbum.images.map(img => img.id);
+    const currentOrder = mockAlbum.images.map((img) => img.id);
     const orderChanged = currentOrder.some((id, idx) => id !== originalImageOrder[idx]);
-    expect(orderChanged || currentOrder.length !== originalImageOrder.length).toBeTruthy();
+    expect(orderChanged || currentOrder.length !== originalImageOrder.length)
+      .toBeTruthy();
   }
 });
 
@@ -684,32 +752,41 @@ Then("the image should be removed from the {string} album", async function(
   expect(sourceAlbum!.images.length).toBeLessThanOrEqual(expectedCount + 1);
 });
 
-Then("the image counts should be updated correctly", async function(this: CustomWorld) {
-  // Verify album image counts match actual images
-  if (mockAlbum) {
-    expect(mockAlbum.imageCount).toBe(mockAlbum.images.length);
-  }
-  if (mockAlbum2) {
-    expect(mockAlbum2.imageCount).toBe(mockAlbum2.images.length);
-  }
-});
+Then(
+  "the image counts should be updated correctly",
+  async function(this: CustomWorld) {
+    // Verify album image counts match actual images
+    if (mockAlbum) {
+      expect(mockAlbum.imageCount).toBe(mockAlbum.images.length);
+    }
+    if (mockAlbum2) {
+      expect(mockAlbum2.imageCount).toBe(mockAlbum2.images.length);
+    }
+  },
+);
 
-Then("the drag operation should be cancelled", async function(this: CustomWorld) {
-  // After Escape, drag should be cancelled
-  await this.page.waitForTimeout(200);
+Then(
+  "the drag operation should be cancelled",
+  async function(this: CustomWorld) {
+    // After Escape, drag should be cancelled
+    await this.page.waitForTimeout(200);
 
-  const draggingElements = this.page.locator('[data-is-dragging="true"]');
-  const count = await draggingElements.count();
-  expect(count).toBe(0);
-});
+    const draggingElements = this.page.locator('[data-is-dragging="true"]');
+    const count = await draggingElements.count();
+    expect(count).toBe(0);
+  },
+);
 
-Then("the images should remain in their original order", async function(this: CustomWorld) {
-  // Order should match original
-  if (mockAlbum) {
-    const currentOrder = mockAlbum.images.map(img => img.id);
-    expect(currentOrder).toEqual(originalImageOrder);
-  }
-});
+Then(
+  "the images should remain in their original order",
+  async function(this: CustomWorld) {
+    // Order should match original
+    if (mockAlbum) {
+      const currentOrder = mockAlbum.images.map((img) => img.id);
+      expect(currentOrder).toEqual(originalImageOrder);
+    }
+  },
+);
 
 Then("the images should not be draggable", async function(this: CustomWorld) {
   // Check that draggable attribute is false or not present
@@ -721,32 +798,41 @@ Then("the images should not be draggable", async function(this: CustomWorld) {
   expect(count).toBe(0);
 });
 
-Then("the drag handle should not be visible", async function(this: CustomWorld) {
-  // Look for GripVertical icon or drag handle
-  const dragHandle = this.page.locator("svg").filter({
-    has: this.page.locator("path"),
-  }).and(this.page.locator('[class*="grip"]'));
+Then(
+  "the drag handle should not be visible",
+  async function(this: CustomWorld) {
+    // Look for GripVertical icon or drag handle
+    const dragHandle = this.page.locator("svg").filter({
+      has: this.page.locator("path"),
+    }).and(this.page.locator('[class*="grip"]'));
 
-  const count = await dragHandle.count();
-  // In selection mode or non-owner view, handles should not be visible
-  // We accept 0 or any count since visibility is controlled by CSS opacity
-  expect(count).toBeGreaterThanOrEqual(0);
-});
+    const count = await dragHandle.count();
+    // In selection mode or non-owner view, handles should not be visible
+    // We accept 0 or any count since visibility is controlled by CSS opacity
+    expect(count).toBeGreaterThanOrEqual(0);
+  },
+);
 
-Then("I should see a {string} indicator", async function(this: CustomWorld, indicatorText: string) {
-  const indicator = this.page.getByText(new RegExp(indicatorText, "i"));
-  await expect(indicator).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "I should see a {string} indicator",
+  async function(this: CustomWorld, indicatorText: string) {
+    const indicator = this.page.getByText(new RegExp(indicatorText, "i"));
+    await expect(indicator).toBeVisible({ timeout: 5000 });
+  },
+);
 
-Then("the save operation should complete successfully", async function(this: CustomWorld) {
-  // Wait for save to complete
-  await this.page.waitForTimeout(500);
+Then(
+  "the save operation should complete successfully",
+  async function(this: CustomWorld) {
+    // Wait for save to complete
+    await this.page.waitForTimeout(500);
 
-  // Verify no error messages
-  const errorMessage = this.page.getByText(/failed to save/i);
-  const errorCount = await errorMessage.count();
-  expect(errorCount).toBe(0);
-});
+    // Verify no error messages
+    const errorMessage = this.page.getByText(/failed to save/i);
+    const errorCount = await errorMessage.count();
+    expect(errorCount).toBe(0);
+  },
+);
 
 Then("the indicator should disappear", async function(this: CustomWorld) {
   // Saving indicator should not be visible after save completes
@@ -763,19 +849,25 @@ Then("I should see an error message", async function(this: CustomWorld) {
   await expect(errorMessage.first()).toBeVisible({ timeout: 5000 });
 });
 
-Then("the images should revert to their original order", async function(this: CustomWorld) {
-  // After failed save, order should revert
-  await this.page.waitForTimeout(500);
+Then(
+  "the images should revert to their original order",
+  async function(this: CustomWorld) {
+    // After failed save, order should revert
+    await this.page.waitForTimeout(500);
 
-  if (mockAlbum) {
-    const currentOrder = mockAlbum.images.map(img => img.id);
-    expect(currentOrder).toEqual(originalImageOrder);
-  }
-});
+    if (mockAlbum) {
+      const currentOrder = mockAlbum.images.map((img) => img.id);
+      expect(currentOrder).toEqual(originalImageOrder);
+    }
+  },
+);
 
-Then("I should not see the selection controls", async function(this: CustomWorld) {
-  // Selection mode button should not be visible for non-owners
-  const selectButton = this.page.getByRole("button", { name: /^select$/i });
-  const count = await selectButton.count();
-  expect(count).toBe(0);
-});
+Then(
+  "I should not see the selection controls",
+  async function(this: CustomWorld) {
+    // Selection mode button should not be visible for non-owners
+    const selectButton = this.page.getByRole("button", { name: /^select$/i });
+    const count = await selectButton.count();
+    expect(count).toBe(0);
+  },
+);

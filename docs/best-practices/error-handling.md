@@ -1,6 +1,8 @@
 # Error Handling Best Practices in TypeScript/React Applications
 
-A comprehensive guide to implementing robust error handling patterns in TypeScript and React applications, from custom error classes to production monitoring.
+A comprehensive guide to implementing robust error handling patterns in
+TypeScript and React applications, from custom error classes to production
+monitoring.
 
 ## Table of Contents
 
@@ -18,11 +20,14 @@ A comprehensive guide to implementing robust error handling patterns in TypeScri
 
 ### Why Custom Error Classes?
 
-Custom error classes provide type safety, context, and better debugging information. Always throw Error instances instead of strings or numbers, which don't produce proper stack traces.
+Custom error classes provide type safety, context, and better debugging
+information. Always throw Error instances instead of strings or numbers, which
+don't produce proper stack traces.
 
 ### Base Error Class Pattern
 
-Create a base error class that properly handles the prototype chain (required for correct `instanceof` checks in ES5 transpilation):
+Create a base error class that properly handles the prototype chain (required
+for correct `instanceof` checks in ES5 transpilation):
 
 ```typescript
 /**
@@ -227,7 +232,9 @@ function normalizeError(error: unknown): ApplicationError {
 
 ### What Are Error Boundaries?
 
-Error boundaries catch JavaScript errors anywhere in their child component tree during rendering, in lifecycle methods, and in constructors. They prevent entire app crashes and display fallback UI.
+Error boundaries catch JavaScript errors anywhere in their child component tree
+during rendering, in lifecycle methods, and in constructors. They prevent entire
+app crashes and display fallback UI.
 
 ### Limitations
 
@@ -240,7 +247,8 @@ Error boundaries **do NOT** catch errors in:
 
 ### Using react-error-boundary Package
 
-The `react-error-boundary` library is the recommended approach (simpler than class components):
+The `react-error-boundary` library is the recommended approach (simpler than
+class components):
 
 ```bash
 npm install react-error-boundary
@@ -324,7 +332,8 @@ Wrap individual features or routes to isolate errors:
 
 #### Handling Async Errors with useErrorBoundary
 
-For errors in event handlers or async operations, use the `useErrorBoundary` hook:
+For errors in event handlers or async operations, use the `useErrorBoundary`
+hook:
 
 ```typescript
 import { useErrorBoundary } from "react-error-boundary";
@@ -831,7 +840,9 @@ export function ErrorPage({
 
 ### Error Logger (Spike Land Implementation)
 
-This project uses a custom error logger (`src/lib/error-logger.ts`) combined with Vercel Analytics for monitoring, rather than external error tracking services.
+This project uses a custom error logger (`src/lib/error-logger.ts`) combined
+with Vercel Analytics for monitoring, rather than external error tracking
+services.
 
 ```typescript
 // src/lib/error-logger.ts
@@ -1136,7 +1147,8 @@ async function fetchWithTimeout<T>(url: string): Promise<T> {
 
 ### Do's ✅
 
-1. **Always throw Error instances** - Never throw strings, numbers, or plain objects
+1. **Always throw Error instances** - Never throw strings, numbers, or plain
+   objects
    ```typescript
    throw new ValidationError("Invalid input", "email");
    ```
@@ -1155,7 +1167,8 @@ async function fetchWithTimeout<T>(url: string): Promise<T> {
    </ErrorBoundary>;
    ```
 
-4. **Handle async errors** - Use try/catch in event handlers and async operations
+4. **Handle async errors** - Use try/catch in event handlers and async
+   operations
    ```typescript
    const { showBoundary } = useErrorBoundary();
    showBoundary(error);
@@ -1285,5 +1298,4 @@ Full working examples of these patterns can be found in:
 
 ---
 
-**Last Updated**: December 2025
-**Version**: 1.0
+**Last Updated**: December 2025 **Version**: 1.0

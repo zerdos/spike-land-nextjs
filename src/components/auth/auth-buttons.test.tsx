@@ -21,15 +21,19 @@ describe("AuthButtons Component", () => {
   describe("Initial Email Step", () => {
     it("should render email input and continue button initially", () => {
       render(<AuthButtons />);
-      expect(screen.getByPlaceholderText(/name@example.com/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/name@example.com/i))
+        .toBeInTheDocument();
       // Use exact match to avoid matching "Continue with Google/GitHub"
-      expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^continue$/i }))
+        .toBeInTheDocument();
     });
 
     it("should render Google and GitHub social buttons", () => {
       render(<AuthButtons />);
-      expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /continue with github/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue with google/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue with github/i }))
+        .toBeInTheDocument();
     });
 
     it("should render Google button before GitHub button", () => {
@@ -54,13 +58,23 @@ describe("AuthButtons Component", () => {
     it("should apply default classes when no className provided", () => {
       const { container } = render(<AuthButtons />);
       const wrapper = container.firstChild;
-      expect(wrapper).toHaveClass("flex", "flex-col", "gap-4", "w-full", "max-w-sm");
+      expect(wrapper).toHaveClass(
+        "flex",
+        "flex-col",
+        "gap-4",
+        "w-full",
+        "max-w-sm",
+      );
     });
 
     it("should have correct button variants - social buttons neutral styling", () => {
       render(<AuthButtons />);
-      const googleButton = screen.getByRole("button", { name: /continue with google/i });
-      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+      const googleButton = screen.getByRole("button", {
+        name: /continue with google/i,
+      });
+      const githubButton = screen.getByRole("button", {
+        name: /continue with github/i,
+      });
 
       // Social buttons should have neutral bg-card styling
       expect(googleButton).toHaveClass("bg-card");
@@ -69,8 +83,12 @@ describe("AuthButtons Component", () => {
 
     it("should have correct button sizes", () => {
       render(<AuthButtons />);
-      const googleButton = screen.getByRole("button", { name: /continue with google/i });
-      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+      const googleButton = screen.getByRole("button", {
+        name: /continue with google/i,
+      });
+      const githubButton = screen.getByRole("button", {
+        name: /continue with github/i,
+      });
 
       expect(googleButton).toHaveClass("h-12");
       expect(githubButton).toHaveClass("h-12");
@@ -78,7 +96,9 @@ describe("AuthButtons Component", () => {
 
     it("should disable continue button when email is empty", () => {
       render(<AuthButtons />);
-      const continueButton = screen.getByRole("button", { name: /^continue$/i });
+      const continueButton = screen.getByRole("button", {
+        name: /^continue$/i,
+      });
       expect(continueButton).toBeDisabled();
     });
 
@@ -86,9 +106,14 @@ describe("AuthButtons Component", () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "test@example.com",
+      );
 
-      const continueButton = screen.getByRole("button", { name: /^continue$/i });
+      const continueButton = screen.getByRole("button", {
+        name: /^continue$/i,
+      });
       expect(continueButton).not.toBeDisabled();
     });
   });
@@ -98,8 +123,12 @@ describe("AuthButtons Component", () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with google/i }));
-      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
+      await user.click(
+        screen.getByRole("button", { name: /continue with google/i }),
+      );
+      expect(signIn).toHaveBeenCalledWith("google", {
+        callbackUrl: "/apps/pixel",
+      });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
 
@@ -107,8 +136,12 @@ describe("AuthButtons Component", () => {
       const user = userEvent.setup();
       render(<AuthButtons />);
 
-      await user.click(screen.getByRole("button", { name: /continue with github/i }));
-      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/apps/pixel" });
+      await user.click(
+        screen.getByRole("button", { name: /continue with github/i }),
+      );
+      expect(signIn).toHaveBeenCalledWith("github", {
+        callbackUrl: "/apps/pixel",
+      });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
 
@@ -125,9 +158,13 @@ describe("AuthButtons Component", () => {
       });
 
       render(<AuthButtons />);
-      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with google/i }),
+      );
 
-      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/my-dashboard" });
+      expect(signIn).toHaveBeenCalledWith("google", {
+        callbackUrl: "/my-dashboard",
+      });
 
       // Reset
       Object.defineProperty(window, "location", {
@@ -139,14 +176,22 @@ describe("AuthButtons Component", () => {
     it("should use callbackUrl from URL params for GitHub sign in", async () => {
       const user = userEvent.setup();
       Object.defineProperty(window, "location", {
-        value: { ...window.location, search: "?callbackUrl=/settings", origin: "http://localhost" },
+        value: {
+          ...window.location,
+          search: "?callbackUrl=/settings",
+          origin: "http://localhost",
+        },
         writable: true,
       });
 
       render(<AuthButtons />);
-      await user.click(screen.getByRole("button", { name: /continue with github/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with github/i }),
+      );
 
-      expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/settings" });
+      expect(signIn).toHaveBeenCalledWith("github", {
+        callbackUrl: "/settings",
+      });
 
       // Reset
       Object.defineProperty(window, "location", {
@@ -167,10 +212,14 @@ describe("AuthButtons Component", () => {
       });
 
       render(<AuthButtons />);
-      await user.click(screen.getByRole("button", { name: /continue with google/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with google/i }),
+      );
 
       // Should use default /apps/pixel instead of external URL
-      expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/apps/pixel" });
+      expect(signIn).toHaveBeenCalledWith("google", {
+        callbackUrl: "/apps/pixel",
+      });
 
       // Reset
       Object.defineProperty(window, "location", {
@@ -181,8 +230,12 @@ describe("AuthButtons Component", () => {
 
     it("should have full width buttons", () => {
       render(<AuthButtons />);
-      const googleButton = screen.getByRole("button", { name: /continue with google/i });
-      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+      const googleButton = screen.getByRole("button", {
+        name: /continue with google/i,
+      });
+      const githubButton = screen.getByRole("button", {
+        name: /continue with github/i,
+      });
 
       expect(googleButton).toHaveClass("w-full");
       expect(githubButton).toHaveClass("w-full");
@@ -190,14 +243,18 @@ describe("AuthButtons Component", () => {
 
     it("should render Google button with icon", () => {
       render(<AuthButtons />);
-      const googleButton = screen.getByRole("button", { name: /continue with google/i });
+      const googleButton = screen.getByRole("button", {
+        name: /continue with google/i,
+      });
       const icon = googleButton.querySelector("svg");
       expect(icon).toBeInTheDocument();
     });
 
     it("should render GitHub button with icon", () => {
       render(<AuthButtons />);
-      const githubButton = screen.getByRole("button", { name: /continue with github/i });
+      const githubButton = screen.getByRole("button", {
+        name: /continue with github/i,
+      });
       const icon = githubButton.querySelector("svg");
       expect(icon).toBeInTheDocument();
     });
@@ -222,7 +279,10 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "test@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       expect(screen.getByText(/checking/i)).toBeInTheDocument();
@@ -237,7 +297,10 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "TEST@EXAMPLE.COM");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "TEST@EXAMPLE.COM",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       expect(mockFetch).toHaveBeenCalledWith("/api/auth/check-email", {
@@ -256,7 +319,10 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "test@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
@@ -266,12 +332,17 @@ describe("AuthButtons Component", () => {
 
     it("should show error message when fetch throws", async () => {
       const user = userEvent.setup();
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockFetch.mockRejectedValue(new Error("Network error"));
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "test@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "test@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
@@ -292,13 +363,18 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /sign in/i }))
+        .toBeInTheDocument();
     });
 
     it("should show disabled email field with entered email", async () => {
@@ -310,7 +386,10 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
@@ -328,11 +407,15 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /use different email/i }))
+          .toBeInTheDocument();
       });
     });
 
@@ -345,17 +428,25 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /use different email/i }))
+          .toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole("button", { name: /use different email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /use different email/i }),
+      );
 
-      expect(screen.getByPlaceholderText(/name@example.com/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/name@example.com/i))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^continue$/i }))
+        .toBeInTheDocument();
     });
 
     it("should call signIn with credentials on password form submission", async () => {
@@ -364,25 +455,42 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       // Mock window.location
       const originalLocation = window.location;
       Object.defineProperty(window, "location", {
         writable: true,
-        value: { ...originalLocation, href: "", search: "", origin: "http://localhost:3000" },
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "",
+          origin: "http://localhost:3000",
+        },
       });
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "testpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       expect(signIn).toHaveBeenCalledWith("credentials", {
@@ -412,18 +520,26 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "wrongpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "wrongpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument();
+        expect(screen.getByText(/invalid email or password/i))
+          .toBeInTheDocument();
       });
     });
 
@@ -444,14 +560,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "testpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       expect(screen.getByText(/signing in/i)).toBeInTheDocument();
@@ -465,7 +588,12 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -481,14 +609,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "testpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
@@ -507,7 +642,12 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -523,14 +663,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "testpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
@@ -554,14 +701,20 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
-      expect(screen.getByText(/create a password to set up your account/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /create account/i })).toBeInTheDocument();
+      expect(screen.getByText(/create a password to set up your account/i))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /create account/i }))
+        .toBeInTheDocument();
     });
 
     it("should require minimum 8 character password for signup", async () => {
@@ -573,20 +726,32 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "short");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "short",
+      );
 
-      const createButton = screen.getByRole("button", { name: /create account/i });
+      const createButton = screen.getByRole("button", {
+        name: /create account/i,
+      });
       expect(createButton).toBeDisabled();
 
       await user.clear(screen.getByPlaceholderText(/create a password/i));
-      await user.type(screen.getByPlaceholderText(/create a password/i), "longenoughpassword");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "longenoughpassword",
+      );
 
       expect(createButton).not.toBeDisabled();
     });
@@ -620,18 +785,30 @@ describe("AuthButtons Component", () => {
         );
       });
 
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       expect(screen.getByText(/creating account/i)).toBeInTheDocument();
@@ -653,10 +830,18 @@ describe("AuthButtons Component", () => {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+            Promise.resolve({
+              success: true,
+              user: { id: "123", email: "newuser@example.com" },
+            }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -672,14 +857,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
@@ -708,10 +900,18 @@ describe("AuthButtons Component", () => {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+            Promise.resolve({
+              success: true,
+              user: { id: "123", email: "newuser@example.com" },
+            }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -727,14 +927,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
@@ -749,7 +956,9 @@ describe("AuthButtons Component", () => {
 
     it("should display error on signup exception", async () => {
       const user = userEvent.setup();
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       // Mock check-email and signup API calls, signup throws exception
       let callCount = 0;
       mockFetch.mockImplementation(() => {
@@ -766,18 +975,26 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/an error occurred during sign up/i)).toBeInTheDocument();
+        expect(screen.getByText(/an error occurred during sign up/i))
+          .toBeInTheDocument();
       });
 
       consoleSpy.mockRestore();
@@ -799,27 +1016,47 @@ describe("AuthButtons Component", () => {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+            Promise.resolve({
+              success: true,
+              user: { id: "123", email: "newuser@example.com" },
+            }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null, status: 200, url: "/" });
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        error: null,
+        status: 200,
+        url: "/",
+      });
 
       const originalLocation = window.location;
       Object.defineProperty(window, "location", {
         writable: true,
-        value: { ...originalLocation, href: "", search: "", origin: "http://localhost:3000" },
+        value: {
+          ...originalLocation,
+          href: "",
+          search: "",
+          origin: "http://localhost:3000",
+        },
       });
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "NewUser@Example.COM");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "NewUser@Example.COM",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       // Check the signup API was called correctly
@@ -827,7 +1064,10 @@ describe("AuthButtons Component", () => {
         expect(mockFetch).toHaveBeenCalledWith("/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: "newuser@example.com", password: "newpassword123" }),
+          body: JSON.stringify({
+            email: "newuser@example.com",
+            password: "newpassword123",
+          }),
         });
       });
 
@@ -853,24 +1093,35 @@ describe("AuthButtons Component", () => {
         return Promise.resolve({
           ok: false,
           status: 409,
-          json: () => Promise.resolve({ error: "An account with this email already exists" }),
+          json: () =>
+            Promise.resolve({
+              error: "An account with this email already exists",
+            }),
         });
       });
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/an account with this email already exists/i)).toBeInTheDocument();
+        expect(screen.getByText(/an account with this email already exists/i))
+          .toBeInTheDocument();
       });
     });
   });
@@ -885,7 +1136,10 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "oauth@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "oauth@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
@@ -904,11 +1158,15 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "oauth@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "oauth@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /use different email/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /use different email/i }))
+          .toBeInTheDocument();
       });
     });
   });
@@ -923,14 +1181,20 @@ describe("AuthButtons Component", () => {
     it("should render separator text with correct styling", () => {
       render(<AuthButtons />);
       const separatorText = screen.getByText(/^or$/i);
-      expect(separatorText).toHaveClass("bg-background", "px-4", "text-muted-foreground");
+      expect(separatorText).toHaveClass(
+        "bg-background",
+        "px-4",
+        "text-muted-foreground",
+      );
     });
   });
 
   describe("Error Handling", () => {
     it("should display generic error on sign in exception", async () => {
       const user = userEvent.setup();
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
@@ -939,18 +1203,26 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "existing@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "existing@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/enter your password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/enter your password/i), "testpassword");
+      await user.type(
+        screen.getByPlaceholderText(/enter your password/i),
+        "testpassword",
+      );
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/an error occurred during sign in/i)).toBeInTheDocument();
+        expect(screen.getByText(/an error occurred during sign in/i))
+          .toBeInTheDocument();
       });
 
       consoleSpy.mockRestore();
@@ -972,7 +1244,10 @@ describe("AuthButtons Component", () => {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({ success: true, user: { id: "123", email: "newuser@example.com" } }),
+            Promise.resolve({
+              success: true,
+              user: { id: "123", email: "newuser@example.com" },
+            }),
         });
       });
       vi.mocked(signIn).mockResolvedValue({
@@ -984,14 +1259,21 @@ describe("AuthButtons Component", () => {
 
       render(<AuthButtons />);
 
-      await user.type(screen.getByPlaceholderText(/name@example.com/i), "newuser@example.com");
+      await user.type(
+        screen.getByPlaceholderText(/name@example.com/i),
+        "newuser@example.com",
+      );
       await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/create a password/i))
+          .toBeInTheDocument();
       });
 
-      await user.type(screen.getByPlaceholderText(/create a password/i), "newpassword123");
+      await user.type(
+        screen.getByPlaceholderText(/create a password/i),
+        "newpassword123",
+      );
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {

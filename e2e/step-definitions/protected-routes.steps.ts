@@ -5,9 +5,12 @@ import { mockAuthCallback, mockSessionExpired } from "../support/helpers/auth-he
 import { getCurrentUrl, getQueryParam, navigateToPath } from "../support/helpers/navigation-helper";
 import { CustomWorld } from "../support/world";
 
-When("I navigate to {string}", async function(this: CustomWorld, path: string) {
-  await navigateToPath(this.page, this.baseUrl, path);
-});
+When(
+  "I navigate to {string}",
+  async function(this: CustomWorld, path: string) {
+    await navigateToPath(this.page, this.baseUrl, path);
+  },
+);
 
 When(
   "I complete GitHub authentication as {string} with email {string}",
@@ -32,7 +35,7 @@ When("my session expires", async function(this: CustomWorld) {
 When(
   "I attempt to access the following protected routes:",
   async function(this: CustomWorld, dataTable: { raw: () => string[][]; }) {
-    const routes = dataTable.raw().map(row => row[0]);
+    const routes = dataTable.raw().map((row) => row[0]);
     this.attach(JSON.stringify({ routes }), "application/json");
 
     for (const route of routes) {
@@ -50,10 +53,13 @@ When(
 
 // NOTE: "I should be redirected to {string}" and "the URL should contain {string}" steps are defined in my-apps.steps.ts and authentication.steps.ts
 
-Then("I should remain on {string}", async function(this: CustomWorld, expectedPath: string) {
-  await this.page.waitForTimeout(300);
-  await assertUrlPath(this.page, expectedPath);
-});
+Then(
+  "I should remain on {string}",
+  async function(this: CustomWorld, expectedPath: string) {
+    await this.page.waitForTimeout(300);
+    await assertUrlPath(this.page, expectedPath);
+  },
+);
 
 // NOTE: "I should see {string} heading" step is defined in authentication.steps.ts
 
@@ -63,16 +69,22 @@ Then("I should not be redirected", async function(this: CustomWorld) {
   expect(currentUrl).toContain(this.baseUrl);
 });
 
-Then("all routes should redirect to home with callback URLs", async function(this: CustomWorld) {
-  const currentUrl = await getCurrentUrl(this.page);
-  const url = new URL(currentUrl);
+Then(
+  "all routes should redirect to home with callback URLs",
+  async function(this: CustomWorld) {
+    const currentUrl = await getCurrentUrl(this.page);
+    const url = new URL(currentUrl);
 
-  expect(url.pathname).toBe("/");
+    expect(url.pathname).toBe("/");
 
-  const callbackUrl = await getQueryParam(this.page, "callbackUrl");
-  expect(callbackUrl).toBeTruthy();
-});
+    const callbackUrl = await getQueryParam(this.page, "callbackUrl");
+    expect(callbackUrl).toBeTruthy();
+  },
+);
 
-Then("I should be on {string}", async function(this: CustomWorld, expectedPath: string) {
-  await assertUrlPath(this.page, expectedPath);
-});
+Then(
+  "I should be on {string}",
+  async function(this: CustomWorld, expectedPath: string) {
+    await assertUrlPath(this.page, expectedPath);
+  },
+);

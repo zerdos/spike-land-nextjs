@@ -254,7 +254,8 @@ describe("useHeroAnimation", () => {
 
       // Manually set the ref
       act(() => {
-        (result.current.animationRef as { current: HTMLDivElement | null; }).current = mockElement;
+        (result.current.animationRef as { current: HTMLDivElement | null; })
+          .current = mockElement;
       });
 
       // Re-render to pick up the new ref value
@@ -273,7 +274,8 @@ describe("useHeroAnimation", () => {
 
       // Assign ref again
       act(() => {
-        (result2.current.animationRef as { current: HTMLDivElement | null; }).current = mockElement;
+        (result2.current.animationRef as { current: HTMLDivElement | null; })
+          .current = mockElement;
       });
 
       // The styles should be calculated based on origin and target
@@ -315,7 +317,8 @@ describe("useHeroAnimation", () => {
 
       // Manually set the ref
       act(() => {
-        (result.current.animationRef as { current: HTMLDivElement | null; }).current = mockElement;
+        (result.current.animationRef as { current: HTMLDivElement | null; })
+          .current = mockElement;
       });
 
       expect(result.current.animationStyles["--hero-duration"]).toBe("300ms");

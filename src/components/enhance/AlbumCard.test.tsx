@@ -222,7 +222,11 @@ describe("AlbumCard Component", () => {
   it("uses fallback alt text when name is empty", () => {
     const albumWithEmptyName = {
       ...mockAlbum,
-      previewImages: [{ id: "img-1", url: "https://example.com/image1.jpg", name: "" }],
+      previewImages: [{
+        id: "img-1",
+        url: "https://example.com/image1.jpg",
+        name: "",
+      }],
     };
     render(<AlbumCard album={albumWithEmptyName} />);
 

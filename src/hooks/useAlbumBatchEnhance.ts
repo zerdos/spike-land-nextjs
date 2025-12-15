@@ -118,7 +118,9 @@ export function useAlbumBatchEnhance({
 
         // Build a map of status updates for efficient lookup
         const statusMap = new Map(
-          data.jobs.map((j) => [j.id, { status: j.status, error: j.errorMessage }]),
+          data.jobs.map((
+            j,
+          ) => [j.id, { status: j.status, error: j.errorMessage }]),
         );
 
         // Compute updated jobs from ref to avoid race conditions with state batching
@@ -172,7 +174,9 @@ export function useAlbumBatchEnhance({
 
         if (onError && !isCancelledRef.current) {
           onError(
-            error instanceof Error ? error.message : "Failed to poll job statuses",
+            error instanceof Error
+              ? error.message
+              : "Failed to poll job statuses",
           );
         }
       }
@@ -262,7 +266,9 @@ export function useAlbumBatchEnhance({
    */
   const completedCount = jobs.filter((job) => job.status === "COMPLETED").length;
   const failedCount = jobs.filter((job) => job.status === "FAILED").length;
-  const progress = jobs.length > 0 ? ((completedCount + failedCount) / jobs.length) * 100 : 0;
+  const progress = jobs.length > 0
+    ? ((completedCount + failedCount) / jobs.length) * 100
+    : 0;
 
   /**
    * Cleanup on unmount

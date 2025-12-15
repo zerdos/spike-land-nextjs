@@ -4,11 +4,14 @@ description: How to delegate subtasks to Claude agents via GitHub
 
 # Delegate to Claude Workflow
 
-This workflow describes how to plan complex tasks using Claude CLI locally and then delegate the execution to autonomous Claude agents via GitHub Issues and PRs.
+This workflow describes how to plan complex tasks using Claude CLI locally and
+then delegate the execution to autonomous Claude agents via GitHub Issues and
+PRs.
 
 ## 1. Preparation & Visualization
 
-If the task involves UI or specific visual requirements, generate a mockup or reference image first.
+If the task involves UI or specific visual requirements, generate a mockup or
+reference image first.
 
 - Use `generate_image` to create the visual asset.
 - Save the path to the image.
@@ -23,7 +26,8 @@ claude "Plan the implementation of [Task Name]. Context: [Description]. Referenc
 
 - Engage in the interactive session.
 - Answer questions to refine the requirements.
-- The plan will be saved to `/Users/z/.claude/plans/`. Find the latest `.md` file in that directory.
+- The plan will be saved to `/Users/z/.claude/plans/`. Find the latest `.md`
+  file in that directory.
 
 ## 3. Delegation via GitHub
 

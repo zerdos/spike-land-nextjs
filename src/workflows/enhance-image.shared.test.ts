@@ -57,9 +57,10 @@ describe("enhance-image.shared", () => {
     });
 
     it("should throw for empty jobId", () => {
-      expect(() => validateEnhanceImageInput({ ...validInput, jobId: "" })).toThrow(
-        "Invalid jobId",
-      );
+      expect(() => validateEnhanceImageInput({ ...validInput, jobId: "" }))
+        .toThrow(
+          "Invalid jobId",
+        );
     });
 
     it("should throw for non-string jobId", () => {
@@ -69,9 +70,10 @@ describe("enhance-image.shared", () => {
     });
 
     it("should throw for empty imageId", () => {
-      expect(() => validateEnhanceImageInput({ ...validInput, imageId: "" })).toThrow(
-        "Invalid imageId",
-      );
+      expect(() => validateEnhanceImageInput({ ...validInput, imageId: "" }))
+        .toThrow(
+          "Invalid imageId",
+        );
     });
 
     it("should throw for non-string imageId", () => {
@@ -81,9 +83,10 @@ describe("enhance-image.shared", () => {
     });
 
     it("should throw for empty userId", () => {
-      expect(() => validateEnhanceImageInput({ ...validInput, userId: "" })).toThrow(
-        "Invalid userId",
-      );
+      expect(() => validateEnhanceImageInput({ ...validInput, userId: "" }))
+        .toThrow(
+          "Invalid userId",
+        );
     });
 
     it("should throw for non-string userId", () => {
@@ -117,9 +120,10 @@ describe("enhance-image.shared", () => {
     });
 
     it("should throw for negative tokensCost", () => {
-      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: -1 })).toThrow(
-        "Invalid tokensCost",
-      );
+      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: -1 }))
+        .toThrow(
+          "Invalid tokensCost",
+        );
     });
 
     it("should throw for non-number tokensCost", () => {
@@ -129,7 +133,8 @@ describe("enhance-image.shared", () => {
     });
 
     it("should accept zero tokensCost", () => {
-      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: 0 })).not.toThrow();
+      expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: 0 }))
+        .not.toThrow();
     });
   });
 
@@ -225,15 +230,27 @@ describe("enhance-image.shared", () => {
       const originalHeight = 1080;
       const originalAspect = originalWidth / originalHeight;
 
-      const tier1k = calculateTargetDimensions("TIER_1K", originalWidth, originalHeight);
+      const tier1k = calculateTargetDimensions(
+        "TIER_1K",
+        originalWidth,
+        originalHeight,
+      );
       const calculatedAspect1k = tier1k.targetWidth / tier1k.targetHeight;
       expect(Math.abs(calculatedAspect1k - originalAspect)).toBeLessThan(0.01);
 
-      const tier2k = calculateTargetDimensions("TIER_2K", originalWidth, originalHeight);
+      const tier2k = calculateTargetDimensions(
+        "TIER_2K",
+        originalWidth,
+        originalHeight,
+      );
       const calculatedAspect2k = tier2k.targetWidth / tier2k.targetHeight;
       expect(Math.abs(calculatedAspect2k - originalAspect)).toBeLessThan(0.01);
 
-      const tier4k = calculateTargetDimensions("TIER_4K", originalWidth, originalHeight);
+      const tier4k = calculateTargetDimensions(
+        "TIER_4K",
+        originalWidth,
+        originalHeight,
+      );
       const calculatedAspect4k = tier4k.targetWidth / tier4k.targetHeight;
       expect(Math.abs(calculatedAspect4k - originalAspect)).toBeLessThan(0.01);
     });
@@ -282,7 +299,9 @@ describe("enhance-image.shared", () => {
         "users/user-abc/originals/subfolder/image.jpg",
         "job-222",
       );
-      expect(result).toBe("users/user-abc/enhanced/subfolder/image/job-222.jpg");
+      expect(result).toBe(
+        "users/user-abc/enhanced/subfolder/image/job-222.jpg",
+      );
     });
   });
 
@@ -477,7 +496,9 @@ describe("enhance-image.shared", () => {
 
   describe("resolvePipelineConfig", () => {
     const mockAlbumFindUnique = vi.mocked(prisma.album.findUnique);
-    const mockPipelineFindUnique = vi.mocked(prisma.enhancementPipeline.findUnique);
+    const mockPipelineFindUnique = vi.mocked(
+      prisma.enhancementPipeline.findUnique,
+    );
     const mockPipelineUpdate = vi.mocked(prisma.enhancementPipeline.update);
 
     beforeEach(() => {
@@ -531,7 +552,8 @@ describe("enhance-image.shared", () => {
       mockAlbumFindUnique.mockResolvedValue(
         {
           pipelineId: "album-pipeline-456",
-        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T : never,
+        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T
+          : never,
       );
       mockPipelineFindUnique.mockResolvedValue(
         {
@@ -570,7 +592,10 @@ describe("enhance-image.shared", () => {
           : never,
       );
 
-      const result = await resolvePipelineConfig("album-123", "explicit-pipeline");
+      const result = await resolvePipelineConfig(
+        "album-123",
+        "explicit-pipeline",
+      );
 
       // Should not query album since explicit pipelineId was provided
       expect(mockAlbumFindUnique).not.toHaveBeenCalled();
@@ -585,7 +610,8 @@ describe("enhance-image.shared", () => {
       mockAlbumFindUnique.mockResolvedValue(
         {
           pipelineId: null,
-        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T : never,
+        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T
+          : never,
       );
 
       const result = await resolvePipelineConfig("album-without-pipeline");
@@ -606,7 +632,10 @@ describe("enhance-image.shared", () => {
     it("should return system default when pipeline not found", async () => {
       mockPipelineFindUnique.mockResolvedValue(null);
 
-      const result = await resolvePipelineConfig(undefined, "nonexistent-pipeline");
+      const result = await resolvePipelineConfig(
+        undefined,
+        "nonexistent-pipeline",
+      );
 
       expect(result.pipelineId).toBeNull();
       expect(result.config).toEqual(SYSTEM_DEFAULT_PIPELINE);
@@ -647,13 +676,18 @@ describe("enhance-image.shared", () => {
           : never,
       );
 
-      const result = await resolvePipelineConfig(undefined, "pipeline-with-nulls");
+      const result = await resolvePipelineConfig(
+        undefined,
+        "pipeline-with-nulls",
+      );
 
       expect(result.config.tier).toBe("TIER_2K");
       expect(result.config.analysis).toEqual(SYSTEM_DEFAULT_PIPELINE.analysis);
       expect(result.config.autoCrop).toEqual(SYSTEM_DEFAULT_PIPELINE.autoCrop);
       expect(result.config.prompt).toEqual(SYSTEM_DEFAULT_PIPELINE.prompt);
-      expect(result.config.generation).toEqual(SYSTEM_DEFAULT_PIPELINE.generation);
+      expect(result.config.generation).toEqual(
+        SYSTEM_DEFAULT_PIPELINE.generation,
+      );
     });
   });
 });

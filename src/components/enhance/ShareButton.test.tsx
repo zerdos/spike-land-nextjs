@@ -110,7 +110,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://spike.land/share/existing-token"))
+      expect(
+        screen.getByDisplayValue("https://spike.land/share/existing-token"),
+      )
         .toBeInTheDocument();
     });
 
@@ -180,7 +182,8 @@ describe("ShareButton Component", () => {
     } as Response);
 
     await waitFor(() => {
-      expect(screen.queryByText("Generating share link...")).not.toBeInTheDocument();
+      expect(screen.queryByText("Generating share link...")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -251,7 +254,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(mockWriteText).toHaveBeenCalledWith("https://spike.land/share/test-token");
+      expect(mockWriteText).toHaveBeenCalledWith(
+        "https://spike.land/share/test-token",
+      );
     });
 
     expect(toast.success).toHaveBeenCalledWith("Link copied to clipboard!");
@@ -297,12 +302,17 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: /Share on Twitter/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Share on Twitter/i }))
+        .toBeInTheDocument();
     });
 
     const twitterLink = screen.getByRole("link", { name: /Share on Twitter/i });
-    const facebookLink = screen.getByRole("link", { name: /Share on Facebook/i });
-    const whatsappLink = screen.getByRole("link", { name: /Share on WhatsApp/i });
+    const facebookLink = screen.getByRole("link", {
+      name: /Share on Facebook/i,
+    });
+    const whatsappLink = screen.getByRole("link", {
+      name: /Share on WhatsApp/i,
+    });
 
     expect(twitterLink).toHaveAttribute(
       "href",
@@ -310,7 +320,9 @@ describe("ShareButton Component", () => {
     );
     expect(twitterLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
+      expect.stringContaining(
+        encodeURIComponent("https://spike.land/share/test-token"),
+      ),
     );
     expect(twitterLink).toHaveAttribute(
       "href",
@@ -323,13 +335,20 @@ describe("ShareButton Component", () => {
     );
     expect(facebookLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
+      expect.stringContaining(
+        encodeURIComponent("https://spike.land/share/test-token"),
+      ),
     );
 
-    expect(whatsappLink).toHaveAttribute("href", expect.stringContaining("wa.me"));
     expect(whatsappLink).toHaveAttribute(
       "href",
-      expect.stringContaining(encodeURIComponent("https://spike.land/share/test-token")),
+      expect.stringContaining("wa.me"),
+    );
+    expect(whatsappLink).toHaveAttribute(
+      "href",
+      expect.stringContaining(
+        encodeURIComponent("https://spike.land/share/test-token"),
+      ),
     );
   });
 
@@ -346,12 +365,17 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: /Share on Twitter/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Share on Twitter/i }))
+        .toBeInTheDocument();
     });
 
     const twitterLink = screen.getByRole("link", { name: /Share on Twitter/i });
-    const facebookLink = screen.getByRole("link", { name: /Share on Facebook/i });
-    const whatsappLink = screen.getByRole("link", { name: /Share on WhatsApp/i });
+    const facebookLink = screen.getByRole("link", {
+      name: /Share on Facebook/i,
+    });
+    const whatsappLink = screen.getByRole("link", {
+      name: /Share on WhatsApp/i,
+    });
 
     expect(twitterLink).toHaveAttribute("target", "_blank");
     expect(twitterLink).toHaveAttribute("rel", "noopener noreferrer");
@@ -395,7 +419,8 @@ describe("ShareButton Component", () => {
     vi.advanceTimersByTime(2000);
 
     await waitFor(() => {
-      expect(copyButton.querySelector(".text-green-500")).not.toBeInTheDocument();
+      expect(copyButton.querySelector(".text-green-500")).not
+        .toBeInTheDocument();
     });
 
     vi.useRealTimers();
@@ -422,7 +447,8 @@ describe("ShareButton Component", () => {
 
     fireEvent.click(button);
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://spike.land/share/abc123")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("https://spike.land/share/abc123"))
+        .toBeInTheDocument();
     });
 
     const closeButton = screen.getByRole("button", { name: /Close/i });
@@ -434,7 +460,8 @@ describe("ShareButton Component", () => {
 
     fireEvent.click(button);
     await waitFor(() => {
-      expect(screen.getByDisplayValue("https://spike.land/share/abc123")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("https://spike.land/share/abc123"))
+        .toBeInTheDocument();
     });
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -474,7 +501,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText("Share your enhanced image with friends and family."))
+      expect(
+        screen.getByText("Share your enhanced image with friends and family."),
+      )
         .toBeInTheDocument();
     });
   });
@@ -492,7 +521,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(shareButton);
 
     await waitFor(() => {
-      const input = screen.getByDisplayValue("https://spike.land/share/test-token");
+      const input = screen.getByDisplayValue(
+        "https://spike.land/share/test-token",
+      );
       expect(input).toHaveAttribute("readonly");
     });
   });
@@ -556,7 +587,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText("Failed to generate share link. Please try again."))
+      expect(
+        screen.getByText("Failed to generate share link. Please try again."),
+      )
         .toBeInTheDocument();
     });
   });
@@ -579,7 +612,9 @@ describe("ShareButton Component", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText("Failed to generate share link. Please try again."))
+      expect(
+        screen.getByText("Failed to generate share link. Please try again."),
+      )
         .toBeInTheDocument();
     });
 

@@ -66,7 +66,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     expect(screen.getByText("Browse Images")).toBeInTheDocument();
     expect(
@@ -80,7 +86,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={false} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={false}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     expect(screen.queryByText("Browse Images")).not.toBeInTheDocument();
   });
@@ -89,17 +101,30 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     expect(screen.getByLabelText("Search Query")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter share token...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter share token..."))
+      .toBeInTheDocument();
   });
 
   it("should render search type toggle buttons", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     expect(screen.getByText("Share Token")).toBeInTheDocument();
     expect(screen.getByText("User")).toBeInTheDocument();
@@ -109,16 +134,24 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     // Initially on Share Token
-    expect(screen.getByPlaceholderText("Enter share token...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter share token..."))
+      .toBeInTheDocument();
 
     // Switch to User
     const userButton = screen.getByText("User");
     fireEvent.click(userButton);
 
-    expect(screen.getByPlaceholderText("Enter user ID or email...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter user ID or email..."))
+      .toBeInTheDocument();
   });
 
   it("should call browse API on search with share token", async () => {
@@ -129,7 +162,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -152,7 +191,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     // Switch to User search
     const userButton = screen.getByText("User");
@@ -179,7 +224,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -204,7 +255,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -217,7 +274,8 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")?.parentElement;
+    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+      ?.parentElement;
     fireEvent.click(imageCards!);
 
     await waitFor(() => {
@@ -236,7 +294,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -249,7 +313,8 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")?.parentElement;
+    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+      ?.parentElement;
     fireEvent.click(imageCards!);
 
     await waitFor(() => {
@@ -284,7 +349,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -297,7 +368,8 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image and select enhancement
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")?.parentElement;
+    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+      ?.parentElement;
     fireEvent.click(imageCards!);
 
     await waitFor(() => {
@@ -321,13 +393,20 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchButton = screen.getByRole("button", { name: /^Search$/ });
     fireEvent.click(searchButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Please enter a search query")).toBeInTheDocument();
+      expect(screen.getByText("Please enter a search query"))
+        .toBeInTheDocument();
     });
   });
 
@@ -339,7 +418,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "nonexistent" } });
@@ -360,7 +445,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -388,7 +479,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -401,12 +498,15 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on the image
-    const imageCard = screen.getByText("0 enhancement(s)").closest("div")?.parentElement;
+    const imageCard = screen.getByText("0 enhancement(s)").closest("div")
+      ?.parentElement;
     fireEvent.click(imageCard!);
 
     await waitFor(() => {
       expect(
-        screen.getByText("This image has no enhancements. Please select a different image."),
+        screen.getByText(
+          "This image has no enhancements. Please select a different image.",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -419,7 +519,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -432,7 +538,8 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")?.parentElement;
+    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+      ?.parentElement;
     fireEvent.click(imageCards!);
 
     await waitFor(() => {
@@ -457,7 +564,13 @@ describe("ImageBrowserDialog", () => {
     const onOpenChange = vi.fn();
     const onSelect = vi.fn();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search Query");
     fireEvent.change(searchInput, { target: { value: "abc123" } });
@@ -479,7 +592,11 @@ describe("ImageBrowserDialog", () => {
     const onSelect = vi.fn();
 
     const { unmount } = render(
-      <ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />,
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
     );
 
     const searchInput = screen.getByLabelText("Search Query");
@@ -495,10 +612,18 @@ describe("ImageBrowserDialog", () => {
     // Unmount and remount to simulate clean state
     unmount();
 
-    render(<ImageBrowserDialog open={true} onOpenChange={onOpenChange} onSelect={onSelect} />);
+    render(
+      <ImageBrowserDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        onSelect={onSelect}
+      />,
+    );
 
     // Should be reset
-    const newSearchInput = screen.getByLabelText("Search Query") as HTMLInputElement;
+    const newSearchInput = screen.getByLabelText(
+      "Search Query",
+    ) as HTMLInputElement;
     expect(newSearchInput.value).toBe("");
     expect(screen.queryByText("Select an Image")).not.toBeInTheDocument();
   });

@@ -93,7 +93,10 @@ export async function GET() {
         }
 
         // Skip if no enhanced URL available
-        if (!latestJob.enhancedUrl || !latestJob.enhancedWidth || !latestJob.enhancedHeight) {
+        if (
+          !latestJob.enhancedUrl || !latestJob.enhancedWidth ||
+          !latestJob.enhancedHeight
+        ) {
           continue;
         }
 

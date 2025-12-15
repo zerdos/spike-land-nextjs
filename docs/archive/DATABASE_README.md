@@ -1,12 +1,16 @@
 # Database Documentation Index
 
-Welcome to the Spike Land database documentation. This directory contains comprehensive guides for database setup, operations, and maintenance.
+Welcome to the Spike Land database documentation. This directory contains
+comprehensive guides for database setup, operations, and maintenance.
 
 ## Quick Links
 
-- **[Quick Start Guide](./DATABASE_QUICK_START.md)** - Get up and running in 5 minutes
-- **[Complete Setup Guide](./DATABASE_SETUP.md)** - Comprehensive database setup, backup, monitoring, and recovery
-- **[Migration Guide](./MIGRATION_GUIDE.md)** - How to create, manage, and deploy database migrations
+- **[Quick Start Guide](./DATABASE_QUICK_START.md)** - Get up and running in 5
+  minutes
+- **[Complete Setup Guide](./DATABASE_SETUP.md)** - Comprehensive database
+  setup, backup, monitoring, and recovery
+- **[Migration Guide](./MIGRATION_GUIDE.md)** - How to create, manage, and
+  deploy database migrations
 
 ## Overview
 
@@ -354,7 +358,8 @@ Monitor these metrics in production:
 - Clean up old data (if applicable)
 - Performance audit
 
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed monitoring setup and SQL queries.
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed monitoring setup and
+SQL queries.
 
 ## Backup and Recovery
 
@@ -388,7 +393,8 @@ pg_restore -d spike_land_restored backup_20250123.backup
 psql spike_land_restored -c "SELECT COUNT(*) FROM users;"
 ```
 
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for complete backup and disaster recovery procedures.
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for complete backup and disaster
+recovery procedures.
 
 ## Troubleshooting
 
@@ -435,7 +441,8 @@ npm run db:migrate -- --name sync_schema
 
 1. **Never commit `.env` file** - Use `.env.example` as template
 2. **Use SSL/TLS** in production - Add `?sslmode=require` to DATABASE_URL
-3. **Least privilege access** - Application user should only have necessary permissions
+3. **Least privilege access** - Application user should only have necessary
+   permissions
 4. **Rotate credentials** - Update passwords quarterly
 5. **Enable audit logging** - Track schema changes and access patterns
 
@@ -469,7 +476,8 @@ const users = await prisma.user.findMany({
 ### Official Documentation
 
 - **Prisma Docs**: https://www.prisma.io/docs
-- **Prisma Schema Reference**: https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference
+- **Prisma Schema Reference**:
+  https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference
 - **PostgreSQL Docs**: https://www.postgresql.org/docs
 - **NextAuth + Prisma**: https://next-auth.js.org/adapters/prisma
 

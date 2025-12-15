@@ -105,7 +105,10 @@ async function mockAlbumsAPI(world: CustomWorld) {
   // Mock GET /api/albums - List albums
   await world.page.route("**/api/albums", async (route) => {
     if (!state.isApiAvailable) {
-      await route.fulfill({ status: 500, body: JSON.stringify({ error: "Service unavailable" }) });
+      await route.fulfill({
+        status: 500,
+        body: JSON.stringify({ error: "Service unavailable" }),
+      });
       return;
     }
 
@@ -132,7 +135,9 @@ async function mockAlbumsAPI(world: CustomWorld) {
         await route.fulfill({
           status: 400,
           contentType: "application/json",
-          body: JSON.stringify({ error: "Album name must be 100 characters or less" }),
+          body: JSON.stringify({
+            error: "Album name must be 100 characters or less",
+          }),
         });
         return;
       }
@@ -165,13 +170,16 @@ async function mockAlbumsAPI(world: CustomWorld) {
   // Mock GET /api/albums/[id] - Get album details
   await world.page.route("**/api/albums/*", async (route) => {
     if (!state.isApiAvailable) {
-      await route.fulfill({ status: 500, body: JSON.stringify({ error: "Service unavailable" }) });
+      await route.fulfill({
+        status: 500,
+        body: JSON.stringify({ error: "Service unavailable" }),
+      });
       return;
     }
 
     const url = route.request().url();
     const albumId = url.split("/albums/")[1]?.split("?")[0]?.split("/")[0];
-    const album = state.albums.find(a => a.id === albumId);
+    const album = state.albums.find((a) => a.id === albumId);
 
     if (route.request().method() === "GET") {
       if (!album) {
@@ -184,7 +192,7 @@ async function mockAlbumsAPI(world: CustomWorld) {
       }
 
       const albumImages = state.images
-        .filter(img => img.id.includes(albumId))
+        .filter((img) => img.id.includes(albumId))
         .map((img, index) => ({ ...img, sortOrder: index }));
 
       await route.fulfill({
@@ -200,7 +208,10 @@ async function mockAlbumsAPI(world: CustomWorld) {
       });
     } else if (route.request().method() === "PATCH") {
       if (!album) {
-        await route.fulfill({ status: 404, body: JSON.stringify({ error: "Album not found" }) });
+        await route.fulfill({
+          status: 404,
+          body: JSON.stringify({ error: "Album not found" }),
+        });
         return;
       }
 
@@ -250,11 +261,14 @@ async function mockAlbumsAPI(world: CustomWorld) {
       });
     } else if (route.request().method() === "DELETE") {
       if (!album) {
-        await route.fulfill({ status: 404, body: JSON.stringify({ error: "Album not found" }) });
+        await route.fulfill({
+          status: 404,
+          body: JSON.stringify({ error: "Album not found" }),
+        });
         return;
       }
 
-      state.albums = state.albums.filter(a => a.id !== albumId);
+      state.albums = state.albums.filter((a) => a.id !== albumId);
 
       await route.fulfill({
         status: 200,
@@ -284,14 +298,17 @@ async function mockAlbumsAPI(world: CustomWorld) {
 // GIVEN STEPS - Setup test state
 // ============================================================================
 
-Given("I have an album named {string}", async function(this: CustomWorld, albumName: string) {
-  const state = initTestState(this);
-  await mockAlbumsAPI(this);
+Given(
+  "I have an album named {string}",
+  async function(this: CustomWorld, albumName: string) {
+    const state = initTestState(this);
+    await mockAlbumsAPI(this);
 
-  const album = createMockAlbum(albumName);
-  state.albums.push(album);
-  state.currentAlbum = album;
-});
+    const album = createMockAlbum(albumName);
+    state.albums.push(album);
+    state.currentAlbum = album;
+  },
+);
 
 Given(
   "I have an album named {string} with {int} images",
@@ -386,7 +403,10 @@ Given("another user has a public album", async function(this: CustomWorld) {
         }),
       });
     } else {
-      await route.fulfill({ status: 403, body: JSON.stringify({ error: "Forbidden" }) });
+      await route.fulfill({
+        status: 403,
+        body: JSON.stringify({ error: "Forbidden" }),
+      });
     }
   });
 });
@@ -401,11 +421,14 @@ Given("the API is temporarily unavailable", async function(this: CustomWorld) {
 // WHEN STEPS - User actions
 // ============================================================================
 
-When("I navigate to {string} page", async function(this: CustomWorld, path: string) {
-  await mockAlbumsAPI(this);
-  await this.page.goto(path);
-  await this.page.waitForLoadState("networkidle");
-});
+When(
+  "I navigate to {string} page",
+  async function(this: CustomWorld, path: string) {
+    await mockAlbumsAPI(this);
+    await this.page.goto(path);
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 When("I navigate to the album", async function(this: CustomWorld) {
   const state = initTestState(this);
@@ -417,21 +440,31 @@ When("I navigate to the album", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-When("I navigate to the album using share token", async function(this: CustomWorld) {
-  const state = initTestState(this);
-  if (!state.currentAlbum?.shareToken) {
-    throw new Error("No share token available");
-  }
+When(
+  "I navigate to the album using share token",
+  async function(this: CustomWorld) {
+    const state = initTestState(this);
+    if (!state.currentAlbum?.shareToken) {
+      throw new Error("No share token available");
+    }
 
-  await this.page.goto(`/albums/${state.currentAlbum.id}?token=${state.currentAlbum.shareToken}`);
-  await this.page.waitForLoadState("networkidle");
-});
+    await this.page.goto(
+      `/albums/${state.currentAlbum.id}?token=${state.currentAlbum.shareToken}`,
+    );
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-When("I enter {string} as the album name", async function(this: CustomWorld, name: string) {
-  const nameInput = this.page.locator('input[name="name"], input[placeholder*="name" i]').first();
-  await expect(nameInput).toBeVisible();
-  await nameInput.fill(name);
-});
+When(
+  "I enter {string} as the album name",
+  async function(this: CustomWorld, name: string) {
+    const nameInput = this.page.locator(
+      'input[name="name"], input[placeholder*="name" i]',
+    ).first();
+    await expect(nameInput).toBeVisible();
+    await nameInput.fill(name);
+  },
+);
 
 When(
   "I enter {string} as the album description",
@@ -445,74 +478,101 @@ When(
 );
 
 When("I leave the album name empty", async function(this: CustomWorld) {
-  const nameInput = this.page.locator('input[name="name"], input[placeholder*="name" i]').first();
+  const nameInput = this.page.locator(
+    'input[name="name"], input[placeholder*="name" i]',
+  ).first();
   await expect(nameInput).toBeVisible();
   await nameInput.fill("");
 });
 
-When("I enter a name longer than 100 characters", async function(this: CustomWorld) {
-  const longName = "a".repeat(101);
-  const nameInput = this.page.locator('input[name="name"], input[placeholder*="name" i]').first();
-  await expect(nameInput).toBeVisible();
-  await nameInput.fill(longName);
-});
+When(
+  "I enter a name longer than 100 characters",
+  async function(this: CustomWorld) {
+    const longName = "a".repeat(101);
+    const nameInput = this.page.locator(
+      'input[name="name"], input[placeholder*="name" i]',
+    ).first();
+    await expect(nameInput).toBeVisible();
+    await nameInput.fill(longName);
+  },
+);
 
 When("I confirm album creation", async function(this: CustomWorld) {
-  const createButton = this.page.getByRole("button", { name: /create|save|confirm/i });
+  const createButton = this.page.getByRole("button", {
+    name: /create|save|confirm/i,
+  });
   await expect(createButton).toBeVisible();
   await createButton.click();
   await this.page.waitForTimeout(500);
 });
 
 When("I open album settings", async function(this: CustomWorld) {
-  const settingsButton = this.page.getByRole("button", { name: /settings|edit|manage/i }).first();
+  const settingsButton = this.page.getByRole("button", {
+    name: /settings|edit|manage/i,
+  }).first();
   await expect(settingsButton).toBeVisible();
   await settingsButton.click();
   await this.page.waitForTimeout(300);
 });
 
-When("I change the album name to {string}", async function(this: CustomWorld, newName: string) {
-  const nameInput = this.page.locator('input[name="name"], input[placeholder*="name" i]').first();
-  await expect(nameInput).toBeVisible();
-  await nameInput.clear();
-  await nameInput.fill(newName);
-});
+When(
+  "I change the album name to {string}",
+  async function(this: CustomWorld, newName: string) {
+    const nameInput = this.page.locator(
+      'input[name="name"], input[placeholder*="name" i]',
+    ).first();
+    await expect(nameInput).toBeVisible();
+    await nameInput.clear();
+    await nameInput.fill(newName);
+  },
+);
 
-When("I change the description to {string}", async function(this: CustomWorld, newDesc: string) {
-  const descInput = this.page.locator(
-    'textarea[name="description"], input[name="description"]',
-  ).first();
-  await expect(descInput).toBeVisible();
-  await descInput.clear();
-  await descInput.fill(newDesc);
-});
+When(
+  "I change the description to {string}",
+  async function(this: CustomWorld, newDesc: string) {
+    const descInput = this.page.locator(
+      'textarea[name="description"], input[name="description"]',
+    ).first();
+    await expect(descInput).toBeVisible();
+    await descInput.clear();
+    await descInput.fill(newDesc);
+  },
+);
 
-When("I change privacy to {string}", async function(this: CustomWorld, privacy: string) {
-  // Look for radio buttons, select dropdown, or privacy toggle
-  const privacyControl = this.page.locator(
-    `input[type="radio"][value="${privacy.toUpperCase()}"], select[name="privacy"]`,
-  ).first();
+When(
+  "I change privacy to {string}",
+  async function(this: CustomWorld, privacy: string) {
+    // Look for radio buttons, select dropdown, or privacy toggle
+    const privacyControl = this.page.locator(
+      `input[type="radio"][value="${privacy.toUpperCase()}"], select[name="privacy"]`,
+    ).first();
 
-  if (await privacyControl.isVisible()) {
-    await privacyControl.click();
-  } else {
-    // Try finding a button or label with the privacy level
-    const privacyOption = this.page.getByText(new RegExp(privacy, "i")).first();
-    await privacyOption.click();
-  }
+    if (await privacyControl.isVisible()) {
+      await privacyControl.click();
+    } else {
+      // Try finding a button or label with the privacy level
+      const privacyOption = this.page.getByText(new RegExp(privacy, "i"))
+        .first();
+      await privacyOption.click();
+    }
 
-  await this.page.waitForTimeout(300);
-});
+    await this.page.waitForTimeout(300);
+  },
+);
 
 When("I save the changes", async function(this: CustomWorld) {
-  const saveButton = this.page.getByRole("button", { name: /save|update|confirm/i });
+  const saveButton = this.page.getByRole("button", {
+    name: /save|update|confirm/i,
+  });
   await expect(saveButton).toBeVisible();
   await saveButton.click();
   await this.page.waitForTimeout(500);
 });
 
 When("I confirm the deletion", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", { name: /delete|confirm|yes/i });
+  const confirmButton = this.page.getByRole("button", {
+    name: /delete|confirm|yes/i,
+  });
   await expect(confirmButton).toBeVisible();
   await confirmButton.click();
   await this.page.waitForTimeout(500);
@@ -520,9 +580,10 @@ When("I confirm the deletion", async function(this: CustomWorld) {
 
 When("I copy the shareable URL", async function(this: CustomWorld) {
   const state = initTestState(this);
-  const shareUrlElement = this.page.locator("input[readonly], code, pre").filter({
-    hasText: /albums\//,
-  }).first();
+  const shareUrlElement = this.page.locator("input[readonly], code, pre")
+    .filter({
+      hasText: /albums\//,
+    }).first();
 
   if (await shareUrlElement.isVisible()) {
     const shareUrl = await shareUrlElement.textContent();
@@ -530,24 +591,27 @@ When("I copy the shareable URL", async function(this: CustomWorld) {
   }
 });
 
-When("I open the URL in an incognito window", async function(this: CustomWorld) {
-  const state = initTestState(this);
+When(
+  "I open the URL in an incognito window",
+  async function(this: CustomWorld) {
+    const state = initTestState(this);
 
-  // Create a new incognito context
-  const incognitoContext = await this.browser.newContext({
-    baseURL: this.baseUrl,
-  });
+    // Create a new incognito context
+    const incognitoContext = await this.browser.newContext({
+      baseURL: this.baseUrl,
+    });
 
-  const incognitoPage = await incognitoContext.newPage();
+    const incognitoPage = await incognitoContext.newPage();
 
-  if (state.currentAlbum) {
-    await incognitoPage.goto(`/albums/${state.currentAlbum.id}`);
-    await incognitoPage.waitForLoadState("networkidle");
-  }
+    if (state.currentAlbum) {
+      await incognitoPage.goto(`/albums/${state.currentAlbum.id}`);
+      await incognitoPage.waitForLoadState("networkidle");
+    }
 
-  // Store for verification
-  this.page = incognitoPage;
-});
+    // Store for verification
+    this.page = incognitoPage;
+  },
+);
 
 When(
   "I attempt to access the album via share URL as anonymous user",
@@ -564,60 +628,75 @@ When(
   },
 );
 
-When("someone tries to access the old share URL", async function(this: CustomWorld) {
-  const state = initTestState(this);
+When(
+  "someone tries to access the old share URL",
+  async function(this: CustomWorld) {
+    const state = initTestState(this);
 
-  if (state.currentAlbum) {
-    await this.page.goto(`/albums/${state.currentAlbum.id}`);
-    await this.page.waitForLoadState("networkidle");
-  }
-});
+    if (state.currentAlbum) {
+      await this.page.goto(`/albums/${state.currentAlbum.id}`);
+      await this.page.waitForLoadState("networkidle");
+    }
+  },
+);
 
-When("I select {int} image from my library", async function(this: CustomWorld, count: number) {
-  await this.page.waitForTimeout(300);
-  const imageCheckboxes = this.page.locator('input[type="checkbox"]').or(
-    this.page.locator('[role="checkbox"]'),
-  );
+When(
+  "I select {int} image from my library",
+  async function(this: CustomWorld, count: number) {
+    await this.page.waitForTimeout(300);
+    const imageCheckboxes = this.page.locator('input[type="checkbox"]').or(
+      this.page.locator('[role="checkbox"]'),
+    );
 
-  const visibleCount = await imageCheckboxes.count();
-  const selectCount = Math.min(count, visibleCount);
+    const visibleCount = await imageCheckboxes.count();
+    const selectCount = Math.min(count, visibleCount);
 
-  for (let i = 0; i < selectCount; i++) {
-    await imageCheckboxes.nth(i).click();
-  }
-});
+    for (let i = 0; i < selectCount; i++) {
+      await imageCheckboxes.nth(i).click();
+    }
+  },
+);
 
-When("I select {int} images from my library", async function(this: CustomWorld, count: number) {
-  await this.page.waitForTimeout(300);
-  const imageCheckboxes = this.page.locator('input[type="checkbox"]').or(
-    this.page.locator('[role="checkbox"]'),
-  );
+When(
+  "I select {int} images from my library",
+  async function(this: CustomWorld, count: number) {
+    await this.page.waitForTimeout(300);
+    const imageCheckboxes = this.page.locator('input[type="checkbox"]').or(
+      this.page.locator('[role="checkbox"]'),
+    );
 
-  const visibleCount = await imageCheckboxes.count();
-  const selectCount = Math.min(count, visibleCount);
+    const visibleCount = await imageCheckboxes.count();
+    const selectCount = Math.min(count, visibleCount);
 
-  for (let i = 0; i < selectCount; i++) {
-    await imageCheckboxes.nth(i).click();
-  }
-});
+    for (let i = 0; i < selectCount; i++) {
+      await imageCheckboxes.nth(i).click();
+    }
+  },
+);
 
 When("I confirm the selection", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", { name: /add|confirm|save/i });
+  const confirmButton = this.page.getByRole("button", {
+    name: /add|confirm|save/i,
+  });
   await expect(confirmButton).toBeVisible();
   await confirmButton.click();
   await this.page.waitForTimeout(500);
 });
 
-When("I select the image that is already in the album", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(300);
-  const firstImage = this.page.locator('input[type="checkbox"]').or(
-    this.page.locator('[role="checkbox"]'),
-  ).first();
-  await firstImage.click();
-});
+When(
+  "I select the image that is already in the album",
+  async function(this: CustomWorld) {
+    await this.page.waitForTimeout(300);
+    const firstImage = this.page.locator('input[type="checkbox"]').or(
+      this.page.locator('[role="checkbox"]'),
+    ).first();
+    await firstImage.click();
+  },
+);
 
 When("I select an image", async function(this: CustomWorld) {
-  const imageCard = this.page.locator('[data-testid="album-image"], img').first();
+  const imageCard = this.page.locator('[data-testid="album-image"], img')
+    .first();
   await expect(imageCard).toBeVisible();
   await imageCard.click();
   await this.page.waitForTimeout(300);
@@ -626,7 +705,9 @@ When("I select an image", async function(this: CustomWorld) {
 // NOTE: "I click {string} button" is defined in common.steps.ts
 
 When("I confirm removal", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", { name: /remove|confirm|yes/i });
+  const confirmButton = this.page.getByRole("button", {
+    name: /remove|confirm|yes/i,
+  });
   await expect(confirmButton).toBeVisible();
   await confirmButton.click();
   await this.page.waitForTimeout(500);
@@ -661,7 +742,8 @@ When("I try to delete the album", async function(this: CustomWorld) {
     await this.page.goto(`/albums/${state.currentAlbum.id}`);
     await this.page.waitForLoadState("networkidle");
 
-    const settingsButton = this.page.getByRole("button", { name: /settings/i }).first();
+    const settingsButton = this.page.getByRole("button", { name: /settings/i })
+      .first();
     if (await settingsButton.isVisible()) {
       await settingsButton.click();
       await this.page.waitForTimeout(300);
@@ -695,10 +777,15 @@ Then(
   },
 );
 
-Then("the album should show {int} images", async function(this: CustomWorld, count: number) {
-  const imageCountText = this.page.getByText(new RegExp(`${count}\\s*(image|photo)`));
-  await expect(imageCountText).toBeVisible();
-});
+Then(
+  "the album should show {int} images",
+  async function(this: CustomWorld, count: number) {
+    const imageCountText = this.page.getByText(
+      new RegExp(`${count}\\s*(image|photo)`),
+    );
+    await expect(imageCountText).toBeVisible();
+  },
+);
 
 Then(
   "the album description should be {string}",
@@ -708,12 +795,17 @@ Then(
   },
 );
 
-Then("I should see a validation error for album name", async function(this: CustomWorld) {
-  const errorMessage = this.page.locator('[role="alert"], .error, [class*="error"]').filter({
-    hasText: /name.*required|required.*name/i,
-  });
-  await expect(errorMessage).toBeVisible();
-});
+Then(
+  "I should see a validation error for album name",
+  async function(this: CustomWorld) {
+    const errorMessage = this.page.locator(
+      '[role="alert"], .error, [class*="error"]',
+    ).filter({
+      hasText: /name.*required|required.*name/i,
+    });
+    await expect(errorMessage).toBeVisible();
+  },
+);
 
 Then("the album should not be created", async function(this: CustomWorld) {
   initTestState(this);
@@ -729,7 +821,9 @@ Then("the album should not be created", async function(this: CustomWorld) {
 Then(
   "I should see a validation error for album name length",
   async function(this: CustomWorld) {
-    const errorMessage = this.page.locator('[role="alert"], .error, [class*="error"]').filter({
+    const errorMessage = this.page.locator(
+      '[role="alert"], .error, [class*="error"]',
+    ).filter({
       hasText: /100 character|too long/i,
     });
     await expect(errorMessage).toBeVisible();
@@ -761,45 +855,58 @@ Then(
   },
 );
 
-Then("the album privacy should be {string}", async function(this: CustomWorld, privacy: string) {
-  await this.page.waitForTimeout(500);
-  // Check for privacy indicator
-  const privacyBadge = this.page.getByText(new RegExp(privacy, "i"));
-  await expect(privacyBadge).toBeVisible();
-});
+Then(
+  "the album privacy should be {string}",
+  async function(this: CustomWorld, privacy: string) {
+    await this.page.waitForTimeout(500);
+    // Check for privacy indicator
+    const privacyBadge = this.page.getByText(new RegExp(privacy, "i"));
+    await expect(privacyBadge).toBeVisible();
+  },
+);
 
 Then("I should receive a shareable URL", async function(this: CustomWorld) {
-  const shareUrlElement = this.page.locator("input[readonly], code, pre").filter({
-    hasText: /albums\//,
-  });
+  const shareUrlElement = this.page.locator("input[readonly], code, pre")
+    .filter({
+      hasText: /albums\//,
+    });
   await expect(shareUrlElement.first()).toBeVisible();
 });
 
-Then("the album should be removed from my list", async function(this: CustomWorld) {
-  const state = initTestState(this);
+Then(
+  "the album should be removed from my list",
+  async function(this: CustomWorld) {
+    const state = initTestState(this);
 
-  await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(500);
 
-  if (state.currentAlbum) {
-    const albumCard = this.page.getByText(state.currentAlbum.name);
-    await expect(albumCard).not.toBeVisible();
-  }
-});
+    if (state.currentAlbum) {
+      const albumCard = this.page.getByText(state.currentAlbum.name);
+      await expect(albumCard).not.toBeVisible();
+    }
+  },
+);
 
-Then("I should be redirected to {string}", async function(this: CustomWorld, path: string) {
-  await expect(this.page).toHaveURL(new RegExp(path), { timeout: 5000 });
-});
+Then(
+  "I should be redirected to {string}",
+  async function(this: CustomWorld, path: string) {
+    await expect(this.page).toHaveURL(new RegExp(path), { timeout: 5000 });
+  },
+);
 
-Then("the images should still exist in my library", async function(this: CustomWorld) {
-  // Navigate to main images page
-  await this.page.goto("/apps/pixel");
-  await this.page.waitForLoadState("networkidle");
+Then(
+  "the images should still exist in my library",
+  async function(this: CustomWorld) {
+    // Navigate to main images page
+    await this.page.goto("/apps/pixel");
+    await this.page.waitForLoadState("networkidle");
 
-  // Check that images are still visible
-  const images = this.page.locator('img[alt*="photo"], img[alt*="image"]');
-  const count = await images.count();
-  expect(count).toBeGreaterThan(0);
-});
+    // Check that images are still visible
+    const images = this.page.locator('img[alt*="photo"], img[alt*="image"]');
+    const count = await images.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
 Then("the album should still exist", async function(this: CustomWorld) {
   const state = initTestState(this);
@@ -817,9 +924,10 @@ Then("the album should still exist", async function(this: CustomWorld) {
 });
 
 Then("I should see a shareable URL", async function(this: CustomWorld) {
-  const shareUrlElement = this.page.locator("input[readonly], code, pre").filter({
-    hasText: /albums\//,
-  });
+  const shareUrlElement = this.page.locator("input[readonly], code, pre")
+    .filter({
+      hasText: /albums\//,
+    });
   await expect(shareUrlElement.first()).toBeVisible();
 });
 
@@ -833,7 +941,9 @@ Then(
 );
 
 Then("I should not see edit controls", async function(this: CustomWorld) {
-  const editButton = this.page.getByRole("button", { name: /edit|settings|delete/i });
+  const editButton = this.page.getByRole("button", {
+    name: /edit|settings|delete/i,
+  });
   await expect(editButton.first()).not.toBeVisible();
 });
 
@@ -842,22 +952,32 @@ Then("I should see the album contents", async function(this: CustomWorld) {
   await expect(albumContent.first()).toBeVisible();
 });
 
-Then("the page title should show {string}", async function(this: CustomWorld, title: string) {
-  const heading = this.page.getByRole("heading", { name: title }).or(this.page.getByText(title));
-  await expect(heading.first()).toBeVisible();
-});
+Then(
+  "the page title should show {string}",
+  async function(this: CustomWorld, title: string) {
+    const heading = this.page.getByRole("heading", { name: title }).or(
+      this.page.getByText(title),
+    );
+    await expect(heading.first()).toBeVisible();
+  },
+);
 
-Then("I should see {string} error", async function(this: CustomWorld, errorText: string) {
-  const errorMessage = this.page.getByText(new RegExp(errorText, "i"));
-  await expect(errorMessage).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "I should see {string} error",
+  async function(this: CustomWorld, errorText: string) {
+    const errorMessage = this.page.getByText(new RegExp(errorText, "i"));
+    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+  },
+);
 
 Then("the shareable URL should be removed", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 
   // The share URL field should either be hidden or show "No share link"
   const noShareMessage = this.page.getByText(/no share|private/i);
-  const shareUrlElement = this.page.locator("input[readonly]").filter({ hasText: /albums\// });
+  const shareUrlElement = this.page.locator("input[readonly]").filter({
+    hasText: /albums\//,
+  });
 
   const isNoShareVisible = await noShareMessage.isVisible().catch(() => false);
   const isShareUrlHidden = !(await shareUrlElement.isVisible().catch(() => false));
@@ -865,27 +985,36 @@ Then("the shareable URL should be removed", async function(this: CustomWorld) {
   expect(isNoShareVisible || isShareUrlHidden).toBe(true);
 });
 
-Then("they should see {string} error", async function(this: CustomWorld, errorText: string) {
-  const errorMessage = this.page.getByText(new RegExp(errorText, "i"));
-  await expect(errorMessage).toBeVisible();
-});
+Then(
+  "they should see {string} error",
+  async function(this: CustomWorld, errorText: string) {
+    const errorMessage = this.page.getByText(new RegExp(errorText, "i"));
+    await expect(errorMessage).toBeVisible();
+  },
+);
 
-Then("I should see an info message about duplicate image", async function(this: CustomWorld) {
-  const infoMessage = this.page.getByText(/already in|duplicate/i);
-  await expect(infoMessage.first()).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "I should see an info message about duplicate image",
+  async function(this: CustomWorld) {
+    const infoMessage = this.page.getByText(/already in|duplicate/i);
+    await expect(infoMessage.first()).toBeVisible({ timeout: 5000 });
+  },
+);
 
 Then("I should see empty state message", async function(this: CustomWorld) {
   const emptyMessage = this.page.getByText(/no images|empty album|add images/i);
   await expect(emptyMessage.first()).toBeVisible();
 });
 
-Then("I should see {int} images in the album", async function(this: CustomWorld, count: number) {
-  const images = this.page.locator(
-    'img[alt*="photo"], img[alt*="image"], [data-testid="album-image"]',
-  );
-  await expect(images).toHaveCount(count, { timeout: 5000 });
-});
+Then(
+  "I should see {int} images in the album",
+  async function(this: CustomWorld, count: number) {
+    const images = this.page.locator(
+      'img[alt*="photo"], img[alt*="image"], [data-testid="album-image"]',
+    );
+    await expect(images).toHaveCount(count, { timeout: 5000 });
+  },
+);
 
 Then("each image should display properly", async function(this: CustomWorld) {
   const images = this.page.locator('img[alt*="photo"], img[alt*="image"]');
@@ -901,17 +1030,24 @@ Then("each image should display properly", async function(this: CustomWorld) {
 Then(
   "the album card should show up to {int} preview images",
   async function(this: CustomWorld, maxCount: number) {
-    const previewImages = this.page.locator('[data-testid="album-preview-image"], .preview-image');
+    const previewImages = this.page.locator(
+      '[data-testid="album-preview-image"], .preview-image',
+    );
     const count = await previewImages.count();
 
     expect(count).toBeLessThanOrEqual(maxCount);
   },
 );
 
-Then("the image count should display {string}", async function(this: CustomWorld, count: string) {
-  const countElement = this.page.getByText(new RegExp(`${count}\\s*(image|photo)`));
-  await expect(countElement).toBeVisible();
-});
+Then(
+  "the image count should display {string}",
+  async function(this: CustomWorld, count: string) {
+    const countElement = this.page.getByText(
+      new RegExp(`${count}\\s*(image|photo)`),
+    );
+    await expect(countElement).toBeVisible();
+  },
+);
 
 Then("I should see an error message", async function(this: CustomWorld) {
   const errorMessage = this.page.locator(

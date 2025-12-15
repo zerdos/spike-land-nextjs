@@ -165,11 +165,36 @@ describe("POST /api/admin/jobs/cleanup", () => {
       failed: 0,
       tokensRefunded: 0,
       jobs: [
-        { id: "job1", userId: "user1", tokensRefunded: 0, processingDuration: 600000 },
-        { id: "job2", userId: "user2", tokensRefunded: 0, processingDuration: 480000 },
-        { id: "job3", userId: "user3", tokensRefunded: 0, processingDuration: 720000 },
-        { id: "job4", userId: "user4", tokensRefunded: 0, processingDuration: 540000 },
-        { id: "job5", userId: "user5", tokensRefunded: 0, processingDuration: 660000 },
+        {
+          id: "job1",
+          userId: "user1",
+          tokensRefunded: 0,
+          processingDuration: 600000,
+        },
+        {
+          id: "job2",
+          userId: "user2",
+          tokensRefunded: 0,
+          processingDuration: 480000,
+        },
+        {
+          id: "job3",
+          userId: "user3",
+          tokensRefunded: 0,
+          processingDuration: 720000,
+        },
+        {
+          id: "job4",
+          userId: "user4",
+          tokensRefunded: 0,
+          processingDuration: 540000,
+        },
+        {
+          id: "job5",
+          userId: "user5",
+          tokensRefunded: 0,
+          processingDuration: 660000,
+        },
       ],
       errors: [],
     });
@@ -326,8 +351,18 @@ describe("POST /api/admin/jobs/cleanup", () => {
       failed: 1,
       tokensRefunded: 17,
       jobs: [
-        { id: "job1", userId: "user1", tokensRefunded: 10, processingDuration: 600000 },
-        { id: "job2", userId: "user2", tokensRefunded: 7, processingDuration: 480000 },
+        {
+          id: "job1",
+          userId: "user1",
+          tokensRefunded: 10,
+          processingDuration: 600000,
+        },
+        {
+          id: "job2",
+          userId: "user2",
+          tokensRefunded: 7,
+          processingDuration: 480000,
+        },
         {
           id: "job3",
           userId: "user3",

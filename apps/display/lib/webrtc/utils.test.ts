@@ -280,7 +280,11 @@ describe("createWebRTCError", () => {
 
   it("should create error with original error", () => {
     const originalError = new Error("Original error");
-    const error = createWebRTCError("peer-unavailable", "Peer not found", originalError);
+    const error = createWebRTCError(
+      "peer-unavailable",
+      "Peer not found",
+      originalError,
+    );
     expect(error).toEqual({
       type: "peer-unavailable",
       message: "Peer not found",
@@ -360,7 +364,9 @@ describe("createConnectionUrl", () => {
 
 describe("parseConnectionUrl", () => {
   it("should extract hostId from valid URL", () => {
-    const hostId = parseConnectionUrl("https://example.com/client?hostId=peer-123");
+    const hostId = parseConnectionUrl(
+      "https://example.com/client?hostId=peer-123",
+    );
     expect(hostId).toBe("peer-123");
   });
 
@@ -375,7 +381,9 @@ describe("parseConnectionUrl", () => {
   });
 
   it("should handle URL with multiple query parameters", () => {
-    const hostId = parseConnectionUrl("https://example.com/client?foo=bar&hostId=peer-456&baz=qux");
+    const hostId = parseConnectionUrl(
+      "https://example.com/client?foo=bar&hostId=peer-456&baz=qux",
+    );
     expect(hostId).toBe("peer-456");
   });
 });
@@ -467,7 +475,10 @@ describe("monitorStreamHealth", () => {
     const cleanup = monitorStreamHealth(mockStream, onInactive);
     cleanup();
 
-    expect(track.removeEventListener).toHaveBeenCalledWith("ended", expect.any(Function));
+    expect(track.removeEventListener).toHaveBeenCalledWith(
+      "ended",
+      expect.any(Function),
+    );
   });
 
   it("should handle multiple tracks", () => {

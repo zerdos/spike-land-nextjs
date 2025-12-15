@@ -1,12 +1,15 @@
 # Smart Video Wall E2E Testing Guide
 
-This document describes the comprehensive E2E testing approach for the Smart Video Wall application using Playwright and Cucumber BDD framework.
+This document describes the comprehensive E2E testing approach for the Smart
+Video Wall application using Playwright and Cucumber BDD framework.
 
 ## Overview
 
-The E2E test suite covers all critical user journeys for the Smart Video Wall system, including:
+The E2E test suite covers all critical user journeys for the Smart Video Wall
+system, including:
 
-- Display page functionality (QR code generation, video feed display, layout optimization)
+- Display page functionality (QR code generation, video feed display, layout
+  optimization)
 - Client page functionality (camera controls, connection management)
 - Multi-client scenarios (simultaneous connections, disconnections)
 - WebRTC connection management
@@ -62,13 +65,15 @@ Located in `/home/z/spike-land-nextjs/e2e/step-definitions/`:
 1. **video-wall-display.steps.ts** - Display page step implementations
 2. **client-camera-control.steps.ts** - Client page step implementations
 3. **layout-optimization.steps.ts** - Layout optimization step implementations
-4. **connection-management.steps.ts** - Connection management step implementations
+4. **connection-management.steps.ts** - Connection management step
+   implementations
 
 ## Technical Approach
 
 ### Multi-Context Architecture
 
-The test suite uses a custom `VideoWallWorld` class that extends Cucumber's World to support multiple browser contexts:
+The test suite uses a custom `VideoWallWorld` class that extends Cucumber's
+World to support multiple browser contexts:
 
 ```typescript
 export class VideoWallWorld extends World {
@@ -93,7 +98,8 @@ export class VideoWallWorld extends World {
 
 #### 1. getUserMedia Mock
 
-Real camera/microphone hardware is not available in CI/CD environments, so we mock `navigator.mediaDevices.getUserMedia`:
+Real camera/microphone hardware is not available in CI/CD environments, so we
+mock `navigator.mediaDevices.getUserMedia`:
 
 ```typescript
 await page.addInitScript(() => {
@@ -124,7 +130,8 @@ await page.addInitScript(() => {
 
 #### 2. PeerJS Mock
 
-WebRTC connections are complex and require network infrastructure (STUN/TURN servers). We mock PeerJS to simplify testing:
+WebRTC connections are complex and require network infrastructure (STUN/TURN
+servers). We mock PeerJS to simplify testing:
 
 ```typescript
 class MockPeer {
@@ -206,7 +213,10 @@ navigator.mediaDevices.getDisplayMedia = async (constraints) => {
 ```typescript
 // Create multiple client contexts
 for (let i = 0; i < clientCount; i++) {
-  const clientContext = await this.createClientContext(`client-${i}`, `Client ${i + 1}`);
+  const clientContext = await this.createClientContext(
+    `client-${i}`,
+    `Client ${i + 1}`,
+  );
   await clientContext.page.goto(`${this.baseUrl}/client/${connectionId}`);
 }
 ```
@@ -298,7 +308,8 @@ For reliable E2E tests, the implementation should use these test IDs:
 - `[data-feed-disabled]` - Disabled feed indicator
 - `[data-camera-state="on|off"]` - Camera state
 - `[data-mic-state="active|muted"]` - Microphone state
-- `[data-connection-state="connected|disconnected|connecting"]` - Connection state
+- `[data-connection-state="connected|disconnected|connecting"]` - Connection
+  state
 - `[data-quality="good|poor|bad"]` - Connection quality
 - `[data-client-name="..."]` - Client name
 - `[data-active="true"]` - Active speaker
@@ -385,7 +396,8 @@ Failed tests automatically capture screenshots:
 
 ### Challenge 1: WebRTC Testing
 
-**Problem:** WebRTC requires real network connections, STUN/TURN servers, and peer discovery.
+**Problem:** WebRTC requires real network connections, STUN/TURN servers, and
+peer discovery.
 
 **Solution:** Mock the entire PeerJS API with simulated connection lifecycle:
 
@@ -394,11 +406,13 @@ Failed tests automatically capture screenshots:
 - Simulate connection states
 - No actual networking required
 
-**Trade-off:** Not testing real WebRTC, but testing application logic around WebRTC.
+**Trade-off:** Not testing real WebRTC, but testing application logic around
+WebRTC.
 
 ### Challenge 2: Camera Access
 
-**Problem:** Browsers require user permission for camera access. CI environments have no camera.
+**Problem:** Browsers require user permission for camera access. CI environments
+have no camera.
 
 **Solution:** Mock `getUserMedia` with canvas-based fake video:
 
@@ -420,11 +434,13 @@ Failed tests automatically capture screenshots:
 - Independent camera mocks
 - Parallel connection simulation
 
-**Trade-off:** All contexts run on same machine, not testing real network diversity.
+**Trade-off:** All contexts run on same machine, not testing real network
+diversity.
 
 ### Challenge 4: Timing and Race Conditions
 
-**Problem:** WebRTC connections, layout changes, and UI updates are asynchronous.
+**Problem:** WebRTC connections, layout changes, and UI updates are
+asynchronous.
 
 **Solution:** Strategic waiting and polling:
 
@@ -460,7 +476,8 @@ Failed tests automatically capture screenshots:
 - Manipulate DOM directly for state testing
 - Use `page.route()` for network delays
 
-**Trade-off:** Not testing real network issues, but testing application's response to network events.
+**Trade-off:** Not testing real network issues, but testing application's
+response to network events.
 
 ## Best Practices
 
@@ -552,14 +569,20 @@ const browser = await chromium.launch({
 ### View Console Logs
 
 ```typescript
-page.on("console", msg => console.log("PAGE LOG:", msg.text()));
+page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
 ```
 
 ### Check Network Requests
 
 ```typescript
-page.on("request", request => console.log(">>", request.method(), request.url()));
-page.on("response", response => console.log("<<", response.status(), response.url()));
+page.on(
+  "request",
+  (request) => console.log(">>", request.method(), request.url()),
+);
+page.on(
+  "response",
+  (response) => console.log("<<", response.status(), response.url()),
+);
 ```
 
 ## Future Enhancements

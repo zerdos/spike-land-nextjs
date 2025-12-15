@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-**Status:** ✅ Primary index already exists and is correctly optimized
-**Action Taken:** Added supplementary chronological index for future use
-**Migration Required:** Yes (schema drift detected, requires migration)
+**Status:** ✅ Primary index already exists and is correctly optimized **Action
+Taken:** Added supplementary chronological index for future use **Migration
+Required:** Yes (schema drift detected, requires migration)
 
 ## Current Schema Analysis
 
@@ -179,9 +179,12 @@ npx prisma migrate dev --name add_album_image_chronological_index
 
 ### Immediate Action
 
-1. ✅ **Primary index `[albumId, sortOrder]` already exists** - No action needed for current queries
-2. ✅ **Added `[albumId, addedAt]` index** - Ready for future chronological features
-3. ⚠️ **Resolve schema drift before deploying** - Use Option 2 (manual migration) for production safety
+1. ✅ **Primary index `[albumId, sortOrder]` already exists** - No action needed
+   for current queries
+2. ✅ **Added `[albumId, addedAt]` index** - Ready for future chronological
+   features
+3. ⚠️ **Resolve schema drift before deploying** - Use Option 2 (manual
+   migration) for production safety
 
 ### Future Optimization Opportunities
 
@@ -216,7 +219,8 @@ ORDER BY idx_scan DESC;
 **Expected results:**
 
 - `album_images_albumId_sortOrder_idx` - High usage (used by all album views)
-- `album_images_albumId_addedAt_idx` - Low/zero usage (until chronological features added)
+- `album_images_albumId_addedAt_idx` - Low/zero usage (until chronological
+  features added)
 - `album_images_imageId_idx` - Medium usage (reverse lookups)
 
 ## Database Setup Instructions
@@ -288,14 +292,16 @@ If you see `Seq Scan`, the index isn't being used (likely due to small dataset).
 
 ### ✅ What's Good
 
-1. **Primary index already exists**: The `[albumId, sortOrder]` index is correctly placed and used by all application queries
+1. **Primary index already exists**: The `[albumId, sortOrder]` index is
+   correctly placed and used by all application queries
 2. **Optimal coverage**: All query patterns have appropriate indexes
 3. **Future-ready**: Added chronological index for upcoming features
 
 ### ⚠️ What Needs Attention
 
 1. **Schema drift**: Resolve before deploying to production
-2. **Migration history**: Need to create baseline migration or reset dev database
+2. **Migration history**: Need to create baseline migration or reset dev
+   database
 
 ### 📊 Impact
 

@@ -29,7 +29,8 @@ describe("AppFeatureList", () => {
       render(<AppFeatureList features={mockFeatures} layout="grid" />);
 
       expect(screen.getByText("Test Feature 1")).toBeInTheDocument();
-      expect(screen.getByText("This is the first test feature")).toBeInTheDocument();
+      expect(screen.getByText("This is the first test feature"))
+        .toBeInTheDocument();
       expect(screen.getByText("Test Feature 2")).toBeInTheDocument();
       expect(screen.getByText("Test Feature 3")).toBeInTheDocument();
     });
@@ -101,7 +102,8 @@ describe("AppFeatureList", () => {
     it("should render icon when provided", () => {
       render(<AppFeatureList features={[mockFeatures[0]]} />);
 
-      const iconContainer = screen.getByText("Test Feature 1").parentElement?.previousSibling;
+      const iconContainer = screen.getByText("Test Feature 1").parentElement
+        ?.previousSibling;
       expect(iconContainer).toHaveClass("flex-shrink-0");
       expect(iconContainer).toHaveClass("bg-primary/10");
     });
@@ -109,7 +111,8 @@ describe("AppFeatureList", () => {
     it("should not render icon container when icon is not provided", () => {
       render(<AppFeatureList features={[mockFeatures[1]]} />);
 
-      const iconContainer = screen.getByText("Test Feature 2").parentElement?.previousSibling;
+      const iconContainer = screen.getByText("Test Feature 2").parentElement
+        ?.previousSibling;
       expect(iconContainer).toBeNull();
     });
 
@@ -167,15 +170,20 @@ describe("AppFeatureList", () => {
     it("should render all feature descriptions", () => {
       render(<AppFeatureList features={mockFeatures} />);
 
-      expect(screen.getByText("This is the first test feature")).toBeInTheDocument();
-      expect(screen.getByText("This is the second test feature")).toBeInTheDocument();
-      expect(screen.getByText("This is the third test feature")).toBeInTheDocument();
+      expect(screen.getByText("This is the first test feature"))
+        .toBeInTheDocument();
+      expect(screen.getByText("This is the second test feature"))
+        .toBeInTheDocument();
+      expect(screen.getByText("This is the third test feature"))
+        .toBeInTheDocument();
     });
 
     it("should render correct number of feature items", () => {
       const { container } = render(<AppFeatureList features={mockFeatures} />);
 
-      const featureItems = container.querySelectorAll('[class*="rounded-lg"][class*="border"]');
+      const featureItems = container.querySelectorAll(
+        '[class*="rounded-lg"][class*="border"]',
+      );
       expect(featureItems.length).toBe(3);
     });
   });

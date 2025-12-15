@@ -124,7 +124,10 @@ export function validateFile(
   // Validate filename security (path traversal, hidden files, length)
   if (!isSecureFilename(file.name)) {
     // Provide specific error messages based on the security issue
-    if (file.name.includes("..") || file.name.includes("/") || file.name.includes("\\")) {
+    if (
+      file.name.includes("..") || file.name.includes("/") ||
+      file.name.includes("\\")
+    ) {
       return {
         valid: false,
         error: "Insecure filename: path traversal characters are not allowed.",
@@ -228,7 +231,9 @@ export function hasImageExtension(filename: string): boolean {
  */
 export function isSecureFilename(filename: string): boolean {
   // Prevent path traversal
-  if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+  if (
+    filename.includes("..") || filename.includes("/") || filename.includes("\\")
+  ) {
     return false;
   }
 

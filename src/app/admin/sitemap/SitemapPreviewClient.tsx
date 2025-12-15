@@ -45,8 +45,12 @@ export function SitemapPreviewClient({
   trackedPaths: initialTrackedPaths,
   origin,
 }: SitemapPreviewClientProps) {
-  const [trackedPaths, setTrackedPaths] = useState<TrackedPath[]>(initialTrackedPaths);
-  const [pathStates, setPathStates] = useState<Map<string, PathState>>(new Map());
+  const [trackedPaths, setTrackedPaths] = useState<TrackedPath[]>(
+    initialTrackedPaths,
+  );
+  const [pathStates, setPathStates] = useState<Map<string, PathState>>(
+    new Map(),
+  );
   const [showHidden, setShowHidden] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newPath, setNewPath] = useState("");
@@ -88,7 +92,8 @@ export function SitemapPreviewClient({
   const updatePathStatus = useCallback((path: string, status: PathStatus) => {
     setPathStates((prev) => {
       const newStates = new Map(prev);
-      const current = newStates.get(path) || { status: "queued", isHidden: false };
+      const current = newStates.get(path) ||
+        { status: "queued", isHidden: false };
       newStates.set(path, { ...current, status });
       return newStates;
     });
@@ -167,7 +172,11 @@ export function SitemapPreviewClient({
 
       // Add to local state
       setTrackedPaths((prev) => [
-        { id: data.trackedPath.id, path: data.trackedPath.path, isActive: true },
+        {
+          id: data.trackedPath.id,
+          path: data.trackedPath.path,
+          isActive: true,
+        },
         ...prev,
       ]);
       setNewPath("");
@@ -297,7 +306,13 @@ export function SitemapPreviewClient({
       else if (state.status === "error") errors++;
     });
 
-    return { healthy, loading, errors, hidden, visible: allPaths.length - hidden };
+    return {
+      healthy,
+      loading,
+      errors,
+      hidden,
+      visible: allPaths.length - hidden,
+    };
   }, [pathStates, allPaths.length]);
 
   return (
@@ -306,7 +321,10 @@ export function SitemapPreviewClient({
       <div className="space-y-4">
         {/* Health Status Bar */}
         <div className="flex items-center gap-3 flex-wrap" aria-live="polite">
-          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+          <Badge
+            variant="outline"
+            className="bg-green-500/10 text-green-500 border-green-500/20"
+          >
             <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
             {stats.healthy} Healthy
           </Badge>
@@ -320,7 +338,10 @@ export function SitemapPreviewClient({
             </Badge>
           )}
           {stats.errors > 0 && (
-            <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">
+            <Badge
+              variant="outline"
+              className="bg-red-500/10 text-red-500 border-red-500/20"
+            >
               <div className="w-2 h-2 rounded-full bg-red-500 mr-2" />
               {stats.errors} Error
             </Badge>
@@ -428,7 +449,8 @@ export function SitemapPreviewClient({
       {/* Responsive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {visiblePaths.map((path) => {
-          const state = pathStates.get(path) || { status: "queued", isHidden: false };
+          const state = pathStates.get(path) ||
+            { status: "queued", isHidden: false };
           const isCustom = isCustomPath(path);
 
           return (
@@ -592,7 +614,9 @@ export function SitemapPreviewClient({
                     <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/90 z-10 backdrop-blur-sm">
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-8 h-8 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
-                        <span className="text-xs text-zinc-500">Loading...</span>
+                        <span className="text-xs text-zinc-500">
+                          Loading...
+                        </span>
                       </div>
                     </div>
                   )}
@@ -617,7 +641,9 @@ export function SitemapPreviewClient({
                           <line x1="12" y1="8" x2="12" y2="12" />
                           <line x1="12" y1="16" x2="12.01" y2="16" />
                         </svg>
-                        <span className="text-xs text-red-400">Failed to load</span>
+                        <span className="text-xs text-red-400">
+                          Failed to load
+                        </span>
                       </div>
                     </div>
                   )}
@@ -630,21 +656,22 @@ export function SitemapPreviewClient({
                   )}
 
                   {/* Iframe with Scaling */}
-                  {(state.status === "loading" || state.status === "loaded") && (
-                    <iframe
-                      src={pathToUrl(path)}
-                      title={`Preview of ${path}`}
-                      className="border-0 origin-top-left pointer-events-none"
-                      style={{
-                        width: "400%",
-                        height: "400%",
-                        transform: "scale(0.25)",
-                      }}
-                      sandbox="allow-scripts allow-same-origin"
-                      onLoad={() => finishLoadingPath(path, true)}
-                      onError={() => finishLoadingPath(path, false)}
-                    />
-                  )}
+                  {(state.status === "loading" || state.status === "loaded") &&
+                    (
+                      <iframe
+                        src={pathToUrl(path)}
+                        title={`Preview of ${path}`}
+                        className="border-0 origin-top-left pointer-events-none"
+                        style={{
+                          width: "400%",
+                          height: "400%",
+                          transform: "scale(0.25)",
+                        }}
+                        sandbox="allow-scripts allow-same-origin"
+                        onLoad={() => finishLoadingPath(path, true)}
+                        onError={() => finishLoadingPath(path, false)}
+                      />
+                    )}
 
                   {/* Hidden Badge Overlay */}
                   {state.isHidden && (

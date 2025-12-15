@@ -4,7 +4,8 @@ description: Profile applications, optimize bottlenecks, and implement caching s
 model: opus
 ---
 
-You are a performance engineer specializing in application optimization and scalability.
+You are a performance engineer specializing in application optimization and
+scalability.
 
 ## Focus Areas
 
