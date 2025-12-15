@@ -141,7 +141,8 @@ describe("sitemap", () => {
 
   it("has expected total number of pages", () => {
     const result = sitemap();
-    // 9 public + 5 protected + 6 admin + 11 storybook = 31 total
-    expect(result.length).toBe(31);
+    // 9 public + 5 protected + 6 admin + 11 storybook + 1 blog listing + N blog posts = 32+ total
+    // Blog posts are dynamically added based on content/blog/*.mdx files
+    expect(result.length).toBeGreaterThanOrEqual(32);
   });
 });

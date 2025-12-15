@@ -1,9 +1,20 @@
 import type { MetadataRoute } from "next";
 
+import { getPostSlugs } from "@/lib/blog/get-posts";
+
 const BASE_URL = "https://spike.land";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
+
+  // Get all blog post slugs for dynamic sitemap entries
+  const blogSlugs = getPostSlugs();
+  const blogEntries: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
+    url: `${BASE_URL}/blog/${slug}`,
+    lastModified: currentDate,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
 
   return [
     // Public Pages
@@ -19,6 +30,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    // Blog
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    ...blogEntries,
     {
       url: `${BASE_URL}/apps`,
       lastModified: currentDate,
