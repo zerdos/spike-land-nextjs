@@ -14602,9 +14602,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:^3.5.1":
-  version: 3.5.1
-  resolution: "recharts@npm:3.5.1"
+"recharts@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "recharts@npm:3.6.0"
   dependencies:
     "@reduxjs/toolkit": "npm:1.x.x || 2.x.x"
     clsx: "npm:^2.1.1"
@@ -14621,7 +14621,7 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-is: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/19351a9faae8879283177e26a2fd4b26c3a89c6a0c727431b530d45fc4d69af89dcb0d2b54f740011b7ea4958c7f9f36362f953990d35af1e94c13fefbec9703
+  checksum: 10c0/39ef37ca93167bcf953b4d509fff992839dac6fb2681a5707085912eb425343063107ae3bdc9104a0c454852218e95a4fb3e64018b07347468879b806c8e9188
   languageName: node
   linkType: hard
 
@@ -16938,7 +16938,7 @@ __metadata:
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
     react-hook-form: "npm:^7.68.0"
-    recharts: "npm:^3.5.1"
+    recharts: "npm:^3.6.0"
     resend: "npm:^6.6.0"
     sharp: "npm:^0.34.5"
     sonner: "npm:^2.0.7"
@@ -16950,7 +16950,7 @@ __metadata:
     vercel: "npm:^50.0.1"
     vitest: "npm:^4.0.15"
     workflow: "npm:4.0.1-beta.31"
-    zod: "npm:^4.1.13"
+    zod: "npm:^4.2.0"
   languageName: unknown
   linkType: soft
 
@@ -17689,10 +17689,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25.0 || ^4.0.0, zod@npm:^4.1.11, zod@npm:^4.1.13":
+"zod@npm:^3.25.0 || ^4.0.0, zod@npm:^4.1.11":
   version: 4.1.13
   resolution: "zod@npm:4.1.13"
   checksum: 10c0/d7e74e82dba81a91ffc3239cd85bc034abe193a28f7087a94ab258a3e48e9a7ca4141920cac979a0d781495b48fc547777394149f26be04c3dc642f58bbc3941
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "zod@npm:4.2.0"
+  checksum: 10c0/c9fa563f4866f5554c84728f69fe01979d5ab41a104176a4b9f1a182fa670b6e55ffe1be81863dc03d8b36c90ee9e917353b429f4aa3615b5f63dc4c8d5d92d3
   languageName: node
   linkType: hard
 
