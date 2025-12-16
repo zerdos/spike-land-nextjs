@@ -983,7 +983,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                             size="sm"
                             asChild
                           >
-                            <Link href={`/pixel/${image.id}`}>View</Link>
+                            <Link href={`/apps/pixel/${image.id}`}>View</Link>
                           </Button>
                           {album.coverImageId !== image.id && (
                             <Button
