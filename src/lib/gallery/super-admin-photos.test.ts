@@ -45,6 +45,7 @@ describe("getSuperAdminPublicPhotos", () => {
       where: {
         userId: "super-admin-id",
         privacy: AlbumPrivacy.PUBLIC,
+        name: "Landing Page",
       },
       include: {
         albumImages: {
