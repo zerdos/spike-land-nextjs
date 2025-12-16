@@ -79,6 +79,21 @@ vi.mock("./AddToAlbumModal", () => ({
       : null,
 }));
 
+// Mock MasonryGridUniform
+vi.mock("@/components/ui/masonry-grid", () => ({
+  MasonryGridUniform: ({
+    children,
+    zoomLevel,
+  }: {
+    children: React.ReactNode;
+    zoomLevel?: number;
+  }) => (
+    <div data-testid="masonry-grid" data-zoom-level={zoomLevel}>
+      {children}
+    </div>
+  ),
+}));
+
 const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; } = {
   id: "test-image-1",
   name: "Test Image",
@@ -660,6 +675,29 @@ describe("EnhancedImagesList Component", () => {
 
       // The modal is still open - this covers the case where onOpenChange is called with true
       // (which happens when the modal stays open, e.g., during interaction)
+    });
+  });
+
+  describe("Zoom level functionality", () => {
+    it("renders MasonryGridUniform with default zoom level 3", () => {
+      render(<EnhancedImagesList images={[mockImage]} />);
+
+      const masonryGrid = screen.getByTestId("masonry-grid");
+      expect(masonryGrid).toHaveAttribute("data-zoom-level", "3");
+    });
+
+    it("renders MasonryGridUniform with custom zoom level", () => {
+      render(<EnhancedImagesList images={[mockImage]} zoomLevel={5} />);
+
+      const masonryGrid = screen.getByTestId("masonry-grid");
+      expect(masonryGrid).toHaveAttribute("data-zoom-level", "5");
+    });
+
+    it("renders MasonryGridUniform with zoom level 1", () => {
+      render(<EnhancedImagesList images={[mockImage]} zoomLevel={1} />);
+
+      const masonryGrid = screen.getByTestId("masonry-grid");
+      expect(masonryGrid).toHaveAttribute("data-zoom-level", "1");
     });
   });
 });

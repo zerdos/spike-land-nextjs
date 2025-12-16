@@ -21,6 +21,7 @@ interface EnhancedImagesListProps {
   showEnhanced?: boolean;
   onDragStart?: (imageIds: string[]) => void;
   onDragEnd?: () => void;
+  zoomLevel?: ZoomLevel;
 }
 
 function formatDate(date: Date | string): string {
@@ -50,6 +51,7 @@ export function EnhancedImagesList({
   showEnhanced = false,
   onDragStart,
   onDragEnd,
+  zoomLevel = 3,
 }: EnhancedImagesListProps) {
   const [isClient, setIsClient] = useState(false);
   const [addToAlbumImageId, setAddToAlbumImageId] = useState<string | null>(
@@ -112,7 +114,7 @@ export function EnhancedImagesList({
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <MasonryGridUniform zoomLevel={zoomLevel}>
         {images.map((image) => {
           const statusBadge = getStatusBadge(image.enhancementJobs);
           const isDeleting = deletingImageId === image.id;
@@ -203,7 +205,7 @@ export function EnhancedImagesList({
 
           return <div key={image.id}>{imageCard}</div>;
         })}
-      </div>
+      </MasonryGridUniform>
 
       <AddToAlbumModal
         imageId={addToAlbumImageId ?? ""}
