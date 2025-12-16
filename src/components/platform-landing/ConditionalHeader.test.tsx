@@ -7,6 +7,11 @@ vi.mock("./PlatformHeader", () => ({
   PlatformHeader: () => <header data-testid="platform-header">Header</header>,
 }));
 
+// Mock PixelAppHeader
+vi.mock("./PixelAppHeader", () => ({
+  PixelAppHeader: () => <header data-testid="pixel-app-header">Pixel Header</header>,
+}));
+
 // Mock next/navigation
 const mockUsePathname = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -85,5 +90,33 @@ describe("ConditionalHeader Component", () => {
     render(<ConditionalHeader />);
     // Should render header when pathname is null (not starting with excluded paths)
     expect(screen.getByTestId("platform-header")).toBeInTheDocument();
+  });
+
+  it("should render PixelAppHeader on /apps/pixel child routes", () => {
+    mockUsePathname.mockReturnValue("/apps/pixel/123");
+    render(<ConditionalHeader />);
+    expect(screen.getByTestId("pixel-app-header")).toBeInTheDocument();
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
+  it("should render PixelAppHeader on /apps/pixel/pipelines", () => {
+    mockUsePathname.mockReturnValue("/apps/pixel/pipelines");
+    render(<ConditionalHeader />);
+    expect(screen.getByTestId("pixel-app-header")).toBeInTheDocument();
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
+  it("should render PixelAppHeader on /apps/pixel/mcp-tools", () => {
+    mockUsePathname.mockReturnValue("/apps/pixel/mcp-tools");
+    render(<ConditionalHeader />);
+    expect(screen.getByTestId("pixel-app-header")).toBeInTheDocument();
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
+  it("should NOT render PixelAppHeader on /apps/pixel root", () => {
+    mockUsePathname.mockReturnValue("/apps/pixel");
+    render(<ConditionalHeader />);
+    expect(screen.getByTestId("platform-header")).toBeInTheDocument();
+    expect(screen.queryByTestId("pixel-app-header")).not.toBeInTheDocument();
   });
 });

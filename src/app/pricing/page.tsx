@@ -334,30 +334,30 @@ export default function PricingPage() {
                     </div>
                   </CardContent>
 
-                  <CardFooter>
-                    <Button
-                      className={cn(
-                        "w-full",
-                        isPopular && "bg-primary hover:bg-primary/90",
-                        isBestValue && "bg-green-500 hover:bg-green-600",
-                      )}
-                      variant={isPopular || isBestValue ? "default" : "outline"}
-                      disabled={loading === id || status === "loading"}
-                      onClick={() => handlePurchase(id)}
-                      data-testid={`buy-button-${id}`}
-                    >
-                      {loading === id
-                        ? "Redirecting to checkout..."
-                        : status === "loading"
-                        ? "Loading..."
-                        : (
-                          <>
-                            <Zap className="h-4 w-4 mr-1.5" />
-                            Buy Now
-                          </>
+                  {isAuthenticated && (
+                    <CardFooter>
+                      <Button
+                        className={cn(
+                          "w-full",
+                          isPopular && "bg-primary hover:bg-primary/90",
+                          isBestValue && "bg-green-500 hover:bg-green-600",
                         )}
-                    </Button>
-                  </CardFooter>
+                        variant={isPopular || isBestValue ? "default" : "outline"}
+                        disabled={loading === id}
+                        onClick={() => handlePurchase(id)}
+                        data-testid={`buy-button-${id}`}
+                      >
+                        {loading === id
+                          ? "Redirecting to checkout..."
+                          : (
+                            <>
+                              <Zap className="h-4 w-4 mr-1.5" />
+                              Buy Now
+                            </>
+                          )}
+                      </Button>
+                    </CardFooter>
+                  )}
                 </Card>
               );
             },

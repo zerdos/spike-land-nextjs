@@ -547,7 +547,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-24 pb-8">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -557,7 +557,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   if (error || !album) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-24 pb-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
@@ -577,7 +577,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pt-24 pb-8">
       <div className="flex gap-6">
         {/* QR Panel Sidebar - only for shareable albums */}
         {album.shareToken && album.privacy !== "PRIVATE" && album.isOwner && (

@@ -506,7 +506,7 @@ export default function NewAppPage() {
   };
 
   return (
-    <div className="container max-w-2xl mx-auto py-8">
+    <div className="container max-w-2xl mx-auto pt-24 pb-8">
       <Card>
         <CardHeader>
           <CardTitle>Create New App</CardTitle>
