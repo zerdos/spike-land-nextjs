@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -9,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Album } from "@/hooks/useUserAlbums";
-import { FolderOpen, X } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 
 interface AlbumSelectorProps {
   albums: Album[];
@@ -33,19 +32,14 @@ export function AlbumSelector({
       <FolderOpen className="h-4 w-4 text-muted-foreground" />
       <span className="text-sm text-muted-foreground">Upload to:</span>
       <Select
-        value={selectedAlbumId || "none"}
-        onValueChange={(value) => onAlbumSelect(value === "none" ? null : value)}
+        value={selectedAlbumId || ""}
+        onValueChange={(value) => onAlbumSelect(value || null)}
         disabled={disabled}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select album..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">
-            <span className="text-muted-foreground">
-              No album (loose images)
-            </span>
-          </SelectItem>
           {albums.map((album) => (
             <SelectItem key={album.id} value={album.id}>
               {album.name}
@@ -53,18 +47,6 @@ export function AlbumSelector({
           ))}
         </SelectContent>
       </Select>
-      {selectedAlbumId && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onAlbumSelect(null)}
-          disabled={disabled}
-          title="Clear album selection"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
     </div>
   );
 }
