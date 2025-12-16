@@ -74,12 +74,11 @@ Then(
 );
 
 When("I click on the Pixel feature card", async function(this: CustomWorld) {
-  const pixelCard = this.page.locator('[href*="pixel"], [href*="signin"]')
-    .filter({
-      has: this.page.getByText(/pixel/i),
-    }).first();
-  await expect(pixelCard).toBeVisible({ timeout: 10000 });
-  await pixelCard.click();
+  // Click the "Get Started" link inside the featured apps section (#apps)
+  const appsSection = this.page.locator("#apps");
+  const getStartedLink = appsSection.getByRole("link", { name: /get started/i });
+  await expect(getStartedLink).toBeVisible({ timeout: 10000 });
+  await getStartedLink.click();
   await this.page.waitForLoadState("networkidle");
 });
 
