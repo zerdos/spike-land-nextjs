@@ -11,6 +11,69 @@ interface MasonryGridProps {
   className?: string;
 }
 
+// Explicit class mappings for Tailwind JIT compatibility
+// Tailwind cannot detect dynamically constructed class names like `grid-cols-${n}`
+// so we must use explicit strings that Tailwind can find at build time
+const SM_GRID_COLS: Record<number, string> = {
+  1: "sm:grid-cols-1",
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-3",
+  4: "sm:grid-cols-4",
+};
+
+const MD_GRID_COLS: Record<number, string> = {
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+  4: "md:grid-cols-4",
+  5: "md:grid-cols-5",
+};
+
+const LG_GRID_COLS: Record<number, string> = {
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+  6: "lg:grid-cols-6",
+};
+
+const XL_GRID_COLS: Record<number, string> = {
+  3: "xl:grid-cols-3",
+  4: "xl:grid-cols-4",
+  5: "xl:grid-cols-5",
+  6: "xl:grid-cols-6",
+  8: "xl:grid-cols-8",
+};
+
+const SM_COLUMNS: Record<number, string> = {
+  1: "sm:columns-1",
+  2: "sm:columns-2",
+  3: "sm:columns-3",
+  4: "sm:columns-4",
+};
+
+const MD_COLUMNS: Record<number, string> = {
+  2: "md:columns-2",
+  3: "md:columns-3",
+  4: "md:columns-4",
+  5: "md:columns-5",
+};
+
+const LG_COLUMNS: Record<number, string> = {
+  2: "lg:columns-2",
+  3: "lg:columns-3",
+  4: "lg:columns-4",
+  5: "lg:columns-5",
+  6: "lg:columns-6",
+};
+
+const XL_COLUMNS: Record<number, string> = {
+  3: "xl:columns-3",
+  4: "xl:columns-4",
+  5: "xl:columns-5",
+  6: "xl:columns-6",
+  8: "xl:columns-8",
+};
+
 // Column counts based on zoom level and breakpoint
 // Higher zoom = fewer columns (bigger items)
 const COLUMN_CONFIG: Record<ZoomLevel, { sm: number; md: number; lg: number; xl: number; }> = {
@@ -33,10 +96,10 @@ export function MasonryGrid({
   const columnClasses = useMemo(() => {
     return cn(
       "columns-1",
-      config.sm > 1 && `sm:columns-${config.sm}`,
-      config.md > 1 && `md:columns-${config.md}`,
-      config.lg > 1 && `lg:columns-${config.lg}`,
-      config.xl > 1 && `xl:columns-${config.xl}`,
+      SM_COLUMNS[config.sm],
+      MD_COLUMNS[config.md],
+      LG_COLUMNS[config.lg],
+      XL_COLUMNS[config.xl],
     );
   }, [config]);
 
@@ -72,14 +135,14 @@ export function MasonryGridUniform({
 }: MasonryGridProps) {
   const config = COLUMN_CONFIG[zoomLevel];
 
-  // Build responsive grid classes
+  // Build responsive grid classes using explicit mappings
   const gridClasses = cn(
     "grid gap-4",
-    `grid-cols-1`,
-    config.sm > 1 && `sm:grid-cols-${config.sm}`,
-    config.md > 1 && `md:grid-cols-${config.md}`,
-    config.lg > 1 && `lg:grid-cols-${config.lg}`,
-    config.xl > 1 && `xl:grid-cols-${config.xl}`,
+    "grid-cols-1",
+    SM_GRID_COLS[config.sm],
+    MD_GRID_COLS[config.md],
+    LG_GRID_COLS[config.lg],
+    XL_GRID_COLS[config.xl],
   );
 
   return (
