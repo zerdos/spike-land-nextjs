@@ -18,6 +18,9 @@ const {
     },
     album: {
       create: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      createMany: vi.fn(),
     },
   },
   mockCheckRateLimit: vi.fn(),
@@ -116,7 +119,14 @@ describe("POST /api/auth/signup", () => {
       undefined,
     );
     mockBootstrapAdmin.mockResolvedValue(undefined);
-    // Default album creation
+    // Default album mocks for ensureUserAlbums
+    mockPrisma.album.findMany.mockResolvedValue([]);
+    mockPrisma.album.createMany.mockResolvedValue({ count: 2 });
+    mockPrisma.album.findFirst.mockResolvedValue({
+      id: "album-1",
+      name: "Private Gallery",
+      privacy: "PRIVATE",
+    });
     mockPrisma.album.create.mockResolvedValue({ id: "album-1" });
   });
 
@@ -431,21 +441,32 @@ describe("POST /api/auth/signup", () => {
       );
     });
 
-    it("should create default public album", async () => {
+    it("should create default private and public albums", async () => {
       const req = createMockRequest({
         email: "test@example.com",
         password: "password123",
       });
       await POST(req);
 
-      expect(mockPrisma.album.create).toHaveBeenCalledWith({
-        data: {
-          userId: "stable-user-id-123",
-          name: "Public Gallery",
-          privacy: "PUBLIC",
-          defaultTier: "TIER_1K",
-          description: "My public enhancements",
-        },
+      // ensureUserAlbums uses createMany to create both albums
+      expect(mockPrisma.album.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            userId: "stable-user-id-123",
+            name: "Private Gallery",
+            privacy: "PRIVATE",
+            defaultTier: "TIER_1K",
+            description: "My private photos",
+          },
+          {
+            userId: "stable-user-id-123",
+            name: "Public Gallery",
+            privacy: "PUBLIC",
+            defaultTier: "TIER_1K",
+            description: "My public enhancements",
+          },
+        ],
+        skipDuplicates: true,
       });
     });
 

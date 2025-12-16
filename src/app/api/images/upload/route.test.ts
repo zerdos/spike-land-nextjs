@@ -37,6 +37,32 @@ vi.mock("@/lib/rate-limiter", () => ({
   rateLimitConfigs: { imageUpload: { maxRequests: 30, windowMs: 60000 } },
 }));
 
+// Mock TokenBalanceManager - hoisted to avoid initialization error
+const { mockTokenBalanceManager } = vi.hoisted(() => ({
+  mockTokenBalanceManager: {
+    hasEnoughTokens: vi.fn().mockResolvedValue(true),
+    getBalance: vi.fn().mockResolvedValue({ balance: 100, lifetimeEarned: 100 }),
+    consumeTokens: vi.fn().mockResolvedValue({ success: true, newBalance: 98 }),
+  },
+}));
+
+vi.mock("@/lib/tokens/balance-manager", () => ({
+  TokenBalanceManager: mockTokenBalanceManager,
+}));
+
+// Mock enhancement workflows
+vi.mock("@/workflows/enhance-image.direct", () => ({
+  enhanceImageDirect: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/workflows/enhance-image.workflow", () => ({
+  enhanceImage: vi.fn(),
+}));
+
+vi.mock("workflow/api", () => ({
+  start: vi.fn().mockResolvedValue({ id: "workflow-123" }),
+}));
+
 const { mockPrisma } = vi.hoisted(() => {
   return {
     mockPrisma: {
@@ -63,7 +89,13 @@ const { mockPrisma } = vi.hoisted(() => {
         }),
       },
       album: {
-        findFirst: vi.fn().mockResolvedValue(null),
+        findFirst: vi.fn().mockResolvedValue({
+          id: "album-123",
+          userId: "user-123",
+          name: "Test Album",
+          defaultTier: "TIER_1K",
+          pipelineId: null,
+        }),
       },
       albumImage: {
         create: vi.fn().mockResolvedValue({
@@ -71,6 +103,15 @@ const { mockPrisma } = vi.hoisted(() => {
           albumId: "album-123",
           imageId: "img-123",
           sortOrder: 0,
+        }),
+      },
+      imageEnhancementJob: {
+        create: vi.fn().mockResolvedValue({
+          id: "job-123",
+          imageId: "img-123",
+          userId: "user-123",
+          tier: "TIER_1K",
+          status: "PROCESSING",
         }),
       },
     },
@@ -102,9 +143,10 @@ function createMockFile(name = "test.jpg", type = "image/jpeg") {
 type MockFile = ReturnType<typeof createMockFile>;
 
 // Helper to create a mock request with formData
+// albumId defaults to "album-123" since it's now required
 function createMockRequest(
   file: MockFile | null,
-  albumId?: string,
+  albumId: string | null = "album-123",
 ): NextRequest {
   const mockFormData = new Map<string, MockFile | string | null>();
   if (file) {
@@ -129,6 +171,18 @@ function createMockRequest(
 describe("POST /api/images/upload", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset token manager mocks to defaults
+    mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
+    mockTokenBalanceManager.getBalance.mockResolvedValue({ balance: 100, lifetimeEarned: 100 });
+    mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true, newBalance: 98 });
+    // Reset album mock to default
+    mockPrisma.album.findFirst.mockResolvedValue({
+      id: "album-123",
+      userId: "user-123",
+      name: "Test Album",
+      defaultTier: "TIER_1K",
+      pipelineId: null,
+    });
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -400,11 +454,14 @@ describe("POST /api/images/upload", () => {
   });
 
   describe("album association", () => {
-    it("should not create albumImage when no albumId provided", async () => {
-      const req = createMockRequest(createMockFile());
+    it("should return 400 when no albumId provided", async () => {
+      // Pass null explicitly to skip albumId
+      const req = createMockRequest(createMockFile(), null);
       const res = await POST(req);
+      const data = await res.json();
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(400);
+      expect(data.suggestion).toContain("select an album");
       expect(mockPrisma.albumImage.create).not.toHaveBeenCalled();
     });
 
@@ -433,12 +490,7 @@ describe("POST /api/images/upload", () => {
     });
 
     it("should create albumImage when valid albumId is provided", async () => {
-      mockPrisma.album.findFirst.mockResolvedValueOnce({
-        id: "album-123",
-        userId: "user-123",
-        name: "Test Album",
-      });
-
+      // Album mock is already set in beforeEach with defaultTier
       const req = createMockRequest(createMockFile(), "album-123");
       const res = await POST(req);
       const data = await res.json();
@@ -454,12 +506,7 @@ describe("POST /api/images/upload", () => {
     });
 
     it("should still return success even if albumImage creation is called", async () => {
-      mockPrisma.album.findFirst.mockResolvedValueOnce({
-        id: "album-123",
-        userId: "user-123",
-        name: "Test Album",
-      });
-
+      // Album mock is already set in beforeEach with defaultTier
       const req = createMockRequest(createMockFile(), "album-123");
       const res = await POST(req);
       const data = await res.json();
@@ -467,6 +514,19 @@ describe("POST /api/images/upload", () => {
       expect(res.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.image.id).toBe("img-123");
+    });
+
+    it("should return 402 if user has insufficient tokens", async () => {
+      mockTokenBalanceManager.hasEnoughTokens.mockResolvedValueOnce(false);
+      mockTokenBalanceManager.getBalance.mockResolvedValueOnce({ balance: 0, lifetimeEarned: 0 });
+
+      const req = createMockRequest(createMockFile(), "album-123");
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(402);
+      expect(data.required).toBeDefined();
+      expect(data.balance).toBe(0);
     });
   });
 });

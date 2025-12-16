@@ -1,6 +1,8 @@
 "use client";
 
 import { QRCodePanel } from "@/components/canvas";
+import { type DisplayType, DisplayTypeSwitcher } from "@/components/enhance/display-type-switcher";
+import { ImagePlaceholder } from "@/components/enhance/ImagePlaceholder";
 import { PipelineSelector } from "@/components/enhance/PipelineSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MasonryGridUniform } from "@/components/ui/masonry-grid";
 import {
   Select,
   SelectContent,
@@ -25,6 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { useZoomLevel, ZoomSlider } from "@/components/ui/zoom-slider";
+import { useMultiFileUpload } from "@/hooks/useMultiFileUpload";
 import {
   ArrowLeft,
   Check,
@@ -43,6 +48,7 @@ import {
   Square,
   Star,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -124,6 +130,33 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   // Cover image selection state
   const [isSettingCover, setIsSettingCover] = useState(false);
   const [showQRSheet, setShowQRSheet] = useState(false);
+
+  // File upload state
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounterRef = useRef(0);
+
+  // View controls
+  const [zoomLevel, setZoomLevel] = useZoomLevel();
+  const [displayType, setDisplayType] = useState<DisplayType>("auto");
+
+  // Multi-file upload hook
+  const {
+    upload,
+    files: uploadingFiles,
+    isUploading,
+    reset: resetUpload,
+  } = useMultiFileUpload({
+    albumId,
+    maxFiles: 20,
+    parallel: false,
+    onUploadComplete: () => {
+      // Refresh album to show new images
+      fetchAlbum();
+      // Reset upload state after a delay
+      setTimeout(() => resetUpload(), 2000);
+    },
+  });
 
   // Ref for tracking original order
   const originalOrderRef = useRef<string[]>([]);
@@ -421,6 +454,56 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     setDragOverImageId(null);
   };
 
+  // File drag and drop handlers
+  const handleFileDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingFiles(true);
+    }
+  };
+
+  const handleFileDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current === 0) {
+      setIsDraggingFiles(false);
+    }
+  };
+
+  const handleFileDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleFileDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFiles(false);
+    dragCounterRef.current = 0;
+
+    const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"));
+
+    if (files.length > 0 && album?.isOwner) {
+      await upload(files);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      await upload(files);
+    }
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
+
   const saveImageOrder = async (imageOrder: string[]) => {
     setIsSavingOrder(true);
     try {
@@ -545,6 +628,19 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     }
   };
 
+  // Get image URL based on display type
+  const getImageUrl = (image: AlbumImage): string => {
+    switch (displayType) {
+      case "original":
+        return image.originalUrl;
+      case "enhanced":
+        return image.enhancedUrl || image.originalUrl;
+      case "auto":
+      default:
+        return image.enhancedUrl || image.originalUrl;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 pt-24 pb-8">
@@ -577,7 +673,36 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 pt-24 pb-8">
+    <div
+      className="container mx-auto px-4 pt-24 pb-8 relative"
+      onDragEnter={album?.isOwner ? handleFileDragEnter : undefined}
+      onDragLeave={album?.isOwner ? handleFileDragLeave : undefined}
+      onDragOver={album?.isOwner ? handleFileDragOver : undefined}
+      onDrop={album?.isOwner ? handleFileDrop : undefined}
+    >
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*"
+        multiple
+        onChange={handleFileInputChange}
+      />
+
+      {/* Drag overlay */}
+      {isDraggingFiles && album?.isOwner && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+          <div className="rounded-lg border-2 border-dashed border-primary bg-primary/10 p-12 text-center">
+            <Upload className="mx-auto h-16 w-16 text-primary mb-4" />
+            <h3 className="text-2xl font-semibold">Drop images here</h3>
+            <p className="text-muted-foreground mt-2">
+              Images will be uploaded to {album.name}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-6">
         {/* QR Panel Sidebar - only for shareable albums */}
         {album.shareToken && album.privacy !== "PRIVATE" && album.isOwner && (
@@ -647,6 +772,17 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     </>
                   )}
                   <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleUploadClick}
+                    disabled={isUploading}
+                  >
+                    {isUploading
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : <Upload className="mr-2 h-4 w-4" />}
+                    {isUploading ? "Uploading..." : "Upload"}
+                  </Button>
+                  <Button
                     variant="outline"
                     size="icon"
                     onClick={() => setShowSettings(true)}
@@ -656,16 +792,29 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {album.imageCount} {album.imageCount === 1 ? "image" : "images"}
-                {isSavingOrder && (
-                  <span className="ml-2 text-muted-foreground">
-                    <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
-                    Saving order...
-                  </span>
-                )}
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground">
+                  {album.imageCount} {album.imageCount === 1 ? "image" : "images"}
+                  {isSavingOrder && (
+                    <span className="ml-2 text-muted-foreground">
+                      <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
+                      Saving order...
+                    </span>
+                  )}
+                </p>
+                {/* View controls */}
+                <div className="hidden sm:flex items-center gap-4 border-l pl-4">
+                  <DisplayTypeSwitcher
+                    value={displayType}
+                    onChange={setDisplayType}
+                  />
+                  <ZoomSlider
+                    value={zoomLevel}
+                    onChange={setZoomLevel}
+                  />
+                </div>
+              </div>
               {album.isOwner && album.images.length > 0 && (
                 <div className="flex gap-2">
                   {isSelectionMode
@@ -735,23 +884,42 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             </div>
           </div>
 
-          {album.images.length === 0
+          {album.images.length === 0 && uploadingFiles.length === 0
             ? (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No images yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Add images from your enhanced images collection
+                    {album.isOwner
+                      ? "Drag and drop images here or click Upload"
+                      : "This album has no images yet"}
                   </p>
-                  <Button asChild>
-                    <Link href="/apps/images">Browse Images</Link>
-                  </Button>
+                  {album.isOwner && (
+                    <Button onClick={handleUploadClick}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Images
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )
             : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <MasonryGridUniform zoomLevel={zoomLevel}>
+                {/* Show uploading placeholders first */}
+                {uploadingFiles.map((fileStatus) => (
+                  <ImagePlaceholder
+                    key={fileStatus.id}
+                    file={fileStatus.file}
+                    progress={fileStatus.progress}
+                    status={fileStatus.status === "completed"
+                      ? "completed"
+                      : fileStatus.status === "failed"
+                      ? "failed"
+                      : "uploading"}
+                    error={fileStatus.error}
+                  />
+                ))}
                 {album.images.map((image) => (
                   <Card
                     key={image.id}
@@ -769,13 +937,13 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                   >
                     <div className="relative aspect-square bg-muted">
                       <Image
-                        src={image.enhancedUrl || image.originalUrl}
+                        src={getImageUrl(image)}
                         alt={image.name || "Album image"}
                         fill
                         className="object-cover"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       />
-                      {image.enhancedUrl && (
+                      {image.enhancedUrl && displayType !== "original" && (
                         <Badge className="absolute top-2 right-2 bg-green-500">
                           <Sparkles className="h-3 w-3 mr-1" />
                           Enhanced
@@ -850,7 +1018,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+              </MasonryGridUniform>
             )}
         </div>
       </div>
