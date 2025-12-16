@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useZoomLevel, ZoomSlider } from "./zoom-slider";
@@ -47,8 +47,7 @@ describe("ZoomSlider", () => {
   it("renders placeholder while not mounted", () => {
     const { container } = render(<ZoomSlider />);
 
-    // Initially shows placeholder
-    const placeholder = container.querySelector(".bg-muted.rounded-full");
+    // Initially shows placeholder or zoom icons
     // Placeholder might briefly appear before hydration
     expect(container.querySelector("svg")).toBeDefined();
   });

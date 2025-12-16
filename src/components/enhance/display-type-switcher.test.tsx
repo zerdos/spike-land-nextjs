@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { type DisplayType, DisplayTypeSwitcher } from "./display-type-switcher";
+import { DisplayTypeSwitcher } from "./display-type-switcher";
 
 describe("DisplayTypeSwitcher", () => {
   it("renders all three display type options", () => {
