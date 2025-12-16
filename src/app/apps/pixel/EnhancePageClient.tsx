@@ -13,6 +13,7 @@ import { MultiUploadProgress } from "@/components/enhance/MultiUploadProgress";
 import { ThumbnailViewToggle } from "@/components/enhance/ThumbnailViewToggle";
 import { TokenDisplay } from "@/components/tokens/TokenDisplay";
 import { Button } from "@/components/ui/button";
+import { useZoomLevel, ZoomSlider } from "@/components/ui/zoom-slider";
 import { useMultiFileUpload } from "@/hooks/useMultiFileUpload";
 import { useThumbnailPreference } from "@/hooks/useThumbnailPreference";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
@@ -36,6 +37,7 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const { refetch: refetchBalance } = useTokenBalance();
   const { showEnhanced, setShowEnhanced } = useThumbnailPreference();
+  const [zoomLevel, setZoomLevel] = useZoomLevel();
   const { albums, isLoading: albumsLoading, refetch: refetchAlbums } = useUserAlbums();
   const { dragOverAlbumId, setDragOver } = useDragDrop();
   const { previewState, showPreview, updatePosition, clearPreview } = useDragPreview();
@@ -214,13 +216,16 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
             <h2 className="text-2xl font-semibold text-foreground">
               Your Images
             </h2>
-            <ThumbnailViewToggle
-              showEnhanced={showEnhanced}
-              onToggle={setShowEnhanced}
-              hasEnhancedImages={images.some((img) =>
-                img.enhancementJobs.some((job) => job.status === "COMPLETED")
-              )}
-            />
+            <div className="flex items-center gap-4">
+              <ThumbnailViewToggle
+                showEnhanced={showEnhanced}
+                onToggle={setShowEnhanced}
+                hasEnhancedImages={images.some((img) =>
+                  img.enhancementJobs.some((job) => job.status === "COMPLETED")
+                )}
+              />
+              <ZoomSlider value={zoomLevel} onChange={setZoomLevel} />
+            </div>
           </div>
           <EnhancedImagesList
             images={images}
@@ -229,6 +234,7 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
             showEnhanced={showEnhanced}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            zoomLevel={zoomLevel}
           />
         </div>
       </div>
