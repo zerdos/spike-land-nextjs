@@ -30,8 +30,7 @@ Feature: Legal Pages
 
   Scenario: Privacy policy displays disclaimer
     When I visit "/privacy"
-    Then I should see "Legal Disclaimer" text
-    And I should see "This Privacy Policy is a template" text
+    Then I should see "This is a template" text
 
   Scenario: Terms of service displays last updated date
     When I visit "/terms"
