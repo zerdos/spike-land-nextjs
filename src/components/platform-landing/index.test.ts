@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { FeaturedAppCard, PlatformFeatures, PlatformHeader, PlatformHero } from "./index";
+import {
+  ConditionalHeader,
+  FeaturedAppCard,
+  PlatformFeatures,
+  PlatformHeader,
+  PlatformHero,
+} from "./index";
 
 describe("Platform Landing Barrel Export", () => {
+  it("should export ConditionalHeader component", () => {
+    expect(ConditionalHeader).toBeDefined();
+    expect(typeof ConditionalHeader).toBe("function");
+  });
+
   it("should export PlatformHeader component", () => {
     expect(PlatformHeader).toBeDefined();
     expect(typeof PlatformHeader).toBe("function");

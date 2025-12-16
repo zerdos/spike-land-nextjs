@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { BlogCard } from "@/components/blog";
-import { PlatformHeader } from "@/components/platform-landing";
 import { getAllPosts } from "@/lib/blog/get-posts";
 
 export const metadata: Metadata = {
@@ -28,7 +27,6 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <PlatformHeader />
       <div className="container mx-auto px-6 max-w-6xl pt-24 pb-12">
         {/* Header */}
         <header className="text-center mb-12">

@@ -1,10 +1,12 @@
 "use client";
 
+import { UserAvatar } from "@/components/auth/user-avatar";
 import { PixelLogo, SpikeLandLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Menu } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -12,11 +14,12 @@ const navLinks = [
   { href: "/pixel", label: "Pixel", isPixel: true },
   { href: "/blog/pixel-launch-announcement", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/auth/signin", label: "Sign In" },
 ];
 
 export function PlatformHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated" && session?.user;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -40,11 +43,21 @@ export function PlatformHeader() {
                   : link.label}
               </Link>
             ))}
-            <Button asChild>
-              <Link href="/apps/pixel">
-                Get Started
+            {!isAuthenticated && (
+              <Link
+                href="/auth/signin"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign In
               </Link>
-            </Button>
+            )}
+            {isAuthenticated ? <UserAvatar /> : (
+              <Button asChild>
+                <Link href="/pixel">
+                  Get Started
+                </Link>
+              </Button>
+            )}
           </nav>
 
           {/* Mobile Menu */}
@@ -71,14 +84,31 @@ export function PlatformHeader() {
                       : link.label}
                   </Link>
                 ))}
-                <Button asChild className="mt-4">
+                {!isAuthenticated && (
                   <Link
-                    href="/apps/pixel"
+                    href="/auth/signin"
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Get Started
+                    Sign In
                   </Link>
-                </Button>
+                )}
+                {isAuthenticated
+                  ? (
+                    <div className="mt-4">
+                      <UserAvatar />
+                    </div>
+                  )
+                  : (
+                    <Button asChild className="mt-4">
+                      <Link
+                        href="/pixel"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Get Started
+                      </Link>
+                    </Button>
+                  )}
               </nav>
             </SheetContent>
           </Sheet>

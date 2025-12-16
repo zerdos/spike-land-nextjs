@@ -11,12 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ENHANCEMENT_COSTS, TOKEN_PACKAGES } from "@/lib/stripe/client";
 import type { TokenPackageId } from "@/lib/stripe/client";
 import { cn } from "@/lib/utils";
-import { Check, Coins, Sparkles, Zap } from "lucide-react";
+import { Check, Clock, Coins, Gift, Sparkles, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 // Calculate value comparison for packages
 function getPackageValueInfo(id: TokenPackageId) {
@@ -43,9 +46,54 @@ function getPackageValueInfo(id: TokenPackageId) {
   return { savings, badges };
 }
 
+// Format time remaining in minutes
+function formatTimeRemaining(ms: number): string {
+  const minutes = Math.ceil(ms / (1000 * 60));
+  if (minutes <= 0) return "Available now!";
+  if (minutes === 1) return "1 minute";
+  return `${minutes} minutes`;
+}
+
 export default function PricingPage() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
+  const [timeUntilNextToken, setTimeUntilNextToken] = useState<number | null>(null);
+  const isAuthenticated = status === "authenticated" && session?.user;
+
+  // Fetch token balance for logged-in users to get regeneration time
+  const { balance, isLoading: balanceLoading } = useTokenBalance();
+
+  // Fetch time until next regeneration for logged-in users
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchRegenTime = async () => {
+      try {
+        const response = await fetch("/api/tokens/balance");
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof data.timeUntilNextRegenMs === "number") {
+            setTimeUntilNextToken(data.timeUntilNextRegenMs);
+          }
+        }
+      } catch {
+        // Silently fail - not critical
+      }
+    };
+
+    fetchRegenTime();
+
+    // Update countdown every minute
+    const interval = setInterval(() => {
+      setTimeUntilNextToken((prev) => {
+        if (prev === null) return null;
+        const newTime = prev - 60000;
+        return newTime > 0 ? newTime : 0;
+      });
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const handlePurchase = async (packageId: TokenPackageId) => {
     if (!session) {
@@ -83,7 +131,7 @@ export default function PricingPage() {
   });
 
   return (
-    <div className="container mx-auto py-12 px-4">
+    <div className="container mx-auto pt-24 pb-12 px-4">
       {/* Hero Section */}
       <div className="text-center mb-16">
         <div className="flex items-center justify-center gap-2 mb-4">
@@ -94,6 +142,91 @@ export default function PricingPage() {
           Get tokens to enhance your images with AI. Choose a token pack that suits your needs.
           Tokens never expire!
         </p>
+      </div>
+
+      {/* Free Tokens Section */}
+      <div className="max-w-4xl mx-auto mb-16">
+        <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader className="text-center pb-2">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Gift className="h-6 w-6 text-primary" />
+              <CardTitle className="text-2xl">Free Tokens Every 15 Minutes!</CardTitle>
+            </div>
+            <CardDescription className="text-base">
+              No credit card required. Just sign in and start enhancing your photos.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Token Well Image */}
+            <div className="relative w-full aspect-[2/1] max-w-2xl mx-auto rounded-lg overflow-hidden border shadow-lg">
+              <Image
+                src="/token-well.jpeg"
+                alt="How Pixel tokens work - Free regeneration every 15 minutes, enhance your photos, power user mode for unlimited creativity"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            {/* Key Points */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="p-4 rounded-lg bg-background/50">
+                <Clock className="h-8 w-8 text-primary mx-auto mb-2" />
+                <p className="font-semibold">+1 Token Every 15 Min</p>
+                <p className="text-sm text-muted-foreground">
+                  Tokens regenerate automatically
+                </p>
+              </div>
+              <div className="p-4 rounded-lg bg-background/50">
+                <Coins className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                <p className="font-semibold">Up to 10 Free Tokens</p>
+                <p className="text-sm text-muted-foreground">
+                  Your token well stores up to 10
+                </p>
+              </div>
+              <div className="p-4 rounded-lg bg-background/50">
+                <Zap className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                <p className="font-semibold">2 Tokens = 1 Image</p>
+                <p className="text-sm text-muted-foreground">
+                  Enhance at 1K resolution
+                </p>
+              </div>
+            </div>
+
+            {/* Next Token Countdown for logged in users */}
+            {isAuthenticated && (
+              <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
+                <p className="text-sm text-muted-foreground mb-1">Your current balance</p>
+                <p className="text-2xl font-bold text-primary mb-2">
+                  {balanceLoading ? "..." : `${balance} tokens`}
+                </p>
+                {timeUntilNextToken !== null && balance < 10 && (
+                  <p className="text-sm">
+                    <Clock className="h-4 w-4 inline mr-1" />
+                    Next free token in: <strong>{formatTimeRemaining(timeUntilNextToken)}</strong>
+                  </p>
+                )}
+                {balance >= 10 && (
+                  <p className="text-sm text-green-600">
+                    <Check className="h-4 w-4 inline mr-1" />
+                    Token well is full!
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Sign in CTA for non-authenticated users */}
+            {!isAuthenticated && status !== "loading" && (
+              <div className="text-center">
+                <Button asChild size="lg" className="px-8">
+                  <Link href="/auth/signin?callbackUrl=/pricing">
+                    Sign in to get free tokens
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Token Packs */}
@@ -201,30 +334,30 @@ export default function PricingPage() {
                     </div>
                   </CardContent>
 
-                  <CardFooter>
-                    <Button
-                      className={cn(
-                        "w-full",
-                        isPopular && "bg-primary hover:bg-primary/90",
-                        isBestValue && "bg-green-500 hover:bg-green-600",
-                      )}
-                      variant={isPopular || isBestValue ? "default" : "outline"}
-                      disabled={loading === id || status === "loading"}
-                      onClick={() => handlePurchase(id)}
-                      data-testid={`buy-button-${id}`}
-                    >
-                      {loading === id
-                        ? "Redirecting to checkout..."
-                        : status === "loading"
-                        ? "Loading..."
-                        : (
-                          <>
-                            <Zap className="h-4 w-4 mr-1.5" />
-                            Buy Now
-                          </>
+                  {isAuthenticated && (
+                    <CardFooter>
+                      <Button
+                        className={cn(
+                          "w-full",
+                          isPopular && "bg-primary hover:bg-primary/90",
+                          isBestValue && "bg-green-500 hover:bg-green-600",
                         )}
-                    </Button>
-                  </CardFooter>
+                        variant={isPopular || isBestValue ? "default" : "outline"}
+                        disabled={loading === id}
+                        onClick={() => handlePurchase(id)}
+                        data-testid={`buy-button-${id}`}
+                      >
+                        {loading === id
+                          ? "Redirecting to checkout..."
+                          : (
+                            <>
+                              <Zap className="h-4 w-4 mr-1.5" />
+                              Buy Now
+                            </>
+                          )}
+                      </Button>
+                    </CardFooter>
+                  )}
                 </Card>
               );
             },

@@ -17,7 +17,7 @@ export default async function NewBoxPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-4xl">
+      <div className="container mx-auto px-4 pt-24 pb-8 md:pb-12 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Create New Box</h1>
           <p className="mt-2 text-muted-foreground">
