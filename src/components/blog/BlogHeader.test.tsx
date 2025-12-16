@@ -17,6 +17,7 @@ vi.mock("next/image", () => ({
     fill?: boolean;
     priority?: boolean;
     className?: string;
+    // eslint-disable-next-line @next/next/no-img-element
   }) => <img src={src} alt={alt} data-testid="header-image" {...props} />,
 }));
 

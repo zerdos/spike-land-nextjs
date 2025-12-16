@@ -160,6 +160,13 @@ Feature: Smoke Tests
     And I should see "Jobs Management" heading
 
   @fast
+  Scenario: Pixel landing page loads for unauthenticated user
+    Given I am not logged in
+    When I visit "/pixel"
+    Then the page should load successfully
+    And I should see "Your photos deserve better" text
+
+  @fast
   Scenario: Unauthenticated user redirected from Pixel app
     Given I am not logged in
     When I visit "/apps/pixel"
@@ -200,7 +207,7 @@ Feature: Smoke Tests
     When I visit "/"
     Then I should see navigation links for:
       | Link      |
-      | Enhance   |
+      | Pixel     |
 
   @fast @requires-db
   Scenario: Authenticated user sees logout option

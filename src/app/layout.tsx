@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
-import { AuthHeader } from "@/components/auth/auth-header";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { ConditionalHeader } from "@/components/platform-landing";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
@@ -75,7 +75,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-            <AuthHeader />
+            <ConditionalHeader />
             {children}
             <FeedbackButton />
           </SessionProvider>

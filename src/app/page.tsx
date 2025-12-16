@@ -1,10 +1,5 @@
 import { CTASection } from "@/components/landing/CTASection";
-import {
-  FeaturedAppCard,
-  PlatformFeatures,
-  PlatformHeader,
-  PlatformHero,
-} from "@/components/platform-landing";
+import { FeaturedAppCard, PlatformFeatures, PlatformHero } from "@/components/platform-landing";
 import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { Image as ImageIcon } from "lucide-react";
 import { unstable_cache } from "next/cache";
@@ -45,9 +40,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
-      {/* Fixed Header */}
-      <PlatformHeader />
-
       {/* Hero Section */}
       <PlatformHero />
 

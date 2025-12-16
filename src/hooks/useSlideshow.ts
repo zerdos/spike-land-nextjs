@@ -148,6 +148,8 @@ export function useSlideshow({
 
   // Cleanup on unmount
   useEffect(() => {
+    const preloadedImages = preloadedImagesRef.current;
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -155,7 +157,7 @@ export function useSlideshow({
       if (transitionTimeoutRef.current) {
         clearTimeout(transitionTimeoutRef.current);
       }
-      preloadedImagesRef.current.clear();
+      preloadedImages.clear();
     };
   }, []);
 

@@ -21,9 +21,9 @@ export function CTASection() {
           variant="secondary"
           className="text-base font-semibold shadow-xl"
         >
-          <Link href="/auth/signin?callbackUrl=/apps/pixel">
+          <Link href="/pixel">
             <Sparkles className="mr-2 h-5 w-5" />
-            Try Pixel Free
+            Try Pixel for free
           </Link>
         </Button>
       </div>

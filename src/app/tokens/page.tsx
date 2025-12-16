@@ -102,7 +102,7 @@ export default function TokensPage() {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto pt-24 pb-8 px-4">
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">

@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { PlatformHeader } from "@/components/platform-landing";
 import prisma from "@/lib/prisma";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -38,7 +37,6 @@ export default async function PixelPage() {
   if (isE2EBypass && !session) {
     return (
       <div className="min-h-screen bg-grid-pattern">
-        <PlatformHeader />
         <div className="pt-16">
           <EnhancePageClient images={[]} />
         </div>
@@ -73,7 +71,6 @@ export default async function PixelPage() {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <PlatformHeader />
       <div className="pt-16">
         <EnhancePageClient images={images} />
       </div>
