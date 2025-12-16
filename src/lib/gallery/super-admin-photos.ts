@@ -12,27 +12,17 @@ export interface FeaturedPhoto {
   tier: EnhancementTier;
 }
 
-const SUPER_ADMIN_EMAIL = "zolika84@gmail.com";
-const LANDING_PAGE_ALBUM_NAME = "Landing Page";
+// Landing page album ID - used to display featured photos on /pixel
+const LANDING_PAGE_ALBUM_ID = "cmit2mns8000004k07oqi2fa3";
 
 export async function getSuperAdminPublicPhotos(
   limit?: number,
 ): Promise<FeaturedPhoto[]> {
-  const superAdmin = await prisma.user.findUnique({
-    where: { email: SUPER_ADMIN_EMAIL },
-    select: { id: true },
-  });
-
-  if (!superAdmin) {
-    return [];
-  }
-
-  // Only fetch from the "Landing Page" album
+  // Fetch the specific landing page album by ID
   const publicAlbums = await prisma.album.findMany({
     where: {
-      userId: superAdmin.id,
+      id: LANDING_PAGE_ALBUM_ID,
       privacy: AlbumPrivacy.PUBLIC,
-      name: LANDING_PAGE_ALBUM_NAME,
     },
     include: {
       albumImages: {

@@ -8,7 +8,7 @@ const getTopPublicPhoto = unstable_cache(
     const photos = await getSuperAdminPublicPhotos(1);
     return photos[0] || null;
   },
-  ["super-admin-top-photo"],
+  ["super-admin-top-photo-v2"],
   { revalidate: 3600, tags: ["super-admin-gallery"] },
 );
 

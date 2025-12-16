@@ -5,37 +5,21 @@ import { getSuperAdminPublicPhotos } from "./super-admin-photos";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
-    user: {
-      findUnique: vi.fn(),
-    },
     album: {
       findMany: vi.fn(),
     },
   },
 }));
 
+// Album ID used for landing page photos
+const LANDING_PAGE_ALBUM_ID = "cmit2mns8000004k07oqi2fa3";
+
 describe("getSuperAdminPublicPhotos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should return empty array when super admin does not exist", async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-
-    const result = await getSuperAdminPublicPhotos();
-
-    expect(result).toEqual([]);
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({
-      where: { email: "zolika84@gmail.com" },
-      select: { id: true },
-    });
-    expect(prisma.album.findMany).not.toHaveBeenCalled();
-  });
-
-  it("should return empty array when super admin has no public albums", async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
+  it("should return empty array when landing page album does not exist or is not public", async () => {
     vi.mocked(prisma.album.findMany).mockResolvedValue([]);
 
     const result = await getSuperAdminPublicPhotos();
@@ -43,9 +27,8 @@ describe("getSuperAdminPublicPhotos", () => {
     expect(result).toEqual([]);
     expect(prisma.album.findMany).toHaveBeenCalledWith({
       where: {
-        userId: "super-admin-id",
+        id: LANDING_PAGE_ALBUM_ID,
         privacy: AlbumPrivacy.PUBLIC,
-        name: "Landing Page",
       },
       include: {
         albumImages: {
@@ -77,9 +60,6 @@ describe("getSuperAdminPublicPhotos", () => {
   });
 
   it("should return empty array when albums have no completed enhancement jobs", async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
@@ -131,9 +111,6 @@ describe("getSuperAdminPublicPhotos", () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
@@ -221,9 +198,6 @@ describe("getSuperAdminPublicPhotos", () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
@@ -300,9 +274,6 @@ describe("getSuperAdminPublicPhotos", () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
@@ -430,9 +401,6 @@ describe("getSuperAdminPublicPhotos", () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
@@ -595,9 +563,6 @@ describe("getSuperAdminPublicPhotos", () => {
     const _olderDate = new Date("2024-01-01T10:00:00Z");
     const newerDate = new Date("2024-01-01T12:00:00Z");
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: "super-admin-id",
-    });
     vi.mocked(prisma.album.findMany).mockResolvedValue([
       {
         id: "album-1",
