@@ -1,13 +1,9 @@
 import { auth } from "@/auth";
-import { BeforeAfterGallery } from "@/components/landing/BeforeAfterGallery";
-import { CTASection } from "@/components/landing/CTASection";
-import { FAQ } from "@/components/landing/FAQ";
-import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
-import { HeroSectionWithData } from "@/components/landing/HeroSectionWithData";
-import { PixelHeader } from "@/components/landing/PixelHeader";
+import { PlatformHeader } from "@/components/platform-landing";
 import prisma from "@/lib/prisma";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { EnhancePageClient } from "./EnhancePageClient";
 
 export const metadata: Metadata = {
@@ -40,21 +36,19 @@ export default async function PixelPage() {
 
   // For E2E bypass, allow access with empty images
   if (isE2EBypass && !session) {
-    return <EnhancePageClient images={[]} />;
+    return (
+      <div className="min-h-screen bg-grid-pattern">
+        <PlatformHeader />
+        <div className="pt-16">
+          <EnhancePageClient images={[]} />
+        </div>
+      </div>
+    );
   }
 
-  // For non-authenticated users, show the landing page
+  // For non-authenticated users, redirect to sign in
   if (!session) {
-    return (
-      <main className="min-h-screen bg-grid-pattern">
-        <PixelHeader />
-        <HeroSectionWithData />
-        <BeforeAfterGallery />
-        <FeatureShowcase />
-        <FAQ />
-        <CTASection />
-      </main>
-    );
+    redirect("/auth/signin?callbackUrl=/apps/pixel");
   }
 
   // For authenticated users, fetch their images and show the app
@@ -77,5 +71,12 @@ export default async function PixelPage() {
     },
   });
 
-  return <EnhancePageClient images={images} />;
+  return (
+    <div className="min-h-screen bg-grid-pattern">
+      <PlatformHeader />
+      <div className="pt-16">
+        <EnhancePageClient images={images} />
+      </div>
+    </div>
+  );
 }

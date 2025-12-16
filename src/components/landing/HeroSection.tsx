@@ -24,14 +24,18 @@ export function HeroSection({
         <div className="mx-auto max-w-5xl text-center">
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-            Enhance Your Photos in <br className="hidden sm:block" />
-            <span className="text-gradient-primary">Seconds</span> with AI.
+            Your photos deserve better than <br className="hidden sm:block" />
+            <span className="text-gradient-primary">&ldquo;good enough.&rdquo;</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Bring old, blurry images back to life. Pixel&apos;s advanced AI restores details and
-            clarity instantly.
+          <p className="mx-auto mb-4 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
+            Pixel uses Google&apos;s latest Gemini model to restore details that weren&apos;t even
+            visible before. Blurry holiday snapshots. Grainy VHS stills. That photo of your
+            grandparents you&apos;ve had since childhood.
+          </p>
+          <p className="mx-auto mb-12 max-w-2xl text-base text-muted-foreground/80 italic">
+            This wasn&apos;t possible until now. Now it is.
           </p>
 
           {/* Comparison Slider */}
@@ -50,7 +54,9 @@ export function HeroSection({
             size="lg"
             className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
           >
-            <Link href="/auth/signin?callbackUrl=/apps/pixel">Start here!</Link>
+            <Link href="/auth/signin?callbackUrl=/apps/pixel">
+              Get Started — First Enhancement Free
+            </Link>
           </Button>
         </div>
       </div>

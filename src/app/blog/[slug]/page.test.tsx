@@ -229,7 +229,7 @@ describe("BlogPostPage", () => {
       expect(screen.getByText(/Transform your photos/i)).toBeInTheDocument();
       expect(
         screen.getByRole("link", { name: /try pixel free/i }),
-      ).toHaveAttribute("href", "/apps/pixel");
+      ).toHaveAttribute("href", "/pixel");
     });
 
     it("displays author and date", async () => {

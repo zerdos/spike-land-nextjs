@@ -1,17 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { redirect } from "next/navigation";
-import { describe, expect, it, Mock, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import Home from "./page";
-
-// Mock auth module
-vi.mock("@/auth", () => ({
-  auth: vi.fn(),
-}));
-
-// Mock next/navigation
-vi.mock("next/navigation", () => ({
-  redirect: vi.fn(),
-}));
 
 // Mock next/cache
 vi.mock("next/cache", () => ({
@@ -41,36 +30,9 @@ vi.mock("@/components/platform-landing", () => ({
   PlatformHero: () => <section data-testid="hero-section">Platform Hero</section>,
 }));
 
-import { auth } from "@/auth";
-
-describe("Home Page - Authentication Redirect", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("should redirect authenticated users to /apps/pixel", async () => {
-    (auth as Mock).mockResolvedValue({ user: { id: "user-123" } });
-
-    await Home();
-
-    expect(redirect).toHaveBeenCalledWith("/apps/pixel");
-  });
-
-  it("should not redirect unauthenticated users", async () => {
-    (auth as Mock).mockResolvedValue(null);
-
+describe("Home Page - No Authentication Redirect", () => {
+  it("should render landing page for all users (no redirect)", async () => {
     const result = await Home();
-
-    expect(redirect).not.toHaveBeenCalled();
-    expect(result).toBeDefined();
-  });
-
-  it("should not redirect when session has no user id", async () => {
-    (auth as Mock).mockResolvedValue({ user: {} });
-
-    const result = await Home();
-
-    expect(redirect).not.toHaveBeenCalled();
     expect(result).toBeDefined();
   });
 });

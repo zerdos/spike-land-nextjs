@@ -30,18 +30,17 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
 describe("HeroSection Component", () => {
   it("should render the main headline", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Enhance Your Photos in/)).toBeInTheDocument();
-    expect(screen.getByText(/Seconds/)).toBeInTheDocument();
-    expect(screen.getByText(/with AI\./)).toBeInTheDocument();
+    expect(screen.getByText(/Your photos deserve better than/)).toBeInTheDocument();
+    expect(screen.getByText(/\u201Cgood enough\.\u201D/)).toBeInTheDocument();
   });
 
   it("should render the subheadline", () => {
     render(<HeroSection />);
     expect(
-      screen.getByText(/Bring old, blurry images back to life/),
+      screen.getByText(/Pixel uses Google's latest Gemini model/),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/restores details and clarity instantly/),
+      screen.getByText(/This wasn't possible until now\. Now it is\./),
     ).toBeInTheDocument();
   });
 
@@ -83,7 +82,9 @@ describe("HeroSection Component", () => {
 
   it("should render primary CTA button linking to sign in page", () => {
     render(<HeroSection />);
-    const ctaLink = screen.getByRole("link", { name: /Start here!/i });
+    const ctaLink = screen.getByRole("link", {
+      name: /Get Started — First Enhancement Free/i,
+    });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute(
       "href",
@@ -106,9 +107,9 @@ describe("HeroSection Component", () => {
     expect(headline).toHaveClass("lg:text-7xl");
   });
 
-  it("should have gradient text on 'Seconds'", () => {
+  it("should have gradient text on 'good enough.'", () => {
     render(<HeroSection />);
-    const gradientText = screen.getByText("Seconds");
+    const gradientText = screen.getByText(/\u201Cgood enough\.\u201D/);
     expect(gradientText).toHaveClass("text-gradient-primary");
   });
 
