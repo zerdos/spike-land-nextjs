@@ -25,6 +25,8 @@ export function ImagePlaceholder({
 
   useEffect(() => {
     // Generate a client-side preview using FileReader
+    // Note: FileReader.readAsDataURL creates a base64 data URL string,
+    // NOT a blob URL. Data URLs don't need cleanup/revocation.
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
@@ -32,14 +34,6 @@ export function ImagePlaceholder({
       }
     };
     reader.readAsDataURL(file);
-
-    return () => {
-      // Cleanup the preview URL
-      if (preview) {
-        URL.revokeObjectURL(preview);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   const statusLabel = {

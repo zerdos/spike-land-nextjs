@@ -3,7 +3,25 @@
 import { cn } from "@/lib/utils";
 import { Children, ReactNode, useMemo } from "react";
 
+// Zoom level constants for type safety and consistency
+export const ZOOM_LEVEL = {
+  MIN: 1,
+  DEFAULT: 3,
+  MAX: 5,
+} as const;
+
 export type ZoomLevel = 1 | 2 | 3 | 4 | 5;
+
+// Type guard to validate zoom level
+export function isValidZoomLevel(value: number): value is ZoomLevel {
+  return value >= ZOOM_LEVEL.MIN && value <= ZOOM_LEVEL.MAX && Number.isInteger(value);
+}
+
+// Clamp zoom level to valid range
+export function clampZoomLevel(value: number): ZoomLevel {
+  const clamped = Math.max(ZOOM_LEVEL.MIN, Math.min(ZOOM_LEVEL.MAX, Math.round(value)));
+  return clamped as ZoomLevel;
+}
 
 interface MasonryGridProps {
   children: ReactNode;
@@ -86,11 +104,13 @@ const COLUMN_CONFIG: Record<ZoomLevel, { sm: number; md: number; lg: number; xl:
 
 export function MasonryGrid({
   children,
-  zoomLevel = 3,
+  zoomLevel = ZOOM_LEVEL.DEFAULT,
   className,
 }: MasonryGridProps) {
   const childArray = Children.toArray(children);
-  const config = COLUMN_CONFIG[zoomLevel];
+  // Ensure zoom level is valid
+  const safeZoomLevel = isValidZoomLevel(zoomLevel) ? zoomLevel : ZOOM_LEVEL.DEFAULT;
+  const config = COLUMN_CONFIG[safeZoomLevel];
 
   // Memoize column classes based on zoom level
   const columnClasses = useMemo(() => {
@@ -130,10 +150,12 @@ export function MasonryGrid({
 // Grid-based variant for when aspect ratios are uniform
 export function MasonryGridUniform({
   children,
-  zoomLevel = 3,
+  zoomLevel = ZOOM_LEVEL.DEFAULT,
   className,
 }: MasonryGridProps) {
-  const config = COLUMN_CONFIG[zoomLevel];
+  // Ensure zoom level is valid
+  const safeZoomLevel = isValidZoomLevel(zoomLevel) ? zoomLevel : ZOOM_LEVEL.DEFAULT;
+  const config = COLUMN_CONFIG[safeZoomLevel];
 
   // Build responsive grid classes using explicit mappings
   const gridClasses = cn(

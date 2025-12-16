@@ -42,7 +42,8 @@ const { mockTokenBalanceManager } = vi.hoisted(() => ({
   mockTokenBalanceManager: {
     hasEnoughTokens: vi.fn().mockResolvedValue(true),
     getBalance: vi.fn().mockResolvedValue({ balance: 100, lifetimeEarned: 100 }),
-    consumeTokens: vi.fn().mockResolvedValue({ success: true, newBalance: 98 }),
+    consumeTokens: vi.fn().mockResolvedValue({ success: true, balance: 98 }),
+    refundTokens: vi.fn().mockResolvedValue({ success: true, balance: 100 }),
   },
 }));
 
@@ -174,7 +175,8 @@ describe("POST /api/images/upload", () => {
     // Reset token manager mocks to defaults
     mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
     mockTokenBalanceManager.getBalance.mockResolvedValue({ balance: 100, lifetimeEarned: 100 });
-    mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true, newBalance: 98 });
+    mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true, balance: 98 });
+    mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true, balance: 100 });
     // Reset album mock to default
     mockPrisma.album.findFirst.mockResolvedValue({
       id: "album-123",
@@ -516,8 +518,12 @@ describe("POST /api/images/upload", () => {
       expect(data.image.id).toBe("img-123");
     });
 
-    it("should return 402 if user has insufficient tokens", async () => {
-      mockTokenBalanceManager.hasEnoughTokens.mockResolvedValueOnce(false);
+    it("should return 402 if user has insufficient tokens (prepay model)", async () => {
+      // With prepay model, consumeTokens fails directly
+      mockTokenBalanceManager.consumeTokens.mockResolvedValueOnce({
+        success: false,
+        error: "Insufficient tokens",
+      });
       mockTokenBalanceManager.getBalance.mockResolvedValueOnce({ balance: 0, lifetimeEarned: 0 });
 
       const req = createMockRequest(createMockFile(), "album-123");
@@ -527,6 +533,34 @@ describe("POST /api/images/upload", () => {
       expect(res.status).toBe(402);
       expect(data.required).toBeDefined();
       expect(data.balance).toBe(0);
+    });
+
+    it("should refund tokens if upload processing fails", async () => {
+      const { processAndUploadImage } = await import(
+        "@/lib/storage/upload-handler"
+      );
+      vi.mocked(processAndUploadImage).mockResolvedValueOnce({
+        success: false,
+        error: "Upload failed",
+        url: "",
+        r2Key: "",
+        width: 0,
+        height: 0,
+        sizeBytes: 0,
+        format: "",
+      });
+
+      const req = createMockRequest(createMockFile(), "album-123");
+      const res = await POST(req);
+
+      expect(res.status).toBe(500);
+      // Verify refund was called since upload failed
+      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+        "user-123",
+        expect.any(Number), // tokenCost
+        expect.stringContaining("failed-upload"),
+        "Upload processing failed",
+      );
     });
   });
 });

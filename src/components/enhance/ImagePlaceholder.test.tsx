@@ -20,13 +20,6 @@ class MockFileReader {
 
 vi.stubGlobal("FileReader", MockFileReader);
 
-// Mock URL.revokeObjectURL
-const originalURL = globalThis.URL;
-vi.stubGlobal("URL", {
-  ...originalURL,
-  revokeObjectURL: vi.fn(),
-});
-
 function createMockFile(name = "test.jpg"): File {
   const blob = new Blob(["test"], { type: "image/jpeg" });
   return new File([blob], name, { type: "image/jpeg" });

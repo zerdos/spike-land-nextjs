@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Textarea } from "@/components/ui/textarea";
 import { useZoomLevel, ZoomSlider } from "@/components/ui/zoom-slider";
 import { useMultiFileUpload } from "@/hooks/useMultiFileUpload";
+import { ROUTES } from "@/lib/routes";
 import {
   ArrowLeft,
   Check,
@@ -266,7 +267,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
       if (!response.ok) throw new Error("Failed to delete album");
 
-      router.push("/apps/pixel");
+      router.push(ROUTES.albums);
     } catch (err) {
       console.error("Error deleting album:", err);
       alert("Failed to delete album. Please try again.");
@@ -629,7 +630,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   };
 
   // Get image URL based on display type
-  const getImageUrl = (image: AlbumImage): string => {
+  const getImageUrl = useCallback((image: AlbumImage): string => {
     switch (displayType) {
       case "original":
         return image.originalUrl;
@@ -639,7 +640,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
       default:
         return image.enhancedUrl || image.originalUrl;
     }
-  };
+  }, [displayType]);
 
   if (isLoading) {
     return (
@@ -661,7 +662,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
               {error || "Album not found"}
             </h3>
             <Button asChild>
-              <Link href="/apps/pixel">
+              <Link href={ROUTES.albums}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Pixel
               </Link>
@@ -722,7 +723,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <Button variant="ghost" size="icon" asChild>
-                <Link href="/apps/pixel">
+                <Link href={ROUTES.albums}>
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>
@@ -983,7 +984,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                             size="sm"
                             asChild
                           >
-                            <Link href={`/apps/pixel/${image.id}`}>View</Link>
+                            <Link href={ROUTES.imageDetail(image.id)}>View</Link>
                           </Button>
                           {album.coverImageId !== image.id && (
                             <Button
