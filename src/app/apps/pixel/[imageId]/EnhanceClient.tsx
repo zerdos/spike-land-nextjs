@@ -229,7 +229,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto pt-24 pb-8 px-4">
       {isLowBalance && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />

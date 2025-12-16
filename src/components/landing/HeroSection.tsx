@@ -54,7 +54,7 @@ export function HeroSection({
             size="lg"
             className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
           >
-            <Link href="/auth/signin?callbackUrl=/apps/pixel">
+            <Link href="/apps/pixel">
               Get Started — First Enhancement Free
             </Link>
           </Button>

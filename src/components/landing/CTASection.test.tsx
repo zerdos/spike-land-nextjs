@@ -16,19 +16,16 @@ describe("CTASection Component", () => {
   it("should render the CTA button", () => {
     render(<CTASection />);
     expect(
-      screen.getByRole("link", { name: /Try Pixel Free/i }),
+      screen.getByRole("link", { name: /Try Pixel for free/i }),
     ).toBeInTheDocument();
   });
 
   it("should have correct href for CTA button", () => {
     render(<CTASection />);
     const ctaLink = screen.getByRole("link", {
-      name: /Try Pixel Free/i,
+      name: /Try Pixel for free/i,
     });
-    expect(ctaLink).toHaveAttribute(
-      "href",
-      "/auth/signin?callbackUrl=/apps/pixel",
-    );
+    expect(ctaLink).toHaveAttribute("href", "/pixel");
   });
 
   it("should render as a section element", () => {

@@ -449,7 +449,8 @@ describe("SettingsPage", () => {
       expect(container).toHaveClass(
         "container",
         "mx-auto",
-        "py-8",
+        "pt-24",
+        "pb-8",
         "px-4",
         "max-w-4xl",
       );

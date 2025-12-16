@@ -8,9 +8,37 @@ vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
 }));
 
-// Mock fetch
+// Mock next/image
+vi.mock("next/image", () => ({
+  default: function MockImage(
+    { src, alt, ...props }: { src: string; alt: string; [key: string]: unknown; },
+  ) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt} {...props} />;
+  },
+}));
+
+// Mock fetch with a helper function
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+// Helper to setup fetch mocks for authenticated users
+function setupAuthenticatedFetchMock(checkoutResponse?: { url?: string; error?: string; }) {
+  mockFetch.mockImplementation((url: string) => {
+    if (url === "/api/tokens/balance") {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+      });
+    }
+    if (url === "/api/stripe/checkout") {
+      return Promise.resolve({
+        json: () => Promise.resolve(checkoutResponse ?? { url: "https://checkout.stripe.com/123" }),
+      });
+    }
+    return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+  });
+}
 
 describe("PricingPage", () => {
   beforeEach(() => {
@@ -170,7 +198,7 @@ describe("PricingPage", () => {
     expect(screen.getByText(/Tokens never expire!/)).toBeDefined();
   });
 
-  it("redirects to login when unauthenticated user tries to purchase", () => {
+  it("hides Buy Now buttons for unauthenticated users", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -178,10 +206,21 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
+    expect(screen.queryByTestId("buy-button-starter")).toBeNull();
+    expect(screen.queryByTestId("buy-button-basic")).toBeNull();
+    expect(screen.queryByTestId("buy-button-pro")).toBeNull();
+    expect(screen.queryByTestId("buy-button-power")).toBeNull();
+  });
 
-    expect(window.location.href).toBe("/?callbackUrl=/pricing");
+  it("shows Sign in to get free tokens button for unauthenticated users", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Sign in to get free tokens")).toBeDefined();
   });
 
   it("calls checkout API when authenticated user clicks Buy Now", async () => {
@@ -190,9 +229,7 @@ describe("PricingPage", () => {
       status: "authenticated",
     });
 
-    mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ url: "https://checkout.stripe.com/123" }),
-    });
+    setupAuthenticatedFetchMock();
 
     render(<PricingPage />);
 
@@ -214,9 +251,7 @@ describe("PricingPage", () => {
       status: "authenticated",
     });
 
-    mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ url: "https://checkout.stripe.com/123" }),
-    });
+    setupAuthenticatedFetchMock();
 
     render(<PricingPage />);
 
@@ -234,9 +269,7 @@ describe("PricingPage", () => {
       status: "authenticated",
     });
 
-    mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ error: "Something went wrong" }),
-    });
+    setupAuthenticatedFetchMock({ error: "Something went wrong" });
 
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
 
@@ -256,9 +289,7 @@ describe("PricingPage", () => {
       status: "authenticated",
     });
 
-    mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({}),
-    });
+    setupAuthenticatedFetchMock({});
 
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
 
@@ -280,7 +311,19 @@ describe("PricingPage", () => {
       status: "authenticated",
     });
 
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    // Mock that throws on checkout
+    mockFetch.mockImplementation((url: string) => {
+      if (url === "/api/tokens/balance") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+        });
+      }
+      if (url === "/api/stripe/checkout") {
+        return Promise.reject(new Error("Network error"));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
 
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     const consoleSpy = vi
@@ -325,7 +368,7 @@ describe("PricingPage", () => {
     expect(screen.queryByText("Can I cancel my subscription?")).toBeNull();
   });
 
-  it("disables buttons while loading", () => {
+  it("hides buttons while session is loading", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "loading",
@@ -333,22 +376,11 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByTestId("buy-button-starter")).toHaveProperty(
-      "disabled",
-      true,
-    );
-    expect(screen.getByTestId("buy-button-basic")).toHaveProperty(
-      "disabled",
-      true,
-    );
-    expect(screen.getByTestId("buy-button-pro")).toHaveProperty(
-      "disabled",
-      true,
-    );
-    expect(screen.getByTestId("buy-button-power")).toHaveProperty(
-      "disabled",
-      true,
-    );
+    // Buttons are hidden for non-authenticated users (loading is not authenticated)
+    expect(screen.queryByTestId("buy-button-starter")).toBeNull();
+    expect(screen.queryByTestId("buy-button-basic")).toBeNull();
+    expect(screen.queryByTestId("buy-button-pro")).toBeNull();
+    expect(screen.queryByTestId("buy-button-power")).toBeNull();
   });
 
   it("shows Processing text while purchase is loading", async () => {
@@ -359,12 +391,22 @@ describe("PricingPage", () => {
 
     // Use a promise that we control to keep the loading state active
     let resolvePromise: (value: unknown) => void;
-    const promise = new Promise((resolve) => {
+    const checkoutPromise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
 
-    mockFetch.mockReturnValueOnce({
-      json: () => promise,
+    // Mock that keeps checkout pending
+    mockFetch.mockImplementation((url: string) => {
+      if (url === "/api/tokens/balance") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+        });
+      }
+      if (url === "/api/stripe/checkout") {
+        return { json: () => checkoutPromise };
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
     });
 
     render(<PricingPage />);
@@ -380,7 +422,7 @@ describe("PricingPage", () => {
     resolvePromise!({ url: "https://checkout.stripe.com/123" });
   });
 
-  it("shows Loading text when session is loading", () => {
+  it("does not show Sign in button while session is loading", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "loading",
@@ -388,9 +430,8 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    const buyButton = screen.getByTestId("buy-button-starter");
-    expect(buyButton.textContent).toContain("Loading...");
-    expect(buyButton).toHaveProperty("disabled", true);
+    // Sign in button is hidden during loading to avoid flash
+    expect(screen.queryByText("Sign in to get free tokens")).toBeNull();
   });
 
   it("renders token packages grid with data-testid", () => {
@@ -404,10 +445,10 @@ describe("PricingPage", () => {
     expect(screen.getByTestId("token-packages-grid")).toBeDefined();
   });
 
-  it("shows buy now buttons with data-testid", () => {
+  it("shows buy now buttons for authenticated users", () => {
     (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
+      data: { user: { id: "123", email: "test@test.com" } },
+      status: "authenticated",
     });
 
     render(<PricingPage />);
@@ -416,5 +457,19 @@ describe("PricingPage", () => {
     expect(screen.getByTestId("buy-button-basic")).toBeDefined();
     expect(screen.getByTestId("buy-button-pro")).toBeDefined();
     expect(screen.getByTestId("buy-button-power")).toBeDefined();
+  });
+
+  it("displays Free Tokens section", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Free Tokens Every 15 Minutes!")).toBeDefined();
+    expect(screen.getByText("+1 Token Every 15 Min")).toBeDefined();
+    expect(screen.getByText("Up to 10 Free Tokens")).toBeDefined();
+    expect(screen.getByText("2 Tokens = 1 Image")).toBeDefined();
   });
 });

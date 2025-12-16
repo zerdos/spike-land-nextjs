@@ -21,12 +21,9 @@ describe("PlatformHero Component", () => {
 
   it("should render primary CTA button linking to Pixel app", () => {
     render(<PlatformHero />);
-    const ctaLink = screen.getByRole("link", { name: /Try Pixel Free/i });
+    const ctaLink = screen.getByRole("link", { name: /Try Pixel for free/i });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute(
-      "href",
-      "/auth/signin?callbackUrl=/apps/pixel",
-    );
+    expect(ctaLink).toHaveAttribute("href", "/pixel");
   });
 
   it("should render secondary CTA button linking to blog", () => {

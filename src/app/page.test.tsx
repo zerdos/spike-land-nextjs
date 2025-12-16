@@ -26,7 +26,6 @@ vi.mock("@/components/platform-landing", () => ({
   PlatformFeatures: () => (
     <section data-testid="platform-features-section">Platform Features</section>
   ),
-  PlatformHeader: () => <header data-testid="platform-header">Platform Header</header>,
   PlatformHero: () => <section data-testid="hero-section">Platform Hero</section>,
 }));
 
@@ -39,8 +38,8 @@ describe("Home Page - No Authentication Redirect", () => {
 
 // Mock components for testing Home page structure
 // Since the actual Home page uses client components, we test the expected page structure using mock components
+// Note: PlatformHeader is now in root layout, not in individual pages
 
-const MockPlatformHeader = () => <header data-testid="platform-header">Platform Header</header>;
 const MockPlatformHero = () => <section data-testid="hero-section">Platform Hero Section</section>;
 const MockFeaturedAppsSection = () => (
   <section
@@ -77,10 +76,10 @@ const MockCTASection = () => (
 );
 
 // Test wrapper that mirrors the Home page structure
+// Note: PlatformHeader is now rendered in root layout, not in individual pages
 function TestableHome() {
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <MockPlatformHeader />
       <MockPlatformHero />
       <MockFeaturedAppsSection />
       <MockPlatformFeatures />
@@ -91,11 +90,6 @@ function TestableHome() {
 
 describe("Home Page", () => {
   describe("Page Structure", () => {
-    it("should render PlatformHeader component", () => {
-      render(<TestableHome />);
-      expect(screen.getByTestId("platform-header")).toBeInTheDocument();
-    });
-
     it("should render PlatformHero component", () => {
       render(<TestableHome />);
       expect(screen.getByTestId("hero-section")).toBeInTheDocument();
