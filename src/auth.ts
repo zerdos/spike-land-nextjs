@@ -8,6 +8,7 @@
  * The signIn callback creates/updates users with stable IDs in the database.
  */
 
+import { ensureUserAlbums } from "@/lib/albums/ensure-user-albums";
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
@@ -96,17 +97,9 @@ export async function handleSignIn(user: {
           console.error("Failed to link referral on signup:", error);
         });
 
-        // Create default public album
-        await prisma.album.create({
-          data: {
-            userId: upsertedUser.id,
-            name: "Public Gallery",
-            privacy: "PUBLIC",
-            defaultTier: "TIER_1K",
-            description: "My public enhancements",
-          },
-        }).catch((error) => {
-          console.error("Failed to create default album:", error);
+        // Create default private and public albums
+        await ensureUserAlbums(upsertedUser.id).catch((error) => {
+          console.error("Failed to create default albums:", error);
         });
       }
 

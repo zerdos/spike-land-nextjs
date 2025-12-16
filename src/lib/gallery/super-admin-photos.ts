@@ -13,6 +13,7 @@ export interface FeaturedPhoto {
 }
 
 const SUPER_ADMIN_EMAIL = "zolika84@gmail.com";
+const LANDING_PAGE_ALBUM_NAME = "Landing Page";
 
 export async function getSuperAdminPublicPhotos(
   limit?: number,
@@ -26,10 +27,12 @@ export async function getSuperAdminPublicPhotos(
     return [];
   }
 
+  // Only fetch from the "Landing Page" album
   const publicAlbums = await prisma.album.findMany({
     where: {
       userId: superAdmin.id,
       privacy: AlbumPrivacy.PUBLIC,
+      name: LANDING_PAGE_ALBUM_NAME,
     },
     include: {
       albumImages: {

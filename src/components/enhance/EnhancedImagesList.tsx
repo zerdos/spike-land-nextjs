@@ -4,6 +4,7 @@ import { AddToAlbumModal } from "@/components/enhance/AddToAlbumModal";
 import { DraggablePhotoCard } from "@/components/enhance/DraggablePhotoCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MasonryGridUniform, type ZoomLevel } from "@/components/ui/masonry-grid";
 import { getBestThumbnail } from "@/lib/images/get-best-thumbnail";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { FolderPlus } from "lucide-react";

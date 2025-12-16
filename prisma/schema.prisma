@@ -361,6 +361,7 @@ model Album {
   albumImages  AlbumImage[]
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, name, privacy]) // Prevent duplicate default albums per user
   @@index([userId, createdAt])
   @@index([privacy])
   @@index([shareToken])

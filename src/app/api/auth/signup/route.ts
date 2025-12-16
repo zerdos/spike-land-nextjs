@@ -7,6 +7,7 @@
  */
 
 import { createStableUserId } from "@/auth.config";
+import { ensureUserAlbums } from "@/lib/albums/ensure-user-albums";
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
@@ -166,17 +167,9 @@ export async function POST(request: NextRequest) {
       console.error("Failed to link referral on signup:", error);
     });
 
-    // Create default public album
-    await prisma.album.create({
-      data: {
-        userId: newUser.id,
-        name: "Public Gallery",
-        privacy: "PUBLIC",
-        defaultTier: "TIER_1K",
-        description: "My public enhancements",
-      },
-    }).catch((error) => {
-      console.error("Failed to create default album:", error);
+    // Create default private and public albums
+    await ensureUserAlbums(newUser.id).catch((error) => {
+      console.error("Failed to create default albums:", error);
     });
 
     // Process referral rewards (email-based signup = email verified)
