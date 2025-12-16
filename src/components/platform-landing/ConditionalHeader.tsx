@@ -3,12 +3,11 @@
 import { usePathname } from "next/navigation";
 import { PlatformHeader } from "./PlatformHeader";
 
-const EXCLUDED_PATHS = ["/canvas", "/storybook"];
+const EXCLUDED_PATHS = ["/canvas", "/storybook", "/admin"];
 
 export function ConditionalHeader() {
   const pathname = usePathname();
 
-  // Hide on canvas and storybook pages
   const shouldHide = EXCLUDED_PATHS.some((path) => pathname?.startsWith(path));
 
   if (shouldHide) {
