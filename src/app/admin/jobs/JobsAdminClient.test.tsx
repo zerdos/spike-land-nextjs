@@ -11,7 +11,9 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
     { originalUrl, enhancedUrl }: { originalUrl: string; enhancedUrl: string; },
   ) => (
     <div data-testid="image-comparison-slider">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={originalUrl} alt="original" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={enhancedUrl} alt="enhanced" />
     </div>
   ),

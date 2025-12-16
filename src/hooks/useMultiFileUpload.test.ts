@@ -966,7 +966,6 @@ describe("useMultiFileUpload", () => {
 
     it("should handle non-Error exceptions gracefully", async () => {
       mockFetch.mockImplementation(() => {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw "string error";
       });
 

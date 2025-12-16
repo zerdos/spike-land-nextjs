@@ -313,18 +313,21 @@ export function useParallelEnhancement({
 
   // Cleanup on unmount
   useEffect(() => {
+    const eventSources = eventSourcesRef.current;
+    const reconnectTimeouts = reconnectTimeoutsRef.current;
+
     return () => {
       isMountedRef.current = false;
 
-      eventSourcesRef.current.forEach((eventSource) => {
+      eventSources.forEach((eventSource) => {
         eventSource.close();
       });
-      eventSourcesRef.current.clear();
+      eventSources.clear();
 
-      reconnectTimeoutsRef.current.forEach((timeout) => {
+      reconnectTimeouts.forEach((timeout) => {
         clearTimeout(timeout);
       });
-      reconnectTimeoutsRef.current.clear();
+      reconnectTimeouts.clear();
     };
   }, []);
 
