@@ -362,9 +362,12 @@ When("I visit {string}", async function(this: CustomWorld, path: string) {
 Then(
   "I should be on the {string} page",
   async function(this: CustomWorld, path: string) {
-    // Wait a bit for client-side routing to complete
+    // Wait for navigation to complete and URL to contain the expected path
     await this.page.waitForLoadState("networkidle");
-    await this.page.waitForTimeout(500);
+    // Wait for URL to contain the path (with timeout for client-side routing)
+    await this.page.waitForURL(new RegExp(path.replace(/\//g, "\\/")), {
+      timeout: 10000,
+    });
     const currentUrl = this.page.url();
     // Handle both exact match, query parameters, and trailing slashes
     const expectedUrl = `${this.baseUrl}${path}`;
