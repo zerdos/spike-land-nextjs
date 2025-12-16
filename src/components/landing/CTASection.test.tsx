@@ -5,42 +5,30 @@ import { CTASection } from "./CTASection";
 describe("CTASection Component", () => {
   it("should render the section heading", () => {
     render(<CTASection />);
-    expect(screen.getByText("Ready to Transform Your Images?"))
-      .toBeInTheDocument();
+    expect(screen.getByText("Christmas is coming.")).toBeInTheDocument();
   });
 
   it("should render the section description", () => {
     render(<CTASection />);
-    expect(screen.getByText(/Join thousands of creators/)).toBeInTheDocument();
+    expect(screen.getByText(/Dig out those old photos/)).toBeInTheDocument();
   });
 
-  it("should render the enhance button", () => {
+  it("should render the CTA button", () => {
     render(<CTASection />);
-    expect(screen.getByRole("link", { name: /Start Enhancing Free/i }))
-      .toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Try Pixel Free/i }),
+    ).toBeInTheDocument();
   });
 
-  it("should render the pricing button", () => {
+  it("should have correct href for CTA button", () => {
     render(<CTASection />);
-    expect(screen.getByRole("link", { name: /View Pricing/i }))
-      .toBeInTheDocument();
-  });
-
-  it("should have correct href for enhance button", () => {
-    render(<CTASection />);
-    const enhanceLink = screen.getByRole("link", {
-      name: /Start Enhancing Free/i,
+    const ctaLink = screen.getByRole("link", {
+      name: /Try Pixel Free/i,
     });
-    expect(enhanceLink).toHaveAttribute(
+    expect(ctaLink).toHaveAttribute(
       "href",
       "/auth/signin?callbackUrl=/apps/pixel",
     );
-  });
-
-  it("should have correct href for pricing button", () => {
-    render(<CTASection />);
-    const pricingLink = screen.getByRole("link", { name: /View Pricing/i });
-    expect(pricingLink).toHaveAttribute("href", "/pricing");
   });
 
   it("should render as a section element", () => {
@@ -53,5 +41,17 @@ describe("CTASection Component", () => {
     const { container } = render(<CTASection />);
     const section = container.querySelector("section");
     expect(section).toHaveClass("bg-gradient-primary");
+  });
+
+  it("should render Sparkles icon in CTA", () => {
+    const { container } = render(<CTASection />);
+    const sparklesIcon = container.querySelector("svg.lucide-sparkles");
+    expect(sparklesIcon).toBeInTheDocument();
+  });
+
+  it("should have decorative blur elements", () => {
+    const { container } = render(<CTASection />);
+    const blurElements = container.querySelectorAll(".blur-3xl");
+    expect(blurElements.length).toBeGreaterThanOrEqual(2);
   });
 });

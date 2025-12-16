@@ -2,11 +2,16 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PlatformHeader } from "./PlatformHeader";
 
-// Mock the SpikeLandLogo component
+// Mock the SpikeLandLogo and PixelLogo components
 vi.mock("@/components/brand", () => ({
   SpikeLandLogo: ({ size, variant }: { size: string; variant: string; }) => (
     <div data-testid="spike-land-logo" data-size={size} data-variant={variant}>
       SpikeLandLogo
+    </div>
+  ),
+  PixelLogo: ({ size, variant }: { size: string; variant: string; }) => (
+    <div data-testid="pixel-logo" data-size={size} data-variant={variant}>
+      PixelLogo
     </div>
   ),
 }));
@@ -28,16 +33,22 @@ describe("PlatformHeader Component", () => {
 
   it("should render desktop navigation links", () => {
     render(<PlatformHeader />);
-    expect(screen.getByRole("link", { name: "Apps" })).toBeInTheDocument();
+    // Pixel link shows PixelLogo instead of text
+    expect(screen.getAllByTestId("pixel-logo").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
   });
 
   it("should have correct href for navigation links", () => {
     render(<PlatformHeader />);
-    expect(screen.getByRole("link", { name: "Apps" })).toHaveAttribute(
+    // Pixel link uses PixelLogo as accessible name
+    expect(screen.getByRole("link", { name: /pixellogo/i })).toHaveAttribute(
       "href",
-      "/apps",
+      "/pixel",
+    );
+    expect(screen.getByRole("link", { name: "Blog" })).toHaveAttribute(
+      "href",
+      "/blog/pixel-launch-announcement",
     );
     expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute(
       "href",
@@ -99,9 +110,9 @@ describe("PlatformHeader Component", () => {
     expect(dialog).toBeInTheDocument();
 
     // Mobile menu should contain navigation links
-    // Links appear in both desktop and mobile nav, but testing library finds all accessible links
-    const appsLinks = screen.getAllByRole("link", { name: "Apps" });
-    expect(appsLinks.length).toBeGreaterThanOrEqual(1);
+    // Pixel link shows PixelLogo instead of text
+    const pixelLogos = screen.getAllByTestId("pixel-logo");
+    expect(pixelLogos.length).toBeGreaterThanOrEqual(1);
 
     // Verify the Get Started button is also in the mobile menu
     const ctaLinks = screen.getAllByRole("link", { name: /get started/i });
@@ -131,7 +142,7 @@ describe("PlatformHeader Component", () => {
 
     // Find the dialog and get the Apps link inside it
     const dialog = screen.getByRole("dialog");
-    const appsLinkInDialog = dialog.querySelector('a[href="/apps"]');
+    const appsLinkInDialog = dialog.querySelector('a[href="/pixel"]');
     expect(appsLinkInDialog).toBeInTheDocument();
 
     // Click the Apps link to close the menu

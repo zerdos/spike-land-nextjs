@@ -99,18 +99,7 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [
-      {
-        source: "/pixel",
-        destination: "/apps/pixel",
-        permanent: true,
-      },
-      {
-        source: "/pixel/:path*",
-        destination: "/apps/pixel/:path*",
-        permanent: true,
-      },
-    ];
+    return [];
   },
 };
 

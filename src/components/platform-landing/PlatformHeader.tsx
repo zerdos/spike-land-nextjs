@@ -1,6 +1,6 @@
 "use client";
 
-import { SpikeLandLogo } from "@/components/brand";
+import { PixelLogo, SpikeLandLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -9,7 +9,8 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/apps", label: "Apps" },
+  { href: "/pixel", label: "Pixel", isPixel: true },
+  { href: "/blog/pixel-launch-announcement", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
   { href: "/auth/signin", label: "Sign In" },
 ];
@@ -32,9 +33,11 @@ export function PlatformHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
               >
-                {link.label}
+                {"isPixel" in link && link.isPixel
+                  ? <PixelLogo size="sm" variant="horizontal" />
+                  : link.label}
               </Link>
             ))}
             <Button asChild>
@@ -60,10 +63,12 @@ export function PlatformHeader() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary"
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {link.label}
+                    {"isPixel" in link && link.isPixel
+                      ? <PixelLogo size="sm" variant="horizontal" />
+                      : link.label}
                   </Link>
                 ))}
                 <Button asChild className="mt-4">

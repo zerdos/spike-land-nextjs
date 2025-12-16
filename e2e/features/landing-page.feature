@@ -42,10 +42,10 @@ Feature: Landing Page - CTA and Feature Cards
     And the Pixel feature card should display an image
 
   @fast
-  Scenario: Pixel feature card links to sign-in
+  Scenario: Pixel feature card links to Pixel landing page
     When I visit "/"
     And I click on the Pixel feature card
-    Then I should be redirected to sign-in page
+    Then I should be on the "/pixel" page
 
   # Platform Features Section Tests
   @fast
@@ -96,12 +96,13 @@ Feature: Landing Page - CTA and Feature Cards
     Then the page should load successfully
     And the apps section should be visible
 
-  # Authenticated User Redirect Tests
+  # Authenticated User Landing Page Tests
   @fast @requires-db
-  Scenario: Authenticated users are redirected from landing
+  Scenario: Authenticated users can view landing page
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit "/"
-    Then I should be redirected to the Pixel app
+    Then the page should load successfully
+    And I should see "Featured Applications" heading
 
   # Footer Tests
   @fast

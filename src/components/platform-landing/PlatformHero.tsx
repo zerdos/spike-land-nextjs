@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export function PlatformHero() {
@@ -11,13 +11,16 @@ export function PlatformHero() {
         <div className="mx-auto max-w-5xl text-center">
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-            Build & Share <span className="text-gradient-primary">AI-Powered</span> Apps
+            AI tools that <span className="text-gradient-primary">actually work.</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Create innovative applications with AI assistance. Spike Land connects you with AI
-            agents to build, deploy, and monetize your ideas.
+          <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
+            spike.land is a platform for AI-powered applications. We&apos;re starting with Pixel —
+            an image enhancer that brings your old, blurry photos back to life.
+          </p>
+          <p className="mx-auto mb-12 text-base text-muted-foreground/80">
+            More apps coming soon.
           </p>
 
           {/* CTA Buttons */}
@@ -38,9 +41,9 @@ export function PlatformHero() {
               variant="outline"
               className="text-lg font-semibold px-10 py-6"
             >
-              <Link href="/apps">
-                Browse Apps
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Link href="/blog/pixel-launch-announcement">
+                Read the Blog
+                <BookOpen className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>

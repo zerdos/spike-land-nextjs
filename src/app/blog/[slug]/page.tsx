@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { BlogHeader, Prose } from "@/components/blog";
 import { MDXContent } from "@/components/blog/MDXContent";
+import { PlatformHeader } from "@/components/platform-landing";
 import { Button } from "@/components/ui/button";
 import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
 import { ArrowLeft } from "lucide-react";
@@ -85,8 +86,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
 
   return (
-    <div className="min-h-screen py-12">
-      <article className="container mx-auto px-6 max-w-3xl">
+    <div className="min-h-screen bg-grid-pattern">
+      <PlatformHeader />
+      <article className="container mx-auto px-6 max-w-3xl pt-24 pb-12">
         {/* Back to blog */}
         <Link
           href="/blog"
@@ -145,7 +147,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             Transform your photos with AI-powered enhancement. Get started free with 50 tokens.
           </p>
           <Button asChild size="lg" className="shadow-glow-cyan">
-            <Link href="/apps/pixel">Try Pixel Free</Link>
+            <Link href="/pixel">Try Pixel Free</Link>
           </Button>
         </div>
       </article>

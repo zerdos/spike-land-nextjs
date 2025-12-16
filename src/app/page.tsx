@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import { CTASection } from "@/components/landing/CTASection";
 import {
   FeaturedAppCard,
@@ -9,7 +8,6 @@ import {
 import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { Image as ImageIcon } from "lucide-react";
 import { unstable_cache } from "next/cache";
-import { redirect } from "next/navigation";
 
 // Cache the super admin's top public photo for 1 hour to reduce database queries
 const getTopPublicPhoto = unstable_cache(
@@ -28,12 +26,6 @@ const FALLBACK_COMPARISON_IMAGES = {
 };
 
 export default async function Home() {
-  // Redirect authenticated users to Pixel app
-  const session = await auth();
-  if (session?.user?.id) {
-    redirect("/apps/pixel");
-  }
-
   // Fetch super admin's public photo for the featured card
   let comparisonImages = FALLBACK_COMPARISON_IMAGES;
   try {
@@ -75,7 +67,7 @@ export default async function Home() {
             name="Pixel"
             description="Bring old, blurry photos back to life with advanced machine learning that restores details and clarity instantly."
             icon={<ImageIcon className="h-8 w-8" />}
-            href="/apps/pixel"
+            href="/pixel"
             featured
             usePixelLogo
             tagline="AI Image Enhancement"

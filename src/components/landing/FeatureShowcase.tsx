@@ -1,16 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Coins,
-  Download,
-  Image as ImageIcon,
-  Layers,
-  Settings,
-  Shield,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { MonitorPlay, Share2, Zap } from "lucide-react";
 
 interface Feature {
   icon: React.ReactNode;
@@ -20,52 +11,20 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    icon: <Sparkles className="h-6 w-6" />,
-    title: "AI-Powered Enhancement",
-    description:
-      "Advanced machine learning models analyze and enhance every pixel of your image for stunning results.",
-  },
-  {
-    icon: <Layers className="h-6 w-6" />,
-    title: "Multiple Resolutions",
-    description:
-      "Choose from 1K, 2K, or 4K output resolutions to match your needs, from web to print quality.",
-  },
-  {
     icon: <Zap className="h-6 w-6" />,
-    title: "Fast Processing",
-    description:
-      "Get your enhanced images in seconds, not minutes. Our optimized pipeline delivers quick results.",
+    title: "Instant results",
+    description: "Upload. Enhance. Done. No subscriptions, no complicated settings.",
   },
   {
-    icon: <Shield className="h-6 w-6" />,
-    title: "Secure & Private",
+    icon: <MonitorPlay className="h-6 w-6" />,
+    title: "Slideshow mode",
     description:
-      "Your images are encrypted and automatically deleted after processing. Your data stays yours.",
+      "Put your restored photos on an iPad or fullscreen on your laptop. Instant conversation starter at family gatherings.",
   },
   {
-    icon: <Download className="h-6 w-6" />,
-    title: "Easy Downloads",
-    description:
-      "Download your enhanced images instantly in high quality. No watermarks, no restrictions.",
-  },
-  {
-    icon: <Coins className="h-6 w-6" />,
-    title: "Pay As You Go",
-    description:
-      "Flexible token-based pricing. Only pay for what you use with no monthly commitments.",
-  },
-  {
-    icon: <ImageIcon className="h-6 w-6" />,
-    title: "All Image Types",
-    description:
-      "Works with portraits, landscapes, products, architecture, and more. One tool for all your needs.",
-  },
-  {
-    icon: <Settings className="h-6 w-6" />,
-    title: "Simple Controls",
-    description:
-      "No complex settings or sliders. Upload your image, choose quality, and enhance. It's that easy.",
+    icon: <Share2 className="h-6 w-6" />,
+    title: "Share anywhere",
+    description: "Download or share directly to social. Show off what AI can actually do.",
   },
 ];
 
@@ -74,26 +33,18 @@ export function FeatureShowcase() {
     "bg-gradient-to-br from-purple-500 to-pink-500",
     "bg-gradient-to-br from-blue-500 to-cyan-500",
     "bg-gradient-to-br from-orange-500 to-red-500",
-    "bg-gradient-to-br from-green-500 to-emerald-500",
-    "bg-gradient-to-br from-indigo-500 to-purple-500",
-    "bg-gradient-to-br from-yellow-500 to-orange-500",
-    "bg-gradient-to-br from-pink-500 to-rose-500",
-    "bg-gradient-to-br from-cyan-500 to-blue-500",
   ];
 
   return (
-    <section className="bg-muted/30 py-20 sm:py-28">
+    <section id="features" className="bg-muted/30 py-20 sm:py-28">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center mb-16">
           <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
-            Why Choose Our AI Enhancement
+            Why Pixel?
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Powerful features designed to make image enhancement simple and effective
-          </p>
         </div>
 
-        <div className="mx-auto max-w-6xl grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto max-w-4xl grid gap-7 sm:grid-cols-3">
           {features.map((feature, index) => (
             <Card
               key={index}

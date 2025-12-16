@@ -23,7 +23,7 @@ describe("PixelHeader Component", () => {
   it("should have a link to Pixel landing page on the logo", () => {
     render(<PixelHeader />);
     const logoLink = screen.getByRole("link", { name: /pixellogo/i });
-    expect(logoLink).toHaveAttribute("href", "/apps/pixel");
+    expect(logoLink).toHaveAttribute("href", "/pixel");
   });
 
   it("should render desktop navigation links", () => {
