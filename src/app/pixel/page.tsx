@@ -3,7 +3,6 @@ import { CTASection } from "@/components/landing/CTASection";
 import { FAQ } from "@/components/landing/FAQ";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { HeroSectionWithData } from "@/components/landing/HeroSectionWithData";
-import { PlatformHeader } from "@/components/platform-landing";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
 export default function PixelLandingPage() {
   return (
     <main className="min-h-screen bg-grid-pattern">
-      <PlatformHeader />
       <HeroSectionWithData />
       <BeforeAfterGallery />
       <FeatureShowcase />

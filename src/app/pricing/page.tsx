@@ -83,7 +83,7 @@ export default function PricingPage() {
   });
 
   return (
-    <div className="container mx-auto py-12 px-4">
+    <div className="container mx-auto pt-24 pb-12 px-4">
       {/* Hero Section */}
       <div className="text-center mb-16">
         <div className="flex items-center justify-center gap-2 mb-4">

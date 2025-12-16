@@ -98,7 +98,7 @@ export default function ReferralsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 space-y-6">
+      <div className="container mx-auto pt-24 pb-8 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
@@ -108,7 +108,7 @@ export default function ReferralsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto pt-24 pb-8">
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -117,7 +117,7 @@ export default function ReferralsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto pt-24 pb-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Referral Program</h1>
         <p className="text-muted-foreground mt-2">

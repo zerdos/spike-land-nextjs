@@ -18,8 +18,8 @@ vi.mock("next/font/google", () => ({
   })),
 }));
 
-vi.mock("@/components/auth/auth-header", () => ({
-  AuthHeader: () => <div data-testid="auth-header">Auth Header</div>,
+vi.mock("@/components/platform-landing", () => ({
+  ConditionalHeader: () => <div data-testid="conditional-header">Conditional Header</div>,
 }));
 
 vi.mock("@/components/auth/session-provider", () => ({
@@ -113,9 +113,9 @@ describe("RootLayout", () => {
     expect(getByTestId("toaster")).toBeInTheDocument();
   });
 
-  it("should render AuthHeader component for global theme and user controls", () => {
+  it("should render ConditionalHeader component for navigation", () => {
     const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
-    expect(getByTestId("auth-header")).toBeInTheDocument();
+    expect(getByTestId("conditional-header")).toBeInTheDocument();
   });
 
   it("should render FeedbackButton component", () => {

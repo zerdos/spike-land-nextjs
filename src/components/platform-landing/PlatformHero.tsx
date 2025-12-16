@@ -30,9 +30,9 @@ export function PlatformHero() {
               size="lg"
               className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
             >
-              <Link href="/auth/signin?callbackUrl=/apps/pixel">
+              <Link href="/pixel">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Try Pixel Free
+                Try Pixel for free
               </Link>
             </Button>
             <Button

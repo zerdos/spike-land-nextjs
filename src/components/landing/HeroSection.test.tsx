@@ -80,16 +80,13 @@ describe("HeroSection Component", () => {
     expect(slider).toHaveAttribute("data-enhanced-label", "Enhanced by Pixel");
   });
 
-  it("should render primary CTA button linking to sign in page", () => {
+  it("should render primary CTA button linking to Pixel app", () => {
     render(<HeroSection />);
     const ctaLink = screen.getByRole("link", {
       name: /Get Started — First Enhancement Free/i,
     });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute(
-      "href",
-      "/auth/signin?callbackUrl=/apps/pixel",
-    );
+    expect(ctaLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should have overflow hidden class", () => {

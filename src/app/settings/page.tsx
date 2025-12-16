@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
   if (status === "loading") {
     return (
-      <div className="container mx-auto py-8 px-4" data-testid="loading-state">
+      <div className="container mx-auto pt-24 pb-8 px-4" data-testid="loading-state">
         <div className="flex items-center justify-center min-h-[400px]">
           <p className="text-muted-foreground">Loading...</p>
         </div>
@@ -68,7 +68,7 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="container mx-auto py-8 px-4 max-w-4xl"
+      className="container mx-auto pt-24 pb-8 px-4 max-w-4xl"
       data-testid="settings-page"
     >
       <div className="mb-8">
