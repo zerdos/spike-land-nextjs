@@ -74,10 +74,8 @@ Then(
 );
 
 When("I click on the Pixel feature card", async function(this: CustomWorld) {
-  const pixelCard = this.page.locator('[href*="pixel"], [href*="signin"]')
-    .filter({
-      has: this.page.getByText(/pixel/i),
-    }).first();
+  // Click the feature card in the #apps section specifically, not the hero CTA
+  const pixelCard = this.page.locator('#apps [href="/pixel"]').first();
   await expect(pixelCard).toBeVisible({ timeout: 10000 });
   await pixelCard.click();
   await this.page.waitForLoadState("networkidle");

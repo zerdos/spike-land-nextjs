@@ -160,11 +160,10 @@ Feature: Smoke Tests
     And I should see "Jobs Management" heading
 
   @fast
-  Scenario: Unauthenticated user sees Pixel landing page
+  Scenario: Unauthenticated user redirected from Pixel app
     Given I am not logged in
     When I visit "/apps/pixel"
-    Then the page should load successfully
-    And I should see "Enhance Your Photos" text
+    Then I should be redirected to sign-in page
 
   @fast
   Scenario: Unauthenticated user redirected from settings page
