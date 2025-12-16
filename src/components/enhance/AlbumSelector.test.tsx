@@ -69,19 +69,7 @@ describe("AlbumSelector", () => {
       expect(trigger).toHaveTextContent("Vacation Photos");
     });
 
-    it("shows clear button when album is selected", () => {
-      render(
-        <AlbumSelector
-          albums={mockAlbums}
-          selectedAlbumId="album-1"
-          onAlbumSelect={() => {}}
-        />,
-      );
-
-      expect(screen.getByTitle("Clear album selection")).toBeInTheDocument();
-    });
-
-    it("hides clear button when no album selected", () => {
+    it("shows placeholder when no album selected", () => {
       render(
         <AlbumSelector
           albums={mockAlbums}
@@ -90,8 +78,8 @@ describe("AlbumSelector", () => {
         />,
       );
 
-      expect(screen.queryByTitle("Clear album selection")).not
-        .toBeInTheDocument();
+      const trigger = screen.getByRole("combobox");
+      expect(trigger).toHaveTextContent("Select album...");
     });
   });
 
@@ -114,7 +102,7 @@ describe("AlbumSelector", () => {
       expect(onAlbumSelect).toHaveBeenCalledWith("album-1");
     });
 
-    it("calls onAlbumSelect with null when selecting 'No album'", async () => {
+    it("allows changing album selection", async () => {
       const user = userEvent.setup();
       const onAlbumSelect = vi.fn();
 
@@ -127,26 +115,9 @@ describe("AlbumSelector", () => {
       );
 
       await user.click(screen.getByRole("combobox"));
-      await user.click(screen.getByRole("option", { name: /no album/i }));
+      await user.click(screen.getByRole("option", { name: "Work Projects" }));
 
-      expect(onAlbumSelect).toHaveBeenCalledWith(null);
-    });
-
-    it("calls onAlbumSelect with null when clicking clear button", async () => {
-      const user = userEvent.setup();
-      const onAlbumSelect = vi.fn();
-
-      render(
-        <AlbumSelector
-          albums={mockAlbums}
-          selectedAlbumId="album-1"
-          onAlbumSelect={onAlbumSelect}
-        />,
-      );
-
-      await user.click(screen.getByTitle("Clear album selection"));
-
-      expect(onAlbumSelect).toHaveBeenCalledWith(null);
+      expect(onAlbumSelect).toHaveBeenCalledWith("album-2");
     });
   });
 
@@ -162,19 +133,6 @@ describe("AlbumSelector", () => {
       );
 
       expect(screen.getByRole("combobox")).toBeDisabled();
-    });
-
-    it("disables clear button when disabled", () => {
-      render(
-        <AlbumSelector
-          albums={mockAlbums}
-          selectedAlbumId="album-1"
-          onAlbumSelect={() => {}}
-          disabled
-        />,
-      );
-
-      expect(screen.getByTitle("Clear album selection")).toBeDisabled();
     });
   });
 });

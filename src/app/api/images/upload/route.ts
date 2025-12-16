@@ -4,8 +4,22 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
+import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { isSecureFilename } from "@/lib/upload/validation";
+import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
+import { enhanceImage } from "@/workflows/enhance-image.workflow";
+import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { start } from "workflow/api";
+
+// Allow longer execution time for image processing
+export const maxDuration = 300;
+
+// Check if we're running in Vercel environment
+function isVercelEnvironment(): boolean {
+  return process.env.VERCEL === "1";
+}
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
@@ -84,6 +98,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // albumId is now required
+    if (!albumId) {
+      requestLogger.warn("No album ID provided");
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: "Please select an album before uploading.",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
     // Validate filename for security (path traversal, hidden files)
     if (!isSecureFilename(file.name)) {
       requestLogger.warn("Insecure filename rejected", { filename: file.name });
@@ -96,33 +127,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate albumId if provided
-    if (albumId) {
-      const album = await prisma.album.findFirst({
-        where: {
-          id: albumId,
-          userId: session.user.id,
-        },
+    // Validate album exists and belongs to user
+    const album = await prisma.album.findFirst({
+      where: {
+        id: albumId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!album) {
+      requestLogger.warn("Invalid album ID", {
+        albumId,
+        userId: session.user.id,
       });
-      if (!album) {
-        requestLogger.warn("Invalid album ID", {
-          albumId,
-          userId: session.user.id,
-        });
-        const errorMessage = getUserFriendlyError(
-          new Error("Invalid input"),
-          400,
-        );
-        return NextResponse.json(
-          {
-            error: errorMessage.message,
-            title: errorMessage.title,
-            suggestion: "Album not found or you don't have access to it.",
-          },
-          { status: 400, headers: { "X-Request-ID": requestId } },
-        );
-      }
+      const errorMessage = getUserFriendlyError(
+        new Error("Invalid input"),
+        400,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: "Album not found or you don't have access to it.",
+        },
+        { status: 400, headers: { "X-Request-ID": requestId } },
+      );
     }
+
+    // Consume tokens FIRST (prepay model) to prevent race conditions
+    // If upload fails later, we'll refund the tokens
+    const tokenCost = ENHANCEMENT_COSTS[album.defaultTier];
+    const consumeResult = await TokenBalanceManager.consumeTokens({
+      userId: session.user.id,
+      amount: tokenCost,
+      source: "image_upload_enhancement",
+      sourceId: `pending-${requestId}`, // Temporary ID until image is created
+      metadata: { tier: album.defaultTier, requestId, albumId, status: "pending" },
+    });
+
+    if (!consumeResult.success) {
+      const { balance } = await TokenBalanceManager.getBalance(session.user.id);
+      requestLogger.warn("Insufficient tokens for upload", {
+        userId: session.user.id,
+        required: tokenCost,
+        available: balance,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error("Insufficient tokens"),
+        402,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion:
+            `You need ${tokenCost} tokens to upload and enhance this image. You have ${balance} tokens.`,
+          required: tokenCost,
+          balance,
+        },
+        { status: 402, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    requestLogger.info("Tokens consumed upfront", {
+      tokenCost,
+      newBalance: consumeResult.balance,
+    });
 
     requestLogger.info("Processing file upload", {
       filename: file.name,
@@ -158,6 +228,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
+      // Refund tokens since upload failed
+      await TokenBalanceManager.refundTokens(
+        session.user.id,
+        tokenCost,
+        `failed-upload-${requestId}`,
+        "Upload processing failed",
+      );
+      requestLogger.info("Tokens refunded due to upload failure", { tokenCost });
+
       requestLogger.error(
         "Upload processing failed",
         new Error(result.error || "Unknown error"),
@@ -195,18 +274,78 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // If albumId provided, create junction record to link image to album
-    if (albumId) {
-      await prisma.albumImage.create({
-        data: {
-          albumId,
-          imageId: enhancedImage.id,
-        },
+    // Create junction record to link image to album
+    await prisma.albumImage.create({
+      data: {
+        albumId,
+        imageId: enhancedImage.id,
+      },
+    });
+
+    // Tokens were already consumed upfront (prepay model)
+    // Create enhancement job
+    const job = await prisma.imageEnhancementJob.create({
+      data: {
+        imageId: enhancedImage.id,
+        userId: session.user.id,
+        tier: album.defaultTier,
+        tokensCost: tokenCost,
+        status: JobStatus.PROCESSING,
+        processingStartedAt: new Date(),
+        pipelineId: album.pipelineId,
+      },
+    });
+
+    requestLogger.info("Enhancement job created for upload", {
+      jobId: job.id,
+      tier: album.defaultTier,
+    });
+
+    // Start enhancement workflow
+    const enhancementInput: EnhanceImageInput = {
+      jobId: job.id,
+      imageId: enhancedImage.id,
+      userId: session.user.id,
+      originalR2Key: result.r2Key,
+      tier: album.defaultTier,
+      tokensCost: tokenCost,
+    };
+
+    if (isVercelEnvironment()) {
+      const workflowRun = await start(enhanceImage, [enhancementInput]);
+      if (workflowRun?.runId) {
+        try {
+          await prisma.imageEnhancementJob.update({
+            where: { id: job.id },
+            data: { workflowRunId: workflowRun.runId },
+          });
+        } catch (updateError) {
+          requestLogger.error(
+            "Failed to store workflowRunId",
+            updateError instanceof Error ? updateError : new Error(String(updateError)),
+            { jobId: job.id },
+          );
+        }
+      }
+      requestLogger.info("Enhancement workflow started (production)", {
+        jobId: job.id,
+        workflowRunId: workflowRun?.runId,
+      });
+    } else {
+      // Development: Run enhancement directly
+      requestLogger.info("Running enhancement directly (dev mode)", { jobId: job.id });
+      enhanceImageDirect(enhancementInput).catch((error) => {
+        requestLogger.error(
+          "Direct enhancement failed",
+          error instanceof Error ? error : new Error(String(error)),
+          { jobId: job.id },
+        );
       });
     }
 
-    requestLogger.info("Upload completed successfully", {
+    requestLogger.info("Upload completed successfully with auto-enhancement", {
       imageId: enhancedImage.id,
+      jobId: job.id,
       filename: file.name,
     });
 
@@ -221,6 +360,12 @@ export async function POST(request: NextRequest) {
           height: enhancedImage.originalHeight,
           size: enhancedImage.originalSizeBytes,
           format: enhancedImage.originalFormat,
+        },
+        enhancement: {
+          jobId: job.id,
+          tier: album.defaultTier,
+          tokenCost,
+          newBalance: consumeResult.balance,
         },
       },
       { headers: { "X-Request-ID": requestId } },

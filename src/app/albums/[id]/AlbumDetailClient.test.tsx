@@ -171,7 +171,10 @@ describe("AlbumDetailClient", () => {
       render(<AlbumDetailClient albumId="album_1" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Enhanced")).toBeDefined();
+        // Use getAllByText since "Enhanced" appears in both the toggle and the badge
+        const enhancedElements = screen.getAllByText("Enhanced");
+        // At least one element should be the badge (has bg-green-500 class)
+        expect(enhancedElements.length).toBeGreaterThanOrEqual(2);
       });
     });
   });
