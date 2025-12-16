@@ -7,8 +7,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("AppsPage", () => {
-  it("should redirect to /apps/pixel", () => {
+  it("should redirect to /pixel", () => {
     AppsPage();
-    expect(redirect).toHaveBeenCalledWith("/apps/pixel");
+    expect(redirect).toHaveBeenCalledWith("/pixel");
   });
 });

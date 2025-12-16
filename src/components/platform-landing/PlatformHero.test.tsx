@@ -7,19 +7,16 @@ describe("PlatformHero Component", () => {
     render(<PlatformHero />);
     const headline = screen.getByRole("heading", { level: 1 });
     expect(headline).toBeInTheDocument();
-    expect(headline).toHaveTextContent(/Build & Share/);
-    expect(headline).toHaveTextContent(/AI-Powered/);
-    expect(headline).toHaveTextContent(/Apps/);
+    expect(headline).toHaveTextContent(/AI tools that/);
+    expect(headline).toHaveTextContent(/actually work/);
   });
 
   it("should render the subheadline", () => {
     render(<PlatformHero />);
     expect(
-      screen.getByText(/Create innovative applications with AI assistance/),
+      screen.getByText(/spike\.land is a platform for AI-powered applications/),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/build, deploy, and monetize your ideas/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/More apps coming soon/)).toBeInTheDocument();
   });
 
   it("should render primary CTA button linking to Pixel app", () => {
@@ -32,11 +29,11 @@ describe("PlatformHero Component", () => {
     );
   });
 
-  it("should render secondary CTA button linking to apps", () => {
+  it("should render secondary CTA button linking to blog", () => {
     render(<PlatformHero />);
-    const ctaLink = screen.getByRole("link", { name: /Browse Apps/i });
+    const ctaLink = screen.getByRole("link", { name: /Read the Blog/i });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute("href", "/apps");
+    expect(ctaLink).toHaveAttribute("href", "/blog/pixel-launch-announcement");
   });
 
   it("should have overflow hidden class", () => {
@@ -54,9 +51,9 @@ describe("PlatformHero Component", () => {
     expect(headline).toHaveClass("lg:text-7xl");
   });
 
-  it("should have gradient text on 'AI-Powered'", () => {
+  it("should have gradient text on 'actually work.'", () => {
     render(<PlatformHero />);
-    const gradientText = screen.getByText("AI-Powered");
+    const gradientText = screen.getByText("actually work.");
     expect(gradientText).toHaveClass("text-gradient-primary");
   });
 
@@ -91,10 +88,10 @@ describe("PlatformHero Component", () => {
     expect(sparklesIcon).toBeInTheDocument();
   });
 
-  it("should render ArrowRight icon in secondary CTA", () => {
+  it("should render BookOpen icon in secondary CTA", () => {
     const { container } = render(<PlatformHero />);
-    const arrowIcon = container.querySelector("svg.lucide-arrow-right");
-    expect(arrowIcon).toBeInTheDocument();
+    const bookIcon = container.querySelector("svg.lucide-book-open");
+    expect(bookIcon).toBeInTheDocument();
   });
 
   it("should have responsive button layout", () => {

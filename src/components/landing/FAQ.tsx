@@ -72,6 +72,14 @@ export function FAQ() {
             ))}
           </Accordion>
         </div>
+
+        {/* The name */}
+        <div className="mx-auto max-w-2xl text-center mt-16 pt-8 border-t border-border/50">
+          <p className="text-sm text-muted-foreground italic">
+            Pixel is named after our golden retriever. She&apos;s about a year old and significantly
+            better at fetch than photo restoration.
+          </p>
+        </div>
       </div>
     </section>
   );

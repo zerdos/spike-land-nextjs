@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Redirect /apps to /apps/pixel for now
+// Redirect /apps to /pixel landing page
 export default function AppsPage() {
-  redirect("/apps/pixel");
+  redirect("/pixel");
 }
