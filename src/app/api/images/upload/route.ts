@@ -154,14 +154,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check token balance for auto-enhancement
+    // Consume tokens FIRST (prepay model) to prevent race conditions
+    // If upload fails later, we'll refund the tokens
     const tokenCost = ENHANCEMENT_COSTS[album.defaultTier];
-    const hasEnoughTokens = await TokenBalanceManager.hasEnoughTokens(
-      session.user.id,
-      tokenCost,
-    );
+    const consumeResult = await TokenBalanceManager.consumeTokens({
+      userId: session.user.id,
+      amount: tokenCost,
+      source: "image_upload_enhancement",
+      sourceId: `pending-${requestId}`, // Temporary ID until image is created
+      metadata: { tier: album.defaultTier, requestId, albumId, status: "pending" },
+    });
 
-    if (!hasEnoughTokens) {
+    if (!consumeResult.success) {
       const { balance } = await TokenBalanceManager.getBalance(session.user.id);
       requestLogger.warn("Insufficient tokens for upload", {
         userId: session.user.id,
@@ -184,6 +188,11 @@ export async function POST(request: NextRequest) {
         { status: 402, headers: { "X-Request-ID": requestId } },
       );
     }
+
+    requestLogger.info("Tokens consumed upfront", {
+      tokenCost,
+      newBalance: consumeResult.balance,
+    });
 
     requestLogger.info("Processing file upload", {
       filename: file.name,
@@ -219,6 +228,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
+      // Refund tokens since upload failed
+      await TokenBalanceManager.refundTokens(
+        session.user.id,
+        tokenCost,
+        `failed-upload-${requestId}`,
+        "Upload processing failed",
+      );
+      requestLogger.info("Tokens refunded due to upload failure", { tokenCost });
+
       requestLogger.error(
         "Upload processing failed",
         new Error(result.error || "Unknown error"),
@@ -264,42 +282,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Consume tokens for auto-enhancement
-    const consumeResult = await TokenBalanceManager.consumeTokens({
-      userId: session.user.id,
-      amount: tokenCost,
-      source: "image_upload_enhancement",
-      sourceId: enhancedImage.id,
-      metadata: { tier: album.defaultTier, requestId, albumId },
-    });
-
-    if (!consumeResult.success) {
-      requestLogger.error(
-        "Failed to consume tokens after upload",
-        new Error(consumeResult.error),
-        { userId: session.user.id, imageId: enhancedImage.id },
-      );
-      // Image is uploaded but enhancement won't start
-      // Return success but without enhancement
-      return NextResponse.json(
-        {
-          success: true,
-          image: {
-            id: enhancedImage.id,
-            name: enhancedImage.name,
-            url: enhancedImage.originalUrl,
-            width: enhancedImage.originalWidth,
-            height: enhancedImage.originalHeight,
-            size: enhancedImage.originalSizeBytes,
-            format: enhancedImage.originalFormat,
-          },
-          enhancement: null,
-          warning: "Image uploaded but enhancement could not start due to token error",
-        },
-        { headers: { "X-Request-ID": requestId } },
-      );
-    }
-
+    // Tokens were already consumed upfront (prepay model)
     // Create enhancement job
     const job = await prisma.imageEnhancementJob.create({
       data: {
