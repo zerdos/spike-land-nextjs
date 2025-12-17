@@ -9,9 +9,9 @@ vi.mock("next/navigation", () => ({
 
 describe("PersonaPage", () => {
   describe("generateStaticParams", () => {
-    it("should return params for all 10 personas", async () => {
+    it("should return params for all 11 personas", async () => {
       const params = await Promise.resolve(generateStaticParams());
-      expect(params).toHaveLength(10);
+      expect(params).toHaveLength(11);
     });
 
     it("should return objects with slug property", async () => {

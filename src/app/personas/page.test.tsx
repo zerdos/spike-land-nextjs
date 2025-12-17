@@ -11,7 +11,7 @@ describe("PersonasPage", () => {
   it("should render page description", () => {
     render(<PersonasPage />);
     expect(
-      screen.getByText(/Meet our 10 target customer personas/),
+      screen.getByText(/Meet our 11 target customer personas/),
     ).toBeInTheDocument();
   });
 
@@ -25,11 +25,12 @@ describe("PersonasPage", () => {
     expect(screen.getByText("Secondary Personas")).toBeInTheDocument();
   });
 
-  it("should render all 3 priority personas", () => {
+  it("should render all 4 priority personas", () => {
     render(<PersonasPage />);
     expect(screen.getByText("The Tech-Savvy Grandson")).toBeInTheDocument();
     expect(screen.getByText("The Social Media Historian")).toBeInTheDocument();
     expect(screen.getByText("The iPhone Upgrader")).toBeInTheDocument();
+    expect(screen.getByText("The Childhood Throwback")).toBeInTheDocument();
   });
 
   it("should render all 7 secondary personas", () => {
@@ -49,12 +50,12 @@ describe("PersonasPage", () => {
     const personaLinks = links.filter((link) =>
       link.getAttribute("href")?.startsWith("/personas/")
     );
-    expect(personaLinks.length).toBe(10);
+    expect(personaLinks.length).toBe(11);
   });
 
   it("should display priority badges for primary personas", () => {
     render(<PersonasPage />);
     const priorityBadges = screen.getAllByText("Priority");
-    expect(priorityBadges.length).toBe(3);
+    expect(priorityBadges.length).toBe(4);
   });
 });
