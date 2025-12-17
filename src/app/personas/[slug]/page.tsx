@@ -4,8 +4,8 @@
  * Deep-linkable page for each customer persona with full details.
  */
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CopyButton } from "@/components/ui/copy-button";
 import { getPersonaBySlug, PERSONAS } from "@/lib/marketing/personas";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -232,16 +232,7 @@ export default async function PersonaPage({ params }: PageProps) {
           <code className="bg-background px-4 py-2 rounded border text-sm flex-1 max-w-md overflow-hidden text-ellipsis">
             {shareUrl}
           </code>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              navigator.clipboard.writeText(shareUrl);
-            }}
-            className="shrink-0"
-          >
-            Copy
-          </Button>
+          <CopyButton text={shareUrl} className="shrink-0" />
         </div>
       </div>
 
