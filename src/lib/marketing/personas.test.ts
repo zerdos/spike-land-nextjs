@@ -3,8 +3,8 @@ import { getPersonaBySlug, getPrimaryPersonas, getSecondaryPersonas, PERSONAS } 
 
 describe("personas", () => {
   describe("PERSONAS constant", () => {
-    it("should have 10 personas", () => {
-      expect(PERSONAS).toHaveLength(10);
+    it("should have 11 personas", () => {
+      expect(PERSONAS).toHaveLength(11);
     });
 
     it("should have unique slugs", () => {
@@ -40,9 +40,9 @@ describe("personas", () => {
   });
 
   describe("getPrimaryPersonas", () => {
-    it("should return 3 primary personas", () => {
+    it("should return 4 primary personas", () => {
       const primary = getPrimaryPersonas();
-      expect(primary).toHaveLength(3);
+      expect(primary).toHaveLength(4);
     });
 
     it("should only include primary priority personas", () => {
