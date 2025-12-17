@@ -24,16 +24,16 @@ Feature: Landing Page - CTA and Feature Cards
   Scenario: Landing page displays Featured Applications section
     When I visit "/"
     Then the page should load successfully
-    And I should see "Featured Applications" heading
-    And I should see "AI-powered apps" text
+    And I should see "See the Transformation" heading
+    And I should see "blurry photo" text
 
   @fast
   Scenario: Landing page displays Pixel app card
     When I visit "/"
     Then the page should load successfully
     And I should see the Pixel feature card
-    And I should see "AI Image Enhancement" text
-    And I should see "photos back to life" text
+    And I should see "AI Photo Restoration" text
+    And I should see "60 seconds" text
 
   @fast
   Scenario: Pixel feature card has comparison preview
@@ -102,7 +102,7 @@ Feature: Landing Page - CTA and Feature Cards
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit "/"
     Then the page should load successfully
-    And I should see "Featured Applications" heading
+    And I should see "See the Transformation" heading
 
   # Footer Tests
   @fast
