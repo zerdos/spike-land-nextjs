@@ -89,3 +89,12 @@ export {
   getLastTouchAttribution,
   hasExistingAttribution,
 } from "./attribution";
+
+// Meta Pixel Tracking
+export {
+  EVENT_MAPPING,
+  type EventMappingConfig,
+  fireMetaPixelEvent,
+  trackMetaCustomEvent,
+  trackMetaEvent,
+} from "./meta-pixel";

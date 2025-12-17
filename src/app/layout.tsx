@@ -5,6 +5,7 @@ import { SessionProvider } from "@/components/auth/session-provider";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { ConditionalHeader } from "@/components/platform-landing";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -83,6 +84,7 @@ export default function RootLayout({
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />
+        <MetaPixel />
       </body>
     </html>
   );
