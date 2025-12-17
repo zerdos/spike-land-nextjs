@@ -7,11 +7,11 @@ code in this repository.
 
 ## 🏢 Business Context
 
-| Field       | Value               |
-| ----------- | ------------------- |
-| **Company** | Spike Land Ltd (UK) |
-| **Domain**  | spike.land          |
-| **Owner**   | Zoltan Erdos        |
+| Field       | Value                                 |
+| ----------- | ------------------------------------- |
+| **Company** | SPIKE LAND LTD (UK Company #16906682) |
+| **Domain**  | spike.land                            |
+| **Owner**   | Zoltan Erdos                          |
 
 See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company
 documentation.
