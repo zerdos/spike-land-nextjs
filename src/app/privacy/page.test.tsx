@@ -45,7 +45,7 @@ describe("Privacy Policy Page", () => {
     it("should display operator name", () => {
       render(<PrivacyPage />);
       expect(screen.getByText(/Operator:/)).toBeInTheDocument();
-      expect(screen.getByText(/Spike Land Ltd/)).toBeInTheDocument();
+      expect(screen.getByText(/SPIKE LAND LTD/)).toBeInTheDocument();
     });
 
     it("should mention GDPR, UK GDPR and CCPA compliance", () => {
