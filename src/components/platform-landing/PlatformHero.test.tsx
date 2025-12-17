@@ -7,28 +7,28 @@ describe("PlatformHero Component", () => {
     render(<PlatformHero />);
     const headline = screen.getByRole("heading", { level: 1 });
     expect(headline).toBeInTheDocument();
-    expect(headline).toHaveTextContent(/AI tools that/);
-    expect(headline).toHaveTextContent(/actually work/);
+    expect(headline).toHaveTextContent(/Old Photos/);
+    expect(headline).toHaveTextContent(/New Life/);
   });
 
   it("should render the subheadline", () => {
     render(<PlatformHero />);
     expect(
-      screen.getByText(/spike\.land is a platform for AI-powered applications/),
+      screen.getByText(/iPhone 4 photos deserve iPhone 16 quality/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/More apps coming soon/)).toBeInTheDocument();
+    expect(screen.getByText(/Free to try/)).toBeInTheDocument();
   });
 
   it("should render primary CTA button linking to Pixel app", () => {
     render(<PlatformHero />);
-    const ctaLink = screen.getByRole("link", { name: /Try Pixel for free/i });
+    const ctaLink = screen.getByRole("link", { name: /Restore Your Photos/i });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute("href", "/pixel");
   });
 
   it("should render secondary CTA button linking to blog", () => {
     render(<PlatformHero />);
-    const ctaLink = screen.getByRole("link", { name: /Read the Blog/i });
+    const ctaLink = screen.getByRole("link", { name: /See Examples/i });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute("href", "/blog/pixel-launch-announcement");
   });
@@ -48,9 +48,9 @@ describe("PlatformHero Component", () => {
     expect(headline).toHaveClass("lg:text-7xl");
   });
 
-  it("should have gradient text on 'actually work.'", () => {
+  it("should have gradient text on 'New Life.'", () => {
     render(<PlatformHero />);
-    const gradientText = screen.getByText("actually work.");
+    const gradientText = screen.getByText("New Life.");
     expect(gradientText).toHaveClass("text-gradient-primary");
   });
 

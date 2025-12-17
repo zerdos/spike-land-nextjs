@@ -11,16 +11,16 @@ export function PlatformHero() {
         <div className="mx-auto max-w-5xl text-center">
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-            AI tools that <span className="text-gradient-primary">actually work.</span>
+            Old Photos. <span className="text-gradient-primary">New Life.</span>
           </h1>
 
           {/* Subheadline */}
           <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            spike.land is a platform for AI-powered applications. We&apos;re starting with Pixel —
-            an image enhancer that brings your old, blurry photos back to life.
+            Your iPhone 4 photos deserve iPhone 16 quality. Restore faded memories in 60 seconds. No
+            skills needed.
           </p>
           <p className="mx-auto mb-12 text-base text-muted-foreground/80">
-            More apps coming soon.
+            Free to try — no credit card required.
           </p>
 
           {/* CTA Buttons */}
@@ -32,7 +32,7 @@ export function PlatformHero() {
             >
               <Link href="/pixel">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Try Pixel for free
+                Restore Your Photos
               </Link>
             </Button>
             <Button
@@ -42,7 +42,7 @@ export function PlatformHero() {
               className="text-lg font-semibold px-10 py-6"
             >
               <Link href="/blog/pixel-launch-announcement">
-                Read the Blog
+                See Examples
                 <BookOpen className="ml-2 h-5 w-5" />
               </Link>
             </Button>
