@@ -81,7 +81,7 @@ export default function PrivacyPage() {
                   <li>How to contact us</li>
                 </ul>
                 <p className="pt-4">
-                  <strong>Operator:</strong> Spike Land Ltd (Company Number pending)
+                  <strong>Operator:</strong> SPIKE LAND LTD (Company Number 16906682)
                 </p>
                 <p>
                   <strong>Registered Office:</strong> United Kingdom

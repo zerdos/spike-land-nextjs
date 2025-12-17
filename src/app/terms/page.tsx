@@ -79,8 +79,8 @@ export default function TermsPage() {
                     to these Terms, please do not use the Service.
                   </p>
                   <p className="mt-3">
-                    These Terms constitute the entire agreement between you and Spike Land Ltd
-                    (&quot;Operator&quot;, Company Number pending) regarding the Service and
+                    These Terms constitute the entire agreement between you and SPIKE LAND LTD
+                    (&quot;Operator&quot;, Company Number 16906682) regarding the Service and
                     supersede all prior agreements and understandings.
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export default function TermsPage() {
 
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-muted-foreground text-sm">
-                    <strong>Operator:</strong> Spike Land Ltd (Company Number pending)
+                    <strong>Operator:</strong> SPIKE LAND LTD (Company Number 16906682)
                   </p>
                   <p className="text-muted-foreground text-sm mt-1">
                     <strong>Registered Office:</strong> United Kingdom
