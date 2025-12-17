@@ -80,7 +80,7 @@ export default function PersonasPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Customer Personas</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Meet our 10 target customer personas for Pixel AI Photo Enhancement. Click any persona to
+          Meet our 11 target customer personas for Pixel AI Photo Enhancement. Click any persona to
           see detailed insights.
         </p>
       </div>
