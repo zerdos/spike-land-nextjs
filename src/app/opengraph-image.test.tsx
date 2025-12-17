@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import OGImage, { alt, contentType, runtime, size } from "./opengraph-image";
 
-// Mock ImageResponse
+// Mock ImageResponse as a class (used with 'new')
 vi.mock("next/og", () => ({
-  ImageResponse: vi.fn().mockImplementation((element) => ({
-    element,
-    status: 200,
-  })),
+  ImageResponse: class MockImageResponse {
+    element: unknown;
+    status = 200;
+    constructor(element: unknown) {
+      this.element = element;
+    }
+  },
 }));
 
 describe("Root OpenGraph Image", () => {
