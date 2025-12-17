@@ -135,3 +135,8 @@ _(None recorded yet)_
 
 **Document Owner**: Zoltan Erdos (CEO) **Last Updated**: December 11, 2025
 **Version**: 1.0
+
+➜ spike-land-nextjs git:(main) ✗ npm whoami\
+spike-npm-land
+
+so the correct package names: @spike-npm-land/mcp-server

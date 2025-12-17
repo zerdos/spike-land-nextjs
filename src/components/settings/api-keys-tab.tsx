@@ -336,7 +336,7 @@ export function ApiKeysTab() {
             <div className="space-y-1">
               <p className="font-medium text-foreground">MCP Server:</p>
               <code className="block p-2 bg-muted rounded text-xs">
-                SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server
+                SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server
               </code>
             </div>
             <div className="flex items-center space-x-4 pt-2">
