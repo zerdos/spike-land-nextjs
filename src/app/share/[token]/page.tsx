@@ -55,6 +55,13 @@ export async function generateMetadata({
     };
   }
 
+  // Construct absolute URL for the OG image
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.VERCEL_URL ||
+    "http://localhost:3000";
+  const protocol = baseUrl.startsWith("http") ? "" : "https://";
+  const ogImageUrl = `${protocol}${baseUrl}/share/${token}/opengraph-image`;
+
   return {
     title: `${image.name} - Enhanced with Pixel`,
     description: image.description ??
@@ -65,12 +72,21 @@ export async function generateMetadata({
         `View this AI-enhanced image created with Pixel`,
       type: "website",
       siteName: "Pixel - AI Image Enhancement",
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${image.name} - Before and After`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${image.name} - Enhanced with Pixel`,
       description: image.description ??
         `View this AI-enhanced image created with Pixel`,
+      images: [ogImageUrl],
     },
   };
 }
