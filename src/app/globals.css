@@ -55,83 +55,136 @@
     --shadow-opacity-dark: 0.3;
 
     /* Light Mode - Pixel Brand */
-    --background: 0 0% 100%; /* Clean White #FFFFFF */
-    --foreground: 240 24% 9%; /* Carbon Text #12121C */
-    --card: 210 22% 97%; /* Light Surface #F4F6F8 */
-    --card-foreground: 240 24% 9%; /* Carbon Text */
-    --popover: 210 22% 97%; /* Light Surface */
-    --popover-foreground: 240 24% 9%; /* Carbon Text */
-    --primary: 187 100% 50%; /* Pixel Cyan #00E5FF */
-    --primary-foreground: 240 24% 9%; /* Carbon Text for contrast */
-    --secondary: 240 38% 14%; /* Surface Blue for accents */
-    --secondary-foreground: 0 0% 100%; /* White */
-    --muted: 210 22% 97%; /* Light Surface */
-    --muted-foreground: 240 25% 50%; /* Darker muted */
-    --accent: 187 100% 50%; /* Pixel Cyan */
-    --accent-foreground: 240 24% 9%; /* Carbon Text */
+    --background: 0 0% 100%;
+    /* Clean White #FFFFFF */
+    --foreground: 240 24% 9%;
+    /* Carbon Text #12121C */
+    --card: 210 22% 97%;
+    /* Light Surface #F4F6F8 */
+    --card-foreground: 240 24% 9%;
+    /* Carbon Text */
+    --popover: 210 22% 97%;
+    /* Light Surface */
+    --popover-foreground: 240 24% 9%;
+    /* Carbon Text */
+    --primary: 187 100% 50%;
+    /* Pixel Cyan #00E5FF */
+    --primary-foreground: 240 24% 9%;
+    /* Carbon Text for contrast */
+    --secondary: 240 38% 14%;
+    /* Surface Blue for accents */
+    --secondary-foreground: 0 0% 100%;
+    /* White */
+    --muted: 210 22% 97%;
+    /* Light Surface */
+    --muted-foreground: 240 25% 50%;
+    /* Darker muted */
+    --accent: 187 100% 50%;
+    /* Pixel Cyan */
+    --accent-foreground: 240 24% 9%;
+    /* Carbon Text */
     --destructive: 0 84.2% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 24% 89%; /* Grid Grey #DCE0E8 */
-    --input: 220 24% 89%; /* Grid Grey */
-    --ring: 187 100% 50%; /* Pixel Cyan */
+    --border: 220 24% 89%;
+    /* Grid Grey #DCE0E8 */
+    --input: 220 24% 89%;
+    /* Grid Grey */
+    --ring: 187 100% 50%;
+    /* Pixel Cyan */
     --radius: 1rem;
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
-    --pixel-fuchsia: 300 100% 50%; /* #FF00FF */
-    --grid-inactive: 220 24% 89%; /* Grid Grey for light mode */
+    --pixel-fuchsia: 300 100% 50%;
+    /* #FF00FF */
+    --grid-inactive: 220 24% 89%;
+    /* Grid Grey for light mode */
 
     /* Chart Colors - Light mode */
-    --chart-1: 187 100% 45%; /* Pixel Cyan darker */
-    --chart-2: 160 60% 40%; /* Green */
-    --chart-3: 30 80% 50%; /* Orange */
-    --chart-4: 240 38% 30%; /* Surface Blue lighter */
-    --chart-5: 340 75% 50%; /* Pink */
+    --chart-1: 187 100% 45%;
+    /* Pixel Cyan darker */
+    --chart-2: 160 60% 40%;
+    /* Green */
+    --chart-3: 30 80% 50%;
+    /* Orange */
+    --chart-4: 240 38% 30%;
+    /* Surface Blue lighter */
+    --chart-5: 340 75% 50%;
+    /* Pink */
 
     /* Animation Duration Tokens */
-    --animation-fast: 150ms; /* Quick transitions (tooltips, hovers) */
-    --animation-normal: 200ms; /* Standard transitions (buttons, cards) */
-    --animation-slow: 300ms; /* Longer transitions (modals, accordions) */
+    --animation-fast: 150ms;
+    /* Quick transitions (tooltips, hovers) */
+    --animation-normal: 200ms;
+    /* Standard transitions (buttons, cards) */
+    --animation-slow: 300ms;
+    /* Longer transitions (modals, accordions) */
   }
 
   .dark {
     /* Dark Mode - Pixel Brand (Default/Primary) */
-    --background: 240 55% 7%; /* Deep Space #08081C */
-    --foreground: 0 0% 100%; /* Pure White */
-    --card: 240 38% 14%; /* Surface Blue #151530 */
-    --card-foreground: 0 0% 100%; /* Pure White */
-    --popover: 240 38% 14%; /* Surface Blue */
-    --popover-foreground: 0 0% 100%; /* Pure White */
-    --primary: 187 100% 50%; /* Pixel Cyan #00E5FF */
-    --primary-foreground: 240 55% 7%; /* Deep Space for contrast */
-    --secondary: 240 38% 20%; /* Lighter Surface Blue */
-    --secondary-foreground: 0 0% 100%; /* Pure White */
-    --muted: 240 38% 14%; /* Surface Blue */
-    --muted-foreground: 240 25% 69%; /* Text Muted #A0A0C0 */
-    --accent: 187 100% 50%; /* Pixel Cyan */
-    --accent-foreground: 240 55% 7%; /* Deep Space */
+    --background: 240 55% 7%;
+    /* Deep Space #08081C */
+    --foreground: 0 0% 100%;
+    /* Pure White */
+    --card: 240 38% 14%;
+    /* Surface Blue #151530 */
+    --card-foreground: 0 0% 100%;
+    /* Pure White */
+    --popover: 240 38% 14%;
+    /* Surface Blue */
+    --popover-foreground: 0 0% 100%;
+    /* Pure White */
+    --primary: 187 100% 50%;
+    /* Pixel Cyan #00E5FF */
+    --primary-foreground: 240 55% 7%;
+    /* Deep Space for contrast */
+    --secondary: 240 38% 20%;
+    /* Lighter Surface Blue */
+    --secondary-foreground: 0 0% 100%;
+    /* Pure White */
+    --muted: 240 38% 14%;
+    /* Surface Blue */
+    --muted-foreground: 240 25% 69%;
+    /* Text Muted #A0A0C0 */
+    --accent: 187 100% 50%;
+    /* Pixel Cyan */
+    --accent-foreground: 240 55% 7%;
+    /* Deep Space */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 30% 22%; /* Slightly lighter than Surface Blue */
+    --border: 240 30% 22%;
+    /* Slightly lighter than Surface Blue */
     --input: 240 30% 22%;
-    --ring: 187 100% 50%; /* Pixel Cyan */
+    --ring: 187 100% 50%;
+    /* Pixel Cyan */
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
-    --pixel-fuchsia: 300 100% 50%; /* #FF00FF */
-    --grid-inactive: 240 38% 14%; /* Surface Blue for dark mode */
+    --pixel-fuchsia: 300 100% 50%;
+    /* #FF00FF */
+    --grid-inactive: 240 38% 14%;
+    /* Surface Blue for dark mode */
 
     /* Dark Mode Palette - Enhanced */
-    --surface-blue: 220 60% 17%; /* #112244 */
-    --border-dark: 260 60% 17%; /* #221144 */
-    --border-item: 240 33% 20%; /* #222244 */
+    --surface-blue: 220 60% 17%;
+    /* #112244 */
+    --border-dark: 260 60% 17%;
+    /* #221144 */
+    --border-item: 240 33% 20%;
+    /* #222244 */
 
     /* Chart Colors - Dark mode */
-    --chart-1: 187 100% 50%; /* Pixel Cyan */
-    --chart-2: 160 60% 45%; /* Green */
-    --chart-3: 30 80% 55%; /* Orange */
-    --chart-4: 240 38% 40%; /* Surface Blue lighter */
-    --chart-5: 340 75% 55%; /* Pink */
+    --chart-1: 187 100% 50%;
+    /* Pixel Cyan */
+    --chart-2: 160 60% 45%;
+    /* Green */
+    --chart-3: 30 80% 55%;
+    /* Orange */
+    --chart-4: 240 38% 40%;
+    /* Surface Blue lighter */
+    --chart-5: 340 75% 55%;
+    /* Pink */
   }
 
   /* Global Styles */
@@ -157,7 +210,9 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: hsl(0 0% 100%); /* Clean White */
+    background: hsl(0 0% 100%);
+    /* Clean White */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
   /* Dark mode body - Deep Space gradient */
@@ -171,7 +226,12 @@
   }
 
   /* Heading typography - use Montserrat */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-montserrat);
   }
 
@@ -193,98 +253,96 @@
 }
 
 @layer utilities {
-  /* Glass-morphism card utility - Light mode with fallback */
-  .glass-card {
-    background: rgba(
-      255,
-      255,
-      255,
-      0.85
-    ); /* Fallback for browsers without backdrop-filter */
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, var(--shadow-opacity-light));
+  /* Glass-morphism System Tiers */
+
+  /* Glass 0: Background / Subtle (Blur 4-6px, Opacity 4-6%) */
+  .glass-0 {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid transparent;
+    /* Placeholder for glass-edge */
   }
 
-  @supports (backdrop-filter: blur(var(--glass-blur))) {
-    .glass-card {
-      background: rgba(255, 255, 255, var(--glass-opacity-light));
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-    }
+  /* Glass 1: Containers / Cards (Blur 10-14px, Opacity 8-10%) */
+  .glass-1 {
+    background: rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Glass 2: Interactive / Modals (Blur 18-24px, Opacity 12-16%) */
+  .glass-2 {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Optical Physics: Dual-tone detailed edges */
+  .glass-edge {
+    box-shadow:
+      inset 1px 1px 0 0 rgba(255, 255, 255, 0.12),
+      inset -1px -1px 0 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Glass Input: Glass-within-glass */
+  .glass-input {
+    background: rgba(0, 0, 0, 0.2);
+    /* Slightly darker inner recess */
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.1),
+      /* Inner shadow top */ 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Bottom highlight */
+    backdrop-filter: blur(12px);
+    /* Maintain blur */
+  }
+
+  /* Background Texture & Blobs */
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  /* Hover & Optical Feedback */
+  .glass-hover {
+    transition: all 0.2s ease-out;
+    /* ease-out as requested */
+  }
+
+  .glass-hover:hover {
+    backdrop-filter: blur(14px);
+    /* Blur +2px (from glass-1 base) */
+    background-color: rgba(255, 255, 255, 0.11);
+    /* Opacity +2% */
+  }
+
+  /* Old util fallbacks mapped to new system */
+  .glass-card {
+    @apply glass-1 glass-edge;
+  }
+
+  .dark .glass-card {
+    @apply glass-1 glass-edge;
   }
 
   .glass-card-hover {
-    background: rgba(255, 255, 255, 0.9); /* Fallback */
-    border: 1px solid rgba(0, 0, 0, 0.12);
-  }
-
-  @supports (backdrop-filter: blur(var(--glass-blur))) {
-    .glass-card-hover {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-    }
-  }
-
-  /* Glass-morphism card utility - Dark mode with fallback */
-  .dark .glass-card {
-    background: rgba(30, 41, 59, 0.9); /* Fallback: slate-800 with opacity */
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, var(--shadow-opacity-dark));
-  }
-
-  @supports (backdrop-filter: blur(var(--glass-blur))) {
-    .dark .glass-card {
-      background: rgba(255, 255, 255, var(--glass-opacity-dark));
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-    }
-  }
-
-  .dark .glass-card-hover {
-    background: rgba(30, 41, 59, 0.95); /* Fallback */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  @supports (backdrop-filter: blur(var(--glass-blur))) {
-    .dark .glass-card-hover {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-    }
+    @apply glass-hover;
   }
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(
-      135deg,
-      hsl(217 91% 60%) 0%,
-      hsl(221 83% 53%) 100%
-    );
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 100%);
   }
 
   .gradient-purple {
-    background: linear-gradient(
-      135deg,
-      hsl(258 90% 66%) 0%,
-      hsl(263 70% 50%) 100%
-    );
+    background: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(263 70% 50%) 100%);
   }
 
   .gradient-pink {
-    background: linear-gradient(
-      135deg,
-      hsl(330 81% 60%) 0%,
-      hsl(338 78% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(338 78% 48%) 100%);
   }
 
   .gradient-orange {
-    background: linear-gradient(
-      135deg,
-      hsl(25 95% 53%) 0%,
-      hsl(21 90% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(21 90% 48%) 100%);
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -302,19 +360,11 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--accent)),
-      hsl(var(--primary))
-    );
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
   }
 
   .bg-gradient-hero {
@@ -361,31 +411,15 @@
   /* Grid background pattern for landing page */
   .bg-grid-pattern {
     background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.3) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.3) 1px,
-      transparent 1px
-    );
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .dark .bg-grid-pattern {
     background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.5) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.5) 1px,
-      transparent 1px
-    );
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
@@ -395,6 +429,7 @@
     100% {
       box-shadow: 0 0 20px hsl(var(--pixel-cyan) / 0.3), 0 0 40px hsl(var(--pixel-cyan) / 0.1);
     }
+
     50% {
       box-shadow: 0 0 30px hsl(var(--pixel-cyan) / 0.5), 0 0 60px hsl(var(--pixel-cyan) / 0.2);
     }
@@ -409,6 +444,7 @@
     0% {
       background-position: 200% 0;
     }
+
     100% {
       background-position: -200% 0;
     }
@@ -432,9 +468,11 @@
   .bg-success {
     background-color: hsl(142 76% 36% / 0.1);
   }
+
   .border-success {
     border-color: hsl(142 76% 36%);
   }
+
   .text-success {
     color: hsl(142 76% 36%);
   }
@@ -442,9 +480,11 @@
   .bg-warning {
     background-color: hsl(38 92% 50% / 0.1);
   }
+
   .border-warning {
     border-color: hsl(38 92% 50%);
   }
+
   .text-warning {
     color: hsl(38 92% 50%);
   }
