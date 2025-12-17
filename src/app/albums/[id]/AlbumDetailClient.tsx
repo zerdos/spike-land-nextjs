@@ -485,6 +485,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     setIsDraggingFiles(false);
     dragCounterRef.current = 0;
 
+    // Early return if dataTransfer is not available (can happen in some test environments)
+    if (!e.dataTransfer?.files) {
+      return;
+    }
+
     const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"));
 
     if (files.length > 0 && album?.isOwner) {

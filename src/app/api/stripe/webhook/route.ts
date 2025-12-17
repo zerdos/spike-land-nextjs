@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
+import { attributeConversion } from "@/lib/tracking/attribution";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -167,6 +168,13 @@ async function handleCheckoutCompleted(
     });
 
     console.log(`[Stripe] Credited ${tokenAmount} tokens to user ${userId}`);
+
+    // Track purchase conversion attribution for campaign analytics
+    await attributeConversion(userId, "PURCHASE", (session.amount_total || 0) / 100).catch(
+      (error) => {
+        console.error("Failed to track purchase attribution:", error);
+      },
+    );
   }
 
   if (type === "subscription" && planId && tokensPerMonth) {
@@ -250,6 +258,13 @@ async function handleCheckoutCompleted(
 
     console.log(
       `[Stripe] Created subscription for user ${userId}, credited ${tokensPerMonth} tokens`,
+    );
+
+    // Track purchase conversion attribution for campaign analytics (subscription)
+    await attributeConversion(userId, "PURCHASE", (session.amount_total || 0) / 100).catch(
+      (error) => {
+        console.error("Failed to track subscription purchase attribution:", error);
+      },
     );
   }
 }
