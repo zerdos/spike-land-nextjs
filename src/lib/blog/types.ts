@@ -23,6 +23,8 @@ export const blogPostFrontmatterSchema = z.object({
   image: z.string().optional(),
   /** Whether to feature this post on the homepage */
   featured: z.boolean().optional(),
+  /** Whether to list this post in blog listings (default: true). Unlisted posts are still accessible via direct URL. */
+  listed: z.boolean().optional().default(true),
 });
 
 /**
@@ -45,6 +47,7 @@ export interface BlogPostFrontmatterInterface {
   tags: string[];
   image?: string;
   featured?: boolean;
+  listed?: boolean;
 }
 
 /**

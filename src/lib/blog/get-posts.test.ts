@@ -44,6 +44,7 @@ describe("get-posts", () => {
     category: "Testing",
     tags: ["test", "vitest"],
     featured: false,
+    listed: true,
   };
 
   const mockContent = "This is the content of the test post.";
@@ -198,6 +199,65 @@ describe("get-posts", () => {
       const posts = getAllPosts();
 
       expect(posts).toHaveLength(1);
+    });
+
+    it("filters out unlisted posts", () => {
+      vi.mocked(fs.readdirSync).mockReturnValue([
+        "listed-post.mdx" as unknown as import("fs").Dirent,
+        "unlisted-post.mdx" as unknown as import("fs").Dirent,
+      ]);
+
+      let callCount = 0;
+      vi.mocked(matter).mockImplementation(() => {
+        callCount++;
+        return {
+          data: {
+            ...mockFrontmatter,
+            slug: callCount === 1 ? "listed-post" : "unlisted-post",
+            listed: callCount === 1 ? true : false,
+          },
+          content: mockContent,
+          matter: "",
+          language: "",
+          orig: Buffer.from(""),
+          stringify: vi.fn(),
+        };
+      });
+
+      const posts = getAllPosts();
+
+      expect(posts).toHaveLength(1);
+      expect(posts[0].frontmatter.listed).toBe(true);
+    });
+
+    it("includes posts without listed field (defaults to true)", () => {
+      vi.mocked(fs.readdirSync).mockReturnValue([
+        "post-without-listed.mdx" as unknown as import("fs").Dirent,
+      ]);
+
+      vi.mocked(matter).mockReturnValue({
+        data: {
+          title: "Test Post",
+          slug: "post-without-listed",
+          description: "A test post",
+          date: "2025-01-01",
+          author: "Test Author",
+          category: "Testing",
+          tags: ["test"],
+          featured: false,
+          // No listed field - should default to true via Zod schema
+        },
+        content: mockContent,
+        matter: "",
+        language: "",
+        orig: Buffer.from(""),
+        stringify: vi.fn(),
+      });
+
+      const posts = getAllPosts();
+
+      expect(posts).toHaveLength(1);
+      expect(posts[0].frontmatter.listed).toBe(true);
     });
   });
 

@@ -228,6 +228,24 @@ export default async function PersonaPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
+      {/* Read Their Story Section */}
+      <Card className="mb-8 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+        <CardHeader>
+          <CardTitle>Read a Real Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-6">
+            See how someone like {persona.name} uses Pixel to bring their memories back to life.
+          </p>
+          <Link
+            href={`/blog/persona-${persona.slug}`}
+            className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          >
+            Read Their Story
+          </Link>
+        </CardContent>
+      </Card>
+
       {/* Share Section */}
       <div className="bg-muted/50 rounded-xl p-6 text-center">
         <h3 className="font-semibold mb-2">Share this persona</h3>
