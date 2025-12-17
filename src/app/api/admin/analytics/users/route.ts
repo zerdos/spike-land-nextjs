@@ -30,10 +30,10 @@ export async function GET() {
       dailyRegistrations = await prisma.$queryRaw<
         Array<{ date: Date; count: bigint; }>
       >`
-        SELECT DATE(created_at) as date, COUNT(*)::bigint as count
+        SELECT DATE("createdAt") as date, COUNT(*)::bigint as count
         FROM users
-        WHERE created_at >= ${last30Days}
-        GROUP BY DATE(created_at)
+        WHERE "createdAt" >= ${last30Days}
+        GROUP BY DATE("createdAt")
         ORDER BY date ASC
       `;
     } catch (error) {
