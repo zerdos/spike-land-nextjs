@@ -6,7 +6,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
-import { getPersonaBySlug, PERSONAS } from "@/lib/marketing/personas";
+import { getPersonaBySlug, type Persona, PERSONAS } from "@/lib/marketing/personas";
+import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,6 +15,8 @@ import { notFound } from "next/navigation";
 interface PageProps {
   params: Promise<{ slug: string; }>;
 }
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://spike.land";
 
 export async function generateStaticParams() {
   return PERSONAS.map((persona) => ({
@@ -43,6 +46,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+/**
+ * Get previous and next personas for navigation
+ */
+function getPersonaNavigation(slug: string): {
+  prev: Persona | null;
+  next: Persona | null;
+} {
+  const currentIndex = PERSONAS.findIndex((p) => p.slug === slug);
+  return {
+    prev: currentIndex > 0 ? PERSONAS[currentIndex - 1] : null,
+    next: currentIndex < PERSONAS.length - 1 ? PERSONAS[currentIndex + 1] : null,
+  };
+}
+
 export default async function PersonaPage({ params }: PageProps) {
   const { slug } = await params;
   const persona = getPersonaBySlug(slug);
@@ -51,7 +68,8 @@ export default async function PersonaPage({ params }: PageProps) {
     notFound();
   }
 
-  const shareUrl = `https://spike.land/personas/${persona.slug}`;
+  const shareUrl = `${BASE_URL}/personas/${persona.slug}`;
+  const { prev, next } = getPersonaNavigation(slug);
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -60,19 +78,7 @@ export default async function PersonaPage({ params }: PageProps) {
         href="/personas"
         className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8 transition-colors"
       >
-        <svg
-          className="w-4 h-4 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+        <ChevronLeft className="w-4 h-4 mr-1" />
         Back to All Personas
       </Link>
 
@@ -238,40 +244,28 @@ export default async function PersonaPage({ params }: PageProps) {
 
       {/* Navigation */}
       <div className="flex justify-between mt-8 pt-8 border-t">
-        {(() => {
-          const currentIndex = PERSONAS.findIndex((p) => p.slug === slug);
-          const prevPersona = currentIndex > 0 ? PERSONAS[currentIndex - 1] : null;
-          const nextPersona = currentIndex < PERSONAS.length - 1
-            ? PERSONAS[currentIndex + 1]
-            : null;
-
-          return (
-            <>
-              {prevPersona
-                ? (
-                  <Link
-                    href={`/personas/${prevPersona.slug}`}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <span className="text-sm">Previous</span>
-                    <div className="font-medium">{prevPersona.name}</div>
-                  </Link>
-                )
-                : <div />}
-              {nextPersona
-                ? (
-                  <Link
-                    href={`/personas/${nextPersona.slug}`}
-                    className="text-right text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <span className="text-sm">Next</span>
-                    <div className="font-medium">{nextPersona.name}</div>
-                  </Link>
-                )
-                : <div />}
-            </>
-          );
-        })()}
+        {prev
+          ? (
+            <Link
+              href={`/personas/${prev.slug}`}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span className="text-sm">Previous</span>
+              <div className="font-medium">{prev.name}</div>
+            </Link>
+          )
+          : <div />}
+        {next
+          ? (
+            <Link
+              href={`/personas/${next.slug}`}
+              className="text-right text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span className="text-sm">Next</span>
+              <div className="font-medium">{next.name}</div>
+            </Link>
+          )
+          : <div />}
       </div>
     </div>
   );

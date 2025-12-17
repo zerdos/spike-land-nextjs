@@ -1,28 +1,31 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CopyButton } from "./copy-button";
 
-// Mock clipboard API
-const mockWriteText = vi.fn().mockResolvedValue(undefined);
-Object.assign(navigator, {
-  clipboard: {
-    writeText: mockWriteText,
-  },
-});
-
 describe("CopyButton", () => {
+  const mockWriteText = vi.fn();
+
   beforeEach(() => {
-    mockWriteText.mockClear();
-    vi.useFakeTimers();
+    mockWriteText.mockReset();
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: mockWriteText,
+      },
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("should render with Copy text initially", () => {
+    mockWriteText.mockResolvedValue(undefined);
     render(<CopyButton text="test" />);
     expect(screen.getByText("Copy")).toBeInTheDocument();
   });
 
   it("should copy text to clipboard when clicked", async () => {
-    vi.useRealTimers();
+    mockWriteText.mockResolvedValue(undefined);
     render(<CopyButton text="https://example.com" />);
 
     fireEvent.click(screen.getByRole("button"));
@@ -32,8 +35,8 @@ describe("CopyButton", () => {
     });
   });
 
-  it("should show Copied text after clicking", async () => {
-    vi.useRealTimers();
+  it("should show Copied text after successful copy", async () => {
+    mockWriteText.mockResolvedValue(undefined);
     render(<CopyButton text="test" />);
 
     fireEvent.click(screen.getByRole("button"));
@@ -44,12 +47,11 @@ describe("CopyButton", () => {
   });
 
   it("should reset to Copy after timeout", async () => {
-    vi.useRealTimers();
+    mockWriteText.mockResolvedValue(undefined);
     render(<CopyButton text="test" />);
 
     fireEvent.click(screen.getByRole("button"));
 
-    // Verify it shows Copied initially
     await waitFor(() => {
       expect(screen.getByText("Copied")).toBeInTheDocument();
     });
@@ -64,8 +66,51 @@ describe("CopyButton", () => {
   });
 
   it("should accept custom className", () => {
+    mockWriteText.mockResolvedValue(undefined);
     render(<CopyButton text="test" className="custom-class" />);
     const button = screen.getByRole("button");
     expect(button).toHaveClass("custom-class");
+  });
+
+  it("should show Failed state when clipboard write fails", async () => {
+    mockWriteText.mockRejectedValue(new Error("Permission denied"));
+    render(<CopyButton text="test" />);
+
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed")).toBeInTheDocument();
+    });
+  });
+
+  it("should reset to Copy after error timeout", async () => {
+    mockWriteText.mockRejectedValue(new Error("Permission denied"));
+    render(<CopyButton text="test" />);
+
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed")).toBeInTheDocument();
+    });
+
+    // Wait for reset (2 seconds + buffer)
+    await waitFor(
+      () => {
+        expect(screen.getByText("Copy")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it("should handle missing clipboard API", async () => {
+    // Remove clipboard API
+    Object.assign(navigator, { clipboard: undefined });
+    render(<CopyButton text="test" />);
+
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed")).toBeInTheDocument();
+    });
   });
 });
