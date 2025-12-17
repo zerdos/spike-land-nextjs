@@ -612,7 +612,7 @@ Then(
 Then(
   "I should see the npx installation command",
   async function(this: CustomWorld) {
-    const npxCommand = this.page.getByText(/npx @spike-land\/mcp-server/);
+    const npxCommand = this.page.getByText(/npx @spike-npm-land\/mcp-server/);
     await expect(npxCommand).toBeVisible();
   },
 );

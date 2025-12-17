@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { authConfig, createStableUserId } from "./auth.config";
 
+vi.mock("next-auth/providers/facebook", () => ({
+  default: vi.fn(() => ({ id: "facebook" })),
+}));
+
 vi.mock("next-auth/providers/github", () => ({
   default: vi.fn(() => ({ id: "github" })),
 }));
@@ -11,6 +15,8 @@ vi.mock("next-auth/providers/google", () => ({
 
 describe("authConfig", () => {
   beforeEach(() => {
+    process.env.AUTH_FACEBOOK_ID = "test-facebook-id";
+    process.env.AUTH_FACEBOOK_SECRET = "test-facebook-secret";
     process.env.GITHUB_ID = "test-github-id";
     process.env.GITHUB_SECRET = "test-github-secret";
     process.env.GOOGLE_ID = "test-google-id";
@@ -19,7 +25,7 @@ describe("authConfig", () => {
   });
 
   it("should have providers configured", () => {
-    expect(authConfig.providers).toHaveLength(2);
+    expect(authConfig.providers).toHaveLength(3);
   });
 
   it("should have session callback", () => {
