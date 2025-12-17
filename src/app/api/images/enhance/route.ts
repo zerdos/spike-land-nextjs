@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { attributeConversion } from "@/lib/tracking/attribution";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
 import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { EnhancementTier, JobStatus } from "@prisma/client";
@@ -203,6 +204,14 @@ export async function POST(request: NextRequest) {
     });
 
     requestLogger.info("Enhancement job created", { jobId: job.id, tier });
+
+    // Track enhancement conversion attribution for campaign analytics (first enhancement only)
+    await attributeConversion(session.user.id, "ENHANCEMENT", tokenCost).catch((error) => {
+      requestLogger.warn("Failed to track enhancement attribution", {
+        userId: session.user.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
 
     const enhancementInput: EnhanceImageInput = {
       jobId: job.id,
