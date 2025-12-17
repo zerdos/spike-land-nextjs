@@ -43,14 +43,6 @@ describe("PersonasPage", () => {
     expect(screen.getByText("The Memorial Creator")).toBeInTheDocument();
   });
 
-  it("should render share section", () => {
-    render(<PersonasPage />);
-    expect(screen.getByText("Share with your team")).toBeInTheDocument();
-    expect(
-      screen.getByText("spike.land/personas/[persona-slug]"),
-    ).toBeInTheDocument();
-  });
-
   it("should have links to individual persona pages", () => {
     render(<PersonasPage />);
     const links = screen.getAllByRole("link");

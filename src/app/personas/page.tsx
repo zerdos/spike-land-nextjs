@@ -129,17 +129,6 @@ export default function PersonasPage() {
           ))}
         </div>
       </section>
-
-      {/* Share CTA */}
-      <div className="mt-16 text-center p-8 bg-muted/50 rounded-xl">
-        <h3 className="text-xl font-semibold mb-2">Share with your team</h3>
-        <p className="text-muted-foreground mb-4">
-          Each persona has a unique shareable link. Click on any persona to get its deep link.
-        </p>
-        <code className="text-sm bg-background px-4 py-2 rounded border">
-          spike.land/personas/[persona-slug]
-        </code>
-      </div>
     </div>
   );
 }
