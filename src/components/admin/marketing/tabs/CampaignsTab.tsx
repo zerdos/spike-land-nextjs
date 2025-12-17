@@ -32,13 +32,11 @@ import {
 interface CampaignData {
   id: string;
   name: string;
-  platform: "FACEBOOK" | "GOOGLE_ADS";
+  platform: "FACEBOOK" | "GOOGLE_ADS" | string;
   visitors: number;
   signups: number;
-  conversionRate: number;
+  conversionRate?: number;
   revenue: number;
-  spend: number;
-  roas: number;
 }
 
 interface CampaignsResponse {
@@ -134,18 +132,14 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
       "Signups",
       "Conv %",
       "Revenue",
-      "Spend",
-      "ROAS",
     ];
     const rows = data.campaigns.map((c) => [
       c.name,
       c.platform,
       c.visitors,
       c.signups,
-      `${c.conversionRate.toFixed(2)}%`,
+      `${(c.conversionRate ?? 0).toFixed(2)}%`,
       `$${c.revenue.toFixed(2)}`,
-      `$${c.spend.toFixed(2)}`,
-      `${c.roas.toFixed(2)}x`,
     ]);
 
     const csvContent = [
@@ -175,10 +169,14 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
-  const getPlatformBadge = (platform: "FACEBOOK" | "GOOGLE_ADS") => {
-    return platform === "FACEBOOK"
-      ? <Badge variant="default" className="bg-blue-600">FB</Badge>
-      : <Badge variant="default" className="bg-yellow-600">Google</Badge>;
+  const getPlatformBadge = (platform: string) => {
+    if (platform === "FACEBOOK" || platform.toLowerCase().includes("facebook")) {
+      return <Badge variant="default" className="bg-blue-600">FB</Badge>;
+    }
+    if (platform === "GOOGLE_ADS" || platform.toLowerCase().includes("google")) {
+      return <Badge variant="default" className="bg-yellow-600">Google</Badge>;
+    }
+    return <Badge variant="outline">{platform}</Badge>;
   };
 
   if (error) {
@@ -307,7 +305,7 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
                               {campaign.signups.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-right">
-                              {campaign.conversionRate.toFixed(2)}%
+                              {(campaign.conversionRate ?? 0).toFixed(2)}%
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               ${campaign.revenue.toLocaleString()}

@@ -64,7 +64,7 @@ export function FunnelTab({ className }: FunnelTabProps) {
       });
 
       if (selectedCampaign !== "all") {
-        params.set("campaignId", selectedCampaign);
+        params.set("utmCampaign", selectedCampaign);
       }
 
       const response = await fetch(`/api/admin/marketing/analytics/funnel?${params}`);
