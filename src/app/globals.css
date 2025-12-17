@@ -316,16 +316,24 @@
   }
 
   /* Old util fallbacks mapped to new system */
-  .glass-card {
-    @apply glass-1 glass-edge;
-  }
-
+  /* Old util fallbacks mapped to new system */
+  .glass-card,
   .dark .glass-card {
-    @apply glass-1 glass-edge;
+    background: rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      inset 1px 1px 0 0 rgba(255, 255, 255, 0.12),
+      inset -1px -1px 0 0 rgba(0, 0, 0, 0.35);
   }
 
   .glass-card-hover {
-    @apply glass-hover;
+    transition: all 0.2s ease-out;
+  }
+
+  .glass-card-hover:hover {
+    backdrop-filter: blur(14px);
+    background-color: rgba(255, 255, 255, 0.11);
   }
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
