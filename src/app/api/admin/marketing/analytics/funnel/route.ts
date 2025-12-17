@@ -130,23 +130,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       };
     }
 
-    // Get conversion counts by type
-    const conversions = await prisma.campaignAttribution.groupBy({
-      by: ["conversionType"],
-      where: attributionFilter,
-      _count: {
-        id: true,
-      },
+    // Get unique users per conversion type (count users, not events)
+    const signupUsers = await prisma.campaignAttribution.findMany({
+      where: { ...attributionFilter, conversionType: "SIGNUP" },
+      select: { userId: true },
+      distinct: ["userId"],
     });
 
-    // Extract counts
-    const signupsData = conversions.find((c) => c.conversionType === "SIGNUP");
-    const enhancementsData = conversions.find((c) => c.conversionType === "ENHANCEMENT");
-    const purchasesData = conversions.find((c) => c.conversionType === "PURCHASE");
+    const enhancementUsers = await prisma.campaignAttribution.findMany({
+      where: { ...attributionFilter, conversionType: "ENHANCEMENT" },
+      select: { userId: true },
+      distinct: ["userId"],
+    });
 
-    const signupsCount = signupsData?._count.id ?? 0;
-    const enhancementsCount = enhancementsData?._count.id ?? 0;
-    const purchasesCount = purchasesData?._count.id ?? 0;
+    const purchaseUsers = await prisma.campaignAttribution.findMany({
+      where: { ...attributionFilter, conversionType: "PURCHASE" },
+      select: { userId: true },
+      distinct: ["userId"],
+    });
+
+    const signupsCount = signupUsers.length;
+    const enhancementsCount = enhancementUsers.length;
+    const purchasesCount = purchaseUsers.length;
 
     // Calculate conversion rates
     // Visitors is the baseline (100%)
