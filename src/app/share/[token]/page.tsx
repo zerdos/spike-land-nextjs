@@ -56,8 +56,11 @@ export async function generateMetadata({
   }
 
   // Construct absolute URL for the OG image
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://spike.land";
-  const ogImageUrl = `${baseUrl}/share/${token}/opengraph-image`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.VERCEL_URL ||
+    "http://localhost:3000";
+  const protocol = baseUrl.startsWith("http") ? "" : "https://";
+  const ogImageUrl = `${protocol}${baseUrl}/share/${token}/opengraph-image`;
 
   return {
     title: `${image.name} - Enhanced with Pixel`,
