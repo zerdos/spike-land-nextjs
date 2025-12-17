@@ -39,7 +39,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { balance, isLowBalance, refetch: refetchBalance } = useTokenBalance({
+  const { balance, isLowBalance, isLoading, refetch: refetchBalance } = useTokenBalance({
     autoRefreshOnFocus: true,
   });
 
@@ -230,7 +230,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4">
-      {isLowBalance && (
+      {!isLoading && isLowBalance && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
@@ -336,7 +336,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                   <Coins className="h-5 w-5 text-yellow-500" />
                   Your Balance
                 </span>
-                <span className="text-lg font-bold">{balance} tokens</span>
+                <span className="text-lg font-bold">{isLoading ? "..." : `${balance} tokens`}</span>
               </div>
 
               <Separator />

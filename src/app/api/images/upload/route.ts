@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS, type EnhancementTier } from "@/lib/tokens/costs";
 import { isSecureFilename } from "@/lib/upload/validation";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
 import { enhanceImage } from "@/workflows/enhance-image.workflow";
@@ -98,23 +98,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // albumId is now required
-    if (!albumId) {
-      requestLogger.warn("No album ID provided");
-      const errorMessage = getUserFriendlyError(
-        new Error("Invalid input"),
-        400,
-      );
-      return NextResponse.json(
-        {
-          error: errorMessage.message,
-          title: errorMessage.title,
-          suggestion: "Please select an album before uploading.",
-        },
-        { status: 400, headers: { "X-Request-ID": requestId } },
-      );
-    }
-
     // Validate filename for security (path traversal, hidden files)
     if (!isSecureFilename(file.name)) {
       requestLogger.warn("Insecure filename rejected", { filename: file.name });
@@ -127,42 +110,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate album exists and belongs to user
-    const album = await prisma.album.findFirst({
-      where: {
-        id: albumId,
-        userId: session.user.id,
-      },
-    });
+    // albumId is optional - if not provided, use TIER_1K as default
+    let album = null;
+    let defaultTier: EnhancementTier = "TIER_1K"; // Default for non-album uploads
+    let pipelineId: string | null = null;
 
-    if (!album) {
-      requestLogger.warn("Invalid album ID", {
-        albumId,
-        userId: session.user.id,
-      });
-      const errorMessage = getUserFriendlyError(
-        new Error("Invalid input"),
-        400,
-      );
-      return NextResponse.json(
-        {
-          error: errorMessage.message,
-          title: errorMessage.title,
-          suggestion: "Album not found or you don't have access to it.",
+    if (albumId) {
+      // Validate album exists and belongs to user
+      album = await prisma.album.findFirst({
+        where: {
+          id: albumId,
+          userId: session.user.id,
         },
-        { status: 400, headers: { "X-Request-ID": requestId } },
+      });
+
+      if (!album) {
+        requestLogger.warn("Invalid album ID", {
+          albumId,
+          userId: session.user.id,
+        });
+        const errorMessage = getUserFriendlyError(
+          new Error("Invalid input"),
+          400,
+        );
+        return NextResponse.json(
+          {
+            error: errorMessage.message,
+            title: errorMessage.title,
+            suggestion: "Album not found or you don't have access to it.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      defaultTier = album.defaultTier as EnhancementTier;
+      pipelineId = album.pipelineId;
+    }
+
+    // Validate that the tier has a defined cost
+    const tokenCost = ENHANCEMENT_COSTS[defaultTier];
+    if (tokenCost === undefined) {
+      requestLogger.error("Invalid enhancement tier", new Error(`Unknown tier: ${defaultTier}`));
+      return NextResponse.json(
+        { error: "Invalid enhancement tier configuration" },
+        { status: 500, headers: { "X-Request-ID": requestId } },
       );
     }
 
     // Consume tokens FIRST (prepay model) to prevent race conditions
     // If upload fails later, we'll refund the tokens
-    const tokenCost = ENHANCEMENT_COSTS[album.defaultTier];
     const consumeResult = await TokenBalanceManager.consumeTokens({
       userId: session.user.id,
       amount: tokenCost,
       source: "image_upload_enhancement",
       sourceId: `pending-${requestId}`, // Temporary ID until image is created
-      metadata: { tier: album.defaultTier, requestId, albumId, status: "pending" },
+      metadata: { tier: defaultTier, requestId, albumId: albumId || null, status: "pending" },
     });
 
     if (!consumeResult.success) {
@@ -274,13 +276,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create junction record to link image to album
-    await prisma.albumImage.create({
-      data: {
-        albumId,
-        imageId: enhancedImage.id,
-      },
-    });
+    // Create junction record to link image to album (if album was specified)
+    if (albumId && album) {
+      await prisma.albumImage.create({
+        data: {
+          albumId,
+          imageId: enhancedImage.id,
+        },
+      });
+    }
 
     // Tokens were already consumed upfront (prepay model)
     // Create enhancement job
@@ -288,17 +292,17 @@ export async function POST(request: NextRequest) {
       data: {
         imageId: enhancedImage.id,
         userId: session.user.id,
-        tier: album.defaultTier,
+        tier: defaultTier,
         tokensCost: tokenCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
-        pipelineId: album.pipelineId,
+        pipelineId: pipelineId,
       },
     });
 
     requestLogger.info("Enhancement job created for upload", {
       jobId: job.id,
-      tier: album.defaultTier,
+      tier: defaultTier,
     });
 
     // Start enhancement workflow
@@ -307,7 +311,7 @@ export async function POST(request: NextRequest) {
       imageId: enhancedImage.id,
       userId: session.user.id,
       originalR2Key: result.r2Key,
-      tier: album.defaultTier,
+      tier: defaultTier,
       tokensCost: tokenCost,
     };
 
@@ -363,7 +367,7 @@ export async function POST(request: NextRequest) {
         },
         enhancement: {
           jobId: job.id,
-          tier: album.defaultTier,
+          tier: defaultTier,
           tokenCost,
           newBalance: consumeResult.balance,
         },

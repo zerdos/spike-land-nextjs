@@ -941,6 +941,95 @@ describe("useMultiFileUpload", () => {
       expect(capturedFormData).not.toBeNull();
       expect(capturedFormData?.get("albumId")).toBeNull();
     });
+
+    it("should use albumId from upload options instead of hook options", async () => {
+      let capturedFormData: FormData | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        capturedFormData = options.body as FormData;
+        return {
+          ok: true,
+          json: async () => ({ imageId: "img-123" }),
+        };
+      });
+
+      // Hook has albumId "album-hook"
+      const { result } = renderHook(() => useMultiFileUpload({ albumId: "album-hook" }));
+
+      const files = [createMockFile("file.jpg")];
+
+      // But we pass albumId "album-upload" at upload time
+      await act(async () => {
+        await result.current.upload(files, { albumId: "album-upload" });
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(1);
+      });
+
+      expect(capturedFormData).not.toBeNull();
+      // Upload-time albumId should override hook-level albumId
+      expect(capturedFormData?.get("albumId")).toBe("album-upload");
+    });
+
+    it("should fall back to hook albumId when upload options albumId is not provided", async () => {
+      let capturedFormData: FormData | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        capturedFormData = options.body as FormData;
+        return {
+          ok: true,
+          json: async () => ({ imageId: "img-123" }),
+        };
+      });
+
+      // Hook has albumId "album-hook"
+      const { result } = renderHook(() => useMultiFileUpload({ albumId: "album-hook" }));
+
+      const files = [createMockFile("file.jpg")];
+
+      // Upload without passing albumId option
+      await act(async () => {
+        await result.current.upload(files);
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(1);
+      });
+
+      expect(capturedFormData).not.toBeNull();
+      // Hook-level albumId should be used
+      expect(capturedFormData?.get("albumId")).toBe("album-hook");
+    });
+
+    it("should use upload albumId option when hook has no albumId", async () => {
+      let capturedFormData: FormData | null = null;
+
+      mockFetch.mockImplementation(async (url, options) => {
+        capturedFormData = options.body as FormData;
+        return {
+          ok: true,
+          json: async () => ({ imageId: "img-123" }),
+        };
+      });
+
+      // Hook has no albumId
+      const { result } = renderHook(() => useMultiFileUpload());
+
+      const files = [createMockFile("file.jpg")];
+
+      // Pass albumId at upload time
+      await act(async () => {
+        await result.current.upload(files, { albumId: "album-upload" });
+      });
+
+      await waitFor(() => {
+        expect(result.current.completedCount).toBe(1);
+      });
+
+      expect(capturedFormData).not.toBeNull();
+      expect(capturedFormData?.get("albumId")).toBe("album-upload");
+    });
   });
 
   describe("error handling edge cases", () => {

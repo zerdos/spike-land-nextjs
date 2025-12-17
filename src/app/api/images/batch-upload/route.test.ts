@@ -252,7 +252,7 @@ describe("POST /api/images/batch-upload", () => {
     expect(res.status).toBe(401);
   });
 
-  it("should return 400 if no albumId provided", async () => {
+  it("should allow upload without albumId using TIER_1K default", async () => {
     const req = new NextRequest("http://localhost/api/images/batch-upload", {
       method: "POST",
     });
@@ -262,9 +262,11 @@ describe("POST /api/images/batch-upload", () => {
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.error).toBe("Album selection is required for upload.");
+    expect(data.success).toBe(true);
+    // Should create image but NOT link to album
+    expect(mockPrisma.albumImage.create).not.toHaveBeenCalled();
   });
 
   it("should return 404 if album not found", async () => {
