@@ -29,15 +29,14 @@ describe("Switch Component", () => {
       expect(switchElement).toHaveClass(
         "peer",
         "inline-flex",
-        "h-5",
-        "w-9",
+        "h-6",
+        "w-11",
         "shrink-0",
         "cursor-pointer",
         "items-center",
         "rounded-full",
         "border-2",
         "border-transparent",
-        "shadow-sm",
       );
     });
 
@@ -246,10 +245,10 @@ describe("Switch Component", () => {
       expect(thumb).toHaveClass(
         "pointer-events-none",
         "block",
-        "h-4",
-        "w-4",
+        "h-5",
+        "w-5",
         "rounded-full",
-        "bg-background",
+        "bg-foreground",
         "shadow-lg",
         "ring-0",
       );
@@ -321,10 +320,10 @@ describe("Switch Component", () => {
       expect(switchElement).toHaveClass("transition-colors");
     });
 
-    it("should render with shadow-sm class", () => {
-      const { container } = render(<Switch />);
+    it("should render with glow shadow when checked", () => {
+      const { container } = render(<Switch checked={true} />);
       const switchElement = container.querySelector('button[role="switch"]');
-      expect(switchElement).toHaveClass("shadow-sm");
+      expect(switchElement).toHaveClass("data-[state=checked]:shadow-glow-cyan");
     });
   });
 

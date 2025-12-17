@@ -15,7 +15,8 @@ describe("Card Components", () => {
       const card = screen.getByTestId("card");
       expect(card).toHaveClass(
         "rounded-2xl",
-        "border",
+        "glass-1",
+        "glass-edge",
         "text-card-foreground",
         "shadow-lg",
       );
@@ -40,6 +41,30 @@ describe("Card Components", () => {
       render(<Card data-testid="card" aria-label="Test Card">Content</Card>);
       const card = screen.getByTestId("card");
       expect(card).toHaveAttribute("aria-label", "Test Card");
+    });
+
+    it("should render with solid variant", () => {
+      render(<Card variant="solid" data-testid="card">Content</Card>);
+      const card = screen.getByTestId("card");
+      expect(card).toHaveClass("bg-card", "border", "border-border", "shadow-sm");
+    });
+
+    it("should render with highlighted variant", () => {
+      render(<Card variant="highlighted" data-testid="card">Content</Card>);
+      const card = screen.getByTestId("card");
+      expect(card).toHaveClass("glass-1", "glass-edge", "shadow-glow-primary");
+    });
+
+    it("should render with dashed variant", () => {
+      render(<Card variant="dashed" data-testid="card">Content</Card>);
+      const card = screen.getByTestId("card");
+      expect(card).toHaveClass("border-2", "border-dashed");
+    });
+
+    it("should render with ghost variant", () => {
+      render(<Card variant="ghost" data-testid="card">Content</Card>);
+      const card = screen.getByTestId("card");
+      expect(card).toHaveClass("border-none", "shadow-none", "bg-transparent");
     });
   });
 

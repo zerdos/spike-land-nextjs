@@ -28,6 +28,11 @@ vi.mock("@/lib/prisma", () => ({
     campaignAttribution: {
       findMany: vi.fn(),
     },
+    campaignMetricsCache: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+    },
   },
 }));
 
@@ -43,6 +48,15 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+    // Return null for cache to force fresh computation
+    vi.mocked(prisma.campaignMetricsCache.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.campaignMetricsCache.upsert).mockResolvedValue({
+      id: "cache-1",
+      cacheKey: "test",
+      metrics: {},
+      computedAt: new Date(),
+      expiresAt: new Date(),
+    });
   });
 
   describe("Authentication and authorization", () => {
@@ -158,16 +172,25 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
   describe("Metrics calculation", () => {
     it("should return overview metrics with correct calculations", async () => {
-      // Mock current period sessions
+      // Mock current period sessions (called twice: once for metrics, once for daily)
       vi.mocked(prisma.visitorSession.findMany)
         .mockResolvedValueOnce([
-          { id: "s1", visitorId: "v1", pageViewCount: 5 },
-          { id: "s2", visitorId: "v2", pageViewCount: 3 },
-          { id: "s3", visitorId: "v1", pageViewCount: 2 }, // Same visitor
+          { id: "s1", visitorId: "v1", pageViewCount: 5, sessionStart: new Date("2024-01-15") },
+          { id: "s2", visitorId: "v2", pageViewCount: 3, sessionStart: new Date("2024-01-15") },
+          { id: "s3", visitorId: "v1", pageViewCount: 2, sessionStart: new Date("2024-01-16") },
         ])
         // Previous period sessions
         .mockResolvedValueOnce([
-          { id: "s4", visitorId: "v3", pageViewCount: 4 },
+          { id: "s4", visitorId: "v3", pageViewCount: 4, sessionStart: new Date("2024-01-01") },
+        ])
+        // Daily metrics query
+        .mockResolvedValueOnce([
+          { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
+          { sessionStart: new Date("2024-01-15"), visitorId: "v2" },
+        ])
+        // Traffic sources query
+        .mockResolvedValueOnce([
+          { utmSource: "google", referrer: null, gclid: null, fbclid: null },
         ]);
 
       // Mock current period attributions
@@ -183,6 +206,10 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
         .mockResolvedValueOnce([
           { conversionType: "SIGNUP", conversionValue: null },
           { conversionType: "PURCHASE", conversionValue: 9.99 },
+        ])
+        // Daily conversions query
+        .mockResolvedValueOnce([
+          { convertedAt: new Date("2024-01-15") },
         ]);
 
       const request = new NextRequest(
@@ -194,34 +221,37 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
       expect(response.status).toBe(200);
 
-      // Current period metrics
-      expect(data.totalSessions).toBe(3);
-      expect(data.uniqueVisitors).toBe(2); // v1 and v2
-      expect(data.totalVisitors).toBe(10); // 5 + 3 + 2
-      expect(data.signups).toBe(2);
-      expect(data.enhancements).toBe(1);
-      expect(data.purchases).toBe(2);
-      expect(data.revenue).toBe(29.98); // 9.99 + 19.99
+      // New response structure: metrics object
+      expect(data.metrics.visitors).toBe(2); // Unique visitors: v1 and v2
+      expect(data.metrics.signups).toBe(2);
+      expect(data.metrics.revenue).toBe(29.98); // 9.99 + 19.99
 
-      // Conversion rates
-      expect(data.signupConversionRate).toBe(100); // 2/2 * 100
-      expect(data.enhancementConversionRate).toBe(50); // 1/2 * 100
-      expect(data.purchaseConversionRate).toBe(200); // 2/1 * 100
+      // Conversion rate is signup/uniqueVisitors
+      expect(data.metrics.conversionRate).toBe(100); // 2/2 * 100
 
-      // Trends
-      expect(data.trends.visitors).toBe(100); // (2-1)/1 * 100
-      expect(data.trends.signups).toBe(100); // (2-1)/1 * 100
-      expect(data.trends.revenue).toBeGreaterThan(0); // (29.98-9.99)/9.99 * 100
+      // Trends (visitorsChange, signupsChange, revenueChange)
+      expect(data.metrics.visitorsChange).toBe(100); // (2-1)/1 * 100
+      expect(data.metrics.signupsChange).toBe(100); // (2-1)/1 * 100
+      expect(data.metrics.revenueChange).toBeGreaterThan(0); // (29.98-9.99)/9.99 * 100
+
+      // Should have daily and trafficSources arrays
+      expect(Array.isArray(data.daily)).toBe(true);
+      expect(Array.isArray(data.trafficSources)).toBe(true);
     });
 
     it("should handle empty data with zero values", async () => {
+      // Mock all 4 visitorSession queries (metrics current, metrics previous, daily, traffic)
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period metrics
+        .mockResolvedValueOnce([]) // Previous period metrics
+        .mockResolvedValueOnce([]) // Daily metrics
+        .mockResolvedValueOnce([]); // Traffic sources
 
+      // Mock all 3 campaignAttribution queries
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period attributions
+        .mockResolvedValueOnce([]) // Previous period attributions
+        .mockResolvedValueOnce([]); // Daily conversions
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-01&endDate=2024-01-31",
@@ -231,33 +261,42 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.totalSessions).toBe(0);
-      expect(data.uniqueVisitors).toBe(0);
-      expect(data.totalVisitors).toBe(0);
-      expect(data.signups).toBe(0);
-      expect(data.enhancements).toBe(0);
-      expect(data.purchases).toBe(0);
-      expect(data.revenue).toBe(0);
-      expect(data.signupConversionRate).toBe(0);
-      expect(data.enhancementConversionRate).toBe(0);
-      expect(data.purchaseConversionRate).toBe(0);
-      expect(data.trends.visitors).toBe(0);
-      expect(data.trends.signups).toBe(0);
-      expect(data.trends.revenue).toBe(0);
+
+      // New response structure
+      expect(data.metrics.visitors).toBe(0);
+      expect(data.metrics.signups).toBe(0);
+      expect(data.metrics.revenue).toBe(0);
+      expect(data.metrics.conversionRate).toBe(0);
+      expect(data.metrics.visitorsChange).toBe(0);
+      expect(data.metrics.signupsChange).toBe(0);
+      expect(data.metrics.revenueChange).toBe(0);
+
+      // Should have daily and trafficSources arrays (empty but present)
+      expect(Array.isArray(data.daily)).toBe(true);
+      expect(Array.isArray(data.trafficSources)).toBe(true);
     });
 
     it("should calculate positive trend when growing from zero", async () => {
+      // Mock all 4 visitorSession queries
       vi.mocked(prisma.visitorSession.findMany)
         .mockResolvedValueOnce([
-          { id: "s1", visitorId: "v1", pageViewCount: 5 },
+          { id: "s1", visitorId: "v1", pageViewCount: 5, sessionStart: new Date("2024-01-15") },
         ])
-        .mockResolvedValueOnce([]); // Previous period empty
+        .mockResolvedValueOnce([]) // Previous period empty
+        .mockResolvedValueOnce([
+          { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
+        ]) // Daily metrics
+        .mockResolvedValueOnce([
+          { utmSource: null, referrer: null, gclid: null, fbclid: null },
+        ]); // Traffic sources
 
+      // Mock all 3 campaignAttribution queries
       vi.mocked(prisma.campaignAttribution.findMany)
         .mockResolvedValueOnce([
           { conversionType: "SIGNUP", conversionValue: null },
         ])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Previous period empty
+        .mockResolvedValueOnce([]); // Daily conversions
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-01&endDate=2024-01-31",
@@ -267,18 +306,22 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.trends.visitors).toBe(100); // Growth from 0
-      expect(data.trends.signups).toBe(100); // Growth from 0
+      expect(data.metrics.visitorsChange).toBe(100); // Growth from 0
+      expect(data.metrics.signupsChange).toBe(100); // Growth from 0
     });
 
     it("should use LAST_TOUCH attribution when specified", async () => {
+      // Mock all required queries
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]) // Daily
+        .mockResolvedValueOnce([]); // Traffic sources
 
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]); // Daily conversions
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-01&endDate=2024-01-31&attributionModel=LAST_TOUCH",
@@ -296,13 +339,17 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
     });
 
     it("should default to FIRST_TOUCH attribution", async () => {
+      // Mock all required queries
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]) // Daily
+        .mockResolvedValueOnce([]); // Traffic sources
 
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]); // Daily conversions
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-01&endDate=2024-01-31",
@@ -357,12 +404,16 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
   describe("Date range handling", () => {
     it("should include entire end day", async () => {
+      // Mock all required queries
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]) // Daily
+        .mockResolvedValueOnce([]); // Traffic sources
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]); // Daily conversions
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-15&endDate=2024-01-15",
@@ -382,12 +433,16 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
     });
 
     it("should calculate previous period correctly", async () => {
+      // Mock all required queries
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]) // Daily
+        .mockResolvedValueOnce([]); // Traffic sources
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([]) // Current period
+        .mockResolvedValueOnce([]) // Previous period
+        .mockResolvedValueOnce([]); // Daily conversions
 
       // 7-day period: Jan 8 to Jan 14
       // Previous period should be: Jan 1 to Jan 7

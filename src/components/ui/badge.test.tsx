@@ -83,7 +83,7 @@ describe("Badge Component", () => {
       const badge = screen.getByText("Badge");
       expect(badge).toHaveClass("inline-flex");
       expect(badge).toHaveClass("items-center");
-      expect(badge).toHaveClass("rounded-md");
+      expect(badge).toHaveClass("rounded-full");
       expect(badge).toHaveClass("border");
       expect(badge).toHaveClass("px-2.5");
       expect(badge).toHaveClass("py-0.5");

@@ -139,6 +139,6 @@ describe("Checkbox", () => {
   it("should have proper default styling classes", () => {
     render(<Checkbox aria-label="test checkbox" />);
     const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toHaveClass("h-4", "w-4", "rounded-sm");
+    expect(checkbox).toHaveClass("h-5", "w-5", "rounded-md");
   });
 });
