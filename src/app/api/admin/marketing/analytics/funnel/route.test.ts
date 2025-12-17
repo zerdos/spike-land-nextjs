@@ -172,30 +172,35 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
       expect(response.status).toBe(200);
       expect(data.stages).toBeInstanceOf(Array);
       expect(data.stages.length).toBe(4);
+      expect(data.campaigns).toBeInstanceOf(Array);
 
       // Verify stage structure
       expect(data.stages[0]).toEqual({
         name: "Visitors",
         count: 5,
         conversionRate: 100,
+        dropoffRate: 40, // (5-3)/5 * 100
       });
 
       expect(data.stages[1]).toEqual({
         name: "Signups",
         count: 3,
         conversionRate: 60, // 3/5 * 100
+        dropoffRate: 33.33, // (3-2)/3 * 100
       });
 
       expect(data.stages[2]).toEqual({
         name: "Enhancements",
         count: 2,
         conversionRate: 66.67, // 2/3 * 100, rounded
+        dropoffRate: 50, // (2-1)/2 * 100
       });
 
       expect(data.stages[3]).toEqual({
         name: "Purchases",
         count: 1,
         conversionRate: 50, // 1/2 * 100
+        dropoffRate: 0, // Last stage has no dropoff
       });
     });
 
@@ -215,21 +220,25 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         name: "Visitors",
         count: 0,
         conversionRate: 100,
+        dropoffRate: 0,
       });
       expect(data.stages[1]).toEqual({
         name: "Signups",
         count: 0,
         conversionRate: 0,
+        dropoffRate: 0,
       });
       expect(data.stages[2]).toEqual({
         name: "Enhancements",
         count: 0,
         conversionRate: 0,
+        dropoffRate: 0,
       });
       expect(data.stages[3]).toEqual({
         name: "Purchases",
         count: 0,
         conversionRate: 0,
+        dropoffRate: 0,
       });
     });
 

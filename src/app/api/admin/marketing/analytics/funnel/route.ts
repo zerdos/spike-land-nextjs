@@ -29,10 +29,17 @@ interface FunnelStage {
   name: string;
   count: number;
   conversionRate: number;
+  dropoffRate: number;
+}
+
+interface CampaignOption {
+  id: string;
+  name: string;
 }
 
 interface FunnelResponse {
   stages: FunnelStage[];
+  campaigns: CampaignOption[];
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -159,31 +166,69 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ? Math.round((purchasesCount / enhancementsCount) * 10000) / 100
       : 0;
 
+    // Calculate drop-off rates (% that didn't continue to next stage)
+    const visitorDropoff = visitorsCount > 0
+      ? Math.round(((visitorsCount - signupsCount) / visitorsCount) * 10000) / 100
+      : 0;
+    const signupDropoff = signupsCount > 0
+      ? Math.round(((signupsCount - enhancementsCount) / signupsCount) * 10000) / 100
+      : 0;
+    const enhancementDropoff = enhancementsCount > 0
+      ? Math.round(((enhancementsCount - purchasesCount) / enhancementsCount) * 10000) / 100
+      : 0;
+
     const stages: FunnelStage[] = [
       {
         name: "Visitors",
         count: visitorsCount,
         conversionRate: 100,
+        dropoffRate: visitorDropoff,
       },
       {
         name: "Signups",
         count: signupsCount,
         conversionRate: signupConversionRate,
+        dropoffRate: signupDropoff,
       },
       {
         name: "Enhancements",
         count: enhancementsCount,
         conversionRate: enhancementConversionRate,
+        dropoffRate: enhancementDropoff,
       },
       {
         name: "Purchases",
         count: purchasesCount,
         conversionRate: purchaseConversionRate,
+        dropoffRate: 0, // Last stage has no dropoff
       },
     ];
 
+    // Get unique campaigns for the filter dropdown
+    const uniqueCampaigns = await prisma.visitorSession.findMany({
+      where: {
+        utmCampaign: { not: null },
+        sessionStart: {
+          gte: start,
+          lte: end,
+        },
+      },
+      select: {
+        utmCampaign: true,
+      },
+      distinct: ["utmCampaign"],
+    });
+
+    const campaigns: CampaignOption[] = uniqueCampaigns
+      .filter((c): c is { utmCampaign: string; } => c.utmCampaign !== null)
+      .map((c) => ({
+        id: c.utmCampaign,
+        name: c.utmCampaign,
+      }));
+
     const response: FunnelResponse = {
       stages,
+      campaigns,
     };
 
     return NextResponse.json(response);
