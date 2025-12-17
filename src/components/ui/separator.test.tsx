@@ -45,8 +45,10 @@ describe("Separator", () => {
     render(<Separator data-testid="separator" />);
 
     const separator = screen.getByTestId("separator");
-    expect(separator).toHaveClass("shrink-0");
-    expect(separator).toHaveClass("bg-border");
+    expect(separator).toHaveClass("bg-gradient-to-r");
+    expect(separator).toHaveClass("from-transparent");
+    expect(separator).toHaveClass("via-white/20");
+    expect(separator).toHaveClass("to-transparent");
   });
 
   it("forwards ref correctly", () => {
@@ -67,8 +69,8 @@ describe("Separator", () => {
     render(<Separator className="my-4" data-testid="separator" />);
 
     const separator = screen.getByTestId("separator");
-    expect(separator).toHaveClass("shrink-0");
-    expect(separator).toHaveClass("bg-border");
+    expect(separator).toHaveClass("bg-gradient-to-r");
+    expect(separator).toHaveClass("from-transparent");
     expect(separator).toHaveClass("my-4");
   });
 
