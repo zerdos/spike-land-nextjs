@@ -333,15 +333,24 @@ function determineSessionPlatform(
     return "OTHER";
   }
 
-  // Check referrer for organic search
-  const referrer = session.referrer?.toLowerCase();
+  // Check referrer for organic search using proper URL parsing
+  const referrer = session.referrer;
   if (referrer) {
-    if (
-      referrer.includes("google.com") ||
-      referrer.includes("bing.com") ||
-      referrer.includes("duckduckgo.com")
-    ) {
-      return "ORGANIC";
+    try {
+      const referrerUrl = new URL(referrer);
+      const hostname = referrerUrl.hostname.toLowerCase();
+      // Check if the hostname ends with the search engine domain
+      const isOrganic = hostname === "google.com" ||
+        hostname.endsWith(".google.com") ||
+        hostname === "bing.com" ||
+        hostname.endsWith(".bing.com") ||
+        hostname === "duckduckgo.com" ||
+        hostname.endsWith(".duckduckgo.com");
+      if (isOrganic) {
+        return "ORGANIC";
+      }
+    } catch {
+      // Invalid URL, treat as other
     }
     return "OTHER";
   }

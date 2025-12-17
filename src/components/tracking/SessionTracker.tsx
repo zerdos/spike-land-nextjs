@@ -185,8 +185,14 @@ export function SessionTracker() {
     if (!hasConsent()) return;
     if (isInitializedRef.current) return;
 
+    // Set flag immediately to prevent race condition in React Strict Mode
+    isInitializedRef.current = true;
+
     const visitorId = getOrCreateVisitorId();
-    if (!visitorId) return;
+    if (!visitorId) {
+      isInitializedRef.current = false; // Reset if we can't get visitor ID
+      return;
+    }
 
     visitorIdRef.current = visitorId;
 
@@ -194,7 +200,6 @@ export function SessionTracker() {
     const existingSessionId = sessionStorage.getItem(SESSION_ID_KEY);
     if (existingSessionId) {
       sessionIdRef.current = existingSessionId;
-      isInitializedRef.current = true;
       return;
     }
 
@@ -234,10 +239,15 @@ export function SessionTracker() {
         const data = await response.json();
         sessionIdRef.current = data.sessionId;
         sessionStorage.setItem(SESSION_ID_KEY, data.sessionId);
-        isInitializedRef.current = true;
+        // Flag already set at start, keep it
+      } else {
+        // Reset flag on failure to allow retry
+        isInitializedRef.current = false;
       }
     } catch (error) {
       console.warn("[Tracking] Failed to initialize session:", error);
+      // Reset flag on error to allow retry
+      isInitializedRef.current = false;
     }
   }, [pathname, searchParams]);
 

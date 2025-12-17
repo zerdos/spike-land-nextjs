@@ -188,3 +188,104 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PATCH request validation schema
+const patchRequestSchema = z.object({
+  sessionId: z.string().min(1).max(128),
+  sessionEnd: z.string().optional(),
+  userId: z.string().min(1).max(128).optional(),
+  exitPage: z.string().max(2048).optional(),
+});
+
+/**
+ * PATCH /api/tracking/session - Update session (end time, link to user)
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    // Check content length
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+      return NextResponse.json({ error: "Request too large" }, { status: 413 });
+    }
+
+    // Rate limiting by IP
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(
+      `tracking_session_patch:${clientIP}`,
+      sessionTrackingRateLimit,
+    );
+
+    if (rateLimitResult.isLimited) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+            ),
+          },
+        },
+      );
+    }
+
+    // Parse body
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parseResult = patchRequestSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid input" },
+        { status: 400 },
+      );
+    }
+
+    const { sessionId, sessionEnd, userId, exitPage } = parseResult.data;
+
+    // Build update data
+    const updateData: Record<string, unknown> = {};
+    if (sessionEnd) {
+      updateData.sessionEnd = new Date(sessionEnd);
+    }
+    if (userId) {
+      updateData.userId = userId;
+    }
+    if (exitPage) {
+      updateData.exitPage = exitPage;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "No update fields provided" },
+        { status: 400 },
+      );
+    }
+
+    // Update session
+    const updatedSession = await prisma.visitorSession.update({
+      where: { id: sessionId },
+      data: updateData,
+    });
+
+    return NextResponse.json({ sessionId: updatedSession.id });
+  } catch (error) {
+    // Handle not found error
+    if (
+      error instanceof Error &&
+      error.message.includes("Record to update not found")
+    ) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    console.error("[Tracking] Session patch error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}

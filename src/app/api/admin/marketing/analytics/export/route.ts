@@ -342,7 +342,8 @@ function determinePlatform(source: string | null): string {
   if (s.includes("google") || s.includes("gclid")) {
     return "Google";
   }
-  if (s.includes("twitter") || s.includes("x.com")) {
+  // UTM source check for Twitter/X - check common patterns
+  if (s.includes("twitter") || s === "x" || s.startsWith("x_")) {
     return "Twitter/X";
   }
   if (s.includes("linkedin")) {
