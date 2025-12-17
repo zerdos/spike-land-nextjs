@@ -1,7 +1,7 @@
 /**
  * Marketing Personas Page
  *
- * Displays all 10 customer personas for Pixel AI Photo Enhancement.
+ * Displays all 11 customer personas for Pixel AI Photo Enhancement.
  * Each persona has a deep link for easy sharing.
  */
 
@@ -80,7 +80,7 @@ export default function PersonasPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Customer Personas</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Meet our 10 target customer personas for Pixel AI Photo Enhancement. Click any persona to
+          Meet our 11 target customer personas for Pixel AI Photo Enhancement. Click any persona to
           see detailed insights.
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function PersonasPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-2">Priority Personas</h2>
         <p className="text-muted-foreground mb-6">
-          These 3 personas should be targeted first due to higher social media engagement and viral
+          These 4 personas should be targeted first due to higher social media engagement and viral
           potential.
         </p>
         <div className="grid md:grid-cols-3 gap-6">
