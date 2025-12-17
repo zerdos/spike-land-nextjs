@@ -63,6 +63,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
 /**
  * Get all blog posts with metadata (for listing pages)
  * Returns posts sorted by date (newest first)
+ * Filters out unlisted posts (frontmatter.listed === false)
  */
 export function getAllPosts(): BlogPostMeta[] {
   const slugs = getPostSlugs();
@@ -78,7 +79,9 @@ export function getAllPosts(): BlogPostMeta[] {
         readingTime: post.readingTime,
       };
     })
-    .filter((post): post is BlogPostMeta => post !== null);
+    .filter((post): post is BlogPostMeta => post !== null)
+    // Filter out unlisted posts (listed defaults to true via Zod schema)
+    .filter((post) => post.frontmatter.listed !== false);
 
   // Sort by date (newest first)
   return posts.sort((a, b) => {

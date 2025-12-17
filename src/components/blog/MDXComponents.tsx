@@ -9,6 +9,8 @@ import type { ComponentPropsWithoutRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { ImagePlaceholder } from "./ImagePlaceholder";
+
 // Dynamic imports with SSR disabled to prevent React hooks errors during static generation
 const ImageComparisonSlider = dynamic(
   () =>
@@ -310,6 +312,7 @@ export const mdxComponents: MDXComponents = {
   Callout,
   Gallery,
   CTAButton,
+  ImagePlaceholder,
 };
 
 /**
