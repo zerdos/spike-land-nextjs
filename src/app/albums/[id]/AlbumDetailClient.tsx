@@ -128,8 +128,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const [isMoving, setIsMoving] = useState(false);
   const [isLoadingAlbums, setIsLoadingAlbums] = useState(false);
 
-  // Cover image selection state
-  const [isSettingCover, setIsSettingCover] = useState(false);
   const [showQRSheet, setShowQRSheet] = useState(false);
 
   // File upload state
@@ -271,36 +269,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     } catch (err) {
       console.error("Error deleting album:", err);
       alert("Failed to delete album. Please try again.");
-    }
-  };
-
-  const handleRemoveImage = async (imageId: string) => {
-    if (!confirm("Remove this image from the album?")) return;
-
-    try {
-      const response = await fetch(`/api/albums/${albumId}/images`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: [imageId] }),
-      });
-
-      if (!response.ok) throw new Error("Failed to remove image");
-
-      setAlbum((prev) =>
-        prev
-          ? {
-            ...prev,
-            images: prev.images.filter((img) => img.id !== imageId),
-            imageCount: prev.imageCount - 1,
-            coverImageId: prev.coverImageId === imageId
-              ? null
-              : prev.coverImageId,
-          }
-          : null
-      );
-    } catch (err) {
-      console.error("Error removing image:", err);
-      alert("Failed to remove image. Please try again.");
     }
   };
 
@@ -604,36 +572,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     }
   };
 
-  // Cover image handler
-  const handleSetCover = async (imageId: string) => {
-    if (!album?.isOwner) return;
-
-    setIsSettingCover(true);
-    try {
-      const response = await fetch(`/api/albums/${albumId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImageId: imageId }),
-      });
-
-      if (!response.ok) throw new Error("Failed to set cover image");
-
-      setAlbum((prev) =>
-        prev
-          ? {
-            ...prev,
-            coverImageId: imageId,
-          }
-          : null
-      );
-    } catch (err) {
-      console.error("Error setting cover:", err);
-      alert("Failed to set cover image. Please try again.");
-    } finally {
-      setIsSettingCover(false);
-    }
-  };
-
   // Get image URL based on display type
   const getImageUrl = useCallback((image: AlbumImage): string => {
     switch (displayType) {
@@ -929,7 +867,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                 {album.images.map((image) => (
                   <Card
                     key={image.id}
-                    className={`overflow-hidden group relative transition-all ${
+                    className={`overflow-hidden group relative transition-all cursor-pointer ${
                       draggedImageId === image.id ? "opacity-50" : ""
                     } ${dragOverImageId === image.id ? "ring-2 ring-primary" : ""} ${
                       selectedImages.has(image.id) ? "ring-2 ring-primary" : ""
@@ -940,6 +878,12 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, image.id)}
                     onDragEnd={handleDragEnd}
+                    onClick={(e) => {
+                      if (!isSelectionMode && !draggedImageId) {
+                        e.stopPropagation();
+                        router.push(ROUTES.imageDetail(image.id));
+                      }
+                    }}
                   >
                     <div className="relative aspect-square bg-muted">
                       <Image
@@ -972,7 +916,10 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                       {isSelectionMode && (
                         <div
                           className="absolute inset-0 bg-black/20 flex items-start justify-start p-3 cursor-pointer"
-                          onClick={() => toggleImageSelection(image.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleImageSelection(image.id);
+                          }}
                         >
                           <Checkbox
                             checked={selectedImages.has(image.id)}
@@ -980,37 +927,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                             className="h-5 w-5 bg-white border-white"
                             aria-label={`Select ${image.name || "image"}`}
                           />
-                        </div>
-                      )}
-                      {album.isOwner && !isSelectionMode && (
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            asChild
-                          >
-                            <Link href={ROUTES.imageDetail(image.id)}>View</Link>
-                          </Button>
-                          {album.coverImageId !== image.id && (
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleSetCover(image.id)}
-                              disabled={isSettingCover}
-                              title="Set as cover"
-                            >
-                              <Star className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleRemoveImage(image.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       )}
                     </div>

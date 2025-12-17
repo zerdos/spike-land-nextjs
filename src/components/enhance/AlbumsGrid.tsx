@@ -31,6 +31,7 @@ export interface AlbumsGridProps {
   onDragOver?: (albumId: string) => void;
   onDragLeave?: () => void;
   onDrop?: (albumId: string) => void;
+  onFileDrop?: (albumId: string, files: File[]) => void;
   dragOverAlbumId?: string | null;
 }
 
@@ -141,6 +142,7 @@ export function AlbumsGrid({
   onDragOver,
   onDragLeave,
   onDrop,
+  onFileDrop,
   dragOverAlbumId,
 }: AlbumsGridProps) {
   if (albums.length === 0) {
@@ -177,6 +179,19 @@ export function AlbumsGrid({
   const handleDrop = (albumId: string, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Check if files are being dropped (native file drop from desktop)
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0 && onFileDrop) {
+      // Filter to only image files
+      const imageFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+      if (imageFiles.length > 0) {
+        onFileDrop(albumId, imageFiles);
+        return;
+      }
+    }
+
+    // Otherwise, this is an internal image drag (existing images being moved)
     if (onDrop) {
       onDrop(albumId);
     }

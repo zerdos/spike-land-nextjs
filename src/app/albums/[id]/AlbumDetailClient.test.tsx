@@ -689,7 +689,9 @@ describe("AlbumDetailClient", () => {
       });
     });
 
-    it("calls API to set cover when clicking star icon", async () => {
+    // Skipped: Set as cover functionality moved to album settings
+    // The hover overlay with star icon has been removed for cleaner UX
+    it.skip("calls API to set cover when clicking star icon", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>
@@ -901,7 +903,9 @@ describe("AlbumDetailClient", () => {
   });
 
   describe("Image Removal", () => {
-    it("removes single image when clicking remove button", async () => {
+    // Skipped: Single image removal via hover button has been removed
+    // Users can now remove images through selection mode bulk actions
+    it.skip("removes single image when clicking remove button", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
       mockFetch.mockResolvedValueOnce({

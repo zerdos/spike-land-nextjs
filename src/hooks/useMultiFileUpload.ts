@@ -27,10 +27,17 @@ export interface UseMultiFileUploadOptions {
 }
 
 /**
+ * Options for individual upload calls
+ */
+export interface UploadOptions {
+  albumId?: string; // Upload directly to a specific album
+}
+
+/**
  * Return type for the multi-file upload hook
  */
 export interface UseMultiFileUploadReturn {
-  upload: (files: File[]) => Promise<void>;
+  upload: (files: File[], options?: UploadOptions) => Promise<void>;
   files: FileUploadStatus[];
   isUploading: boolean;
   progress: number; // Overall 0-100
@@ -132,6 +139,7 @@ export function useMultiFileUpload(
     async (
       fileStatus: FileUploadStatus,
       signal: AbortSignal,
+      targetAlbumId?: string,
     ): Promise<void> => {
       const fileId = fileStatus.id;
 
@@ -146,8 +154,10 @@ export function useMultiFileUpload(
 
         const formData = new FormData();
         formData.append("file", fileStatus.file);
-        if (albumId) {
-          formData.append("albumId", albumId);
+        // Use targetAlbumId from upload call, or fall back to hook-level albumId
+        const effectiveAlbumId = targetAlbumId ?? albumId;
+        if (effectiveAlbumId) {
+          formData.append("albumId", effectiveAlbumId);
         }
 
         const response = await fetch("/api/images/upload", {
@@ -198,10 +208,10 @@ export function useMultiFileUpload(
    * Upload all files sequentially
    */
   const uploadSequential = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal) => {
+    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
       for (const fileStatus of fileStatuses) {
         if (signal.aborted) break;
-        await uploadSingleFile(fileStatus, signal);
+        await uploadSingleFile(fileStatus, signal, targetAlbumId);
       }
     },
     [uploadSingleFile],
@@ -211,9 +221,9 @@ export function useMultiFileUpload(
    * Upload all files in parallel
    */
   const uploadParallel = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal) => {
+    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
       await Promise.all(
-        fileStatuses.map((fileStatus) => uploadSingleFile(fileStatus, signal)),
+        fileStatuses.map((fileStatus) => uploadSingleFile(fileStatus, signal, targetAlbumId)),
       );
     },
     [uploadSingleFile],
@@ -223,7 +233,9 @@ export function useMultiFileUpload(
    * Main upload function
    */
   const upload = useCallback(
-    async (filesToUpload: File[]): Promise<void> => {
+    async (filesToUpload: File[], options?: UploadOptions): Promise<void> => {
+      const targetAlbumId = options?.albumId;
+
       // Validate file count
       if (filesToUpload.length === 0) {
         throw new Error("No files to upload");
@@ -256,9 +268,9 @@ export function useMultiFileUpload(
       try {
         // Upload files (sequential or parallel)
         if (parallel) {
-          await uploadParallel(fileStatuses, controller.signal);
+          await uploadParallel(fileStatuses, controller.signal, targetAlbumId);
         } else {
-          await uploadSequential(fileStatuses, controller.signal);
+          await uploadSequential(fileStatuses, controller.signal, targetAlbumId);
         }
 
         // Call onUploadComplete callback

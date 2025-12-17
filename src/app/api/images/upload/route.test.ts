@@ -456,15 +456,20 @@ describe("POST /api/images/upload", () => {
   });
 
   describe("album association", () => {
-    it("should return 400 when no albumId provided", async () => {
-      // Pass null explicitly to skip albumId
+    it("should allow upload without albumId using TIER_1K default", async () => {
+      // Pass null explicitly to skip albumId - now allowed
       const req = createMockRequest(createMockFile(), null);
       const res = await POST(req);
       const data = await res.json();
 
-      expect(res.status).toBe(400);
-      expect(data.suggestion).toContain("select an album");
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+      // Should create image but NOT link to album
+      expect(mockPrisma.enhancedImage.create).toHaveBeenCalled();
       expect(mockPrisma.albumImage.create).not.toHaveBeenCalled();
+      // Should use TIER_1K (2 tokens) as default
+      expect(data.enhancement.tier).toBe("TIER_1K");
+      expect(data.enhancement.tokenCost).toBe(2);
     });
 
     it("should return 400 if albumId is provided but album does not exist", async () => {
