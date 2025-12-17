@@ -1,7 +1,7 @@
 # Spike Land - Business Structure Documentation
 
 > **Last Updated**: December 2025 **Decision**: Form UK Limited Company
-> **Company Name**: Spike Land Ltd (pending registration)
+> **Company Name**: SPIKE LAND LTD (Company #16906682)
 
 ---
 
@@ -46,7 +46,7 @@
 | Field                         | Value                                       |
 | ----------------------------- | ------------------------------------------- |
 | **Company Name**              | Spike Land Ltd                              |
-| **Company Number**            | _Awaiting Certificate of Incorporation_     |
+| **Company Number**            | 16906682                                    |
 | **Application Reference**     | 112-184507                                  |
 | **Corporation Tax Reference** | BRCT00003618256                             |
 | **Registered Office**         | _TBD_                                       |
@@ -54,7 +54,7 @@
 | **Shareholder(s)**            | Zoltan Erdos (100%)                         |
 | **SIC Codes**                 | 62090 (IT consultancy), 63120 (Web portals) |
 | **Application Date**          | December 2025                               |
-| **Incorporation Date**        | _Expected within 2 working days_            |
+| **Incorporation Date**        | 12 December 2025                            |
 
 ---
 
@@ -72,11 +72,11 @@
   - SIC codes: 62090, 63120
 - [x] Application submitted (Reference: 112-184507)
 - [x] Corporation Tax registration submitted (Reference: BRCT00003618256)
-- [ ] Receive Certificate of Incorporation (expected within 2 working days)
+- [x] Receive Certificate of Incorporation (12 December 2025)
 
-### Phase 2: Post-Formation Setup (Days 3-7)
+### Phase 2: Post-Formation Setup (Days 3-7) ✅ COMPLETE
 
-- [ ] Open business bank account (Starling, Tide, or Monzo Business recommended)
+- [x] Open business bank account (Monzo Business)
 - [ ] Register for Corporation Tax with HMRC (within 3 months of incorporation)
 - [ ] Update Stripe account to company details
 - [ ] Set up accounting software (FreeAgent, Xero, or QuickBooks)

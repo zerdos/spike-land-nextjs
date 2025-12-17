@@ -73,7 +73,7 @@ describe("Terms of Service Page", () => {
 
     it("should specify operator as company", () => {
       const { container } = render(<TermsPage />);
-      expect(container.textContent?.includes("Spike Land Ltd")).toBe(true);
+      expect(container.textContent?.includes("SPIKE LAND LTD")).toBe(true);
     });
 
     it("should mention capacity to agree", () => {
