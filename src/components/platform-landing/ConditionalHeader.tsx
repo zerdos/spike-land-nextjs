@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { PixelAppHeader } from "./PixelAppHeader";
 import { PlatformHeader } from "./PlatformHeader";
 
-const EXCLUDED_PATHS = ["/canvas", "/storybook", "/admin"];
+const EXCLUDED_PATHS = ["/canvas", "/storybook", "/admin", "/personas"];
 
 // Check if pathname is a child route of /apps/pixel (but not /apps/pixel itself)
 function isPixelAppChildRoute(pathname: string | null): boolean {

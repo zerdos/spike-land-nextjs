@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Coins, Rocket, Shield } from "lucide-react";
+import { Clock, Coins, ImageIcon, Layers } from "lucide-react";
 import { type ReactNode } from "react";
 
 interface Feature {
@@ -12,28 +12,28 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    icon: <Bot className="h-6 w-6" />,
-    title: "AI-Powered Development",
+    icon: <Clock className="h-6 w-6" />,
+    title: "60-Second Magic",
     description:
-      "Connect with AI agents that understand your requirements and build production-ready applications tailored to your needs.",
+      "Upload. Enhance. Download. That's it. No complex settings, no waiting around. Your photo is ready before your coffee.",
+  },
+  {
+    icon: <ImageIcon className="h-6 w-6" />,
+    title: "Print-Ready 4K",
+    description:
+      "Good enough to frame. Finally. Get crystal-clear resolution that looks stunning on any screen or print size.",
+  },
+  {
+    icon: <Layers className="h-6 w-6" />,
+    title: "Batch Albums",
+    description:
+      "Restore 100 photos at once. Perfect for family reunions, wedding albums, or that shoebox of photos from the attic.",
   },
   {
     icon: <Coins className="h-6 w-6" />,
-    title: "Flexible Token Economy",
+    title: "Free Forever Tier",
     description:
-      "Pay-as-you-go pricing with auto-regenerating tokens. Only pay for what you use, with no monthly commitments required.",
-  },
-  {
-    icon: <Rocket className="h-6 w-6" />,
-    title: "Easy Deployment",
-    description:
-      "Deploy your apps with one click. Get custom domains and scalable infrastructure without any DevOps knowledge.",
-  },
-  {
-    icon: <Shield className="h-6 w-6" />,
-    title: "Secure & Compliant",
-    description:
-      "Enterprise-grade security with GDPR compliance. Your data is encrypted and protected at all times.",
+      "Tokens regenerate every 15 minutes. No credit card ever required. Try as many photos as you want, on the house.",
   },
 ];
 
@@ -50,10 +50,10 @@ export function PlatformFeatures() {
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center mb-16">
           <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
-            Why Spike Land?
+            Why Pixel?
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Everything you need to build, deploy, and monetize AI-powered applications
+            The fastest way to restore your memories. Powered by the latest AI.
           </p>
         </div>
 

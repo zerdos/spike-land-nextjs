@@ -5,13 +5,13 @@ import { PlatformFeatures } from "./PlatformFeatures";
 describe("PlatformFeatures Component", () => {
   it("should render the section heading", () => {
     render(<PlatformFeatures />);
-    expect(screen.getByText("Why Spike Land?")).toBeInTheDocument();
+    expect(screen.getByText("Why Pixel?")).toBeInTheDocument();
   });
 
   it("should render the section description", () => {
     render(<PlatformFeatures />);
     expect(
-      screen.getByText(/Everything you need to build, deploy, and monetize/),
+      screen.getByText(/The fastest way to restore your memories/),
     ).toBeInTheDocument();
   });
 
@@ -21,34 +21,34 @@ describe("PlatformFeatures Component", () => {
     expect(cards.length).toBe(4);
   });
 
-  it("should render AI-Powered Development feature", () => {
+  it("should render 60-Second Magic feature", () => {
     render(<PlatformFeatures />);
-    expect(screen.getByText("AI-Powered Development")).toBeInTheDocument();
+    expect(screen.getByText("60-Second Magic")).toBeInTheDocument();
     expect(
-      screen.getByText(/Connect with AI agents that understand/),
+      screen.getByText(/Upload. Enhance. Download. That's it./),
     ).toBeInTheDocument();
   });
 
-  it("should render Flexible Token Economy feature", () => {
+  it("should render Print-Ready 4K feature", () => {
     render(<PlatformFeatures />);
-    expect(screen.getByText("Flexible Token Economy")).toBeInTheDocument();
+    expect(screen.getByText("Print-Ready 4K")).toBeInTheDocument();
     expect(
-      screen.getByText(/Pay-as-you-go pricing with auto-regenerating/),
+      screen.getByText(/Good enough to frame. Finally./),
     ).toBeInTheDocument();
   });
 
-  it("should render Easy Deployment feature", () => {
+  it("should render Batch Albums feature", () => {
     render(<PlatformFeatures />);
-    expect(screen.getByText("Easy Deployment")).toBeInTheDocument();
-    expect(screen.getByText(/Deploy your apps with one click/))
+    expect(screen.getByText("Batch Albums")).toBeInTheDocument();
+    expect(screen.getByText(/Restore 100 photos at once/))
       .toBeInTheDocument();
   });
 
-  it("should render Secure & Compliant feature", () => {
+  it("should render Free Forever Tier feature", () => {
     render(<PlatformFeatures />);
-    expect(screen.getByText("Secure & Compliant")).toBeInTheDocument();
+    expect(screen.getByText("Free Forever Tier")).toBeInTheDocument();
     expect(
-      screen.getByText(/Enterprise-grade security with GDPR compliance/),
+      screen.getByText(/Tokens regenerate every 15 minutes/),
     ).toBeInTheDocument();
   });
 
@@ -97,28 +97,28 @@ describe("PlatformFeatures Component", () => {
     expect(heading).toHaveClass("sm:text-4xl");
   });
 
-  it("should render Bot icon for AI-Powered Development", () => {
+  it("should render Clock icon for 60-Second Magic", () => {
     const { container } = render(<PlatformFeatures />);
-    const botIcon = container.querySelector("svg.lucide-bot");
-    expect(botIcon).toBeInTheDocument();
+    const clockIcon = container.querySelector("svg.lucide-clock");
+    expect(clockIcon).toBeInTheDocument();
   });
 
-  it("should render Coins icon for Flexible Token Economy", () => {
+  it("should render Image icon for Print-Ready 4K", () => {
+    const { container } = render(<PlatformFeatures />);
+    const imageIcon = container.querySelector("svg.lucide-image");
+    expect(imageIcon).toBeInTheDocument();
+  });
+
+  it("should render Layers icon for Batch Albums", () => {
+    const { container } = render(<PlatformFeatures />);
+    const layersIcon = container.querySelector("svg.lucide-layers");
+    expect(layersIcon).toBeInTheDocument();
+  });
+
+  it("should render Coins icon for Free Forever Tier", () => {
     const { container } = render(<PlatformFeatures />);
     const coinsIcon = container.querySelector("svg.lucide-coins");
     expect(coinsIcon).toBeInTheDocument();
-  });
-
-  it("should render Rocket icon for Easy Deployment", () => {
-    const { container } = render(<PlatformFeatures />);
-    const rocketIcon = container.querySelector("svg.lucide-rocket");
-    expect(rocketIcon).toBeInTheDocument();
-  });
-
-  it("should render Shield icon for Secure & Compliant", () => {
-    const { container } = render(<PlatformFeatures />);
-    const shieldIcon = container.querySelector("svg.lucide-shield");
-    expect(shieldIcon).toBeInTheDocument();
   });
 
   it("should have center-aligned text in header", () => {
