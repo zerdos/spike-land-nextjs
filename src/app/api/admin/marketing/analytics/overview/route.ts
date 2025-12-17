@@ -32,21 +32,25 @@ const querySchema = z.object({
 });
 
 interface OverviewMetrics {
-  totalVisitors: number;
-  uniqueVisitors: number;
-  totalSessions: number;
-  signups: number;
-  signupConversionRate: number;
-  enhancements: number;
-  enhancementConversionRate: number;
-  purchases: number;
-  purchaseConversionRate: number;
-  revenue: number;
-  trends: {
+  metrics: {
     visitors: number;
+    visitorsChange: number;
     signups: number;
+    signupsChange: number;
+    conversionRate: number;
+    conversionRateChange: number;
     revenue: number;
+    revenueChange: number;
   };
+  daily: Array<{
+    date: string;
+    visitors: number;
+    conversions: number;
+  }>;
+  trafficSources: Array<{
+    name: string;
+    value: number;
+  }>;
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -96,38 +100,51 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const previousEnd = new Date(start.getTime() - 1);
 
         // Query current period metrics
-        const currentMetrics = await getMetrics(
+        const currentMetrics = await getRawMetrics(
           start,
           end,
           attributionModel as AttributionType,
         );
 
         // Query previous period metrics for trends
-        const previousMetrics = await getMetrics(
+        const previousMetrics = await getRawMetrics(
           previousStart,
           previousEnd,
           attributionModel as AttributionType,
         );
 
-        // Calculate trends (percentage change)
-        const trends = {
-          visitors: calculatePercentageChange(
-            previousMetrics.uniqueVisitors,
-            currentMetrics.uniqueVisitors,
-          ),
-          signups: calculatePercentageChange(
-            previousMetrics.signups,
-            currentMetrics.signups,
-          ),
-          revenue: calculatePercentageChange(
-            previousMetrics.revenue,
-            currentMetrics.revenue,
-          ),
-        };
+        // Get daily breakdown
+        const daily = await getDailyMetrics(start, end);
 
+        // Get traffic sources breakdown
+        const trafficSources = await getTrafficSources(start, end);
+
+        // Build response in expected format
         return {
-          ...currentMetrics,
-          trends,
+          metrics: {
+            visitors: currentMetrics.uniqueVisitors,
+            visitorsChange: calculatePercentageChange(
+              previousMetrics.uniqueVisitors,
+              currentMetrics.uniqueVisitors,
+            ),
+            signups: currentMetrics.signups,
+            signupsChange: calculatePercentageChange(
+              previousMetrics.signups,
+              currentMetrics.signups,
+            ),
+            conversionRate: currentMetrics.signupConversionRate,
+            conversionRateChange: calculatePercentageChange(
+              previousMetrics.signupConversionRate,
+              currentMetrics.signupConversionRate,
+            ),
+            revenue: currentMetrics.revenue,
+            revenueChange: calculatePercentageChange(
+              previousMetrics.revenue,
+              currentMetrics.revenue,
+            ),
+          },
+          daily,
+          trafficSources,
         };
       },
       300, // Cache for 5 minutes
@@ -146,11 +163,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-async function getMetrics(
+interface RawMetrics {
+  totalVisitors: number;
+  uniqueVisitors: number;
+  totalSessions: number;
+  signups: number;
+  signupConversionRate: number;
+  enhancements: number;
+  enhancementConversionRate: number;
+  purchases: number;
+  purchaseConversionRate: number;
+  revenue: number;
+}
+
+async function getRawMetrics(
   startDate: Date,
   endDate: Date,
   attributionModel: AttributionType,
-): Promise<Omit<OverviewMetrics, "trends">> {
+): Promise<RawMetrics> {
   // Get visitor sessions in date range
   const sessions = await prisma.visitorSession.findMany({
     where: {
@@ -230,4 +260,149 @@ function calculatePercentageChange(previous: number, current: number): number {
   }
   const change = ((current - previous) / previous) * 100;
   return Math.round(change * 100) / 100;
+}
+
+/**
+ * Get daily visitor and conversion metrics for the date range
+ */
+async function getDailyMetrics(
+  startDate: Date,
+  endDate: Date,
+): Promise<Array<{ date: string; visitors: number; conversions: number; }>> {
+  // Group sessions by day
+  const sessions = await prisma.visitorSession.findMany({
+    where: {
+      sessionStart: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      sessionStart: true,
+      visitorId: true,
+    },
+  });
+
+  // Group conversions by day
+  const conversions = await prisma.campaignAttribution.findMany({
+    where: {
+      convertedAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+      attributionType: "FIRST_TOUCH",
+      conversionType: "SIGNUP",
+    },
+    select: {
+      convertedAt: true,
+    },
+  });
+
+  // Aggregate by date
+  const dailyMap = new Map<string, { visitors: Set<string>; conversions: number; }>();
+
+  // Initialize all dates in range
+  const current = new Date(startDate);
+  while (current <= endDate) {
+    const dateKey = current.toISOString().split("T")[0]!;
+    dailyMap.set(dateKey, { visitors: new Set(), conversions: 0 });
+    current.setDate(current.getDate() + 1);
+  }
+
+  // Count unique visitors per day
+  for (const session of sessions) {
+    const dateKey = session.sessionStart.toISOString().split("T")[0]!;
+    const day = dailyMap.get(dateKey);
+    if (day) {
+      day.visitors.add(session.visitorId);
+    }
+  }
+
+  // Count conversions per day
+  for (const conversion of conversions) {
+    const dateKey = conversion.convertedAt.toISOString().split("T")[0]!;
+    const day = dailyMap.get(dateKey);
+    if (day) {
+      day.conversions++;
+    }
+  }
+
+  // Convert to array format
+  return Array.from(dailyMap.entries())
+    .map(([date, data]) => ({
+      date,
+      visitors: data.visitors.size,
+      conversions: data.conversions,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * Get traffic sources breakdown
+ */
+async function getTrafficSources(
+  startDate: Date,
+  endDate: Date,
+): Promise<Array<{ name: string; value: number; }>> {
+  const sessions = await prisma.visitorSession.findMany({
+    where: {
+      sessionStart: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      utmSource: true,
+      referrer: true,
+      gclid: true,
+      fbclid: true,
+    },
+  });
+
+  // Categorize traffic sources
+  const sourceMap = new Map<string, number>();
+
+  for (const session of sessions) {
+    let source = "Direct";
+
+    if (session.gclid) {
+      source = "Google Ads";
+    } else if (session.fbclid) {
+      source = "Facebook";
+    } else if (session.utmSource) {
+      const utmLower = session.utmSource.toLowerCase();
+      if (utmLower.includes("google")) {
+        source = "Google";
+      } else if (utmLower.includes("facebook") || utmLower.includes("fb")) {
+        source = "Facebook";
+      } else if (utmLower.includes("twitter") || utmLower === "x") {
+        source = "Twitter/X";
+      } else if (utmLower.includes("email") || utmLower.includes("newsletter")) {
+        source = "Email";
+      } else {
+        source = "Other";
+      }
+    } else if (session.referrer) {
+      try {
+        const url = new URL(session.referrer);
+        const host = url.hostname.toLowerCase();
+        if (host.includes("google")) {
+          source = "Organic Search";
+        } else if (host.includes("bing") || host.includes("duckduckgo")) {
+          source = "Organic Search";
+        } else {
+          source = "Referral";
+        }
+      } catch {
+        source = "Referral";
+      }
+    }
+
+    sourceMap.set(source, (sourceMap.get(source) || 0) + 1);
+  }
+
+  // Convert to array and sort by value
+  return Array.from(sourceMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 }
