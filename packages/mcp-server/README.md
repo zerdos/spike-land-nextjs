@@ -1,4 +1,4 @@
-# @spike-land/mcp-server
+# @spike-npm-land/mcp-server
 
 MCP (Model Context Protocol) server for Spike Land image generation and
 modification. Use this server to generate and modify images with AI directly
@@ -7,13 +7,13 @@ from Claude Desktop or Claude Code.
 ## Installation
 
 ```bash
-npx @spike-land/mcp-server
+npx @spike-npm-land/mcp-server
 ```
 
 Or install globally:
 
 ```bash
-npm install -g @spike-land/mcp-server
+npm install -g @spike-npm-land/mcp-server
 ```
 
 ## Setup
@@ -37,7 +37,7 @@ Edit your Claude Desktop configuration file:
   "mcpServers": {
     "spike-land": {
       "command": "npx",
-      "args": ["@spike-land/mcp-server"],
+      "args": ["@spike-npm-land/mcp-server"],
       "env": {
         "SPIKE_LAND_API_KEY": "sk_live_your_key_here"
       }
@@ -56,7 +56,7 @@ Add to your project's `.claude/settings.json` or global
   "mcpServers": {
     "spike-land": {
       "command": "npx",
-      "args": ["@spike-land/mcp-server"],
+      "args": ["@spike-npm-land/mcp-server"],
       "env": {
         "SPIKE_LAND_API_KEY": "sk_live_your_key_here"
       }
@@ -68,7 +68,7 @@ Add to your project's `.claude/settings.json` or global
 Or via CLI:
 
 ```bash
-claude mcp add spike-land -- npx @spike-land/mcp-server
+claude mcp add spike-land -- npx @spike-npm-land/mcp-server
 ```
 
 ## Available Tools

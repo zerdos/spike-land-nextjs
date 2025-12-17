@@ -1047,7 +1047,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
             </p>
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
-{`SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server`}
+{`SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server`}
               </pre>
               <Button
                 variant="ghost"
@@ -1055,7 +1055,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server`,
+                    `SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server`,
                     "mcp",
                   )}
               >
