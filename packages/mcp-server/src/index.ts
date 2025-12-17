@@ -7,14 +7,14 @@
  * using the Spike Land API.
  *
  * Usage:
- *   SPIKE_LAND_API_KEY=sk_live_... npx @spike-land/mcp-server
+ *   SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server
  *
  * Configuration for Claude Desktop (~/.config/claude/claude_desktop_config.json):
  *   {
  *     "mcpServers": {
  *       "spike-land": {
  *         "command": "npx",
- *         "args": ["@spike-land/mcp-server"],
+ *         "args": ["@spike-npm-land/mcp-server"],
  *         "env": { "SPIKE_LAND_API_KEY": "sk_live_..." }
  *       }
  *     }
