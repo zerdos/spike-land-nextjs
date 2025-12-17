@@ -96,33 +96,34 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
-    const albumId = formData.get("albumId") as string;
+    const albumId = formData.get("albumId") as string | null;
 
-    if (!albumId) {
-      return NextResponse.json(
-        { error: "Album selection is required for upload." },
-        { status: 400, headers: { "X-Request-ID": requestId } },
-      );
-    }
+    // albumId is optional - if not provided, use TIER_1K as default
+    let album: { id: string; userId: string; defaultTier: string; } | null = null;
+    let defaultTier: EnhancementTier = "TIER_1K"; // Default for non-album uploads
 
-    const album = await prisma.album.findUnique({
-      where: { id: albumId },
-      select: {
-        id: true,
-        userId: true,
-        defaultTier: true,
-      },
-    });
+    if (albumId) {
+      album = await prisma.album.findUnique({
+        where: { id: albumId },
+        select: {
+          id: true,
+          userId: true,
+          defaultTier: true,
+        },
+      });
 
-    if (!album || album.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Album not found or access denied." },
-        { status: 404, headers: { "X-Request-ID": requestId } },
-      );
+      if (!album || album.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: "Album not found or access denied." },
+          { status: 404, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      defaultTier = album.defaultTier as EnhancementTier;
     }
 
     // Calculate cost
-    const costPerImage = ENHANCEMENT_COSTS[album.defaultTier as EnhancementTier];
+    const costPerImage = ENHANCEMENT_COSTS[defaultTier];
     const totalCost = files.length * costPerImage;
 
     // Check balance
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
       amount: totalCost,
       source: "BATCH_UPLOAD",
       sourceId: requestId, // Use request ID as reference
-      metadata: { albumId, fileCount: files.length, tier: album.defaultTier },
+      metadata: { albumId: albumId || null, fileCount: files.length, tier: defaultTier },
     });
 
     if (!files || files.length === 0) {
@@ -382,12 +383,15 @@ export async function POST(request: NextRequest) {
       // Execute transaction for all successfully uploaded files
       const enhancedImages = await prisma.$transaction(async (tx) => {
         const images = [];
-        // Get max sort order for album
-        const maxSort = await tx.albumImage.aggregate({
-          where: { albumId: album.id },
-          _max: { sortOrder: true },
-        });
-        let currentSort = (maxSort._max.sortOrder ?? -1) + 1;
+        // Get max sort order for album (if album specified)
+        let currentSort = 0;
+        if (album) {
+          const maxSort = await tx.albumImage.aggregate({
+            where: { albumId: album.id },
+            _max: { sortOrder: true },
+          });
+          currentSort = (maxSort._max.sortOrder ?? -1) + 1;
+        }
 
         for (const fileData of uploadedFiles) {
           // Create enhanced image
@@ -405,21 +409,23 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          // Link to album
-          await tx.albumImage.create({
-            data: {
-              albumId: album.id,
-              imageId: img.id,
-              sortOrder: currentSort++,
-            },
-          });
+          // Link to album (if album specified)
+          if (album) {
+            await tx.albumImage.create({
+              data: {
+                albumId: album.id,
+                imageId: img.id,
+                sortOrder: currentSort++,
+              },
+            });
+          }
 
           // Create Enhancement Job
           await tx.imageEnhancementJob.create({
             data: {
               userId: session.user.id,
               imageId: img.id,
-              tier: album.defaultTier,
+              tier: defaultTier,
               status: "PENDING",
               tokensCost: costPerImage,
             },

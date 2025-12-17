@@ -1,7 +1,6 @@
 "use client";
 
 import { PixelLogo } from "@/components/brand";
-import { AlbumSelector } from "@/components/enhance/AlbumSelector";
 import { AlbumsGrid } from "@/components/enhance/AlbumsGrid";
 import { AlbumsGridSkeleton } from "@/components/enhance/AlbumsGridSkeleton";
 import { CreateAlbumDialog } from "@/components/enhance/CreateAlbumDialog";
@@ -34,7 +33,6 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
   const router = useRouter();
   const [images, setImages] = useState(initialImages);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
-  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const { refetch: refetchBalance } = useTokenBalance();
   const { showEnhanced, setShowEnhanced } = useThumbnailPreference();
   const [zoomLevel, setZoomLevel] = useZoomLevel();
@@ -51,7 +49,6 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
   } = useMultiFileUpload({
     maxFiles: 20,
     parallel: false,
-    albumId: selectedAlbumId || undefined,
     onFileComplete: (_imageId) => {
       // Refresh the page to show the newly uploaded image
       router.refresh();
@@ -61,10 +58,6 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
       setTimeout(() => {
         reset();
         router.refresh();
-        // Refetch albums to update image counts
-        if (selectedAlbumId) {
-          refetchAlbums();
-        }
       }, 2000);
     },
   });
@@ -131,53 +124,22 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
   return (
     <div className="min-h-screen" onDragOver={handleDragMove}>
       <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <PixelLogo size="lg" />
-              <span className="text-muted-foreground text-lg hidden sm:inline">
-                AI Image Enhancement
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/apps/pixel/pipelines">
-                  <Settings2 className="h-4 w-4 mr-2" />
-                  Pipelines
-                </Link>
-              </Button>
-              <TokenDisplay />
-            </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <PixelLogo size="lg" />
+            <span className="text-muted-foreground text-lg hidden sm:inline">
+              AI Image Enhancement
+            </span>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <ImageUpload onFilesSelected={upload} isUploading={isUploading} />
-              {!albumsLoading && albums.length > 0 && (
-                <AlbumSelector
-                  albums={albums}
-                  selectedAlbumId={selectedAlbumId}
-                  onAlbumSelect={setSelectedAlbumId}
-                  disabled={isUploading}
-                />
-              )}
-              {files.length > 0 && (
-                <MultiUploadProgress
-                  files={files}
-                  onCancel={cancel}
-                />
-              )}
-            </div>
-            <div className="hidden lg:block">
-              <div className="text-foreground/80 text-lg font-semibold mb-4">
-                Your Images
-              </div>
-              <div className="text-muted-foreground text-sm">
-                Upload one or multiple images to get started with AI enhancement.
-                {albums.length > 0 &&
-                  " Select an album below to upload directly to it."}
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/apps/pixel/pipelines">
+                <Settings2 className="h-4 w-4 mr-2" />
+                Pipelines
+              </Link>
+            </Button>
+            <TokenDisplay />
           </div>
         </div>
 
@@ -211,7 +173,8 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
             )}
         </div>
 
-        <div className="mb-6">
+        {/* Images Section */}
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-foreground">
               Your Images
@@ -236,6 +199,17 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
             onDragEnd={handleDragEnd}
             zoomLevel={zoomLevel}
           />
+        </div>
+
+        {/* Upload Section */}
+        <div className="space-y-4">
+          <ImageUpload onFilesSelected={upload} isUploading={isUploading} />
+          {files.length > 0 && (
+            <MultiUploadProgress
+              files={files}
+              onCancel={cancel}
+            />
+          )}
         </div>
       </div>
 
