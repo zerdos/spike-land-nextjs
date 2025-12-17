@@ -8,7 +8,7 @@
 
 ## Priority Personas (Initial Campaign Focus)
 
-These 3 personas should be targeted first due to higher social media engagement and viral potential.
+These 4 personas should be targeted first due to higher social media engagement and viral potential.
 
 ---
 
@@ -166,11 +166,63 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
+### 4. The Childhood Throwback
+
+**Demographics**
+
+| Attribute | Value                   |
+| --------- | ----------------------- |
+| Age       | 25-40                   |
+| Gender    | 55% Female              |
+| Income    | £25-55k                 |
+| Location  | UK (all areas)          |
+| Platform  | TikTok, Instagram Reels |
+
+**Psychographics**
+
+- Deeply nostalgic about own childhood
+- Loves reaction content and before/after reveals
+- Shares personal memories for emotional connection
+- Values authenticity and warm, cozy aesthetics
+
+**Pain Points**
+
+- Childhood photos from the 90s/2000s are embarrassingly low quality
+- Wants to see themselves clearly in old photos
+- Parents' old prints/scans are faded or damaged
+- Can't share childhood photos without feeling embarrassed by quality
+
+**Triggers**
+
+- Seeing childhood reaction videos trending
+- Finding old photo albums at parents' house
+- Birthday nostalgia (especially milestone ages)
+- "What you looked like as a kid" trends
+
+**Primary Hook**
+
+> "A memory that will last forever"
+
+**Ad Copy Variations**
+
+- "I enhanced my baby photos. I wasn't ready for the emotions."
+- "Found a box of photos at my mum's. Now I can finally see 5-year-old me clearly."
+- "This is what my childhood actually looked like. I'm not crying, you are."
+
+**Content Ideas**
+
+- Emotional reaction videos to enhanced childhood photos
+- Before/after reveals with trending "cozy" audio
+- "POV: You see your childhood in HD for the first time"
+- Parent reactions to seeing their kids' enhanced photos
+
+---
+
 ## Secondary Personas
 
 ---
 
-### 4. The Memory Keeper
+### 5. The Memory Keeper
 
 **Demographics**
 
@@ -208,7 +260,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 5. The Genealogist
+### 6. The Genealogist
 
 **Demographics**
 
@@ -246,7 +298,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 6. The Grieving Pet Owner
+### 7. The Grieving Pet Owner
 
 **Demographics**
 
@@ -286,7 +338,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 7. The Nostalgic Parent
+### 8. The Nostalgic Parent
 
 **Demographics**
 
@@ -324,7 +376,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 8. The Wedding Planner
+### 9. The Wedding Planner
 
 **Demographics**
 
@@ -362,7 +414,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 9. The Real Estate Flipper
+### 10. The Real Estate Flipper
 
 **Demographics**
 
@@ -400,7 +452,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 ---
 
-### 10. The Memorial Creator
+### 11. The Memorial Creator
 
 **Demographics**
 
@@ -444,9 +496,10 @@ These 3 personas should be targeted first due to higher social media engagement 
 
 | Persona                | Platform  | Budget % | Expected CAC | Viral Potential |
 | ---------------------- | --------- | -------- | ------------ | --------------- |
-| Tech-Savvy Grandson    | IG/TikTok | 35%      | £3-8         | High            |
-| Social Media Historian | TikTok/IG | 35%      | £2-6         | Very High       |
-| iPhone Upgrader        | IG/TikTok | 30%      | £5-12        | Medium          |
+| Tech-Savvy Grandson    | IG/TikTok | 25%      | £3-8         | High            |
+| Social Media Historian | TikTok/IG | 25%      | £2-6         | Very High       |
+| iPhone Upgrader        | IG/TikTok | 25%      | £5-12        | Medium          |
+| Childhood Throwback    | TikTok/IG | 25%      | £2-5         | Very High       |
 
 **Phase 2 expansion**: Memory Keeper, Nostalgic Parent, Pet Owner
 
@@ -458,6 +511,7 @@ These 3 personas should be targeted first due to higher social media engagement 
 ?utm_source=instagram&utm_medium=paid&utm_campaign=grandson
 ?utm_source=tiktok&utm_medium=paid&utm_campaign=historian
 ?utm_source=instagram&utm_medium=paid&utm_campaign=upgrader
+?utm_source=tiktok&utm_medium=paid&utm_campaign=throwback
 ```
 
 ---
