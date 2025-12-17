@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     // Validate that the tier has a defined cost
     const tokenCost = ENHANCEMENT_COSTS[defaultTier];
     if (tokenCost === undefined) {
-      requestLogger.error("Invalid enhancement tier", { tier: defaultTier });
+      requestLogger.error("Invalid enhancement tier", new Error(`Unknown tier: ${defaultTier}`));
       return NextResponse.json(
         { error: "Invalid enhancement tier configuration" },
         { status: 500, headers: { "X-Request-ID": requestId } },
