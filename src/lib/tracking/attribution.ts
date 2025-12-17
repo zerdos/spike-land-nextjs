@@ -1,0 +1,439 @@
+/**
+ * Campaign Attribution Utilities
+ *
+ * Manages multi-touch attribution tracking for campaign analytics.
+ * Supports first-touch and last-touch attribution models.
+ */
+
+import prisma from "@/lib/prisma";
+import type { CampaignAttribution, VisitorSession } from "@prisma/client";
+import { getPlatformFromUTM, type UTMParams } from "./utm-capture";
+
+/**
+ * Attribution types matching Prisma schema
+ */
+export type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH";
+
+/**
+ * Conversion types matching Prisma schema
+ */
+export type ConversionType = "SIGNUP" | "ENHANCEMENT" | "PURCHASE";
+
+/**
+ * Parameters for creating an attribution record
+ */
+export interface AttributionParams {
+  /** User ID to attribute */
+  userId: string;
+  /** Session ID associated with the conversion */
+  sessionId: string;
+  /** Attribution model type */
+  attributionType: AttributionType;
+  /** Conversion type */
+  conversionType: ConversionType;
+  /** Optional conversion value (e.g., tokens, revenue) */
+  conversionValue?: number;
+  /** Platform identifier */
+  platform?: string;
+  /** External campaign ID from ad platform */
+  externalCampaignId?: string;
+  /** UTM parameters */
+  utmParams?: UTMParams;
+}
+
+/**
+ * Full attribution record with session data
+ */
+export interface AttributionWithSession extends CampaignAttribution {
+  session?: VisitorSession;
+}
+
+/**
+ * Create an attribution record in the database
+ *
+ * @param params - Attribution parameters
+ *
+ * @example
+ * ```typescript
+ * await createAttribution({
+ *   userId: user.id,
+ *   sessionId: session.id,
+ *   attributionType: "FIRST_TOUCH",
+ *   conversionType: "SIGNUP",
+ *   utmParams: { utm_source: "google", utm_campaign: "brand" },
+ * });
+ * ```
+ */
+export async function createAttribution(
+  params: AttributionParams,
+): Promise<void> {
+  const {
+    userId,
+    sessionId,
+    attributionType,
+    conversionType,
+    conversionValue,
+    platform,
+    externalCampaignId,
+    utmParams,
+  } = params;
+
+  // Determine platform from UTM params if not provided
+  const derivedPlatform = platform || (utmParams ? getPlatformFromUTM(utmParams) : "DIRECT");
+
+  await prisma.campaignAttribution.create({
+    data: {
+      userId,
+      sessionId,
+      attributionType,
+      conversionType,
+      conversionValue,
+      platform: derivedPlatform,
+      externalCampaignId,
+      utmCampaign: utmParams?.utm_campaign,
+      utmSource: utmParams?.utm_source,
+      utmMedium: utmParams?.utm_medium,
+    },
+  });
+}
+
+/**
+ * Get the first-touch attribution for a user
+ *
+ * Returns the attribution record from the user's first tracked session.
+ *
+ * @param userId - The user ID to look up
+ * @returns The first-touch attribution or null
+ *
+ * @example
+ * ```typescript
+ * const firstTouch = await getFirstTouchAttribution(user.id);
+ * if (firstTouch) {
+ *   console.log(`First touch: ${firstTouch.utmCampaign}`);
+ * }
+ * ```
+ */
+export async function getFirstTouchAttribution(
+  userId: string,
+): Promise<CampaignAttribution | null> {
+  return prisma.campaignAttribution.findFirst({
+    where: {
+      userId,
+      attributionType: "FIRST_TOUCH",
+    },
+    orderBy: {
+      convertedAt: "asc",
+    },
+  });
+}
+
+/**
+ * Get the last-touch attribution for a user
+ *
+ * Returns the most recent attribution record for the user.
+ *
+ * @param userId - The user ID to look up
+ * @returns The last-touch attribution or null
+ *
+ * @example
+ * ```typescript
+ * const lastTouch = await getLastTouchAttribution(user.id);
+ * if (lastTouch) {
+ *   console.log(`Last touch: ${lastTouch.utmCampaign}`);
+ * }
+ * ```
+ */
+export async function getLastTouchAttribution(
+  userId: string,
+): Promise<CampaignAttribution | null> {
+  return prisma.campaignAttribution.findFirst({
+    where: {
+      userId,
+      attributionType: "LAST_TOUCH",
+    },
+    orderBy: {
+      convertedAt: "desc",
+    },
+  });
+}
+
+/**
+ * Get all attributions for a user
+ *
+ * @param userId - The user ID to look up
+ * @returns Array of attribution records
+ */
+export async function getAllAttributions(
+  userId: string,
+): Promise<CampaignAttribution[]> {
+  return prisma.campaignAttribution.findMany({
+    where: { userId },
+    orderBy: { convertedAt: "desc" },
+  });
+}
+
+/**
+ * Record a conversion with both first-touch and last-touch attribution
+ *
+ * This function:
+ * 1. Gets the user's first session (first touch)
+ * 2. Gets the user's most recent session (last touch)
+ * 3. Creates both FIRST_TOUCH and LAST_TOUCH attribution records
+ *
+ * @param userId - The user ID to attribute
+ * @param conversionType - Type of conversion
+ * @param value - Optional conversion value
+ *
+ * @example
+ * ```typescript
+ * // On successful signup
+ * await attributeConversion(user.id, "SIGNUP");
+ *
+ * // On purchase
+ * await attributeConversion(user.id, "PURCHASE", 9.99);
+ *
+ * // On enhancement
+ * await attributeConversion(user.id, "ENHANCEMENT", 100); // tokens
+ * ```
+ */
+export async function attributeConversion(
+  userId: string,
+  conversionType: ConversionType,
+  value?: number,
+): Promise<void> {
+  // Get user's sessions ordered by start time
+  const sessions = await prisma.visitorSession.findMany({
+    where: { userId },
+    orderBy: { sessionStart: "asc" },
+  });
+
+  if (sessions.length === 0) {
+    // No sessions found - try to find sessions by visitor ID linked to user
+    // This handles cases where the user was linked after session creation
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      console.warn(`No user found for attribution: ${userId}`);
+      return;
+    }
+
+    // Create a minimal attribution with no session data
+    await createDirectAttribution(userId, conversionType, value);
+    return;
+  }
+
+  const firstSession = sessions[0]!;
+  const lastSession = sessions[sessions.length - 1]!;
+
+  // Create first-touch attribution
+  await createAttribution({
+    userId,
+    sessionId: firstSession.id,
+    attributionType: "FIRST_TOUCH",
+    conversionType,
+    conversionValue: value,
+    platform: determineSessionPlatform(firstSession),
+    externalCampaignId: firstSession.gclid || firstSession.fbclid || undefined,
+    utmParams: extractUTMFromSession(firstSession),
+  });
+
+  // Create last-touch attribution (if different from first)
+  // Always create both for proper multi-touch analysis
+  await createAttribution({
+    userId,
+    sessionId: lastSession.id,
+    attributionType: "LAST_TOUCH",
+    conversionType,
+    conversionValue: value,
+    platform: determineSessionPlatform(lastSession),
+    externalCampaignId: lastSession.gclid || lastSession.fbclid || undefined,
+    utmParams: extractUTMFromSession(lastSession),
+  });
+}
+
+/**
+ * Create a direct attribution when no session data is available
+ *
+ * @param userId - The user ID
+ * @param conversionType - Type of conversion
+ * @param value - Optional conversion value
+ */
+async function createDirectAttribution(
+  userId: string,
+  conversionType: ConversionType,
+  value?: number,
+): Promise<void> {
+  // Create a placeholder session for direct attribution
+  const session = await prisma.visitorSession.create({
+    data: {
+      visitorId: `direct_${userId}`,
+      userId,
+      landingPage: "/",
+      pageViewCount: 0,
+    },
+  });
+
+  // Create both attribution records with DIRECT platform
+  await prisma.campaignAttribution.createMany({
+    data: [
+      {
+        userId,
+        sessionId: session.id,
+        attributionType: "FIRST_TOUCH",
+        conversionType,
+        conversionValue: value,
+        platform: "DIRECT",
+      },
+      {
+        userId,
+        sessionId: session.id,
+        attributionType: "LAST_TOUCH",
+        conversionType,
+        conversionValue: value,
+        platform: "DIRECT",
+      },
+    ],
+  });
+}
+
+/**
+ * Determine the platform from session data
+ *
+ * @param session - The visitor session
+ * @returns Platform identifier
+ */
+function determineSessionPlatform(
+  session: VisitorSession,
+): string {
+  // Check click IDs first
+  if (session.gclid) {
+    return "GOOGLE_ADS";
+  }
+  if (session.fbclid) {
+    return "FACEBOOK";
+  }
+
+  // Check UTM source
+  const source = session.utmSource?.toLowerCase();
+  if (source) {
+    if (source.includes("google") || source.includes("gads")) {
+      return "GOOGLE_ADS";
+    }
+    if (
+      source.includes("facebook") ||
+      source.includes("fb") ||
+      source.includes("instagram") ||
+      source.includes("meta")
+    ) {
+      return "FACEBOOK";
+    }
+    return "OTHER";
+  }
+
+  // Check referrer for organic search
+  const referrer = session.referrer?.toLowerCase();
+  if (referrer) {
+    if (
+      referrer.includes("google.com") ||
+      referrer.includes("bing.com") ||
+      referrer.includes("duckduckgo.com")
+    ) {
+      return "ORGANIC";
+    }
+    return "OTHER";
+  }
+
+  return "DIRECT";
+}
+
+/**
+ * Extract UTM parameters from a session
+ *
+ * @param session - The visitor session
+ * @returns UTMParams object
+ */
+function extractUTMFromSession(session: VisitorSession): UTMParams {
+  return {
+    utm_source: session.utmSource || undefined,
+    utm_medium: session.utmMedium || undefined,
+    utm_campaign: session.utmCampaign || undefined,
+    utm_term: session.utmTerm || undefined,
+    utm_content: session.utmContent || undefined,
+    gclid: session.gclid || undefined,
+    fbclid: session.fbclid || undefined,
+  };
+}
+
+/**
+ * Get attribution summary for a campaign
+ *
+ * @param campaignName - The campaign name to analyze
+ * @param startDate - Start of analysis period
+ * @param endDate - End of analysis period
+ * @returns Attribution summary statistics
+ */
+export async function getCampaignAttributionSummary(
+  campaignName: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<{
+  totalConversions: number;
+  firstTouchCount: number;
+  lastTouchCount: number;
+  totalValue: number;
+  conversionsByType: Record<ConversionType, number>;
+}> {
+  const attributions = await prisma.campaignAttribution.findMany({
+    where: {
+      utmCampaign: campaignName,
+      convertedAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+
+  const summary = {
+    totalConversions: attributions.length,
+    firstTouchCount: attributions.filter((a) => a.attributionType === "FIRST_TOUCH").length,
+    lastTouchCount: attributions.filter((a) => a.attributionType === "LAST_TOUCH").length,
+    totalValue: attributions.reduce((sum, a) => sum + (a.conversionValue || 0), 0),
+    conversionsByType: {
+      SIGNUP: 0,
+      ENHANCEMENT: 0,
+      PURCHASE: 0,
+    } as Record<ConversionType, number>,
+  };
+
+  for (const attribution of attributions) {
+    summary.conversionsByType[attribution.conversionType as ConversionType]++;
+  }
+
+  return summary;
+}
+
+/**
+ * Check if a user already has attribution for a specific conversion type
+ *
+ * Useful to prevent duplicate attribution records.
+ *
+ * @param userId - The user ID
+ * @param conversionType - The conversion type to check
+ * @returns true if attribution exists
+ */
+export async function hasExistingAttribution(
+  userId: string,
+  conversionType: ConversionType,
+): Promise<boolean> {
+  const count = await prisma.campaignAttribution.count({
+    where: {
+      userId,
+      conversionType,
+    },
+  });
+
+  return count > 0;
+}

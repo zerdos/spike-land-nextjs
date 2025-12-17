@@ -7,44 +7,47 @@ datasource db {
 }
 
 model User {
-  id                 String                @id @default(cuid())
-  name               String?
-  email              String?               @unique
-  emailVerified      DateTime?
-  image              String?
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-  stripeCustomerId   String?               @unique
-  role               UserRole              @default(USER)
-  referralCode       String?               @unique
-  referredById       String?
-  referralCount      Int                   @default(0)
-  passwordHash       String?
-  accounts           Account[]
-  albums             Album[]
-  apps               App[]
-  auditLogs          AuditLog[]
-  enhancedImages     EnhancedImage[]
-  enhancementJobs    ImageEnhancementJob[]
-  refereeReferrals   Referral[]            @relation("RefereeReferrals")
-  referrerReferrals  Referral[]            @relation("ReferrerReferrals")
-  sessions           Session[]
-  stripePayments     StripePayment[]
-  subscription       Subscription?
-  tokenTransactions  TokenTransaction[]
-  tokenBalance       UserTokenBalance?
-  referredBy         User?                 @relation("Referrals", fields: [referredById], references: [id])
-  referrals          User[]                @relation("Referrals")
-  voucherRedemptions VoucherRedemption[]
-  feedback           Feedback[]
-  createdGalleryItems FeaturedGalleryItem[] @relation("GalleryItemCreator")
-  emailLogs          EmailLog[]
-  trackedUrls        TrackedUrl[]
-  apiKeys            ApiKey[]
-  mcpGenerationJobs  McpGenerationJob[]
-  boxes              Box[]
-  pipelines          EnhancementPipeline[]
-  marketingAccounts  MarketingAccount[]
+  id                   String                @id @default(cuid())
+  name                 String?
+  email                String?               @unique
+  emailVerified        DateTime?
+  image                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  stripeCustomerId     String?               @unique
+  role                 UserRole              @default(USER)
+  referralCode         String?               @unique
+  referredById         String?
+  referralCount        Int                   @default(0)
+  passwordHash         String?
+  accounts             Account[]
+  albums               Album[]
+  apps                 App[]
+  auditLogs            AuditLog[]
+  enhancedImages       EnhancedImage[]
+  enhancementJobs      ImageEnhancementJob[]
+  refereeReferrals     Referral[]            @relation("RefereeReferrals")
+  referrerReferrals    Referral[]            @relation("ReferrerReferrals")
+  sessions             Session[]
+  stripePayments       StripePayment[]
+  subscription         Subscription?
+  tokenTransactions    TokenTransaction[]
+  tokenBalance         UserTokenBalance?
+  referredBy           User?                 @relation("Referrals", fields: [referredById], references: [id])
+  referrals            User[]                @relation("Referrals")
+  voucherRedemptions   VoucherRedemption[]
+  feedback             Feedback[]
+  createdGalleryItems  FeaturedGalleryItem[] @relation("GalleryItemCreator")
+  emailLogs            EmailLog[]
+  trackedUrls          TrackedUrl[]
+  apiKeys              ApiKey[]
+  mcpGenerationJobs    McpGenerationJob[]
+  boxes                Box[]
+  pipelines            EnhancementPipeline[]
+  marketingAccounts    MarketingAccount[]
+  // Campaign Analytics relations
+  visitorSessions      VisitorSession[]
+  campaignAttributions CampaignAttribution[]
 
   @@map("users")
 }
@@ -69,18 +72,18 @@ model Account {
 }
 
 model MarketingAccount {
-  id            String   @id @default(cuid())
-  userId        String
-  platform      MarketingPlatform
-  accountId     String   // Platform-specific account ID (FB Ad Account ID, Google Ads Customer ID)
-  accountName   String?
-  accessToken   String   // Encrypted access token
-  refreshToken  String?  // Encrypted refresh token (for Google Ads)
-  expiresAt     DateTime?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String            @id @default(cuid())
+  userId       String
+  platform     MarketingPlatform
+  accountId    String // Platform-specific account ID (FB Ad Account ID, Google Ads Customer ID)
+  accountName  String?
+  accessToken  String // Encrypted access token
+  refreshToken String? // Encrypted refresh token (for Google Ads)
+  expiresAt    DateTime?
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform, accountId])
   @@index([userId])
@@ -228,24 +231,24 @@ model StripePayment {
 }
 
 model EnhancedImage {
-  id                String                @id @default(cuid())
-  userId            String
-  name              String
-  description       String?
-  originalUrl       String
-  originalR2Key     String
-  originalWidth     Int
-  originalHeight    Int
-  originalSizeBytes Int
-  originalFormat    String
-  isPublic          Boolean               @default(false)
-  viewCount         Int                   @default(0)
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  shareToken        String?               @unique
-  albumImages       AlbumImage[]
-  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enhancementJobs   ImageEnhancementJob[]
+  id                   String                @id @default(cuid())
+  userId               String
+  name                 String
+  description          String?
+  originalUrl          String
+  originalR2Key        String
+  originalWidth        Int
+  originalHeight       Int
+  originalSizeBytes    Int
+  originalFormat       String
+  isPublic             Boolean               @default(false)
+  viewCount            Int                   @default(0)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  shareToken           String?               @unique
+  albumImages          AlbumImage[]
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enhancementJobs      ImageEnhancementJob[]
   featuredGalleryItems FeaturedGalleryItem[]
 
   @@index([userId, createdAt])
@@ -261,7 +264,7 @@ model ImageEnhancementJob {
   tier                  EnhancementTier
   tokensCost            Int
   status                JobStatus
-  currentStage          PipelineStage?  // Current pipeline stage for progress tracking
+  currentStage          PipelineStage? // Current pipeline stage for progress tracking
   enhancedUrl           String?
   enhancedR2Key         String?
   enhancedWidth         Int?
@@ -279,18 +282,18 @@ model ImageEnhancementJob {
   updatedAt             DateTime        @updatedAt
   workflowRunId         String?
   // Analysis fields for dynamic prompt pipeline
-  analysisResult        Json?           // Stores full AnalysisDetailedResult JSON
-  analysisSource        String?         // Model used for analysis (e.g., "gemini-3-pro-image-preview")
+  analysisResult        Json? // Stores full AnalysisDetailedResult JSON
+  analysisSource        String? // Model used for analysis (e.g., "gemini-3-pro-image-preview")
   // Cropping fields for auto-crop feature
   wasCropped            Boolean         @default(false)
-  cropDimensions        Json?           // Stores { left, top, width, height } pixel values used
+  cropDimensions        Json? // Stores { left, top, width, height } pixel values used
 
   // Pipeline reference for audit trail
-  pipelineId            String?
-  pipeline              EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
+  pipelineId String?
+  pipeline   EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
 
-  image                 EnhancedImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   featuredGalleryItems FeaturedGalleryItem[]
 
   @@index([userId, status, createdAt])
@@ -342,24 +345,24 @@ model SubscriptionPlan {
 }
 
 model Album {
-  id           String       @id @default(cuid())
+  id           String          @id @default(cuid())
   userId       String
   name         String
   description  String?
   coverImageId String?
-  privacy      AlbumPrivacy @default(PRIVATE)
+  privacy      AlbumPrivacy    @default(PRIVATE)
   defaultTier  EnhancementTier @default(TIER_1K)
-  shareToken   String?      @unique
-  sortOrder    Int          @default(0)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  shareToken   String?         @unique
+  sortOrder    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   // Pipeline reference (optional - falls back to system default)
-  pipelineId   String?
-  pipeline     EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
+  pipelineId String?
+  pipeline   EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
 
-  albumImages  AlbumImage[]
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  albumImages AlbumImage[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name, privacy]) // Prevent duplicate default albums per user
   @@index([userId, createdAt])
@@ -574,10 +577,10 @@ enum JobStatus {
 }
 
 enum PipelineStage {
-  ANALYZING   // Image analysis with vision model
-  CROPPING    // Auto-crop based on analysis
-  PROMPTING   // Build dynamic enhancement prompt
-  GENERATING  // Gemini API image generation
+  ANALYZING // Image analysis with vision model
+  CROPPING // Auto-crop based on analysis
+  PROMPTING // Build dynamic enhancement prompt
+  GENERATING // Gemini API image generation
 }
 
 enum SubscriptionStatus {
@@ -689,41 +692,41 @@ model FeaturedGalleryItem {
 // Browser Agent Service Models
 
 model BoxTier {
-  id             String   @id @default(cuid())
-  name           String   // e.g. "Standard", "Pro", "Ultra"
-  description    String?
-  cpu            Int      // vCPU count
-  ram            Int      // RAM in MB
-  storage        Int      // Storage in GB
-  pricePerHour   Int      // Token cost per hour
-  pricePerMonth  Int      // Token cost per month (if subscription)
-  isActive       Boolean  @default(true)
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  boxes          Box[]
+  id            String   @id @default(cuid())
+  name          String // e.g. "Standard", "Pro", "Ultra"
+  description   String?
+  cpu           Int // vCPU count
+  ram           Int // RAM in MB
+  storage       Int // Storage in GB
+  pricePerHour  Int // Token cost per hour
+  pricePerMonth Int // Token cost per month (if subscription)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  boxes         Box[]
 
   @@map("box_tiers")
 }
 
 model Box {
-  id              String       @id @default(cuid())
+  id              String    @id @default(cuid())
   name            String
   description     String?
   userId          String
   tierId          String?
-  status          BoxStatus    @default(STOPPED)
-  connectionUrl   String?      // URL to access the VNC/NoVNC interface
-  storageVolumeId String?      // ID of the persistent storage volume (R2/S3)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  status          BoxStatus @default(STOPPED)
+  connectionUrl   String? // URL to access the VNC/NoVNC interface
+  storageVolumeId String? // ID of the persistent storage volume (R2/S3)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
 
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier            BoxTier?     @relation(fields: [tierId], references: [id])
-  actions         BoxAction[]
-  tasks           AgentTask[]
-  messages        BoxMessage[]
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier     BoxTier?     @relation(fields: [tierId], references: [id])
+  actions  BoxAction[]
+  tasks    AgentTask[]
+  messages BoxMessage[]
 
   @@index([userId, createdAt])
   @@index([status])
@@ -731,52 +734,52 @@ model Box {
 }
 
 model BoxAction {
-  id        String      @id @default(cuid())
+  id        String        @id @default(cuid())
   boxId     String
   action    BoxActionType
-  status    JobStatus   @default(PENDING)
+  status    JobStatus     @default(PENDING)
   metadata  Json?
   error     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
-  box       Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  box Box @relation(fields: [boxId], references: [id], onDelete: Cascade)
 
   @@index([boxId, createdAt])
   @@map("box_actions")
 }
 
 model AgentTask {
-  id        String      @id @default(cuid())
+  id        String    @id @default(cuid())
   boxId     String
-  type      String      // e.g. "NAVIGATE", "CLICK", "TYPE"
-  payload   Json?       // e.g. { url: "https://google.com" }
-  status    JobStatus   @default(PENDING)
+  type      String // e.g. "NAVIGATE", "CLICK", "TYPE"
+  payload   Json? // e.g. { url: "https://google.com" }
+  status    JobStatus @default(PENDING)
   result    Json?
   error     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  box       Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  box Box @relation(fields: [boxId], references: [id], onDelete: Cascade)
 
   @@index([boxId, status])
   @@map("agent_tasks")
 }
 
 model EmailLog {
-  id         String      @id @default(cuid())
-  userId     String
-  to         String
-  subject    String
-  template   String
-  status     EmailStatus @default(SENT)
-  resendId   String?     @unique
-  sentAt     DateTime    @default(now())
-  openedAt   DateTime?
-  clickedAt  DateTime?
-  bouncedAt  DateTime?
-  metadata   Json?
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String      @id @default(cuid())
+  userId    String
+  to        String
+  subject   String
+  template  String
+  status    EmailStatus @default(SENT)
+  resendId  String?     @unique
+  sentAt    DateTime    @default(now())
+  openedAt  DateTime?
+  clickedAt DateTime?
+  bouncedAt DateTime?
+  metadata  Json?
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -787,7 +790,7 @@ model EmailLog {
 
 model TrackedUrl {
   id          String   @id @default(cuid())
-  path        String   @unique  // Store path only (e.g., "/custom-page"), not full URL
+  path        String   @unique // Store path only (e.g., "/custom-page"), not full URL
   label       String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -870,48 +873,209 @@ enum BoxMessageRole {
 }
 
 enum PipelineVisibility {
-  PRIVATE  // Only owner can use
-  PUBLIC   // Anyone can use/fork
-  LINK     // Accessible via shareToken
+  PRIVATE // Only owner can use
+  PUBLIC // Anyone can use/fork
+  LINK // Accessible via shareToken
 }
 
 // Pipeline Configuration System
 // Stores reusable AI enhancement pipeline configurations
 
 model EnhancementPipeline {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
 
   // Ownership (null = system default)
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Sharing
-  visibility  PipelineVisibility @default(PRIVATE)
-  shareToken  String?  @unique  // For link-based sharing
+  visibility PipelineVisibility @default(PRIVATE)
+  shareToken String?            @unique // For link-based sharing
 
   // Pipeline Configuration (includes tier)
-  tier        EnhancementTier @default(TIER_1K)
+  tier EnhancementTier @default(TIER_1K)
 
   // Stage Configs (JSON)
-  analysisConfig    Json?  // Analysis stage settings
-  autoCropConfig    Json?  // Auto-crop behavior
-  promptConfig      Json?  // Dynamic prompt generation
-  generationConfig  Json?  // Gemini generation settings
+  analysisConfig   Json? // Analysis stage settings
+  autoCropConfig   Json? // Auto-crop behavior
+  promptConfig     Json? // Dynamic prompt generation
+  generationConfig Json? // Gemini generation settings
 
   // Usage tracking
-  usageCount  Int      @default(0)
+  usageCount Int @default(0)
 
   // Relations
-  albums      Album[]
-  jobs        ImageEnhancementJob[]
+  albums Album[]
+  jobs   ImageEnhancementJob[]
 
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([visibility])
   @@map("enhancement_pipelines")
+}
+
+// =============================================================================
+// Campaign Analytics Models
+// =============================================================================
+
+// Visitor session tracking with UTM parameters for campaign attribution
+model VisitorSession {
+  id           String    @id @default(cuid())
+  visitorId    String // Anonymous fingerprint/cookie ID
+  userId       String? // Linked user ID after signup/login
+  sessionStart DateTime  @default(now())
+  sessionEnd   DateTime?
+
+  // Device & Browser info
+  deviceType String? // mobile, tablet, desktop
+  browser    String?
+  os         String?
+
+  // Geo info (anonymized)
+  ipCountry String? // ISO 2-letter country code
+  ipCity    String?
+
+  // Traffic source
+  referrer      String? // Full referrer URL
+  landingPage   String // First page of session
+  exitPage      String? // Last page of session
+  pageViewCount Int     @default(0)
+
+  // UTM parameters for campaign attribution
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
+  // Platform click IDs for direct attribution
+  gclid  String? // Google Click ID
+  fbclid String? // Facebook Click ID
+
+  // Relations
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  pageViews PageView[]
+  events    AnalyticsEvent[]
+
+  @@index([visitorId])
+  @@index([userId])
+  @@index([utmCampaign])
+  @@index([utmSource])
+  @@index([sessionStart])
+  @@index([gclid])
+  @@index([fbclid])
+  @@map("visitor_sessions")
+}
+
+// Individual page view tracking
+model PageView {
+  id          String   @id @default(cuid())
+  sessionId   String
+  path        String
+  title       String?
+  timestamp   DateTime @default(now())
+  timeOnPage  Int? // Seconds spent on page
+  scrollDepth Int? // Percentage scrolled (0-100)
+
+  session VisitorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, timestamp])
+  @@index([path])
+  @@map("page_views")
+}
+
+// Custom event tracking for user behavior
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  name      String // e.g., "signup_started", "enhancement_completed"
+  category  String? // e.g., "conversion", "engagement"
+  value     Float? // Numeric value (e.g., token amount, revenue)
+  metadata  Json? // Additional event data
+  timestamp DateTime @default(now())
+
+  session VisitorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, timestamp])
+  @@index([name])
+  @@index([category])
+  @@map("analytics_events")
+}
+
+// Campaign attribution linking users to campaigns
+model CampaignAttribution {
+  id        String @id @default(cuid())
+  userId    String
+  sessionId String
+
+  // Attribution model
+  attributionType AttributionType
+
+  // Campaign identifiers
+  platform           String? // "FACEBOOK", "GOOGLE_ADS", "ORGANIC", "DIRECT", etc.
+  externalCampaignId String? // Campaign ID from FB/Google for ROI matching
+  utmCampaign        String?
+  utmSource          String?
+  utmMedium          String?
+
+  // Conversion data
+  conversionType  ConversionType
+  conversionValue Float? // Token/revenue value
+  convertedAt     DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([utmCampaign])
+  @@index([externalCampaignId])
+  @@index([convertedAt])
+  @@index([conversionType])
+  @@index([attributionType])
+  @@map("campaign_attributions")
+}
+
+// Cached campaign metrics for dashboard performance
+model CampaignMetricsCache {
+  id         String   @id @default(cuid())
+  cacheKey   String   @unique // e.g., "overview:2024-01-01:2024-01-31:first_touch"
+  metrics    Json // Cached metrics data
+  computedAt DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([cacheKey])
+  @@index([expiresAt])
+  @@map("campaign_metrics_cache")
+}
+
+// Campaign link for connecting UTM campaigns to external platform campaign IDs
+model CampaignLink {
+  id                   String   @id @default(cuid())
+  utmCampaign          String
+  platform             String // "FACEBOOK" | "GOOGLE_ADS"
+  externalCampaignId   String
+  externalCampaignName String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([utmCampaign, platform])
+  @@index([platform])
+  @@index([externalCampaignId])
+  @@map("campaign_links")
+}
+
+// Enums for Campaign Analytics
+enum AttributionType {
+  FIRST_TOUCH
+  LAST_TOUCH
+}
+
+enum ConversionType {
+  SIGNUP
+  ENHANCEMENT
+  PURCHASE
 }

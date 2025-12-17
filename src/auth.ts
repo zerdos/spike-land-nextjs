@@ -17,6 +17,7 @@ import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
 import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
 import { linkReferralOnSignup } from "@/lib/referral/tracker";
+import { attributeConversion } from "@/lib/tracking/attribution";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import NextAuth, { DefaultSession } from "next-auth";
@@ -100,6 +101,11 @@ export async function handleSignIn(user: {
         // Create default private and public albums
         await ensureUserAlbums(upsertedUser.id).catch((error) => {
           console.error("Failed to create default albums:", error);
+        });
+
+        // Track signup conversion attribution for campaign analytics
+        await attributeConversion(upsertedUser.id, "SIGNUP").catch((error) => {
+          console.error("Failed to track signup attribution:", error);
         });
       }
 
