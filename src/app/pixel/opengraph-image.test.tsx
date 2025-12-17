@@ -1,10 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import OGImage, {
-  alt,
-  contentType,
-  runtime,
-  size,
-} from "./opengraph-image";
+import OGImage, { alt, contentType, runtime, size } from "./opengraph-image";
 
 // Mock ImageResponse
 vi.mock("next/og", () => ({

@@ -5,6 +5,7 @@
  * custom events, and user linking.
  */
 
+import { fireMetaPixelEvent } from "./meta-pixel";
 import type { UTMParams } from "./utm-capture";
 
 /** Session storage key for current session ID */
@@ -322,6 +323,9 @@ export async function recordEvent(
   sessionId: string,
   event: TrackingEvent,
 ): Promise<void> {
+  // Fire Meta Pixel event (client-side, non-blocking)
+  fireMetaPixelEvent(event.name, { ...event.metadata, value: event.value });
+
   // Update local activity timestamp
   updateLastActivity();
 
