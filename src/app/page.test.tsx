@@ -47,14 +47,13 @@ const MockFeaturedAppsSection = () => (
     id="apps"
     className="container mx-auto py-16 px-4"
   >
-    <h2>Featured Applications</h2>
-    <p>Discover AI-powered apps built on Spike Land</p>
+    <h2>See the Transformation</h2>
+    <p>That blurry photo of your dog. Your grandparents&apos; wedding day.</p>
     <div data-testid="featured-app-card">
       <div role="img" aria-label="Pixel logo">pixel</div>
-      <span>AI Image Enhancement</span>
+      <span>AI Photo Restoration</span>
       <span>
-        Bring old, blurry photos back to life with advanced machine learning that restores details
-        and clarity instantly.
+        Upload any photo. Watch it transform. Download in HD. It takes 60 seconds.
       </span>
       <div data-testid="comparison-slider">Before/After</div>
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
@@ -120,14 +119,14 @@ describe("Home Page", () => {
   });
 
   describe("Featured Apps Section", () => {
-    it("should render the Featured Applications heading", () => {
+    it("should render the See the Transformation heading", () => {
       render(<TestableHome />);
-      expect(screen.getByText("Featured Applications")).toBeInTheDocument();
+      expect(screen.getByText("See the Transformation")).toBeInTheDocument();
     });
 
     it("should render the Featured Apps description", () => {
       render(<TestableHome />);
-      expect(screen.getByText(/Discover AI-powered apps/)).toBeInTheDocument();
+      expect(screen.getByText(/blurry photo of your dog/)).toBeInTheDocument();
     });
 
     it("should render Pixel logo", () => {
@@ -136,9 +135,9 @@ describe("Home Page", () => {
         .toBeInTheDocument();
     });
 
-    it("should render AI Image Enhancement tagline", () => {
+    it("should render AI Photo Restoration tagline", () => {
       render(<TestableHome />);
-      expect(screen.getByText("AI Image Enhancement")).toBeInTheDocument();
+      expect(screen.getByText("AI Photo Restoration")).toBeInTheDocument();
     });
 
     it("should render comparison slider", () => {
