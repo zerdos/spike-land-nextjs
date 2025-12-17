@@ -128,8 +128,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const [isMoving, setIsMoving] = useState(false);
   const [isLoadingAlbums, setIsLoadingAlbums] = useState(false);
 
-  // Cover image selection state (used in album settings)
-  const [_isSettingCover, _setIsSettingCover] = useState(false);
   const [showQRSheet, setShowQRSheet] = useState(false);
 
   // File upload state
@@ -271,37 +269,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     } catch (err) {
       console.error("Error deleting album:", err);
       alert("Failed to delete album. Please try again.");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleRemoveImage = async (imageId: string) => {
-    if (!confirm("Remove this image from the album?")) return;
-
-    try {
-      const response = await fetch(`/api/albums/${albumId}/images`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: [imageId] }),
-      });
-
-      if (!response.ok) throw new Error("Failed to remove image");
-
-      setAlbum((prev) =>
-        prev
-          ? {
-            ...prev,
-            images: prev.images.filter((img) => img.id !== imageId),
-            imageCount: prev.imageCount - 1,
-            coverImageId: prev.coverImageId === imageId
-              ? null
-              : prev.coverImageId,
-          }
-          : null
-      );
-    } catch (err) {
-      console.error("Error removing image:", err);
-      alert("Failed to remove image. Please try again.");
     }
   };
 
@@ -602,37 +569,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
       alert("Failed to move images. Please try again.");
     } finally {
       setIsMoving(false);
-    }
-  };
-
-  // Cover image handler (can be used from album settings)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleSetCover = async (imageId: string) => {
-    if (!album?.isOwner) return;
-
-    _setIsSettingCover(true);
-    try {
-      const response = await fetch(`/api/albums/${albumId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImageId: imageId }),
-      });
-
-      if (!response.ok) throw new Error("Failed to set cover image");
-
-      setAlbum((prev) =>
-        prev
-          ? {
-            ...prev,
-            coverImageId: imageId,
-          }
-          : null
-      );
-    } catch (err) {
-      console.error("Error setting cover:", err);
-      alert("Failed to set cover image. Please try again.");
-    } finally {
-      _setIsSettingCover(false);
     }
   };
 
@@ -942,8 +878,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, image.id)}
                     onDragEnd={handleDragEnd}
-                    onClick={() => {
+                    onClick={(e) => {
                       if (!isSelectionMode && !draggedImageId) {
+                        e.stopPropagation();
                         router.push(ROUTES.imageDetail(image.id));
                       }
                     }}

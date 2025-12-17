@@ -147,9 +147,18 @@ export async function POST(request: NextRequest) {
       pipelineId = album.pipelineId;
     }
 
+    // Validate that the tier has a defined cost
+    const tokenCost = ENHANCEMENT_COSTS[defaultTier];
+    if (tokenCost === undefined) {
+      requestLogger.error("Invalid enhancement tier", { tier: defaultTier });
+      return NextResponse.json(
+        { error: "Invalid enhancement tier configuration" },
+        { status: 500, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
     // Consume tokens FIRST (prepay model) to prevent race conditions
     // If upload fails later, we'll refund the tokens
-    const tokenCost = ENHANCEMENT_COSTS[defaultTier];
     const consumeResult = await TokenBalanceManager.consumeTokens({
       userId: session.user.id,
       amount: tokenCost,

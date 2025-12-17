@@ -122,8 +122,17 @@ export async function POST(request: NextRequest) {
       defaultTier = album.defaultTier as EnhancementTier;
     }
 
-    // Calculate cost
+    // Validate that the tier has a defined cost
     const costPerImage = ENHANCEMENT_COSTS[defaultTier];
+    if (costPerImage === undefined) {
+      requestLogger.error("Invalid enhancement tier", { tier: defaultTier });
+      return NextResponse.json(
+        { error: "Invalid enhancement tier configuration" },
+        { status: 500, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    // Calculate cost
     const totalCost = files.length * costPerImage;
 
     // Check balance
