@@ -66,10 +66,12 @@ export function OverviewTab({ className }: OverviewTabProps) {
     setError(null);
 
     try {
+      // Convert frontend format (first-touch) to API format (FIRST_TOUCH)
+      const apiAttributionModel = attribution === "first-touch" ? "FIRST_TOUCH" : "LAST_TOUCH";
       const params = new URLSearchParams({
         startDate: formatDateForAPI(dateRange.startDate),
         endDate: formatDateForAPI(dateRange.endDate),
-        attributionModel: attribution,
+        attributionModel: apiAttributionModel,
       });
 
       const response = await fetch(`/api/admin/marketing/analytics/overview?${params}`);
