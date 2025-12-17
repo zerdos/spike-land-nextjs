@@ -437,7 +437,8 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       </div>
 
       <p className="text-sm text-muted-foreground text-center">
-        This account was created with Google or GitHub. Please sign in using one of these options.
+        This account was created with Google, Facebook, or GitHub. Please sign in using one of these
+        options.
       </p>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
