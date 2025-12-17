@@ -54,7 +54,7 @@ export default async function PersonaPage({ params }: PageProps) {
   const shareUrl = `https://spike.land/personas/${persona.slug}`;
 
   return (
-    <div className="container max-w-4xl py-12">
+    <div className="container max-w-4xl mx-auto py-12 px-4">
       {/* Back Link */}
       <Link
         href="/personas"

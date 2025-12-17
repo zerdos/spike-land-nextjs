@@ -73,6 +73,18 @@ describe("ConditionalHeader Component", () => {
     expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
   });
 
+  it("should NOT render PlatformHeader on /personas pages", () => {
+    mockUsePathname.mockReturnValue("/personas");
+    render(<ConditionalHeader />);
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
+  it("should NOT render PlatformHeader on /personas child routes", () => {
+    mockUsePathname.mockReturnValue("/personas/tech-savvy-grandson");
+    render(<ConditionalHeader />);
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
   it("should render PlatformHeader on /settings page", () => {
     mockUsePathname.mockReturnValue("/settings");
     render(<ConditionalHeader />);

@@ -76,7 +76,7 @@ export default function PersonasPage() {
   const secondaryPersonas = getSecondaryPersonas();
 
   return (
-    <div className="container max-w-6xl py-12">
+    <div className="container max-w-6xl mx-auto py-12 px-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Customer Personas</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
