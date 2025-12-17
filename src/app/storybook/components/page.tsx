@@ -90,11 +90,11 @@ export default function ComponentsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label htmlFor="input-default">Default Input</Label>
                 <Input id="input-default" placeholder="Enter text..." />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label htmlFor="input-disabled">Disabled Input</Label>
                 <Input id="input-disabled" placeholder="Disabled" disabled />
               </div>
@@ -161,7 +161,7 @@ export default function ComponentsPage() {
             </div>
             <Separator />
             <div className="flex items-center space-x-2">
-              <Switch id="switch-demo" />
+              <Switch id="switch-demo" defaultChecked />
               <Label htmlFor="switch-demo">Toggle switch</Label>
             </div>
           </CardContent>
