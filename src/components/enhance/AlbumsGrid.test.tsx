@@ -521,4 +521,146 @@ describe("AlbumsGrid", () => {
     expect(imageContainers[1].classList.contains("row-span-2")).toBe(false);
     expect(imageContainers[2].classList.contains("row-span-2")).toBe(false);
   });
+
+  describe("file drop functionality", () => {
+    it("calls onFileDrop when image files are dropped on album", () => {
+      const mockOnFileDrop = vi.fn();
+      render(<AlbumsGrid albums={mockAlbums} onFileDrop={mockOnFileDrop} />);
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
+      const dataTransfer = {
+        files: [file],
+      };
+
+      fireEvent.drop(card!, { dataTransfer });
+
+      expect(mockOnFileDrop).toHaveBeenCalledWith("album-1", [file]);
+    });
+
+    it("calls onFileDrop with multiple files when multiple images are dropped", () => {
+      const mockOnFileDrop = vi.fn();
+      render(<AlbumsGrid albums={mockAlbums} onFileDrop={mockOnFileDrop} />);
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const file1 = new File(["content1"], "test1.jpg", { type: "image/jpeg" });
+      const file2 = new File(["content2"], "test2.png", { type: "image/png" });
+      const dataTransfer = {
+        files: [file1, file2],
+      };
+
+      fireEvent.drop(card!, { dataTransfer });
+
+      expect(mockOnFileDrop).toHaveBeenCalledWith("album-1", [file1, file2]);
+    });
+
+    it("filters out non-image files when dropping", () => {
+      const mockOnFileDrop = vi.fn();
+      const mockOnDrop = vi.fn();
+      render(
+        <AlbumsGrid
+          albums={mockAlbums}
+          onFileDrop={mockOnFileDrop}
+          onDrop={mockOnDrop}
+        />,
+      );
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const imageFile = new File(["content"], "test.jpg", { type: "image/jpeg" });
+      const textFile = new File(["content"], "test.txt", { type: "text/plain" });
+      const dataTransfer = {
+        files: [imageFile, textFile],
+      };
+
+      fireEvent.drop(card!, { dataTransfer });
+
+      // Only the image file should be included
+      expect(mockOnFileDrop).toHaveBeenCalledWith("album-1", [imageFile]);
+      // onDrop should not be called since we had image files
+      expect(mockOnDrop).not.toHaveBeenCalled();
+    });
+
+    it("calls onDrop instead of onFileDrop when only non-image files are dropped", () => {
+      const mockOnFileDrop = vi.fn();
+      const mockOnDrop = vi.fn();
+      render(
+        <AlbumsGrid
+          albums={mockAlbums}
+          onFileDrop={mockOnFileDrop}
+          onDrop={mockOnDrop}
+        />,
+      );
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const textFile = new File(["content"], "test.txt", { type: "text/plain" });
+      const dataTransfer = {
+        files: [textFile],
+      };
+
+      fireEvent.drop(card!, { dataTransfer });
+
+      // onFileDrop should not be called (no image files)
+      expect(mockOnFileDrop).not.toHaveBeenCalled();
+      // onDrop should be called as fallback
+      expect(mockOnDrop).toHaveBeenCalledWith("album-1");
+    });
+
+    it("calls onDrop when no files are dropped (internal drag)", () => {
+      const mockOnFileDrop = vi.fn();
+      const mockOnDrop = vi.fn();
+      render(
+        <AlbumsGrid
+          albums={mockAlbums}
+          onFileDrop={mockOnFileDrop}
+          onDrop={mockOnDrop}
+        />,
+      );
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const dataTransfer = {
+        files: [],
+      };
+
+      fireEvent.drop(card!, { dataTransfer });
+
+      // onFileDrop should not be called (no files)
+      expect(mockOnFileDrop).not.toHaveBeenCalled();
+      // onDrop should be called for internal drag
+      expect(mockOnDrop).toHaveBeenCalledWith("album-1");
+    });
+
+    it("does not call onFileDrop when handler is not provided", () => {
+      const mockOnDrop = vi.fn();
+      render(<AlbumsGrid albums={mockAlbums} onDrop={mockOnDrop} />);
+
+      const card = screen.getByText("Vacation Photos").closest(
+        "[class*='overflow-hidden']",
+      );
+
+      const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
+      const dataTransfer = {
+        files: [file],
+      };
+
+      // Should not throw even if onFileDrop is not provided
+      expect(() => fireEvent.drop(card!, { dataTransfer })).not.toThrow();
+      // onDrop should be called as fallback
+      expect(mockOnDrop).toHaveBeenCalledWith("album-1");
+    });
+  });
 });

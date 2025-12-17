@@ -168,6 +168,10 @@ function EnhancePageContent({ images: initialImages }: EnhancePageClientProps) {
                 onAlbumClick={(albumId) => router.push(`/albums/${albumId}`)}
                 onDragOver={(albumId) => setDragOver(albumId)}
                 onDragLeave={() => setDragOver(null)}
+                onFileDrop={(albumId, files) => {
+                  setDragOver(null);
+                  upload(files, { albumId });
+                }}
                 dragOverAlbumId={dragOverAlbumId}
               />
             )}
