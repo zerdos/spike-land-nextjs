@@ -1,22 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Bug, FileText, Lightbulb, Loader2, MessageSquare, Send } from "lucide-react";
+import { Bug, FileText, Lightbulb, Loader2, MessageSquare, Send, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
@@ -31,6 +23,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { data: session, status } = useSession();
   const pathname = usePathname();
@@ -43,12 +36,29 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
     setEmail("");
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      setTimeout(() => resetForm(), 300); // Reset after animation
+  // Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node) &&
+        open
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  // Reset form after close animation
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => resetForm(), 300);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [open]);
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -77,7 +87,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
       }
 
       toast.success("Thank you for your feedback!");
-      handleOpenChange(false);
+      setOpen(false);
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast.error(
@@ -107,7 +117,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
         type="button"
         onClick={() => setFeedbackType(type)}
         className={cn(
-          "group flex flex-1 items-center justify-center gap-2 rounded-xl border p-4 transition-all duration-200",
+          "group flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border p-2 transition-all duration-200",
           isSelected
             ? cn(
               "bg-secondary/50 shadow-[0_0_15px_-3px_rgba(0,0,0,0.1)]",
@@ -134,7 +144,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
         </span>
         <span
           className={cn(
-            "text-sm font-medium",
+            "text-xs font-medium",
             isSelected
               ? "text-foreground"
               : "text-muted-foreground group-hover:text-foreground",
@@ -147,108 +157,104 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
   };
 
   return (
-    <>
+    <div
+      ref={containerRef}
+      className={cn("fixed bottom-4 right-4 z-50 flex flex-col items-end gap-4", className)}
+    >
+      {/* Expandable Feedback Form */}
+      <div
+        className={cn(
+          "w-[350px] origin-bottom-right overflow-hidden rounded-2xl border border-border bg-background/95 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-out",
+          open
+            ? "scale-100 opacity-100 translate-y-0"
+            : "scale-95 opacity-0 translate-y-8 pointer-events-none invisible",
+        )}
+      >
+        <div className="p-4 pb-2">
+          <h3 className="text-lg font-semibold tracking-tight">Send Feedback</h3>
+          <p className="text-sm text-muted-foreground">
+            Share your thoughts, report bugs, or suggest ideas.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 p-4 pt-2">
+          <div className="flex gap-2">
+            <FeedbackTypeButton
+              type="BUG"
+              icon={Bug}
+              label="Bug"
+              activeColorClass="text-red-500"
+              borderColorClass="border-red-500/50"
+            />
+            <FeedbackTypeButton
+              type="IDEA"
+              icon={Lightbulb}
+              label="Idea"
+              activeColorClass="text-yellow-500"
+              borderColorClass="border-yellow-500/50"
+            />
+            <FeedbackTypeButton
+              type="OTHER"
+              icon={FileText}
+              label="Other"
+              activeColorClass="text-blue-500"
+              borderColorClass="border-blue-500/50"
+            />
+          </div>
+
+          <Textarea
+            id="message"
+            placeholder="Describe your feedback..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="min-h-[100px] resize-none border-border bg-secondary/20 text-sm focus-visible:ring-primary/50"
+          />
+
+          {!isAuthenticated && (
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email (optional)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border-border bg-secondary/20 text-sm h-9 focus-visible:ring-primary/50"
+            />
+          )}
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              size="sm"
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-primary w-full"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                <>
+                  Submit Feedback
+                  <Send className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Trigger Button */}
       <Button
         variant="default"
         size="icon"
         className={cn(
-          "fixed bottom-4 right-4 z-40 h-12 w-12 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95",
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-primary",
-          className,
+          "h-12 w-12 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95",
+          open
+            ? "bg-secondary text-foreground hover:bg-secondary/80 rotate-90"
+            : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-primary rotate-0",
         )}
-        onClick={() => setOpen(true)}
-        aria-label="Send feedback"
+        onClick={() => setOpen(!open)}
+        aria-label={open ? "Close feedback" : "Send feedback"}
+        aria-expanded={open}
       >
-        <MessageSquare className="h-5 w-5" />
+        {open ? <X className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
       </Button>
-
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="border-border bg-background/95 p-0 text-foreground backdrop-blur-xl sm:max-w-[425px]">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle className="text-xl font-semibold tracking-tight">
-              Send Feedback
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Share your thoughts, report bugs, or suggest new ideas.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-6 p-6 pt-2">
-            <div className="flex gap-3">
-              <FeedbackTypeButton
-                type="BUG"
-                icon={Bug}
-                label="Bug"
-                activeColorClass="text-red-500"
-                borderColorClass="border-red-500/50"
-              />
-              <FeedbackTypeButton
-                type="IDEA"
-                icon={Lightbulb}
-                label="Idea"
-                activeColorClass="text-yellow-500"
-                borderColorClass="border-yellow-500/50"
-              />
-              <FeedbackTypeButton
-                type="OTHER"
-                icon={FileText}
-                label="Other"
-                activeColorClass="text-blue-500"
-                borderColorClass="border-blue-500/50"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Textarea
-                id="message"
-                placeholder="Describe your feedback..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[120px] resize-none border-border bg-secondary/20 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50"
-              />
-            </div>
-
-            {!isAuthenticated && (
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-muted-foreground">
-                  Email (optional)
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border-border bg-secondary/20 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50"
-                />
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="bg-secondary/30 p-6 pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting}
-              className="text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-primary"
-            >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                <>
-                  Submit
-                  <Send className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 }

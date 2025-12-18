@@ -49,8 +49,8 @@
 
     /* Glass-morphism variables */
     --glass-blur: 12px;
-    --glass-opacity-light: 0.7;
-    --glass-opacity-dark: 0.03;
+    --glass-opacity-light: 0.85;
+    --glass-opacity-dark: 0.15;
     --shadow-opacity-light: 0.1;
     --shadow-opacity-dark: 0.3;
 
@@ -261,7 +261,7 @@
 
   /* Glass 0: Background / Subtle (Blur 4-6px, Opacity 4-6%) */
   .glass-0 {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid transparent;
@@ -270,14 +270,14 @@
 
   /* Glass 1: Containers / Cards (Blur 10-14px, Opacity 8-10%) */
   .glass-1 {
-    background: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
 
   /* Glass 2: Interactive / Modals (Blur 18-24px, Opacity 12-16%) */
   .glass-2 {
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
@@ -323,7 +323,7 @@
   /* Old util fallbacks mapped to new system */
   .glass-card,
   .dark .glass-card {
-    background: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow:
