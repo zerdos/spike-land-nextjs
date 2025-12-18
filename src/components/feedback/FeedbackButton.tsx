@@ -12,6 +12,9 @@ import { toast } from "sonner";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
 
+// Animation duration in milliseconds - must match CSS transition duration-300
+const ANIMATION_DURATION_MS = 300;
+
 interface FeedbackButtonProps {
   className?: string;
 }
@@ -35,13 +38,14 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
     setEmail("");
   };
 
-  // Close when clicking outside
+  // Close when clicking outside - only attach listener when panel is open
   useEffect(() => {
+    if (!open) return; // Early return when closed - no listener needed
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        open
+        !containerRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
       }
@@ -54,7 +58,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
   // Reset form after close animation
   useEffect(() => {
     if (!open) {
-      const timer = setTimeout(() => resetForm(), 300);
+      const timer = setTimeout(() => resetForm(), ANIMATION_DURATION_MS);
       return () => clearTimeout(timer);
     }
     return undefined;
