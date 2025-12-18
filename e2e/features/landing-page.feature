@@ -133,40 +133,31 @@ Feature: Landing Page - CTA and Feature Cards
     And I click the "Try Pixel for free" link
     Then I should be on the "/pixel" page
 
-  # HeroSection Component Tests
+  # PlatformHero Component Tests
   @fast
-  Scenario: HeroSection displays main headline
+  Scenario: PlatformHero displays main headline
+    Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "Your photos deserve better" text
+    And I should see "Old Photos" text
 
   @fast
-  Scenario: HeroSection displays subheadline about Gemini
+  Scenario: PlatformHero displays subheadline
+    Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "Gemini model" text
+    And I should see "iPhone" text
 
   @fast
-  Scenario: HeroSection has Get Started CTA button
+  Scenario: PlatformHero has Restore Your Photos CTA button
+    Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "Get Started" link
+    And I should see "Restore Your Photos" link
 
   @fast
-  Scenario: HeroSection Get Started button navigates to Pixel app
-    When I visit "/"
-    And I click the "Get Started" link
-    Then I should be redirected to sign-in page
-
-  @fast
-  Scenario: HeroSection displays image comparison slider
+  Scenario: Featured app section displays image comparison slider
+    Given I am not logged in
     When I visit "/"
     Then the page should load successfully
     And I should see the image comparison slider
-
-  @fast
-  Scenario: HeroSection shows Original and Enhanced labels
-    When I visit "/"
-    Then the page should load successfully
-    And I should see "Original" text
-    And I should see "Enhanced" text

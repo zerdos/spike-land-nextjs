@@ -160,13 +160,4 @@ Then(
 
 // NOTE: "I should see {string} or {string} text" is defined in common.steps.ts
 
-// Image comparison slider step
-Then(
-  "I should see the image comparison slider",
-  async function(this: CustomWorld) {
-    // Verify we have at least one image visible in the hero section
-    // The image comparison slider contains images for original and enhanced views
-    const heroImage = this.page.locator("section img").first();
-    await expect(heroImage).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see the image comparison slider" is defined in share-page.steps.ts

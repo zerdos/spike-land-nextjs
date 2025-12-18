@@ -60,16 +60,7 @@ Then(
   },
 );
 
-When(
-  "I click {string} in the sidebar",
-  async function(this: CustomWorld, linkText: string) {
-    const sidebar = this.page.locator("aside");
-    const link = sidebar.getByRole("link", { name: new RegExp(linkText, "i") });
-    await expect(link.first()).toBeVisible();
-    await link.first().click();
-    await this.page.waitForLoadState("networkidle");
-  },
-);
+// NOTE: "I click {string} in the sidebar" is defined in admin.steps.ts
 
 // Mobile menu steps
 Then("I should see the mobile menu button", async function(this: CustomWorld) {

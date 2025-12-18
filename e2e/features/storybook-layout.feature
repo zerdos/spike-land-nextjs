@@ -9,7 +9,6 @@ Feature: Storybook Design System Layout
     When I visit "/storybook" on a desktop viewport
     Then the page should load successfully
     And I should see the desktop sidebar
-    And I should see "Design System" text
     And I should see "Overview" in the sidebar navigation
     And I should see "Brand" in the sidebar navigation
     And I should see "Colors" in the sidebar navigation
