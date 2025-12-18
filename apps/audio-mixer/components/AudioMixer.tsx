@@ -66,7 +66,7 @@ export function AudioMixer() {
   // Handle recording
   const handleStartRecording = useCallback(async () => {
     await handleInitialize();
-    await recording.startRecording();
+    return recording.startRecording();
   }, [handleInitialize, recording]);
 
   const handleStopRecording = useCallback(async () => {
