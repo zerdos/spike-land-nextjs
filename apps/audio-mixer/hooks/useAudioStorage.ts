@@ -3,6 +3,8 @@
  * Resolves #332
  */
 
+"use client";
+
 import { useCallback } from "react";
 import type { AudioProject, SavedTrack, SaveTrackOptions, StorageResult } from "../types/storage";
 
@@ -46,6 +48,123 @@ async function isOPFSAvailable(): Promise<boolean> {
 }
 
 /**
+ * Get or create a directory handle at the given path
+ */
+async function getDirectoryHandle(
+  path: string,
+  create = false,
+): Promise<FileSystemDirectoryHandle> {
+  const root = await navigator.storage.getDirectory();
+  const parts = path.split("/").filter(Boolean);
+
+  let current = root;
+  for (const part of parts) {
+    current = await current.getDirectoryHandle(part, { create });
+  }
+  return current;
+}
+
+/**
+ * Get a file handle at the given path
+ */
+async function getFileHandle(
+  path: string,
+  create = false,
+): Promise<FileSystemFileHandle> {
+  const parts = path.split("/").filter(Boolean);
+  const fileName = parts.pop();
+  if (!fileName) {
+    throw new Error("Invalid file path");
+  }
+
+  const dirPath = parts.join("/");
+  const dir = await getDirectoryHandle(dirPath, create);
+  return dir.getFileHandle(fileName, { create });
+}
+
+/**
+ * Write data to a file in OPFS
+ */
+async function writeFile(path: string, data: Uint8Array | string): Promise<void> {
+  const handle = await getFileHandle(path, true);
+  const writable = await handle.createWritable();
+  await writable.write(data);
+  await writable.close();
+}
+
+/**
+ * Read data from a file in OPFS
+ */
+async function readFile(path: string): Promise<Uint8Array> {
+  const handle = await getFileHandle(path, false);
+  const file = await handle.getFile();
+  const buffer = await file.arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
+/**
+ * Read text from a file in OPFS
+ */
+async function readTextFile(path: string): Promise<string> {
+  const handle = await getFileHandle(path, false);
+  const file = await handle.getFile();
+  return file.text();
+}
+
+/**
+ * Delete a file from OPFS
+ */
+async function deleteFile(path: string): Promise<void> {
+  const parts = path.split("/").filter(Boolean);
+  const fileName = parts.pop();
+  if (!fileName) {
+    throw new Error("Invalid file path");
+  }
+
+  const dirPath = parts.join("/");
+  const dir = await getDirectoryHandle(dirPath, false);
+  await dir.removeEntry(fileName);
+}
+
+/**
+ * Delete a directory recursively from OPFS
+ */
+async function deleteDirectory(path: string): Promise<void> {
+  const parts = path.split("/").filter(Boolean);
+  const dirName = parts.pop();
+  if (!dirName) {
+    throw new Error("Invalid directory path");
+  }
+
+  const parentPath = parts.join("/");
+  if (parentPath) {
+    const parent = await getDirectoryHandle(parentPath, false);
+    await parent.removeEntry(dirName, { recursive: true });
+  } else {
+    const root = await navigator.storage.getDirectory();
+    await root.removeEntry(dirName, { recursive: true });
+  }
+}
+
+/**
+ * List all directories in OPFS at a given path
+ */
+async function listDirectories(path: string): Promise<string[]> {
+  try {
+    const dir = await getDirectoryHandle(path, false);
+    const entries: string[] = [];
+    for await (const [name, handle] of dir.entries()) {
+      if (handle.kind === "directory") {
+        entries.push(name);
+      }
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Hook for managing audio storage in OPFS
  */
 export function useAudioStorage() {
@@ -65,16 +184,8 @@ export function useAudioStorage() {
       options: SaveTrackOptions,
     ): Promise<StorageResult<SavedTrack>> => {
       try {
-        // Dynamic import to avoid SSR issues
-        const { writeFile, mkdir } = await import("@spike-npm-land/opfs-node-adapter");
-
         const trackId = generateId();
         const trackPath = getTrackPath(options.projectId, trackId, options.format);
-
-        // Ensure directory exists
-        await mkdir(`${AUDIO_MIXER_BASE_PATH}/projects/${options.projectId}/tracks`, {
-          recursive: true,
-        });
 
         // Write the audio file
         await writeFile(trackPath, audioData);
@@ -114,13 +225,8 @@ export function useAudioStorage() {
           return { success: false, error: "Track has no OPFS path" };
         }
 
-        const { readFile } = await import("@spike-npm-land/opfs-node-adapter");
-        const data = await readFile(track.opfsPath, null);
-
-        // Convert Buffer to Uint8Array
-        const uint8Array = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-
-        return { success: true, data: uint8Array };
+        const data = await readFile(track.opfsPath);
+        return { success: true, data };
       } catch (error) {
         return {
           success: false,
@@ -140,9 +246,7 @@ export function useAudioStorage() {
         return { success: false, error: "Track has no OPFS path" };
       }
 
-      const { rm } = await import("@spike-npm-land/opfs-node-adapter");
-      await rm(track.opfsPath);
-
+      await deleteFile(track.opfsPath);
       return { success: true };
     } catch (error) {
       return {
@@ -157,12 +261,7 @@ export function useAudioStorage() {
    */
   const saveProject = useCallback(async (project: AudioProject): Promise<StorageResult> => {
     try {
-      const { writeFile, mkdir } = await import("@spike-npm-land/opfs-node-adapter");
-
       const metadataPath = getProjectMetadataPath(project.id);
-
-      // Ensure directory exists
-      await mkdir(`${AUDIO_MIXER_BASE_PATH}/projects/${project.id}`, { recursive: true });
 
       // Write metadata as JSON
       const metadata = JSON.stringify(project, null, 2);
@@ -183,11 +282,9 @@ export function useAudioStorage() {
   const loadProject = useCallback(
     async (projectId: string): Promise<StorageResult<AudioProject>> => {
       try {
-        const { readFile } = await import("@spike-npm-land/opfs-node-adapter");
-
         const metadataPath = getProjectMetadataPath(projectId);
-        const data = await readFile(metadataPath, "utf8");
-        const project = JSON.parse(data as string) as AudioProject;
+        const data = await readTextFile(metadataPath);
+        const project = JSON.parse(data) as AudioProject;
 
         return { success: true, data: project };
       } catch (error) {
@@ -205,20 +302,18 @@ export function useAudioStorage() {
    */
   const listProjects = useCallback(async (): Promise<StorageResult<AudioProject[]>> => {
     try {
-      const { glob, readFile } = await import("@spike-npm-land/opfs-node-adapter");
-
-      // Find all metadata files
-      const metadataFiles = await glob(`${AUDIO_MIXER_BASE_PATH}/projects/*/metadata.json`);
+      const projectDirs = await listDirectories(`${AUDIO_MIXER_BASE_PATH}/projects`);
 
       const projects: AudioProject[] = [];
-      for (const filePath of metadataFiles) {
+      for (const projectId of projectDirs) {
         try {
-          const data = await readFile(filePath, "utf8");
-          const project = JSON.parse(data as string) as AudioProject;
+          const metadataPath = getProjectMetadataPath(projectId);
+          const data = await readTextFile(metadataPath);
+          const project = JSON.parse(data) as AudioProject;
           projects.push(project);
         } catch {
           // Skip corrupted metadata files
-          console.warn(`Failed to load project metadata from ${filePath}`);
+          console.warn(`Failed to load project metadata for ${projectId}`);
         }
       }
 
@@ -242,10 +337,8 @@ export function useAudioStorage() {
   const deleteProject = useCallback(
     async (projectId: string): Promise<StorageResult> => {
       try {
-        const { rm } = await import("@spike-npm-land/opfs-node-adapter");
-
         const projectPath = `${AUDIO_MIXER_BASE_PATH}/projects/${projectId}`;
-        await rm(projectPath, { recursive: true });
+        await deleteDirectory(projectPath);
 
         return { success: true };
       } catch (error) {
