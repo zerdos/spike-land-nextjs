@@ -314,10 +314,25 @@ export function AudioMixer() {
 
         const trackPosition = track.position ?? track.delay ?? 0;
         const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
-        const offset = time - trackPosition + track.trimStart;
 
-        // Only play if within track bounds
-        if (offset >= track.trimStart && offset < effectiveTrimEnd) {
+        // Position within track's timeline
+        const timelinePosition = time - trackPosition;
+
+        // Calculate actual buffer offset, accounting for negative trimStart (silence)
+        let bufferOffset: number;
+        if (track.trimStart < 0) {
+          const silenceDuration = Math.abs(track.trimStart);
+          // During silence period, don't play anything
+          if (timelinePosition < silenceDuration) {
+            return; // In silence region, nothing to scrub
+          }
+          bufferOffset = timelinePosition - silenceDuration;
+        } else {
+          bufferOffset = track.trimStart + timelinePosition;
+        }
+
+        // Only play if within valid buffer bounds
+        if (bufferOffset >= 0 && bufferOffset < effectiveTrimEnd) {
           const source = context.createBufferSource();
           source.buffer = track.buffer;
 
@@ -327,7 +342,7 @@ export function AudioMixer() {
           gainNode.connect(masterGain);
 
           // Play 50ms snippet
-          source.start(0, offset, 0.05);
+          source.start(0, bufferOffset, 0.05);
           scrubSourceRef.current = source;
         }
       });

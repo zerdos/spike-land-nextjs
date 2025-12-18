@@ -275,7 +275,7 @@ export function TimelineTrack({
             }`}
           />
           {(isHoveringHandle === "start" || dragMode === "trim-start") && (
-            <div className="absolute -top-8 left-1/2 -track-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
               {effectiveTrimStart < 0
                 ? `+${(-effectiveTrimStart).toFixed(2)}s`
                 : `${effectiveTrimStart.toFixed(2)}s`}
@@ -302,7 +302,7 @@ export function TimelineTrack({
             }`}
           />
           {(isHoveringHandle === "end" || dragMode === "trim-end") && (
-            <div className="absolute -top-8 left-1/2 -track-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
               {effectiveTrimEnd.toFixed(2)}s
             </div>
           )}
