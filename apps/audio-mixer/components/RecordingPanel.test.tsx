@@ -3,8 +3,8 @@
  * Resolves #332
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RecordingPanel } from "./RecordingPanel";
 
 // Mock audio-engine
@@ -18,12 +18,17 @@ describe("RecordingPanel", () => {
     isRecording: false,
     isPaused: false,
     duration: 0,
-    onStart: vi.fn(),
+    onStart: vi.fn().mockResolvedValue(true),
     onPause: vi.fn(),
     onResume: vi.fn(),
     onStop: vi.fn(),
     onCancel: vi.fn(),
   };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    defaultProps.onStart = vi.fn().mockResolvedValue(true);
+  });
 
   it("renders record button when not recording", () => {
     render(<RecordingPanel {...defaultProps} />);
@@ -31,13 +36,48 @@ describe("RecordingPanel", () => {
     expect(screen.getByText("Record")).toBeInTheDocument();
   });
 
-  it("calls onStart when record button is clicked", () => {
+  it("calls onStart when record button is clicked", async () => {
     render(<RecordingPanel {...defaultProps} />);
 
     const recordButton = screen.getByText("Record");
     fireEvent.click(recordButton);
 
-    expect(defaultProps.onStart).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(defaultProps.onStart).toHaveBeenCalled();
+    });
+  });
+
+  it("shows error message when recording fails", async () => {
+    defaultProps.onStart = vi.fn().mockResolvedValue(false);
+    render(<RecordingPanel {...defaultProps} />);
+
+    const recordButton = screen.getByText("Record");
+    fireEvent.click(recordButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Microphone access denied/)).toBeInTheDocument();
+    });
+  });
+
+  it("shows 'Starting...' while initializing recording", async () => {
+    let resolveStart: (value: boolean) => void;
+    defaultProps.onStart = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveStart = resolve;
+        }),
+    );
+
+    render(<RecordingPanel {...defaultProps} />);
+
+    const recordButton = screen.getByText("Record");
+    fireEvent.click(recordButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Starting...")).toBeInTheDocument();
+    });
+
+    resolveStart!(true);
   });
 
   it("shows recording controls when recording", () => {

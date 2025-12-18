@@ -5,14 +5,15 @@
 
 "use client";
 
-import { Circle, Pause, Square } from "lucide-react";
+import { AlertCircle, Circle, Pause, Square } from "lucide-react";
+import { useCallback, useState } from "react";
 import { formatTime } from "../lib/audio-engine";
 
 interface RecordingPanelProps {
   isRecording: boolean;
   isPaused: boolean;
   duration: number;
-  onStart: () => void;
+  onStart: () => Promise<boolean> | void;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
@@ -29,15 +30,44 @@ export function RecordingPanel({
   onStop,
   onCancel,
 }: RecordingPanelProps) {
+  const [error, setError] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
+
+  const handleStart = useCallback(async () => {
+    setError(null);
+    setIsStarting(true);
+    try {
+      const result = await onStart();
+      if (result === false) {
+        setError(
+          "Microphone access denied. Please allow microphone access in your browser settings.",
+        );
+      }
+    } catch {
+      setError("Failed to start recording. Please check microphone permissions.");
+    } finally {
+      setIsStarting(false);
+    }
+  }, [onStart]);
+
   if (!isRecording) {
     return (
-      <button
-        onClick={onStart}
-        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-      >
-        <Circle className="w-4 h-4 fill-current" />
-        Record
-      </button>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={handleStart}
+          disabled={isStarting}
+          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-wait text-white rounded-lg transition-colors"
+        >
+          <Circle className="w-4 h-4 fill-current" />
+          {isStarting ? "Starting..." : "Record"}
+        </button>
+        {error && (
+          <div className="flex items-center gap-2 text-red-400 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
     );
   }
 

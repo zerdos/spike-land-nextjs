@@ -44,6 +44,7 @@ model User {
   mcpGenerationJobs    McpGenerationJob[]
   boxes                Box[]
   pipelines            EnhancementPipeline[]
+  audioMixerProjects   AudioMixerProject[]
   marketingAccounts    MarketingAccount[]
   // Campaign Analytics relations
   visitorSessions      VisitorSession[]
@@ -1066,6 +1067,51 @@ model CampaignLink {
   @@index([platform])
   @@index([externalCampaignId])
   @@map("campaign_links")
+}
+
+// =============================================================================
+// Audio Mixer Models
+// =============================================================================
+
+model AudioMixerProject {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks      AudioTrack[]
+
+  @@index([userId, createdAt])
+  @@map("audio_mixer_projects")
+}
+
+model AudioTrack {
+  id            String            @id @default(cuid())
+  projectId     String
+  name          String
+  fileUrl       String? // R2 public URL
+  fileR2Key     String? // R2 key for server operations
+  fileFormat    String // wav, mp3, webm, etc.
+  duration      Float // seconds
+  fileSizeBytes Int
+  volume        Float             @default(1.0)
+  muted         Boolean           @default(false)
+  solo          Boolean           @default(false)
+  sortOrder     Int               @default(0)
+  storageType   AudioStorageType  @default(R2)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  project       AudioMixerProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, sortOrder])
+  @@map("audio_tracks")
+}
+
+enum AudioStorageType {
+  R2
+  OPFS
 }
 
 // Enums for Campaign Analytics

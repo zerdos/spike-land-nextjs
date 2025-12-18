@@ -76,6 +76,11 @@ export default defineConfig({
       "next/server": path.resolve(__dirname, "./node_modules/next/server.js"),
       "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
       "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
+      // Mock OPFS adapter for tests
+      "@spike-npm-land/opfs-node-adapter": path.resolve(
+        __dirname,
+        "./vitest.mock-opfs-adapter.ts",
+      ),
     },
   },
 });

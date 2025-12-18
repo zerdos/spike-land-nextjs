@@ -1,0 +1,76 @@
+/**
+ * Audio Storage Types
+ * Resolves #332
+ */
+
+/**
+ * Storage location for audio files
+ */
+export type StorageLocation = "opfs" | "r2";
+
+/**
+ * A saved audio track reference
+ */
+export interface SavedTrack {
+  id: string;
+  name: string;
+  format: string;
+  duration: number;
+  sizeBytes: number;
+  storageLocation: StorageLocation;
+  opfsPath?: string;
+  r2Key?: string;
+  r2Url?: string;
+  volume: number;
+  muted: boolean;
+  solo: boolean;
+  createdAt: string;
+}
+
+/**
+ * An audio project containing multiple tracks
+ */
+export interface AudioProject {
+  id: string;
+  name: string;
+  description?: string;
+  tracks: SavedTrack[];
+  masterVolume: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Result of a storage operation
+ */
+export interface StorageResult<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+/**
+ * Options for saving a track
+ */
+export interface SaveTrackOptions {
+  projectId: string;
+  name: string;
+  format: string;
+  duration: number;
+  volume?: number;
+  muted?: boolean;
+  solo?: boolean;
+}
+
+/**
+ * Metadata stored with audio files in OPFS
+ */
+export interface OPFSAudioMetadata {
+  trackId: string;
+  projectId: string;
+  name: string;
+  format: string;
+  duration: number;
+  sizeBytes: number;
+  createdAt: string;
+}
