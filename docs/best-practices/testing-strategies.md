@@ -1221,7 +1221,7 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn --immutable-cache
 
       - run: yarn test:coverage --shard=${{ matrix.shard }}/4
 
@@ -1245,7 +1245,7 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn --immutable-cache
 
       - run: yarn build
 

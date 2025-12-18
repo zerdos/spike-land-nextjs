@@ -37,7 +37,7 @@ jobs:
           cache: "yarn"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn --immutable-cache
 
       - name: Run Claude Code Review
         id: claude-review
