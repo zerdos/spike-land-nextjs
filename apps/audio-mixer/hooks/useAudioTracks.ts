@@ -71,7 +71,8 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
         track.id === action.payload.id
           ? {
             ...track,
-            trimStart: Math.max(0, action.payload.trimStart),
+            // Allow negative trimStart for lead-in silence (up to -30s)
+            trimStart: Math.max(-30, action.payload.trimStart),
             trimEnd: Math.min(track.duration || Infinity, action.payload.trimEnd),
           }
           : track
@@ -298,13 +299,39 @@ export function useAudioTracks() {
 
       // Calculate effective playback parameters with position and trim
       const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
-      const trimmedDuration = effectiveTrimEnd - track.trimStart;
-      const playbackOffset = track.trimStart + track.currentTime;
-      const playbackDuration = Math.max(0, trimmedDuration - track.currentTime);
-
-      // Calculate when to start (using position, with delay fallback for backward compat)
       const trackPosition = track.position ?? track.delay ?? 0;
-      const startTime = Math.max(0, context.currentTime + trackPosition);
+
+      // Handle negative trimStart (lead-in silence)
+      let playbackOffset: number;
+      let playbackDuration: number;
+      let scheduleDelay: number;
+
+      if (track.trimStart < 0) {
+        // Negative trimStart: add silence before audio
+        const silenceDuration = Math.abs(track.trimStart);
+        const currentTimeInTrack = track.currentTime;
+
+        if (currentTimeInTrack < silenceDuration) {
+          // Still in the silence region - schedule audio to start after remaining silence
+          scheduleDelay = silenceDuration - currentTimeInTrack;
+          playbackOffset = 0;
+          playbackDuration = effectiveTrimEnd;
+        } else {
+          // Past the silence - start audio from offset
+          scheduleDelay = 0;
+          playbackOffset = currentTimeInTrack - silenceDuration;
+          playbackDuration = Math.max(0, effectiveTrimEnd - playbackOffset);
+        }
+      } else {
+        // Normal positive trimStart
+        scheduleDelay = 0;
+        playbackOffset = track.trimStart + track.currentTime;
+        const trimmedDuration = effectiveTrimEnd - track.trimStart;
+        playbackDuration = Math.max(0, trimmedDuration - track.currentTime);
+      }
+
+      // Calculate when to start
+      const startTime = Math.max(0, context.currentTime + trackPosition + scheduleDelay);
 
       source.start(startTime, playbackOffset, playbackDuration);
       sourceRefs.current.set(id, source);

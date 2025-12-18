@@ -5,6 +5,7 @@
 
 export { Playhead } from "./Playhead";
 export { SelectedTrackPanel } from "./SelectedTrackPanel";
+export { ShortcutsBar } from "./ShortcutsBar";
 export { Timeline } from "./Timeline";
 export { TimelineControls } from "./TimelineControls";
 export { TimelineRuler } from "./TimelineRuler";

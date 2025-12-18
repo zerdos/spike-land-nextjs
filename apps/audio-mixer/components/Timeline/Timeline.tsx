@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { AudioTrack, SnapGrid } from "../../types";
 import { Playhead } from "./Playhead";
 import { SelectedTrackPanel } from "./SelectedTrackPanel";
+import { ShortcutsBar } from "./ShortcutsBar";
 import { TimelineControls } from "./TimelineControls";
 import { TimelineRuler } from "./TimelineRuler";
 import { TimelineTrack, TRACK_HEIGHT } from "./TimelineTrack";
@@ -257,10 +258,8 @@ export function Timeline({
         </div>
       </div>
 
-      {/* Scrub hint */}
-      <div className="px-4 py-1 bg-gray-800 border-t border-gray-700 text-xs text-gray-500">
-        Click to seek | Shift+drag to scrub | Drag tracks to move | Drag edges to trim
-      </div>
+      {/* Shortcuts bar */}
+      <ShortcutsBar />
 
       {/* Selected track panel */}
       <SelectedTrackPanel

@@ -104,22 +104,28 @@ export function SelectedTrackPanel({
         <div className="flex items-center gap-2">
           <Scissors className="w-4 h-4 text-gray-400" />
           <div className="flex items-center gap-1">
-            <label className="text-xs text-gray-500">Start:</label>
+            <label
+              className="text-xs text-gray-500"
+              title="Negative values add silence before audio"
+            >
+              Start:
+            </label>
             <input
               type="number"
-              min="0"
+              min="-30"
               max={effectiveTrimEnd - 0.1}
               step="0.1"
               value={track.trimStart.toFixed(1)}
               onChange={(e) => onTrimChange(parseFloat(e.target.value) || 0, effectiveTrimEnd)}
               className="w-16 px-1.5 py-0.5 text-xs bg-gray-700 text-gray-300 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              title="Negative values add silence before audio"
             />
           </div>
           <div className="flex items-center gap-1">
             <label className="text-xs text-gray-500">End:</label>
             <input
               type="number"
-              min={track.trimStart + 0.1}
+              min={Math.max(0.1, track.trimStart + 0.1)}
               max={track.duration}
               step="0.1"
               value={effectiveTrimEnd.toFixed(1)}
@@ -128,6 +134,11 @@ export function SelectedTrackPanel({
               className="w-16 px-1.5 py-0.5 text-xs bg-gray-700 text-gray-300 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
             />
           </div>
+          {track.trimStart < 0 && (
+            <span className="text-xs text-yellow-400" title="Lead-in silence added">
+              +{Math.abs(track.trimStart).toFixed(1)}s silence
+            </span>
+          )}
         </div>
 
         {/* Spacer */}

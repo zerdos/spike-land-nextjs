@@ -108,10 +108,20 @@ export async function mixTracksToBlob(
       duration,
       ...activeTracks.map((t) => {
         const effectiveTrimEnd = t.trimEnd > 0 ? t.trimEnd : t.duration;
-        const trimmedDuration = effectiveTrimEnd - t.trimStart;
         // Use position (with delay fallback for backward compat)
         const trackPosition = t.position ?? t.delay ?? 0;
-        return Math.max(0, trackPosition) + trimmedDuration;
+
+        // Handle negative trimStart (lead-in silence)
+        if (t.trimStart < 0) {
+          // Silence duration + audio duration
+          const silenceDuration = Math.abs(t.trimStart);
+          const audioDuration = effectiveTrimEnd;
+          return Math.max(0, trackPosition) + silenceDuration + audioDuration;
+        } else {
+          // Normal trim
+          const trimmedDuration = effectiveTrimEnd - t.trimStart;
+          return Math.max(0, trackPosition) + trimmedDuration;
+        }
       }),
     )
     : duration;
@@ -135,14 +145,27 @@ export async function mixTracksToBlob(
 
       // Calculate effective trim boundaries
       const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
-      const trimmedDuration = effectiveTrimEnd - track.trimStart;
 
       // Use position (with delay fallback for backward compat)
       const trackPosition = track.position ?? track.delay ?? 0;
-      // Start time is just the position (always >= 0)
-      const startTime = Math.max(0, trackPosition);
-      const bufferOffset = track.trimStart;
-      const playDuration = trimmedDuration;
+
+      // Handle negative trimStart (lead-in silence)
+      let startTime: number;
+      let bufferOffset: number;
+      let playDuration: number;
+
+      if (track.trimStart < 0) {
+        // Negative trimStart: add silence before audio
+        const silenceDuration = Math.abs(track.trimStart);
+        startTime = Math.max(0, trackPosition) + silenceDuration;
+        bufferOffset = 0; // Start from beginning of audio
+        playDuration = effectiveTrimEnd;
+      } else {
+        // Normal positive trimStart
+        startTime = Math.max(0, trackPosition);
+        bufferOffset = track.trimStart;
+        playDuration = effectiveTrimEnd - track.trimStart;
+      }
 
       source.start(startTime, bufferOffset, playDuration);
     }
