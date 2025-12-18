@@ -284,7 +284,7 @@ export default function MusicCreatorPage() {
                     value={[track.volume]}
                     max={1}
                     step={0.01}
-                    onValueChange={(vals) => setVolume(track.id, vals[0])}
+                    onValueChange={(vals) => setVolume(track.id, vals[0] ?? 1)}
                     className="w-20"
                     aria-label={`Volume for ${track.name}`}
                   />
