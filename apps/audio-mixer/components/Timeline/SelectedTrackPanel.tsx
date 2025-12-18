@@ -4,6 +4,8 @@
 
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Headphones, Scissors, Trash2, Volume2, VolumeX } from "lucide-react";
 import type { AudioTrack } from "../../types";
 
