@@ -22,7 +22,10 @@ interface SerializedTrack {
   pan: number;
   muted: boolean;
   solo: boolean;
+  /** @deprecated Use position instead */
   delay: number;
+  /** Track position on timeline in seconds */
+  position: number;
   trimStart: number;
   trimEnd: number;
   duration: number;
@@ -56,6 +59,7 @@ function serializeTrack(track: AudioTrack): SerializedTrack {
     muted: track.muted,
     solo: track.solo,
     delay: track.delay,
+    position: track.position ?? track.delay ?? 0,
     trimStart: track.trimStart,
     trimEnd: track.trimEnd,
     duration: track.duration,

@@ -8,6 +8,7 @@
 import {
   Check,
   Download,
+  Keyboard,
   Loader2,
   Pause,
   Play,
@@ -23,16 +24,22 @@ import {
   useAudioStorage,
   useAudioTracks,
   useProjectPersistence,
+  useTimeline,
 } from "../hooks";
 import { blobToAudioBuffer, mixTracksToBlob } from "../lib/audio-engine";
+import { KeyboardShortcutsPanel, ShortcutToast } from "./KeyboardShortcutsPanel";
 import { RecordingPanel } from "./RecordingPanel";
-import { SortableTrackList } from "./SortableTrackList";
+import { SplashScreen } from "./SplashScreen";
+import { Timeline } from "./Timeline";
 
 export function AudioMixer() {
+  const [hasUserGesture, setHasUserGesture] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.8);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [shortcutToast, setShortcutToast] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,6 +47,10 @@ export function AudioMixer() {
   const recording = useAudioRecording();
   const trackManager = useAudioTracks();
   const audioStorage = useAudioStorage();
+  const timeline = useTimeline();
+
+  // Scrub audio ref for playing snippets
+  const scrubSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   // Persistence
   const [persistenceState, persistenceActions] = useProjectPersistence(
@@ -47,8 +58,21 @@ export function AudioMixer() {
     masterVolume,
   );
 
+  // Show toast and auto-hide
+  const showToast = useCallback((message: string) => {
+    setShortcutToast(message);
+    setTimeout(() => setShortcutToast(null), 1000);
+  }, []);
+
+  // Handle splash screen click
+  const handleStart = useCallback(() => {
+    setHasUserGesture(true);
+  }, []);
+
   // Load saved project on mount
   useEffect(() => {
+    if (!hasUserGesture) return;
+
     const loadSavedProject = async () => {
       const savedProject = persistenceActions.loadProject();
       if (!savedProject || savedProject.tracks.length === 0) return;
@@ -93,6 +117,8 @@ export function AudioMixer() {
             muted: track.muted,
             solo: track.solo,
             delay: track.delay,
+            // Migration: use position if present, otherwise fall back to delay
+            position: track.position ?? track.delay ?? 0,
             trimStart: track.trimStart,
             trimEnd: track.trimEnd,
             duration: track.duration,
@@ -117,7 +143,7 @@ export function AudioMixer() {
 
     loadSavedProject();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [hasUserGesture]); // Only run once on mount after user gesture
 
   // Initialize audio context on first interaction
   const handleInitialize = useCallback(async () => {
@@ -220,19 +246,96 @@ export function AudioMixer() {
     const { context, masterGain } = await audioContext.initialize();
     trackManager.playAllTracks(context, masterGain);
     setIsPlaying(true);
-  }, [audioContext, trackManager]);
+    // Start playhead animation from current position
+    timeline.startPlayheadAnimation(timeline.state.playheadTime);
+  }, [audioContext, trackManager, timeline]);
 
   // Stop all tracks
   const handleStopAll = useCallback(() => {
     trackManager.stopAllTracks();
     setIsPlaying(false);
-  }, [trackManager]);
+    timeline.stopPlayheadAnimation();
+  }, [trackManager, timeline]);
+
+  // Toggle play/pause
+  const handleTogglePlayPause = useCallback(async () => {
+    if (isPlaying) {
+      handleStopAll();
+      showToast("⏸ Paused");
+    } else {
+      await handlePlayAll();
+      showToast("▶ Playing");
+    }
+  }, [isPlaying, handleStopAll, handlePlayAll, showToast]);
+
+  // Handle playhead seek
+  const handlePlayheadSeek = useCallback(
+    (time: number) => {
+      timeline.setPlayheadTime(time);
+      // If playing, restart from new position
+      if (isPlaying) {
+        trackManager.stopAllTracks();
+        audioContext.initialize().then(({ context, masterGain }) => {
+          // Update currentTime on tracks before playing
+          trackManager.playAllTracks(context, masterGain);
+          timeline.startPlayheadAnimation(time);
+        });
+      }
+    },
+    [timeline, isPlaying, trackManager, audioContext],
+  );
+
+  // Handle scrub audio feedback
+  const handleScrubAudio = useCallback(
+    async (time: number) => {
+      // Stop previous scrub snippet
+      if (scrubSourceRef.current) {
+        try {
+          scrubSourceRef.current.stop();
+        } catch {
+          // Already stopped
+        }
+        scrubSourceRef.current = null;
+      }
+
+      const { context, masterGain } = await audioContext.initialize();
+
+      // Play a short snippet from each track at the scrub position
+      const hasSolo = trackManager.tracks.some((t) => t.solo);
+
+      trackManager.tracks.forEach((track) => {
+        if (!track.buffer || track.muted) return;
+        if (hasSolo && !track.solo) return;
+
+        const trackPosition = track.position ?? track.delay ?? 0;
+        const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+        const offset = time - trackPosition + track.trimStart;
+
+        // Only play if within track bounds
+        if (offset >= track.trimStart && offset < effectiveTrimEnd) {
+          const source = context.createBufferSource();
+          source.buffer = track.buffer;
+
+          const gainNode = context.createGain();
+          gainNode.gain.value = track.volume * 0.5; // Reduce volume for scrub
+          source.connect(gainNode);
+          gainNode.connect(masterGain);
+
+          // Play 50ms snippet
+          source.start(0, offset, 0.05);
+          scrubSourceRef.current = source;
+        }
+      });
+    },
+    [audioContext, trackManager.tracks],
+  );
 
   // Export mix
   const handleExport = useCallback(async () => {
     if (trackManager.tracks.length === 0) return;
 
     setIsExporting(true);
+    showToast("📦 Exporting...");
 
     try {
       const { context } = await audioContext.initialize();
@@ -248,25 +351,278 @@ export function AudioMixer() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      showToast("✓ Export complete");
     } catch (error) {
       console.error("Export failed:", error);
+      showToast("✗ Export failed");
     } finally {
       setIsExporting(false);
     }
-  }, [audioContext, trackManager]);
+  }, [audioContext, trackManager, showToast]);
 
-  // Play individual track
-  const handlePlayTrack = useCallback(
-    async (trackId: string) => {
-      const { context, masterGain } = await audioContext.initialize();
-      trackManager.playTrack(trackId, context, masterGain);
-    },
-    [audioContext, trackManager],
-  );
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!hasUserGesture) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      const isMeta = e.metaKey || e.ctrlKey;
+
+      // Toggle shortcuts panel
+      if (key === "?" || (key === "/" && e.shiftKey)) {
+        e.preventDefault();
+        setShowShortcuts((prev) => !prev);
+        return;
+      }
+
+      // Close shortcuts panel or deselect
+      if (key === "escape") {
+        if (showShortcuts) {
+          setShowShortcuts(false);
+        } else {
+          timeline.setSelectedTrackId(null);
+          showToast("Deselected");
+        }
+        return;
+      }
+
+      // Playback controls
+      if (key === " ") {
+        e.preventDefault();
+        handleTogglePlayPause();
+        return;
+      }
+
+      if (key === "s" && !isMeta) {
+        e.preventDefault();
+        handleStopAll();
+        showToast("⏹ Stopped");
+        return;
+      }
+
+      // Seek controls
+      if (key === "home") {
+        e.preventDefault();
+        handlePlayheadSeek(0);
+        showToast("⏮ Start");
+        return;
+      }
+
+      if (key === "end") {
+        e.preventDefault();
+        const maxTime = Math.max(
+          ...trackManager.tracks.map((t) => {
+            const effectiveTrimEnd = t.trimEnd > 0 ? t.trimEnd : t.duration;
+            return (t.position ?? t.delay ?? 0) + effectiveTrimEnd - t.trimStart;
+          }),
+          0,
+        );
+        handlePlayheadSeek(maxTime);
+        showToast("⏭ End");
+        return;
+      }
+
+      if (key === "arrowleft" && !isMeta) {
+        e.preventDefault();
+        const delta = e.shiftKey ? 5 : 1;
+        const newTime = Math.max(0, timeline.state.playheadTime - delta);
+        handlePlayheadSeek(newTime);
+        showToast(`⏪ -${delta}s`);
+        return;
+      }
+
+      if (key === "arrowright" && !isMeta) {
+        e.preventDefault();
+        const delta = e.shiftKey ? 5 : 1;
+        handlePlayheadSeek(timeline.state.playheadTime + delta);
+        showToast(`⏩ +${delta}s`);
+        return;
+      }
+
+      // Track selection
+      if (key === "arrowup") {
+        e.preventDefault();
+        const tracks = trackManager.tracks;
+        if (tracks.length === 0) return;
+        const currentIndex = timeline.state.selectedTrackId
+          ? tracks.findIndex((t) => t.id === timeline.state.selectedTrackId)
+          : tracks.length;
+        const newIndex = Math.max(0, currentIndex - 1);
+        timeline.setSelectedTrackId(tracks[newIndex].id);
+        showToast(`Track ${newIndex + 1}`);
+        return;
+      }
+
+      if (key === "arrowdown") {
+        e.preventDefault();
+        const tracks = trackManager.tracks;
+        if (tracks.length === 0) return;
+        const currentIndex = timeline.state.selectedTrackId
+          ? tracks.findIndex((t) => t.id === timeline.state.selectedTrackId)
+          : -1;
+        const newIndex = Math.min(tracks.length - 1, currentIndex + 1);
+        timeline.setSelectedTrackId(tracks[newIndex].id);
+        showToast(`Track ${newIndex + 1}`);
+        return;
+      }
+
+      // Track controls (require selected track)
+      const selectedTrack = timeline.state.selectedTrackId
+        ? trackManager.tracks.find((t) => t.id === timeline.state.selectedTrackId)
+        : null;
+
+      if (key === "m" && !isMeta) {
+        e.preventDefault();
+        if (selectedTrack) {
+          trackManager.toggleMute(selectedTrack.id);
+          showToast(selectedTrack.muted ? "🔊 Unmuted" : "🔇 Muted");
+        }
+        return;
+      }
+
+      if (key === "o") {
+        e.preventDefault();
+        if (selectedTrack) {
+          trackManager.toggleSolo(selectedTrack.id);
+          showToast(selectedTrack.solo ? "Solo off" : "🎧 Solo");
+        }
+        return;
+      }
+
+      if (key === "delete" || key === "backspace") {
+        e.preventDefault();
+        if (selectedTrack) {
+          trackManager.removeTrack(selectedTrack.id);
+          timeline.setSelectedTrackId(null);
+          showToast("🗑 Deleted");
+        }
+        return;
+      }
+
+      // Volume controls
+      if (key === "[") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Master volume
+          const newVolume = Math.max(0, masterVolume - 0.1);
+          setMasterVolume(newVolume);
+          showToast(`Master ${Math.round(newVolume * 100)}%`);
+        } else if (selectedTrack) {
+          const newVolume = Math.max(0, selectedTrack.volume - 0.1);
+          trackManager.setVolume(selectedTrack.id, newVolume);
+          showToast(`Volume ${Math.round(newVolume * 100)}%`);
+        }
+        return;
+      }
+
+      if (key === "]") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Master volume
+          const newVolume = Math.min(1, masterVolume + 0.1);
+          setMasterVolume(newVolume);
+          showToast(`Master ${Math.round(newVolume * 100)}%`);
+        } else if (selectedTrack) {
+          const newVolume = Math.min(1, selectedTrack.volume + 0.1);
+          trackManager.setVolume(selectedTrack.id, newVolume);
+          showToast(`Volume ${Math.round(newVolume * 100)}%`);
+        }
+        return;
+      }
+
+      // Zoom controls
+      if (key === "=" || key === "+") {
+        e.preventDefault();
+        timeline.setZoom(Math.min(200, timeline.state.zoom * 1.25));
+        showToast("🔍 Zoom in");
+        return;
+      }
+
+      if (key === "-") {
+        e.preventDefault();
+        timeline.setZoom(Math.max(10, timeline.state.zoom / 1.25));
+        showToast("🔍 Zoom out");
+        return;
+      }
+
+      if (key === "0" && !isMeta) {
+        e.preventDefault();
+        timeline.setZoom(50);
+        showToast("🔍 Reset zoom");
+        return;
+      }
+
+      // Snap toggle
+      if (key === "g") {
+        e.preventDefault();
+        timeline.setSnapEnabled(!timeline.state.snapEnabled);
+        showToast(timeline.state.snapEnabled ? "Grid snap off" : "Grid snap on");
+        return;
+      }
+
+      // Recording
+      if (key === "r" && !isMeta) {
+        e.preventDefault();
+        if (recording.isRecording) {
+          handleStopRecording();
+          showToast("⏹ Recording stopped");
+        } else {
+          handleStartRecording();
+          showToast("⏺ Recording...");
+        }
+        return;
+      }
+
+      // File operations
+      if (key === "o" && isMeta) {
+        e.preventDefault();
+        fileInputRef.current?.click();
+        return;
+      }
+
+      if (key === "e" && isMeta) {
+        e.preventDefault();
+        handleExport();
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    hasUserGesture,
+    showShortcuts,
+    isPlaying,
+    masterVolume,
+    timeline,
+    trackManager,
+    recording,
+    handleTogglePlayPause,
+    handleStopAll,
+    handlePlayheadSeek,
+    handleStartRecording,
+    handleStopRecording,
+    handleExport,
+    showToast,
+  ]);
+
+  // Show splash screen if no user gesture
+  if (!hasUserGesture) {
+    return <SplashScreen onStart={handleStart} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white pt-20 px-6 pb-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-3">
@@ -297,6 +653,19 @@ export function AudioMixer() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Master Controls</h2>
             <div className="flex items-center gap-4">
+              {/* Keyboard shortcuts button */}
+              <button
+                onClick={() => setShowShortcuts(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                title="Keyboard shortcuts (?)"
+              >
+                <Keyboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Shortcuts</span>
+                <kbd className="hidden sm:inline px-1.5 py-0.5 bg-gray-700 rounded text-xs font-mono">
+                  ?
+                </kbd>
+              </button>
+
               {/* Master Volume */}
               <div className="flex items-center gap-2">
                 <Volume2 className="w-5 h-5 text-gray-400" />
@@ -392,34 +761,33 @@ export function AudioMixer() {
           />
         </div>
 
-        {/* Tracks List */}
+        {/* Timeline */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">
-            Tracks ({trackManager.tracks.length})
+            Timeline ({trackManager.tracks.length} tracks)
           </h2>
 
-          {trackManager.tracks.length === 0
-            ? (
-              <div className="bg-gray-800 rounded-lg p-8 text-center">
-                <p className="text-gray-400">
-                  No tracks yet. Add an audio file or record something!
-                </p>
-              </div>
-            )
-            : (
-              <SortableTrackList
-                tracks={trackManager.tracks}
-                onReorder={trackManager.reorderTracks}
-                onPlay={handlePlayTrack}
-                onStop={trackManager.stopTrack}
-                onVolumeChange={trackManager.setVolume}
-                onMuteToggle={trackManager.toggleMute}
-                onSoloToggle={trackManager.toggleSolo}
-                onRemove={trackManager.removeTrack}
-                onDelayChange={trackManager.setDelay}
-                onTrimChange={trackManager.setTrim}
-              />
-            )}
+          <Timeline
+            tracks={trackManager.tracks}
+            playheadTime={timeline.state.playheadTime}
+            isPlaying={isPlaying}
+            zoom={timeline.state.zoom}
+            snapEnabled={timeline.state.snapEnabled}
+            snapGrid={timeline.state.snapGrid}
+            selectedTrackId={timeline.state.selectedTrackId}
+            onTrackPositionChange={trackManager.setPosition}
+            onPlayheadSeek={handlePlayheadSeek}
+            onZoomChange={timeline.setZoom}
+            onSnapToggle={timeline.setSnapEnabled}
+            onSnapGridChange={timeline.setSnapGrid}
+            onSelectTrack={timeline.setSelectedTrackId}
+            onVolumeChange={trackManager.setVolume}
+            onMuteToggle={trackManager.toggleMute}
+            onSoloToggle={trackManager.toggleSolo}
+            onTrimChange={trackManager.setTrim}
+            onRemoveTrack={trackManager.removeTrack}
+            onScrubAudio={handleScrubAudio}
+          />
         </div>
 
         {/* Clear All & New Project */}
@@ -445,6 +813,15 @@ export function AudioMixer() {
           </div>
         )}
       </div>
+
+      {/* Keyboard Shortcuts Panel */}
+      <KeyboardShortcutsPanel
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
+
+      {/* Shortcut Toast */}
+      <ShortcutToast action={shortcutToast} />
     </div>
   );
 }
