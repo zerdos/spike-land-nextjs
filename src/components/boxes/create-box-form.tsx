@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { BoxTier } from "@prisma/client";
 import { Check, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 import { toast } from "sonner";
 

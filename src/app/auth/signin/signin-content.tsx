@@ -4,8 +4,8 @@ import { AuthButtons } from "@/components/auth/auth-buttons";
 import { PixelLogo } from "@/components/brand/PixelLogo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { AlertCircle } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 

@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Heart, Sparkles, Star, Zap } from "lucide-react";
-import Link from "next/link";
 
 export default function ComicSansPage() {
   return (

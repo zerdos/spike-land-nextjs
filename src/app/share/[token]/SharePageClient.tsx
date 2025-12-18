@@ -3,8 +3,8 @@
 import { PixelLogo } from "@/components/brand";
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { Download, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 interface SharePageClientProps {

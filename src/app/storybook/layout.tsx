@@ -2,11 +2,11 @@
 
 import { storybookIconMap, storybookSections } from "@/components/storybook";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Component, Menu } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";

@@ -4,9 +4,22 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateBoxForm } from "./create-box-form";
 
-// Mock next/navigation
+// Mock next-view-transitions
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
+vi.mock("next-view-transitions", () => ({
+  useTransitionRouter: () => ({
+    push: mockPush,
+    refresh: mockRefresh,
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
+// Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,

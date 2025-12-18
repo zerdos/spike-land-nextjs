@@ -6,8 +6,8 @@
  */
 
 import { auth } from "@/auth";
+import { Link } from "@/components/ui/link";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 

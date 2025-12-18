@@ -69,11 +69,11 @@ jobs:
         run: yarn npm audit --all --severity moderate
 
   unit-tests:
-    name: Unit Tests [${{ matrix.shard }}/12]
+    name: Unit Tests [${{ matrix.shard }}/8]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
       fail-fast: false
 
     steps:
@@ -103,8 +103,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Run tests (shard ${{ matrix.shard }}/12)
-        run: yarn test:run --shard=${{ matrix.shard }}/12 --reporter=github-actions --no-file-parallelism
+      - name: Run tests (shard ${{ matrix.shard }}/8)
+        run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public

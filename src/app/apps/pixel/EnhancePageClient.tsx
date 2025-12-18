@@ -12,6 +12,7 @@ import { MultiUploadProgress } from "@/components/enhance/MultiUploadProgress";
 import { ThumbnailViewToggle } from "@/components/enhance/ThumbnailViewToggle";
 import { TokenDisplay } from "@/components/tokens/TokenDisplay";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { useZoomLevel, ZoomSlider } from "@/components/ui/zoom-slider";
 import { useMultiFileUpload } from "@/hooks/useMultiFileUpload";
 import { useThumbnailPreference } from "@/hooks/useThumbnailPreference";
@@ -19,8 +20,7 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { Settings2 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 
 interface EnhancePageClientProps {

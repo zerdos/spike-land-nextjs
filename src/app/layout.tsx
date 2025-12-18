@@ -9,6 +9,7 @@ import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ViewTransitions } from "next-view-transitions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,19 +70,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
-          disableTransitionOnChange
-        >
-          <SessionProvider>
-            <ConditionalHeader />
-            {children}
-            <FeedbackButton />
-          </SessionProvider>
-          <Toaster />
-        </ThemeProvider>
+        <ViewTransitions>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            disableTransitionOnChange
+          >
+            <SessionProvider>
+              <ConditionalHeader />
+              {children}
+              <FeedbackButton />
+            </SessionProvider>
+            <Toaster />
+          </ThemeProvider>
+        </ViewTransitions>
         <Analytics />
         <SpeedInsights />
         <MetaPixel />

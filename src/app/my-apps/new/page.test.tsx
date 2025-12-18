@@ -13,8 +13,15 @@ const mockRouter = {
   prefetch: vi.fn(),
 };
 
+vi.mock("next-view-transitions", () => ({
+  useTransitionRouter: () => mockRouter,
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/",
 }));
 
 describe("NewAppPage", () => {

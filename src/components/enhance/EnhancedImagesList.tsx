@@ -4,12 +4,12 @@ import { AddToAlbumModal } from "@/components/enhance/AddToAlbumModal";
 import { DraggablePhotoCard } from "@/components/enhance/DraggablePhotoCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { MasonryGridUniform, type ZoomLevel } from "@/components/ui/masonry-grid";
 import { getBestThumbnail } from "@/lib/images/get-best-thumbnail";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { FolderPlus } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface EnhancedImagesListProps {
@@ -127,6 +127,7 @@ export function EnhancedImagesList({
                     src={getBestThumbnail(image, showEnhanced)}
                     alt="Uploaded image"
                     fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

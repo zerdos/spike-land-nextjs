@@ -15,8 +15,9 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Coins } from "lucide-react";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 interface EnhanceClientProps {

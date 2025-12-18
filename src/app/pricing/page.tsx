@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ENHANCEMENT_COSTS, TOKEN_PACKAGES } from "@/lib/stripe/client";
@@ -18,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { Check, Clock, Coins, Gift, Sparkles, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 // Calculate value comparison for packages

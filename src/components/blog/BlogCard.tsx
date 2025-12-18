@@ -1,6 +1,6 @@
+import { Link } from "@/components/ui/link";
 import { Calendar, Clock, Tag } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { BlogPostMeta } from "@/lib/blog/types";

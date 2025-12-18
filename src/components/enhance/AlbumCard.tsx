@@ -120,18 +120,12 @@ export function AlbumCard(
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-        <Badge
-          variant="secondary"
-          className="absolute bottom-2 left-2 gap-1"
-        >
+        <Badge className="absolute bottom-2 left-2 gap-1 bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]">
           {getPrivacyIcon(album.privacy)}
           {getPrivacyLabel(album.privacy)}
         </Badge>
 
-        <Badge
-          variant="secondary"
-          className="absolute bottom-2 right-2"
-        >
+        <Badge className="absolute bottom-2 right-2 bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]">
           {album.imageCount} {album.imageCount === 1 ? "image" : "images"}
         </Badge>
       </div>
