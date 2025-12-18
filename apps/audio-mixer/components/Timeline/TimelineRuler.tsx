@@ -62,7 +62,7 @@ export function TimelineRuler({ zoom, duration, onSeek }: TimelineRulerProps) {
 
   return (
     <div
-      className="relative h-8 bg-gray-800 border-b border-gray-700 cursor-pointer select-none"
+      className="relative h-10 bg-black/40 border-b border-white/5 cursor-pointer select-none overflow-hidden"
       style={{ width: `${width}px` }}
       onClick={handleClick}
     >
@@ -74,14 +74,16 @@ export function TimelineRuler({ zoom, duration, onSeek }: TimelineRulerProps) {
         >
           {/* Time label (only for major marks) */}
           {isMajor && (
-            <span className="text-xs text-gray-400 mb-0.5">
+            <span className="text-[10px] font-mono font-bold text-white/40 mb-1">
               {formatTime(time)}
             </span>
           )}
           {/* Tick mark */}
           <div
-            className={`w-px ${isMajor ? "h-3 bg-gray-400" : "h-2 bg-gray-600"}`}
-            style={{ marginTop: isMajor ? 0 : "4px" }}
+            className={`w-px transition-colors duration-300 ${
+              isMajor ? "h-4 bg-white/40" : "h-2 bg-white/10"
+            }`}
+            style={{ marginTop: isMajor ? 0 : "6px" }}
           />
         </div>
       ))}

@@ -4,10 +4,13 @@
 
 "use client";
 
+import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { AudioTrack, SnapGrid } from "../../types";
 import { Playhead } from "./Playhead";
 import { SelectedTrackPanel } from "./SelectedTrackPanel";
+import { ShortcutsBar } from "./ShortcutsBar";
 import { TimelineControls } from "./TimelineControls";
 import { TimelineRuler } from "./TimelineRuler";
 import { TimelineTrack, TRACK_HEIGHT } from "./TimelineTrack";
@@ -165,21 +168,23 @@ export function Timeline({
     : null;
 
   return (
-    <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
+    <div className="glass-1 glass-edge rounded-2xl overflow-hidden border-none shadow-xl">
       {/* Controls */}
-      <TimelineControls
-        zoom={zoom}
-        snapEnabled={snapEnabled}
-        snapGrid={snapGrid}
-        onZoomChange={onZoomChange}
-        onSnapToggle={onSnapToggle}
-        onSnapGridChange={onSnapGridChange}
-      />
+      <div className="bg-white/5 border-b border-white/5">
+        <TimelineControls
+          zoom={zoom}
+          snapEnabled={snapEnabled}
+          snapGrid={snapGrid}
+          onZoomChange={onZoomChange}
+          onSnapToggle={onSnapToggle}
+          onSnapGridChange={onSnapGridChange}
+        />
+      </div>
 
       {/* Ruler */}
-      <div className="overflow-x-hidden">
+      <div className="overflow-x-hidden border-b border-white/5">
         <div
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600"
+          className="overflow-x-auto scrollbar-none"
           style={{ overflowY: "hidden" }}
           ref={(el) => {
             // Sync scroll with tracks viewport
@@ -192,24 +197,26 @@ export function Timeline({
             }
           }}
         >
-          <TimelineRuler
-            zoom={zoom}
-            duration={totalDuration}
-            onSeek={onPlayheadSeek}
-          />
+          <div className="bg-black/20">
+            <TimelineRuler
+              zoom={zoom}
+              duration={totalDuration}
+              onSeek={onPlayheadSeek}
+            />
+          </div>
         </div>
       </div>
 
       {/* Tracks viewport */}
       <div
         ref={viewportRef}
-        className="relative overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+        className="relative overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20 transition-all"
         style={{ height: `${Math.min(tracksHeight, 400)}px` }}
         onMouseDown={handleViewportMouseDown}
       >
         {/* Content container */}
         <div
-          className="relative"
+          className="relative bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.03)_1px,transparent_0)] bg-[size:40px_40px]"
           style={{
             width: `${contentWidth}px`,
             height: `${tracksHeight}px`,
@@ -217,28 +224,40 @@ export function Timeline({
           }}
         >
           {/* Track rows */}
-          {tracks.map((track, index) => (
-            <div
-              key={track.id}
-              className="absolute left-0 right-0"
-              style={{
-                top: `${index * TRACK_ROW_HEIGHT + 4}px`,
-                height: `${TRACK_HEIGHT}px`,
-              }}
-              data-timeline-track
-            >
-              <TimelineTrack
-                track={track}
-                zoom={zoom}
-                isSelected={track.id === selectedTrackId}
-                playheadTime={playheadTime}
-                snapTime={snapTime}
-                onPositionChange={(position) => onTrackPositionChange(track.id, position)}
-                onTrimChange={(trimStart, trimEnd) => onTrimChange(track.id, trimStart, trimEnd)}
-                onSelect={() => onSelectTrack(track.id)}
-              />
-            </div>
-          ))}
+          <div className="pt-4">
+            {tracks.map((track, index) => (
+              <div
+                key={track.id}
+                className="absolute left-0 right-0 group"
+                style={{
+                  top: `${index * TRACK_ROW_HEIGHT + 12}px`,
+                  height: `${TRACK_HEIGHT}px`,
+                }}
+                data-timeline-track
+              >
+                {/* Track Row Background Highlight */}
+                <div
+                  className={cn(
+                    "absolute inset-0 mx-2 rounded-xl transition-colors pointer-events-none",
+                    track.id === selectedTrackId
+                      ? "bg-primary/10 border border-primary/20"
+                      : "group-hover:bg-white/5",
+                  )}
+                />
+
+                <TimelineTrack
+                  track={track}
+                  zoom={zoom}
+                  isSelected={track.id === selectedTrackId}
+                  playheadTime={playheadTime}
+                  snapTime={snapTime}
+                  onPositionChange={(position) => onTrackPositionChange(track.id, position)}
+                  onTrimChange={(trimStart, trimEnd) => onTrimChange(track.id, trimStart, trimEnd)}
+                  onSelect={() => onSelectTrack(track.id)}
+                />
+              </div>
+            ))}
+          </div>
 
           {/* Playhead */}
           <Playhead
@@ -250,27 +269,36 @@ export function Timeline({
 
           {/* Empty state */}
           {tracks.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-              Add audio files or record to get started
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                <Plus className="w-8 h-8 opacity-20" />
+              </div>
+              <p className="font-medium">No tracks in project</p>
+              <p className="text-sm opacity-60">Add audio files or record to get started</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Scrub hint */}
-      <div className="px-4 py-1 bg-gray-800 border-t border-gray-700 text-xs text-gray-500">
-        Click to seek | Shift+drag to scrub | Drag tracks to move | Drag edges to trim
+      {/* Shortcuts bar */}
+      <div className="bg-black/40 border-t border-white/5">
+        <ShortcutsBar />
       </div>
 
       {/* Selected track panel */}
-      <SelectedTrackPanel
-        track={selectedTrack}
-        onVolumeChange={(volume) => selectedTrackId && onVolumeChange(selectedTrackId, volume)}
-        onMuteToggle={() => selectedTrackId && onMuteToggle(selectedTrackId)}
-        onSoloToggle={() => selectedTrackId && onSoloToggle(selectedTrackId)}
-        onTrimChange={(start, end) => selectedTrackId && onTrimChange(selectedTrackId, start, end)}
-        onRemove={() => selectedTrackId && onRemoveTrack(selectedTrackId)}
-      />
+      {selectedTrack && (
+        <div className="border-t border-primary/20 bg-primary/5 backdrop-blur-md">
+          <SelectedTrackPanel
+            track={selectedTrack}
+            onVolumeChange={(volume) => selectedTrackId && onVolumeChange(selectedTrackId, volume)}
+            onMuteToggle={() => selectedTrackId && onMuteToggle(selectedTrackId)}
+            onSoloToggle={() => selectedTrackId && onSoloToggle(selectedTrackId)}
+            onTrimChange={(start, end) =>
+              selectedTrackId && onTrimChange(selectedTrackId, start, end)}
+            onRemove={() => selectedTrackId && onRemoveTrack(selectedTrackId)}
+          />
+        </div>
+      )}
     </div>
   );
 }
