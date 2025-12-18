@@ -38,7 +38,7 @@ containing:
 echo $DATABASE_URL
 
 # 2. Create initial migration
-npx prisma migrate dev --name init
+yarn prisma migrate dev --name init
 
 # Output:
 # - Creates prisma/migrations/[timestamp]_init/
@@ -53,13 +53,13 @@ npx prisma migrate dev --name init
 # Example: Add a new field to User model
 
 # 2. Create migration with descriptive name
-npx prisma migrate dev --name add_user_role
+yarn prisma migrate dev --name add_user_role
 
 # 3. Review generated SQL
 cat prisma/migrations/[timestamp]_add_user_role/migration.sql
 
 # 4. Test migration worked
-npx prisma studio
+yarn prisma studio
 ```
 
 ### Migration Naming Convention
@@ -84,14 +84,14 @@ Use clear, descriptive names that indicate what changed:
 ```bash
 # If you're still developing and haven't committed:
 # Option 1: Reset and start over (deletes all data!)
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # Option 2: Create new migration to fix previous one
-npx prisma migrate dev --name fix_previous_migration
+yarn prisma migrate dev --name fix_previous_migration
 
 # Option 3: Edit last migration (ONLY if not committed!)
 # - Edit the SQL file
-# - Run: npx prisma migrate dev
+# - Run: yarn prisma migrate dev
 ```
 
 ### Working with Multiple Developers
@@ -104,12 +104,12 @@ git pull origin main
 ls -la prisma/migrations/
 
 # 3. Apply pending migrations
-npx prisma migrate dev
+yarn prisma migrate dev
 
 # 4. Resolve conflicts if any
 # - If migration conflicts occur, you may need to:
-#   a) Reset your database: npx prisma migrate reset
-#   b) Or create a new migration to reconcile: npx prisma migrate dev
+#   a) Reset your database: yarn prisma migrate reset
+#   b) Or create a new migration to reconcile: yarn prisma migrate dev
 ```
 
 ## Production Deployment
@@ -131,7 +131,7 @@ Before deploying migrations to production:
 # Production deployments should use 'migrate deploy'
 # This is non-interactive and suitable for CI/CD
 
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # This will:
 # - Apply all pending migrations
@@ -156,10 +156,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "18"
 
@@ -169,7 +169,7 @@ jobs:
       - name: Run database migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma migrate deploy
+        run: yarn prisma migrate deploy
 
       - name: Deploy application
         run: |
@@ -225,7 +225,7 @@ model Payment {
 ```
 
 ```bash
-npx prisma migrate dev --name add_payment_table
+yarn prisma migrate dev --name add_payment_table
 ```
 
 ### Adding a Column
@@ -239,21 +239,21 @@ model User {
 ```
 
 ```bash
-npx prisma migrate dev --name add_user_phone_number
+yarn prisma migrate dev --name add_user_phone_number
 ```
 
 ### Making Column Required (Safe Pattern)
 
 ```bash
 # Step 1: Add nullable column
-npx prisma migrate dev --name add_required_field_nullable
+yarn prisma migrate dev --name add_required_field_nullable
 
 # Step 2: Backfill data
 psql $DATABASE_URL -c "UPDATE users SET new_field = 'default' WHERE new_field IS NULL;"
 
 # Step 3: Make column required
 # Update schema.prisma: new_field String (remove ?)
-npx prisma migrate dev --name make_new_field_required
+yarn prisma migrate dev --name make_new_field_required
 ```
 
 ### Adding an Index
@@ -267,7 +267,7 @@ model App {
 ```
 
 ```bash
-npx prisma migrate dev --name add_app_status_created_index
+yarn prisma migrate dev --name add_app_status_created_index
 ```
 
 ### Renaming a Column (Safe Pattern)
@@ -275,7 +275,7 @@ npx prisma migrate dev --name add_app_status_created_index
 ```bash
 # Step 1: Add new column
 # schema.prisma: Add new_name String?
-npx prisma migrate dev --name add_renamed_column
+yarn prisma migrate dev --name add_renamed_column
 
 # Step 2: Backfill data
 UPDATE users SET new_name = old_name;
@@ -285,7 +285,7 @@ UPDATE users SET new_name = old_name;
 
 # Step 4: Drop old column
 # schema.prisma: Remove old_name field
-npx prisma migrate dev --name remove_old_column
+yarn prisma migrate dev --name remove_old_column
 ```
 
 ### Adding an Enum
@@ -304,7 +304,7 @@ model User {
 ```
 
 ```bash
-npx prisma migrate dev --name add_user_role_enum
+yarn prisma migrate dev --name add_user_role_enum
 ```
 
 ## Rollback Procedures
@@ -313,15 +313,15 @@ npx prisma migrate dev --name add_user_role_enum
 
 ```bash
 # 1. Check migration status
-npx prisma migrate status
+yarn prisma migrate status
 
 # 2. Mark failed migration as rolled back
-npx prisma migrate resolve --rolled-back [migration_name]
+yarn prisma migrate resolve --rolled-back [migration_name]
 
 # 3. Fix the issue in schema.prisma
 
 # 4. Create new migration
-npx prisma migrate dev --name fix_migration_name
+yarn prisma migrate dev --name fix_migration_name
 ```
 
 ### Scenario 2: Need to Undo Last Migration
@@ -333,7 +333,7 @@ npx prisma migrate dev --name fix_migration_name
 pg_restore -d spike_land backup.sql
 
 # 2. Mark migration as rolled back
-npx prisma migrate resolve --rolled-back [migration_name]
+yarn prisma migrate resolve --rolled-back [migration_name]
 
 # 3. Fix schema and create new migration
 ```
@@ -347,7 +347,7 @@ pg_restore -d spike_land production_backup_pre_migration.sql
 
 # 3. Deploy previous application version
 # 4. Mark migration as rolled back (if needed)
-npx prisma migrate resolve --rolled-back [migration_name]
+yarn prisma migrate resolve --rolled-back [migration_name]
 
 # 5. Investigate issue before retrying
 ```
@@ -361,7 +361,7 @@ npx prisma migrate resolve --rolled-back [migration_name]
 pg_dump -Fc spike_land > backup_$(date +%Y%m%d_%H%M%S).backup
 
 # Run migration
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # If successful, can delete old backup after verification period
 ```
@@ -370,12 +370,12 @@ npx prisma migrate deploy
 
 ```bash
 # Staging environment
-DATABASE_URL=postgres://staging npx prisma migrate deploy
+DATABASE_URL=postgres://staging yarn prisma migrate deploy
 
 # Monitor for issues, test application
 
 # Production (only after staging success)
-DATABASE_URL=postgres://production npx prisma migrate deploy
+DATABASE_URL=postgres://production yarn prisma migrate deploy
 ```
 
 ### 3. Keep Migrations Small and Focused
@@ -470,7 +470,7 @@ CREATE INDEX idx_users_verified ON users(verified);
 
 ```bash
 # Error: Migration X has already been applied
-npx prisma migrate resolve --applied [migration_name]
+yarn prisma migrate resolve --applied [migration_name]
 ```
 
 ### Schema Drift Detected
@@ -480,11 +480,11 @@ npx prisma migrate resolve --applied [migration_name]
 # This happens when manual SQL changes were made
 
 # Option 1: Reset (development only)
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # Option 2: Create migration to match current state
-npx prisma db pull  # Update schema.prisma from database
-npx prisma migrate dev --name sync_schema
+yarn prisma db pull  # Update schema.prisma from database
+yarn prisma migrate dev --name sync_schema
 ```
 
 ### Cannot Create Migration
@@ -493,10 +493,10 @@ npx prisma migrate dev --name sync_schema
 # Error: Can't create migration - database has pending migrations
 
 # Apply pending migrations first
-npx prisma migrate dev
+yarn prisma migrate dev
 
 # Then create new migration
-npx prisma migrate dev --name new_migration
+yarn prisma migrate dev --name new_migration
 ```
 
 ### Migration Conflicts
@@ -508,13 +508,13 @@ npx prisma migrate dev --name new_migration
 git pull origin main
 
 # 2. Reset local migrations (if not pushed)
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # 3. Apply team's migrations
-npx prisma migrate dev
+yarn prisma migrate dev
 
 # 4. Create your migration on top
-npx prisma migrate dev --name your_changes
+yarn prisma migrate dev --name your_changes
 ```
 
 ## Monitoring Migration Health
@@ -523,7 +523,7 @@ npx prisma migrate dev --name your_changes
 
 ```bash
 # Show applied and pending migrations
-npx prisma migrate status
+yarn prisma migrate status
 
 # Output:
 # ✓ 001_init (applied)
@@ -535,10 +535,10 @@ npx prisma migrate status
 
 ```bash
 # Check if database matches schema.prisma
-npx prisma validate
+yarn prisma validate
 
 # Pull current database schema
-npx prisma db pull
+yarn prisma db pull
 # Then compare with your schema.prisma
 ```
 

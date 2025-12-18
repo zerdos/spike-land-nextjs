@@ -84,7 +84,7 @@ ORDER BY addedAt DESC
 
 ```bash
 # Generate migration file
-npx prisma migrate dev --name add_album_image_chronological_index
+yarn prisma migrate dev --name add_album_image_chronological_index
 
 # This will:
 # 1. Create migration SQL in prisma/migrations/
@@ -96,7 +96,7 @@ npx prisma migrate dev --name add_album_image_chronological_index
 
 ```bash
 # Production deployment
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # This applies all pending migrations
 ```
@@ -219,7 +219,7 @@ DROP INDEX "album_images_albumId_addedAt_idx";
 Or create a migration:
 
 ```bash
-npx prisma migrate dev --name remove_album_image_chronological_index
+yarn prisma migrate dev --name remove_album_image_chronological_index
 ```
 
 ## References

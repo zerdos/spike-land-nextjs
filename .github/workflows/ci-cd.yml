@@ -40,17 +40,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: yarn-cache
         with:
           path: node_modules
@@ -78,17 +78,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: yarn-cache
         with:
           path: node_modules
@@ -101,7 +101,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: yarn prisma generate
 
       - name: Run tests (shard ${{ matrix.shard }}/8)
         run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
@@ -127,17 +127,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: yarn-cache
         with:
           path: node_modules
@@ -148,16 +148,6 @@ jobs:
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
-
-      - name: Cache Next.js build
-        uses: actions/cache@v4
-        with:
-          path: |
-            .next/cache
-            .next/standalone
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('src/**/*.{ts,tsx,js,jsx}', 'public/**', 'yarn.lock', 'next.config.js', 'next.config.mjs', 'next.config.ts') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-
 
       - name: Build application
         run: yarn build
@@ -185,17 +175,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: yarn-cache
         with:
           path: node_modules
@@ -208,14 +198,14 @@ jobs:
         run: yarn install --immutable
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: yarn prisma generate
 
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' package.json | tr -d '^~')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright

@@ -428,7 +428,7 @@ SELECT * FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 5;
 # This is manual - requires understanding of schema changes
 
 # Step 4: Apply reverse migration
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # Step 5: Verify database state
 ```

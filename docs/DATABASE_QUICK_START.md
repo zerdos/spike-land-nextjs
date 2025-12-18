@@ -44,14 +44,14 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/
 
 ```bash
 # Generate types (no database changes)
-npx prisma generate
+yarn prisma generate
 ```
 
 ### Step 4: Run Migrations
 
 ```bash
 # Create tables in database
-npx prisma migrate dev --name init
+yarn prisma migrate dev --name init
 
 # This will:
 # - Create all tables
@@ -63,7 +63,7 @@ npx prisma migrate dev --name init
 
 ```bash
 # Open Prisma Studio to browse database
-npx prisma studio
+yarn prisma studio
 
 # Or check with psql
 psql postgresql://postgres:password@localhost:5432/spike_land -c "\dt"
@@ -94,25 +94,25 @@ App (1) ----< (N) App (self-reference for forks)
 
 ```bash
 # Generate Prisma Client after schema changes
-npx prisma generate
+yarn prisma generate
 
 # Create new migration
-npx prisma migrate dev --name your_migration_name
+yarn prisma migrate dev --name your_migration_name
 
 # Apply migrations to production
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # Open database browser
-npx prisma studio
+yarn prisma studio
 
 # Reset database (DEV ONLY - deletes all data!)
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # Format schema file
-npx prisma format
+yarn prisma format
 
 # Validate schema
-npx prisma validate
+yarn prisma validate
 ```
 
 ## Usage in Code
@@ -191,15 +191,15 @@ cat .env | grep DATABASE_URL
 psql $DATABASE_URL -c "SELECT 1"
 
 # Reset and try again (DEV ONLY)
-npx prisma migrate reset
-npx prisma migrate dev --name init
+yarn prisma migrate reset
+yarn prisma migrate dev --name init
 ```
 
 ### Generated client not found
 
 ```bash
 # Generate Prisma Client
-npx prisma generate
+yarn prisma generate
 
 # Check if generated
 ls -la src/generated/prisma
@@ -207,8 +207,8 @@ ls -la src/generated/prisma
 
 ## Next Steps
 
-1. **Run migrations**: `npx prisma migrate dev --name init`
-2. **Test connection**: `npx prisma studio`
+1. **Run migrations**: `yarn prisma migrate dev --name init`
+2. **Test connection**: `yarn prisma studio`
 3. **Start development**: `npm run dev`
 4. **Read full docs**: See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for:
    - Backup strategies

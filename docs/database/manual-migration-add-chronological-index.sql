@@ -139,10 +139,10 @@ ORDER BY idx_scan DESC;
 -- After running this SQL manually, update Prisma migration tracking:
 --
 -- Option 1: Mark as applied (if you ran this SQL manually)
--- $ npx prisma migrate resolve --applied "20241212_add_album_image_chronological_index"
+-- $ yarn prisma migrate resolve --applied "20241212_add_album_image_chronological_index"
 --
 -- Option 2: Let Prisma generate migration (if you haven't run SQL yet)
--- $ npx prisma migrate dev --name add_album_image_chronological_index
+-- $ yarn prisma migrate dev --name add_album_image_chronological_index
 --
 -- The migration will generate SQL identical to this script.
 

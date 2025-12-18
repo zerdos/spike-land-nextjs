@@ -117,10 +117,10 @@ If the database already has the changes from the failed migration:
 
 ```bash
 # Mark the failed migration as applied
-npx prisma migrate resolve --applied "20241208_add_password_hash"
+yarn prisma migrate resolve --applied "20241208_add_password_hash"
 
 # Generate new migration for the chronological index
-npx prisma migrate dev --name add_album_image_chronological_index
+yarn prisma migrate dev --name add_album_image_chronological_index
 ```
 
 #### Option 2: Database Push (Development Only)
@@ -129,11 +129,11 @@ For local development environment only:
 
 ```bash
 # Push schema changes without migration
-npx prisma db push
+yarn prisma db push
 
 # Verify
-npx prisma validate
-npx prisma generate
+yarn prisma validate
+yarn prisma generate
 ```
 
 **WARNING:** Do not use `db push` in production!
@@ -151,7 +151,7 @@ ON "album_images"("albumId", "addedAt");
 Then mark as applied:
 
 ```bash
-npx prisma migrate resolve --applied "20241212_add_album_image_chronological_index"
+yarn prisma migrate resolve --applied "20241212_add_album_image_chronological_index"
 ```
 
 ---

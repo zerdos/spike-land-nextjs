@@ -606,13 +606,13 @@ prisma/migrations/0_init/migration.sql
 To apply migrations:
 
 ```bash
-npx prisma migrate deploy
+yarn prisma migrate deploy
 ```
 
 To generate Prisma client:
 
 ```bash
-npx prisma generate
+yarn prisma generate
 ```
 
 ---
