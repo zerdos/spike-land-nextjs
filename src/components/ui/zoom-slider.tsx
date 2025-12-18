@@ -46,6 +46,20 @@ export function ZoomSlider({
     [onChange],
   );
 
+  const handleZoomOut = useCallback(() => {
+    const newValue = Math.max(1, value - 1) as ZoomLevel;
+    setInternalValue(newValue);
+    localStorage.setItem(STORAGE_KEY, String(newValue));
+    onChange?.(newValue);
+  }, [value, onChange]);
+
+  const handleZoomIn = useCallback(() => {
+    const newValue = Math.min(5, value + 1) as ZoomLevel;
+    setInternalValue(newValue);
+    localStorage.setItem(STORAGE_KEY, String(newValue));
+    onChange?.(newValue);
+  }, [value, onChange]);
+
   // Don't render until mounted to avoid hydration mismatch
   if (!isMounted) {
     return (
@@ -59,7 +73,14 @@ export function ZoomSlider({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <ZoomOut className="h-4 w-4 text-muted-foreground" />
+      <button
+        onClick={handleZoomOut}
+        className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={value <= 1}
+        aria-label="Zoom out"
+      >
+        <ZoomOut className="h-4 w-4" />
+      </button>
       <Slider
         value={[value]}
         min={1}
@@ -69,7 +90,14 @@ export function ZoomSlider({
         className="w-24"
         aria-label="Zoom level"
       />
-      <ZoomIn className="h-4 w-4 text-muted-foreground" />
+      <button
+        onClick={handleZoomIn}
+        className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={value >= 5}
+        aria-label="Zoom in"
+      >
+        <ZoomIn className="h-4 w-4" />
+      </button>
     </div>
   );
 }

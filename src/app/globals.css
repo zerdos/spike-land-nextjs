@@ -71,6 +71,8 @@
     /* Pixel Cyan #00E5FF */
     --primary-foreground: 240 24% 9%;
     /* Carbon Text for contrast */
+    --primary-text: 187 100% 28%;
+    /* Accessible Dark Teal for Light Mode Text */
     --secondary: 240 38% 14%;
     /* Surface Blue for accents */
     --secondary-foreground: 0 0% 100%;
@@ -123,15 +125,15 @@
 
   .dark {
     /* Dark Mode - Pixel Brand (Default/Primary) */
-    --background: 240 55% 7%;
-    /* Deep Space #08081C */
+    --background: 220 39% 11%;
+    /* Deep Space #111827 */
     --foreground: 0 0% 100%;
     /* Pure White */
-    --card: 240 38% 14%;
-    /* Surface Blue #151530 */
+    --card: 218 26% 14%;
+    /* Surface Blue #1A202C */
     --card-foreground: 0 0% 100%;
     /* Pure White */
-    --popover: 240 38% 14%;
+    --popover: 218 26% 14%;
     /* Surface Blue */
     --popover-foreground: 0 0% 100%;
     /* Pure White */
@@ -139,23 +141,25 @@
     /* Pixel Cyan #00E5FF */
     --primary-foreground: 240 55% 7%;
     /* Deep Space for contrast */
-    --secondary: 240 38% 20%;
-    /* Lighter Surface Blue */
+    --primary-text: 187 100% 50%;
+    /* Original Cyan for Dark Mode */
+    --secondary: 217 19% 27%;
+    /* Border Color as Secondary Surface */
     --secondary-foreground: 0 0% 100%;
     /* Pure White */
-    --muted: 240 38% 14%;
+    --muted: 218 26% 14%;
     /* Surface Blue */
-    --muted-foreground: 240 25% 69%;
-    /* Text Muted #A0A0C0 */
+    --muted-foreground: 216 13% 65%;
+    /* Text Muted #9CA3AF */
     --accent: 187 100% 50%;
     /* Pixel Cyan */
     --accent-foreground: 240 55% 7%;
     /* Deep Space */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 30% 22%;
-    /* Slightly lighter than Surface Blue */
-    --input: 240 30% 22%;
+    --border: 217 19% 27%;
+    /* Card Border #374151 */
+    --input: 217 19% 27%;
     --ring: 187 100% 50%;
     /* Pixel Cyan */
 
@@ -163,16 +167,16 @@
     --pixel-cyan: 187 100% 50%;
     --pixel-fuchsia: 300 100% 50%;
     /* #FF00FF */
-    --grid-inactive: 240 38% 14%;
+    --grid-inactive: 218 26% 14%;
     /* Surface Blue for dark mode */
 
     /* Dark Mode Palette - Enhanced */
-    --surface-blue: 220 60% 17%;
-    /* #112244 */
-    --border-dark: 260 60% 17%;
-    /* #221144 */
-    --border-item: 240 33% 20%;
-    /* #222244 */
+    --surface-blue: 218 26% 14%;
+    /* #1A202C */
+    --border-dark: 217 19% 27%;
+    /* #374151 */
+    --border-item: 220 14% 34%;
+    /* #4B5563 */
 
     /* Chart Colors - Dark mode */
     --chart-1: 187 100% 50%;
