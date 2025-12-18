@@ -49,7 +49,12 @@ describe("GET /api/v1/agent/tasks", () => {
   });
 
   it("should return 400 if boxId is missing", async () => {
-    // Note: boxId check happens before auth check
+    // Auth must pass first
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "GET",
     });

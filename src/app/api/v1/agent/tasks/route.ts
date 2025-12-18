@@ -14,17 +14,17 @@ const taskResultSchema = z.object({
 // GET /api/v1/agent/tasks?boxId=...
 // Fetch pending tasks for a specific box
 export async function GET(req: NextRequest) {
+  // Authenticate first before processing any parameters
+  const authResult = await authenticateMcpRequest(req);
+  if (!authResult.success) {
+    return NextResponse.json({ error: authResult.error }, { status: 401 });
+  }
+
   const searchParams = req.nextUrl.searchParams;
   const boxId = searchParams.get("boxId");
 
   if (!boxId) {
     return NextResponse.json({ error: "Missing boxId" }, { status: 400 });
-  }
-
-  // verifyAgentToken(req);
-  const authResult = await authenticateMcpRequest(req);
-  if (!authResult.success) {
-    return NextResponse.json({ error: authResult.error }, { status: 401 });
   }
 
   try {
