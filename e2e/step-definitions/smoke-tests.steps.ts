@@ -186,26 +186,10 @@ Then(
 Then(
   "the page should have dark theme applied",
   async function(this: CustomWorld) {
-    // Check that the html or body has dark class or dark theme styling
+    // App uses next-themes with forcedTheme="dark" and attribute="class"
+    // This adds "dark" class to the html element
     const html = this.page.locator("html");
-    const classList = await html.getAttribute("class");
-    const style = await html.getAttribute("style");
-
-    // Dark theme can be applied via class or style
-    const isDark = (classList && classList.includes("dark")) ||
-      (style && style.includes("color-scheme: dark")) ||
-      await this.page.evaluate(() => {
-        const bg = window.getComputedStyle(document.body).backgroundColor;
-        // Dark backgrounds typically have low RGB values
-        const rgb = bg.match(/\d+/g);
-        if (rgb && rgb.length >= 3) {
-          const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
-          return brightness < 128; // Dark if average is less than 128
-        }
-        return false;
-      });
-
-    expect(isDark).toBe(true);
+    await expect(html).toHaveClass(/dark/, { timeout: 5000 });
   },
 );
 
