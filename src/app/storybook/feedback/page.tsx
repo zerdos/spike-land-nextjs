@@ -1,8 +1,10 @@
 "use client";
 
 import { Section } from "@/components/storybook";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, CheckCircle2, Info, Terminal, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 
 export default function FeedbackPage() {
@@ -74,6 +76,57 @@ export default function FeedbackPage() {
                 <p className="text-sm text-muted-foreground">bg-destructive/10</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Alert Component */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Alert</CardTitle>
+            <CardDescription>
+              Alert messages for important notifications and system feedback
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Default Alert</AlertTitle>
+              <AlertDescription>
+                This is a default alert for general information and updates.
+              </AlertDescription>
+            </Alert>
+
+            <Alert className="border-primary/50 bg-primary/5">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertTitle>Information</AlertTitle>
+              <AlertDescription>
+                Your enhancement is being processed. This may take a few moments.
+              </AlertDescription>
+            </Alert>
+
+            <Alert className="border-green-500/50 bg-green-500/5">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>
+                Your image has been enhanced successfully! View it in your gallery.
+              </AlertDescription>
+            </Alert>
+
+            <Alert className="border-yellow-500/50 bg-yellow-500/5">
+              <TriangleAlert className="h-4 w-4 text-yellow-500" />
+              <AlertTitle>Warning</AlertTitle>
+              <AlertDescription>
+                Your token balance is running low. Consider purchasing more tokens.
+              </AlertDescription>
+            </Alert>
+
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                Failed to process image. Please try again or contact support.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </Section>
