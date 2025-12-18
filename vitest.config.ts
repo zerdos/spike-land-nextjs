@@ -67,8 +67,15 @@ export default defineConfig({
       "@/hooks": path.resolve(__dirname, "./src/hooks"),
       "@apps": path.resolve(__dirname, "./apps"),
       "@vercel/kv": path.resolve(__dirname, "./vitest.mock-vercel-kv.ts"),
+      // Mock next-view-transitions to avoid ESM import issues
+      "next-view-transitions": path.resolve(
+        __dirname,
+        "./vitest.mock-next-view-transitions.tsx",
+      ),
       // Fix ESM module resolution for next-auth imports
       "next/server": path.resolve(__dirname, "./node_modules/next/server.js"),
+      "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
+      "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
     },
   },
 });

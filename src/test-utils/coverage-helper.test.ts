@@ -233,8 +233,8 @@ describe("coverage-helper", () => {
       const result = generateSummary({});
 
       expect(result).toContain("Files: 0");
-      expect(result).toContain("Statements: 0/0 (0%)");
-      expect(result).toContain("Functions:  0/0 (0%)");
+      expect(result).toContain("Statements: 0/0 (0.0%)");
+      expect(result).toContain("Functions:  0/0 (0.0%)");
     });
 
     it("generates summary with coverage data", () => {
@@ -280,33 +280,38 @@ describe("coverage-helper", () => {
       expect(result).toContain("file1.js");
     });
 
-    it("sorts files alphabetically", () => {
+    it("sorts files by coverage percentage (lowest first)", () => {
       const coverage = {
-        "z-file.js": {
-          path: "z-file.js",
-          statementMap: {},
+        "high-coverage.js": {
+          path: "high-coverage.js",
+          statementMap: {
+            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
+          },
           fnMap: {},
           branchMap: {},
-          s: {},
+          s: { "0": 1 }, // 100% coverage
           f: {},
           b: {},
         },
-        "a-file.js": {
-          path: "a-file.js",
-          statementMap: {},
+        "low-coverage.js": {
+          path: "low-coverage.js",
+          statementMap: {
+            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
+          },
           fnMap: {},
           branchMap: {},
-          s: {},
+          s: { "0": 0 }, // 0% coverage
           f: {},
           b: {},
         },
       };
 
       const result = generateSummary(coverage);
-      const aIndex = result.indexOf("a-file.js");
-      const zIndex = result.indexOf("z-file.js");
+      const lowIndex = result.indexOf("low-coverage.js");
+      const highIndex = result.indexOf("high-coverage.js");
 
-      expect(aIndex).toBeLessThan(zIndex);
+      // Files are sorted by coverage percentage, lowest first
+      expect(lowIndex).toBeLessThan(highIndex);
     });
 
     it("handles files with no statements", () => {
@@ -324,8 +329,9 @@ describe("coverage-helper", () => {
 
       const result = generateSummary(coverage);
 
-      expect(result).toContain("Statements: 0/0 (N/A%)");
-      expect(result).toContain("Functions:  0/0 (N/A%)");
+      // When there are no statements/functions, percentage is 0.0%
+      expect(result).toContain("Statements: 0/0 (0.0%)");
+      expect(result).toContain("Functions:  0/0 (0.0%)");
     });
 
     it("calculates correct percentages", () => {
