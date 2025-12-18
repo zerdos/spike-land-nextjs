@@ -66,11 +66,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ViewTransitions>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
-        >
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
+      >
+        <ViewTransitions>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -84,11 +84,11 @@ export default function RootLayout({
             </SessionProvider>
             <Toaster />
           </ThemeProvider>
-          <Analytics />
-          <SpeedInsights />
-          <MetaPixel />
-        </body>
-      </html>
-    </ViewTransitions>
+        </ViewTransitions>
+        <Analytics />
+        <SpeedInsights />
+        <MetaPixel />
+      </body>
+    </html>
   );
 }
