@@ -130,7 +130,7 @@ describe("ReferenceImageUpload", () => {
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Description (optional)"))
         .toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /upload pending image/i }))
+      expect(screen.getByRole("button", { name: /upload/i }))
         .toBeInTheDocument();
     });
   });
@@ -171,7 +171,7 @@ describe("ReferenceImageUpload", () => {
         .toBeInTheDocument();
     });
 
-    const removeButton = screen.getByRole("button", { name: /remove pending upload/i });
+    const removeButton = screen.getByRole("button", { name: "" }); // X button has no text
     await userEvent.click(removeButton);
 
     await waitFor(() => {
@@ -204,11 +204,11 @@ describe("ReferenceImageUpload", () => {
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload pending image/i }))
+      expect(screen.getByRole("button", { name: /upload/i }))
         .toBeInTheDocument();
     });
 
-    const uploadButton = screen.getByRole("button", { name: /upload pending image/i });
+    const uploadButton = screen.getByRole("button", { name: /upload/i });
     await userEvent.click(uploadButton);
 
     await waitFor(() => {
@@ -245,11 +245,11 @@ describe("ReferenceImageUpload", () => {
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload pending image/i }))
+      expect(screen.getByRole("button", { name: /upload/i }))
         .toBeInTheDocument();
     });
 
-    const uploadButton = screen.getByRole("button", { name: /upload pending image/i });
+    const uploadButton = screen.getByRole("button", { name: /upload/i });
     await userEvent.click(uploadButton);
 
     await waitFor(() => {
