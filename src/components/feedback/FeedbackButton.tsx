@@ -163,7 +163,13 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
   return (
     <div
       ref={containerRef}
-      className={cn("fixed bottom-4 right-4 z-50 flex flex-col items-end gap-4", className)}
+      className={cn(
+        "fixed bottom-4 right-4 z-50 flex flex-col items-end gap-4",
+        // Only allow pointer events on the container when the form is open
+        // This prevents the hidden form from blocking clicks on underlying elements
+        !open && "pointer-events-none",
+        className,
+      )}
     >
       {/* Expandable Feedback Form */}
       <div
@@ -248,7 +254,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
         variant="default"
         size="icon"
         className={cn(
-          "h-12 w-12 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95",
+          "h-12 w-12 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 pointer-events-auto",
           open
             ? "bg-secondary text-foreground hover:bg-secondary/80 rotate-90"
             : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-primary rotate-0",
