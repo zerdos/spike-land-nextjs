@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Bug, FileText, Lightbulb, Loader2, MessageSquare, Send, X } from "lucide-react";
@@ -58,6 +57,7 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
       const timer = setTimeout(() => resetForm(), 300);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [open]);
 
   const handleSubmit = async () => {
