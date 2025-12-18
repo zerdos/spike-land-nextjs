@@ -2,7 +2,30 @@ import { CTASection } from "@/components/landing/CTASection";
 import { FeaturedAppCard, PlatformFeatures, PlatformHero } from "@/components/platform-landing";
 import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { Image as ImageIcon } from "lucide-react";
+import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
+
+export const metadata: Metadata = {
+  title: "AI Photo Restoration - Restore Old Photos to HD | Spike Land",
+  description:
+    "Restore faded memories in 60 seconds. Upload any photo, watch it transform with AI, and download in HD. Old photos, new life.",
+  keywords: [
+    "AI photo restoration",
+    "restore old photos",
+    "enhance photos",
+    "fix blurry photos",
+    "Spike Land",
+    "Pixel",
+    "photo enhancer",
+    "old photo repair",
+  ],
+  openGraph: {
+    title: "AI Photo Restoration - Restore Old Photos to HD | Spike Land",
+    description:
+      "Restore faded memories in 60 seconds. Upload any photo, watch it transform with AI, and download in HD.",
+    type: "website",
+  },
+};
 
 // Cache the super admin's top public photo for 1 hour to reduce database queries
 const getTopPublicPhoto = unstable_cache(
