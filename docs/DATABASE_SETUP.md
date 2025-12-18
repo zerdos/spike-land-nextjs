@@ -250,10 +250,10 @@ Once you have a database configured:
 
 ```bash
 # Generate Prisma Client (types only, no DB changes)
-npx prisma generate
+yarn prisma generate
 
 # Create and apply initial migration
-npx prisma migrate dev --name init
+yarn prisma migrate dev --name init
 
 # This will:
 # 1. Create migration files in prisma/migrations/
@@ -265,18 +265,18 @@ npx prisma migrate dev --name init
 
 ```bash
 # After schema changes, create a new migration
-npx prisma migrate dev --name descriptive_name
+yarn prisma migrate dev --name descriptive_name
 
 # Examples:
-npx prisma migrate dev --name add_app_status_index
-npx prisma migrate dev --name add_requirement_priority
+yarn prisma migrate dev --name add_app_status_index
+yarn prisma migrate dev --name add_requirement_priority
 ```
 
 ### Production Migrations
 
 ```bash
 # Deploy migrations to production (non-interactive)
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # This should be run in CI/CD pipeline
 ```
@@ -293,7 +293,7 @@ npx prisma migrate deploy
 
 ```bash
 # WARNING: This deletes all data!
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # This will:
 # 1. Drop database
@@ -804,20 +804,20 @@ max_connections = 200
 
 ```bash
 # Mark migration as rolled back
-npx prisma migrate resolve --rolled-back <migration_name>
+yarn prisma migrate resolve --rolled-back <migration_name>
 
 # Fix issue and re-run
-npx prisma migrate dev
+yarn prisma migrate dev
 ```
 
 **Error: "Database schema is not in sync"**
 
 ```bash
 # Reset migration state (dev only!)
-npx prisma migrate reset
+yarn prisma migrate reset
 
 # Production: Create new migration to sync
-npx prisma migrate dev --name sync_schema
+yarn prisma migrate dev --name sync_schema
 ```
 
 ### Performance Issues

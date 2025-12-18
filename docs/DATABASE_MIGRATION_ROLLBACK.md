@@ -25,7 +25,7 @@ The voucher system adds the following tables:
 pg_dump -h <host> -U <user> -d <database> > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Or using Prisma
-npx prisma db execute --schema=./prisma/schema.prisma --file=backup.sql
+yarn prisma db execute --schema=./prisma/schema.prisma --file=backup.sql
 ```
 
 **Step 2: Remove Dependent Data First**
@@ -62,7 +62,7 @@ Remove the voucher-related models from `prisma/schema.prisma`:
 **Step 5: Generate New Prisma Client**
 
 ```bash
-npx prisma generate
+yarn prisma generate
 ```
 
 ### Partial Rollback (Keep Structure, Clear Data)
@@ -110,17 +110,17 @@ AND "createdAt" > '2024-01-01';
 
 1. Check Prisma migration status:
    ```bash
-   npx prisma migrate status
+   yarn prisma migrate status
    ```
 
 2. Reset to last known good state:
    ```bash
-   npx prisma migrate reset --skip-seed
+   yarn prisma migrate reset --skip-seed
    ```
 
 3. Apply migrations up to the good state:
    ```bash
-   npx prisma migrate deploy
+   yarn prisma migrate deploy
    ```
 
 ### If Data Corruption Detected

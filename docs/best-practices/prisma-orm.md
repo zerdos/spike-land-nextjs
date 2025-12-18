@@ -537,7 +537,7 @@ const results = await prisma.$queryRawUnsafe(
 
 ```bash
 # Create a new migration after changing schema.prisma
-npx prisma migrate dev --name add_user_roles
+yarn prisma migrate dev --name add_user_roles
 
 # This command:
 # 1. Creates SQL migration in prisma/migrations/
@@ -545,7 +545,7 @@ npx prisma migrate dev --name add_user_roles
 # 3. Generates Prisma Client
 
 # Reset dev database (destructive, dev only)
-npx prisma migrate reset
+yarn prisma migrate reset
 ```
 
 #### Production Environment
@@ -553,7 +553,7 @@ npx prisma migrate reset
 ```bash
 # Apply migrations without generating Prisma Client
 # Use in CI/CD pipeline
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # This command:
 # 1. Applies pending migrations to production
@@ -568,7 +568,7 @@ npx prisma migrate deploy
 - name: Run Prisma migrations
   env:
     DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
-  run: npx prisma migrate deploy
+  run: yarn prisma migrate deploy
 
 # This must run BEFORE application deployment
 ```
@@ -590,7 +590,7 @@ For failed migrations, mark them as rolled back:
 
 ```bash
 # Mark a migration as rolled back
-npx prisma migrate resolve --rolled-back "20240101120000_add_new_column"
+yarn prisma migrate resolve --rolled-back "20240101120000_add_new_column"
 
 # The migration can now be applied again with migrate deploy
 ```
@@ -601,16 +601,16 @@ Create reverse SQL using `migrate diff`:
 
 ```bash
 # Generate a down migration to revert schema changes
-npx prisma migrate diff \
+yarn prisma migrate diff \
   --from-schema-datamodel schema.prisma \
   --to-schema-datasource prisma/schema.prisma \
   --script > down.sql
 
 # Execute down migration
-npx prisma db execute --file ./down.sql
+yarn prisma db execute --file ./down.sql
 
 # Mark original migration as rolled back
-npx prisma migrate resolve --rolled-back "20240101120000_add_new_column"
+yarn prisma migrate resolve --rolled-back "20240101120000_add_new_column"
 ```
 
 #### Step-by-Step Rollback Process
@@ -620,17 +620,17 @@ npx prisma migrate resolve --rolled-back "20240101120000_add_new_column"
 // For example, remove the new column you added
 
 // 2. Generate the down migration
-// npx prisma migrate diff --from-schema-datamodel schema.prisma --to-schema-datasource prisma/schema.prisma --script > down.sql
+// yarn prisma migrate diff --from-schema-datamodel schema.prisma --to-schema-datasource prisma/schema.prisma --script > down.sql
 
 // 3. Review down.sql carefully!
 // Example:
 // ALTER TABLE "User" DROP COLUMN "phone";
 
 // 4. Execute in production (with backup!)
-// npx prisma db execute --file ./down.sql
+// yarn prisma db execute --file ./down.sql
 
 // 5. Mark migration as rolled back
-// npx prisma migrate resolve --rolled-back "20240101120000_add_phone"
+// yarn prisma migrate resolve --rolled-back "20240101120000_add_phone"
 
 // 6. Commit the reverted schema.prisma to git
 // git add prisma/schema.prisma
@@ -644,14 +644,14 @@ migration history.
 
 ```bash
 # Check for schema drift
-npx prisma migrate status
+yarn prisma migrate status
 
 # If drift is detected:
 # Option 1: Use migrate resolve to acknowledge hotfix
-npx prisma migrate resolve --rolled-back "20240101120000_migration"
+yarn prisma migrate resolve --rolled-back "20240101120000_migration"
 
 # Option 2: Mark migration as applied without re-running
-npx prisma migrate resolve --applied "20240101120000_migration"
+yarn prisma migrate resolve --applied "20240101120000_migration"
 ```
 
 ### 5. Expand and Contract Pattern
@@ -951,7 +951,7 @@ enum UserRole {
 Generate types:
 
 ```bash
-npx prisma generate
+yarn prisma generate
 ```
 
 Usage:
@@ -1103,7 +1103,7 @@ import { execSync } from "child_process";
 
 beforeAll(async () => {
   // Reset database schema
-  await execSync("npx prisma migrate reset --force");
+  await execSync("yarn prisma migrate reset --force");
 });
 
 afterAll(async () => {
@@ -1287,10 +1287,10 @@ Run seeding:
 
 ```bash
 # Seed database
-npx prisma db seed
+yarn prisma db seed
 
 # Or with migrate reset
-npx prisma migrate reset
+yarn prisma migrate reset
 ```
 
 ---
@@ -1411,16 +1411,16 @@ process.on("exit", () => clearInterval(interval));
 
 ```bash
 # 1. Verify migrations
-npx prisma migrate status
+yarn prisma migrate status
 
 # 2. Apply migrations (in CI/CD)
-npx prisma migrate deploy
+yarn prisma migrate deploy
 
 # 3. Verify schema matches database
-npx prisma db pull  # Compare with schema.prisma
+yarn prisma db pull  # Compare with schema.prisma
 
 # 4. Generate updated Prisma Client
-npx prisma generate
+yarn prisma generate
 
 # 5. Deploy application
 npm run build
@@ -1462,7 +1462,7 @@ npm start
 
 **Type Errors**
 
-- Regenerate Prisma Client: `npx prisma generate`
+- Regenerate Prisma Client: `yarn prisma generate`
 - Clear TypeScript cache: `rm -rf .next`
 - Verify schema.prisma syntax
 - Check for uncommitted migrations

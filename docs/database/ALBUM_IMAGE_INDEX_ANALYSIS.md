@@ -142,15 +142,15 @@ The database has schema changes that aren't reflected in migration files:
 
 ```bash
 # WARNING: This will delete all data in development database
-npx prisma migrate reset
-npx prisma migrate dev --name add_album_image_chronological_index
+yarn prisma migrate reset
+yarn prisma migrate dev --name add_album_image_chronological_index
 ```
 
 #### Option 2: Manual Migration (Production Safe)
 
 ```bash
 # 1. Generate SQL for current schema state
-npx prisma migrate diff \
+yarn prisma migrate diff \
   --from-schema-datamodel prisma/schema.prisma \
   --to-schema-datasource prisma/schema.prisma \
   --script > migrations/fix_schema_drift.sql
@@ -162,17 +162,17 @@ cat migrations/fix_schema_drift.sql
 psql $DATABASE_URL -f migrations/fix_schema_drift.sql
 
 # 4. Mark migration as applied
-npx prisma migrate resolve --applied 20241208_add_password_hash
+yarn prisma migrate resolve --applied 20241208_add_password_hash
 ```
 
 #### Option 3: Use Prisma DB Push (Development)
 
 ```bash
 # Push schema changes without creating migration
-npx prisma db push
+yarn prisma db push
 
 # Then create proper migration
-npx prisma migrate dev --name add_album_image_chronological_index
+yarn prisma migrate dev --name add_album_image_chronological_index
 ```
 
 ## Recommendation
@@ -229,13 +229,13 @@ ORDER BY idx_scan DESC;
 
 ```bash
 # Fix schema drift
-npx prisma db push --accept-data-loss  # Development only!
+yarn prisma db push --accept-data-loss  # Development only!
 
 # Generate Prisma Client
-npx prisma generate
+yarn prisma generate
 
 # Verify schema
-npx prisma validate
+yarn prisma validate
 ```
 
 ### Production Environment
@@ -246,16 +246,16 @@ Instead, create a proper migration:
 
 ```bash
 # 1. Create baseline migration for current state
-npx prisma migrate diff \
+yarn prisma migrate diff \
   --from-empty \
   --to-schema-datamodel prisma/schema.prisma \
   --script > prisma/migrations/20241212_baseline/migration.sql
 
 # 2. Mark as applied (don't re-run)
-npx prisma migrate resolve --applied 20241212_baseline
+yarn prisma migrate resolve --applied 20241212_baseline
 
 # 3. Future migrations will work normally
-npx prisma migrate deploy
+yarn prisma migrate deploy
 ```
 
 ## Testing Queries

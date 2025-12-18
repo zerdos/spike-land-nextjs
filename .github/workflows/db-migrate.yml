@@ -75,19 +75,19 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Run Prisma migrations
-        run: npx prisma migrate deploy
+        run: yarn prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Generate Prisma Client (verify schema)
-        run: npx prisma generate
+        run: yarn prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Verify database connection
         run: |
           echo "Verifying database connection..."
-          npx prisma db execute --stdin <<< "SELECT 1 as health_check;"
+          yarn prisma db execute --stdin <<< "SELECT 1 as health_check;"
           echo "✓ Database connection verified"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
