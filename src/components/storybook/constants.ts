@@ -2,12 +2,14 @@ import {
   Accessibility,
   Bell,
   Component,
+  LayoutGrid,
   Loader,
   MousePointerClick,
   Palette,
   PanelTop,
   Sparkles,
   SplitSquareHorizontal,
+  Table2,
   Type,
 } from "lucide-react";
 
@@ -22,6 +24,8 @@ export const storybookIconMap = {
   Loader,
   PanelTop,
   Accessibility,
+  Table2,
+  LayoutGrid,
 };
 
 export const colorPalette = {
@@ -143,8 +147,20 @@ export const storybookSections = [
   {
     id: "components",
     label: "Components",
-    description: "Cards, badges, inputs, checkboxes, radio groups, selects, switches",
+    description: "Cards, badges, inputs, accordion, tabs, textarea, tooltip, slider",
     icon: "Component",
+  },
+  {
+    id: "data-display",
+    label: "Data Display",
+    description: "Tables, toggle groups, and copy buttons",
+    icon: "Table2",
+  },
+  {
+    id: "layout",
+    label: "Layout",
+    description: "Masonry grid, text overlays, and zoom controls",
+    icon: "LayoutGrid",
   },
   {
     id: "comparison",
@@ -155,7 +171,7 @@ export const storybookSections = [
   {
     id: "feedback",
     label: "Feedback",
-    description: "Toast notifications, semantic state colors",
+    description: "Toast notifications, alerts, semantic state colors",
     icon: "Bell",
   },
   {
@@ -167,7 +183,7 @@ export const storybookSections = [
   {
     id: "modals",
     label: "Modals",
-    description: "Alert dialogs, sheets, enhancement settings dialogs",
+    description: "Dialogs, dropdown menus, sheets, alert dialogs",
     icon: "PanelTop",
   },
   {

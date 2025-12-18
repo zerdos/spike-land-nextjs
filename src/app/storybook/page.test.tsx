@@ -34,14 +34,14 @@ describe("StorybookPage (Overview)", () => {
   });
 
   describe("section cards", () => {
-    it("should render all 10 section links", () => {
+    it("should render all 12 section links", () => {
       render(<StorybookPage />);
       const links = screen.getAllByRole("link");
       // Filter links that point to storybook sections
       const sectionLinks = links.filter((link) =>
         link.getAttribute("href")?.startsWith("/storybook/")
       );
-      expect(sectionLinks).toHaveLength(10);
+      expect(sectionLinks).toHaveLength(12);
     });
 
     it("should have correct links to section pages", () => {
@@ -55,6 +55,8 @@ describe("StorybookPage (Overview)", () => {
       expect(hrefs).toContain("/storybook/typography");
       expect(hrefs).toContain("/storybook/buttons");
       expect(hrefs).toContain("/storybook/components");
+      expect(hrefs).toContain("/storybook/data-display");
+      expect(hrefs).toContain("/storybook/layout");
       expect(hrefs).toContain("/storybook/comparison");
       expect(hrefs).toContain("/storybook/feedback");
       expect(hrefs).toContain("/storybook/loading");
@@ -69,6 +71,8 @@ describe("StorybookPage (Overview)", () => {
       expect(screen.getByText("Typography")).toBeInTheDocument();
       expect(screen.getByText("Buttons")).toBeInTheDocument();
       expect(screen.getByText("Components")).toBeInTheDocument();
+      expect(screen.getByText("Data Display")).toBeInTheDocument();
+      expect(screen.getByText("Layout")).toBeInTheDocument();
       expect(screen.getByText("Comparison")).toBeInTheDocument();
       expect(screen.getByText("Feedback")).toBeInTheDocument();
       expect(screen.getByText("Loading")).toBeInTheDocument();
