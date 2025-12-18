@@ -2,8 +2,8 @@ import { auth } from "@/auth";
 import { BoxCard } from "@/components/boxes/box-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import prisma from "@/lib/prisma";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function BoxesPage() {

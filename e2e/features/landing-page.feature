@@ -113,3 +113,60 @@ Feature: Landing Page - CTA and Feature Cards
       | Link    |
       | Terms   |
       | Privacy |
+
+  # CTASection Component Tests
+  @fast
+  Scenario: CTASection displays Christmas heading
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Christmas is coming" text
+
+  @fast
+  Scenario: CTASection displays call-to-action message
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Dig out those old photos" text
+
+  @fast
+  Scenario: CTASection Try Pixel button navigates correctly
+    When I visit "/"
+    And I click the "Try Pixel for free" link
+    Then I should be on the "/pixel" page
+
+  # HeroSection Component Tests
+  @fast
+  Scenario: HeroSection displays main headline
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Your photos deserve better" text
+
+  @fast
+  Scenario: HeroSection displays subheadline about Gemini
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Gemini model" text
+
+  @fast
+  Scenario: HeroSection has Get Started CTA button
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Get Started" link
+
+  @fast
+  Scenario: HeroSection Get Started button navigates to Pixel app
+    When I visit "/"
+    And I click the "Get Started" link
+    Then I should be redirected to sign-in page
+
+  @fast
+  Scenario: HeroSection displays image comparison slider
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the image comparison slider
+
+  @fast
+  Scenario: HeroSection shows Original and Enhanced labels
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Original" text
+    And I should see "Enhanced" text

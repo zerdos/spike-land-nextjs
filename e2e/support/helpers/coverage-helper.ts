@@ -245,17 +245,96 @@ export async function generateCoverageReport(): Promise<void> {
   fs.writeFileSync(istanbulPath, JSON.stringify(istanbulCoverage, null, 2));
   console.log(`[Coverage] Istanbul coverage written to: ${istanbulPath}`);
 
-  // Generate summary
+  // Generate summary (plain text for file)
   const summary = generateSummary(istanbulCoverage);
   const summaryPath = path.join(coverageDir, "coverage-summary.txt");
   fs.writeFileSync(summaryPath, summary);
   console.log(`[Coverage] Summary written to: ${summaryPath}`);
 
-  // Print summary to console
-  console.log("\n" + "=".repeat(60));
-  console.log("E2E COVERAGE SUMMARY");
-  console.log("=".repeat(60));
-  console.log(summary);
+  // Print colorful summary to console
+  generateConsoleSummary(istanbulCoverage);
+}
+
+// ANSI color codes for terminal output
+const colors = {
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  bgRed: "\x1b[41m",
+  bgGreen: "\x1b[42m",
+  bgYellow: "\x1b[43m",
+};
+
+/**
+ * Extract a human-readable name from a bundled chunk path
+ */
+function extractReadableName(filePath: string): string {
+  // Try to extract meaningful path from Next.js chunk names
+  // e.g., "Developer_spike-land-nextjs_src_app_pricing_page_tsx_5dc2dbca._.js"
+  // -> "src/app/pricing/page.tsx"
+
+  const match = filePath.match(/spike-land-nextjs_(.+?)_[a-f0-9]+\._\.js$/);
+  if (match) {
+    return match[1]
+      .replace(/_tsx$/, ".tsx")
+      .replace(/_ts$/, ".ts")
+      .replace(/_/g, "/");
+  }
+
+  // For other chunk patterns, try to extract src path
+  const srcMatch = filePath.match(/src_(.+?)(?:_[a-f0-9]+)?\._\.js$/);
+  if (srcMatch) {
+    return "src/" + srcMatch[1].replace(/_/g, "/");
+  }
+
+  // Return last part of path if no pattern matches
+  const parts = filePath.split("/");
+  return parts[parts.length - 1];
+}
+
+/**
+ * Get color based on coverage percentage
+ */
+function getCoverageColor(pct: number): string {
+  if (pct >= 80) return colors.green;
+  if (pct >= 60) return colors.yellow;
+  return colors.red;
+}
+
+/**
+ * Format a percentage with color
+ */
+function formatPct(pct: number, withColor = true): string {
+  const formatted = pct.toFixed(1).padStart(5) + "%";
+  if (!withColor) return formatted;
+  return getCoverageColor(pct) + formatted + colors.reset;
+}
+
+/**
+ * Create a progress bar
+ */
+function createProgressBar(pct: number, width = 20): string {
+  const filled = Math.round((pct / 100) * width);
+  const empty = width - filled;
+  const color = getCoverageColor(pct);
+  return color + "█".repeat(filled) + colors.dim + "░".repeat(empty) + colors.reset;
+}
+
+interface FileCoverageStats {
+  path: string;
+  readableName: string;
+  statements: number;
+  coveredStatements: number;
+  stmtPct: number;
+  functions: number;
+  coveredFunctions: number;
+  fnPct: number;
 }
 
 /**
@@ -268,9 +347,10 @@ function generateSummary(coverage: IstanbulCoverageMap): string {
   let totalFunctions = 0;
   let coveredFunctions = 0;
 
-  const lines: string[] = [];
+  // Collect stats for all files
+  const fileStats: FileCoverageStats[] = [];
 
-  for (const filePath of files.sort()) {
+  for (const filePath of files) {
     const fileCov = coverage[filePath];
 
     const fileStatements = Object.keys(fileCov.s).length;
@@ -284,41 +364,200 @@ function generateSummary(coverage: IstanbulCoverageMap): string {
     coveredFunctions += fileCoveredFunctions;
 
     const stmtPct = fileStatements > 0
-      ? ((fileCoveredStatements / fileStatements) * 100).toFixed(1)
-      : "N/A";
+      ? (fileCoveredStatements / fileStatements) * 100
+      : 0;
     const fnPct = fileFunctions > 0
-      ? ((fileCoveredFunctions / fileFunctions) * 100).toFixed(1)
-      : "N/A";
+      ? (fileCoveredFunctions / fileFunctions) * 100
+      : 0;
 
-    lines.push(`${filePath}`);
+    fileStats.push({
+      path: filePath,
+      readableName: extractReadableName(filePath),
+      statements: fileStatements,
+      coveredStatements: fileCoveredStatements,
+      stmtPct,
+      functions: fileFunctions,
+      coveredFunctions: fileCoveredFunctions,
+      fnPct,
+    });
+  }
+
+  // Sort by statement coverage (lowest first) to highlight areas needing work
+  fileStats.sort((a, b) => a.stmtPct - b.stmtPct);
+
+  const totalStmtPct = totalStatements > 0
+    ? (coveredStatements / totalStatements) * 100
+    : 0;
+  const totalFnPct = totalFunctions > 0
+    ? (coveredFunctions / totalFunctions) * 100
+    : 0;
+
+  const lines: string[] = [];
+
+  // Header
+  lines.push("");
+  lines.push(`${colors.bold}TOTALS:${colors.reset}`);
+  lines.push(`Files: ${files.length}`);
+  lines.push(
+    `Statements: ${coveredStatements}/${totalStatements} (${totalStmtPct.toFixed(1)}%)`,
+  );
+  lines.push(
+    `Functions:  ${coveredFunctions}/${totalFunctions} (${totalFnPct.toFixed(1)}%)`,
+  );
+  lines.push("");
+
+  // Detailed file breakdown (sorted by coverage, lowest first)
+  for (const stat of fileStats) {
+    lines.push(`${stat.path}`);
     lines.push(
-      `  Statements: ${fileCoveredStatements}/${fileStatements} (${stmtPct}%)`,
+      `  Statements: ${stat.coveredStatements}/${stat.statements} (${stat.stmtPct.toFixed(1)}%)`,
     );
     lines.push(
-      `  Functions:  ${fileCoveredFunctions}/${fileFunctions} (${fnPct}%)`,
+      `  Functions:  ${stat.coveredFunctions}/${stat.functions} (${stat.fnPct.toFixed(1)}%)`,
     );
     lines.push("");
   }
 
-  const totalStmtPct = totalStatements > 0
-    ? ((coveredStatements / totalStatements) * 100).toFixed(1)
-    : "0";
-  const totalFnPct = totalFunctions > 0
-    ? ((coveredFunctions / totalFunctions) * 100).toFixed(1)
-    : "0";
-
-  lines.unshift("");
-  lines.unshift(
-    `Functions:  ${coveredFunctions}/${totalFunctions} (${totalFnPct}%)`,
-  );
-  lines.unshift(
-    `Statements: ${coveredStatements}/${totalStatements} (${totalStmtPct}%)`,
-  );
-  lines.unshift(`Files: ${files.length}`);
-  lines.unshift("TOTALS:");
-  lines.unshift("");
-
   return lines.join("\n");
+}
+
+/**
+ * Generate a colorful console summary of coverage
+ */
+function generateConsoleSummary(coverage: IstanbulCoverageMap): void {
+  const files = Object.keys(coverage);
+  let totalStatements = 0;
+  let coveredStatements = 0;
+  let totalFunctions = 0;
+  let coveredFunctions = 0;
+
+  // Collect stats for all files
+  const fileStats: FileCoverageStats[] = [];
+
+  for (const filePath of files) {
+    const fileCov = coverage[filePath];
+
+    const fileStatements = Object.keys(fileCov.s).length;
+    const fileCoveredStatements = Object.values(fileCov.s).filter((v) => v > 0).length;
+    const fileFunctions = Object.keys(fileCov.f).length;
+    const fileCoveredFunctions = Object.values(fileCov.f).filter((v) => v > 0).length;
+
+    totalStatements += fileStatements;
+    coveredStatements += fileCoveredStatements;
+    totalFunctions += fileFunctions;
+    coveredFunctions += fileCoveredFunctions;
+
+    const stmtPct = fileStatements > 0
+      ? (fileCoveredStatements / fileStatements) * 100
+      : 0;
+    const fnPct = fileFunctions > 0
+      ? (fileCoveredFunctions / fileFunctions) * 100
+      : 0;
+
+    fileStats.push({
+      path: filePath,
+      readableName: extractReadableName(filePath),
+      statements: fileStatements,
+      coveredStatements: fileCoveredStatements,
+      stmtPct,
+      functions: fileFunctions,
+      coveredFunctions: fileCoveredFunctions,
+      fnPct,
+    });
+  }
+
+  // Sort by statement coverage (lowest first)
+  fileStats.sort((a, b) => a.stmtPct - b.stmtPct);
+
+  const totalStmtPct = totalStatements > 0
+    ? (coveredStatements / totalStatements) * 100
+    : 0;
+  const totalFnPct = totalFunctions > 0
+    ? (coveredFunctions / totalFunctions) * 100
+    : 0;
+
+  // Print colorful header
+  console.log("");
+  console.log(
+    `${colors.bold}${colors.cyan}╔════════════════════════════════════════════════════════════════╗${colors.reset}`,
+  );
+  console.log(
+    `${colors.bold}${colors.cyan}║${colors.reset}              ${colors.bold}E2E COVERAGE REPORT${colors.reset}                              ${colors.bold}${colors.cyan}║${colors.reset}`,
+  );
+  console.log(
+    `${colors.bold}${colors.cyan}╚════════════════════════════════════════════════════════════════╝${colors.reset}`,
+  );
+  console.log("");
+
+  // Overall summary
+  console.log(`${colors.bold}📊 Overall Coverage${colors.reset}`);
+  console.log(`   Files:      ${colors.bold}${files.length}${colors.reset}`);
+  console.log(
+    `   Statements: ${createProgressBar(totalStmtPct)} ${
+      formatPct(totalStmtPct)
+    } (${coveredStatements}/${totalStatements})`,
+  );
+  console.log(
+    `   Functions:  ${createProgressBar(totalFnPct)} ${
+      formatPct(totalFnPct)
+    } (${coveredFunctions}/${totalFunctions})`,
+  );
+  console.log("");
+
+  // Files needing attention (< 50% coverage)
+  const needsWork = fileStats.filter(f => f.stmtPct < 50);
+  if (needsWork.length > 0) {
+    console.log(
+      `${colors.bold}${colors.red}⚠️  Files Needing Attention (< 50% coverage)${colors.reset}`,
+    );
+    console.log(`${"─".repeat(66)}`);
+    for (const stat of needsWork) {
+      console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
+      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+    }
+    console.log("");
+  }
+
+  // Files with moderate coverage (50-79%)
+  const moderate = fileStats.filter(f => f.stmtPct >= 50 && f.stmtPct < 80);
+  if (moderate.length > 0) {
+    console.log(`${colors.bold}${colors.yellow}📈 Moderate Coverage (50-79%)${colors.reset}`);
+    console.log(`${"─".repeat(66)}`);
+    for (const stat of moderate) {
+      console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
+      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+    }
+    console.log("");
+  }
+
+  // Files with good coverage (>= 80%)
+  const good = fileStats.filter(f => f.stmtPct >= 80);
+  if (good.length > 0) {
+    console.log(`${colors.bold}${colors.green}✅ Good Coverage (≥ 80%)${colors.reset}`);
+    console.log(`${"─".repeat(66)}`);
+    for (const stat of good) {
+      console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
+      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+    }
+    console.log("");
+  }
+
+  // Summary footer
+  const statusColor = totalStmtPct >= 80
+    ? colors.green
+    : totalStmtPct >= 60
+    ? colors.yellow
+    : colors.red;
+  const statusIcon = totalStmtPct >= 80 ? "✅" : totalStmtPct >= 60 ? "📈" : "⚠️";
+  console.log(
+    `${colors.bold}${colors.cyan}─────────────────────────────────────────────────────────────────${colors.reset}`,
+  );
+  console.log(
+    `${statusIcon} ${colors.bold}Status:${colors.reset} ${statusColor}${
+      totalStmtPct.toFixed(1)
+    }% statement coverage${colors.reset}`,
+  );
+  console.log("");
 }
 
 /**

@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import prisma from "@/lib/prisma";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function MyAppsPage() {

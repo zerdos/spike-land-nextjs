@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import {
   Select,
   SelectContent,
@@ -17,7 +18,6 @@ import type { Pipeline } from "@/hooks/usePipelines";
 import { usePipelines } from "@/hooks/usePipelines";
 import type { EnhancementTier } from "@prisma/client";
 import { ExternalLink, Settings } from "lucide-react";
-import Link from "next/link";
 
 interface PipelineSelectorProps {
   /**

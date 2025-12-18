@@ -10,9 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "@/components/ui/link";
 import { Coins, LayoutGrid, LogOut, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 
 interface UserAvatarProps {
   className?: string;

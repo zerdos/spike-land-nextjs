@@ -1,9 +1,9 @@
 "use client";
 
+import { Link } from "@/components/ui/link";
 import type { MDXComponents } from "mdx/types";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
 import { Button } from "@/components/ui/button";

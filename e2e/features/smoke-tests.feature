@@ -228,3 +228,45 @@ Feature: Smoke Tests
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit each main page
     Then each page should have a proper HTML title
+
+  # Root Layout Tests
+  @fast
+  Scenario: Root layout applies dark theme
+    When I visit "/"
+    Then the page should load successfully
+    And the page should have dark theme applied
+
+  @fast
+  Scenario: Root layout renders with correct HTML structure
+    When I visit "/"
+    Then the page should load successfully
+    And the page should have proper HTML lang attribute
+    And the page should have a main content area
+
+  @fast
+  Scenario: Root layout loads required fonts
+    When I visit "/"
+    Then the page should load successfully
+    And the page should load custom fonts
+
+  @fast
+  Scenario: Cookies page displays full cookie policy
+    When I visit "/cookies"
+    Then the page should load successfully
+    And I should see "Cookie Policy" heading
+    And I should see "Essential Cookies" text
+    And I should see "Analytics Cookies" text
+
+  @fast
+  Scenario: Terms page displays table of contents
+    When I visit "/terms"
+    Then the page should load successfully
+    And I should see "Terms of Service" heading
+    And I should see "Table of Contents" text
+
+  @fast
+  Scenario: Privacy page displays data collection info
+    When I visit "/privacy"
+    Then the page should load successfully
+    And I should see "Privacy Policy" heading
+    And I should see "Data Collection" text

@@ -80,6 +80,6 @@ module.exports = {
     retry: 0, // No retries for coverage - each run should be deterministic
     tags: "not @skip and not @flaky and not @requires-db",
     timeout: 15000,
-    parallel: 1, // Disable parallelism for accurate coverage collection
+    parallel: 1, // Coverage requires single process to accumulate data
   },
 };

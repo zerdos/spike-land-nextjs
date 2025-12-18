@@ -9,6 +9,7 @@ import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ViewTransitions } from "next-view-transitions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,27 +66,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
-          disableTransitionOnChange
+    <ViewTransitions>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
         >
-          <SessionProvider>
-            <ConditionalHeader />
-            {children}
-            <FeedbackButton />
-          </SessionProvider>
-          <Toaster />
-        </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
-        <MetaPixel />
-      </body>
-    </html>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            disableTransitionOnChange
+          >
+            <SessionProvider>
+              <ConditionalHeader />
+              {children}
+              <FeedbackButton />
+            </SessionProvider>
+            <Toaster />
+          </ThemeProvider>
+          <Analytics />
+          <SpeedInsights />
+          <MetaPixel />
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }
