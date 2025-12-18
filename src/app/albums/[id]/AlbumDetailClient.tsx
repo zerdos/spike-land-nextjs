@@ -900,7 +900,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                         </Badge>
                       )}
                       {album.coverImageId === image.id && (
-                        <Badge variant="overlay" className="absolute top-2 left-2">
+                        <Badge className="absolute top-2 left-2 bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]">
                           <Star className="h-3 w-3 mr-1 fill-current" />
                           Cover
                         </Badge>

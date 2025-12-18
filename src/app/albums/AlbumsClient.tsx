@@ -312,7 +312,7 @@ export function AlbumsClient() {
                       </div>
                     )}
                   <Badge
-                    variant="overlay"
+                    variant="secondary"
                     className="absolute bottom-2 left-2 gap-1"
                   >
                     {getPrivacyIcon(album.privacy)}
