@@ -312,8 +312,7 @@ export function AlbumsClient() {
                       </div>
                     )}
                   <Badge
-                    variant="secondary"
-                    className="absolute bottom-2 left-2 gap-1"
+                    className="absolute bottom-2 left-2 gap-1 bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]"
                   >
                     {getPrivacyIcon(album.privacy)}
                     {getPrivacyLabel(album.privacy)}
