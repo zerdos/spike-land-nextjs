@@ -112,8 +112,11 @@ jobs:
 
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
-            IMPORTANT: Start EVERY comment with this exact marker (on its own line):
+            IMPORTANT: Start EVERY comment with this exact marker (on its own line - this is required for cleanup later - do if new review comments are on the way we don't want old ones to pile up):
             <!-- claude-code-review -->
+
+            IMPORTANT: you have to mention "@jules" in the comment if you want to have modifications applied to the PR code before merging. @jules is the bot user that has permissions to modify the PR code.
+            If you don't mention @jules, your suggestions will be ignored.
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
