@@ -49,14 +49,13 @@ Then(
   "{string} should be highlighted in the sidebar",
   async function(this: CustomWorld, sectionName: string) {
     // Active links have class bg-primary/10 text-primary
-    const activeLink = this.page.locator(
-      `aside a:has-text("${sectionName}")`,
-    ).first();
+    // Use exact match to find the specific navigation link
+    const sidebar = this.page.locator("aside");
+    const activeLink = sidebar.getByRole("link", { name: sectionName, exact: true });
     await expect(activeLink).toBeVisible();
 
-    // Check that it has the active styling class
-    const classes = await activeLink.getAttribute("class");
-    expect(classes).toContain("bg-primary");
+    // Check that it has the active styling class using Playwright's assertion
+    await expect(activeLink).toHaveClass(/bg-primary/);
   },
 );
 
