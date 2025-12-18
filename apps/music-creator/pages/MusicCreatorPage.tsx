@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Play, Square, Mic, Upload, Volume2, VolumeX } from "lucide-react";
 
 interface Track {
@@ -25,6 +25,12 @@ export default function MusicCreatorPage() {
   const chunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tracksRef = useRef<Track[]>([]);
+
+  // Keep tracksRef in sync with tracks state
+  useEffect(() => {
+    tracksRef.current = tracks;
+  }, [tracks]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -39,21 +45,18 @@ export default function MusicCreatorPage() {
       }
 
       // Cleanup tracks
-      tracks.forEach(track => {
+      tracksRef.current.forEach(track => {
         track.audioElement.pause();
         URL.revokeObjectURL(track.url);
       });
     };
-  }, [tracks]);
+  }, []);
 
   // Helper to create a new track
   const addTrack = useCallback((name: string, blob: Blob | File) => {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.preload = "metadata";
-
-    // Wait for metadata to load to get duration if needed,
-    // but for now we just add it.
 
     const newTrack: Track = {
       id: crypto.randomUUID(),
@@ -68,14 +71,33 @@ export default function MusicCreatorPage() {
   }, []);
 
   // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       addTrack(file.name, file);
     }
     // Reset input
     if (event.target) event.target.value = '';
-  };
+  }, [addTrack]);
+
+  // Playback Logic
+  const playAll = useCallback(() => {
+    tracksRef.current.forEach(track => {
+      track.audioElement.currentTime = 0; // Simple start from beginning
+      if (!track.isMuted) {
+        track.audioElement.play().catch(e => console.error("Play error", e));
+      }
+    });
+    setIsPlaying(true);
+  }, []);
+
+  const stopAll = useCallback(() => {
+    tracksRef.current.forEach(track => {
+      track.audioElement.pause();
+      track.audioElement.currentTime = 0;
+    });
+    setIsPlaying(false);
+  }, []);
 
   // Recording Logic
   const startRecording = async () => {
@@ -136,69 +158,46 @@ export default function MusicCreatorPage() {
     }
   };
 
-  // Playback Logic
-  const playAll = () => {
-    // Determine the longest duration or just play all
-    // Reset all to 0? Or play from current?
-    // For simplicity, let's reset to 0 for now unless we implement seeking.
-
-    tracks.forEach(track => {
-      track.audioElement.currentTime = 0; // Simple start from beginning
-      if (!track.isMuted) {
-        track.audioElement.play().catch(e => console.error("Play error", e));
-      }
-    });
-    setIsPlaying(true);
-  };
-
-  const stopAll = () => {
-    tracks.forEach(track => {
-      track.audioElement.pause();
-      track.audioElement.currentTime = 0;
-    });
-    setIsPlaying(false);
-  };
-
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     if (isPlaying) {
       stopAll();
     } else {
       playAll();
     }
-  };
+  }, [isPlaying, playAll, stopAll]);
 
   // Track Controls
-  const toggleMute = (id: string) => {
-    setTracks(prev => prev.map(track => {
-      if (track.id === id) {
-        const newMuted = !track.isMuted;
-        track.audioElement.muted = newMuted;
-        return { ...track, isMuted: newMuted };
-      }
-      return track;
-    }));
-  };
+  const toggleMute = useCallback((id: string) => {
+    const track = tracksRef.current.find(t => t.id === id);
+    if (track) {
+      track.audioElement.muted = !track.isMuted;
+    }
 
-  const setVolume = (id: string, volume: number) => {
-    setTracks(prev => prev.map(track => {
-      if (track.id === id) {
-        track.audioElement.volume = volume;
-        return { ...track, volume };
-      }
-      return track;
-    }));
-  };
+    setTracks(prev => prev.map(t =>
+      t.id === id ? { ...t, isMuted: !t.isMuted } : t
+    ));
+  }, []);
 
-  const removeTrack = (id: string) => {
-    setTracks(prev => {
-      const trackToRemove = prev.find(t => t.id === id);
-      if (trackToRemove) {
-        trackToRemove.audioElement.pause();
-        URL.revokeObjectURL(trackToRemove.url);
-      }
-      return prev.filter(t => t.id !== id);
-    });
-  };
+  const setVolume = useCallback((id: string, volume: number) => {
+    const track = tracksRef.current.find(t => t.id === id);
+    if (track) {
+      track.audioElement.volume = volume;
+    }
+
+    setTracks(prev => prev.map(t =>
+      t.id === id ? { ...t, volume } : t
+    ));
+  }, []);
+
+  const removeTrack = useCallback((id: string) => {
+    const trackToRemove = tracksRef.current.find(t => t.id === id);
+    if (trackToRemove) {
+      trackToRemove.audioElement.pause();
+      URL.revokeObjectURL(trackToRemove.url);
+    }
+
+    setTracks(prev => prev.filter(t => t.id !== id));
+  }, []);
 
   // Update loop for progress bar (optional, kept simple for now)
   // We can just rely on basic controls for this MVP.
@@ -282,7 +281,7 @@ export default function MusicCreatorPage() {
                 <div className="flex items-center gap-2 w-32">
                   <Volume2 className="h-4 w-4 text-muted-foreground" />
                   <Slider
-                    defaultValue={[track.volume]}
+                    value={[track.volume]}
                     max={1}
                     step={0.01}
                     onValueChange={(vals) => setVolume(track.id, vals[0])}

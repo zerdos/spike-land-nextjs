@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import MusicCreatorPage from './MusicCreatorPage';
 import React from 'react';
-
 import { vi } from 'vitest';
 
 // Mock URL.createObjectURL and URL.revokeObjectURL
@@ -24,6 +24,10 @@ class AudioMock {
 global.Audio = AudioMock as any;
 
 describe('MusicCreatorPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders the page title', () => {
     render(<MusicCreatorPage />);
     expect(screen.getByText('Music Creator')).toBeInTheDocument();
@@ -36,6 +40,29 @@ describe('MusicCreatorPage', () => {
     expect(screen.getByText('Add Track')).toBeInTheDocument();
   });
 
-  // More interactions would require mocking MediaRecorder and more complex state,
-  // but this ensures the component renders and basic structure is there.
+  it('handles file upload', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<MusicCreatorPage />);
+
+    const file = new File(['audio content'], 'test-audio.mp3', { type: 'audio/mp3' });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    await user.upload(input, file);
+
+    expect(await screen.findByText('test-audio.mp3')).toBeInTheDocument();
+  });
+
+  it('toggles play/stop', async () => {
+    const user = userEvent.setup();
+    render(<MusicCreatorPage />);
+
+    const playButton = screen.getByLabelText('Play');
+    await user.click(playButton);
+
+    expect(await screen.findByLabelText('Stop')).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Stop'));
+    expect(await screen.findByLabelText('Play')).toBeInTheDocument();
+  });
+
 });
