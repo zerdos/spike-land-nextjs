@@ -286,10 +286,9 @@ export function ReferenceImageUpload({
                 type="button"
                 size="icon"
                 variant="destructive"
-                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => deleteReferenceImage(img.r2Key)}
                 disabled={disabled || deletingKeys.has(img.r2Key)}
-                aria-label="Delete reference image"
               >
                 {deletingKeys.has(img.r2Key)
                   ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -323,7 +322,6 @@ export function ReferenceImageUpload({
                   onChange={(e) => updatePendingDescription(index, e.target.value)}
                   disabled={pending.uploading || disabled}
                   className="h-8 text-sm"
-                  aria-label="Reference image description"
                 />
                 {pending.error && (
                   <p className="text-xs text-destructive flex items-center gap-1">
@@ -337,7 +335,6 @@ export function ReferenceImageUpload({
                     size="sm"
                     onClick={() => uploadPending(index)}
                     disabled={pending.uploading || disabled}
-                    aria-label="Upload pending image"
                   >
                     {pending.uploading
                       ? (
@@ -359,7 +356,6 @@ export function ReferenceImageUpload({
                     variant="ghost"
                     onClick={() => removePending(index)}
                     disabled={pending.uploading || disabled}
-                    aria-label="Remove pending upload"
                   >
                     <X className="h-3 w-3" />
                   </Button>

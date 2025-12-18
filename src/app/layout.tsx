@@ -31,7 +31,6 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://spike.land"),
   title: "Spike Land - Vibe Coded Apps with Claude Code",
   description:
     "Experience the platform that brought you Smart Video Wall. Create vibe-coded applications powered by Claude Code, combining AI innovation with creative development for next-generation web experiences.",
