@@ -647,4 +647,134 @@ describe("GoogleAdsClient", () => {
       expect(campaigns[0].startDate).toBeInstanceOf(Date);
     });
   });
+
+  describe("currency handling", () => {
+    it("listCampaigns should use currency from account settings", async () => {
+      const client = new GoogleAdsClient({ accessToken: "test_token" });
+      const customerId = "1234567890";
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(async (url, options) => {
+          const body = options?.body ? JSON.parse(options.body as string) : {};
+
+          // Mock getCustomerInfo response
+          if (body.query && body.query.includes("FROM customer")) {
+            return {
+              ok: true,
+              json: async () => ({
+                results: [
+                  {
+                    customer: {
+                      id: customerId,
+                      descriptiveName: "Test Account",
+                      currencyCode: "EUR", // Testing with EUR instead of USD
+                      timeZone: "UTC",
+                    },
+                  },
+                ],
+              }),
+            } as Response;
+          }
+
+          // Mock listCampaigns response
+          if (body.query && body.query.includes("FROM campaign")) {
+            return {
+              ok: true,
+              json: async () => ({
+                results: [
+                  {
+                    campaign: {
+                      id: "1",
+                      name: "Test Campaign",
+                      status: "ENABLED",
+                      advertisingChannelType: "SEARCH",
+                      startDate: "20230101",
+                      endDate: "20230131",
+                      campaignBudget: "budget/1",
+                    },
+                    campaignBudget: {
+                      amountMicros: "10000000", // 10 units
+                    },
+                  },
+                ],
+              }),
+            } as Response;
+          }
+
+          return { ok: false, statusText: "Not Found" } as Response;
+        }),
+      );
+
+      const campaigns = await client.listCampaigns(customerId);
+
+      expect(campaigns).toHaveLength(1);
+      expect(campaigns[0].budgetCurrency).toBe("EUR");
+    });
+
+    it("getCampaignMetrics should use currency from account settings", async () => {
+      const client = new GoogleAdsClient({ accessToken: "test_token" });
+      const customerId = "1234567890";
+      const campaignId = "1";
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(async (url, options) => {
+          const body = options?.body ? JSON.parse(options.body as string) : {};
+
+          // Mock getCustomerInfo response
+          if (body.query && body.query.includes("FROM customer")) {
+            return {
+              ok: true,
+              json: async () => ({
+                results: [
+                  {
+                    customer: {
+                      id: customerId,
+                      descriptiveName: "Test Account",
+                      currencyCode: "GBP", // Testing with GBP
+                      timeZone: "UTC",
+                    },
+                  },
+                ],
+              }),
+            } as Response;
+          }
+
+          // Mock getCampaignMetrics response
+          if (body.query && body.query.includes("metrics.impressions")) {
+            return {
+              ok: true,
+              json: async () => ({
+                results: [
+                  {
+                    metrics: {
+                      impressions: "1000",
+                      clicks: "100",
+                      costMicros: "5000000",
+                      conversions: "5",
+                      ctr: "0.1",
+                      averageCpc: "50000",
+                      averageCpm: "5000",
+                    },
+                  },
+                ],
+              }),
+            } as Response;
+          }
+
+          return { ok: false, statusText: "Not Found" } as Response;
+        }),
+      );
+
+      const metrics = await client.getCampaignMetrics(
+        customerId,
+        campaignId,
+        new Date(),
+        new Date(),
+      );
+
+      expect(metrics.spendCurrency).toBe("GBP");
+    });
+  });
 });
