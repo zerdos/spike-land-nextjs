@@ -164,7 +164,7 @@ export function audioBufferToWav(buffer: AudioBuffer): Blob {
   let offset = headerSize;
   for (let i = 0; i < buffer.length; i++) {
     for (let ch = 0; ch < numChannels; ch++) {
-      const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+      const sample = Math.max(-1, Math.min(1, channels[ch]![i]!));
       const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
       view.setInt16(offset, intSample, true);
       offset += bytesPerSample;
