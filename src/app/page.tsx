@@ -2,38 +2,7 @@ import { CTASection } from "@/components/landing/CTASection";
 import { FeaturedAppCard, PlatformFeatures, PlatformHero } from "@/components/platform-landing";
 import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
 import { Image as ImageIcon } from "lucide-react";
-import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
-
-export const metadata: Metadata = {
-  title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
-  description:
-    "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
-  keywords: [
-    "Spike Land",
-    "vibe coding",
-    "Claude Code",
-    "AI app platform",
-    "AI photo restoration",
-    "restore old photos",
-    "Pixel",
-    "old photo repair",
-    "web platform",
-  ],
-  openGraph: {
-    title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
-    description:
-      "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
-    siteName: "Spike Land",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
-    description:
-      "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
-  },
-};
 
 // Cache the super admin's top public photo for 1 hour to reduce database queries
 const getTopPublicPhoto = unstable_cache(

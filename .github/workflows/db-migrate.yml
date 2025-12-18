@@ -31,17 +31,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: yarn-cache
         with:
           path: node_modules
@@ -75,19 +75,19 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Run Prisma migrations
-        run: npx prisma migrate deploy
+        run: yarn prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Generate Prisma Client (verify schema)
-        run: npx prisma generate
+        run: yarn prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Verify database connection
         run: |
           echo "Verifying database connection..."
-          npx prisma db execute --stdin <<< "SELECT 1 as health_check;"
+          yarn prisma db execute --stdin <<< "SELECT 1 as health_check;"
           echo "✓ Database connection verified"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

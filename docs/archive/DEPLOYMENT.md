@@ -129,7 +129,7 @@ You can also run migrations manually:
 The workflow runs:
 
 ```bash
-npx prisma migrate deploy
+yarn prisma migrate deploy
 ```
 
 ## Deployment URLs

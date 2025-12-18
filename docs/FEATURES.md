@@ -478,8 +478,8 @@ cp .env.example .env.local
 # Edit .env.local with your credentials
 
 # Set up database
-npx prisma generate
-npx prisma db push
+yarn prisma generate
+yarn prisma db push
 
 # Start development server
 yarn dev

@@ -1214,9 +1214,9 @@ jobs:
         shard: [1, 2, 3, 4]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "yarn"
@@ -1238,9 +1238,9 @@ jobs:
         shard: [1, 2]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "yarn"
@@ -1249,7 +1249,7 @@ jobs:
 
       - run: yarn build
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
 

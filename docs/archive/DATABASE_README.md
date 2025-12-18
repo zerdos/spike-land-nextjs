@@ -417,20 +417,20 @@ psql $DATABASE_URL -c "SELECT 1"
 ```bash
 # Check migration status
 npm run db:validate
-npx prisma migrate status
+yarn prisma migrate status
 
 # Reset (dev only)
 npm run db:migrate:reset
 
 # Mark migration as resolved
-npx prisma migrate resolve --rolled-back [name]
+yarn prisma migrate resolve --rolled-back [name]
 ```
 
 ### Schema Drift
 
 ```bash
 # Pull current database schema
-npx prisma db pull
+yarn prisma db pull
 
 # Compare with prisma/schema.prisma
 # Create migration to sync

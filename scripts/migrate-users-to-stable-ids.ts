@@ -11,7 +11,7 @@
  * DEPLOYMENT ORDER:
  * 1. Backup database: pg_dump -Fc $DATABASE_URL > backup_before_migration.dump
  * 2. Stop application (to prevent race conditions during migration)
- * 3. Run database migration: npx prisma migrate deploy
+ * 3. Run database migration: yarn prisma migrate deploy
  * 4. Run this script: npx ts-node --esm scripts/migrate-users-to-stable-ids.ts
  * 5. Deploy new code with stable user IDs
  * 6. Start application
