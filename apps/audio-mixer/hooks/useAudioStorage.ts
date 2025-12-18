@@ -4,13 +4,7 @@
  */
 
 import { useCallback } from "react";
-import type {
-  AudioProject,
-  OPFSAudioMetadata,
-  SavedTrack,
-  SaveTrackOptions,
-  StorageResult,
-} from "../types/storage";
+import type { AudioProject, SavedTrack, SaveTrackOptions, StorageResult } from "../types/storage";
 
 // Base path for audio mixer files in OPFS
 const AUDIO_MIXER_BASE_PATH = "audio-mixer";
