@@ -101,7 +101,7 @@ export async function mixTracksToBlob(
 ): Promise<Blob> {
   const sampleRate = context.sampleRate;
 
-  // Calculate total duration considering delays and trims
+  // Calculate total duration considering positions and trims
   const activeTracks = tracks.filter((t) => t.buffer && !t.muted);
   const totalDuration = activeTracks.length > 0
     ? Math.max(
@@ -109,9 +109,9 @@ export async function mixTracksToBlob(
       ...activeTracks.map((t) => {
         const effectiveTrimEnd = t.trimEnd > 0 ? t.trimEnd : t.duration;
         const trimmedDuration = effectiveTrimEnd - t.trimStart;
-        // For negative delay, track starts earlier (at time 0)
-        // For positive delay, track ends later
-        return Math.max(0, t.delay) + trimmedDuration;
+        // Use position (with delay fallback for backward compat)
+        const trackPosition = t.position ?? t.delay ?? 0;
+        return Math.max(0, trackPosition) + trimmedDuration;
       }),
     )
     : duration;
@@ -137,11 +137,12 @@ export async function mixTracksToBlob(
       const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
       const trimmedDuration = effectiveTrimEnd - track.trimStart;
 
-      // Calculate start time with delay
-      // Positive delay = start later, negative delay = start at 0 but skip part of audio
-      const startTime = Math.max(0, track.delay);
-      const bufferOffset = track.trimStart + Math.max(0, -track.delay);
-      const playDuration = Math.max(0, trimmedDuration - Math.max(0, -track.delay));
+      // Use position (with delay fallback for backward compat)
+      const trackPosition = track.position ?? track.delay ?? 0;
+      // Start time is just the position (always >= 0)
+      const startTime = Math.max(0, trackPosition);
+      const bufferOffset = track.trimStart;
+      const playDuration = trimmedDuration;
 
       source.start(startTime, bufferOffset, playDuration);
     }

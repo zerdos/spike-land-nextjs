@@ -19,8 +19,10 @@ export interface AudioTrack {
   waveformData: number[];
   type: "file" | "recording";
   file?: File;
-  /** Track delay/offset in seconds (-5 to +10) */
+  /** @deprecated Use position instead. Track delay/offset in seconds (-5 to +10) */
   delay: number;
+  /** Track position on timeline in seconds (start time). Replaces delay. */
+  position: number;
   /** Trim start point in seconds from beginning */
   trimStart: number;
   /** Trim end point in seconds from beginning (defaults to duration) */
@@ -69,6 +71,7 @@ export type TrackAction =
   | { type: "SET_VOLUME"; payload: { id: string; volume: number; }; }
   | { type: "SET_PAN"; payload: { id: string; pan: number; }; }
   | { type: "SET_DELAY"; payload: { id: string; delay: number; }; }
+  | { type: "SET_POSITION"; payload: { id: string; position: number; }; }
   | { type: "SET_TRIM"; payload: { id: string; trimStart: number; trimEnd: number; }; }
   | { type: "TOGGLE_MUTE"; payload: string; }
   | { type: "TOGGLE_SOLO"; payload: string; }
@@ -77,6 +80,23 @@ export type TrackAction =
   | { type: "REORDER_TRACKS"; payload: string[]; }
   | { type: "RESTORE_TRACKS"; payload: Partial<AudioTrack>[]; }
   | { type: "CLEAR_TRACKS"; };
+
+export type SnapGrid = 0.1 | 0.25 | 0.5 | 1;
+
+export interface TimelineState {
+  /** Pixels per second (default: 50, range: 10-200) */
+  zoom: number;
+  /** Horizontal scroll offset in pixels */
+  scrollOffset: number;
+  /** Current playhead time in seconds */
+  playheadTime: number;
+  /** Currently selected track ID */
+  selectedTrackId: string | null;
+  /** Whether snap to grid is enabled */
+  snapEnabled: boolean;
+  /** Snap grid interval in seconds */
+  snapGrid: SnapGrid;
+}
 
 export interface MixerControls {
   play: () => void;

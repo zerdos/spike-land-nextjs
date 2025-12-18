@@ -34,6 +34,7 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
           waveformData: [],
           type: "file",
           delay: 0,
+          position: 0,
           trimStart: 0,
           trimEnd: 0,
           ...action.payload,
@@ -57,6 +58,12 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
       return state.map((track) =>
         track.id === action.payload.id
           ? { ...track, delay: Math.max(-5, Math.min(10, action.payload.delay)) }
+          : track
+      );
+    case "SET_POSITION":
+      return state.map((track) =>
+        track.id === action.payload.id
+          ? { ...track, position: Math.max(0, action.payload.position) }
           : track
       );
     case "SET_TRIM":
@@ -107,6 +114,8 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
         type: trackData.type ?? "file",
         file: trackData.file,
         delay: trackData.delay ?? 0,
+        // Migration: use position if present, otherwise fall back to delay
+        position: trackData.position ?? trackData.delay ?? 0,
         trimStart: trackData.trimStart ?? 0,
         trimEnd: trackData.trimEnd ?? 0,
       }));
@@ -161,6 +170,7 @@ export function useAudioTracks() {
         isPlaying: false,
         currentTime: 0,
         delay: 0,
+        position: 0,
         trimStart: 0,
         trimEnd: buffer.duration,
         ...track,
@@ -241,6 +251,10 @@ export function useAudioTracks() {
     dispatch({ type: "SET_DELAY", payload: { id, delay } });
   }, []);
 
+  const setPosition = useCallback((id: string, position: number) => {
+    dispatch({ type: "SET_POSITION", payload: { id, position } });
+  }, []);
+
   const setTrim = useCallback((id: string, trimStart: number, trimEnd: number) => {
     dispatch({ type: "SET_TRIM", payload: { id, trimStart, trimEnd } });
   }, []);
@@ -282,19 +296,19 @@ export function useAudioTracks() {
         sourceRefs.current.delete(id);
       };
 
-      // Calculate effective playback parameters with delay and trim
+      // Calculate effective playback parameters with position and trim
       const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
       const trimmedDuration = effectiveTrimEnd - track.trimStart;
       const playbackOffset = track.trimStart + track.currentTime;
       const playbackDuration = Math.max(0, trimmedDuration - track.currentTime);
 
-      // Calculate when to start (accounting for delay)
-      // Positive delay = start later, negative delay = handled by scheduling earlier
-      const startTime = Math.max(0, context.currentTime + track.delay);
+      // Calculate when to start (using position, with delay fallback for backward compat)
+      const trackPosition = track.position ?? track.delay ?? 0;
+      const startTime = Math.max(0, context.currentTime + trackPosition);
 
       source.start(startTime, playbackOffset, playbackDuration);
       sourceRefs.current.set(id, source);
-      startTimeRefs.current.set(id, context.currentTime - track.currentTime + track.delay);
+      startTimeRefs.current.set(id, context.currentTime - track.currentTime + trackPosition);
 
       dispatch({ type: "PLAY_TRACK", payload: id });
     },
@@ -353,6 +367,7 @@ export function useAudioTracks() {
     toggleMute,
     toggleSolo,
     setDelay,
+    setPosition,
     setTrim,
     reorderTracks,
     restoreTracks,
