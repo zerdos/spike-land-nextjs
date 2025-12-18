@@ -40,18 +40,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Cache node_modules
-      #   uses: actions/cache@v5
-      #   id: yarn-cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # - name: Install dependencies (if cache miss)
-      #   if: steps.yarn-cache.outputs.cache-hit != 'true'
-      #   run: yarn install --immutable
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client

@@ -49,18 +49,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Cache node_modules
-      #   uses: actions/cache@v5
-      #   id: yarn-cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # - name: Install dependencies (if cache miss)
-      #   if: steps.yarn-cache.outputs.cache-hit != 'true'
-      #   run: yarn install --immutable
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Run linter
         run: yarn lint
@@ -87,18 +87,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Cache node_modules
-      #   uses: actions/cache@v5
-      #   id: yarn-cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # - name: Install dependencies (if cache miss)
-      #   if: steps.yarn-cache.outputs.cache-hit != 'true'
-      #   run: yarn install --immutable
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Generate Prisma Client
         run: yarn prisma generate
@@ -136,28 +136,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Cache node_modules
-      #   uses: actions/cache@v5
-      #   id: yarn-cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # - name: Install dependencies (if cache miss)
-      #   if: steps.yarn-cache.outputs.cache-hit != 'true'
-      #   run: yarn install --immutable
-
-      # - name: Cache Next.js build
-      #   uses: actions/cache@v5
-      #   with:
-      #     path: |
-      #       .next/cache
-      #       .next/standalone
-      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('src/**/*.{ts,tsx,js,jsx}', 'public/**', 'yarn.lock', 'next.config.js', 'next.config.mjs', 'next.config.ts') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-nextjs-
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Build application
         run: yarn build
@@ -194,18 +184,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Cache node_modules
-      #   uses: actions/cache@v5
-      #   id: yarn-cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # - name: Install dependencies (if cache miss)
-      #   if: steps.yarn-cache.outputs.cache-hit != 'true'
-      #   run: yarn install --immutable
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Generate Prisma Client
         run: yarn prisma generate
