@@ -15,6 +15,8 @@
     "test:e2e": "cucumber-js",
     "test:e2e:local": "BASE_URL=http://localhost:3000 cucumber-js",
     "test:e2e:local:parallel": "BASE_URL=http://localhost:3000 CI=true cucumber-js --profile ci",
+    "test:e2e:review:parallel": "BASE_URL=$(./scripts/get-review-url.sh) CI=true cucumber-js --profile ci",
+    "review": "./scripts/get-review-url.sh",
     "test:e2e:ci": "cucumber-js --profile ci",
     "test:e2e:fast": "cucumber-js --profile fast",
     "test:e2e:slow": "cucumber-js --profile slow",
