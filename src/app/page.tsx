@@ -8,7 +8,7 @@ import { unstable_cache } from "next/cache";
 export const metadata: Metadata = {
   title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
   description:
-    "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds. Experience the future of AI development.",
+    "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
   keywords: [
     "Spike Land",
     "vibe coding",
@@ -24,16 +24,7 @@ export const metadata: Metadata = {
     title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
     description:
       "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
-    url: "https://spike.land",
     siteName: "Spike Land",
-    images: [
-      {
-        url: "/og-image.png", // Assuming a default OG image exists or will be resolved
-        width: 1200,
-        height: 630,
-        alt: "Spike Land Platform",
-      },
-    ],
     type: "website",
   },
   twitter: {

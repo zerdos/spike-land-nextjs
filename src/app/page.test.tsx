@@ -44,11 +44,8 @@ describe("Page Metadata", () => {
   });
 
   it("should have correct metadata description", () => {
-    expect(metadata.description).toContain(
-      "Create vibe-coded applications powered by Claude Code",
-    );
-    expect(metadata.description).toContain(
-      "Try our flagship app Pixel to restore old photos",
+    expect(metadata.description).toBe(
+      "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
     );
   });
 
@@ -63,9 +60,10 @@ describe("Page Metadata", () => {
     expect(metadata.openGraph?.title).toBe(metadata.title);
     expect(metadata.openGraph?.type).toBe("website");
     expect(metadata.openGraph?.siteName).toBe("Spike Land");
-    expect(metadata.openGraph?.url).toBe("https://spike.land");
-    expect(metadata.openGraph?.images).toBeDefined();
-    expect(metadata.openGraph?.images).toHaveLength(1);
+
+    // Ensure redundant fields are not present
+    expect(metadata.openGraph?.url).toBeUndefined();
+    expect(metadata.openGraph?.images).toBeUndefined();
   });
 
   it("should have correct twitter metadata", () => {
