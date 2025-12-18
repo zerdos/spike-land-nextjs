@@ -25,6 +25,8 @@ export interface AudioTrack {
   trimStart: number;
   /** Trim end point in seconds from beginning (defaults to duration) */
   trimEnd: number;
+  /** OPFS path where audio data is stored for persistence */
+  opfsPath?: string;
 }
 
 export interface RecordingState {

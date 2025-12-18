@@ -28,6 +28,8 @@ interface SerializedTrack {
   duration: number;
   type: "file" | "recording";
   waveformData: number[];
+  /** OPFS path where audio data is stored */
+  opfsPath?: string;
 }
 
 /**
@@ -59,6 +61,7 @@ function serializeTrack(track: AudioTrack): SerializedTrack {
     duration: track.duration,
     type: track.type,
     waveformData: track.waveformData,
+    opfsPath: track.opfsPath,
   };
 }
 

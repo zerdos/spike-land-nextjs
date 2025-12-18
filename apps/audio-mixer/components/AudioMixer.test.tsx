@@ -71,15 +71,31 @@ const mockPersistenceActions = {
   createNewProject: vi.fn().mockReturnValue("new-project-id"),
 };
 
+const mockAudioStorage = {
+  checkSupport: vi.fn().mockResolvedValue(true),
+  saveTrack: vi.fn().mockResolvedValue({ success: true }),
+  loadTrack: vi.fn().mockResolvedValue({ success: true, data: new Uint8Array() }),
+  loadTrackByPath: vi.fn().mockResolvedValue({ success: true, data: new Uint8Array() }),
+  saveTrackToPath: vi.fn().mockResolvedValue({ success: true }),
+  deleteTrack: vi.fn().mockResolvedValue({ success: true }),
+  saveProject: vi.fn().mockResolvedValue({ success: true }),
+  loadProject: vi.fn().mockResolvedValue({ success: true, data: null }),
+  listProjects: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  deleteProject: vi.fn().mockResolvedValue({ success: true }),
+  createProject: vi.fn().mockResolvedValue({ success: true, data: null }),
+};
+
 vi.mock("../hooks", () => ({
   useAudioContext: () => mockAudioContext,
   useAudioRecording: () => mockRecording,
   useAudioTracks: () => mockTrackManager,
+  useAudioStorage: () => mockAudioStorage,
   useProjectPersistence: () => [mockPersistenceState, mockPersistenceActions],
 }));
 
 vi.mock("../lib/audio-engine", () => ({
   mixTracksToBlob: vi.fn().mockResolvedValue(new Blob(["audio"], { type: "audio/wav" })),
+  blobToAudioBuffer: vi.fn().mockResolvedValue({ duration: 5 }),
   formatTime: (seconds: number) =>
     `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`,
   drawWaveform: vi.fn(),

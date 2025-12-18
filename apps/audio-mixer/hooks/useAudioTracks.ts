@@ -127,12 +127,17 @@ export function useAudioTracks() {
       file: File,
       context: AudioContext,
       masterGain: GainNode,
+      opfsPath?: string,
     ): Promise<AudioTrack> => {
       const buffer = await loadAudioFile(context, file);
       const waveformData = generateWaveformData(buffer, 100);
       const { gainNode } = createTrackNodes(context, masterGain, buffer);
 
+      // Generate ID upfront so we can return it
+      const trackId = generateId();
+
       const track: Partial<AudioTrack> = {
+        id: trackId,
         name: file.name.replace(/\.[^.]+$/, ""),
         buffer,
         gainNode,
@@ -140,12 +145,14 @@ export function useAudioTracks() {
         waveformData,
         type: "file",
         file,
+        opfsPath,
+        trimEnd: buffer.duration,
       };
 
       dispatch({ type: "ADD_TRACK", payload: track });
 
       return {
-        id: "",
+        id: trackId,
         source: null,
         volume: 0.8,
         pan: 0,
@@ -153,6 +160,9 @@ export function useAudioTracks() {
         solo: false,
         isPlaying: false,
         currentTime: 0,
+        delay: 0,
+        trimStart: 0,
+        trimEnd: buffer.duration,
         ...track,
       } as AudioTrack;
     },
@@ -165,6 +175,7 @@ export function useAudioTracks() {
       context: AudioContext,
       masterGain: GainNode,
       name: string = "Recording",
+      opfsPath?: string,
     ): Promise<void> => {
       const waveformData = generateWaveformData(buffer, 100);
       const { gainNode } = createTrackNodes(context, masterGain, buffer);
@@ -178,6 +189,8 @@ export function useAudioTracks() {
           duration: buffer.duration,
           waveformData,
           type: "recording",
+          opfsPath,
+          trimEnd: buffer.duration,
         },
       });
     },

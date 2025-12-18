@@ -269,6 +269,42 @@ export function useAudioStorage() {
   }, []);
 
   /**
+   * Load audio data directly from an OPFS path
+   */
+  const loadTrackByPath = useCallback(
+    async (opfsPath: string): Promise<StorageResult<Uint8Array>> => {
+      try {
+        const data = await readFile(opfsPath);
+        return { success: true, data };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Failed to load track from path",
+        };
+      }
+    },
+    [],
+  );
+
+  /**
+   * Save audio data directly to an OPFS path
+   */
+  const saveTrackToPath = useCallback(
+    async (opfsPath: string, audioData: Uint8Array): Promise<StorageResult> => {
+      try {
+        await writeFile(opfsPath, audioData);
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Failed to save track to path",
+        };
+      }
+    },
+    [],
+  );
+
+  /**
    * Save project metadata to OPFS
    */
   const saveProject = useCallback(async (project: AudioProject): Promise<StorageResult> => {
@@ -400,6 +436,8 @@ export function useAudioStorage() {
     checkSupport,
     saveTrack,
     loadTrack,
+    loadTrackByPath,
+    saveTrackToPath,
     deleteTrack,
     saveProject,
     loadProject,

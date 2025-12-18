@@ -20,10 +20,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   useAudioContext,
   useAudioRecording,
+  useAudioStorage,
   useAudioTracks,
   useProjectPersistence,
 } from "../hooks";
-import { mixTracksToBlob } from "../lib/audio-engine";
+import { blobToAudioBuffer, mixTracksToBlob } from "../lib/audio-engine";
 import { RecordingPanel } from "./RecordingPanel";
 import { SortableTrackList } from "./SortableTrackList";
 
@@ -38,12 +39,85 @@ export function AudioMixer() {
   const audioContext = useAudioContext();
   const recording = useAudioRecording();
   const trackManager = useAudioTracks();
+  const audioStorage = useAudioStorage();
 
   // Persistence
   const [persistenceState, persistenceActions] = useProjectPersistence(
     trackManager.tracks,
     masterVolume,
   );
+
+  // Load saved project on mount
+  useEffect(() => {
+    const loadSavedProject = async () => {
+      const savedProject = persistenceActions.loadProject();
+      if (!savedProject || savedProject.tracks.length === 0) return;
+
+      // Restore master volume
+      setMasterVolume(savedProject.masterVolume);
+
+      // Check if OPFS is supported
+      const opfsSupported = await audioStorage.checkSupport();
+
+      // Initialize audio context for decoding
+      const { context, masterGain } = await audioContext.initialize();
+      setIsInitialized(true);
+
+      // Restore tracks with audio data from OPFS
+      const restoredTracks = await Promise.all(
+        savedProject.tracks.map(async (track) => {
+          let buffer: AudioBuffer | null = null;
+
+          // Try to load audio from OPFS if path exists
+          if (opfsSupported && track.opfsPath) {
+            try {
+              const result = await audioStorage.loadTrackByPath(track.opfsPath);
+              if (result.success && result.data) {
+                // Decode the audio data - slice to get proper ArrayBuffer
+                const arrayBuffer = result.data.buffer.slice(
+                  result.data.byteOffset,
+                  result.data.byteOffset + result.data.byteLength,
+                ) as ArrayBuffer;
+                buffer = await context.decodeAudioData(arrayBuffer);
+              }
+            } catch (error) {
+              console.warn(`Failed to load audio for track ${track.name}:`, error);
+            }
+          }
+
+          return {
+            id: track.id,
+            name: track.name,
+            volume: track.volume,
+            pan: track.pan,
+            muted: track.muted,
+            solo: track.solo,
+            delay: track.delay,
+            trimStart: track.trimStart,
+            trimEnd: track.trimEnd,
+            duration: track.duration,
+            type: track.type,
+            waveformData: track.waveformData,
+            opfsPath: track.opfsPath,
+            buffer,
+            gainNode: buffer
+              ? (() => {
+                const gainNode = context.createGain();
+                gainNode.gain.value = track.muted ? 0 : track.volume;
+                gainNode.connect(masterGain);
+                return gainNode;
+              })()
+              : null,
+          };
+        }),
+      );
+
+      trackManager.restoreTracks(restoredTracks);
+    };
+
+    loadSavedProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Initialize audio context on first interaction
   const handleInitialize = useCallback(async () => {
@@ -69,10 +143,26 @@ export function AudioMixer() {
       await handleInitialize();
 
       const { context, masterGain } = await audioContext.initialize();
+      const opfsSupported = await audioStorage.checkSupport();
 
       for (const file of files) {
         if (file.type.startsWith("audio/")) {
-          await trackManager.addTrack(file, context, masterGain);
+          let opfsPath: string | undefined;
+
+          // Save audio to OPFS first for persistence
+          if (opfsSupported) {
+            try {
+              const arrayBuffer = await file.arrayBuffer();
+              opfsPath = `audio-mixer/tracks/${Date.now()}-${file.name}`;
+              await audioStorage.saveTrackToPath(opfsPath, new Uint8Array(arrayBuffer));
+            } catch (error) {
+              console.warn("Failed to save track to OPFS:", error);
+              opfsPath = undefined;
+            }
+          }
+
+          // Add track with OPFS path
+          await trackManager.addTrack(file, context, masterGain, opfsPath);
         }
       }
 
@@ -81,7 +171,7 @@ export function AudioMixer() {
         fileInputRef.current.value = "";
       }
     },
-    [handleInitialize, audioContext, trackManager],
+    [handleInitialize, audioContext, trackManager, audioStorage],
   );
 
   // Handle recording
@@ -92,18 +182,38 @@ export function AudioMixer() {
 
   const handleStopRecording = useCallback(async () => {
     const { context, masterGain } = await audioContext.initialize();
-    const buffer = await recording.getRecordingAsBuffer(context);
+    const blob = await recording.stopRecording();
 
-    if (buffer) {
+    if (blob) {
+      const buffer = await blobToAudioBuffer(context, blob);
       const recordingNumber = trackManager.tracks.filter((t) => t.type === "recording").length + 1;
+      const recordingName = `Recording ${recordingNumber}`;
+
+      // Save recording to OPFS for persistence
+      let opfsPath: string | undefined;
+      const opfsSupported = await audioStorage.checkSupport();
+      if (opfsSupported) {
+        try {
+          const arrayBuffer = await blob.arrayBuffer();
+          opfsPath = `audio-mixer/recordings/${Date.now()}-${
+            recordingName.replace(/\s+/g, "-")
+          }.webm`;
+          await audioStorage.saveTrackToPath(opfsPath, new Uint8Array(arrayBuffer));
+        } catch (error) {
+          console.warn("Failed to save recording to OPFS:", error);
+          opfsPath = undefined;
+        }
+      }
+
       await trackManager.addRecordedTrack(
         buffer,
         context,
         masterGain,
-        `Recording ${recordingNumber}`,
+        recordingName,
+        opfsPath,
       );
     }
-  }, [audioContext, recording, trackManager]);
+  }, [audioContext, recording, trackManager, audioStorage]);
 
   // Play all tracks
   const handlePlayAll = useCallback(async () => {
