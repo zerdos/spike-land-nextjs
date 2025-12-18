@@ -109,6 +109,7 @@ export function Waveform({
         window.removeEventListener("mouseup", handleMouseUp);
       };
     }
+    return undefined;
   }, [isDraggingStart, isDraggingEnd, handleMouseMove, handleMouseUp]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {

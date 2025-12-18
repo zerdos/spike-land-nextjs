@@ -11,6 +11,15 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock prisma
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    audioMixerProject: {
+      findFirst: vi.fn(),
+    },
+  },
+}));
+
 // Mock audio R2 client
 vi.mock("@/lib/storage/audio-r2-client", () => ({
   isAudioR2Configured: vi.fn(),
@@ -20,12 +29,20 @@ vi.mock("@/lib/storage/audio-r2-client", () => ({
 
 // Import after mocking
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import {
   generateAudioKey,
   isAudioR2Configured,
   uploadAudioToR2,
 } from "@/lib/storage/audio-r2-client";
 import { POST } from "./route";
+
+// Typed mock for prisma
+const mockPrisma = prisma as unknown as {
+  audioMixerProject: {
+    findFirst: ReturnType<typeof vi.fn>;
+  };
+};
 
 // Helper to create a mock file with arrayBuffer method
 function createMockFile(name = "test.wav", type = "audio/wav", size = 1024) {
@@ -134,6 +151,10 @@ describe("POST /api/audio/upload", () => {
       url: "https://example.com/test-key.wav",
       sizeBytes: 1024,
     });
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-123",
+      userId: "user-123",
+    });
 
     const req = createMockRequest({
       file: createMockFile(),
@@ -165,6 +186,10 @@ describe("POST /api/audio/upload", () => {
       sizeBytes: 0,
       error: "Upload failed",
     });
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-123",
+      userId: "user-123",
+    });
 
     const req = createMockRequest({
       file: createMockFile(),
@@ -185,6 +210,10 @@ describe("POST /api/audio/upload", () => {
       expires: "2099-01-01",
     });
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-123",
+      userId: "user-123",
+    });
 
     const req = createMockRequest({
       file: createMockFile("large.wav", "audio/wav", 501 * 1024 * 1024), // 501MB

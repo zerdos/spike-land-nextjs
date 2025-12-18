@@ -88,7 +88,11 @@ async function getFileHandle(
 async function writeFile(path: string, data: Uint8Array | string): Promise<void> {
   const handle = await getFileHandle(path, true);
   const writable = await handle.createWritable();
-  await writable.write(data);
+  // Convert Uint8Array to ArrayBuffer for FileSystemWriteChunkType compatibility
+  const writeData: FileSystemWriteChunkType = typeof data === "string"
+    ? data
+    : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+  await writable.write(writeData);
   await writable.close();
 }
 
@@ -153,7 +157,11 @@ async function listDirectories(path: string): Promise<string[]> {
   try {
     const dir = await getDirectoryHandle(path, false);
     const entries: string[] = [];
-    for await (const [name, handle] of dir.entries()) {
+    // Use type assertion for entries() method which exists in File System Access API
+    const dirWithEntries = dir as FileSystemDirectoryHandle & {
+      entries(): AsyncIterable<[string, FileSystemHandle]>;
+    };
+    for await (const [name, handle] of dirWithEntries.entries()) {
       if (handle.kind === "directory") {
         entries.push(name);
       }
@@ -201,6 +209,10 @@ export function useAudioStorage() {
           volume: options.volume ?? 1.0,
           muted: options.muted ?? false,
           solo: options.solo ?? false,
+          delay: 0,
+          trimStart: 0,
+          trimEnd: options.duration,
+          order: 0,
           createdAt: new Date().toISOString(),
         };
 

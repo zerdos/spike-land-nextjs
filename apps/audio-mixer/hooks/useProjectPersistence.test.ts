@@ -119,7 +119,7 @@ describe("useProjectPersistence", () => {
   });
 
   it("does not auto-save empty state", () => {
-    const { result } = renderHook(() => useProjectPersistence([], 0.8));
+    renderHook(() => useProjectPersistence([], 0.8));
 
     // Wait for loading to complete
     act(() => {

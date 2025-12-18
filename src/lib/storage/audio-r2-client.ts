@@ -246,7 +246,6 @@ export async function downloadAudioFromR2(key: string): Promise<Buffer | null> {
     const chunks: Uint8Array[] = [];
 
     if (response.Body) {
-      // @ts-expect-error - Body is a stream
       for await (const chunk of response.Body) {
         chunks.push(chunk);
       }

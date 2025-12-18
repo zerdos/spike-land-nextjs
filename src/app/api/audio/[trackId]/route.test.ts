@@ -10,6 +10,15 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock prisma
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    audioMixerProject: {
+      findFirst: vi.fn(),
+    },
+  },
+}));
+
 // Mock audio R2 client
 vi.mock("@/lib/storage/audio-r2-client", () => ({
   isAudioR2Configured: vi.fn(),
@@ -21,6 +30,7 @@ vi.mock("@/lib/storage/audio-r2-client", () => ({
 
 // Import after mocking
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import {
   deleteAudioFromR2,
   downloadAudioFromR2,
@@ -29,6 +39,13 @@ import {
   isAudioR2Configured,
 } from "@/lib/storage/audio-r2-client";
 import { DELETE, GET, HEAD } from "./route";
+
+// Typed mock for prisma
+const mockPrisma = prisma as unknown as {
+  audioMixerProject: {
+    findFirst: ReturnType<typeof vi.fn>;
+  };
+};
 
 describe("GET /api/audio/[trackId]", () => {
   beforeEach(() => {
@@ -75,6 +92,10 @@ describe("GET /api/audio/[trackId]", () => {
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(downloadAudioFromR2).mockResolvedValue(null);
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
+    });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
     const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
@@ -89,6 +110,10 @@ describe("GET /api/audio/[trackId]", () => {
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(downloadAudioFromR2).mockResolvedValue(Buffer.from("test audio data"));
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
+    });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
     const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
@@ -138,6 +163,10 @@ describe("DELETE /api/audio/[trackId]", () => {
       success: true,
       key: "test-key.wav",
     });
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
+    });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
       method: "DELETE",
@@ -160,6 +189,10 @@ describe("DELETE /api/audio/[trackId]", () => {
       success: false,
       key: "test-key.wav",
       error: "Delete failed",
+    });
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
     });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
@@ -195,6 +228,10 @@ describe("HEAD /api/audio/[trackId]", () => {
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(getAudioMetadata).mockResolvedValue(null);
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
+    });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
       method: "HEAD",
@@ -215,6 +252,10 @@ describe("HEAD /api/audio/[trackId]", () => {
       size: 1024,
       contentType: "audio/wav",
       lastModified: new Date("2024-01-01"),
+    });
+    mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
+      id: "project-456",
+      userId: "user-123",
     });
 
     const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {

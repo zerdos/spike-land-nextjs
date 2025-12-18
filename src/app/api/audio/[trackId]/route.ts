@@ -76,8 +76,8 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Return the audio file
-    return new NextResponse(buffer, {
+    // Return the audio file - convert Buffer to Uint8Array for BodyInit compatibility
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": `audio/${format}`,
         "Content-Length": buffer.length.toString(),
