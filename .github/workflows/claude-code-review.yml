@@ -101,11 +101,10 @@ jobs:
             - But you shouldn't commit anything.
 
             **Comment Management:**
-            - Before posting new review comments, check for existing Claude comments using the marker `<!-- claude-code-review -->`
-            - Delete outdated comments before posting new ones
-            - Start EVERY comment with: `<!-- claude-code-review -->`
+            - Before posting new review comments, check for existing Claude code code reviews! If you find any, please update / remove the existing review.
 
-            Be constructive and helpful. Fix issues directly when possible.
+            Be constructive and helpful.
+            If you find anything that's not clear - or needs to be changed, you can ask @Jules to do it, simply mentioning in the PR review - to do the following changes in this PR.  You must either accept the PR, or ask modifications. If you are happy with it, wait until the CI finishes. If it is passed, you can merge the PR. If the PR failed, please ask @Jules to fix the CI.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
