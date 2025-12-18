@@ -49,23 +49,25 @@ describe("FeedbackButton", () => {
     });
 
     it("renders the floating button", () => {
-      render(<FeedbackButton />);
+      const { container } = render(<FeedbackButton />);
       const button = screen.getByRole("button", { name: "Send feedback" });
       expect(button).toBeInTheDocument();
-      expect(button).toHaveClass("fixed", "bottom-4", "right-4", "z-40");
+      // Position classes are on the container, not the button
+      const feedbackContainer = container.firstChild;
+      expect(feedbackContainer).toHaveClass("fixed", "bottom-4", "right-4", "z-50");
     });
 
-    it("opens dialog on click", async () => {
+    it("opens panel on click", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      // Component uses an expandable panel, not a dialog
       expect(screen.getByText("Send Feedback")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "Share your thoughts, report bugs, or suggest new ideas.",
+          "Share your thoughts, report bugs, or suggest ideas.",
         ),
       ).toBeInTheDocument();
     });
@@ -76,7 +78,7 @@ describe("FeedbackButton", () => {
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
     });
 
     it("renders feedback type buttons", async () => {
@@ -145,7 +147,7 @@ describe("FeedbackButton", () => {
         "Found a bug!",
       );
       await user.type(
-        screen.getByLabelText("Email (optional)"),
+        screen.getByPlaceholderText("Email (optional)"),
         "test@example.com",
       );
       await user.click(screen.getByRole("button", { name: /submit/i }));
@@ -282,7 +284,7 @@ describe("FeedbackButton", () => {
       });
     });
 
-    it("closes dialog on successful submission", async () => {
+    it("closes panel on successful submission", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true }),
@@ -299,25 +301,27 @@ describe("FeedbackButton", () => {
       await user.click(screen.getByRole("button", { name: /submit/i }));
 
       await waitFor(() => {
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        // Panel closes and button returns to "Send feedback" state
+        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
       });
     });
 
-    it("closes dialog on Cancel click", async () => {
+    it("closes panel on close button click", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Send Feedback")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Cancel" }));
+      await user.click(screen.getByRole("button", { name: "Close feedback" }));
 
       await waitFor(() => {
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        // Panel closes and button returns to "Send feedback" state
+        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
       });
     });
 
-    it("resets form when dialog is closed", async () => {
+    it("resets form when panel is closed", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
@@ -330,30 +334,39 @@ describe("FeedbackButton", () => {
         "Some message",
       );
       await user.type(
-        screen.getByLabelText("Email (optional)"),
+        screen.getByPlaceholderText("Email (optional)"),
         "test@test.com",
       );
 
-      // Close dialog
-      await user.click(screen.getByRole("button", { name: "Cancel" }));
+      // Close panel
+      await user.click(screen.getByRole("button", { name: "Close feedback" }));
 
-      // Wait for dialog to close and form to reset (reset happens after 300ms timeout)
-      await waitFor(() => {
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-      });
+      // Wait for panel to close and form to reset (reset happens after 300ms timeout)
+      await waitFor(
+        () => {
+          expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+        },
+        { timeout: 500 },
+      );
 
-      // Reopen dialog
+      // Wait extra time for the reset timeout to complete (300ms in component)
+      await new Promise((r) => setTimeout(r, 350));
+
+      // Reopen panel
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
       // Check form is reset - message and email should be empty
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText("Describe your feedback..."))
-          .toHaveValue("");
-        expect(screen.getByLabelText("Email (optional)")).toHaveValue("");
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByPlaceholderText("Describe your feedback..."))
+            .toHaveValue("");
+          expect(screen.getByPlaceholderText("Email (optional)")).toHaveValue("");
+        },
+        { timeout: 500 },
+      );
     });
 
-    it("disables buttons while submitting", async () => {
+    it("disables submit button while submitting", async () => {
       mockFetch.mockImplementation(
         () =>
           new Promise((resolve) =>
@@ -378,14 +391,13 @@ describe("FeedbackButton", () => {
       const submitButton = screen.getByRole("button", { name: /submit/i });
       await user.click(submitButton);
 
-      // While submitting, the Cancel button should be disabled
-      expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-      // The submit button loses its text during loading, so check that it's disabled via the spinner container
+      // The submit button shows a spinner and is disabled during loading
       expect(document.querySelector(".animate-spin")?.closest("button"))
         .toBeDisabled();
 
       await waitFor(() => {
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        // Panel closes after successful submission
+        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
       });
     });
 
@@ -414,7 +426,8 @@ describe("FeedbackButton", () => {
       expect(document.querySelector(".animate-spin")).toBeInTheDocument();
 
       await waitFor(() => {
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        // Panel closes after successful submission
+        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
       });
     });
   });
@@ -433,7 +446,7 @@ describe("FeedbackButton", () => {
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.queryByLabelText("Email (optional)")).not
+      expect(screen.queryByPlaceholderText("Email (optional)")).not
         .toBeInTheDocument();
     });
 
@@ -484,7 +497,7 @@ describe("FeedbackButton", () => {
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
     });
   });
 
@@ -502,14 +515,15 @@ describe("FeedbackButton", () => {
       expect(button).toHaveAttribute("aria-label", "Send feedback");
     });
 
-    it("has proper dialog structure", async () => {
+    it("has proper panel structure", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Send Feedback" }))
+      // Component uses an expandable panel with heading
+      expect(screen.getByText("Send Feedback")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Close feedback" }))
         .toBeInTheDocument();
     });
 
@@ -521,7 +535,7 @@ describe("FeedbackButton", () => {
 
       expect(screen.getByPlaceholderText("Describe your feedback..."))
         .toBeInTheDocument();
-      expect(screen.getByLabelText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
     });
 
     it("has message textarea", async () => {
@@ -545,10 +559,10 @@ describe("FeedbackButton", () => {
       });
     });
 
-    it("applies custom className to the button", () => {
-      render(<FeedbackButton className="custom-class" />);
-      const button = screen.getByRole("button", { name: "Send feedback" });
-      expect(button).toHaveClass("custom-class");
+    it("applies custom className to the container", () => {
+      const { container } = render(<FeedbackButton className="custom-class" />);
+      const feedbackContainer = container.firstChild;
+      expect(feedbackContainer).toHaveClass("custom-class");
     });
   });
 

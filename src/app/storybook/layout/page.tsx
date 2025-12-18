@@ -201,7 +201,12 @@ export default function LayoutPage() {
             <Separator />
 
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">Zoom Level Preview</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Zoom State Synchronization</Label>
+                <span className="text-[10px] text-muted-foreground/70">
+                  Slider and buttons stay in sync
+                </span>
+              </div>
               <div className="grid grid-cols-5 gap-2">
                 {([1, 2, 3, 4, 5] as ZoomLevel[]).map((level) => (
                   <button

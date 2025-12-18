@@ -49,8 +49,8 @@
 
     /* Glass-morphism variables */
     --glass-blur: 12px;
-    --glass-opacity-light: 0.7;
-    --glass-opacity-dark: 0.03;
+    --glass-opacity-light: 0.85;
+    --glass-opacity-dark: 0.15;
     --shadow-opacity-light: 0.1;
     --shadow-opacity-dark: 0.3;
 
@@ -71,6 +71,8 @@
     /* Pixel Cyan #00E5FF */
     --primary-foreground: 240 24% 9%;
     /* Carbon Text for contrast */
+    --primary-text: 187 100% 28%;
+    /* Accessible Dark Teal for Light Mode Text */
     --secondary: 240 38% 14%;
     /* Surface Blue for accents */
     --secondary-foreground: 0 0% 100%;
@@ -123,15 +125,15 @@
 
   .dark {
     /* Dark Mode - Pixel Brand (Default/Primary) */
-    --background: 240 55% 7%;
-    /* Deep Space #08081C */
+    --background: 220 35% 13%;
+    /* Deep Space Lighter #161e2e */
     --foreground: 0 0% 100%;
     /* Pure White */
-    --card: 240 38% 14%;
-    /* Surface Blue #151530 */
+    --card: 220 30% 19%;
+    /* Surface Blue Lighter #21293a */
     --card-foreground: 0 0% 100%;
     /* Pure White */
-    --popover: 240 38% 14%;
+    --popover: 220 30% 19%;
     /* Surface Blue */
     --popover-foreground: 0 0% 100%;
     /* Pure White */
@@ -139,23 +141,25 @@
     /* Pixel Cyan #00E5FF */
     --primary-foreground: 240 55% 7%;
     /* Deep Space for contrast */
-    --secondary: 240 38% 20%;
-    /* Lighter Surface Blue */
+    --primary-text: 187 100% 50%;
+    /* Original Cyan for Dark Mode */
+    --secondary: 220 20% 32%;
+    /* Border Color as Secondary Surface */
     --secondary-foreground: 0 0% 100%;
     /* Pure White */
-    --muted: 240 38% 14%;
+    --muted: 220 30% 19%;
     /* Surface Blue */
-    --muted-foreground: 240 25% 69%;
-    /* Text Muted #A0A0C0 */
+    --muted-foreground: 220 15% 70%;
+    /* Text Muted Lighter #aab5c5 */
     --accent: 187 100% 50%;
     /* Pixel Cyan */
     --accent-foreground: 240 55% 7%;
     /* Deep Space */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 30% 22%;
-    /* Slightly lighter than Surface Blue */
-    --input: 240 30% 22%;
+    --border: 220 20% 32%;
+    /* Card Border Lighter #414d60 */
+    --input: 220 20% 32%;
     --ring: 187 100% 50%;
     /* Pixel Cyan */
 
@@ -163,16 +167,16 @@
     --pixel-cyan: 187 100% 50%;
     --pixel-fuchsia: 300 100% 50%;
     /* #FF00FF */
-    --grid-inactive: 240 38% 14%;
+    --grid-inactive: 220 30% 19%;
     /* Surface Blue for dark mode */
 
     /* Dark Mode Palette - Enhanced */
-    --surface-blue: 220 60% 17%;
-    /* #112244 */
-    --border-dark: 260 60% 17%;
-    /* #221144 */
-    --border-item: 240 33% 20%;
-    /* #222244 */
+    --surface-blue: 220 30% 19%;
+    /* #21293a */
+    --border-dark: 220 20% 32%;
+    /* #414d60 */
+    --border-item: 220 18% 40%;
+    /* #535f72 */
 
     /* Chart Colors - Dark mode */
     --chart-1: 187 100% 50%;
@@ -257,7 +261,7 @@
 
   /* Glass 0: Background / Subtle (Blur 4-6px, Opacity 4-6%) */
   .glass-0 {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid transparent;
@@ -266,14 +270,14 @@
 
   /* Glass 1: Containers / Cards (Blur 10-14px, Opacity 8-10%) */
   .glass-1 {
-    background: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
 
   /* Glass 2: Interactive / Modals (Blur 18-24px, Opacity 12-16%) */
   .glass-2 {
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
@@ -319,7 +323,7 @@
   /* Old util fallbacks mapped to new system */
   .glass-card,
   .dark .glass-card {
-    background: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow:
