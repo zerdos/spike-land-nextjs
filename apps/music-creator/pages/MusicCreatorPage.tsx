@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Play, Square, Mic, Upload, Volume2, VolumeX } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Mic, Play, Square, Trash2, Upload, Volume2, VolumeX } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface Track {
   id: string;
@@ -39,7 +39,7 @@ export default function MusicCreatorPage() {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
         mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       }
@@ -77,7 +77,7 @@ export default function MusicCreatorPage() {
       addTrack(file.name, file);
     }
     // Reset input
-    if (event.target) event.target.value = '';
+    if (event.target) event.target.value = "";
   }, [addTrack]);
 
   // Playback Logic
@@ -114,7 +114,7 @@ export default function MusicCreatorPage() {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         addTrack(`Recording ${new Date().toLocaleTimeString()}`, blob);
 
         // Stop all tracks in the stream
@@ -135,7 +135,6 @@ export default function MusicCreatorPage() {
       recordingTimerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
-
     } catch (err) {
       console.error("Error accessing microphone:", err);
       alert("Could not access microphone.");
@@ -173,9 +172,7 @@ export default function MusicCreatorPage() {
       track.audioElement.muted = !track.isMuted;
     }
 
-    setTracks(prev => prev.map(t =>
-      t.id === id ? { ...t, isMuted: !t.isMuted } : t
-    ));
+    setTracks(prev => prev.map(t => t.id === id ? { ...t, isMuted: !t.isMuted } : t));
   }, []);
 
   const setVolume = useCallback((id: string, volume: number) => {
@@ -184,9 +181,7 @@ export default function MusicCreatorPage() {
       track.audioElement.volume = volume;
     }
 
-    setTracks(prev => prev.map(t =>
-      t.id === id ? { ...t, volume } : t
-    ));
+    setTracks(prev => prev.map(t => t.id === id ? { ...t, volume } : t));
   }, []);
 
   const removeTrack = useCallback((id: string) => {
@@ -223,7 +218,9 @@ export default function MusicCreatorPage() {
                 variant={isPlaying ? "destructive" : "default"}
                 aria-label={isPlaying ? "Stop" : "Play"}
               >
-                {isPlaying ? <Square className="fill-current" /> : <Play className="fill-current" />}
+                {isPlaying
+                  ? <Square className="fill-current" />
+                  : <Play className="fill-current" />}
                 <span className="ml-2">{isPlaying ? "Stop" : "Play All"}</span>
               </Button>
 
@@ -242,7 +239,7 @@ export default function MusicCreatorPage() {
             </div>
 
             <div className="flex gap-4">
-               <input
+              <input
                 type="file"
                 accept="audio/*"
                 className="hidden"
@@ -297,7 +294,9 @@ export default function MusicCreatorPage() {
                     onClick={() => toggleMute(track.id)}
                     aria-label={track.isMuted ? "Unmute" : "Mute"}
                   >
-                    {track.isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    {track.isMuted
+                      ? <VolumeX className="h-4 w-4" />
+                      : <Volume2 className="h-4 w-4" />}
                   </Button>
 
                   <Button
