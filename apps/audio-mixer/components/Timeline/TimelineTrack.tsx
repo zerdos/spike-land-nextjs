@@ -64,30 +64,47 @@ function drawWaveform(
 
   // Get RGB values from track color class
   const colorMap: Record<string, string> = {
-    "bg-blue-600": "59, 130, 246",
-    "bg-green-600": "22, 163, 74",
-    "bg-purple-600": "147, 51, 234",
-    "bg-orange-600": "234, 88, 12",
-    "bg-pink-600": "219, 39, 119",
-    "bg-cyan-600": "8, 145, 178",
-    "bg-yellow-600": "202, 138, 4",
-    "bg-red-600": "220, 38, 38",
+    "bg-blue-600": "0, 229, 255", // Pixel Cyan
+    "bg-green-600": "16, 185, 129",
+    "bg-purple-600": "168, 85, 247",
+    "bg-orange-600": "249, 115, 22",
+    "bg-pink-600": "236, 72, 153",
+    "bg-cyan-600": "6, 182, 212",
+    "bg-yellow-600": "234, 179, 8",
+    "bg-red-600": "239, 68, 68",
   };
-  const rgb = colorMap[trackColor] || "59, 130, 246";
+  const rgb = colorMap[trackColor] || "0, 229, 255";
 
   for (let i = 0; i < barCount; i++) {
     const dataIndex = dataOffset + Math.floor(i * step);
     const value = waveformData[dataIndex] || 0;
-    const barHeight = Math.max(2, value * height * 0.8);
+    const barHeight = Math.max(2, value * height * 0.9);
     const x = i * (barWidth + 1);
     const y = (height - barHeight) / 2;
 
-    // Played portion is brighter
-    ctx.fillStyle = i < progressIndex
-      ? `rgba(${rgb}, 1)`
-      : `rgba(${rgb}, 0.5)`;
+    const isPlayed = i < progressIndex;
 
-    ctx.fillRect(x, y, barWidth, barHeight);
+    // Create gradient for each bar
+    const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
+    if (isPlayed) {
+      gradient.addColorStop(0, `rgba(${rgb}, 1)`);
+      gradient.addColorStop(1, `rgba(${rgb}, 0.6)`);
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = `rgba(${rgb}, 0.5)`;
+    } else {
+      gradient.addColorStop(0, `rgba(${rgb}, 0.3)`);
+      gradient.addColorStop(1, `rgba(${rgb}, 0.15)`);
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.fillStyle = gradient;
+
+    // Rounded rectangles for bars
+    const radius = barWidth / 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barWidth, barHeight, radius);
+    ctx.fill();
+    ctx.shadowBlur = 0; // Reset for next bar
   }
 }
 
@@ -113,11 +130,9 @@ export function TimelineTrack({
   const startTrimEnd = useRef(0);
 
   // Calculate dimensions
-  // Support negative trimStart (adds silence before track)
   const effectiveTrimStart = track.trimStart;
   const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
 
-  // If trimStart is negative, we're adding silence at the beginning
   const silenceBefore = effectiveTrimStart < 0 ? Math.abs(effectiveTrimStart) : 0;
   const actualAudioStart = Math.max(0, effectiveTrimStart);
   const actualAudioDuration = effectiveTrimEnd - actualAudioStart;
@@ -126,25 +141,21 @@ export function TimelineTrack({
   const trackWidth = totalVisualDuration * zoom;
   const trackLeft = (track.position ?? track.delay ?? 0) * zoom;
 
-  // Calculate playback progress within this track
   const trackPosition = track.position ?? track.delay ?? 0;
   const relativeTime = playheadTime - trackPosition - silenceBefore;
   const progress = Math.max(0, Math.min(1, relativeTime / actualAudioDuration));
 
-  // Get track color based on index (use id hash for consistency)
   const colorIndex = Math.abs(track.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)) %
     TRACK_COLORS.length;
   const trackColor = TRACK_COLORS[colorIndex] ?? "bg-blue-600";
 
-  // Draw waveform
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas size (only for audio portion, not silence)
     const audioWidth = actualAudioDuration * zoom;
     canvas.width = Math.max(1, Math.floor(audioWidth));
-    canvas.height = TRACK_HEIGHT - 16; // Account for padding
+    canvas.height = TRACK_HEIGHT - 24;
 
     drawWaveform(
       canvas,
@@ -167,7 +178,6 @@ export function TimelineTrack({
     track.duration,
   ]);
 
-  // Handle drag start
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, mode: DragMode) => {
       if (e.button !== 0) return;
@@ -185,7 +195,6 @@ export function TimelineTrack({
     [track.position, track.delay, track.trimStart, track.trimEnd, track.duration, onSelect],
   );
 
-  // Handle drag move and end
   useEffect(() => {
     if (!dragMode) return;
 
@@ -198,24 +207,14 @@ export function TimelineTrack({
         const snappedPosition = snapTime(newPosition);
         onPositionChange(snappedPosition);
       } else if (dragMode === "trim-start" && onTrimChange) {
-        // Trimming the start: can go negative (adds silence)
-        // Moving right: increase trimStart (trim more audio)
-        // Moving left: decrease trimStart (can go negative for silence)
         const newTrimStart = startTrimStart.current + deltaTime;
-        // Don't let trimStart exceed trimEnd - 0.1s (minimum duration)
         const maxTrimStart = startTrimEnd.current - 0.1;
-        // Allow negative values (adding silence)
         const clampedTrimStart = Math.min(newTrimStart, maxTrimStart);
         const snappedTrimStart = snapTime(clampedTrimStart);
         onTrimChange(snappedTrimStart, startTrimEnd.current);
       } else if (dragMode === "trim-end" && onTrimChange) {
-        // Trimming the end
-        // Moving right: increase trimEnd (extend beyond original = silence at end not really useful, cap at duration)
-        // Moving left: decrease trimEnd (trim audio from end)
         const newTrimEnd = startTrimEnd.current + deltaTime;
-        // Minimum: trimStart + 0.1s
         const minTrimEnd = Math.max(0, startTrimStart.current) + 0.1;
-        // Maximum: track duration (can't extend beyond original audio)
         const maxTrimEnd = track.duration;
         const clampedTrimEnd = Math.max(minTrimEnd, Math.min(maxTrimEnd, newTrimEnd));
         const snappedTrimEnd = snapTime(clampedTrimEnd);
@@ -236,17 +235,16 @@ export function TimelineTrack({
     };
   }, [dragMode, zoom, snapTime, onPositionChange, onTrimChange, track.duration]);
 
-  // Calculate silence region width
   const silenceWidth = silenceBefore * zoom;
 
   return (
     <div
-      className={`absolute rounded-md transition-shadow ${
-        isSelected ? "ring-2 ring-white shadow-lg" : "hover:ring-1 hover:ring-white/50"
-      } ${track.muted ? "opacity-50" : ""}`}
+      className={`absolute rounded-xl transition-all duration-300 ${
+        isSelected ? "glass-edge shadow-glow-cyan-sm z-30" : "hover:shadow-lg z-20"
+      } ${track.muted ? "opacity-40 grayscale-[0.5]" : "opacity-100"}`}
       style={{
         left: `${trackLeft}px`,
-        width: `${Math.max(trackWidth, 20)}px`,
+        width: `${Math.max(trackWidth, 24)}px`,
         height: `${TRACK_HEIGHT}px`,
       }}
       onClick={(e) => {
@@ -254,30 +252,33 @@ export function TimelineTrack({
         onSelect();
       }}
     >
+      {/* Selection Border Glow */}
+      {isSelected && (
+        <div className="absolute -inset-[2px] rounded-[14px] bg-gradient-to-r from-primary/50 to-secondary/50 -z-10 animate-pulse" />
+      )}
+
       {/* Left trim handle */}
       {onTrimChange && (
         <div
-          className={`absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize z-20 group ${
-            dragMode === "trim-start" ? "bg-white/40" : ""
+          className={`absolute left-0 top-0 bottom-0 w-3 cursor-ew-resize z-40 group ${
+            dragMode === "trim-start" ? "bg-white/20" : ""
           }`}
           onMouseDown={(e) => handleMouseDown(e, "trim-start")}
           onMouseEnter={() => setIsHoveringHandle("start")}
           onMouseLeave={() => setIsHoveringHandle(null)}
         >
-          {/* Handle visual */}
           <div
-            className={`absolute inset-y-2 left-0 w-1.5 rounded-full transition-all ${
+            className={`absolute inset-y-1.5 left-1 w-1 rounded-full transition-all ${
               isHoveringHandle === "start" || dragMode === "trim-start"
-                ? "bg-white/80 shadow-lg"
-                : "bg-white/30 group-hover:bg-white/60"
+                ? "bg-white shadow-glow-cyan-sm scale-y-110"
+                : "bg-white/40 group-hover:bg-white/80"
             }`}
           />
-          {/* Trim indicator */}
           {(isHoveringHandle === "start" || dragMode === "trim-start") && (
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 rounded text-[10px] text-white whitespace-nowrap border border-gray-600">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
               {effectiveTrimStart < 0
-                ? `+${(-effectiveTrimStart).toFixed(1)}s`
-                : `${effectiveTrimStart.toFixed(1)}s`}
+                ? `+${(-effectiveTrimStart).toFixed(2)}s`
+                : `${effectiveTrimStart.toFixed(2)}s`}
             </div>
           )}
         </div>
@@ -286,74 +287,81 @@ export function TimelineTrack({
       {/* Right trim handle */}
       {onTrimChange && (
         <div
-          className={`absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize z-20 group ${
-            dragMode === "trim-end" ? "bg-white/40" : ""
+          className={`absolute right-0 top-0 bottom-0 w-3 cursor-ew-resize z-40 group ${
+            dragMode === "trim-end" ? "bg-white/20" : ""
           }`}
           onMouseDown={(e) => handleMouseDown(e, "trim-end")}
           onMouseEnter={() => setIsHoveringHandle("end")}
           onMouseLeave={() => setIsHoveringHandle(null)}
         >
-          {/* Handle visual */}
           <div
-            className={`absolute inset-y-2 right-0 w-1.5 rounded-full transition-all ${
+            className={`absolute inset-y-1.5 right-1 w-1 rounded-full transition-all ${
               isHoveringHandle === "end" || dragMode === "trim-end"
-                ? "bg-white/80 shadow-lg"
-                : "bg-white/30 group-hover:bg-white/60"
+                ? "bg-white shadow-glow-cyan-sm scale-y-110"
+                : "bg-white/40 group-hover:bg-white/80"
             }`}
           />
-          {/* Trim indicator */}
           {(isHoveringHandle === "end" || dragMode === "trim-end") && (
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 rounded text-[10px] text-white whitespace-nowrap border border-gray-600">
-              {effectiveTrimEnd.toFixed(1)}s
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 glass-2 border-white/10 rounded text-[10px] text-white font-mono z-50">
+              {effectiveTrimEnd.toFixed(2)}s
             </div>
           )}
         </div>
       )}
 
-      {/* Silence region (if trimStart is negative) */}
+      {/* Silence region */}
       {silenceBefore > 0 && (
         <div
-          className="absolute top-0 bottom-0 bg-gray-700/50 border-r border-dashed border-gray-500"
+          className="absolute top-0 bottom-0 bg-white/5 border-r border-dashed border-white/20 overflow-hidden"
           style={{
             left: 0,
             width: `${silenceWidth}px`,
           }}
         >
-          <div className="h-full flex items-center justify-center">
-            <span className="text-[10px] text-gray-400 rotate-0">silence</span>
+          <div className="h-full flex items-center justify-center bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.05)_10px,rgba(255,255,255,0.05)_20px)]">
+            <span className="text-[9px] text-white/30 font-bold uppercase tracking-tighter">
+              Silence
+            </span>
           </div>
         </div>
       )}
 
-      {/* Main track content - draggable area */}
+      {/* Main track content */}
       <div
-        className={`absolute top-0 bottom-0 ${trackColor} rounded-md cursor-move`}
+        className={`absolute top-0 bottom-0 ${trackColor} glass-edge rounded-xl cursor-move shadow-inner transition-colors duration-300`}
         style={{
           left: `${silenceWidth}px`,
           right: 0,
         }}
         onMouseDown={(e) => handleMouseDown(e, "move")}
       >
-        <div className="h-full p-2 flex flex-col">
-          {/* Track name */}
-          <div className="text-xs text-white/90 font-medium truncate mb-1">
-            {track.name}
-            {track.muted && <span className="ml-1 text-white/50">(muted)</span>}
-            {track.solo && <span className="ml-1 text-yellow-300">(solo)</span>}
+        <div className="h-full p-2.5 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] text-white font-bold truncate tracking-wide flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
+              {track.name}
+            </div>
+            <div className="flex gap-1">
+              {track.muted && (
+                <div className="w-2 h-2 rounded-full bg-red-400/80 shadow-[0_0_5px_red]" />
+              )}
+              {track.solo && (
+                <div className="w-2 h-2 rounded-full bg-yellow-300 shadow-[0_0_5px_yellow]" />
+              )}
+            </div>
           </div>
 
-          {/* Waveform canvas */}
           <canvas
             ref={canvasRef}
-            className="flex-1 w-full rounded"
-            style={{ imageRendering: "pixelated" }}
+            className="flex-1 w-full rounded-md"
+            style={{ imageRendering: "auto" }}
           />
         </div>
       </div>
 
-      {/* Playing indicator */}
+      {/* Playing pulse effect */}
       {track.isPlaying && (
-        <div className="absolute inset-0 rounded-md border-2 border-white/30 animate-pulse pointer-events-none" />
+        <div className="absolute inset-0 rounded-xl border border-white/20 animate-pulse pointer-events-none" />
       )}
     </div>
   );

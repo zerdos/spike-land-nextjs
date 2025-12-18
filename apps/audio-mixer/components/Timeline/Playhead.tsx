@@ -53,7 +53,7 @@ export function Playhead({ time, zoom, height, onSeek }: PlayheadProps) {
 
   return (
     <div
-      className="absolute top-0 z-20 pointer-events-none"
+      className="absolute top-0 z-50 pointer-events-none transition-opacity duration-300"
       style={{
         left: `${position}px`,
         height: `${height}px`,
@@ -61,15 +61,20 @@ export function Playhead({ time, zoom, height, onSeek }: PlayheadProps) {
     >
       {/* Playhead handle (draggable) */}
       <div
-        className="absolute -top-2 -left-2 w-4 h-4 bg-red-500 rounded-full cursor-ew-resize pointer-events-auto hover:bg-red-400 transition-colors shadow-lg"
+        className="absolute -top-3 -left-2.5 w-5 h-5 bg-primary/90 rounded-full cursor-ew-resize pointer-events-auto hover:bg-primary transition-all shadow-glow-cyan-sm active:scale-110 flex items-center justify-center border border-white/20"
         onMouseDown={handleMouseDown}
         title="Drag to seek"
-      />
+      >
+        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+      </div>
       {/* Playhead line */}
       <div
-        className="w-0.5 bg-red-500 shadow-lg"
+        className="w-[3px] bg-primary shadow-glow-cyan-sm relative"
         style={{ height: `${height}px` }}
-      />
+      >
+        {/* Subtle gradient glow tail */}
+        <div className="absolute inset-x-0 top-0 w-full h-full bg-gradient-to-b from-primary/50 to-transparent opacity-30" />
+      </div>
     </div>
   );
 }
