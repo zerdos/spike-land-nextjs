@@ -6,24 +6,41 @@ import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 
 export const metadata: Metadata = {
-  title: "AI Photo Restoration - Restore Old Photos to HD | Spike Land",
+  title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
   description:
-    "Restore faded memories in 60 seconds. Upload any photo, watch it transform with AI, and download in HD. Old photos, new life.",
+    "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds. Experience the future of AI development.",
   keywords: [
+    "Spike Land",
+    "vibe coding",
+    "Claude Code",
+    "AI app platform",
     "AI photo restoration",
     "restore old photos",
-    "enhance photos",
-    "fix blurry photos",
-    "Spike Land",
     "Pixel",
-    "photo enhancer",
     "old photo repair",
+    "web platform",
   ],
   openGraph: {
-    title: "AI Photo Restoration - Restore Old Photos to HD | Spike Land",
+    title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
     description:
-      "Restore faded memories in 60 seconds. Upload any photo, watch it transform with AI, and download in HD.",
+      "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
+    url: "https://spike.land",
+    siteName: "Spike Land",
+    images: [
+      {
+        url: "/og-image.png", // Assuming a default OG image exists or will be resolved
+        width: 1200,
+        height: 630,
+        alt: "Spike Land Platform",
+      },
+    ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
+    description:
+      "Create vibe-coded applications powered by Claude Code. Try our flagship app Pixel to restore old photos to HD in seconds.",
   },
 };
 

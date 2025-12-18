@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import Home from "./page";
+import Home, { metadata } from "./page";
 
 // Mock next/cache
 vi.mock("next/cache", () => ({
@@ -33,6 +33,44 @@ describe("Home Page - No Authentication Redirect", () => {
   it("should render landing page for all users (no redirect)", async () => {
     const result = await Home();
     expect(result).toBeDefined();
+  });
+});
+
+describe("Page Metadata", () => {
+  it("should have correct metadata title", () => {
+    expect(metadata.title).toBe(
+      "Spike Land - Vibe Coded Apps with AI | Featuring Pixel Photo Restoration",
+    );
+  });
+
+  it("should have correct metadata description", () => {
+    expect(metadata.description).toContain(
+      "Create vibe-coded applications powered by Claude Code",
+    );
+    expect(metadata.description).toContain(
+      "Try our flagship app Pixel to restore old photos",
+    );
+  });
+
+  it("should include relevant keywords", () => {
+    const keywords = metadata.keywords as string[];
+    expect(keywords).toContain("Spike Land");
+    expect(keywords).toContain("AI photo restoration");
+    expect(keywords).toContain("Claude Code");
+  });
+
+  it("should have correct open graph metadata", () => {
+    expect(metadata.openGraph?.title).toBe(metadata.title);
+    expect(metadata.openGraph?.type).toBe("website");
+    expect(metadata.openGraph?.siteName).toBe("Spike Land");
+    expect(metadata.openGraph?.url).toBe("https://spike.land");
+    expect(metadata.openGraph?.images).toBeDefined();
+    expect(metadata.openGraph?.images).toHaveLength(1);
+  });
+
+  it("should have correct twitter metadata", () => {
+    expect(metadata.twitter?.card).toBe("summary_large_image");
+    expect(metadata.twitter?.title).toBe(metadata.title);
   });
 });
 
