@@ -18,7 +18,7 @@ import type { TokenPackageId } from "@/lib/stripe/client";
 import { cn } from "@/lib/utils";
 import { Check, Clock, Coins, RefreshCw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 
 // Calculate value comparison for packages

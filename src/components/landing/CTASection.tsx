@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { Sparkles } from "lucide-react";
-import Link from "next/link";
 
 export function CTASection() {
   return (

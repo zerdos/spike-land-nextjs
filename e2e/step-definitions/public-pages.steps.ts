@@ -159,3 +159,5 @@ Then(
 );
 
 // NOTE: "I should see {string} or {string} text" is defined in common.steps.ts
+
+// NOTE: "I should see the image comparison slider" is defined in share-page.steps.ts

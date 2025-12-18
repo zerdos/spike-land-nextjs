@@ -3,6 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AlbumDetailClient } from "./AlbumDetailClient";
 
 const mockPush = vi.fn();
+vi.mock("next-view-transitions", () => ({
+  useTransitionRouter: () => ({
+    push: mockPush,
+  }),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,

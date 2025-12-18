@@ -64,7 +64,8 @@ When(
   "I click {string} in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    const link = sidebar.getByRole("link", { name: linkText });
+    // Use exact match to avoid matching text that contains the link name
+    const link = sidebar.getByRole("link", { name: linkText, exact: true });
     await expect(link).toBeVisible();
     await link.click();
     await this.page.waitForLoadState("networkidle");
@@ -75,7 +76,8 @@ When(
   "I click the {string} link in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    const link = sidebar.getByRole("link", { name: linkText });
+    // Use exact match to avoid matching text that contains the link name
+    const link = sidebar.getByRole("link", { name: linkText, exact: true });
     await expect(link).toBeVisible();
     await link.click();
     await this.page.waitForLoadState("networkidle");

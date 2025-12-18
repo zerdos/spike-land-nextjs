@@ -22,7 +22,7 @@ import type {
 } from "@/lib/ai/pipeline-types";
 import type { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { ArrowLeft, Plus, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 
 interface Pipeline extends PipelineData {

@@ -2,7 +2,7 @@
 
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/components/ui/link";
 
 // Fallback demo images (used when no featured gallery items exist)
 const FALLBACK_ORIGINAL = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=60";

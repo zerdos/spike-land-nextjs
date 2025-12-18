@@ -5,9 +5,9 @@
  * Each persona has a deep link for easy sharing.
  */
 
+import { Link } from "@/components/ui/link";
 import { getPrimaryPersonas, getSecondaryPersonas } from "@/lib/marketing/personas";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Customer Personas | Spike Land",

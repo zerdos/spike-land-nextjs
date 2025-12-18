@@ -51,8 +51,8 @@ module.exports = {
     timeout: 15000,
   },
   // CI profile - all tests except flaky and database-dependent tests
+  // NOTE: No 'paths' option here - CI workflow passes shard-specific files via CLI
   ci: {
-    paths: ["e2e/features/**/*.feature"],
     require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: [
@@ -62,11 +62,11 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: false, // In CI, run all tests to get full report
-    retry: 1, // Retry once in CI to handle transient issues
+    failFast: true, // In CI, run all tests to get full report
+    retry: 0, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @requires-db", // Skip db-dependent tests (no seeded test data in CI)
     timeout: 10000, // 30 second timeout for CI
-    parallel: 16, // Run 4 scenarios in parallel
+    parallel: 1, // Run 4 scenarios in parallel
   },
   // Coverage profile - collect V8 coverage during E2E tests
   coverage: {
@@ -80,6 +80,6 @@ module.exports = {
     retry: 0, // No retries for coverage - each run should be deterministic
     tags: "not @skip and not @flaky and not @requires-db",
     timeout: 15000,
-    parallel: 1, // Disable parallelism for accurate coverage collection
+    parallel: 1, // Coverage requires single process to accumulate data
   },
 };

@@ -2,10 +2,10 @@
 
 import { PixelLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Menu } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 const navLinks = [

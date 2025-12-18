@@ -5,12 +5,12 @@ import { FloatingHint, HINT_TEXT } from "@/components/canvas/FloatingHint";
 import { SlideshowView } from "@/components/canvas/SlideshowView";
 import { SmartGrid } from "@/components/canvas/SmartGrid";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { useSmartGallery } from "@/hooks/useSmartGallery";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
 import { Play } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // Re-export types for backward compatibility

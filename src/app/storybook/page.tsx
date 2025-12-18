@@ -1,7 +1,7 @@
 import { storybookIconMap, storybookSections } from "@/components/storybook";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
 
 export default function StorybookPage() {
   return (

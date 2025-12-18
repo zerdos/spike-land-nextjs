@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { BlogHeader, Prose } from "@/components/blog";
 import { MDXContent } from "@/components/blog/MDXContent";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 // Force dynamic rendering for blog posts with interactive MDX components
 // next-mdx-remote uses React hooks that require client-side rendering

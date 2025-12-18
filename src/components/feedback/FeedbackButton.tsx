@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Bug, FileText, Lightbulb, Loader2, MessageSquare, Send, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
@@ -19,7 +19,9 @@ interface FeedbackButtonProps {
   className?: string;
 }
 
-export function FeedbackButton({ className }: FeedbackButtonProps) {
+// Memoize to prevent re-renders when parent components re-render
+// The component only depends on className prop, useSession, and usePathname
+export const FeedbackButton = memo(function FeedbackButton({ className }: FeedbackButtonProps) {
   const [open, setOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("BUG");
   const [message, setMessage] = useState("");
@@ -267,4 +269,4 @@ export function FeedbackButton({ className }: FeedbackButtonProps) {
       </Button>
     </div>
   );
-}
+});

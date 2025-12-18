@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from "@/components/ui/link";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,6 @@ import {
   Wand2,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 interface McpJob {

@@ -13,8 +13,16 @@ vi.mock("sonner", () => ({
   },
 }));
 
-// Mock next/navigation
+// Mock next-view-transitions
 const mockRouterRefresh = vi.fn();
+vi.mock("next-view-transitions", () => ({
+  useTransitionRouter: () => ({
+    refresh: mockRouterRefresh,
+  }),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
+// Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     refresh: mockRouterRefresh,

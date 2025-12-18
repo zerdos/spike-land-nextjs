@@ -29,7 +29,7 @@ import {
 } from "@/lib/validations/app";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 

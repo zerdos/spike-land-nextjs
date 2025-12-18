@@ -113,3 +113,51 @@ Feature: Landing Page - CTA and Feature Cards
       | Link    |
       | Terms   |
       | Privacy |
+
+  # CTASection Component Tests
+  @fast
+  Scenario: CTASection displays Christmas heading
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Christmas is coming" text
+
+  @fast
+  Scenario: CTASection displays call-to-action message
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Dig out those old photos" text
+
+  @fast
+  Scenario: CTASection Try Pixel button navigates correctly
+    When I visit "/"
+    And I click the "Try Pixel for free" link
+    Then I should be on the "/pixel" page
+
+  # PlatformHero Component Tests
+  @fast
+  Scenario: PlatformHero displays main headline
+    Given I am not logged in
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Old Photos" text
+
+  @fast
+  Scenario: PlatformHero displays subheadline
+    Given I am not logged in
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "iPhone" text
+
+  @fast
+  Scenario: PlatformHero has Restore Your Photos CTA button
+    Given I am not logged in
+    When I visit "/"
+    Then the page should load successfully
+    And I should see "Restore Your Photos" link
+
+  @fast
+  Scenario: Featured app section displays image comparison slider
+    Given I am not logged in
+    When I visit "/"
+    Then the page should load successfully
+    And I should see the image comparison slider

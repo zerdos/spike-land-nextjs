@@ -13,7 +13,7 @@ import {
 import type { Box, BoxTier } from "@prisma/client";
 import { BoxActionType, BoxStatus } from "@prisma/client";
 import { Copy, Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 import { toast } from "sonner";
 

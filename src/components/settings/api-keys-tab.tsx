@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/components/ui/link";
 import { Check, Copy, ExternalLink, Key, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 interface ApiKey {

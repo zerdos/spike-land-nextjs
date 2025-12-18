@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/components/ui/link";
 import { MasonryGridUniform } from "@/components/ui/masonry-grid";
 import {
   Select,
@@ -52,9 +53,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface AlbumImage {
@@ -900,10 +900,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                         </Badge>
                       )}
                       {album.coverImageId === image.id && (
-                        <Badge
-                          className="absolute top-2 left-2"
-                          variant="secondary"
-                        >
+                        <Badge className="absolute top-2 left-2 bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]">
                           <Star className="h-3 w-3 mr-1 fill-current" />
                           Cover
                         </Badge>

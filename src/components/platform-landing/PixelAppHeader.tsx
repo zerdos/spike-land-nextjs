@@ -3,12 +3,12 @@
 import { UserAvatar } from "@/components/auth/user-avatar";
 import { PixelLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Menu, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useState } from "react";
 
 export function PixelAppHeader() {

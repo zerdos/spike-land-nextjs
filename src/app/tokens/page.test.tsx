@@ -2,13 +2,19 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import TokensPage from "./page";
 
 // Mock next-auth
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
+}));
+
+// Mock next-view-transitions
+vi.mock("next-view-transitions", () => ({
+  useTransitionRouter: vi.fn(),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
 }));
 
 // Mock next/navigation
@@ -57,8 +63,8 @@ describe("TokensPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue(
-      mockRouter as ReturnType<typeof useRouter>,
+    vi.mocked(useTransitionRouter).mockReturnValue(
+      mockRouter as ReturnType<typeof useTransitionRouter>,
     );
     vi.mocked(global.fetch).mockResolvedValue({
       json: () => Promise.resolve({ url: "https://checkout.stripe.com/test" }),

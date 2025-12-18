@@ -6,10 +6,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
+import { Link } from "@/components/ui/link";
 import { getPersonaBySlug, type Persona, PERSONAS } from "@/lib/marketing/personas";
 import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface PageProps {
