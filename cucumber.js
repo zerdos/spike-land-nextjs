@@ -51,8 +51,8 @@ module.exports = {
     timeout: 15000,
   },
   // CI profile - all tests except flaky and database-dependent tests
+  // NOTE: No 'paths' option here - CI workflow passes shard-specific files via CLI
   ci: {
-    paths: ["e2e/features/**/*.feature"],
     require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
     requireModule: ["tsx/cjs"],
     format: [
