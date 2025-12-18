@@ -1,3 +1,4 @@
+import { authenticateMcpRequest } from "@/lib/mcp/auth";
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -20,10 +21,29 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing boxId" }, { status: 400 });
   }
 
-  // TODO: Add Authorization header check here in Phase 2
   // verifyAgentToken(req);
+  const authResult = await authenticateMcpRequest(req);
+  if (!authResult.success) {
+    return NextResponse.json({ error: authResult.error }, { status: 401 });
+  }
 
   try {
+    // Verify box ownership
+    const box = await prisma.box.findUnique({
+      where: { id: boxId },
+      select: { userId: true },
+    });
+
+    if (!box) {
+      return NextResponse.json({ error: "Box not found" }, { status: 404 });
+    }
+
+    if (box.userId !== authResult.userId) {
+      return NextResponse.json({ error: "Unauthorized access to box" }, {
+        status: 403,
+      });
+    }
+
     const tasks = await prisma.agentTask.findMany({
       where: {
         boxId,
@@ -46,9 +66,30 @@ export async function GET(req: NextRequest) {
 // POST /api/v1/agent/tasks
 // Update task status key/result
 export async function POST(req: NextRequest) {
+  const authResult = await authenticateMcpRequest(req);
+  if (!authResult.success) {
+    return NextResponse.json({ error: authResult.error }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { taskId, status, result, error } = taskResultSchema.parse(body);
+
+    // Verify task ownership
+    const task = await prisma.agentTask.findUnique({
+      where: { id: taskId },
+      include: { box: true },
+    });
+
+    if (!task) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    if (task.box.userId !== authResult.userId) {
+      return NextResponse.json({ error: "Unauthorized access to task" }, {
+        status: 403,
+      });
+    }
 
     const updatedTask = await prisma.agentTask.update({
       where: { id: taskId },

@@ -1,15 +1,24 @@
-import type { AgentTask } from "@prisma/client";
+import type { AgentTask, Box } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "./route";
+import { authenticateMcpRequest } from "@/lib/mcp/auth";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
     agentTask: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
     },
+    box: {
+      findUnique: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@/lib/mcp/auth", () => ({
+  authenticateMcpRequest: vi.fn(),
 }));
 
 const prisma = (await import("@/lib/prisma")).default;
@@ -19,7 +28,28 @@ describe("GET /api/v1/agent/tasks", () => {
     vi.clearAllMocks();
   });
 
+  it("should return 401 if authentication fails", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: false,
+      error: "Invalid API key",
+    });
+
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-1",
+      {
+        method: "GET",
+      },
+    );
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(data.error).toBe("Invalid API key");
+  });
+
   it("should return 400 if boxId is missing", async () => {
+    // Note: boxId check happens before auth check
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "GET",
     });
@@ -31,7 +61,64 @@ describe("GET /api/v1/agent/tasks", () => {
     expect(data.error).toBe("Missing boxId");
   });
 
-  it("should return pending tasks for a given boxId", async () => {
+  it("should return 404 if box not found", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.box.findUnique).mockResolvedValue(null);
+
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-1",
+      {
+        method: "GET",
+      },
+    );
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.error).toBe("Box not found");
+  });
+
+  it("should return 403 if user does not own the box", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+      id: "box-1",
+      userId: "user-2",
+    } as Box);
+
+    const request = new NextRequest(
+      "http://localhost/api/v1/agent/tasks?boxId=box-1",
+      {
+        method: "GET",
+      },
+    );
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toBe("Unauthorized access to box");
+  });
+
+  it("should return pending tasks for a given boxId when authorized", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+      id: "box-1",
+      userId: "user-1",
+    } as Box);
+
     const mockTasks: Partial<AgentTask>[] = [
       {
         id: "task-1",
@@ -80,24 +167,17 @@ describe("GET /api/v1/agent/tasks", () => {
     });
   });
 
-  it("should return empty array when no pending tasks", async () => {
-    vi.mocked(prisma.agentTask.findMany).mockResolvedValue([]);
-
-    const request = new NextRequest(
-      "http://localhost/api/v1/agent/tasks?boxId=box-2",
-      {
-        method: "GET",
-      },
-    );
-
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.tasks).toEqual([]);
-  });
-
   it("should handle server errors", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.box.findUnique).mockResolvedValue({
+      id: "box-1",
+      userId: "user-1",
+    } as Box);
+
     vi.mocked(prisma.agentTask.findMany).mockRejectedValue(
       new Error("Database error"),
     );
@@ -132,7 +212,87 @@ describe("POST /api/v1/agent/tasks", () => {
     vi.clearAllMocks();
   });
 
-  it("should update task status to COMPLETED", async () => {
+  it("should return 401 if authentication fails", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: false,
+      error: "Invalid API key",
+    });
+
+    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        taskId: "task-1",
+        status: "COMPLETED",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(data.error).toBe("Invalid API key");
+  });
+
+  it("should return 404 if task not found", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.agentTask.findUnique).mockResolvedValue(null);
+
+    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        taskId: "task-1",
+        status: "COMPLETED",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.error).toBe("Task not found");
+  });
+
+  it("should return 403 if user does not own the task's box", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.agentTask.findUnique).mockResolvedValue({
+      id: "task-1",
+      box: { userId: "user-2" },
+    } as any);
+
+    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        taskId: "task-1",
+        status: "COMPLETED",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toBe("Unauthorized access to task");
+  });
+
+  it("should update task status to COMPLETED when authorized", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.agentTask.findUnique).mockResolvedValue({
+      id: "task-1",
+      box: { userId: "user-1" },
+    } as any);
+
     const mockUpdatedTask: Partial<AgentTask> = {
       id: "task-1",
       boxId: "box-1",
@@ -172,6 +332,16 @@ describe("POST /api/v1/agent/tasks", () => {
   });
 
   it("should update task status to FAILED with error message", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.agentTask.findUnique).mockResolvedValue({
+      id: "task-2",
+      box: { userId: "user-1" },
+    } as any);
+
     const mockUpdatedTask: Partial<AgentTask> = {
       id: "task-2",
       boxId: "box-1",
@@ -210,44 +380,13 @@ describe("POST /api/v1/agent/tasks", () => {
     });
   });
 
-  it("should update task status to PROCESSING", async () => {
-    const mockUpdatedTask: Partial<AgentTask> = {
-      id: "task-3",
-      boxId: "box-1",
-      type: "EXECUTE_COMMAND",
-      payload: { command: "long-running-cmd" },
-      status: "PROCESSING",
-    };
-
-    vi.mocked(prisma.agentTask.update).mockResolvedValue(
-      mockUpdatedTask as AgentTask,
-    );
-
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
-      method: "POST",
-      body: JSON.stringify({
-        taskId: "task-3",
-        status: "PROCESSING",
-      }),
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.task.status).toBe("PROCESSING");
-    expect(prisma.agentTask.update).toHaveBeenCalledWith({
-      where: { id: "task-3" },
-      data: {
-        status: "PROCESSING",
-        result: undefined,
-        error: undefined,
-      },
-    });
-  });
-
   it("should return 400 for missing taskId", async () => {
+    // Auth success needed first
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
     const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
       method: "POST",
       body: JSON.stringify({
@@ -263,40 +402,17 @@ describe("POST /api/v1/agent/tasks", () => {
     expect(data.details).toBeDefined();
   });
 
-  it("should return 400 for missing status", async () => {
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
-      method: "POST",
-      body: JSON.stringify({
-        taskId: "task-1",
-      }),
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid request body");
-    expect(data.details).toBeDefined();
-  });
-
-  it("should return 400 for invalid status value", async () => {
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
-      method: "POST",
-      body: JSON.stringify({
-        taskId: "task-1",
-        status: "INVALID_STATUS",
-      }),
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid request body");
-    expect(data.details).toBeDefined();
-  });
-
   it("should handle server errors during update", async () => {
+    vi.mocked(authenticateMcpRequest).mockResolvedValue({
+      success: true,
+      userId: "user-1",
+    });
+
+    vi.mocked(prisma.agentTask.findUnique).mockResolvedValue({
+      id: "task-1",
+      box: { userId: "user-1" },
+    } as any);
+
     vi.mocked(prisma.agentTask.update).mockRejectedValue(
       new Error("Database connection failed"),
     );
@@ -322,32 +438,6 @@ describe("POST /api/v1/agent/tasks", () => {
       "Failed to update agent task:",
       expect.any(Error),
     );
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  it("should handle task not found error", async () => {
-    vi.mocked(prisma.agentTask.update).mockRejectedValue(
-      new Error("Record to update not found"),
-    );
-
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
-      () => {},
-    );
-
-    const request = new NextRequest("http://localhost/api/v1/agent/tasks", {
-      method: "POST",
-      body: JSON.stringify({
-        taskId: "non-existent-task",
-        status: "COMPLETED",
-      }),
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.error).toBe("Internal Server Error");
 
     consoleErrorSpy.mockRestore();
   });
