@@ -10,10 +10,6 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
 jobs:
   claude-review:
     # Optional: Filter by PR author
@@ -40,30 +36,63 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = context.payload.pull_request.number;
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              per_page: 100
-            });
-
             const MARKER = '<!-- claude-code-review -->';
-            const toDelete = comments.filter(c => c.body.includes(MARKER));
 
-            console.log(`Deleting ${toDelete.length} old Claude review comments`);
+            // Fetch all issue comments with pagination
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100
+              }
+            );
 
-            for (const comment of toDelete) {
+            const issueCommentsToDelete = comments.filter(c => c.body.includes(MARKER));
+            console.log(`Found ${issueCommentsToDelete.length} old Claude issue comments to delete`);
+
+            for (const comment of issueCommentsToDelete) {
               try {
                 await github.rest.issues.deleteComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   comment_id: comment.id
                 });
-                console.log(`Deleted comment ${comment.id}`);
+                console.log(`Deleted issue comment ${comment.id}`);
               } catch (e) {
-                console.log(`Failed: ${e.message}`);
+                console.log(`Failed to delete issue comment: ${e.message}`);
               }
             }
+
+            // Fetch all PR review comments (inline code comments) with pagination
+            const reviewComments = await github.paginate(
+              github.rest.pulls.listReviewComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100
+              }
+            );
+
+            const reviewCommentsToDelete = reviewComments.filter(c => c.body.includes(MARKER));
+            console.log(`Found ${reviewCommentsToDelete.length} old Claude review comments to delete`);
+
+            for (const comment of reviewCommentsToDelete) {
+              try {
+                await github.rest.pulls.deleteReviewComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id
+                });
+                console.log(`Deleted review comment ${comment.id}`);
+              } catch (e) {
+                console.log(`Failed to delete review comment: ${e.message}`);
+              }
+            }
+
+            console.log(`Cleanup complete: ${issueCommentsToDelete.length} issue + ${reviewCommentsToDelete.length} review comments removed`);
 
       - name: Run Claude Code Review
         id: claude-review
@@ -81,45 +110,10 @@ jobs:
             - Security concerns
             - Test coverage
 
-            Use the repository's CLAUDE.md for guidance on style and conventions.
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
-            IMPORTANT FORMATTING RULES:
-
-            1. Start EVERY comment with this exact marker (on its own line):
-               <!-- claude-code-review -->
-
-            2. If you find issues that need fixing, structure your comment as follows:
-
-               ## Code Review Summary
-               [Brief overview of what you found]
-
-               ## Changes Requested
-
-               @jules Please make the following changes to this PR:
-
-               ### File: `path/to/file.ts`
-               - **Line X-Y**: [Description of the issue]
-                 - Current: `problematic code snippet`
-                 - Required: [Explanation of what needs to change]
-
-               ### File: `path/to/another/file.ts`
-               - **Line Z**: [Description of issue]
-                 - Required: [What needs to change]
-
-               ## Additional Notes
-               [Any context needed to understand the codebase conventions]
-
-            3. If the code looks good with no changes needed, post:
-
-               ## Code Review: Approved
-
-               This PR looks good! No changes required.
-
-               - Code quality: OK
-               - No bugs detected
-               - Tests adequate
-
-               Ready to merge.
+            IMPORTANT: Start EVERY comment with this exact marker (on its own line):
+            <!-- claude-code-review -->
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
