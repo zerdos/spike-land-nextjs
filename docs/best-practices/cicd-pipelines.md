@@ -76,7 +76,7 @@ jobs:
     name: Lint Code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run ESLint
         run: yarn lint
 
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Tests
         run: yarn test:run
 
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit-tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build
         run: yarn build
 
@@ -144,7 +144,7 @@ stability:
 - uses: actions/checkout@a81bbbf8298c0fa03ea29cdc473d45769f953675 # v3.5.2
 
 # ACCEPTABLE: Pinned to release version
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@v6
 
 # AVOID: Using branches (unstable)
 - uses: actions/checkout@main
@@ -174,7 +174,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Tests
         run: yarn test:coverage
       - name: Verify Coverage
@@ -228,7 +228,7 @@ reducing build times by 5-10 minutes on average.
 
 ```yaml
 - name: Setup Node.js
-  uses: actions/setup-node@v4
+  uses: actions/setup-node@v6
   with:
     node-version: "18"
     cache: "yarn" # Automatically caches yarn.lock
@@ -483,7 +483,7 @@ deploy-rolling:
   environment:
     name: production
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Update Deployment Image
       run: |
@@ -556,7 +556,7 @@ export default function CheckoutPage() {
 deploy-with-flags:
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Build with Feature Flags Disabled
       run: |
@@ -651,7 +651,7 @@ jobs:
       url: https://pr-${{ github.event.pull_request.number }}.preview.example.com
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy Preview
         run: |
@@ -737,7 +737,7 @@ deploy-with-auto-rollback:
   runs-on: ubuntu-latest
 
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Deploy New Version
       id: deploy
@@ -786,7 +786,7 @@ deploy-with-safe-db:
   runs-on: ubuntu-latest
 
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     # Step 1: Deploy backward-compatible DB changes BEFORE code
     - name: Run Database Migrations (backward compatible)
@@ -988,7 +988,7 @@ deploy-with-monitoring:
   runs-on: ubuntu-latest
 
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Deploy Application
       run: yarn deploy:prod
@@ -1062,13 +1062,13 @@ jobs:
 
 ```yaml
 - name: Setup Node
-  uses: actions/setup-node@v4 # Pinned to specific version
+  uses: actions/setup-node@v6 # Pinned to specific version
   with:
     node-version: "18.19.0" # Exact version, not latest
 
 # Check action pinning:
 # actions/checkout@a81bbbf8298c0fa03ea29cdc473d45769f953675  # Good
-# actions/checkout@v4                                           # Acceptable
+# actions/checkout@v6                                           # Acceptable
 # actions/checkout@main                                         # Avoid
 ```
 
@@ -1081,7 +1081,7 @@ sbom:
   runs-on: ubuntu-latest
 
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Generate SBOM
       uses: anchore/sbom-action@v0

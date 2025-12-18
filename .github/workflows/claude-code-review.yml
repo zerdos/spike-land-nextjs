@@ -26,18 +26,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version-file: ".nvmrc"
           cache: "yarn"
+          cache-dependency-path: yarn.lock
 
-      - name: Install dependencies
-        run: yarn --immutable-cache
+      # - name: Install dependencies
+      #   run: yarn --immutable-cache
 
       - name: Run Claude Code Review
         id: claude-review
