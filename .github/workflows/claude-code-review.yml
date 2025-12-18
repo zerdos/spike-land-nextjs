@@ -28,75 +28,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Cleanup old Claude review comments
-        uses: actions/github-script@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const MARKER = '<!-- claude-code-review -->';
+          node-version: ".nvmrc"
+          cache: "yarn"
 
-            // Fetch all issue comments with pagination
-            const comments = await github.paginate(
-              github.rest.issues.listComments,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                per_page: 100
-              }
-            );
-
-            const issueCommentsToDelete = comments.filter(c => c.body.includes(MARKER));
-            console.log(`Found ${issueCommentsToDelete.length} old Claude issue comments to delete`);
-
-            for (const comment of issueCommentsToDelete) {
-              try {
-                await github.rest.issues.deleteComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: comment.id
-                });
-                console.log(`Deleted issue comment ${comment.id}`);
-              } catch (e) {
-                console.log(`Failed to delete issue comment: ${e.message}`);
-              }
-            }
-
-            // Fetch all PR review comments (inline code comments) with pagination
-            const reviewComments = await github.paginate(
-              github.rest.pulls.listReviewComments,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                per_page: 100
-              }
-            );
-
-            const reviewCommentsToDelete = reviewComments.filter(c => c.body.includes(MARKER));
-            console.log(`Found ${reviewCommentsToDelete.length} old Claude review comments to delete`);
-
-            for (const comment of reviewCommentsToDelete) {
-              try {
-                await github.rest.pulls.deleteReviewComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: comment.id
-                });
-                console.log(`Deleted review comment ${comment.id}`);
-              } catch (e) {
-                console.log(`Failed to delete review comment: ${e.message}`);
-              }
-            }
-
-            console.log(`Cleanup complete: ${issueCommentsToDelete.length} issue + ${reviewCommentsToDelete.length} review comments removed`);
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
+        env:
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -110,16 +65,34 @@ jobs:
             - Security concerns
             - Test coverage
 
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+            Use the repository's CLAUDE.md for guidance on style and conventions.
 
-            IMPORTANT: Start EVERY comment with this exact marker (on its own line - this is required for cleanup later - do if new review comments are on the way we don't want old ones to pile up):
-            <!-- claude-code-review -->
+            ## Your Capabilities
 
-            IMPORTANT: you have to mention "@jules" in the comment if you want to have modifications applied to the PR code before merging. @jules is the bot user that has permissions to modify the PR code.
-            If you don't mention @jules, your suggestions will be ignored.
+            **GitHub Access:**
+            - Read existing comments: `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments`
+            - Read PR reviews: `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews`
+            - Read PR commits: `gh pr view ${{ github.event.pull_request.number }} --json commits`
+            - Add/update/delete comments as needed
+            - Use `gh pr comment` or `gh api` for comment management
 
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            **Testing:**
+            - Run `yarn dev:e2e &` to start the dev server in background (port 3000)
+            - Use Playwright MCP tools (browser_navigate, browser_snapshot, browser_click, etc.) to test the app manually
+            - Run `yarn test:run` for unit tests
+            - Run `yarn lint` for linting
+
+            **File Editing:**
+            - You can directly edit files to fix issues you find
+            - After making changes, commit them with a clear message
+
+            **Comment Management:**
+            - Before posting new review comments, check for existing Claude comments using the marker `<!-- claude-code-review -->`
+            - Delete outdated comments before posting new ones
+            - Start EVERY comment with: `<!-- claude-code-review -->`
+
+            Be constructive and helpful. Fix issues directly when possible.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          claude_args: '--mcp-config .mcp.json --allowed-tools "Bash(gh:*),Bash(yarn:*),Bash(git:*),Bash(npm:*),Edit,Write,Read,Glob,Grep,mcp__playwright__*"'
