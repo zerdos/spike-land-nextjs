@@ -45,6 +45,10 @@ const mockTrackManager = {
   setVolume: vi.fn(),
   toggleMute: vi.fn(),
   toggleSolo: vi.fn(),
+  setDelay: vi.fn(),
+  setTrim: vi.fn(),
+  reorderTracks: vi.fn(),
+  restoreTracks: vi.fn(),
   playTrack: vi.fn(),
   stopTrack: vi.fn(),
   playAllTracks: vi.fn(),
@@ -52,10 +56,26 @@ const mockTrackManager = {
   clearTracks: vi.fn(),
 };
 
+const mockPersistenceState = {
+  projectId: "test-project",
+  isLoading: false,
+  isSaving: false,
+  lastSavedAt: null,
+  hasUnsavedChanges: false,
+};
+
+const mockPersistenceActions = {
+  saveNow: vi.fn(),
+  loadProject: vi.fn().mockReturnValue(null),
+  clearProject: vi.fn(),
+  createNewProject: vi.fn().mockReturnValue("new-project-id"),
+};
+
 vi.mock("../hooks", () => ({
   useAudioContext: () => mockAudioContext,
   useAudioRecording: () => mockRecording,
   useAudioTracks: () => mockTrackManager,
+  useProjectPersistence: () => [mockPersistenceState, mockPersistenceActions],
 }));
 
 vi.mock("../lib/audio-engine", () => ({
@@ -155,6 +175,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -223,6 +246,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -249,6 +275,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -273,6 +302,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -343,6 +375,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -364,6 +399,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 
@@ -388,6 +426,9 @@ describe("AudioMixer", () => {
         currentTime: 0,
         waveformData: [0.5],
         type: "file",
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
       },
     ];
 

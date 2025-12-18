@@ -5,7 +5,7 @@
 
 "use client";
 
-import { Mic, Pause, Play, Trash2, Volume2, VolumeX } from "lucide-react";
+import { Clock, Mic, Pause, Play, Trash2, Volume2, VolumeX } from "lucide-react";
 import { formatTime } from "../lib/audio-engine";
 import type { AudioTrack } from "../types";
 import { Waveform } from "./Waveform";
@@ -19,6 +19,8 @@ interface TrackItemProps {
   onSoloToggle: () => void;
   onRemove: () => void;
   onSeek?: (progress: number) => void;
+  onDelayChange?: (delay: number) => void;
+  onTrimChange?: (trimStart: number, trimEnd: number) => void;
 }
 
 export function TrackItem({
@@ -30,8 +32,28 @@ export function TrackItem({
   onSoloToggle,
   onRemove,
   onSeek,
+  onDelayChange,
+  onTrimChange,
 }: TrackItemProps) {
   const progress = track.duration > 0 ? track.currentTime / track.duration : 0;
+
+  // Calculate effective duration considering trim
+  const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+  const trimmedDuration = Math.max(0, effectiveTrimEnd - track.trimStart);
+
+  // Normalize trim values to 0-1 for waveform display
+  const normalizedTrimStart = track.duration > 0 ? track.trimStart / track.duration : 0;
+  const normalizedTrimEnd = track.duration > 0 ? effectiveTrimEnd / track.duration : 1;
+
+  const handleTrimStartChange = (normalizedValue: number) => {
+    const trimStartSeconds = normalizedValue * track.duration;
+    onTrimChange?.(trimStartSeconds, effectiveTrimEnd);
+  };
+
+  const handleTrimEndChange = (normalizedValue: number) => {
+    const trimEndSeconds = normalizedValue * track.duration;
+    onTrimChange?.(track.trimStart, trimEndSeconds);
+  };
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 space-y-3">
@@ -43,8 +65,24 @@ export function TrackItem({
             {track.name}
           </span>
           <span className="text-gray-400 text-sm">
-            {formatTime(track.duration)}
+            {trimmedDuration !== track.duration
+              ? (
+                <>
+                  {formatTime(trimmedDuration)}
+                  <span className="text-gray-500 ml-1">
+                    (from {formatTime(track.duration)})
+                  </span>
+                </>
+              )
+              : (
+                formatTime(track.duration)
+              )}
           </span>
+          {track.delay !== 0 && (
+            <span className="text-blue-400 text-sm">
+              {track.delay > 0 ? `+${track.delay.toFixed(1)}s` : `${track.delay.toFixed(1)}s`}
+            </span>
+          )}
         </div>
         <button
           onClick={onRemove}
@@ -65,6 +103,11 @@ export function TrackItem({
           barColor={track.muted ? "#374151" : "#4b5563"}
           progressColor={track.muted ? "#6b7280" : "#3b82f6"}
           onClick={onSeek}
+          trimStart={normalizedTrimStart}
+          trimEnd={normalizedTrimEnd}
+          onTrimStartChange={onTrimChange ? handleTrimStartChange : undefined}
+          onTrimEndChange={onTrimChange ? handleTrimEndChange : undefined}
+          showTrimHandles={!!onTrimChange}
         />
       </div>
 
@@ -122,6 +165,26 @@ export function TrackItem({
             {Math.round(track.volume * 100)}%
           </span>
         </div>
+
+        {/* Delay Slider */}
+        {onDelayChange && (
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-gray-400" />
+            <input
+              type="range"
+              min="-5"
+              max="10"
+              step="0.1"
+              value={track.delay}
+              onChange={(e) => onDelayChange(parseFloat(e.target.value))}
+              className="w-24 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              aria-label="Track delay"
+            />
+            <span className="text-gray-400 text-sm w-12 text-right">
+              {track.delay > 0 ? `+${track.delay.toFixed(1)}` : track.delay.toFixed(1)}s
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

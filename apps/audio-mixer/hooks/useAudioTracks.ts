@@ -33,6 +33,9 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
           currentTime: 0,
           waveformData: [],
           type: "file",
+          delay: 0,
+          trimStart: 0,
+          trimEnd: 0,
           ...action.payload,
         },
       ];
@@ -50,6 +53,22 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
       return state.map((track) =>
         track.id === action.payload.id ? { ...track, pan: action.payload.pan } : track
       );
+    case "SET_DELAY":
+      return state.map((track) =>
+        track.id === action.payload.id
+          ? { ...track, delay: Math.max(-5, Math.min(10, action.payload.delay)) }
+          : track
+      );
+    case "SET_TRIM":
+      return state.map((track) =>
+        track.id === action.payload.id
+          ? {
+            ...track,
+            trimStart: Math.max(0, action.payload.trimStart),
+            trimEnd: Math.min(track.duration || Infinity, action.payload.trimEnd),
+          }
+          : track
+      );
     case "TOGGLE_MUTE":
       return state.map((track) =>
         track.id === action.payload ? { ...track, muted: !track.muted } : track
@@ -66,6 +85,31 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
       return state.map((track) =>
         track.id === action.payload ? { ...track, isPlaying: false, currentTime: 0 } : track
       );
+    case "REORDER_TRACKS": {
+      const orderMap = new Map(action.payload.map((id, index) => [id, index]));
+      return [...state].sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+    }
+    case "RESTORE_TRACKS":
+      return action.payload.map((trackData) => ({
+        id: trackData.id || generateId(),
+        name: trackData.name || "Restored Track",
+        source: null,
+        buffer: trackData.buffer || null,
+        gainNode: trackData.gainNode || null,
+        volume: trackData.volume ?? 0.8,
+        pan: trackData.pan ?? 0,
+        muted: trackData.muted ?? false,
+        solo: trackData.solo ?? false,
+        isPlaying: false,
+        duration: trackData.duration ?? 0,
+        currentTime: 0,
+        waveformData: trackData.waveformData ?? [],
+        type: trackData.type ?? "file",
+        file: trackData.file,
+        delay: trackData.delay ?? 0,
+        trimStart: trackData.trimStart ?? 0,
+        trimEnd: trackData.trimEnd ?? 0,
+      }));
     case "CLEAR_TRACKS":
       return [];
     default:
@@ -180,6 +224,22 @@ export function useAudioTracks() {
     dispatch({ type: "TOGGLE_SOLO", payload: id });
   }, []);
 
+  const setDelay = useCallback((id: string, delay: number) => {
+    dispatch({ type: "SET_DELAY", payload: { id, delay } });
+  }, []);
+
+  const setTrim = useCallback((id: string, trimStart: number, trimEnd: number) => {
+    dispatch({ type: "SET_TRIM", payload: { id, trimStart, trimEnd } });
+  }, []);
+
+  const reorderTracks = useCallback((newOrder: string[]) => {
+    dispatch({ type: "REORDER_TRACKS", payload: newOrder });
+  }, []);
+
+  const restoreTracks = useCallback((trackStates: Partial<AudioTrack>[]) => {
+    dispatch({ type: "RESTORE_TRACKS", payload: trackStates });
+  }, []);
+
   const playTrack = useCallback(
     (id: string, context: AudioContext, masterGain: GainNode) => {
       const track = tracks.find((t) => t.id === id);
@@ -209,9 +269,19 @@ export function useAudioTracks() {
         sourceRefs.current.delete(id);
       };
 
-      source.start(0, track.currentTime);
+      // Calculate effective playback parameters with delay and trim
+      const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+      const trimmedDuration = effectiveTrimEnd - track.trimStart;
+      const playbackOffset = track.trimStart + track.currentTime;
+      const playbackDuration = Math.max(0, trimmedDuration - track.currentTime);
+
+      // Calculate when to start (accounting for delay)
+      // Positive delay = start later, negative delay = handled by scheduling earlier
+      const startTime = Math.max(0, context.currentTime + track.delay);
+
+      source.start(startTime, playbackOffset, playbackDuration);
       sourceRefs.current.set(id, source);
-      startTimeRefs.current.set(id, context.currentTime - track.currentTime);
+      startTimeRefs.current.set(id, context.currentTime - track.currentTime + track.delay);
 
       dispatch({ type: "PLAY_TRACK", payload: id });
     },
@@ -269,6 +339,10 @@ export function useAudioTracks() {
     setVolume,
     toggleMute,
     toggleSolo,
+    setDelay,
+    setTrim,
+    reorderTracks,
+    restoreTracks,
     playTrack,
     stopTrack,
     playAllTracks,

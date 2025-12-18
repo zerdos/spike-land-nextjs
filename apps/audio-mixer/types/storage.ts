@@ -24,6 +24,14 @@ export interface SavedTrack {
   volume: number;
   muted: boolean;
   solo: boolean;
+  /** Track delay/offset in seconds */
+  delay: number;
+  /** Trim start point in seconds */
+  trimStart: number;
+  /** Trim end point in seconds */
+  trimEnd: number;
+  /** Display order of the track */
+  order: number;
   createdAt: string;
 }
 

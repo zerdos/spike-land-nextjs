@@ -40,6 +40,9 @@ describe("TrackItem", () => {
     currentTime: 0,
     waveformData: [0.5, 0.6, 0.7],
     type: "file",
+    delay: 0,
+    trimStart: 0,
+    trimEnd: 0,
   };
 
   const defaultProps = {

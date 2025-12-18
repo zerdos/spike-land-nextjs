@@ -19,6 +19,12 @@ export interface AudioTrack {
   waveformData: number[];
   type: "file" | "recording";
   file?: File;
+  /** Track delay/offset in seconds (-5 to +10) */
+  delay: number;
+  /** Trim start point in seconds from beginning */
+  trimStart: number;
+  /** Trim end point in seconds from beginning (defaults to duration) */
+  trimEnd: number;
 }
 
 export interface RecordingState {
@@ -60,10 +66,14 @@ export type TrackAction =
   | { type: "UPDATE_TRACK"; payload: { id: string; updates: Partial<AudioTrack>; }; }
   | { type: "SET_VOLUME"; payload: { id: string; volume: number; }; }
   | { type: "SET_PAN"; payload: { id: string; pan: number; }; }
+  | { type: "SET_DELAY"; payload: { id: string; delay: number; }; }
+  | { type: "SET_TRIM"; payload: { id: string; trimStart: number; trimEnd: number; }; }
   | { type: "TOGGLE_MUTE"; payload: string; }
   | { type: "TOGGLE_SOLO"; payload: string; }
   | { type: "PLAY_TRACK"; payload: string; }
   | { type: "STOP_TRACK"; payload: string; }
+  | { type: "REORDER_TRACKS"; payload: string[]; }
+  | { type: "RESTORE_TRACKS"; payload: Partial<AudioTrack>[]; }
   | { type: "CLEAR_TRACKS"; };
 
 export interface MixerControls {

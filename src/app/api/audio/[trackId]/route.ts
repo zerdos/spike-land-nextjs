@@ -4,6 +4,7 @@
  */
 
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import {
   deleteAudioFromR2,
   downloadAudioFromR2,
@@ -49,6 +50,17 @@ export async function GET(request: Request, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Missing required parameter: projectId" },
         { status: 400 },
+      );
+    }
+
+    // Validate project ownership
+    const project = await prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    });
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found or access denied" },
+        { status: 404 },
       );
     }
 
@@ -117,6 +129,17 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
+    // Validate project ownership
+    const project = await prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    });
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found or access denied" },
+        { status: 404 },
+      );
+    }
+
     // Generate R2 key
     const key = generateAudioKey(session.user.id, projectId, trackId, format);
 
@@ -166,6 +189,14 @@ export async function HEAD(request: Request, { params }: RouteParams) {
 
     if (!projectId) {
       return new NextResponse(null, { status: 400 });
+    }
+
+    // Validate project ownership
+    const project = await prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    });
+    if (!project) {
+      return new NextResponse(null, { status: 404 });
     }
 
     // Generate R2 key

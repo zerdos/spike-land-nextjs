@@ -4,6 +4,7 @@
  */
 
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import {
   generateAudioKey,
   isAudioR2Configured,
@@ -51,6 +52,26 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Missing required fields: projectId, trackId, format" },
         { status: 400 },
+      );
+    }
+
+    // Validate audio format
+    const ALLOWED_FORMATS = ["wav", "mp3", "webm", "ogg", "flac", "aac", "m4a"];
+    if (!ALLOWED_FORMATS.includes(format.toLowerCase())) {
+      return NextResponse.json(
+        { error: `Invalid audio format. Allowed: ${ALLOWED_FORMATS.join(", ")}` },
+        { status: 400 },
+      );
+    }
+
+    // Validate project ownership
+    const project = await prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    });
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found or access denied" },
+        { status: 404 },
       );
     }
 
@@ -104,9 +125,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

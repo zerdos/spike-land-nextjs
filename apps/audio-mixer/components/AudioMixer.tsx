@@ -5,12 +5,27 @@
 
 "use client";
 
-import { Download, Pause, Play, Plus, Square, Volume2 } from "lucide-react";
+import {
+  Check,
+  Download,
+  Loader2,
+  Pause,
+  Play,
+  Plus,
+  RefreshCw,
+  Square,
+  Volume2,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAudioContext, useAudioRecording, useAudioTracks } from "../hooks";
+import {
+  useAudioContext,
+  useAudioRecording,
+  useAudioTracks,
+  useProjectPersistence,
+} from "../hooks";
 import { mixTracksToBlob } from "../lib/audio-engine";
 import { RecordingPanel } from "./RecordingPanel";
-import { TrackItem } from "./TrackItem";
+import { SortableTrackList } from "./SortableTrackList";
 
 export function AudioMixer() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -23,6 +38,12 @@ export function AudioMixer() {
   const audioContext = useAudioContext();
   const recording = useAudioRecording();
   const trackManager = useAudioTracks();
+
+  // Persistence
+  const [persistenceState, persistenceActions] = useProjectPersistence(
+    trackManager.tracks,
+    masterVolume,
+  );
 
   // Initialize audio context on first interaction
   const handleInitialize = useCallback(async () => {
@@ -138,7 +159,26 @@ export function AudioMixer() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Audio Mixer</h1>
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-3xl font-bold">Audio Mixer</h1>
+            {/* Save Status Indicator */}
+            {persistenceState.isSaving && (
+              <div className="flex items-center gap-1 text-gray-400 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Saving...</span>
+              </div>
+            )}
+            {!persistenceState.isSaving && persistenceState.lastSavedAt &&
+              !persistenceState.hasUnsavedChanges && (
+              <div className="flex items-center gap-1 text-green-400 text-sm">
+                <Check className="w-4 h-4" />
+                <span>Saved</span>
+              </div>
+            )}
+            {!persistenceState.isSaving && persistenceState.hasUnsavedChanges && (
+              <div className="text-yellow-400 text-sm">Unsaved changes</div>
+            )}
+          </div>
           <p className="text-gray-400">Layer tracks and record your own audio</p>
         </div>
 
@@ -257,31 +297,40 @@ export function AudioMixer() {
               </div>
             )
             : (
-              <div className="space-y-3">
-                {trackManager.tracks.map((track) => (
-                  <TrackItem
-                    key={track.id}
-                    track={track}
-                    onPlay={() => handlePlayTrack(track.id)}
-                    onStop={() => trackManager.stopTrack(track.id)}
-                    onVolumeChange={(volume) => trackManager.setVolume(track.id, volume)}
-                    onMuteToggle={() => trackManager.toggleMute(track.id)}
-                    onSoloToggle={() => trackManager.toggleSolo(track.id)}
-                    onRemove={() => trackManager.removeTrack(track.id)}
-                  />
-                ))}
-              </div>
+              <SortableTrackList
+                tracks={trackManager.tracks}
+                onReorder={trackManager.reorderTracks}
+                onPlay={handlePlayTrack}
+                onStop={trackManager.stopTrack}
+                onVolumeChange={trackManager.setVolume}
+                onMuteToggle={trackManager.toggleMute}
+                onSoloToggle={trackManager.toggleSolo}
+                onRemove={trackManager.removeTrack}
+                onDelayChange={trackManager.setDelay}
+                onTrimChange={trackManager.setTrim}
+              />
             )}
         </div>
 
-        {/* Clear All */}
+        {/* Clear All & New Project */}
         {trackManager.tracks.length > 0 && (
-          <div className="text-center">
+          <div className="flex items-center justify-center gap-4">
             <button
               onClick={trackManager.clearTracks}
               className="text-red-400 hover:text-red-300 text-sm transition-colors"
             >
               Clear All Tracks
+            </button>
+            <span className="text-gray-600">|</span>
+            <button
+              onClick={() => {
+                trackManager.clearTracks();
+                persistenceActions.createNewProject();
+              }}
+              className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              New Project
             </button>
           </div>
         )}
