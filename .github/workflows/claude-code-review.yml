@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1
+          fetch-depth: 30
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -37,8 +37,18 @@ jobs:
           cache: "yarn"
           cache-dependency-path: yarn.lock
 
-      # - name: Install dependencies
-      #   run: yarn --immutable-cache
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
 
       - name: Run Claude Code Review
         id: claude-review
