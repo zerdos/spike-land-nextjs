@@ -116,6 +116,9 @@ export default {
           "5": "hsl(var(--chart-5))",
         },
       },
+      textColor: {
+        primary: "hsl(var(--primary-text))",
+      },
     },
   },
   plugins: [],
