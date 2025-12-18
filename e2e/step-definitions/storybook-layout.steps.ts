@@ -73,8 +73,9 @@ When("I click the mobile menu button", async function(this: CustomWorld) {
   const menuButton = this.page.getByRole("button", { name: /toggle menu/i });
   await expect(menuButton).toBeVisible();
   await menuButton.click();
-  // Wait for drawer animation
-  await this.page.waitForTimeout(300);
+  // Wait for drawer to appear using Playwright's built-in waiting
+  const drawer = this.page.getByRole("dialog");
+  await expect(drawer).toBeVisible({ timeout: 5000 });
 });
 
 Then(
@@ -89,10 +90,9 @@ Then(
 Then(
   "the mobile navigation drawer should close",
   async function(this: CustomWorld) {
-    // Wait for animation
-    await this.page.waitForTimeout(500);
+    // Use Playwright's built-in waiting for element to be hidden/detached
     const drawer = this.page.getByRole("dialog");
-    await expect(drawer).not.toBeVisible({ timeout: 5000 });
+    await expect(drawer).toBeHidden({ timeout: 5000 });
   },
 );
 
@@ -136,8 +136,9 @@ When("I resize the viewport to mobile", async function(this: CustomWorld) {
     width: MOBILE_WIDTH,
     height: MOBILE_HEIGHT,
   });
-  // Wait for layout to adjust
-  await this.page.waitForTimeout(200);
+  // Wait for mobile menu button to appear (confirms responsive layout applied)
+  const menuButton = this.page.getByRole("button", { name: /toggle menu/i });
+  await expect(menuButton).toBeVisible({ timeout: 5000 });
 });
 
 When("I resize the viewport to desktop", async function(this: CustomWorld) {
@@ -145,6 +146,7 @@ When("I resize the viewport to desktop", async function(this: CustomWorld) {
     width: DESKTOP_WIDTH,
     height: DESKTOP_HEIGHT,
   });
-  // Wait for layout to adjust
-  await this.page.waitForTimeout(200);
+  // Wait for desktop sidebar to appear (confirms responsive layout applied)
+  const sidebar = this.page.locator("aside").first();
+  await expect(sidebar).toBeVisible({ timeout: 5000 });
 });
