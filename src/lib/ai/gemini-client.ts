@@ -1,9 +1,20 @@
 import { tryCatch } from "@/lib/try-catch";
 import { GoogleGenAI } from "@google/genai";
+import type { AspectRatio } from "./aspect-ratio";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
 // Configuration constants - exported for job metadata tracking
-export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+const PRODUCTION_MODEL = "gemini-3-pro-image-preview";
+const DEVELOPMENT_MODEL = "gemini-2.5-flash";
+
+/**
+ * Default model selection based on environment.
+ * - Production: gemini-3-pro-image-preview (higher quality, supports 2K/4K)
+ * - Development: gemini-2.5-flash (cheaper, faster, supports aspect ratios)
+ * Can be overridden via GEMINI_MODEL environment variable.
+ */
+export const DEFAULT_MODEL = process.env.GEMINI_MODEL ||
+  (process.env.NODE_ENV === "production" ? PRODUCTION_MODEL : DEVELOPMENT_MODEL);
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 // Timeout for Gemini API requests (configurable via env, default 5 minutes)
@@ -835,6 +846,8 @@ export interface GenerateImageParams {
   prompt: string;
   tier: "1K" | "2K" | "4K";
   negativePrompt?: string;
+  /** Optional aspect ratio for the generated image (default: 1:1) */
+  aspectRatio?: AspectRatio;
 }
 
 export interface ModifyImageParams {
@@ -842,6 +855,8 @@ export interface ModifyImageParams {
   imageData: string;
   mimeType: string;
   tier: "1K" | "2K" | "4K";
+  /** Optional aspect ratio - auto-detected from input image if not provided */
+  aspectRatio?: AspectRatio;
 }
 
 const GENERATION_BASE_PROMPT =
@@ -872,6 +887,7 @@ export async function generateImageWithGemini(
     responseModalities: ["IMAGE"],
     imageConfig: {
       imageSize: params.tier,
+      ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
     },
   };
 
@@ -897,7 +913,9 @@ export async function generateImageWithGemini(
 
   console.log(`Generating image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
+      params.aspectRatio || "1:1 (default)"
+    }`,
   );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
@@ -927,6 +945,7 @@ export async function modifyImageWithGemini(
     responseModalities: ["IMAGE"],
     imageConfig: {
       imageSize: params.tier,
+      ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
     },
   };
 
@@ -954,7 +973,9 @@ export async function modifyImageWithGemini(
 
   console.log(`Modifying image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
+      params.aspectRatio || "auto-detected"
+    }`,
   );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
@@ -967,7 +988,10 @@ export async function modifyImageWithGemini(
  */
 async function processGeminiStream(
   ai: GoogleGenAI,
-  config: { responseModalities: string[]; imageConfig: { imageSize: string; }; },
+  config: {
+    responseModalities: string[];
+    imageConfig: { imageSize: string; aspectRatio?: string; };
+  },
   contents: {
     role: "user";
     parts: Array<
