@@ -571,7 +571,7 @@ describe("gemini-client", () => {
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-3-pro-image-preview",
+          model: "gemini-2.5-flash", // Development environment uses flash model
           config: {
             responseModalities: ["IMAGE"],
             imageConfig: {
@@ -1702,8 +1702,10 @@ describe("gemini-client", () => {
   });
 
   describe("DEFAULT_MODEL export", () => {
-    it("should export the default model name", () => {
-      expect(DEFAULT_MODEL).toBe("gemini-3-pro-image-preview");
+    it("should export the default model name for test environment", () => {
+      // In test/development environment, defaults to gemini-2.5-flash
+      // In production, it would be gemini-3-pro-image-preview
+      expect(DEFAULT_MODEL).toBe("gemini-2.5-flash");
     });
   });
 
