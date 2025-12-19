@@ -41,6 +41,7 @@ import {
   Globe,
   GripVertical,
   ImageIcon,
+  Layers,
   Link as LinkIcon,
   Loader2,
   Lock,
@@ -116,10 +117,15 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
 
-  // Drag and drop state
+  // Drag and drop state (for reordering)
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
   const [dragOverImageId, setDragOverImageId] = useState<string | null>(null);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  // Blend drag-drop state (for dropping enhanced image onto another)
+  const [blendDragSourceId, setBlendDragSourceId] = useState<string | null>(null);
+  const [blendDropTargetId, setBlendDropTargetId] = useState<string | null>(null);
+  const [blendingImageId, setBlendingImageId] = useState<string | null>(null);
 
   // Move to album dialog state
   const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -421,7 +427,127 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   const handleDragEnd = () => {
     setDraggedImageId(null);
     setDragOverImageId(null);
+    setBlendDragSourceId(null);
+    setBlendDropTargetId(null);
   };
+
+  // Helper function to fetch image URL and convert to base64
+  const fetchImageAsBase64 = useCallback(
+    async (url: string): Promise<{ base64: string; mimeType: string; }> => {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const mimeType = blob.type || "image/jpeg";
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(",")[1];
+          if (base64) {
+            resolve({ base64, mimeType });
+          } else {
+            reject(new Error("Failed to convert image to base64"));
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    },
+    [],
+  );
+
+  // Blend drag-drop handlers (for dropping enhanced image onto another image)
+  const handleBlendDragStart = useCallback(
+    (e: React.DragEvent, imageId: string, enhancedUrl: string) => {
+      if (isSelectionMode) return;
+
+      // Mark this as a blend drag operation
+      e.dataTransfer.setData(
+        "application/x-blend-image",
+        JSON.stringify({
+          imageId,
+          enhancedUrl,
+        }),
+      );
+      e.dataTransfer.effectAllowed = "copy";
+      setBlendDragSourceId(imageId);
+      setDraggedImageId(imageId);
+    },
+    [isSelectionMode],
+  );
+
+  const handleBlendDragOver = useCallback((e: React.DragEvent, targetImageId: string) => {
+    // Check if this is a blend drag operation
+    if (!e.dataTransfer.types.includes("application/x-blend-image")) {
+      return;
+    }
+
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+
+    // Only set target if different from source
+    if (blendDragSourceId && blendDragSourceId !== targetImageId) {
+      setBlendDropTargetId(targetImageId);
+    }
+  }, [blendDragSourceId]);
+
+  const handleBlendDrop = useCallback(async (e: React.DragEvent, targetImageId: string) => {
+    e.preventDefault();
+
+    // Check if this is a blend drag operation
+    const blendData = e.dataTransfer.getData("application/x-blend-image");
+    if (!blendData) {
+      setBlendDropTargetId(null);
+      return;
+    }
+
+    try {
+      const { imageId: sourceImageId, enhancedUrl } = JSON.parse(blendData);
+
+      // Don't blend with self
+      if (sourceImageId === targetImageId) {
+        setBlendDropTargetId(null);
+        setBlendDragSourceId(null);
+        return;
+      }
+
+      // Set blending state for visual feedback
+      setBlendingImageId(targetImageId);
+      setBlendDropTargetId(null);
+      setBlendDragSourceId(null);
+      setDraggedImageId(null);
+
+      // Fetch the enhanced image as base64
+      const { base64, mimeType } = await fetchImageAsBase64(enhancedUrl);
+
+      // Call enhance API with blend source
+      const response = await fetch("/api/images/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageId: targetImageId,
+          tier: "TIER_1K", // Always use 2 tokens for drag-drop blend
+          blendSource: { base64, mimeType },
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Enhancement failed");
+      }
+
+      // Refresh album to get updated image data after a delay
+      // The actual enhancement is async, so we poll or rely on user refresh
+      setTimeout(() => {
+        fetchAlbum();
+      }, 2000);
+    } catch (error) {
+      console.error("Blend enhancement failed:", error);
+      alert(error instanceof Error ? error.message : "Blend enhancement failed");
+    } finally {
+      setBlendingImageId(null);
+    }
+  }, [fetchImageAsBase64, fetchAlbum]);
 
   // File drag and drop handlers
   const handleFileDragEnter = (e: React.DragEvent) => {
@@ -873,12 +999,34 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                       draggedImageId === image.id ? "opacity-50" : ""
                     } ${dragOverImageId === image.id ? "ring-2 ring-primary" : ""} ${
                       selectedImages.has(image.id) ? "ring-2 ring-primary" : ""
+                    } ${blendDropTargetId === image.id ? "ring-2 ring-purple-500 scale-105" : ""} ${
+                      blendingImageId === image.id ? "animate-pulse" : ""
                     }`}
                     draggable={album.isOwner && !isSelectionMode}
-                    onDragStart={(e) => handleDragStart(e, image.id)}
-                    onDragOver={(e) => handleDragOver(e, image.id)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, image.id)}
+                    onDragStart={(e) => {
+                      // If enhanced image, use blend drag; otherwise, use reorder drag
+                      if (image.enhancedUrl) {
+                        handleBlendDragStart(e, image.id, image.enhancedUrl);
+                      } else {
+                        handleDragStart(e, image.id);
+                      }
+                    }}
+                    onDragOver={(e) => {
+                      handleDragOver(e, image.id);
+                      handleBlendDragOver(e, image.id);
+                    }}
+                    onDragLeave={() => {
+                      handleDragLeave();
+                      setBlendDropTargetId(null);
+                    }}
+                    onDrop={(e) => {
+                      // Try blend drop first, then regular drop
+                      if (e.dataTransfer.types.includes("application/x-blend-image")) {
+                        handleBlendDrop(e, image.id);
+                      } else {
+                        handleDrop(e, image.id);
+                      }
+                    }}
                     onDragEnd={handleDragEnd}
                     onClick={(e) => {
                       if (!isSelectionMode && !draggedImageId) {
@@ -908,6 +1056,27 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                           <Star className="h-3 w-3 mr-1 fill-current" />
                           Cover
                         </Badge>
+                      )}
+                      {/* Blend drop target overlay */}
+                      {blendDropTargetId === image.id && (
+                        <div className="absolute inset-0 bg-purple-500/30 backdrop-blur-sm flex items-center justify-center pointer-events-none z-10">
+                          <div className="bg-background/95 rounded-lg p-3 text-center shadow-lg border">
+                            <Layers className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                            <p className="text-sm font-medium">Drop to Blend</p>
+                          </div>
+                        </div>
+                      )}
+                      {/* Blending in progress overlay */}
+                      {blendingImageId === image.id && (
+                        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center pointer-events-none z-10">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-purple-500" />
+                            <Badge className="bg-purple-500">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              Enhancing...
+                            </Badge>
+                          </div>
+                        </div>
                       )}
                       {album.isOwner && !isSelectionMode && (
                         <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">

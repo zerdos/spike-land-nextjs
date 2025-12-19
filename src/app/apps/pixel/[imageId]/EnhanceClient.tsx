@@ -126,9 +126,89 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   const handleImageDrop = useCallback(
     (imageData: BlendImageData) => {
       setBlendImageData(imageData);
-      setShowBlendDialog(true);
+      // Don't show dialog - auto-enhance will handle it
     },
     [],
+  );
+
+  // Auto-enhance on drop with TIER_1K (2 tokens)
+  const handleAutoEnhance = useCallback(
+    async (imageData: BlendImageData) => {
+      // Set blend data first
+      setBlendImageData(imageData);
+
+      try {
+        const response = await fetch("/api/images/enhance", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageId: image.id,
+            tier: "TIER_1K", // Always use 2 tokens for drag-drop enhancement
+            blendSource: {
+              base64: imageData.base64,
+              mimeType: imageData.mimeType,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Enhancement failed");
+        }
+
+        const result = await response.json();
+
+        const newJob: ImageEnhancementJob = {
+          id: result.jobId,
+          userId: image.userId,
+          imageId: image.id,
+          tier: "TIER_1K",
+          status: "PROCESSING",
+          currentStage: null,
+          tokensCost: result.tokensCost || 2,
+          enhancedUrl: null,
+          enhancedR2Key: null,
+          enhancedWidth: null,
+          enhancedHeight: null,
+          enhancedSizeBytes: null,
+          errorMessage: null,
+          retryCount: 0,
+          maxRetries: 3,
+          geminiPrompt: null,
+          geminiModel: null,
+          geminiTemp: null,
+          workflowRunId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          processingStartedAt: null,
+          processingCompletedAt: null,
+          analysisResult: null,
+          analysisSource: null,
+          wasCropped: false,
+          cropDimensions: null,
+          pipelineId: null,
+          sourceImageId: null,
+        };
+
+        setImage((prev: ImageWithJobs) => ({
+          ...prev,
+          enhancementJobs: [newJob, ...prev.enhancementJobs],
+        }));
+
+        setActiveJobId(result.jobId);
+        refetchBalance();
+
+        // Reset blend state after triggering enhancement
+        setBlendImageData(null);
+      } catch (error) {
+        console.error("Auto-enhancement request failed:", error);
+        alert(error instanceof Error ? error.message : "Enhancement failed");
+        setBlendImageData(null);
+      }
+    },
+    [image.id, image.userId, refetchBalance],
   );
 
   const handleEnhance = async (tier: EnhancementTier) => {
@@ -325,6 +405,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
       <DroppableEnhanceZone
         onImageDrop={handleImageDrop}
+        onAutoEnhance={handleAutoEnhance}
         disabled={activeJobId !== null}
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">

@@ -302,6 +302,10 @@ describe("rate-limiter", () => {
     });
 
     it("should detect KV availability via ping", async () => {
+      // Set env vars to enable KV check
+      process.env.KV_REST_API_URL = "https://test.kv.vercel.com";
+      process.env.KV_REST_API_TOKEN = "test-token";
+
       mockedKV.ping.mockResolvedValue("PONG");
       mockedKV.get.mockResolvedValue(null);
       mockedKV.set.mockResolvedValue("OK");
@@ -313,9 +317,17 @@ describe("rate-limiter", () => {
 
       expect(mockedKV.ping).toHaveBeenCalled();
       expect(mockedKV.get).toHaveBeenCalled();
+
+      // Clean up
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
     });
 
     it("should fall back to memory when ping fails", async () => {
+      // Set env vars to enable KV check
+      process.env.KV_REST_API_URL = "https://test.kv.vercel.com";
+      process.env.KV_REST_API_TOKEN = "test-token";
+
       mockedKV.ping.mockRejectedValue(new Error("KV not available"));
 
       resetKVAvailability();
@@ -328,9 +340,17 @@ describe("rate-limiter", () => {
       expect(mockedKV.ping).toHaveBeenCalled();
       expect(mockedKV.get).not.toHaveBeenCalled(); // Should not try to use KV
       expect(result.isLimited).toBe(false);
+
+      // Clean up
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
     });
 
     it("should cache KV availability status", async () => {
+      // Set env vars to enable KV check
+      process.env.KV_REST_API_URL = "https://test.kv.vercel.com";
+      process.env.KV_REST_API_TOKEN = "test-token";
+
       mockedKV.ping.mockResolvedValue("PONG");
       mockedKV.get.mockResolvedValue(null);
       mockedKV.set.mockResolvedValue("OK");
@@ -343,9 +363,17 @@ describe("rate-limiter", () => {
 
       // Ping should only be called once due to caching
       expect(mockedKV.ping).toHaveBeenCalledTimes(1);
+
+      // Clean up
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
     });
 
     it("should reset availability cache with resetKVAvailability", async () => {
+      // Set env vars to enable KV check
+      process.env.KV_REST_API_URL = "https://test.kv.vercel.com";
+      process.env.KV_REST_API_TOKEN = "test-token";
+
       mockedKV.ping.mockResolvedValue("PONG");
       mockedKV.get.mockResolvedValue(null);
       mockedKV.set.mockResolvedValue("OK");
@@ -358,6 +386,27 @@ describe("rate-limiter", () => {
 
       // Should ping twice due to reset
       expect(mockedKV.ping).toHaveBeenCalledTimes(2);
+
+      // Clean up
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
+    });
+
+    it("should skip KV ping when env vars are not set", async () => {
+      // Ensure env vars are not set
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
+
+      resetKVAvailability();
+
+      const result = await checkRateLimit("user1", {
+        maxRequests: 5,
+        windowMs: 1000,
+      });
+
+      // Should not attempt to ping KV when env vars are missing
+      expect(mockedKV.ping).not.toHaveBeenCalled();
+      expect(result.isLimited).toBe(false);
     });
   });
 

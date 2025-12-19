@@ -17,6 +17,8 @@ export interface BlendImageData {
 interface DroppableEnhanceZoneProps {
   /** Callback when an image file is dropped onto the zone */
   onImageDrop: (imageData: BlendImageData) => void;
+  /** Optional callback to auto-trigger enhancement after drop (for automatic enhancement flow) */
+  onAutoEnhance?: (imageData: BlendImageData) => Promise<void>;
   /** Whether the drop zone is disabled */
   disabled?: boolean;
   /** Child content to render inside the drop zone */
@@ -39,6 +41,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
  */
 export function DroppableEnhanceZone({
   onImageDrop,
+  onAutoEnhance,
   disabled = false,
   children,
 }: DroppableEnhanceZoneProps) {
@@ -114,11 +117,18 @@ export function DroppableEnhanceZone({
           reader.readAsDataURL(file);
         });
 
-        onImageDrop({
+        const imageData: BlendImageData = {
           base64,
           mimeType: file.type,
           fileName: file.name,
-        });
+        };
+
+        onImageDrop(imageData);
+
+        // If auto-enhance callback is provided, trigger enhancement immediately
+        if (onAutoEnhance) {
+          await onAutoEnhance(imageData);
+        }
       } catch (error) {
         console.error("Failed to process dropped image:", error);
         alert("Failed to process the image. Please try again.");
@@ -126,7 +136,7 @@ export function DroppableEnhanceZone({
         setIsProcessing(false);
       }
     },
-    [onImageDrop],
+    [onImageDrop, onAutoEnhance],
   );
 
   const handleDrop = useCallback(
