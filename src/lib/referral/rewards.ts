@@ -57,7 +57,7 @@ export async function completeReferralAndGrantRewards(
   }
 
   // Grant tokens to both users in transaction
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: result, error: transactionError } = await tryCatch(
     prisma.$transaction(async (tx: any) => {
       // Grant tokens to referrer

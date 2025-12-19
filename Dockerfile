@@ -74,6 +74,7 @@ COPY tailwind.config.ts eslint.config.mjs ./
 COPY src ./src
 COPY apps ./apps
 COPY public ./public
+COPY content ./content
 
 # ============================================================================
 # STAGE: Development server (for docker-compose)

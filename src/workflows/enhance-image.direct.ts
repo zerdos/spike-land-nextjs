@@ -164,7 +164,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   // Step 2: Get image metadata
   console.log(`[Dev Enhancement] Getting image metadata`);
-  let sharpMetadata = await sharp(imageBuffer).metadata();
+  const sharpMetadata = await sharp(imageBuffer).metadata();
   let width = sharpMetadata.width || DEFAULT_IMAGE_DIMENSION;
   let height = sharpMetadata.height || DEFAULT_IMAGE_DIMENSION;
 

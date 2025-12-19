@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
   // Use transaction to atomically:
   // 1. Consume tokens
   // 2. Create all jobs
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: result, error: transactionError } = await tryCatch(
     prisma.$transaction(async (tx: any) => {
       // Consume tokens atomically
