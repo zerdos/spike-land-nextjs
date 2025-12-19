@@ -297,16 +297,7 @@ When(
   },
 );
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  const deleteButton = this.page.locator('[role="alertdialog"]').getByRole(
-    "button",
-    {
-      name: /delete|confirm/i,
-    },
-  );
-  await deleteButton.click();
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 // Form interactions
 When(
@@ -480,15 +471,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} section",
-  async function(this: CustomWorld, sectionTitle: string) {
-    const section = this.page.getByRole("heading", {
-      name: new RegExp(sectionTitle, "i"),
-    });
-    await expect(section).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} section" is defined in common.steps.ts
 
 Then(
   "I should only see pipelines matching {string}",
@@ -661,13 +644,7 @@ Then(
   },
 );
 
-Then(
-  "I should see the delete confirmation dialog",
-  async function(this: CustomWorld) {
-    const alertDialog = this.page.locator('[role="alertdialog"]');
-    await expect(alertDialog).toBeVisible();
-  },
-);
+// NOTE: "I should see the delete confirmation dialog" is defined in common.steps.ts
 
 Then(
   "{string} should be removed from {string}",

@@ -335,16 +335,7 @@ When(
   },
 );
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  const deleteButton = this.page.locator('[role="dialog"]').getByRole(
-    "button",
-    {
-      name: /delete/i,
-    },
-  );
-  await deleteButton.click();
-  await this.page.waitForLoadState("networkidle");
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 When("I cancel the deletion", async function(this: CustomWorld) {
   const cancelButton = this.page.locator('[role="dialog"]').getByRole(
@@ -526,13 +517,7 @@ Then(
   },
 );
 
-Then(
-  "I should see the delete confirmation dialog",
-  async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-  },
-);
+// NOTE: "I should see the delete confirmation dialog" is defined in common.steps.ts
 
 Then("the gallery item should be removed", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");

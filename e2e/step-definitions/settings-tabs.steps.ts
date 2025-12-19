@@ -122,13 +122,7 @@ Then(
   },
 );
 
-Then(
-  "I should see the delete confirmation dialog",
-  async function(this: CustomWorld) {
-    const dialog = this.page.getByRole("alertdialog");
-    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should see the delete confirmation dialog" is defined in common.steps.ts
 
 Then(
   "the key should be removed from the list",

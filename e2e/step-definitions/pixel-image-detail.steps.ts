@@ -377,28 +377,7 @@ When(
   },
 );
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  // Mock the delete API
-  await this.page.route("**/api/jobs/*", async (route) => {
-    if (route.request().method() === "DELETE") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ success: true }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
-
-  const confirmButton = this.page.getByRole("button", {
-    name: /confirm|yes|delete/i,
-  });
-  if (await confirmButton.isVisible()) {
-    await confirmButton.click();
-    await this.page.waitForTimeout(300);
-  }
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 // Assertion steps
 Then(

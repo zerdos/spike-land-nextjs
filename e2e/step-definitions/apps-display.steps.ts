@@ -49,14 +49,7 @@ Then(
 );
 
 // NOTE: "I should see the description {string}" step is defined in home-page.steps.ts
-
-Then(
-  "I should see {string} section",
-  async function(this: CustomWorld, sectionName: string) {
-    const section = this.page.getByRole("heading", { name: sectionName });
-    await expect(section).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see {string} section" is defined in common.steps.ts
 
 Then(
   "I should see the app card {string}",

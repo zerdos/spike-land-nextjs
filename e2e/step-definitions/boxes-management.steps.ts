@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPageLoad } from "../support/helpers/retry-helper";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { BoxesPage } from "../support/page-objects/BoxesPage";
 import { CustomWorld } from "../support/world";
 
@@ -294,21 +294,8 @@ Then(
 );
 
 // Delete box steps
-Then(
-  "I should see the delete confirmation dialog",
-  async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
-    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
-
-When("I confirm the deletion", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", {
-    name: /Confirm|Delete|Yes/i,
-  });
-  await confirmButton.click();
-  await waitForPageLoad(this.page);
-});
+// NOTE: "I should see the delete confirmation dialog" is defined in common.steps.ts
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 Then(
   "I should still be on the box detail page",
