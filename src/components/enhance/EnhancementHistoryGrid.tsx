@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MASONRY_BREAKPOINTS_GALLERY, MASONRY_CLASSES, MASONRY_ITEM_MARGIN } from "@/lib/canvas";
 import { formatFileSize } from "@/lib/utils";
 import type { EnhancementTier, JobStatus, PipelineStage } from "@prisma/client";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Layers, Loader2, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
@@ -39,6 +39,8 @@ export interface EnhancementVersion {
   status: JobStatus;
   currentStage?: PipelineStage | null;
   sizeBytes?: number | null;
+  /** If present, this enhancement was created by blending with another image */
+  sourceImageId?: string | null;
 }
 
 interface EnhancementHistoryGridProps {
@@ -220,6 +222,17 @@ export function EnhancementHistoryGrid({
               >
                 {tierLabels[version.tier]}
               </Badge>
+
+              {/* Blend Badge */}
+              {version.sourceImageId && (
+                <Badge
+                  variant="outline"
+                  className="absolute top-2 left-12 text-xs font-semibold bg-pink-500/20 text-pink-400 border-pink-500/30 flex items-center gap-1"
+                >
+                  <Layers className="h-3 w-3" />
+                  Blend
+                </Badge>
+              )}
 
               {/* Delete/Cancel Button */}
               {isDeletable && (

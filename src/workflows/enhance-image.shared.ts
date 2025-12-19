@@ -31,6 +31,14 @@ export const ENHANCED_JPEG_QUALITY = 95;
 export const DEFAULT_IMAGE_DIMENSION = 1024;
 export const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 };
 
+/** Data for a blend source image (uploaded by user, not stored) */
+export interface BlendSourceData {
+  /** Base64-encoded image data */
+  base64: string;
+  /** MIME type of the image (e.g., "image/jpeg") */
+  mimeType: string;
+}
+
 // Types
 export interface EnhanceImageInput {
   jobId: string;
@@ -39,6 +47,10 @@ export interface EnhanceImageInput {
   originalR2Key: string;
   tier: EnhancementTier;
   tokensCost: number;
+  /** Optional R2 key for blend source image (image-to-image blending) - deprecated, use blendSource */
+  sourceImageR2Key?: string | null;
+  /** Optional base64 image data for blend source (uploaded by user, not stored) */
+  blendSource?: BlendSourceData | null;
 }
 
 export interface ImageMetadata {
@@ -83,6 +95,25 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
 
   if (typeof input.tokensCost !== "number" || input.tokensCost < 0) {
     throw new Error("Invalid tokensCost: must be a non-negative number");
+  }
+
+  // sourceImageR2Key is optional, but if provided must be a string
+  if (
+    input.sourceImageR2Key !== undefined &&
+    input.sourceImageR2Key !== null &&
+    typeof input.sourceImageR2Key !== "string"
+  ) {
+    throw new Error("Invalid sourceImageR2Key: must be a string or null");
+  }
+
+  // blendSource is optional, but if provided must have base64 and mimeType
+  if (input.blendSource !== undefined && input.blendSource !== null) {
+    if (typeof input.blendSource.base64 !== "string" || !input.blendSource.base64) {
+      throw new Error("Invalid blendSource.base64: must be a non-empty string");
+    }
+    if (typeof input.blendSource.mimeType !== "string" || !input.blendSource.mimeType) {
+      throw new Error("Invalid blendSource.mimeType: must be a non-empty string");
+    }
   }
 }
 

@@ -1,11 +1,13 @@
 import {
   type AnalysisDetailedResult,
   analyzeImageV2,
+  buildBlendEnhancementPrompt,
   buildDynamicEnhancementPrompt,
   DEFAULT_MODEL,
   DEFAULT_TEMPERATURE,
   enhanceImageWithGemini,
   type ImageAnalysisResultV2,
+  type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
@@ -134,6 +136,38 @@ async function saveAnalysisToDb(
       analysisSource: DEFAULT_MODEL,
     },
   });
+}
+
+/**
+ * Step 4b: Download and prepare blend source image for reference
+ * Returns ReferenceImageData if successful, undefined if failed
+ */
+async function downloadBlendSourceStep(
+  sourceR2Key: string,
+): Promise<ReferenceImageData | undefined> {
+  "use step";
+
+  try {
+    const sourceBuffer = await downloadFromR2(sourceR2Key);
+    if (!sourceBuffer) {
+      console.warn("Blend source download returned null");
+      return undefined;
+    }
+
+    const sourceMetadata = await sharp(sourceBuffer).metadata();
+    const sourceMimeType = sourceMetadata.format
+      ? `image/${sourceMetadata.format === "jpeg" ? "jpeg" : sourceMetadata.format}`
+      : "image/jpeg";
+
+    return {
+      imageData: sourceBuffer.toString("base64"),
+      mimeType: sourceMimeType,
+      description: "Image to blend/merge with target",
+    };
+  } catch (error) {
+    console.warn("Failed to download blend source:", error);
+    return undefined;
+  }
 }
 
 /**
@@ -269,6 +303,7 @@ async function enhanceWithGemini(
   originalWidth: number,
   originalHeight: number,
   promptOverride: string,
+  referenceImages?: ReferenceImageData[],
 ): Promise<Buffer> {
   "use step";
 
@@ -280,6 +315,7 @@ async function enhanceWithGemini(
       originalWidth,
       originalHeight,
       promptOverride,
+      referenceImages,
     });
     return enhanced;
   } catch (error) {
@@ -471,13 +507,28 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
 }> {
   "use workflow";
 
-  const { jobId, userId, originalR2Key, tier, tokensCost } = input;
+  const { jobId, userId, originalR2Key, tier, tokensCost, sourceImageR2Key, blendSource } = input;
 
   try {
     // === STAGE 1: ANALYSIS ===
 
     // Step 1: Download original image
     let imageBuffer = await downloadOriginalImage(originalR2Key);
+
+    // Step 1b: Prepare blend source image for reference (if applicable)
+    // Priority: blendSource (new - base64 data) > sourceImageR2Key (deprecated - R2 key)
+    let sourceImageData: ReferenceImageData | undefined;
+    if (blendSource) {
+      // New approach: base64 data provided directly (no download needed)
+      sourceImageData = {
+        imageData: blendSource.base64,
+        mimeType: blendSource.mimeType,
+        description: "Image to blend/merge with target",
+      };
+    } else if (sourceImageR2Key) {
+      // Deprecated: download from R2 (for backwards compatibility)
+      sourceImageData = await downloadBlendSourceStep(sourceImageR2Key);
+    }
 
     // Step 2: Get image metadata
     const metadata = await getImageMetadata(imageBuffer);
@@ -520,10 +571,10 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
       currentHeight,
     );
 
-    // Build dynamic enhancement prompt based on analysis
-    const dynamicPrompt = buildDynamicEnhancementPrompt(
-      analysisResult.structuredAnalysis,
-    );
+    // Build enhancement prompt based on analysis (blend or dynamic)
+    const dynamicPrompt = sourceImageData
+      ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
+      : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
     // Step 7: Enhance with Gemini using dynamic prompt
     const enhancedBuffer = await enhanceWithGemini(
@@ -533,6 +584,7 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
       currentWidth,
       currentHeight,
       dynamicPrompt,
+      sourceImageData ? [sourceImageData] : undefined,
     );
 
     // === STAGE 4: POST-PROCESSING ===

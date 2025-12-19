@@ -283,6 +283,54 @@ export function buildDynamicEnhancementPrompt(
 }
 
 /**
+ * Builds a prompt for blending two images together creatively.
+ * Used when sourceImageId is provided for image-to-image enhancement.
+ *
+ * @param targetAnalysis - Structured analysis result from vision model for the target image
+ * @returns Enhancement prompt tailored for blending two images
+ */
+export function buildBlendEnhancementPrompt(
+  targetAnalysis: AnalysisDetailedResult,
+): string {
+  let instruction = `You are a professional image artist specializing in creative image blending.
+You have been given TWO images:
+1. The TARGET image (the main image to enhance)
+2. The SOURCE image (a reference image to blend elements from)
+
+Your task is to creatively merge visual elements, styles, or subjects from the SOURCE image into the TARGET image while maintaining a cohesive, professional result.
+
+Guidelines:
+- Preserve the core composition and subject of the TARGET image
+- Incorporate artistic elements, color palette, or stylistic qualities from the SOURCE image
+- The result should look like a natural, professional photograph
+- Blend seamlessly without obvious artificial transitions
+`;
+
+  // Add target image defect corrections if any
+  const defects = targetAnalysis.defects;
+  if (defects.isDark) {
+    instruction += `- The target image is dark - ensure proper lighting in the blended result\n`;
+  }
+  if (defects.hasNoise) {
+    instruction += `- Remove any noise or grain from the final result\n`;
+  }
+  if (defects.isBlurry) {
+    instruction += `- Ensure the final result is sharp and in focus\n`;
+  }
+  if (defects.isOverexposed) {
+    instruction += `- Balance exposure in the final result\n`;
+  }
+  if (defects.hasColorCast && defects.colorCastType) {
+    instruction += `- Correct the ${defects.colorCastType} color cast in the final result\n`;
+  }
+
+  instruction += `
+Final Output: A stunning, high-quality photograph that artistically blends both images into a cohesive masterpiece.`;
+
+  return instruction;
+}
+
+/**
  * Returns default analysis result for fallback scenarios.
  * Used when vision model analysis fails or times out.
  * @internal

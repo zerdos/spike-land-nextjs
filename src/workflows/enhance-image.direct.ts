@@ -15,10 +15,12 @@
 
 import {
   analyzeImageV2,
+  buildBlendEnhancementPrompt,
   buildDynamicEnhancementPrompt,
   DEFAULT_MODEL,
   DEFAULT_TEMPERATURE,
   enhanceImageWithGemini,
+  type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
@@ -75,16 +77,30 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
   // Validate input parameters
   validateEnhanceImageInput(input);
 
-  const { jobId, userId, originalR2Key, tier, tokensCost } = input;
+  const { jobId, userId, originalR2Key, tier, tokensCost, blendSource } = input;
 
   try {
-    console.log(`[Dev Enhancement] Starting job ${jobId} (${tier})`);
+    const isBlendMode = !!blendSource;
+    console.log(
+      `[Dev Enhancement] Starting job ${jobId} (${tier})${isBlendMode ? " [BLEND MODE]" : ""}`,
+    );
 
     // Step 1: Download original image
     console.log(`[Dev Enhancement] Downloading from R2: ${originalR2Key}`);
     let imageBuffer = await downloadFromR2(originalR2Key);
     if (!imageBuffer) {
       throw new Error("Failed to download original image from R2");
+    }
+
+    // Step 1b: Prepare blend source data (if provided - already base64 from client upload)
+    let sourceImageData: ReferenceImageData | null = null;
+    if (blendSource) {
+      console.log(`[Dev Enhancement] Using uploaded blend source (${blendSource.mimeType})`);
+      sourceImageData = {
+        imageData: blendSource.base64,
+        mimeType: blendSource.mimeType,
+        description: "Image to blend/merge with target",
+      };
     }
 
     // Step 2: Get image metadata
@@ -196,14 +212,16 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
       });
     }
 
-    // Step 5: STAGE 3 - Build dynamic enhancement prompt
+    // Step 5: STAGE 3 - Build enhancement prompt (blend or dynamic)
     console.log(
-      `[Dev Enhancement] Stage 3: Building dynamic enhancement prompt`,
+      `[Dev Enhancement] Stage 3: Building ${
+        sourceImageData ? "blend" : "dynamic"
+      } enhancement prompt`,
     );
     await updateJobStage(jobId, PipelineStage.PROMPTING);
-    const dynamicPrompt = buildDynamicEnhancementPrompt(
-      analysisResult.structuredAnalysis,
-    );
+    const dynamicPrompt = sourceImageData
+      ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
+      : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
     // Step 6: Prepare image for Gemini (pad to square)
     console.log(`[Dev Enhancement] Preparing image for Gemini`);
@@ -219,7 +237,9 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt
     console.log(
-      `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement`,
+      `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
+        sourceImageData ? " [BLEND]" : ""
+      }`,
     );
     await updateJobStage(jobId, PipelineStage.GENERATING);
     const enhancedBuffer = await enhanceImageWithGemini({
@@ -229,6 +249,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
       originalWidth: width,
       originalHeight: height,
       promptOverride: dynamicPrompt,
+      referenceImages: sourceImageData ? [sourceImageData] : undefined,
     });
 
     // Step 8: Post-process and upload
