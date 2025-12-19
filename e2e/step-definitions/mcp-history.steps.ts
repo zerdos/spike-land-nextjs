@@ -179,18 +179,7 @@ Then(
   },
 );
 
-When(
-  "I select {string} from the type filter",
-  async function(this: CustomWorld, filterValue: string) {
-    const filter = this.page.locator('[role="combobox"]').first();
-    await filter.click();
-    await this.page.waitForTimeout(300);
-
-    const option = this.page.getByRole("option", { name: filterValue });
-    await option.click();
-    await this.page.waitForTimeout(500);
-  },
-);
+// NOTE: "I select {string} from the type filter" is defined in common.steps.ts
 
 Then(
   "I should only see Generate type jobs",
@@ -253,11 +242,7 @@ Then("I should see the job ID", async function(this: CustomWorld) {
   await expect(jobIdLabel).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
-Then("I should see the tier information", async function(this: CustomWorld) {
-  const modal = this.page.locator('[role="dialog"]');
-  const tierLabel = modal.getByText("Tier");
-  await expect(tierLabel).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+// NOTE: "I should see the tier information" is defined in common.steps.ts
 
 // NOTE: "I should see the tokens used" is defined in common.steps.ts
 

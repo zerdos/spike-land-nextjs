@@ -840,14 +840,7 @@ Then("the indicator should disappear", async function(this: CustomWorld) {
   await expect(savingIndicator).not.toBeVisible({ timeout: 5000 });
 });
 
-Then("I should see an error message", async function(this: CustomWorld) {
-  // Look for error alert or toast
-  const errorMessage = this.page.getByText(/failed/i).or(
-    this.page.locator('[role="alert"]').filter({ hasText: /error/i }),
-  );
-
-  await expect(errorMessage.first()).toBeVisible({ timeout: 5000 });
-});
+// NOTE: "I should see an error message" is defined in common.steps.ts
 
 Then(
   "the images should revert to their original order",

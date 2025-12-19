@@ -260,15 +260,7 @@ Then("I should see email input field", async function(this: CustomWorld) {
   await expect(emailInput).toBeVisible();
 });
 
-Then(
-  "I should see search input with placeholder {string}",
-  async function(this: CustomWorld, placeholder: string) {
-    const searchInput = this.page.locator(
-      `input[placeholder*="${placeholder}"]`,
-    );
-    await expect(searchInput).toBeVisible();
-  },
-);
+// NOTE: "I should see search input with placeholder {string}" is defined in common.steps.ts
 
 Then(
   "I should see status filter dropdown with {string} option",
@@ -560,16 +552,7 @@ Then(
   },
 );
 
-Then(
-  "PENDING status badge should be yellow",
-  async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "PENDING",
-    }).first();
-    const className = await badge.getAttribute("class");
-    expect(className).toContain("yellow");
-  },
-);
+// NOTE: "PENDING status badge should be yellow" is defined in common.steps.ts
 
 Then("SENT status badge should be blue", async function(this: CustomWorld) {
   const badge = this.page.locator('[class*="Badge"]').filter({
@@ -617,13 +600,7 @@ Then("BOUNCED status badge should be red", async function(this: CustomWorld) {
   expect(className).toContain("red");
 });
 
-Then("FAILED status badge should be red", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({
-    hasText: "FAILED",
-  }).first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("red");
-});
+// NOTE: "FAILED status badge should be red" is defined in common.steps.ts
 
 Then("I should see pagination controls", async function(this: CustomWorld) {
   const pagination = this.page.locator("text=Page 1 of");

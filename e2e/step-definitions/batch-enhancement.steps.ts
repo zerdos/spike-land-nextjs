@@ -386,17 +386,7 @@ When("I navigate to my album", async function(this: CustomWorld) {
 });
 
 // NOTE: "I click {string} button" is defined in common.steps.ts
-
-When(
-  "I click {string} button in the dialog",
-  async function(this: CustomWorld, buttonText: string) {
-    const dialog = this.page.locator('[role="dialog"]');
-    const button = dialog.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await button.click();
-  },
-);
+// NOTE: "I click {string} button in the dialog" is defined in common.steps.ts
 
 When(
   "I select {string} enhancement tier",
