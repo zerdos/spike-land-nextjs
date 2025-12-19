@@ -1,0 +1,54 @@
+# Docker Compose for spike-land development
+#
+# Usage:
+#   docker-compose up dev --build       # Start dev server on port 3000
+#   docker-compose up production --build # Start production server on port 3001
+#   docker-compose logs -f dev          # Follow logs
+#   docker-compose down                 # Stop and remove containers
+
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    volumes:
+      # Mount source directories for hot reload (read-write for workflow package)
+      - ./src:/app/src
+      - ./apps:/app/apps
+      - ./public:/app/public
+    environment:
+      - NODE_ENV=development
+      - NEXTAUTH_URL=http://localhost:3000
+      - SKIP_ENV_VALIDATION=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 3s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+
+  # Production server (uses standalone build) - runs on port 3001
+  production:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - production
