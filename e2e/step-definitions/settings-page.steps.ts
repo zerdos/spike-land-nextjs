@@ -41,15 +41,7 @@ Then("I should see the settings tabs", async function(this: CustomWorld) {
 
 // NOTE: "I click the {string} tab" is defined in common.steps.ts
 
-Then(
-  "the {string} tab should be active",
-  async function(this: CustomWorld, tabName: string) {
-    const tab = this.page.getByRole("tab", { name: tabName });
-    await expect(tab).toHaveAttribute("aria-selected", "true", {
-      timeout: 5000,
-    });
-  },
-);
+// NOTE: "the {string} tab should be active" is defined in common.steps.ts
 
 Then(
   "the {string} tab should not be active",

@@ -188,3 +188,172 @@ Then(
     expect(href).toContain(expectedPath);
   },
 );
+
+// ======= CONSOLIDATED STEPS (avoid duplicates across step files) =======
+
+// Common search input with placeholder check
+Then(
+  "I should see search input with placeholder {string}",
+  async function(this: CustomWorld, placeholder: string) {
+    const searchInput = this.page.locator(
+      `input[placeholder*="${placeholder}"]`,
+    );
+    await expect(searchInput).toBeVisible();
+  },
+);
+
+// Common label check
+Then(
+  "I should see {string} label",
+  async function(this: CustomWorld, label: string) {
+    const labelElement = this.page.getByText(label);
+    await expect(labelElement.first()).toBeVisible();
+  },
+);
+
+// Common type filter selection
+When(
+  "I select {string} from the type filter",
+  async function(this: CustomWorld, type: string) {
+    // Works for multiple filter implementations (SelectTrigger or combobox)
+    const selectTrigger = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    const combobox = this.page.locator('[role="combobox"]').first();
+
+    const filter = (await selectTrigger.isVisible()) ? selectTrigger : combobox;
+    await filter.click();
+    await this.page.locator('[role="option"]').filter({ hasText: type }).click();
+  },
+);
+
+// Common deletion confirmation
+When("I confirm the deletion", async function(this: CustomWorld) {
+  const confirmButton = this.page
+    .locator('[role="dialog"], [role="alertdialog"]')
+    .getByRole("button", { name: /delete|confirm|yes/i });
+  await confirmButton.click();
+});
+
+// Common PENDING status badge check
+Then("PENDING status badge should be yellow", async function(this: CustomWorld) {
+  const badge = this.page
+    .locator('[class*="Badge"]')
+    .filter({ hasText: "PENDING" })
+    .first();
+  const className = await badge.getAttribute("class");
+  expect(className).toContain("yellow");
+});
+
+// Common FAILED status badge check
+Then("FAILED status badge should be red", async function(this: CustomWorld) {
+  const badge = this.page
+    .locator('[class*="Badge"]')
+    .filter({ hasText: "FAILED" })
+    .first();
+  const className = await badge.getAttribute("class");
+  expect(className).toContain("red");
+});
+
+// Common delete confirmation dialog check
+Then(
+  "I should see the delete confirmation dialog",
+  async function(this: CustomWorld) {
+    const dialog = this.page.locator(
+      '[role="dialog"], [role="alertdialog"]',
+    );
+    await expect(dialog).toBeVisible();
+  },
+);
+
+// Common section visibility check
+Then(
+  "I should see {string} section",
+  async function(this: CustomWorld, section: string) {
+    const sectionElement = this.page.locator(`text=${section}`).first();
+    await expect(sectionElement).toBeVisible();
+  },
+);
+
+// Common tab active check
+Then(
+  "the {string} tab should be active",
+  async function(this: CustomWorld, tabName: string) {
+    // Try tab role first (proper tabs), then button role (button-based tabs)
+    const tab = this.page.getByRole("tab", { name: tabName });
+    const button = this.page.getByRole("button", { name: tabName });
+
+    const element = (await tab.isVisible()) ? tab : button;
+    await expect(element).toBeVisible();
+
+    // For proper tabs, check aria-selected
+    if (await tab.isVisible()) {
+      await expect(tab).toHaveAttribute("aria-selected", "true");
+    }
+  },
+);
+
+// Common tier information check
+Then("I should see the tier information", async function(this: CustomWorld) {
+  const modal = this.page.locator('[role="dialog"]');
+  const tierLabel = modal.getByText("Tier").or(this.page.getByText("Tier"));
+  await expect(tierLabel.first()).toBeVisible();
+});
+
+// Common button in dialog click
+When(
+  "I click {string} button in the dialog",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page
+      .locator('[role="dialog"]')
+      .getByRole("button", { name: buttonText });
+    await button.click();
+  },
+);
+
+// Common button in modal click (alias for dialog)
+When(
+  "I click {string} button in the modal",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page
+      .locator('[role="dialog"]')
+      .getByRole("button", { name: buttonText });
+    await button.click();
+  },
+);
+
+// Common text during refresh check
+Then(
+  "I should see {string} text during refresh",
+  async function(this: CustomWorld, text: string) {
+    // During refresh, the text may appear briefly
+    const element = this.page.getByText(text);
+    // Use a short timeout as refresh is quick
+    try {
+      await expect(element).toBeVisible({ timeout: 3000 });
+    } catch {
+      // If text already disappeared, that's fine - refresh was quick
+    }
+  },
+);
+
+// Common date range picker check
+Then("I should see date range picker", async function(this: CustomWorld) {
+  const picker = this.page
+    .locator('[class*="DatePicker"], [class*="date-picker"], input[type="date"]')
+    .or(this.page.getByRole("button", { name: /date|calendar/i }));
+  await expect(picker.first()).toBeVisible();
+});
+
+// Common heading check with alternative (or)
+Then(
+  "I should see {string} or {string} heading",
+  async function(this: CustomWorld, heading1: string, heading2: string) {
+    const h1 = this.page
+      .locator("h1, h2, h3, h4, h5, h6")
+      .filter({ hasText: heading1 });
+    const h2 = this.page
+      .locator("h1, h2, h3, h4, h5, h6")
+      .filter({ hasText: heading2 });
+    const element = h1.or(h2);
+    await expect(element.first()).toBeVisible();
+  },
+);

@@ -466,9 +466,7 @@ When("I delete an image from the list", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 });
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  // Already handled in the previous step with dialog auto-accept
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 When("I attempt to delete an image", async function(this: CustomWorld) {
   const deleteButton = this.page.getByRole("button", { name: /delete/i })

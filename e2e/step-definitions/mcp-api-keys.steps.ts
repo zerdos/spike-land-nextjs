@@ -192,13 +192,7 @@ Then(
   },
 );
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", {
-    name: /delete|confirm/i,
-  });
-  await confirmButton.click();
-  await this.page.waitForTimeout(500);
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 Then(
   "the {string} key should be removed from the list",

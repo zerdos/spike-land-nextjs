@@ -517,13 +517,7 @@ When("I click on that job", async function(this: CustomWorld) {
 // Then steps
 // NOTE: "I should see {string} tab" is defined in common.steps.ts
 
-Then(
-  "I should see search input with placeholder {string}",
-  async function(this: CustomWorld, placeholder: string) {
-    const input = this.page.locator(`input[placeholder*="${placeholder}"]`);
-    await expect(input).toBeVisible();
-  },
-);
+// NOTE: "I should see search input with placeholder {string}" is defined in common.steps.ts
 
 Then(
   "I should see jobs list panel on the left",
@@ -570,14 +564,7 @@ Then(
   },
 );
 
-Then(
-  "the {string} tab should be active",
-  async function(this: CustomWorld, tabName: string) {
-    const tab = this.page.getByRole("button", { name: tabName });
-    // Active tab has default variant styling
-    await expect(tab).toBeVisible();
-  },
-);
+// NOTE: "the {string} tab should be active" is defined in common.steps.ts
 
 Then(
   "the jobs list should only show PROCESSING status jobs",
@@ -797,13 +784,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} label",
-  async function(this: CustomWorld, label: string) {
-    const labelElement = this.page.locator(`text=${label}`);
-    await expect(labelElement.first()).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} label" is defined in common.steps.ts
 
 Then("I should see the model name", async function(this: CustomWorld) {
   const model = this.page.locator('[class*="font-mono"]').filter({
@@ -887,16 +868,7 @@ Then(
   },
 );
 
-Then(
-  "PENDING status badge should be yellow",
-  async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "PENDING",
-    }).first();
-    const className = await badge.getAttribute("class");
-    expect(className).toContain("yellow");
-  },
-);
+// NOTE: "PENDING status badge should be yellow" is defined in common.steps.ts
 
 Then(
   "PROCESSING status badge should be blue with animation",
@@ -921,13 +893,7 @@ Then(
   },
 );
 
-Then("FAILED status badge should be red", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({
-    hasText: "FAILED",
-  }).first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("red");
-});
+// NOTE: "FAILED status badge should be red" is defined in common.steps.ts
 
 Then(
   "CANCELLED status badge should be neutral",

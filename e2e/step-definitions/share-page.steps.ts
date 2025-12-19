@@ -24,13 +24,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} label",
-  async function(this: CustomWorld, label: string) {
-    const labelElement = this.page.getByText(label);
-    await expect(labelElement.first()).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see {string} label" is defined in common.steps.ts
 
 Then(
   "I should see the image name displayed",

@@ -183,15 +183,7 @@ When(
   },
 );
 
-When(
-  "I select {string} from the type filter",
-  async function(this: CustomWorld, type: string) {
-    const typeSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
-    await typeSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: type })
-      .click();
-  },
-);
+// NOTE: "I select {string} from the type filter" is defined in common.steps.ts
 
 When("I click on a feedback row", async function(this: CustomWorld) {
   const row = this.page.locator("tbody tr").first();
@@ -232,24 +224,10 @@ When(
   },
 );
 
-When(
-  "I click {string} button in the dialog",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.locator('[role="dialog"]').getByRole("button", {
-      name: buttonText,
-    });
-    await button.click();
-  },
-);
+// NOTE: "I click {string} button in the dialog" is defined in common.steps.ts
 
 // Then steps
-Then(
-  "I should see {string} label",
-  async function(this: CustomWorld, label: string) {
-    const labelElement = this.page.getByText(label);
-    await expect(labelElement).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} label" is defined in common.steps.ts
 
 Then("I should see status filter dropdown", async function(this: CustomWorld) {
   const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
@@ -420,14 +398,7 @@ Then("I should see the submission date", async function(this: CustomWorld) {
   await expect(dateSection).toBeVisible();
 });
 
-Then(
-  "I should see {string} section",
-  async function(this: CustomWorld, section: string) {
-    const dialog = this.page.locator('[role="dialog"]');
-    const sectionElement = dialog.locator(`text=${section}`).first();
-    await expect(sectionElement).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} section" is defined in common.steps.ts
 
 Then("I should see the user agent string", async function(this: CustomWorld) {
   const dialog = this.page.locator('[role="dialog"]');
@@ -472,13 +443,7 @@ Then(
   },
 );
 
-Then("I should see a success message", async function(this: CustomWorld) {
-  // Alert is shown via window.alert in the component
-  this.page.on("dialog", async (dialog) => {
-    expect(dialog.message()).toContain("success");
-    await dialog.accept();
-  });
-});
+// NOTE: "I should see a success message" is defined in common.steps.ts
 
 Then("the admin note should be saved", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");

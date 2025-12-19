@@ -569,14 +569,7 @@ When("I save the changes", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 });
 
-When("I confirm the deletion", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", {
-    name: /delete|confirm|yes/i,
-  });
-  await expect(confirmButton).toBeVisible();
-  await confirmButton.click();
-  await this.page.waitForTimeout(500);
-});
+// NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 When("I copy the shareable URL", async function(this: CustomWorld) {
   const state = initTestState(this);
@@ -1049,16 +1042,5 @@ Then(
   },
 );
 
-Then("I should see an error message", async function(this: CustomWorld) {
-  const errorMessage = this.page.locator(
-    '[role="alert"], .error, .toast, [class*="error"], [data-sonner-toast]',
-  );
-  await expect(errorMessage.first()).toBeVisible({ timeout: 5000 });
-});
-
-Then("I should see a success message", async function(this: CustomWorld) {
-  const successMessage = this.page.locator(
-    '[role="status"], .success, .toast, [class*="success"], [data-sonner-toast]',
-  );
-  await expect(successMessage.first()).toBeVisible({ timeout: 5000 });
-});
+// NOTE: "I should see an error message" is defined in common.steps.ts
+// NOTE: "I should see a success message" is defined in common.steps.ts
