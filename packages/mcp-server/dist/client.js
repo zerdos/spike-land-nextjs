@@ -43,6 +43,7 @@ export class SpikeLandClient {
             prompt: params.prompt,
             tier: params.tier || "TIER_1K",
             negativePrompt: params.negativePrompt,
+            aspectRatio: params.aspectRatio,
         });
     }
     /**

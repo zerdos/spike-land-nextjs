@@ -10,6 +10,7 @@ export interface GenerateRequest {
   prompt: string;
   tier?: "TIER_1K" | "TIER_2K" | "TIER_4K";
   negativePrompt?: string;
+  aspectRatio?: string;
 }
 
 export interface ModifyRequest {
@@ -106,6 +107,7 @@ export class SpikeLandClient {
       prompt: params.prompt,
       tier: params.tier || "TIER_1K",
       negativePrompt: params.negativePrompt,
+      aspectRatio: params.aspectRatio,
     });
   }
 

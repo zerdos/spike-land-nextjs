@@ -1,3 +1,8 @@
+import {
+  type AspectRatio,
+  isValidAspectRatio,
+  SUPPORTED_ASPECT_RATIOS,
+} from "@/lib/ai/aspect-ratio";
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
@@ -29,6 +34,8 @@ const MAX_PROMPT_LENGTH = 4000;
  *     prompt: string (required) - Text description of the image to generate
  *     tier: "TIER_1K" | "TIER_2K" | "TIER_4K" (required) - Output resolution
  *     negativePrompt?: string - Things to avoid in the generation
+ *     aspectRatio?: string - Output aspect ratio (default: "1:1")
+ *       Supported: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
  *   }
  *
  * Response:
@@ -70,18 +77,18 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse and validate request body
-  const { data: body, error: jsonError } = await tryCatch<
-    { prompt?: string; tier?: string; negativePrompt?: string; }
-  >(request.json());
+  const { data: body, error: jsonError } = await tryCatch<{
+    prompt?: string;
+    tier?: string;
+    negativePrompt?: string;
+    aspectRatio?: string;
+  }>(request.json());
 
   if (jsonError) {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { prompt, tier, negativePrompt } = body;
+  const { prompt, tier, negativePrompt, aspectRatio } = body;
 
   // Validate prompt
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -112,6 +119,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate aspectRatio if provided
+  if (aspectRatio && !isValidAspectRatio(aspectRatio)) {
+    return NextResponse.json(
+      {
+        error: `Invalid aspectRatio. Must be one of: ${SUPPORTED_ASPECT_RATIOS.join(", ")}`,
+      },
+      { status: 400 },
+    );
+  }
+
   const { data: result, error: jobError } = await tryCatch(
     createGenerationJob({
       userId: userId!,
@@ -119,6 +136,7 @@ export async function POST(request: NextRequest) {
       prompt: prompt.trim(),
       tier: tier as EnhancementTier,
       negativePrompt: negativePrompt?.trim(),
+      aspectRatio: aspectRatio as AspectRatio | undefined,
     }),
   );
 

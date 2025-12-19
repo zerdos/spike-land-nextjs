@@ -31,6 +31,20 @@ import {
 import { z } from "zod";
 import { SpikeLandClient } from "./client.js";
 
+// Supported aspect ratios
+const SUPPORTED_ASPECT_RATIOS = [
+  "1:1",
+  "3:2",
+  "2:3",
+  "3:4",
+  "4:3",
+  "4:5",
+  "5:4",
+  "9:16",
+  "16:9",
+  "21:9",
+] as const;
+
 // Tool parameter schemas
 const GenerateImageSchema = z.object({
   prompt: z.string().describe("Text description of the image to generate"),
@@ -45,6 +59,12 @@ const GenerateImageSchema = z.object({
     .string()
     .optional()
     .describe("Things to avoid in the generated image"),
+  aspect_ratio: z
+    .enum(SUPPORTED_ASPECT_RATIOS)
+    .optional()
+    .describe(
+      "Output aspect ratio. Supported: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9 (default: 1:1)",
+    ),
   wait_for_completion: z
     .boolean()
     .optional()
@@ -89,6 +109,8 @@ const tools: Tool[] = [
     name: "generate_image",
     description: `Generate a new image from a text prompt using Spike Land's AI.
 
+Supported aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
 Token costs:
 - TIER_1K (1024px): 2 tokens
 - TIER_2K (2048px): 5 tokens
@@ -112,6 +134,23 @@ Returns the generated image URL when complete.`,
           type: "string",
           description: "Things to avoid in the generated image",
         },
+        aspect_ratio: {
+          type: "string",
+          enum: [
+            "1:1",
+            "3:2",
+            "2:3",
+            "3:4",
+            "4:3",
+            "4:5",
+            "5:4",
+            "9:16",
+            "16:9",
+            "21:9",
+          ],
+          default: "1:1",
+          description: "Output aspect ratio for the generated image",
+        },
         wait_for_completion: {
           type: "boolean",
           default: true,
@@ -126,6 +165,7 @@ Returns the generated image URL when complete.`,
     description: `Modify an existing image using a text prompt.
 
 Provide either image_url or image_base64 for the source image.
+The output aspect ratio is automatically detected from the input image.
 
 Token costs:
 - TIER_1K (1024px): 2 tokens
@@ -237,6 +277,7 @@ async function main() {
             prompt: params.prompt,
             tier: params.tier,
             negativePrompt: params.negative_prompt,
+            aspectRatio: params.aspect_ratio,
           });
 
           if (!result.success || !result.jobId) {
