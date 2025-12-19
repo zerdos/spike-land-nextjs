@@ -37,6 +37,16 @@ async function isKVAvailable(): Promise<boolean> {
     return kvAvailable;
   }
 
+  // Check for required environment variables first (sync check)
+  // @vercel/kv throws synchronously when these are missing, which tryCatch can't catch
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    console.warn(
+      "Vercel KV environment variables not set, using in-memory storage",
+    );
+    kvAvailable = false;
+    return false;
+  }
+
   // Test KV connection with a simple ping
   const { error } = await tryCatch(kv.ping());
 

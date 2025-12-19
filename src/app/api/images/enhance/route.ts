@@ -268,17 +268,46 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const job = await prisma.imageEnhancementJob.create({
-    data: {
-      imageId,
-      userId: session.user.id,
-      tier,
-      tokensCost: tokenCost,
-      status: JobStatus.PROCESSING,
-      processingStartedAt: new Date(),
-      // Note: sourceImageId is kept null for uploaded blends since we don't store the blend source
-    },
-  });
+  const { data: job, error: jobError } = await tryCatch(
+    prisma.imageEnhancementJob.create({
+      data: {
+        imageId,
+        userId: session.user.id,
+        tier,
+        tokensCost: tokenCost,
+        status: JobStatus.PROCESSING,
+        processingStartedAt: new Date(),
+        // Note: sourceImageId is kept null for uploaded blends since we don't store the blend source
+      },
+    }),
+  );
+
+  if (jobError || !job) {
+    requestLogger.error(
+      "Failed to create enhancement job",
+      jobError instanceof Error ? jobError : new Error(String(jobError)),
+      { userId: session.user.id, imageId },
+    );
+    // Refund tokens since job creation failed
+    await TokenBalanceManager.refundTokens(
+      session.user.id,
+      tokenCost,
+      "job-creation-failed",
+      "Failed to create enhancement job",
+    );
+    const errorMessage = getUserFriendlyError(
+      jobError instanceof Error ? jobError : new Error("Failed to create job"),
+      500,
+    );
+    return NextResponse.json(
+      {
+        error: errorMessage.message,
+        title: errorMessage.title,
+        suggestion: errorMessage.suggestion,
+      },
+      { status: 500, headers: { "X-Request-ID": requestId } },
+    );
+  }
 
   requestLogger.info("Enhancement job created", {
     jobId: job.id,
@@ -312,7 +341,49 @@ export async function POST(request: NextRequest) {
 
   if (isVercelEnvironment()) {
     // Production: Use Vercel's durable workflow infrastructure
-    const workflowRun = await start(enhanceImage, [enhancementInput]);
+    const { data: workflowRun, error: workflowError } = await tryCatch(
+      start(enhanceImage, [enhancementInput]),
+    );
+
+    if (workflowError) {
+      requestLogger.error(
+        "Failed to start enhancement workflow",
+        workflowError instanceof Error
+          ? workflowError
+          : new Error(String(workflowError)),
+        { jobId: job.id },
+      );
+      // Mark job as failed and refund tokens
+      await tryCatch(
+        prisma.imageEnhancementJob.update({
+          where: { id: job.id },
+          data: {
+            status: JobStatus.REFUNDED,
+            errorMessage: "Failed to start workflow",
+          },
+        }),
+      );
+      await TokenBalanceManager.refundTokens(
+        session.user.id,
+        tokenCost,
+        job.id,
+        "Workflow startup failed",
+      );
+      const errorMessage = getUserFriendlyError(
+        workflowError instanceof Error
+          ? workflowError
+          : new Error("Failed to start workflow"),
+        500,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+        },
+        { status: 500, headers: { "X-Request-ID": requestId } },
+      );
+    }
 
     // Store the workflow run ID for cancellation support (if available)
     if (workflowRun?.runId) {
