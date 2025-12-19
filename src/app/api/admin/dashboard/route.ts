@@ -7,31 +7,42 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (authError) {
+    console.error("Failed to fetch dashboard metrics:", authError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    console.error("Failed to fetch dashboard metrics:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    await requireAdminByUserId(session.user.id);
-
-    const [
-      totalUsers,
-      adminCount,
-      totalEnhancements,
-      pendingJobs,
-      processingJobs,
-      completedJobs,
-      failedJobs,
-      totalTokensPurchased,
-      totalTokensSpent,
-      activeVouchers,
-    ] = await Promise.all([
+  const { data: metricsData, error: metricsError } = await tryCatch(
+    Promise.all([
       prisma.user.count(),
       prisma.user.count({
         where: {
@@ -66,32 +77,44 @@ export async function GET() {
       prisma.voucher.count({
         where: { status: "ACTIVE" },
       }),
-    ]);
+    ]),
+  );
 
-    return NextResponse.json({
-      totalUsers,
-      adminCount,
-      totalEnhancements,
-      jobStatus: {
-        pending: pendingJobs,
-        processing: processingJobs,
-        completed: completedJobs,
-        failed: failedJobs,
-        active: pendingJobs + processingJobs,
-      },
-      totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
-      totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
-      activeVouchers,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Failed to fetch dashboard metrics:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (metricsError) {
+    console.error("Failed to fetch dashboard metrics:", metricsError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  const [
+    totalUsers,
+    adminCount,
+    totalEnhancements,
+    pendingJobs,
+    processingJobs,
+    completedJobs,
+    failedJobs,
+    totalTokensPurchased,
+    totalTokensSpent,
+    activeVouchers,
+  ] = metricsData;
+
+  return NextResponse.json({
+    totalUsers,
+    adminCount,
+    totalEnhancements,
+    jobStatus: {
+      pending: pendingJobs,
+      processing: processingJobs,
+      completed: completedJobs,
+      failed: failedJobs,
+      active: pendingJobs + processingJobs,
+    },
+    totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
+    totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
+    activeVouchers,
+    timestamp: new Date().toISOString(),
+  });
 }

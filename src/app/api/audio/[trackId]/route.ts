@@ -12,6 +12,7 @@ import {
   getAudioMetadata,
   isAudioR2Configured,
 } from "@/lib/storage/audio-r2-client";
+import { tryCatch } from "@/lib/try-catch";
 import { NextResponse } from "next/server";
 
 interface RouteParams {
@@ -23,75 +24,98 @@ interface RouteParams {
  * Download an audio file
  */
 export async function GET(request: Request, { params }: RouteParams) {
-  try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    // Check R2 configuration
-    if (!isAudioR2Configured()) {
-      return NextResponse.json(
-        { error: "Audio storage is not configured" },
-        { status: 503 },
-      );
-    }
-
-    const { trackId } = await params;
-    const url = new URL(request.url);
-    const projectId = url.searchParams.get("projectId");
-    const format = url.searchParams.get("format") || "wav";
-
-    if (!projectId) {
-      return NextResponse.json(
-        { error: "Missing required parameter: projectId" },
-        { status: 400 },
-      );
-    }
-
-    // Validate project ownership
-    const project = await prisma.audioMixerProject.findFirst({
-      where: { id: projectId, userId: session.user.id },
-    });
-    if (!project) {
-      return NextResponse.json(
-        { error: "Project not found or access denied" },
-        { status: 404 },
-      );
-    }
-
-    // Generate R2 key
-    const key = generateAudioKey(session.user.id, projectId, trackId, format);
-
-    // Download from R2
-    const buffer = await downloadAudioFromR2(key);
-    if (!buffer) {
-      return NextResponse.json(
-        { error: "Audio file not found" },
-        { status: 404 },
-      );
-    }
-
-    // Return the audio file - convert Buffer to Uint8Array for BodyInit compatibility
-    return new NextResponse(new Uint8Array(buffer), {
-      headers: {
-        "Content-Type": `audio/${format}`,
-        "Content-Length": buffer.length.toString(),
-        "Content-Disposition": `attachment; filename="${trackId}.${format}"`,
-        "Cache-Control": "private, max-age=3600",
-      },
-    });
-  } catch (error) {
-    console.error("Error downloading audio:", error);
+  // Check authentication
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError) {
+    console.error("Error downloading audio:", authError);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: authError instanceof Error ? authError.message : "Internal server error" },
       { status: 500 },
     );
   }
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
+  // Check R2 configuration
+  if (!isAudioR2Configured()) {
+    return NextResponse.json(
+      { error: "Audio storage is not configured" },
+      { status: 503 },
+    );
+  }
+
+  const { data: resolvedParams, error: paramsError } = await tryCatch(params);
+  if (paramsError) {
+    console.error("Error downloading audio:", paramsError);
+    return NextResponse.json(
+      { error: paramsError instanceof Error ? paramsError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  const { trackId } = resolvedParams;
+  const url = new URL(request.url);
+  const projectId = url.searchParams.get("projectId");
+  const format = url.searchParams.get("format") || "wav";
+
+  if (!projectId) {
+    return NextResponse.json(
+      { error: "Missing required parameter: projectId" },
+      { status: 400 },
+    );
+  }
+
+  // Validate project ownership
+  const { data: project, error: projectError } = await tryCatch(
+    prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    }),
+  );
+  if (projectError) {
+    console.error("Error downloading audio:", projectError);
+    return NextResponse.json(
+      { error: projectError instanceof Error ? projectError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  if (!project) {
+    return NextResponse.json(
+      { error: "Project not found or access denied" },
+      { status: 404 },
+    );
+  }
+
+  // Generate R2 key
+  const key = generateAudioKey(session.user.id, projectId, trackId, format);
+
+  // Download from R2
+  const { data: buffer, error: downloadError } = await tryCatch(downloadAudioFromR2(key));
+  if (downloadError) {
+    console.error("Error downloading audio:", downloadError);
+    return NextResponse.json(
+      { error: downloadError instanceof Error ? downloadError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  if (!buffer) {
+    return NextResponse.json(
+      { error: "Audio file not found" },
+      { status: 404 },
+    );
+  }
+
+  // Return the audio file - convert Buffer to Uint8Array for BodyInit compatibility
+  return new NextResponse(new Uint8Array(buffer), {
+    headers: {
+      "Content-Type": `audio/${format}`,
+      "Content-Length": buffer.length.toString(),
+      "Content-Disposition": `attachment; filename="${trackId}.${format}"`,
+      "Cache-Control": "private, max-age=3600",
+    },
+  });
 }
 
 /**
@@ -99,70 +123,93 @@ export async function GET(request: Request, { params }: RouteParams) {
  * Delete an audio file
  */
 export async function DELETE(request: Request, { params }: RouteParams) {
-  try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    // Check R2 configuration
-    if (!isAudioR2Configured()) {
-      return NextResponse.json(
-        { error: "Audio storage is not configured" },
-        { status: 503 },
-      );
-    }
-
-    const { trackId } = await params;
-    const url = new URL(request.url);
-    const projectId = url.searchParams.get("projectId");
-    const format = url.searchParams.get("format") || "wav";
-
-    if (!projectId) {
-      return NextResponse.json(
-        { error: "Missing required parameter: projectId" },
-        { status: 400 },
-      );
-    }
-
-    // Validate project ownership
-    const project = await prisma.audioMixerProject.findFirst({
-      where: { id: projectId, userId: session.user.id },
-    });
-    if (!project) {
-      return NextResponse.json(
-        { error: "Project not found or access denied" },
-        { status: 404 },
-      );
-    }
-
-    // Generate R2 key
-    const key = generateAudioKey(session.user.id, projectId, trackId, format);
-
-    // Delete from R2
-    const result = await deleteAudioFromR2(key);
-    if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || "Delete failed" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      key: result.key,
-    });
-  } catch (error) {
-    console.error("Error deleting audio:", error);
+  // Check authentication
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError) {
+    console.error("Error deleting audio:", authError);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: authError instanceof Error ? authError.message : "Internal server error" },
       { status: 500 },
     );
   }
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
+  // Check R2 configuration
+  if (!isAudioR2Configured()) {
+    return NextResponse.json(
+      { error: "Audio storage is not configured" },
+      { status: 503 },
+    );
+  }
+
+  const { data: resolvedParams, error: paramsError } = await tryCatch(params);
+  if (paramsError) {
+    console.error("Error deleting audio:", paramsError);
+    return NextResponse.json(
+      { error: paramsError instanceof Error ? paramsError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  const { trackId } = resolvedParams;
+  const url = new URL(request.url);
+  const projectId = url.searchParams.get("projectId");
+  const format = url.searchParams.get("format") || "wav";
+
+  if (!projectId) {
+    return NextResponse.json(
+      { error: "Missing required parameter: projectId" },
+      { status: 400 },
+    );
+  }
+
+  // Validate project ownership
+  const { data: project, error: projectError } = await tryCatch(
+    prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    }),
+  );
+  if (projectError) {
+    console.error("Error deleting audio:", projectError);
+    return NextResponse.json(
+      { error: projectError instanceof Error ? projectError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  if (!project) {
+    return NextResponse.json(
+      { error: "Project not found or access denied" },
+      { status: 404 },
+    );
+  }
+
+  // Generate R2 key
+  const key = generateAudioKey(session.user.id, projectId, trackId, format);
+
+  // Delete from R2
+  const { data: result, error: deleteError } = await tryCatch(deleteAudioFromR2(key));
+  if (deleteError) {
+    console.error("Error deleting audio:", deleteError);
+    return NextResponse.json(
+      { error: deleteError instanceof Error ? deleteError.message : "Internal server error" },
+      { status: 500 },
+    );
+  }
+  if (!result.success) {
+    return NextResponse.json(
+      { error: result.error || "Delete failed" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    key: result.key,
+  });
 }
 
 /**
@@ -170,52 +217,63 @@ export async function DELETE(request: Request, { params }: RouteParams) {
  * Get metadata for an audio file
  */
 export async function HEAD(request: Request, { params }: RouteParams) {
-  try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return new NextResponse(null, { status: 401 });
-    }
-
-    // Check R2 configuration
-    if (!isAudioR2Configured()) {
-      return new NextResponse(null, { status: 503 });
-    }
-
-    const { trackId } = await params;
-    const url = new URL(request.url);
-    const projectId = url.searchParams.get("projectId");
-    const format = url.searchParams.get("format") || "wav";
-
-    if (!projectId) {
-      return new NextResponse(null, { status: 400 });
-    }
-
-    // Validate project ownership
-    const project = await prisma.audioMixerProject.findFirst({
-      where: { id: projectId, userId: session.user.id },
-    });
-    if (!project) {
-      return new NextResponse(null, { status: 404 });
-    }
-
-    // Generate R2 key
-    const key = generateAudioKey(session.user.id, projectId, trackId, format);
-
-    // Get metadata from R2
-    const metadata = await getAudioMetadata(key);
-    if (!metadata) {
-      return new NextResponse(null, { status: 404 });
-    }
-
-    return new NextResponse(null, {
-      headers: {
-        "Content-Length": metadata.size.toString(),
-        "Content-Type": metadata.contentType || `audio/${format}`,
-        "Last-Modified": metadata.lastModified?.toUTCString() || "",
-      },
-    });
-  } catch {
+  // Check authentication
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError) {
     return new NextResponse(null, { status: 500 });
   }
+  if (!session?.user?.id) {
+    return new NextResponse(null, { status: 401 });
+  }
+
+  // Check R2 configuration
+  if (!isAudioR2Configured()) {
+    return new NextResponse(null, { status: 503 });
+  }
+
+  const { data: resolvedParams, error: paramsError } = await tryCatch(params);
+  if (paramsError) {
+    return new NextResponse(null, { status: 500 });
+  }
+  const { trackId } = resolvedParams;
+  const url = new URL(request.url);
+  const projectId = url.searchParams.get("projectId");
+  const format = url.searchParams.get("format") || "wav";
+
+  if (!projectId) {
+    return new NextResponse(null, { status: 400 });
+  }
+
+  // Validate project ownership
+  const { data: project, error: projectError } = await tryCatch(
+    prisma.audioMixerProject.findFirst({
+      where: { id: projectId, userId: session.user.id },
+    }),
+  );
+  if (projectError) {
+    return new NextResponse(null, { status: 500 });
+  }
+  if (!project) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  // Generate R2 key
+  const key = generateAudioKey(session.user.id, projectId, trackId, format);
+
+  // Get metadata from R2
+  const { data: metadata, error: metadataError } = await tryCatch(getAudioMetadata(key));
+  if (metadataError) {
+    return new NextResponse(null, { status: 500 });
+  }
+  if (!metadata) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  return new NextResponse(null, {
+    headers: {
+      "Content-Length": metadata.size.toString(),
+      "Content-Type": metadata.contentType || `audio/${format}`,
+      "Last-Modified": metadata.lastModified?.toUTCString() || "",
+    },
+  });
 }

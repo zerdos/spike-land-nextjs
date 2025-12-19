@@ -5,6 +5,7 @@
  * custom events, and user linking.
  */
 
+import { tryCatch } from "@/lib/try-catch";
 import { fireMetaPixelEvent } from "./meta-pixel";
 import type { UTMParams } from "./utm-capture";
 
@@ -207,8 +208,8 @@ export async function createSession(data: CreateSessionData): Promise<string> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Failed to create session");
+    const { data: errorData } = await tryCatch(response.json());
+    throw new Error(errorData?.message || "Failed to create session");
   }
 
   const result = await response.json();
@@ -255,8 +256,8 @@ export async function updateSession(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Failed to update session");
+    const { data: errorData } = await tryCatch(response.json());
+    throw new Error(errorData?.message || "Failed to update session");
   }
 }
 
@@ -297,8 +298,8 @@ export async function recordPageView(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Failed to record page view");
+    const { data: errorData } = await tryCatch(response.json());
+    throw new Error(errorData?.message || "Failed to record page view");
   }
 }
 
@@ -341,8 +342,8 @@ export async function recordEvent(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Failed to record event");
+    const { data: errorData } = await tryCatch(response.json());
+    throw new Error(errorData?.message || "Failed to record event");
   }
 }
 
@@ -382,8 +383,8 @@ export async function linkUserToSession(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Failed to link user to session");
+    const { data: errorData } = await tryCatch(response.json());
+    throw new Error(errorData?.message || "Failed to link user to session");
   }
 }
 
@@ -404,12 +405,16 @@ export async function linkUserToSession(
  * ```
  */
 export async function endSession(sessionId: string): Promise<void> {
-  try {
-    await updateSession(sessionId, {
+  const { error } = await tryCatch(
+    updateSession(sessionId, {
       sessionEnd: new Date(),
-    });
-  } finally {
-    clearSession();
+    }),
+  );
+  // Always clear session, regardless of API result
+  clearSession();
+  // Re-throw if there was an error
+  if (error) {
+    throw error;
   }
 }
 

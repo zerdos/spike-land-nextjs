@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 /**
  * Comprehensive list of disposable email providers
@@ -410,9 +411,9 @@ export async function validateReferralAfterVerification(
   shouldGrantRewards: boolean;
   error?: string;
 }> {
-  try {
-    // Find pending referral for this user
-    const referral = await prisma.referral.findFirst({
+  // Find pending referral for this user
+  const { data: referral, error: findError } = await tryCatch(
+    prisma.referral.findFirst({
       where: {
         refereeId,
         status: "PENDING",
@@ -420,52 +421,78 @@ export async function validateReferralAfterVerification(
       include: {
         referrer: { select: { id: true } },
       },
-    });
+    }),
+  );
 
-    if (!referral) {
-      return {
-        success: false,
-        shouldGrantRewards: false,
-        error: "No pending referral found",
-      };
-    }
-
-    // Perform fraud checks
-    const fraudCheck = await performFraudChecks(
-      refereeId,
-      referral.referrerId,
-      referral.ipAddress ?? undefined,
-    );
-
-    if (!fraudCheck.passed) {
-      // Mark as invalid
-      await prisma.referral.update({
-        where: { id: referral.id },
-        data: { status: "INVALID" },
-      });
-
-      return {
-        success: true,
-        referralId: referral.id,
-        shouldGrantRewards: false,
-        error: `Fraud checks failed: ${fraudCheck.reasons.join(", ")}`,
-      };
-    }
-
-    // All checks passed - ready for reward
-    return {
-      success: true,
-      referralId: referral.id,
-      shouldGrantRewards: true,
-    };
-  } catch (error) {
-    console.error("Failed to validate referral:", error);
+  if (findError) {
+    console.error("Failed to validate referral:", findError);
     return {
       success: false,
       shouldGrantRewards: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: findError instanceof Error ? findError.message : "Unknown error",
     };
   }
+
+  if (!referral) {
+    return {
+      success: false,
+      shouldGrantRewards: false,
+      error: "No pending referral found",
+    };
+  }
+
+  // Perform fraud checks
+  const { data: fraudCheck, error: fraudCheckError } = await tryCatch(
+    performFraudChecks(
+      refereeId,
+      referral.referrerId,
+      referral.ipAddress ?? undefined,
+    ),
+  );
+
+  if (fraudCheckError) {
+    console.error("Failed to validate referral:", fraudCheckError);
+    return {
+      success: false,
+      shouldGrantRewards: false,
+      error: fraudCheckError instanceof Error
+        ? fraudCheckError.message
+        : "Unknown error",
+    };
+  }
+
+  if (!fraudCheck.passed) {
+    // Mark as invalid
+    const { error: updateError } = await tryCatch(
+      prisma.referral.update({
+        where: { id: referral.id },
+        data: { status: "INVALID" },
+      }),
+    );
+
+    if (updateError) {
+      console.error("Failed to validate referral:", updateError);
+      return {
+        success: false,
+        shouldGrantRewards: false,
+        error: updateError instanceof Error ? updateError.message : "Unknown error",
+      };
+    }
+
+    return {
+      success: true,
+      referralId: referral.id,
+      shouldGrantRewards: false,
+      error: `Fraud checks failed: ${fraudCheck.reasons.join(", ")}`,
+    };
+  }
+
+  // All checks passed - ready for reward
+  return {
+    success: true,
+    referralId: referral.id,
+    shouldGrantRewards: true,
+  };
 }
 
 /**

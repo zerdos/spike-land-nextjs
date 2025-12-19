@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import type { Album } from "@prisma/client";
 
 const DEFAULT_PRIVATE_ALBUM = {
@@ -29,9 +30,15 @@ export interface UserAlbums {
  */
 export async function ensureUserAlbums(userId: string): Promise<UserAlbums> {
   // Find existing albums for this user
-  const existingAlbums = await prisma.album.findMany({
-    where: { userId },
-  });
+  const { data: existingAlbums, error: findError } = await tryCatch(
+    prisma.album.findMany({
+      where: { userId },
+    }),
+  );
+
+  if (findError) {
+    throw new Error(`Failed to fetch albums for user ${userId}: ${findError.message}`);
+  }
 
   const existingPrivate = existingAlbums.find(
     (a) => a.privacy === "PRIVATE" && a.name === DEFAULT_PRIVATE_ALBUM.name,
@@ -65,33 +72,47 @@ export async function ensureUserAlbums(userId: string): Promise<UserAlbums> {
 
   // Batch create missing albums
   if (albumsToCreate.length > 0) {
-    await prisma.album.createMany({
-      data: albumsToCreate,
-      skipDuplicates: true,
-    });
+    const { error: createError } = await tryCatch(
+      prisma.album.createMany({
+        data: albumsToCreate,
+        skipDuplicates: true,
+      }),
+    );
+
+    if (createError) {
+      throw new Error(`Failed to create albums for user ${userId}: ${createError.message}`);
+    }
   }
 
   // Fetch the final albums
-  const [privateAlbum, publicAlbum] = await Promise.all([
-    existingPrivate
-      ? Promise.resolve(existingPrivate)
-      : prisma.album.findFirst({
-        where: {
-          userId,
-          privacy: "PRIVATE",
-          name: DEFAULT_PRIVATE_ALBUM.name,
-        },
-      }),
-    existingPublic
-      ? Promise.resolve(existingPublic)
-      : prisma.album.findFirst({
-        where: {
-          userId,
-          privacy: "PUBLIC",
-          name: DEFAULT_PUBLIC_ALBUM.name,
-        },
-      }),
-  ]);
+  const { data: albums, error: fetchError } = await tryCatch(
+    Promise.all([
+      existingPrivate
+        ? Promise.resolve(existingPrivate)
+        : prisma.album.findFirst({
+          where: {
+            userId,
+            privacy: "PRIVATE",
+            name: DEFAULT_PRIVATE_ALBUM.name,
+          },
+        }),
+      existingPublic
+        ? Promise.resolve(existingPublic)
+        : prisma.album.findFirst({
+          where: {
+            userId,
+            privacy: "PUBLIC",
+            name: DEFAULT_PUBLIC_ALBUM.name,
+          },
+        }),
+    ]),
+  );
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch albums for user ${userId}: ${fetchError.message}`);
+  }
+
+  const [privateAlbum, publicAlbum] = albums;
 
   if (!privateAlbum || !publicAlbum) {
     throw new Error(`Failed to ensure albums for user ${userId}`);

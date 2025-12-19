@@ -2,6 +2,7 @@ import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { EnhancementTier, MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
@@ -69,10 +70,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse and validate request body
-  let body: { prompt?: string; tier?: string; negativePrompt?: string; };
-  try {
-    body = await request.json();
-  } catch {
+  const { data: body, error: jsonError } = await tryCatch<
+    { prompt?: string; tier?: string; negativePrompt?: string; }
+  >(request.json());
+
+  if (jsonError) {
     return NextResponse.json(
       { error: "Invalid JSON body" },
       { status: 400 },
@@ -110,32 +112,34 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
-    const result = await createGenerationJob({
+  const { data: result, error: jobError } = await tryCatch(
+    createGenerationJob({
       userId: userId!,
       apiKeyId,
       prompt: prompt.trim(),
       tier: tier as EnhancementTier,
       negativePrompt: negativePrompt?.trim(),
-    });
+    }),
+  );
 
-    if (!result.success) {
-      // Determine appropriate status code
-      const status = result.error?.includes("Insufficient") ? 402 : 500;
-      return NextResponse.json({ error: result.error }, { status });
-    }
-
-    return NextResponse.json({
-      success: true,
-      jobId: result.jobId,
-      tokensCost: result.tokensCost,
-      message: "Generation started. Poll /api/mcp/jobs/{jobId} for status.",
-    });
-  } catch (error) {
-    console.error("Failed to create generation job:", error);
+  if (jobError) {
+    console.error("Failed to create generation job:", jobError);
     return NextResponse.json(
       { error: "Failed to start image generation" },
       { status: 500 },
     );
   }
+
+  if (!result.success) {
+    // Determine appropriate status code
+    const status = result.error?.includes("Insufficient") ? 402 : 500;
+    return NextResponse.json({ error: result.error }, { status });
+  }
+
+  return NextResponse.json({
+    success: true,
+    jobId: result.jobId,
+    tokensCost: result.tokensCost,
+    message: "Generation started. Poll /api/mcp/jobs/{jobId} for status.",
+  });
 }

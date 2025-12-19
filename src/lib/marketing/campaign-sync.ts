@@ -7,6 +7,7 @@
 
 import prisma from "@/lib/prisma";
 import { setCachedMetrics } from "@/lib/tracking/metrics-cache";
+import { tryCatch } from "@/lib/try-catch";
 import { createMarketingClient } from "./index";
 import { CampaignMetrics, MarketingPlatform } from "./types";
 
@@ -56,9 +57,9 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
     errors: [],
   };
 
-  try {
-    // 1. Get all active connected marketing accounts
-    const accounts = await prisma.marketingAccount.findMany({
+  // 1. Get all active connected marketing accounts
+  const { data: accounts, error: accountsError } = await tryCatch(
+    prisma.marketingAccount.findMany({
       where: {
         isActive: true,
       },
@@ -71,131 +72,146 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
         refreshToken: true,
         expiresAt: true,
       },
-    });
+    }),
+  );
 
-    if (accounts.length === 0) {
-      return result;
-    }
-
-    // 2. Get all campaign links for matching UTM campaigns to external IDs
-    const campaignLinks = await prisma.campaignLink.findMany();
-    const linksByExternal = new Map<string, typeof campaignLinks[0]>();
-    for (const link of campaignLinks) {
-      const key = `${link.platform}:${link.externalCampaignId}`;
-      linksByExternal.set(key, link);
-    }
-
-    // Define date range for metrics (last 30 days)
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-
-    const allSpendData: CampaignSpendData[] = [];
-
-    // 3. For each account, fetch campaigns and metrics
-    for (const account of accounts) {
-      try {
-        // Check if token is expired
-        if (account.expiresAt && new Date(account.expiresAt) < new Date()) {
-          // Try to refresh token if we have a refresh token
-          if (account.refreshToken) {
-            try {
-              const refreshed = await refreshAccountToken(
-                account.id,
-                account.platform as MarketingPlatform,
-                decryptToken(account.refreshToken),
-              );
-              if (!refreshed) {
-                result.errors.push(
-                  `Account ${account.accountId} (${account.platform}): Token expired and refresh failed`,
-                );
-                continue;
-              }
-            } catch (error) {
-              result.errors.push(
-                `Account ${account.accountId} (${account.platform}): Token refresh error: ${
-                  error instanceof Error ? error.message : "Unknown error"
-                }`,
-              );
-              continue;
-            }
-          } else {
-            result.errors.push(
-              `Account ${account.accountId} (${account.platform}): Token expired and no refresh token`,
-            );
-            continue;
-          }
-        }
-
-        const client = createMarketingClient(account.platform as MarketingPlatform, {
-          accessToken: decryptToken(account.accessToken),
-          customerId: account.accountId,
-        });
-
-        // Fetch campaigns
-        const campaigns = await client.listCampaigns(account.accountId);
-
-        // For each campaign, check if it's linked and fetch metrics
-        for (const campaign of campaigns) {
-          const linkKey = `${account.platform}:${campaign.id}`;
-          const link = linksByExternal.get(linkKey);
-
-          if (link) {
-            // Campaign is linked - fetch metrics
-            try {
-              const metrics = await client.getCampaignMetrics(
-                account.accountId,
-                campaign.id,
-                startDate,
-                endDate,
-              );
-
-              allSpendData.push({
-                campaignId: campaign.id,
-                platform: account.platform as MarketingPlatform,
-                utmCampaign: link.utmCampaign,
-                spend: metrics.spend,
-                spendCurrency: metrics.spendCurrency,
-                impressions: metrics.impressions,
-                clicks: metrics.clicks,
-                conversions: metrics.conversions,
-                dateRange: {
-                  start: startDate,
-                  end: endDate,
-                },
-              });
-
-              result.synced++;
-            } catch (metricsError) {
-              result.errors.push(
-                `Campaign ${campaign.id} (${campaign.name}): ${
-                  metricsError instanceof Error ? metricsError.message : "Failed to fetch metrics"
-                }`,
-              );
-            }
-          }
-        }
-      } catch (accountError) {
-        result.errors.push(
-          `Account ${account.accountId} (${account.platform}): ${
-            accountError instanceof Error ? accountError.message : "Unknown error"
-          }`,
-        );
-      }
-    }
-
-    // 4. Store aggregated spend data in cache for ROI calculation
-    if (allSpendData.length > 0) {
-      await cacheExternalSpendData(allSpendData, startDate, endDate);
-    }
-
-    return result;
-  } catch (error) {
+  if (accountsError) {
     result.errors.push(
-      `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Sync failed: ${accountsError.message}`,
     );
     return result;
   }
+
+  if (accounts.length === 0) {
+    return result;
+  }
+
+  // 2. Get all campaign links for matching UTM campaigns to external IDs
+  const { data: campaignLinks, error: linksError } = await tryCatch(
+    prisma.campaignLink.findMany(),
+  );
+
+  if (linksError) {
+    result.errors.push(
+      `Sync failed: ${linksError.message}`,
+    );
+    return result;
+  }
+
+  const linksByExternal = new Map<string, typeof campaignLinks[0]>();
+  for (const link of campaignLinks) {
+    const key = `${link.platform}:${link.externalCampaignId}`;
+    linksByExternal.set(key, link);
+  }
+
+  // Define date range for metrics (last 30 days)
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 30);
+
+  const allSpendData: CampaignSpendData[] = [];
+
+  // 3. For each account, fetch campaigns and metrics
+  for (const account of accounts) {
+    // Check if token is expired
+    if (account.expiresAt && new Date(account.expiresAt) < new Date()) {
+      // Try to refresh token if we have a refresh token
+      if (account.refreshToken) {
+        const { data: refreshed, error: refreshError } = await tryCatch(
+          refreshAccountToken(
+            account.id,
+            account.platform as MarketingPlatform,
+            decryptToken(account.refreshToken),
+          ),
+        );
+
+        if (refreshError) {
+          result.errors.push(
+            `Account ${account.accountId} (${account.platform}): Token refresh error: ${refreshError.message}`,
+          );
+          continue;
+        }
+
+        if (!refreshed) {
+          result.errors.push(
+            `Account ${account.accountId} (${account.platform}): Token expired and refresh failed`,
+          );
+          continue;
+        }
+      } else {
+        result.errors.push(
+          `Account ${account.accountId} (${account.platform}): Token expired and no refresh token`,
+        );
+        continue;
+      }
+    }
+
+    const client = createMarketingClient(account.platform as MarketingPlatform, {
+      accessToken: decryptToken(account.accessToken),
+      customerId: account.accountId,
+    });
+
+    // Fetch campaigns
+    const { data: campaigns, error: campaignsError } = await tryCatch(
+      client.listCampaigns(account.accountId),
+    );
+
+    if (campaignsError) {
+      result.errors.push(
+        `Account ${account.accountId} (${account.platform}): ${campaignsError.message}`,
+      );
+      continue;
+    }
+
+    // For each campaign, check if it's linked and fetch metrics
+    for (const campaign of campaigns) {
+      const linkKey = `${account.platform}:${campaign.id}`;
+      const link = linksByExternal.get(linkKey);
+
+      if (link) {
+        // Campaign is linked - fetch metrics
+        const { data: metrics, error: metricsError } = await tryCatch(
+          client.getCampaignMetrics(
+            account.accountId,
+            campaign.id,
+            startDate,
+            endDate,
+          ),
+        );
+
+        if (metricsError) {
+          result.errors.push(
+            `Campaign ${campaign.id} (${campaign.name}): ${metricsError.message}`,
+          );
+          continue;
+        }
+
+        allSpendData.push({
+          campaignId: campaign.id,
+          platform: account.platform as MarketingPlatform,
+          utmCampaign: link.utmCampaign,
+          spend: metrics.spend,
+          spendCurrency: metrics.spendCurrency,
+          impressions: metrics.impressions,
+          clicks: metrics.clicks,
+          conversions: metrics.conversions,
+          dateRange: {
+            start: startDate,
+            end: endDate,
+          },
+        });
+
+        result.synced++;
+      }
+    }
+  }
+
+  // 4. Store aggregated spend data in cache for ROI calculation
+  if (allSpendData.length > 0) {
+    await cacheExternalSpendData(allSpendData, startDate, endDate);
+  }
+
+  return result;
 }
 
 /**
@@ -206,11 +222,18 @@ async function refreshAccountToken(
   platform: MarketingPlatform,
   refreshToken: string,
 ): Promise<boolean> {
-  try {
-    const client = createMarketingClient(platform);
-    const newTokens = await client.refreshAccessToken(refreshToken);
+  const client = createMarketingClient(platform);
 
-    await prisma.marketingAccount.update({
+  const { data: newTokens, error: tokenError } = await tryCatch(
+    client.refreshAccessToken(refreshToken),
+  );
+
+  if (tokenError) {
+    return false;
+  }
+
+  const { error: updateError } = await tryCatch(
+    prisma.marketingAccount.update({
       where: { id: accountId },
       data: {
         accessToken: newTokens.accessToken,
@@ -218,12 +241,14 @@ async function refreshAccountToken(
         expiresAt: newTokens.expiresAt,
         updatedAt: new Date(),
       },
-    });
+    }),
+  );
 
-    return true;
-  } catch {
+  if (updateError) {
     return false;
   }
+
+  return true;
 }
 
 /**

@@ -3,6 +3,7 @@
  * Resolves #332
  */
 
+import { tryCatch } from "@/lib/try-catch";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -186,38 +187,22 @@ export async function uploadAudioToR2(params: UploadAudioParams): Promise<Upload
     };
   }
 
-  try {
-    const client = getAudioR2Client();
-    const bucket = getAudioBucketName();
+  const client = getAudioR2Client();
+  const bucket = getAudioBucketName();
 
-    const upload = new Upload({
-      client,
-      params: {
-        Bucket: bucket,
-        Key: key,
-        Body: buffer,
-        ContentType: contentType,
-        Metadata: metadata,
-      },
-    });
+  const upload = new Upload({
+    client,
+    params: {
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      Metadata: metadata,
+    },
+  });
 
-    await upload.done();
-
-    // Construct the public URL
-    const publicUrl = process.env.CLOUDFLARE_R2_AUDIO_PUBLIC_URL?.trim() ||
-      process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim();
-    if (!publicUrl) {
-      throw new Error("CLOUDFLARE_R2_AUDIO_PUBLIC_URL is not configured");
-    }
-    const url = `${publicUrl}/${key}`;
-
-    return {
-      success: true,
-      key,
-      url,
-      sizeBytes: buffer.length,
-    };
-  } catch (error) {
+  const { error } = await tryCatch(upload.done());
+  if (error) {
     console.error("Error uploading audio to R2:", error);
     return {
       success: false,
@@ -227,57 +212,80 @@ export async function uploadAudioToR2(params: UploadAudioParams): Promise<Upload
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  // Construct the public URL
+  const publicUrl = process.env.CLOUDFLARE_R2_AUDIO_PUBLIC_URL?.trim() ||
+    process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim();
+  if (!publicUrl) {
+    return {
+      success: false,
+      key,
+      url: "",
+      sizeBytes: 0,
+      error: "CLOUDFLARE_R2_AUDIO_PUBLIC_URL is not configured",
+    };
+  }
+  const url = `${publicUrl}/${key}`;
+
+  return {
+    success: true,
+    key,
+    url,
+    sizeBytes: buffer.length,
+  };
 }
 
 /**
  * Download an audio file from Cloudflare R2
  */
 export async function downloadAudioFromR2(key: string): Promise<Buffer | null> {
-  try {
-    const client = getAudioR2Client();
-    const bucket = getAudioBucketName();
+  const client = getAudioR2Client();
+  const bucket = getAudioBucketName();
 
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    });
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
 
-    const response = await client.send(command);
-    const chunks: Uint8Array[] = [];
-
-    if (response.Body) {
-      for await (const chunk of response.Body) {
-        chunks.push(chunk);
-      }
-    }
-
-    return Buffer.concat(chunks);
-  } catch (error) {
+  const { data: response, error } = await tryCatch(client.send(command));
+  if (error) {
     console.error("Error downloading audio from R2:", error);
     return null;
   }
+
+  const chunks: Uint8Array[] = [];
+
+  if (response.Body) {
+    const { error: streamError } = await tryCatch(
+      (async () => {
+        for await (const chunk of response.Body!) {
+          chunks.push(chunk);
+        }
+      })(),
+    );
+    if (streamError) {
+      console.error("Error downloading audio from R2:", streamError);
+      return null;
+    }
+  }
+
+  return Buffer.concat(chunks);
 }
 
 /**
  * Delete an audio file from Cloudflare R2
  */
 export async function deleteAudioFromR2(key: string): Promise<DeleteAudioResult> {
-  try {
-    const client = getAudioR2Client();
-    const bucket = getAudioBucketName();
+  const client = getAudioR2Client();
+  const bucket = getAudioBucketName();
 
-    const command = new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    });
+  const command = new DeleteObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
 
-    await client.send(command);
-
-    return {
-      success: true,
-      key,
-    };
-  } catch (error) {
+  const { error } = await tryCatch(client.send(command));
+  if (error) {
     console.error("Error deleting audio from R2:", error);
     return {
       success: false,
@@ -285,34 +293,38 @@ export async function deleteAudioFromR2(key: string): Promise<DeleteAudioResult>
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return {
+    success: true,
+    key,
+  };
 }
 
 /**
  * Get metadata for an audio file
  */
 export async function getAudioMetadata(key: string): Promise<AudioMetadata | null> {
-  try {
-    const client = getAudioR2Client();
-    const bucket = getAudioBucketName();
+  const client = getAudioR2Client();
+  const bucket = getAudioBucketName();
 
-    const command = new HeadObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    });
+  const command = new HeadObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
 
-    const response = await client.send(command);
-
-    return {
-      key,
-      size: response.ContentLength || 0,
-      lastModified: response.LastModified,
-      contentType: response.ContentType,
-      metadata: response.Metadata,
-    };
-  } catch (error) {
+  const { data: response, error } = await tryCatch(client.send(command));
+  if (error) {
     console.error("Error getting audio metadata from R2:", error);
     return null;
   }
+
+  return {
+    key,
+    size: response.ContentLength || 0,
+    lastModified: response.LastModified,
+    contentType: response.ContentType,
+    metadata: response.Metadata,
+  };
 }
 
 /**
@@ -322,44 +334,43 @@ export async function listProjectAudioFiles(
   userId: string,
   projectId: string,
 ): Promise<AudioMetadata[]> {
-  try {
-    const client = getAudioR2Client();
-    const bucket = getAudioBucketName();
-    const prefix = `users/${userId}/audio-projects/${projectId}/tracks/`;
+  const client = getAudioR2Client();
+  const bucket = getAudioBucketName();
+  const prefix = `users/${userId}/audio-projects/${projectId}/tracks/`;
 
-    const files: AudioMetadata[] = [];
-    let continuationToken: string | undefined;
-    let hasMore = true;
+  const files: AudioMetadata[] = [];
+  let continuationToken: string | undefined;
+  let hasMore = true;
 
-    while (hasMore) {
-      const command = new ListObjectsV2Command({
-        Bucket: bucket,
-        Prefix: prefix,
-        ContinuationToken: continuationToken,
-        MaxKeys: 1000,
-      });
+  while (hasMore) {
+    const command = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+      ContinuationToken: continuationToken,
+      MaxKeys: 1000,
+    });
 
-      const response = await client.send(command);
-
-      if (response.Contents) {
-        for (const object of response.Contents) {
-          files.push({
-            key: object.Key || "",
-            size: object.Size || 0,
-            lastModified: object.LastModified,
-          });
-        }
-      }
-
-      continuationToken = response.NextContinuationToken;
-      hasMore = response.IsTruncated === true;
+    const { data: response, error } = await tryCatch(client.send(command));
+    if (error) {
+      console.error("Error listing project audio files from R2:", error);
+      return [];
     }
 
-    return files;
-  } catch (error) {
-    console.error("Error listing project audio files from R2:", error);
-    return [];
+    if (response.Contents) {
+      for (const object of response.Contents) {
+        files.push({
+          key: object.Key || "",
+          size: object.Size || 0,
+          lastModified: object.LastModified,
+        });
+      }
+    }
+
+    continuationToken = response.NextContinuationToken;
+    hasMore = response.IsTruncated === true;
   }
+
+  return files;
 }
 
 /**
@@ -369,33 +380,35 @@ export async function deleteProjectAudioFiles(
   userId: string,
   projectId: string,
 ): Promise<{ success: boolean; deletedCount: number; error?: string; }> {
-  try {
-    const files = await listProjectAudioFiles(userId, projectId);
-    let deletedCount = 0;
-
-    for (const file of files) {
-      const result = await deleteAudioFromR2(file.key);
-      if (result.success) {
-        deletedCount++;
-      }
-    }
-
-    // Also delete the project metadata file
-    const metadataKey = generateProjectMetadataKey(userId, projectId);
-    await deleteAudioFromR2(metadataKey);
-
-    return {
-      success: true,
-      deletedCount,
-    };
-  } catch (error) {
-    console.error("Error deleting project audio files from R2:", error);
+  const { data: files, error: listError } = await tryCatch(
+    Promise.resolve(listProjectAudioFiles(userId, projectId)),
+  );
+  if (listError) {
+    console.error("Error deleting project audio files from R2:", listError);
     return {
       success: false,
       deletedCount: 0,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: listError instanceof Error ? listError.message : "Unknown error",
     };
   }
+
+  let deletedCount = 0;
+
+  for (const file of files) {
+    const result = await deleteAudioFromR2(file.key);
+    if (result.success) {
+      deletedCount++;
+    }
+  }
+
+  // Also delete the project metadata file
+  const metadataKey = generateProjectMetadataKey(userId, projectId);
+  await deleteAudioFromR2(metadataKey);
+
+  return {
+    success: true,
+    deletedCount,
+  };
 }
 
 /**

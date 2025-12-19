@@ -1,6 +1,8 @@
 import type { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { tryCatch } from "@/lib/try-catch";
+
 import type {
   AnalysisConfig,
   AutoCropConfig,
@@ -164,14 +166,14 @@ export function usePipelines(
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
 
   const fetchPipelines = useCallback(async (page = 0, append = false) => {
-    try {
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setIsLoading(true);
-      }
-      setError(null);
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError(null);
 
+    const fetchAndParse = async (): Promise<PipelinesResponse> => {
       const response = await fetch(`/api/pipelines?page=${page}`);
 
       if (!response.ok) {
@@ -181,29 +183,33 @@ export function usePipelines(
         throw new Error(`Failed to fetch pipelines: ${response.statusText}`);
       }
 
-      const data: PipelinesResponse = await response.json();
+      return response.json();
+    };
 
-      if (append) {
-        setPipelines((prev) => [...prev, ...data.pipelines]);
-      } else {
-        setPipelines(data.pipelines);
-      }
-      setPagination(data.pagination);
-    } catch (err) {
-      const errorMessage = err instanceof Error
-        ? err.message
+    const { data, error: fetchError } = await tryCatch(fetchAndParse());
+
+    if (fetchError) {
+      const errorMessage = fetchError instanceof Error
+        ? fetchError.message
         : "An unknown error occurred";
       setError(new Error(errorMessage));
       if (!append) {
         setPipelines([]);
         setPagination(null);
       }
-    } finally {
+    } else {
       if (append) {
-        setIsLoadingMore(false);
+        setPipelines((prev) => [...prev, ...data.pipelines]);
       } else {
-        setIsLoading(false);
+        setPipelines(data.pipelines);
       }
+      setPagination(data.pagination);
+    }
+
+    if (append) {
+      setIsLoadingMore(false);
+    } else {
+      setIsLoading(false);
     }
   }, []);
 

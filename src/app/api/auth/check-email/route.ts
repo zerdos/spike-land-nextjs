@@ -9,6 +9,7 @@
 
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 // Email validation regex (RFC 5322 simplified)
@@ -46,83 +47,101 @@ function getClientIP(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Check content length to prevent oversized payloads
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-      return NextResponse.json({ error: "Request too large" }, { status: 413 });
-    }
+  // Check content length to prevent oversized payloads
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  }
 
-    // Rate limiting by IP address (user is not authenticated yet)
-    const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `email_check:${clientIP}`,
-      emailCheckRateLimit,
-    );
+  // Rate limiting by IP address (user is not authenticated yet)
+  const clientIP = getClientIP(request);
+  const { data: rateLimitResult, error: rateLimitError } = await tryCatch(
+    checkRateLimit(`email_check:${clientIP}`, emailCheckRateLimit),
+  );
 
-    if (rateLimitResult.isLimited) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
-            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          },
-        },
-      );
-    }
-
-    const body = await request.json();
-    const { email } = body;
-
-    // Input validation: required, string type
-    if (!email || typeof email !== "string") {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 },
-      );
-    }
-
-    const trimmedEmail = email.trim().toLowerCase();
-
-    // Validate email format
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
-    }
-
-    // Check if user exists in database
-    const user = await prisma.user.findUnique({
-      where: { email: trimmedEmail },
-      select: {
-        id: true,
-        passwordHash: true,
-      },
-    });
-
-    if (!user) {
-      // User doesn't exist - they can create an account
-      return NextResponse.json({
-        exists: false,
-        hasPassword: false,
-      });
-    }
-
-    // User exists - check if they have a password set
-    return NextResponse.json({
-      exists: true,
-      hasPassword: user.passwordHash !== null,
-    });
-  } catch (error) {
-    console.error("Email check error:", error);
+  if (rateLimitError) {
+    console.error("Email check error:", rateLimitError);
     return NextResponse.json(
       { error: "Failed to check email" },
       { status: 500 },
     );
   }
+
+  if (rateLimitResult.isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          ),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+        },
+      },
+    );
+  }
+
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+
+  if (jsonError) {
+    console.error("Email check error:", jsonError);
+    return NextResponse.json(
+      { error: "Failed to check email" },
+      { status: 500 },
+    );
+  }
+
+  const { email } = body;
+
+  // Input validation: required, string type
+  if (!email || typeof email !== "string") {
+    return NextResponse.json(
+      { error: "Email is required" },
+      { status: 400 },
+    );
+  }
+
+  const trimmedEmail = email.trim().toLowerCase();
+
+  // Validate email format
+  if (!EMAIL_REGEX.test(trimmedEmail)) {
+    return NextResponse.json(
+      { error: "Invalid email format" },
+      { status: 400 },
+    );
+  }
+
+  // Check if user exists in database
+  const { data: user, error: dbError } = await tryCatch(
+    prisma.user.findUnique({
+      where: { email: trimmedEmail },
+      select: {
+        id: true,
+        passwordHash: true,
+      },
+    }),
+  );
+
+  if (dbError) {
+    console.error("Email check error:", dbError);
+    return NextResponse.json(
+      { error: "Failed to check email" },
+      { status: 500 },
+    );
+  }
+
+  if (!user) {
+    // User doesn't exist - they can create an account
+    return NextResponse.json({
+      exists: false,
+      hasPassword: false,
+    });
+  }
+
+  // User exists - check if they have a password set
+  return NextResponse.json({
+    exists: true,
+    hasPassword: user.passwordHash !== null,
+  });
 }

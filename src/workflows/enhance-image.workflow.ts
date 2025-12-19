@@ -12,6 +12,7 @@ import {
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { tryCatch } from "@/lib/try-catch";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import sharp from "sharp";
 import { FatalError } from "workflow";
@@ -91,9 +92,9 @@ async function analyzeImageStep(
 ): Promise<ImageAnalysisResultV2> {
   "use step";
 
-  try {
-    return await analyzeImageV2(imageBase64, mimeType);
-  } catch (error) {
+  const { data, error } = await tryCatch(analyzeImageV2(imageBase64, mimeType));
+
+  if (error) {
     // Don't fail the job if analysis fails - return default analysis
     console.warn("Image analysis failed, using defaults:", error);
     return {
@@ -116,6 +117,8 @@ async function analyzeImageStep(
       },
     };
   }
+
+  return data;
 }
 
 /**
@@ -147,27 +150,88 @@ async function downloadBlendSourceStep(
 ): Promise<ReferenceImageData | undefined> {
   "use step";
 
-  try {
-    const sourceBuffer = await downloadFromR2(sourceR2Key);
-    if (!sourceBuffer) {
-      console.warn("Blend source download returned null");
-      return undefined;
-    }
+  const { data: sourceBuffer, error: downloadError } = await tryCatch(
+    downloadFromR2(sourceR2Key),
+  );
 
-    const sourceMetadata = await sharp(sourceBuffer).metadata();
-    const sourceMimeType = sourceMetadata.format
-      ? `image/${sourceMetadata.format === "jpeg" ? "jpeg" : sourceMetadata.format}`
-      : "image/jpeg";
-
-    return {
-      imageData: sourceBuffer.toString("base64"),
-      mimeType: sourceMimeType,
-      description: "Image to blend/merge with target",
-    };
-  } catch (error) {
-    console.warn("Failed to download blend source:", error);
+  if (downloadError) {
+    console.warn("Failed to download blend source:", downloadError);
     return undefined;
   }
+
+  if (!sourceBuffer) {
+    console.warn("Blend source download returned null");
+    return undefined;
+  }
+
+  const { data: sourceMetadata, error: metadataError } = await tryCatch(
+    sharp(sourceBuffer).metadata(),
+  );
+
+  if (metadataError) {
+    console.warn("Failed to get blend source metadata:", metadataError);
+    return undefined;
+  }
+
+  const sourceMimeType = sourceMetadata.format
+    ? `image/${sourceMetadata.format === "jpeg" ? "jpeg" : sourceMetadata.format}`
+    : "image/jpeg";
+
+  return {
+    imageData: sourceBuffer.toString("base64"),
+    mimeType: sourceMimeType,
+    description: "Image to blend/merge with target",
+  };
+}
+
+/**
+ * Helper function to perform the actual cropping operations
+ */
+async function performCropOperations(
+  imageBuffer: Buffer,
+  cropRegion: { left: number; top: number; width: number; height: number; },
+  originalR2Key: string,
+  jobId: string,
+  mimeType: string,
+): Promise<{
+  buffer: Buffer;
+  width: number;
+  height: number;
+  cropDimensions: { left: number; top: number; width: number; height: number; };
+}> {
+  // Crop the image
+  const croppedBuffer = await sharp(imageBuffer)
+    .extract(cropRegion)
+    .toBuffer();
+
+  // Get new dimensions
+  const croppedMetadata = await sharp(croppedBuffer).metadata();
+  const newWidth = croppedMetadata.width || cropRegion.width;
+  const newHeight = croppedMetadata.height || cropRegion.height;
+
+  // Upload cropped image back to R2 (overwrite original)
+  await uploadToR2({
+    key: originalR2Key,
+    buffer: croppedBuffer,
+    contentType: mimeType,
+    metadata: { cropped: "true", jobId },
+  });
+
+  // Update job with crop info
+  await prisma.imageEnhancementJob.update({
+    where: { id: jobId },
+    data: {
+      wasCropped: true,
+      cropDimensions: JSON.parse(JSON.stringify(cropRegion)),
+    },
+  });
+
+  return {
+    buffer: croppedBuffer,
+    width: newWidth,
+    height: newHeight,
+    cropDimensions: cropRegion,
+  };
 }
 
 /**
@@ -193,83 +257,50 @@ async function autoCropStep(
 }> {
   "use step";
 
+  const noCropResult = {
+    buffer: imageBuffer,
+    width: originalWidth,
+    height: originalHeight,
+    wasCropped: false,
+    cropDimensions: null,
+  };
+
   // Check if cropping is needed
   if (
     !analysisResult.cropping.isCroppingNeeded ||
     !analysisResult.cropping.suggestedCrop ||
     !validateCropDimensions(analysisResult.cropping.suggestedCrop)
   ) {
-    return {
-      buffer: imageBuffer,
-      width: originalWidth,
-      height: originalHeight,
-      wasCropped: false,
-      cropDimensions: null,
-    };
+    return noCropResult;
   }
 
-  try {
-    const cropRegion = cropDimensionsToPixels(
-      analysisResult.cropping.suggestedCrop,
-      originalWidth,
-      originalHeight,
-    );
+  const cropRegion = cropDimensionsToPixels(
+    analysisResult.cropping.suggestedCrop,
+    originalWidth,
+    originalHeight,
+  );
 
-    // Validate calculated region
-    if (cropRegion.width <= 0 || cropRegion.height <= 0) {
-      return {
-        buffer: imageBuffer,
-        width: originalWidth,
-        height: originalHeight,
-        wasCropped: false,
-        cropDimensions: null,
-      };
-    }
+  // Validate calculated region
+  if (cropRegion.width <= 0 || cropRegion.height <= 0) {
+    return noCropResult;
+  }
 
-    // Crop the image
-    const croppedBuffer = await sharp(imageBuffer)
-      .extract(cropRegion)
-      .toBuffer();
+  const { data, error } = await tryCatch(
+    performCropOperations(imageBuffer, cropRegion, originalR2Key, jobId, mimeType),
+  );
 
-    // Get new dimensions
-    const croppedMetadata = await sharp(croppedBuffer).metadata();
-    const newWidth = croppedMetadata.width || cropRegion.width;
-    const newHeight = croppedMetadata.height || cropRegion.height;
-
-    // Upload cropped image back to R2 (overwrite original)
-    await uploadToR2({
-      key: originalR2Key,
-      buffer: croppedBuffer,
-      contentType: mimeType,
-      metadata: { cropped: "true", jobId },
-    });
-
-    // Update job with crop info
-    await prisma.imageEnhancementJob.update({
-      where: { id: jobId },
-      data: {
-        wasCropped: true,
-        cropDimensions: JSON.parse(JSON.stringify(cropRegion)),
-      },
-    });
-
-    return {
-      buffer: croppedBuffer,
-      width: newWidth,
-      height: newHeight,
-      wasCropped: true,
-      cropDimensions: cropRegion,
-    };
-  } catch (error) {
+  if (error) {
     console.warn("Auto-crop failed, continuing with original:", error);
-    return {
-      buffer: imageBuffer,
-      width: originalWidth,
-      height: originalHeight,
-      wasCropped: false,
-      cropDimensions: null,
-    };
+    return noCropResult;
   }
+
+  return {
+    buffer: data.buffer,
+    width: data.width,
+    height: data.height,
+    wasCropped: true,
+    cropDimensions: data.cropDimensions,
+  };
 }
 
 /**
@@ -307,8 +338,8 @@ async function enhanceWithGemini(
 ): Promise<Buffer> {
   "use step";
 
-  try {
-    const enhanced = await enhanceImageWithGemini({
+  const { data: enhanced, error } = await tryCatch(
+    enhanceImageWithGemini({
       imageData: imageBase64,
       mimeType,
       tier,
@@ -316,9 +347,10 @@ async function enhanceWithGemini(
       originalHeight,
       promptOverride,
       referenceImages,
-    });
-    return enhanced;
-  } catch (error) {
+    }),
+  );
+
+  if (error) {
     // Gemini errors that indicate permanent failure
     const message = error instanceof Error ? error.message : String(error);
     if (
@@ -331,6 +363,8 @@ async function enhanceWithGemini(
     // Other errors will be retried automatically
     throw error;
   }
+
+  return enhanced;
 }
 
 /**
@@ -500,6 +534,115 @@ async function refundTokens(
  *   10. Update job status
  *   11. Refund tokens on failure
  */
+/**
+ * Helper function containing the core workflow steps
+ */
+async function executeEnhancementWorkflow(
+  input: EnhanceImageInput,
+): Promise<string> {
+  const { jobId, originalR2Key, tier, sourceImageR2Key, blendSource } = input;
+
+  // === STAGE 1: ANALYSIS ===
+
+  // Step 1: Download original image
+  let imageBuffer = await downloadOriginalImage(originalR2Key);
+
+  // Step 1b: Prepare blend source image for reference (if applicable)
+  // Priority: blendSource (new - base64 data) > sourceImageR2Key (deprecated - R2 key)
+  let sourceImageData: ReferenceImageData | undefined;
+  if (blendSource) {
+    // New approach: base64 data provided directly (no download needed)
+    sourceImageData = {
+      imageData: blendSource.base64,
+      mimeType: blendSource.mimeType,
+      description: "Image to blend/merge with target",
+    };
+  } else if (sourceImageR2Key) {
+    // Deprecated: download from R2 (for backwards compatibility)
+    sourceImageData = await downloadBlendSourceStep(sourceImageR2Key);
+  }
+
+  // Step 2: Get image metadata
+  const metadata = await getImageMetadata(imageBuffer);
+  let currentWidth = metadata.width;
+  let currentHeight = metadata.height;
+
+  // Step 3: Analyze image with vision model
+  const analysisResult = await analyzeImageStep(
+    metadata.imageBase64,
+    metadata.mimeType,
+  );
+
+  // Step 4: Save analysis to database
+  await saveAnalysisToDb(jobId, analysisResult);
+
+  // === STAGE 2: AUTO-CROP (Conditional) ===
+
+  // Step 5: Auto-crop if needed
+  const cropResult = await autoCropStep(
+    imageBuffer,
+    currentWidth,
+    currentHeight,
+    analysisResult.structuredAnalysis,
+    originalR2Key,
+    jobId,
+    metadata.mimeType,
+  );
+
+  // Update current state with crop result
+  imageBuffer = cropResult.buffer;
+  currentWidth = cropResult.width;
+  currentHeight = cropResult.height;
+
+  // === STAGE 3: DYNAMIC PROMPT & ENHANCEMENT ===
+
+  // Step 6: Pad image to square for Gemini
+  const paddedBase64 = await padImageForGemini(
+    imageBuffer,
+    currentWidth,
+    currentHeight,
+  );
+
+  // Build enhancement prompt based on analysis (blend or dynamic)
+  const dynamicPrompt = sourceImageData
+    ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
+    : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
+
+  // Step 7: Enhance with Gemini using dynamic prompt
+  const enhancedBuffer = await enhanceWithGemini(
+    paddedBase64,
+    metadata.mimeType,
+    TIER_TO_SIZE[tier],
+    currentWidth,
+    currentHeight,
+    dynamicPrompt,
+    sourceImageData ? [sourceImageData] : undefined,
+  );
+
+  // === STAGE 4: POST-PROCESSING ===
+
+  // Step 8: Post-process and upload
+  const result = await processAndUpload(
+    enhancedBuffer,
+    tier,
+    currentWidth,
+    currentHeight,
+    originalR2Key,
+    jobId,
+  );
+
+  // Step 9: Update job as completed
+  await updateJobStatus(jobId, "COMPLETED", {
+    enhancedUrl: result.enhancedUrl,
+    r2Key: result.r2Key,
+    width: result.width,
+    height: result.height,
+    sizeBytes: result.sizeBytes,
+  });
+
+  return result.enhancedUrl;
+}
+
 export async function enhanceImage(input: EnhanceImageInput): Promise<{
   success: boolean;
   enhancedUrl?: string;
@@ -507,109 +650,13 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
 }> {
   "use workflow";
 
-  const { jobId, userId, originalR2Key, tier, tokensCost, sourceImageR2Key, blendSource } = input;
+  const { jobId, userId, tokensCost } = input;
 
-  try {
-    // === STAGE 1: ANALYSIS ===
+  const { data: enhancedUrl, error } = await tryCatch(
+    executeEnhancementWorkflow(input),
+  );
 
-    // Step 1: Download original image
-    let imageBuffer = await downloadOriginalImage(originalR2Key);
-
-    // Step 1b: Prepare blend source image for reference (if applicable)
-    // Priority: blendSource (new - base64 data) > sourceImageR2Key (deprecated - R2 key)
-    let sourceImageData: ReferenceImageData | undefined;
-    if (blendSource) {
-      // New approach: base64 data provided directly (no download needed)
-      sourceImageData = {
-        imageData: blendSource.base64,
-        mimeType: blendSource.mimeType,
-        description: "Image to blend/merge with target",
-      };
-    } else if (sourceImageR2Key) {
-      // Deprecated: download from R2 (for backwards compatibility)
-      sourceImageData = await downloadBlendSourceStep(sourceImageR2Key);
-    }
-
-    // Step 2: Get image metadata
-    const metadata = await getImageMetadata(imageBuffer);
-    let currentWidth = metadata.width;
-    let currentHeight = metadata.height;
-
-    // Step 3: Analyze image with vision model
-    const analysisResult = await analyzeImageStep(
-      metadata.imageBase64,
-      metadata.mimeType,
-    );
-
-    // Step 4: Save analysis to database
-    await saveAnalysisToDb(jobId, analysisResult);
-
-    // === STAGE 2: AUTO-CROP (Conditional) ===
-
-    // Step 5: Auto-crop if needed
-    const cropResult = await autoCropStep(
-      imageBuffer,
-      currentWidth,
-      currentHeight,
-      analysisResult.structuredAnalysis,
-      originalR2Key,
-      jobId,
-      metadata.mimeType,
-    );
-
-    // Update current state with crop result
-    imageBuffer = cropResult.buffer;
-    currentWidth = cropResult.width;
-    currentHeight = cropResult.height;
-
-    // === STAGE 3: DYNAMIC PROMPT & ENHANCEMENT ===
-
-    // Step 6: Pad image to square for Gemini
-    const paddedBase64 = await padImageForGemini(
-      imageBuffer,
-      currentWidth,
-      currentHeight,
-    );
-
-    // Build enhancement prompt based on analysis (blend or dynamic)
-    const dynamicPrompt = sourceImageData
-      ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
-      : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
-
-    // Step 7: Enhance with Gemini using dynamic prompt
-    const enhancedBuffer = await enhanceWithGemini(
-      paddedBase64,
-      metadata.mimeType,
-      TIER_TO_SIZE[tier],
-      currentWidth,
-      currentHeight,
-      dynamicPrompt,
-      sourceImageData ? [sourceImageData] : undefined,
-    );
-
-    // === STAGE 4: POST-PROCESSING ===
-
-    // Step 8: Post-process and upload
-    const result = await processAndUpload(
-      enhancedBuffer,
-      tier,
-      currentWidth,
-      currentHeight,
-      originalR2Key,
-      jobId,
-    );
-
-    // Step 9: Update job as completed
-    await updateJobStatus(jobId, "COMPLETED", {
-      enhancedUrl: result.enhancedUrl,
-      r2Key: result.r2Key,
-      width: result.width,
-      height: result.height,
-      sizeBytes: result.sizeBytes,
-    });
-
-    return { success: true, enhancedUrl: result.enhancedUrl };
-  } catch (error) {
+  if (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     // Step 10: Refund tokens on failure
@@ -626,4 +673,6 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<{
 
     return { success: false, error: errorMessage };
   }
+
+  return { success: true, enhancedUrl };
 }

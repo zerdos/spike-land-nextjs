@@ -1,6 +1,7 @@
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { getJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -64,40 +65,40 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  try {
-    const { jobId } = await params;
+  const { jobId } = await params;
 
-    // Get job - only for the authenticated user
-    const job = await getJob(jobId, userId);
+  // Get job - only for the authenticated user
+  const { data: job, error } = await tryCatch(getJob(jobId, userId));
 
-    if (!job) {
-      return NextResponse.json(
-        { error: "Job not found" },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json({
-      id: job.id,
-      type: job.type,
-      tier: job.tier,
-      tokensCost: job.tokensCost,
-      status: job.status,
-      prompt: job.prompt,
-      inputImageUrl: job.inputImageUrl || null,
-      outputImageUrl: job.outputImageUrl || null,
-      outputWidth: job.outputWidth || null,
-      outputHeight: job.outputHeight || null,
-      errorMessage: job.errorMessage || null,
-      createdAt: job.createdAt.toISOString(),
-      processingStartedAt: job.processingStartedAt?.toISOString() || null,
-      processingCompletedAt: job.processingCompletedAt?.toISOString() || null,
-    });
-  } catch (error) {
+  if (error) {
     console.error("Failed to fetch job:", error);
     return NextResponse.json(
       { error: "Failed to fetch job status" },
       { status: 500 },
     );
   }
+
+  if (!job) {
+    return NextResponse.json(
+      { error: "Job not found" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({
+    id: job.id,
+    type: job.type,
+    tier: job.tier,
+    tokensCost: job.tokensCost,
+    status: job.status,
+    prompt: job.prompt,
+    inputImageUrl: job.inputImageUrl || null,
+    outputImageUrl: job.outputImageUrl || null,
+    outputWidth: job.outputWidth || null,
+    outputHeight: job.outputHeight || null,
+    errorMessage: job.errorMessage || null,
+    createdAt: job.createdAt.toISOString(),
+    processingStartedAt: job.processingStartedAt?.toISOString() || null,
+    processingCompletedAt: job.processingCompletedAt?.toISOString() || null,
+  });
 }

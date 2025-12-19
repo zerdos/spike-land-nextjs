@@ -1,6 +1,7 @@
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { getJobHistory } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
+import { tryCatch } from "@/lib/try-catch";
 import { McpJobType } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -85,19 +86,21 @@ export async function GET(request: NextRequest) {
     type = typeParam as McpJobType;
   }
 
-  try {
-    const result = await getJobHistory(userId!, {
+  const { data: result, error } = await tryCatch(
+    getJobHistory(userId!, {
       limit,
       offset,
       type,
-    });
+    }),
+  );
 
-    return NextResponse.json(result);
-  } catch (error) {
+  if (error) {
     console.error("Failed to fetch job history:", error);
     return NextResponse.json(
       { error: "Failed to fetch job history" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(result);
 }

@@ -15,6 +15,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 const RETENTION_DAYS = 90;
@@ -128,43 +129,21 @@ async function cleanupTrackingData(): Promise<CleanupStats> {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
 
-  try {
-    // Validate cron secret
-    if (!validateCronSecret(request)) {
-      console.error("Cleanup tracking cron: Invalid or missing CRON_SECRET");
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    console.log("Cleanup tracking cron: Starting cleanup...");
-
-    // Run the cleanup
-    const stats = await cleanupTrackingData();
-
-    const duration = Date.now() - startTime;
-    const totalDeleted = stats.visitorSessions +
-      stats.pageViews +
-      stats.analyticsEvents +
-      stats.metricsCache;
-
-    const response = {
-      success: true,
-      retentionDays: RETENTION_DAYS,
-      deleted: stats,
-      totalDeleted,
-      durationMs: duration,
-      timestamp: new Date().toISOString(),
-    };
-
-    console.log(
-      `Cleanup tracking cron: Completed. Deleted ${totalDeleted} records in ${duration}ms`,
-      stats,
+  // Validate cron secret
+  if (!validateCronSecret(request)) {
+    console.error("Cleanup tracking cron: Invalid or missing CRON_SECRET");
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
     );
+  }
 
-    return NextResponse.json(response);
-  } catch (error) {
+  console.log("Cleanup tracking cron: Starting cleanup...");
+
+  // Run the cleanup
+  const { data: stats, error } = await tryCatch(cleanupTrackingData());
+
+  if (error) {
     const duration = Date.now() - startTime;
     console.error("Cleanup tracking cron: Failed", error);
 
@@ -178,4 +157,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { status: 500 },
     );
   }
+
+  const duration = Date.now() - startTime;
+  const totalDeleted = stats.visitorSessions +
+    stats.pageViews +
+    stats.analyticsEvents +
+    stats.metricsCache;
+
+  const response = {
+    success: true,
+    retentionDays: RETENTION_DAYS,
+    deleted: stats,
+    totalDeleted,
+    durationMs: duration,
+    timestamp: new Date().toISOString(),
+  };
+
+  console.log(
+    `Cleanup tracking cron: Completed. Deleted ${totalDeleted} records in ${duration}ms`,
+    stats,
+  );
+
+  return NextResponse.json(response);
 }

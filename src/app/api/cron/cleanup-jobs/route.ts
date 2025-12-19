@@ -10,36 +10,25 @@
  */
 
 import { cleanupStuckJobs } from "@/lib/jobs/cleanup";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  try {
-    // Verify the request is from Vercel Cron
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+  // Verify the request is from Vercel Cron
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    // Run cleanup with default settings (5 minute timeout)
-    const result = await cleanupStuckJobs();
+  // Run cleanup with default settings (5 minute timeout)
+  const { data: result, error } = await tryCatch(cleanupStuckJobs());
 
-    return NextResponse.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      result: {
-        totalFound: result.totalFound,
-        cleanedUp: result.cleanedUp,
-        failed: result.failed,
-        tokensRefunded: result.tokensRefunded,
-        errorCount: result.errors.length,
-      },
-    });
-  } catch (error) {
+  if (error) {
     console.error("Cron job cleanup failed:", error);
 
     return NextResponse.json(
@@ -51,4 +40,16 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
+
+  return NextResponse.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    result: {
+      totalFound: result.totalFound,
+      cleanedUp: result.cleanedUp,
+      failed: result.failed,
+      tokensRefunded: result.tokensRefunded,
+      errorCount: result.errors.length,
+    },
+  });
 }

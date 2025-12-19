@@ -5,6 +5,7 @@
  * @see https://developers.google.com/google-ads/api/docs/start
  */
 
+import { tryCatch } from "@/lib/try-catch";
 import {
   Campaign,
   CampaignMetrics,
@@ -254,15 +255,21 @@ export class GoogleAdsClient implements IMarketingClient {
    * Validate access token
    */
   async validateToken(accessToken: string): Promise<boolean> {
-    try {
-      const response = await fetch(
+    const { data: response, error } = await tryCatch(
+      fetch(
         `https://oauth2.googleapis.com/tokeninfo?access_token=${accessToken}`,
-      );
-      const data = await response.json();
-      return !data.error && data.scope?.includes("adwords");
-    } catch {
+      ),
+    );
+    if (error || !response) {
       return false;
     }
+    const { data: tokenData, error: jsonError } = await tryCatch(
+      response.json(),
+    );
+    if (jsonError || !tokenData) {
+      return false;
+    }
+    return !tokenData.error && tokenData.scope?.includes("adwords");
   }
 
   /**
@@ -279,22 +286,21 @@ export class GoogleAdsClient implements IMarketingClient {
 
     for (const resourceName of response.resourceNames || []) {
       const customerId = resourceName.replace("customers/", "");
-      try {
-        const customerData = await this.getCustomerInfo(customerId);
-        if (customerData) {
-          accounts.push({
-            id: customerId,
-            userId: "", // Will be set by caller
-            platform: "GOOGLE_ADS",
-            accountId: customerId,
-            accountName: customerData.descriptiveName,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-      } catch {
-        // Skip inaccessible customers
+      const { data: customerData } = await tryCatch(
+        this.getCustomerInfo(customerId),
+      );
+      // Skip inaccessible customers (when error occurs, customerData is null)
+      if (customerData) {
+        accounts.push({
+          id: customerId,
+          userId: "", // Will be set by caller
+          platform: "GOOGLE_ADS",
+          accountId: customerId,
+          accountName: customerData.descriptiveName,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
       }
     }
 
@@ -307,16 +313,18 @@ export class GoogleAdsClient implements IMarketingClient {
   private async getCustomerInfo(
     customerId: string,
   ): Promise<GoogleAdsCustomer | null> {
-    try {
-      const results = await this.query<{ customer: GoogleAdsCustomer; }>(
+    const { data: results, error } = await tryCatch(
+      this.query<{ customer: GoogleAdsCustomer; }>(
         customerId,
         `SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.time_zone FROM customer LIMIT 1`,
-      );
+      ),
+    );
 
-      return results[0]?.customer || null;
-    } catch {
+    if (error || !results) {
       return null;
     }
+
+    return results[0]?.customer || null;
   }
 
   /**
@@ -358,8 +366,8 @@ export class GoogleAdsClient implements IMarketingClient {
   ): Promise<Campaign | null> {
     const customerId = accountId.replace(/-/g, "");
 
-    try {
-      const results = await this.query<{
+    const { data: results, error } = await tryCatch(
+      this.query<{
         campaign: GoogleAdsCampaign;
         campaignBudget?: { amountMicros: string; };
       }>(
@@ -375,19 +383,21 @@ export class GoogleAdsClient implements IMarketingClient {
           campaign_budget.amount_micros
         FROM campaign
         WHERE campaign.id = ${campaignId}`,
-      );
+      ),
+    );
 
-      const result = results[0];
-      if (!result) return null;
-
-      return this.mapCampaign(
-        result.campaign,
-        customerId,
-        result.campaignBudget,
-      );
-    } catch {
+    if (error || !results) {
       return null;
     }
+
+    const result = results[0];
+    if (!result) return null;
+
+    return this.mapCampaign(
+      result.campaign,
+      customerId,
+      result.campaignBudget,
+    );
   }
 
   /**

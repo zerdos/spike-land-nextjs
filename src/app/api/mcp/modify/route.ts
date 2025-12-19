@@ -2,6 +2,7 @@ import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createModificationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { EnhancementTier, MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
@@ -81,15 +82,14 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse and validate request body
-  let body: {
+  const { data: body, error: parseError } = await tryCatch<{
     prompt?: string;
     tier?: string;
     image?: string;
     mimeType?: string;
-  };
-  try {
-    body = await request.json();
-  } catch {
+  }>(request.json());
+
+  if (parseError) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
@@ -153,33 +153,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
-    const result = await createModificationJob({
+  const { data: result, error: jobError } = await tryCatch(
+    createModificationJob({
       userId: userId!,
       apiKeyId,
       prompt: prompt.trim(),
       tier: tier as EnhancementTier,
       imageData: image,
       mimeType,
-    });
+    }),
+  );
 
-    if (!result.success) {
-      // Determine appropriate status code
-      const status = result.error?.includes("Insufficient") ? 402 : 500;
-      return NextResponse.json({ error: result.error }, { status });
-    }
-
-    return NextResponse.json({
-      success: true,
-      jobId: result.jobId,
-      tokensCost: result.tokensCost,
-      message: "Modification started. Poll /api/mcp/jobs/{jobId} for status.",
-    });
-  } catch (error) {
-    console.error("Failed to create modification job:", error);
+  if (jobError) {
+    console.error("Failed to create modification job:", jobError);
     return NextResponse.json(
       { error: "Failed to start image modification" },
       { status: 500 },
     );
   }
+
+  if (!result.success) {
+    // Determine appropriate status code
+    const status = result.error?.includes("Insufficient") ? 402 : 500;
+    return NextResponse.json({ error: result.error }, { status });
+  }
+
+  return NextResponse.json({
+    success: true,
+    jobId: result.jobId,
+    tokensCost: result.tokensCost,
+    message: "Modification started. Poll /api/mcp/jobs/{jobId} for status.",
+  });
 }

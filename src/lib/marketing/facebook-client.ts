@@ -5,6 +5,8 @@
  * @see https://developers.facebook.com/docs/marketing-api/get-started
  */
 
+import { tryCatch } from "@/lib/try-catch";
+
 import {
   Campaign,
   CampaignMetrics,
@@ -214,21 +216,28 @@ export class FacebookMarketingClient implements IMarketingClient {
    * Validate access token
    */
   async validateToken(accessToken: string): Promise<boolean> {
-    try {
-      const params = new URLSearchParams({
-        input_token: accessToken,
-        access_token: `${this.appId}|${this.appSecret}`,
-      });
+    const params = new URLSearchParams({
+      input_token: accessToken,
+      access_token: `${this.appId}|${this.appSecret}`,
+    });
 
-      const response = await fetch(
-        `${FACEBOOK_GRAPH_API_BASE}/debug_token?${params}`,
-      );
-      const data = await response.json();
+    const { data: response, error } = await tryCatch(
+      fetch(`${FACEBOOK_GRAPH_API_BASE}/debug_token?${params}`),
+    );
 
-      return data.data?.is_valid === true;
-    } catch {
+    if (error || !response) {
       return false;
     }
+
+    const { data: jsonData, error: jsonError } = await tryCatch(
+      response.json(),
+    );
+
+    if (jsonError || !jsonData) {
+      return false;
+    }
+
+    return jsonData.data?.is_valid === true;
   }
 
   /**
@@ -273,14 +282,17 @@ export class FacebookMarketingClient implements IMarketingClient {
     accountId: string,
     campaignId: string,
   ): Promise<Campaign | null> {
-    try {
-      const response = await this.request<FacebookCampaignResponse>(
+    const { data: response, error } = await tryCatch(
+      this.request<FacebookCampaignResponse>(
         `/${campaignId}?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time,created_time,updated_time`,
-      );
-      return this.mapCampaign(response, accountId);
-    } catch {
+      ),
+    );
+
+    if (error || !response) {
       return null;
     }
+
+    return this.mapCampaign(response, accountId);
   }
 
   /**

@@ -1,6 +1,7 @@
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -51,18 +52,20 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  try {
-    const balanceInfo = await TokenBalanceManager.getBalance(userId!);
+  const { data: balanceInfo, error } = await tryCatch(
+    TokenBalanceManager.getBalance(userId!),
+  );
 
-    return NextResponse.json({
-      balance: balanceInfo.balance,
-      lastRegeneration: balanceInfo.lastRegeneration.toISOString(),
-    });
-  } catch (error) {
+  if (error) {
     console.error("Failed to get balance:", error);
     return NextResponse.json(
       { error: "Failed to get token balance" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({
+    balance: balanceInfo.balance,
+    lastRegeneration: balanceInfo.lastRegeneration.toISOString(),
+  });
 }
