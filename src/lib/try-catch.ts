@@ -37,10 +37,15 @@ export interface ErrorReportContext {
 // Detect workflow environment (Prisma not available)
 // Must be checked before any dynamic imports
 function isWorkflowEnvironment(): boolean {
+  // Browser environment is NOT a workflow - allow error reporting
+  if (typeof window !== "undefined") {
+    return false;
+  }
+
   try {
     // Workflows have "use workflow" directive and restricted Node.js
-    // Check for workflow-specific env or missing process.versions
-    return !process.versions?.node || !!process.env.WORKFLOW_RUNTIME;
+    // Check for workflow-specific env
+    return !!process.env.WORKFLOW_RUNTIME;
   } catch {
     return true;
   }

@@ -127,6 +127,16 @@ describe("AdminLayout", () => {
       get: mockGet,
     } as any);
 
+    // Auth still gets called but returns E2E test user (auth handles bypass internally)
+    vi.mocked(auth).mockResolvedValue({
+      user: {
+        id: "e2e-test-user",
+        name: "E2E Test User",
+        email: "e2e@test.com",
+        role: "ADMIN",
+      },
+    } as any);
+
     const originalNodeEnv = process.env.NODE_ENV;
     const originalBypassSecret = process.env.E2E_BYPASS_SECRET;
     process.env.NODE_ENV = "test";
@@ -135,11 +145,13 @@ describe("AdminLayout", () => {
     const result = await AdminLayout({ children: <div>Test Content</div> });
     render(result);
 
-    // Verify E2E Test User is displayed instead of real user
+    // Verify E2E Test User is displayed
     expect(screen.getByText("E2E Test User")).toBeInTheDocument();
     expect(screen.getByText("Test Content")).toBeInTheDocument();
-    // Auth should not be called when bypass is active
-    expect(auth).not.toHaveBeenCalled();
+    // Auth is called but returns E2E session (bypass is handled internally by auth)
+    expect(auth).toHaveBeenCalled();
+    // isAdminByUserId should NOT be called since E2E bypass uses role from session
+    expect(isAdminByUserId).not.toHaveBeenCalled();
 
     // Restore env
     process.env.NODE_ENV = originalNodeEnv;

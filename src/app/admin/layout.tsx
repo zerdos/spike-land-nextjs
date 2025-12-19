@@ -25,17 +25,23 @@ export default async function AdminLayout({
     e2eBypassSecret &&
     e2eBypassHeader === e2eBypassSecret;
 
-  let session = null;
+  // Always get session (auth() handles E2E bypass internally)
+  const session = await auth();
 
-  if (!isE2EBypass) {
-    session = await auth();
+  if (!session?.user?.id) {
+    redirect("/");
+  }
 
-    if (!session?.user?.id) {
+  // For E2E bypass, check role from session (set via e2e-user-role cookie)
+  // For regular users, check role from database
+  if (isE2EBypass) {
+    // E2E session has role from cookie, check if admin
+    const role = session.user.role;
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
       redirect("/");
     }
-
+  } else {
     const userIsAdmin = await isAdminByUserId(session.user.id);
-
     if (!userIsAdmin) {
       redirect("/");
     }
@@ -68,9 +74,7 @@ export default async function AdminLayout({
             <div className="border-b border-neutral-200 p-6 dark:border-neutral-800">
               <h1 className="text-xl font-semibold">Admin Dashboard</h1>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {isE2EBypass
-                  ? "E2E Test User"
-                  : session?.user?.name || session?.user?.email}
+                {session.user.name || session.user.email}
               </p>
             </div>
 

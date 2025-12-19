@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
 type ErrorEnvironment = "FRONTEND" | "BACKEND";
@@ -171,6 +172,22 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
     fetchErrors();
   };
 
+  // Error simulation handlers
+  const simulateFrontendError = async () => {
+    await tryCatch(
+      Promise.reject(new Error("Test frontend error - simulated for testing")),
+      { context: { route: "/admin/errors", errorCode: "TEST_FRONTEND_ERROR" } },
+    );
+    // Refresh after a short delay to see the error
+    setTimeout(fetchErrors, 1000);
+  };
+
+  const simulateBackendError = async () => {
+    await fetch("/api/admin/errors/test", { method: "POST" });
+    // Refresh after a short delay to see the error
+    setTimeout(fetchErrors, 1000);
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -280,6 +297,26 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
             >
               {isPolling ? "Pause" : "Resume"}
             </Button>
+            <div className="border-l border-neutral-200 dark:border-neutral-700 pl-4 ml-2 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={simulateFrontendError}
+                className="text-purple-600 border-purple-300 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-700 dark:hover:bg-purple-900/20"
+              >
+                Test Frontend
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={simulateBackendError}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20"
+              >
+                Test Backend
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
