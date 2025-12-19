@@ -403,6 +403,8 @@ export async function POST(request: NextRequest) {
         processingStartedAt: new Date(),
         // Set sourceImageId when blending with stored image (null for uploaded files)
         sourceImageId: sourceImageId,
+        // Track blend jobs (both file upload and stored image blends)
+        isBlend: !!resolvedBlendSource,
       },
     }),
   );

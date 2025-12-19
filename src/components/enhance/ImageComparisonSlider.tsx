@@ -183,7 +183,7 @@ export function ImageComparisonSlider({
               alt={enhancedLabel}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-              className="object-cover"
+              className="object-contain"
               priority
               onError={handleEnhancedError}
             />
@@ -208,7 +208,7 @@ export function ImageComparisonSlider({
                 alt={originalLabel}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-                className="object-cover"
+                className="object-contain"
                 priority
                 onError={handleOriginalError}
               />

@@ -55,6 +55,79 @@ const ACCEPTED_IMAGE_TYPES = [
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
+// Maximum dimension for uploads to stay under Vercel's 4.5MB body limit
+const MAX_UPLOAD_DIMENSION = 2048;
+const UPLOAD_QUALITY = 0.85;
+
+/**
+ * Resize image to fit within max dimension while maintaining aspect ratio.
+ * Returns base64 JPEG data for efficient upload.
+ */
+async function resizeImageForUpload(
+  file: File,
+  maxDimension = MAX_UPLOAD_DIMENSION,
+  quality = UPLOAD_QUALITY,
+): Promise<{
+  base64: string;
+  mimeType: string;
+  width: number;
+  height: number;
+}> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { naturalWidth: width, naturalHeight: height } = img;
+
+      // Calculate new dimensions maintaining aspect ratio
+      if (width > maxDimension || height > maxDimension) {
+        const ratio = Math.min(maxDimension / width, maxDimension / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      // Create canvas and draw resized image
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Failed to get canvas context"));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Export as JPEG for consistent compression
+      const dataUrl = canvas.toDataURL("image/jpeg", quality);
+      const base64Data = dataUrl.split(",")[1];
+
+      if (!base64Data) {
+        reject(new Error("Failed to encode image"));
+        return;
+      }
+
+      resolve({
+        base64: base64Data,
+        mimeType: "image/jpeg",
+        width,
+        height,
+      });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Failed to load image for resizing"));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 export function ImageSlot({
   label,
   image,
@@ -84,36 +157,11 @@ export function ImageSlot({
       setIsProcessing(true);
 
       try {
-        // Read file as base64
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64Data = result.split(",")[1];
-            if (base64Data) {
-              resolve(base64Data);
-            } else {
-              reject(new Error("Failed to read file"));
-            }
-          };
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(file);
-        });
+        // Resize image for upload to stay under Vercel's body size limit
+        // This converts to JPEG and scales down to max 2048px dimension
+        const { base64, mimeType, width, height } = await resizeImageForUpload(file);
 
-        // Get image dimensions
-        const dimensions = await new Promise<{ width: number; height: number; }>(
-          (resolve, reject) => {
-            const img = new window.Image();
-            img.onload = () => {
-              resolve({ width: img.naturalWidth, height: img.naturalHeight });
-              URL.revokeObjectURL(img.src);
-            };
-            img.onerror = () => reject(new Error("Failed to load image"));
-            img.src = URL.createObjectURL(file);
-          },
-        );
-
-        // Create object URL for preview
+        // Create object URL for preview (from original file for best quality)
         const previewUrl = URL.createObjectURL(file);
 
         const uploadedImage: UploadedImage = {
@@ -121,10 +169,10 @@ export function ImageSlot({
           id: `upload-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           url: previewUrl,
           name: file.name,
-          width: dimensions.width,
-          height: dimensions.height,
+          width,
+          height,
           base64,
-          mimeType: file.type,
+          mimeType,
         };
 
         onImageSelect(uploadedImage);
