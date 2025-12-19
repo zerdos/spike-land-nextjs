@@ -43,6 +43,18 @@ coverage
 *.lcov
 .nyc_output
 
+# Test files (not needed in Docker builds)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+vitest.setup.ts
+vitest.mock-*.ts
+vitest.mock-*.tsx
+
+# Playwright/E2E artifacts
+playwright-report
+test-results
+
 # Other
 .vercel
 .turbo

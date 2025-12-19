@@ -245,6 +245,7 @@ export async function POST(request: NextRequest) {
   // 2. Create all jobs
 
   const { data: result, error: transactionError } = await tryCatch(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     prisma.$transaction(async (tx: any) => {
       // Consume tokens atomically
       const tokenBalance = await tx.userTokenBalance.findUnique({

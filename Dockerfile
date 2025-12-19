@@ -120,7 +120,7 @@ COPY e2e ./e2e
 # STAGE 8: Run unit tests
 # ============================================================================
 FROM test-source AS unit-tests
-RUN yarn test:coverage --shard 42/120
+RUN yarn test:run
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
@@ -199,9 +199,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -u 1001 -g nodejs nextjs
 
 # Copy ONLY production artifacts (standalone mode)
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# --link creates independent layers for better cache reuse
+COPY --link --from=build --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --link --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --link --from=build --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 ENV NODE_ENV=production PORT=3000
