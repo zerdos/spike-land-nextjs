@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest } from "next/server";
 import { ApiKeyValidationResult, validateApiKey } from "./api-key-manager";
 
@@ -59,7 +60,17 @@ export async function authenticateMcpRequest(
   }
 
   // Validate the API key
-  const validationResult: ApiKeyValidationResult = await validateApiKey(apiKey);
+  const { data: validationResult, error: validationError } = await tryCatch<
+    ApiKeyValidationResult,
+    Error
+  >(validateApiKey(apiKey));
+
+  if (validationError) {
+    return {
+      success: false,
+      error: validationError.message || "API key validation failed",
+    };
+  }
 
   if (!validationResult.isValid) {
     return {
@@ -119,7 +130,14 @@ export async function authenticateMcpOrSession(
   }
 
   // Fall back to session auth
-  const session = await auth();
+  const { data: session, error: sessionError } = await tryCatch(auth());
+
+  if (sessionError) {
+    return {
+      success: false,
+      error: "Session authentication failed",
+    };
+  }
 
   if (session?.user?.id) {
     return {

@@ -10,59 +10,80 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import { type CleanupOptions, cleanupStuckJobs } from "@/lib/jobs/cleanup";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  try {
-    // Check authentication
-    const session = await auth();
+  // Check authentication
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Require admin role
-    await requireAdminByUserId(session.user.id);
-
-    // Parse request body for options
-    let options: CleanupOptions = {};
-    try {
-      const body = await request.json();
-      options = {
-        timeoutMs: body.timeoutMs,
-        dryRun: body.dryRun,
-        batchSize: body.batchSize,
-      };
-    } catch {
-      // Use defaults if no body or invalid JSON
-      options = {};
-    }
-
-    // Run cleanup
-    const result = await cleanupStuckJobs(options);
-
-    return NextResponse.json({
-      success: true,
-      result,
-      message: result.cleanedUp > 0
-        ? `Successfully cleaned up ${result.cleanedUp} stuck jobs and refunded ${result.tokensRefunded} tokens`
-        : result.totalFound > 0 && options.dryRun
-        ? `Dry run: Found ${result.totalFound} stuck jobs (no changes made)`
-        : "No stuck jobs found",
-    });
-  } catch (error) {
-    console.error("Jobs cleanup failed:", error);
-
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-
+  if (authError) {
+    console.error("Jobs cleanup failed:", authError);
     return NextResponse.json(
       {
         error: "Failed to cleanup stuck jobs",
-        details: error instanceof Error ? error.message : String(error),
+        details: authError.message,
       },
       { status: 500 },
     );
   }
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Require admin role
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    console.error("Jobs cleanup failed:", adminError);
+    if (adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      {
+        error: "Failed to cleanup stuck jobs",
+        details: adminError.message,
+      },
+      { status: 500 },
+    );
+  }
+
+  // Parse request body for options
+  const { data: body } = await tryCatch(request.json());
+  const options: CleanupOptions = body
+    ? {
+      timeoutMs: body.timeoutMs,
+      dryRun: body.dryRun,
+      batchSize: body.batchSize,
+    }
+    : {};
+
+  // Run cleanup
+  const { data: result, error: cleanupError } = await tryCatch(
+    cleanupStuckJobs(options),
+  );
+
+  if (cleanupError) {
+    console.error("Jobs cleanup failed:", cleanupError);
+    return NextResponse.json(
+      {
+        error: "Failed to cleanup stuck jobs",
+        details: cleanupError.message,
+      },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    result,
+    message: result.cleanedUp > 0
+      ? `Successfully cleaned up ${result.cleanedUp} stuck jobs and refunded ${result.tokensRefunded} tokens`
+      : result.totalFound > 0 && options.dryRun
+      ? `Dry run: Found ${result.totalFound} stuck jobs (no changes made)`
+      : "No stuck jobs found",
+  });
 }

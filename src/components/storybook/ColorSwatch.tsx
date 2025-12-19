@@ -8,7 +8,9 @@ interface ColorSwatchProps {
   contrastPass?: boolean;
 }
 
-export function ColorSwatch({ name, hex, desc, role, contrastPass }: ColorSwatchProps) {
+export function ColorSwatch(
+  { name, hex, desc, role, contrastPass }: ColorSwatchProps,
+) {
   return (
     <div className="flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-border hover:bg-muted/50 transition-colors">
       <div
@@ -23,7 +25,10 @@ export function ColorSwatch({ name, hex, desc, role, contrastPass }: ColorSwatch
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-sm text-muted-foreground font-mono">{hex}</span>
           {contrastPass && (
-            <Badge variant="outline" className="text-xs border-green-500 text-green-500">
+            <Badge
+              variant="outline"
+              className="text-xs border-green-500 text-green-500"
+            >
               Contrast Pass (AA)
             </Badge>
           )}

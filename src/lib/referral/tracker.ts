@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { cookies } from "next/headers";
 import { getUserByReferralCode } from "./code-generator";
 
@@ -46,6 +47,34 @@ export async function clearReferralCookie(): Promise<void> {
 }
 
 /**
+ * Perform database operations to link referral
+ */
+async function performReferralLinkage(
+  newUserId: string,
+  referrerId: string,
+  ipAddress?: string,
+): Promise<void> {
+  // Update new user with referrer
+  await prisma.user.update({
+    where: { id: newUserId },
+    data: { referredById: referrerId },
+  });
+
+  // Create referral record
+  await prisma.referral.create({
+    data: {
+      referrerId,
+      refereeId: newUserId,
+      ipAddress: ipAddress ?? null,
+      status: "PENDING", // Will be completed after fraud checks
+    },
+  });
+
+  // Clear cookie after successful linkage
+  await clearReferralCookie();
+}
+
+/**
  * Link new user to referrer based on cookie
  * Creates referral record in PENDING status
  */
@@ -53,51 +82,37 @@ export async function linkReferralOnSignup(
   newUserId: string,
   ipAddress?: string,
 ): Promise<{ success: boolean; referrerId?: string; error?: string; }> {
-  try {
-    // Get referral code from cookie
-    const referralCode = await getReferralCodeFromCookie();
-    if (!referralCode) {
-      return { success: false, error: "No referral code found" };
-    }
+  // Get referral code from cookie
+  const referralCode = await getReferralCodeFromCookie();
+  if (!referralCode) {
+    return { success: false, error: "No referral code found" };
+  }
 
-    // Get referrer ID
-    const referrerId = await getUserByReferralCode(referralCode);
-    if (!referrerId) {
-      return { success: false, error: "Invalid referral code" };
-    }
+  // Get referrer ID
+  const referrerId = await getUserByReferralCode(referralCode);
+  if (!referrerId) {
+    return { success: false, error: "Invalid referral code" };
+  }
 
-    // Prevent self-referral
-    if (referrerId === newUserId) {
-      return { success: false, error: "Cannot refer yourself" };
-    }
+  // Prevent self-referral
+  if (referrerId === newUserId) {
+    return { success: false, error: "Cannot refer yourself" };
+  }
 
-    // Update new user with referrer
-    await prisma.user.update({
-      where: { id: newUserId },
-      data: { referredById: referrerId },
-    });
+  // Perform database operations with tryCatch
+  const { error } = await tryCatch(
+    performReferralLinkage(newUserId, referrerId, ipAddress),
+  );
 
-    // Create referral record
-    await prisma.referral.create({
-      data: {
-        referrerId,
-        refereeId: newUserId,
-        ipAddress: ipAddress ?? null,
-        status: "PENDING", // Will be completed after fraud checks
-      },
-    });
-
-    // Clear cookie after successful linkage
-    await clearReferralCookie();
-
-    return { success: true, referrerId };
-  } catch (error) {
+  if (error) {
     console.error("Failed to link referral on signup:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return { success: true, referrerId };
 }
 
 /**

@@ -173,13 +173,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Calculate drop-off rates (% that didn't continue to next stage)
     const visitorDropoff = visitorsCount > 0
-      ? Math.round(((visitorsCount - signupsCount) / visitorsCount) * 10000) / 100
+      ? Math.round(((visitorsCount - signupsCount) / visitorsCount) * 10000) /
+        100
       : 0;
     const signupDropoff = signupsCount > 0
-      ? Math.round(((signupsCount - enhancementsCount) / signupsCount) * 10000) / 100
+      ? Math.round(
+        ((signupsCount - enhancementsCount) / signupsCount) * 10000,
+      ) / 100
       : 0;
     const enhancementDropoff = enhancementsCount > 0
-      ? Math.round(((enhancementsCount - purchasesCount) / enhancementsCount) * 10000) / 100
+      ? Math.round(
+        ((enhancementsCount - purchasesCount) / enhancementsCount) * 10000,
+      ) / 100
       : 0;
 
     const stages: FunnelStage[] = [

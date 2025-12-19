@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { TokenBalanceManager } from "./balance-manager";
 
 export interface RegenerationStats {
@@ -20,32 +21,37 @@ export async function processAllUserRegenerations(): Promise<
     errors: [],
   };
 
-  try {
-    // Get all users with token balances
-    const userBalances = await prisma.userTokenBalance.findMany({
+  // Get all users with token balances
+  const { data: userBalances, error: fetchError } = await tryCatch(
+    prisma.userTokenBalance.findMany({
       select: {
         userId: true,
       },
-    });
+    }),
+  );
 
-    for (const { userId } of userBalances) {
-      try {
-        const tokensAdded = await TokenBalanceManager.processRegeneration(
-          userId,
-        );
-        if (tokensAdded > 0) {
-          stats.totalUsersProcessed++;
-          stats.totalTokensRegenerated += tokensAdded;
-        }
-      } catch (error) {
-        stats.errors.push({
-          userId,
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
+  if (fetchError) {
+    console.error("Error processing user regenerations:", fetchError);
+    return stats;
+  }
+
+  for (const { userId } of userBalances) {
+    const { data: tokensAdded, error } = await tryCatch(
+      TokenBalanceManager.processRegeneration(userId),
+    );
+
+    if (error) {
+      stats.errors.push({
+        userId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      continue;
     }
-  } catch (error) {
-    console.error("Error processing user regenerations:", error);
+
+    if (tokensAdded > 0) {
+      stats.totalUsersProcessed++;
+      stats.totalTokensRegenerated += tokensAdded;
+    }
   }
 
   return stats;

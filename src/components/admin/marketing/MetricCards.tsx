@@ -36,7 +36,9 @@ function getTrendIcon(change: number) {
   return <Minus className="h-3 w-3" />;
 }
 
-function getTrendVariant(change: number): "default" | "destructive" | "secondary" {
+function getTrendVariant(
+  change: number,
+): "default" | "destructive" | "secondary" {
   if (change > 0) {
     return "default";
   }
@@ -46,7 +48,9 @@ function getTrendVariant(change: number): "default" | "destructive" | "secondary
   return "secondary";
 }
 
-export function MetricCard({ metric, loading }: { metric: MetricCardData; loading?: boolean; }) {
+export function MetricCard(
+  { metric, loading }: { metric: MetricCardData; loading?: boolean; },
+) {
   if (loading) {
     return (
       <Card>
@@ -100,7 +104,11 @@ export function MetricCards({ metrics, className, loading }: MetricCardsProps) {
       )}
     >
       {metrics.map((metric, index) => (
-        <MetricCard key={metric.title || index} metric={metric} loading={loading} />
+        <MetricCard
+          key={metric.title || index}
+          metric={metric}
+          loading={loading}
+        />
       ))}
     </div>
   );

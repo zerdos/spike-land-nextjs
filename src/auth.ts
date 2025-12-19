@@ -18,6 +18,7 @@ import { validateReferralAfterVerification } from "@/lib/referral/fraud-detectio
 import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
 import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { attributeConversion } from "@/lib/tracking/attribution";
+import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import NextAuth, { DefaultSession } from "next-auth";
@@ -57,16 +58,27 @@ export async function handleSignIn(user: {
   // This runs before NextAuth creates a user with random CUID
   if (user.email) {
     const stableId = createStableUserId(user.email);
-    try {
-      // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
+
+    // Check if user already exists
+    const { data: existingUser, error: findError } = await tryCatch(
+      prisma.user.findUnique({
         where: { email: user.email },
-      });
+      }),
+    );
 
-      const isNewUser = !existingUser;
+    if (findError) {
+      // Log the error but don't block sign-in
+      // The JWT callback will still set the correct stable ID, so the user
+      // can authenticate. The database record will be created on next sign-in.
+      console.error("Failed to upsert user with stable ID:", findError);
+      return true;
+    }
 
-      // Use upsert to handle both new and existing users
-      const upsertedUser = await prisma.user.upsert({
+    const isNewUser = !existingUser;
+
+    // Use upsert to handle both new and existing users
+    const { data: upsertedUser, error: upsertError } = await tryCatch(
+      prisma.user.upsert({
         where: { email: user.email },
         update: {
           // Update profile info if user already exists
@@ -79,63 +91,80 @@ export async function handleSignIn(user: {
           name: user.name,
           image: user.image,
         },
-      });
+      }),
+    );
 
-      // Handle referral tracking for new users
-      if (isNewUser) {
-        // Bootstrap admin role for first user
-        await bootstrapAdminIfNeeded(upsertedUser.id).catch((error) => {
-          console.error("Failed to bootstrap admin:", error);
-        });
-
-        // Assign referral code to new user
-        await assignReferralCodeToUser(upsertedUser.id).catch((error) => {
-          console.error("Failed to assign referral code:", error);
-        });
-
-        // Link referral if cookie exists
-        await linkReferralOnSignup(upsertedUser.id).catch((error) => {
-          console.error("Failed to link referral on signup:", error);
-        });
-
-        // Create default private and public albums
-        await ensureUserAlbums(upsertedUser.id).catch((error) => {
-          console.error("Failed to create default albums:", error);
-        });
-
-        // Track signup conversion attribution for campaign analytics
-        await attributeConversion(upsertedUser.id, "SIGNUP").catch((error) => {
-          console.error("Failed to track signup attribution:", error);
-        });
-      }
-
-      // Process referral rewards if email is verified (for OAuth, it's auto-verified)
-      if (user.email && isNewUser) {
-        const validation = await validateReferralAfterVerification(
-          upsertedUser.id,
-        ).catch((error) => {
-          console.error("Failed to validate referral:", error);
-          return null;
-        });
-
-        if (validation?.shouldGrantRewards && validation.referralId) {
-          await completeReferralAndGrantRewards(validation.referralId).catch(
-            (error) => {
-              console.error("Failed to grant referral rewards:", error);
-            },
-          );
-        }
-      }
-    } catch (error) {
+    if (upsertError) {
       // Log the error but don't block sign-in
       // The JWT callback will still set the correct stable ID, so the user
       // can authenticate. The database record will be created on next sign-in.
-      console.error("Failed to upsert user with stable ID:", error);
-      // Return false only for critical errors that should block sign-in
-      // For database errors, we allow sign-in to proceed since:
+      console.error("Failed to upsert user with stable ID:", upsertError);
+      // Return true to allow sign-in to proceed since:
       // 1. JWT callback sets the correct stable ID regardless
       // 2. User can still authenticate even if DB is temporarily down
       // 3. The record will be created on next successful sign-in
+      return true;
+    }
+
+    // Handle referral tracking for new users
+    if (isNewUser) {
+      // Bootstrap admin role for first user
+      const { error: bootstrapError } = await tryCatch(
+        bootstrapAdminIfNeeded(upsertedUser.id),
+      );
+      if (bootstrapError) {
+        console.error("Failed to bootstrap admin:", bootstrapError);
+      }
+
+      // Assign referral code to new user
+      const { error: referralCodeError } = await tryCatch(
+        assignReferralCodeToUser(upsertedUser.id),
+      );
+      if (referralCodeError) {
+        console.error("Failed to assign referral code:", referralCodeError);
+      }
+
+      // Link referral if cookie exists
+      const { error: linkReferralError } = await tryCatch(
+        linkReferralOnSignup(upsertedUser.id),
+      );
+      if (linkReferralError) {
+        console.error("Failed to link referral on signup:", linkReferralError);
+      }
+
+      // Create default private and public albums
+      const { error: albumsError } = await tryCatch(
+        ensureUserAlbums(upsertedUser.id),
+      );
+      if (albumsError) {
+        console.error("Failed to create default albums:", albumsError);
+      }
+
+      // Track signup conversion attribution for campaign analytics
+      const { error: attributionError } = await tryCatch(
+        attributeConversion(upsertedUser.id, "SIGNUP"),
+      );
+      if (attributionError) {
+        console.error("Failed to track signup attribution:", attributionError);
+      }
+    }
+
+    // Process referral rewards if email is verified (for OAuth, it's auto-verified)
+    if (user.email && isNewUser) {
+      const { data: validation, error: validationError } = await tryCatch(
+        validateReferralAfterVerification(upsertedUser.id),
+      );
+
+      if (validationError) {
+        console.error("Failed to validate referral:", validationError);
+      } else if (validation?.shouldGrantRewards && validation.referralId) {
+        const { error: rewardsError } = await tryCatch(
+          completeReferralAndGrantRewards(validation.referralId),
+        );
+        if (rewardsError) {
+          console.error("Failed to grant referral rewards:", rewardsError);
+        }
+      }
     }
   }
   return true;
@@ -182,9 +211,9 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
           return null;
         }
 
-        try {
-          // Find user by email
-          const user = await prisma.user.findUnique({
+        // Find user by email
+        const { data: user, error: findUserError } = await tryCatch(
+          prisma.user.findUnique({
             where: { email },
             select: {
               id: true,
@@ -193,32 +222,41 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
               image: true,
               passwordHash: true,
             },
-          });
+          }),
+        );
 
-          // Pre-computed dummy hash for timing attack prevention
-          // This ensures bcrypt.compare always runs regardless of user existence
-          const dummyHash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeN9qo8uLOickgx2ZMRZoMy";
-
-          // Always run bcrypt comparison to prevent timing attacks
-          const hashToCompare = user?.passwordHash || dummyHash;
-          const isValidPassword = await bcrypt.compare(password, hashToCompare);
-
-          // Return null if user doesn't exist, has no password, or password is invalid
-          if (!user || !user.passwordHash || !isValidPassword) {
-            return null;
-          }
-
-          // Return user object (NextAuth will use this)
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-          };
-        } catch (error) {
-          console.error("Credentials auth error:", error);
+        if (findUserError) {
+          console.error("Credentials auth error:", findUserError);
           return null;
         }
+
+        // Pre-computed dummy hash for timing attack prevention
+        // This ensures bcrypt.compare always runs regardless of user existence
+        const dummyHash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeN9qo8uLOickgx2ZMRZoMy";
+
+        // Always run bcrypt comparison to prevent timing attacks
+        const hashToCompare = user?.passwordHash || dummyHash;
+        const { data: isValidPassword, error: bcryptError } = await tryCatch(
+          bcrypt.compare(password, hashToCompare),
+        );
+
+        if (bcryptError) {
+          console.error("Credentials auth error:", bcryptError);
+          return null;
+        }
+
+        // Return null if user doesn't exist, has no password, or password is invalid
+        if (!user || !user.passwordHash || !isValidPassword) {
+          return null;
+        }
+
+        // Return user object (NextAuth will use this)
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       },
     }),
   ],
@@ -305,22 +343,22 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
 
       // On initial sign-in or refresh, fetch role from database
       if (user?.email || trigger === "signIn" || trigger === "update") {
-        try {
-          const userId = token.sub;
-          if (userId) {
-            const dbUser = await prisma.user.findUnique({
+        const userId = token.sub;
+        if (userId) {
+          const { data: dbUser, error: roleError } = await tryCatch(
+            prisma.user.findUnique({
               where: { id: userId },
               select: { role: true },
-            });
-            if (dbUser) {
-              token.role = dbUser.role;
+            }),
+          );
+          if (roleError) {
+            console.error("Failed to fetch user role for JWT:", roleError);
+            // Default to USER role if database lookup fails
+            if (!token.role) {
+              token.role = UserRole.USER;
             }
-          }
-        } catch (error) {
-          console.error("Failed to fetch user role for JWT:", error);
-          // Default to USER role if database lookup fails
-          if (!token.role) {
-            token.role = UserRole.USER;
+          } else if (dbUser) {
+            token.role = dbUser.role;
           }
         }
       }
@@ -351,8 +389,9 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const auth = async (...args: any[]) => {
   if (process.env.E2E_BYPASS_AUTH === "true") {
-    try {
-      const cookieStore = await cookies();
+    const { data: cookieStore } = await tryCatch(cookies());
+    // Ignore if cookies cannot be read
+    if (cookieStore) {
       const sessionToken = cookieStore.get("authjs.session-token")?.value;
       if (sessionToken === "mock-session-token") {
         return {
@@ -366,8 +405,6 @@ export const auth = async (...args: any[]) => {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };
       }
-    } catch (_e) {
-      // Ignore if cookies cannot be read
     }
   }
   // @ts-expect-error - auth accepts variable arguments

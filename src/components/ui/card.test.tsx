@@ -46,7 +46,12 @@ describe("Card Components", () => {
     it("should render with solid variant", () => {
       render(<Card variant="solid" data-testid="card">Content</Card>);
       const card = screen.getByTestId("card");
-      expect(card).toHaveClass("bg-card", "border", "border-border", "shadow-sm");
+      expect(card).toHaveClass(
+        "bg-card",
+        "border",
+        "border-border",
+        "shadow-sm",
+      );
     });
 
     it("should render with highlighted variant", () => {

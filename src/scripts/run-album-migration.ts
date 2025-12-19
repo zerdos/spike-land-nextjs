@@ -122,7 +122,9 @@ async function main() {
         skipDuplicates: true,
       });
 
-      console.log(`  Moved ${orphanedImages.length} orphaned images to Private Gallery`);
+      console.log(
+        `  Moved ${orphanedImages.length} orphaned images to Private Gallery`,
+      );
       imagesMovedTotal += orphanedImages.length;
     }
   }

@@ -40,7 +40,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/admin/marketing?error=Invalid callback parameters", request.url),
+        new URL(
+          "/admin/marketing?error=Invalid callback parameters",
+          request.url,
+        ),
       );
     }
 

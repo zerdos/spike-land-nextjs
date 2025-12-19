@@ -98,4 +98,14 @@ describe("GET /api/referral/link", () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe("Failed to generate referral link");
   });
+
+  it("should handle auth errors gracefully", async () => {
+    vi.mocked(auth).mockRejectedValue(new Error("Auth service unavailable"));
+
+    const response = await GET(mockRequest);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Failed to generate referral link");
+  });
 });

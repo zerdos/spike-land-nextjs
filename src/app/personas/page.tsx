@@ -38,7 +38,11 @@ function PersonaCard({
         className={`
         relative overflow-hidden rounded-xl border p-6 transition-all duration-300
         hover:shadow-lg hover:scale-[1.02] hover:border-primary/50
-        ${priority === "primary" ? "bg-primary/5 border-primary/20" : "bg-card border-border"}
+        ${
+          priority === "primary"
+            ? "bg-primary/5 border-primary/20"
+            : "bg-card border-border"
+        }
       `}
       >
         {priority === "primary" && (

@@ -21,8 +21,15 @@ describe("audio-r2-client", () => {
     it("generates correct key pattern", async () => {
       const { generateAudioKey } = await import("./audio-r2-client");
 
-      const key = generateAudioKey("user-123", "project-456", "track-789", "wav");
-      expect(key).toBe("users/user-123/audio-projects/project-456/tracks/track-789.wav");
+      const key = generateAudioKey(
+        "user-123",
+        "project-456",
+        "track-789",
+        "wav",
+      );
+      expect(key).toBe(
+        "users/user-123/audio-projects/project-456/tracks/track-789.wav",
+      );
     });
 
     it("handles different formats", async () => {
@@ -39,7 +46,9 @@ describe("audio-r2-client", () => {
       const { generateProjectMetadataKey } = await import("./audio-r2-client");
 
       const key = generateProjectMetadataKey("user-123", "project-456");
-      expect(key).toBe("users/user-123/audio-projects/project-456/metadata.json");
+      expect(key).toBe(
+        "users/user-123/audio-projects/project-456/metadata.json",
+      );
     });
   });
 

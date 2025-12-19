@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -98,7 +99,7 @@ export async function uploadToR2(
 ): Promise<UploadImageResult> {
   const { key, buffer, contentType, metadata } = params;
 
-  try {
+  const uploadOperation = async () => {
     const client = getR2Client();
     const bucket = getBucketName();
 
@@ -120,14 +121,12 @@ export async function uploadToR2(
     if (!publicUrl) {
       throw new Error("CLOUDFLARE_R2_PUBLIC_URL is not configured");
     }
-    const url = `${publicUrl}/${key}`;
+    return `${publicUrl}/${key}`;
+  };
 
-    return {
-      success: true,
-      key,
-      url,
-    };
-  } catch (error) {
+  const { data: url, error } = await tryCatch(uploadOperation());
+
+  if (error) {
     console.error("Error uploading to R2:", error);
     return {
       success: false,
@@ -136,13 +135,19 @@ export async function uploadToR2(
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return {
+    success: true,
+    key,
+    url,
+  };
 }
 
 /**
  * Download an image from Cloudflare R2
  */
 export async function downloadFromR2(key: string): Promise<Buffer | null> {
-  try {
+  const downloadOperation = async () => {
     const client = getR2Client();
     const bucket = getBucketName();
 
@@ -162,17 +167,23 @@ export async function downloadFromR2(key: string): Promise<Buffer | null> {
     }
 
     return Buffer.concat(chunks);
-  } catch (error) {
+  };
+
+  const { data, error } = await tryCatch(downloadOperation());
+
+  if (error) {
     console.error("Error downloading from R2:", error);
     return null;
   }
+
+  return data;
 }
 
 /**
  * Delete an image from Cloudflare R2
  */
 export async function deleteFromR2(key: string): Promise<DeleteImageResult> {
-  try {
+  const deleteOperation = async () => {
     const client = getR2Client();
     const bucket = getBucketName();
 
@@ -182,12 +193,11 @@ export async function deleteFromR2(key: string): Promise<DeleteImageResult> {
     });
 
     await client.send(command);
+  };
 
-    return {
-      success: true,
-      key,
-    };
-  } catch (error) {
+  const { error } = await tryCatch(deleteOperation());
+
+  if (error) {
     console.error("Error deleting from R2:", error);
     return {
       success: false,
@@ -195,6 +205,11 @@ export async function deleteFromR2(key: string): Promise<DeleteImageResult> {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return {
+    success: true,
+    key,
+  };
 }
 
 /**
@@ -228,7 +243,7 @@ export interface ListStorageResult {
  * List all objects in R2 bucket and calculate storage statistics
  */
 export async function listR2StorageStats(): Promise<ListStorageResult> {
-  try {
+  const listOperation = async () => {
     const client = getR2Client();
     const bucket = getBucketName();
 
@@ -283,11 +298,12 @@ export async function listR2StorageStats(): Promise<ListStorageResult> {
       );
     }
 
-    return {
-      success: true,
-      stats,
-    };
-  } catch (error) {
+    return stats;
+  };
+
+  const { data: stats, error } = await tryCatch(listOperation());
+
+  if (error) {
     console.error("Error listing R2 storage:", error);
     return {
       success: false,
@@ -295,4 +311,9 @@ export async function listR2StorageStats(): Promise<ListStorageResult> {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return {
+    success: true,
+    stats,
+  };
 }

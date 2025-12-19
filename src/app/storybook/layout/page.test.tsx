@@ -20,7 +20,9 @@ describe("LayoutPage", () => {
 
     it("should render the section description", () => {
       render(<LayoutPage />);
-      expect(screen.getByText(/components for organizing and displaying content/i))
+      expect(
+        screen.getByText(/components for organizing and displaying content/i),
+      )
         .toBeInTheDocument();
     });
   });
@@ -29,7 +31,8 @@ describe("LayoutPage", () => {
     it("should render masonry grid card", () => {
       render(<LayoutPage />);
       expect(screen.getByText("Masonry Grid")).toBeInTheDocument();
-      expect(screen.getByText(/css columns-based masonry layout/i)).toBeInTheDocument();
+      expect(screen.getByText(/css columns-based masonry layout/i))
+        .toBeInTheDocument();
     });
 
     it("should render masonry items", () => {
@@ -48,7 +51,8 @@ describe("LayoutPage", () => {
     it("should render text overlay card", () => {
       render(<LayoutPage />);
       expect(screen.getByText("Text Overlay")).toBeInTheDocument();
-      expect(screen.getByText(/position text labels on top of images/i)).toBeInTheDocument();
+      expect(screen.getByText(/position text labels on top of images/i))
+        .toBeInTheDocument();
     });
 
     it("should render position variants", () => {
@@ -72,7 +76,8 @@ describe("LayoutPage", () => {
     it("should render zoom slider card", () => {
       render(<LayoutPage />);
       expect(screen.getByText("Zoom Slider")).toBeInTheDocument();
-      expect(screen.getByText(/control zoom level for masonry grids/i)).toBeInTheDocument();
+      expect(screen.getByText(/control zoom level for masonry grids/i))
+        .toBeInTheDocument();
     });
 
     it("should render zoom level buttons", () => {

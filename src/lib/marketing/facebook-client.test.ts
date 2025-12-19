@@ -77,9 +77,13 @@ describe("FacebookMarketingClient", () => {
       expect(url).toContain("https://www.facebook.com/");
       expect(url).toContain("dialog/oauth");
       expect(url).toContain(`client_id=${mockEnv.FACEBOOK_MARKETING_APP_ID}`);
-      expect(url).toContain("redirect_uri=https%3A%2F%2Fexample.com%2Fcallback");
+      expect(url).toContain(
+        "redirect_uri=https%3A%2F%2Fexample.com%2Fcallback",
+      );
       expect(url).toContain("state=test_state");
-      expect(url).toContain("scope=ads_read%2Cads_management%2Cbusiness_management");
+      expect(url).toContain(
+        "scope=ads_read%2Cads_management%2Cbusiness_management",
+      );
     });
   });
 
@@ -133,7 +137,10 @@ describe("FacebookMarketingClient", () => {
       );
 
       await expect(
-        client.exchangeCodeForTokens("invalid_code", "https://example.com/callback"),
+        client.exchangeCodeForTokens(
+          "invalid_code",
+          "https://example.com/callback",
+        ),
       ).rejects.toThrow("Failed to exchange code");
     });
   });
@@ -201,7 +208,10 @@ describe("FacebookMarketingClient", () => {
     it("should return false on fetch error", async () => {
       const client = new FacebookMarketingClient();
 
-      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockRejectedValue(new Error("Network error")),
+      );
 
       const isValid = await client.validateToken("any_token");
       expect(isValid).toBe(false);

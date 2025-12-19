@@ -69,7 +69,9 @@ describe("GET /api/marketing/google/callback", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toContain("/login?error=Unauthorized");
+    expect(response.headers.get("location")).toContain(
+      "/login?error=Unauthorized",
+    );
   });
 
   it("should redirect with error when OAuth error occurs", async () => {

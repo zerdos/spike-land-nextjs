@@ -71,10 +71,31 @@ export default async function Image() {
                 rx="4"
                 fill="url(#sparkGradient)"
               />
-              <rect x="56" y="29" width="22" height="22" rx="4" fill="#374151" />
+              <rect
+                x="56"
+                y="29"
+                width="22"
+                height="22"
+                rx="4"
+                fill="#374151"
+              />
               <rect x="2" y="56" width="22" height="22" rx="4" fill="#374151" />
-              <rect x="29" y="56" width="22" height="22" rx="4" fill="#374151" />
-              <rect x="56" y="56" width="22" height="22" rx="4" fill="#374151" />
+              <rect
+                x="29"
+                y="56"
+                width="22"
+                height="22"
+                rx="4"
+                fill="#374151"
+              />
+              <rect
+                x="56"
+                y="56"
+                width="22"
+                height="22"
+                rx="4"
+                fill="#374151"
+              />
             </svg>
           </div>
           <span

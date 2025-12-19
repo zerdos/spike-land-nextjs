@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { AlbumPrivacy, EnhancementTier, JobStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -27,26 +28,36 @@ interface PublicAlbumPhoto {
 }
 
 export async function GET() {
-  try {
-    // 1. Find super admin user
-    const superAdmin = await prisma.user.findFirst({
+  // 1. Find super admin user
+  const { data: superAdmin, error: superAdminError } = await tryCatch(
+    prisma.user.findFirst({
       where: {
         email: SUPER_ADMIN_EMAIL,
       },
       select: {
         id: true,
       },
-    });
+    }),
+  );
 
-    if (!superAdmin) {
-      return NextResponse.json(
-        { error: "Super admin user not found" },
-        { status: 404 },
-      );
-    }
+  if (superAdminError) {
+    console.error("Failed to fetch public album photos:", superAdminError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    // 2. Get PUBLIC albums with enhanced images
-    const albums = await prisma.album.findMany({
+  if (!superAdmin) {
+    return NextResponse.json(
+      { error: "Super admin user not found" },
+      { status: 404 },
+    );
+  }
+
+  // 2. Get PUBLIC albums with enhanced images
+  const { data: albums, error: albumsError } = await tryCatch(
+    prisma.album.findMany({
       where: {
         userId: superAdmin.id,
         privacy: AlbumPrivacy.PUBLIC,
@@ -76,46 +87,49 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    }),
+  );
 
-    // 3. Transform data to response format
-    const items: PublicAlbumPhoto[] = [];
+  if (albumsError) {
+    console.error("Failed to fetch public album photos:", albumsError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    for (const album of albums) {
-      for (const albumImage of album.albumImages) {
-        const { image } = albumImage;
+  // 3. Transform data to response format
+  const items: PublicAlbumPhoto[] = [];
 
-        // Only include images with completed enhancement jobs
-        const latestJob = image.enhancementJobs[0];
+  for (const album of albums) {
+    for (const albumImage of album.albumImages) {
+      const { image } = albumImage;
 
-        if (!latestJob) {
-          continue;
-        }
+      // Only include images with completed enhancement jobs
+      const latestJob = image.enhancementJobs[0];
 
-        // Skip if no enhanced URL available
-        if (
-          !latestJob.enhancedUrl || !latestJob.enhancedWidth ||
-          !latestJob.enhancedHeight
-        ) {
-          continue;
-        }
-
-        items.push({
-          id: image.id,
-          title: image.name,
-          originalUrl: image.originalUrl,
-          enhancedUrl: latestJob.enhancedUrl,
-          width: latestJob.enhancedWidth,
-          height: latestJob.enhancedHeight,
-          albumName: album.name,
-          tier: latestJob.tier,
-        });
-
-        // Stop if we've reached the limit
-        if (items.length >= DEFAULT_LIMIT) {
-          break;
-        }
+      if (!latestJob) {
+        continue;
       }
+
+      // Skip if no enhanced URL available
+      if (
+        !latestJob.enhancedUrl || !latestJob.enhancedWidth ||
+        !latestJob.enhancedHeight
+      ) {
+        continue;
+      }
+
+      items.push({
+        id: image.id,
+        title: image.name,
+        originalUrl: image.originalUrl,
+        enhancedUrl: latestJob.enhancedUrl,
+        width: latestJob.enhancedWidth,
+        height: latestJob.enhancedHeight,
+        albumName: album.name,
+        tier: latestJob.tier,
+      });
 
       // Stop if we've reached the limit
       if (items.length >= DEFAULT_LIMIT) {
@@ -123,21 +137,20 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json(
-      {
-        items,
-      },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-        },
-      },
-    );
-  } catch (error) {
-    console.error("Failed to fetch public album photos:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    // Stop if we've reached the limit
+    if (items.length >= DEFAULT_LIMIT) {
+      break;
+    }
   }
+
+  return NextResponse.json(
+    {
+      items,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    },
+  );
 }

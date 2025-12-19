@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import type { CampaignAttribution, VisitorSession } from "@prisma/client";
 import { getPlatformFromUTM, type UTMParams } from "./utm-capture";
 
@@ -79,7 +80,8 @@ export async function createAttribution(
   } = params;
 
   // Determine platform from UTM params if not provided
-  const derivedPlatform = platform || (utmParams ? getPlatformFromUTM(utmParams) : "DIRECT");
+  const derivedPlatform = platform ||
+    (utmParams ? getPlatformFromUTM(utmParams) : "DIRECT");
 
   await prisma.campaignAttribution.create({
     data: {
@@ -235,7 +237,7 @@ export async function attributeConversion(
     attributionType: "FIRST_TOUCH",
     conversionType,
     conversionValue: value,
-    platform: determineSessionPlatform(firstSession),
+    platform: await determineSessionPlatform(firstSession),
     externalCampaignId: firstSession.gclid || firstSession.fbclid || undefined,
     utmParams: extractUTMFromSession(firstSession),
   });
@@ -248,7 +250,7 @@ export async function attributeConversion(
     attributionType: "LAST_TOUCH",
     conversionType,
     conversionValue: value,
-    platform: determineSessionPlatform(lastSession),
+    platform: await determineSessionPlatform(lastSession),
     externalCampaignId: lastSession.gclid || lastSession.fbclid || undefined,
     utmParams: extractUTMFromSession(lastSession),
   });
@@ -300,14 +302,30 @@ async function createDirectAttribution(
 }
 
 /**
+ * Safely parse a URL and return the hostname, or null if invalid
+ *
+ * @param url - The URL string to parse
+ * @returns The hostname or null if parsing fails
+ */
+async function safeParseUrlHostname(url: string): Promise<string | null> {
+  const { data, error } = await tryCatch(
+    Promise.resolve().then(() => new URL(url).hostname.toLowerCase()),
+  );
+  if (error) {
+    return null;
+  }
+  return data;
+}
+
+/**
  * Determine the platform from session data
  *
  * @param session - The visitor session
  * @returns Platform identifier
  */
-function determineSessionPlatform(
+async function determineSessionPlatform(
   session: VisitorSession,
-): string {
+): Promise<string> {
   // Check click IDs first
   if (session.gclid) {
     return "GOOGLE_ADS";
@@ -336,9 +354,8 @@ function determineSessionPlatform(
   // Check referrer for organic search using proper URL parsing
   const referrer = session.referrer;
   if (referrer) {
-    try {
-      const referrerUrl = new URL(referrer);
-      const hostname = referrerUrl.hostname.toLowerCase();
+    const hostname = await safeParseUrlHostname(referrer);
+    if (hostname) {
       // Check if the hostname ends with the search engine domain
       const isOrganic = hostname === "google.com" ||
         hostname.endsWith(".google.com") ||
@@ -349,8 +366,6 @@ function determineSessionPlatform(
       if (isOrganic) {
         return "ORGANIC";
       }
-    } catch {
-      // Invalid URL, treat as other
     }
     return "OTHER";
   }
@@ -409,7 +424,10 @@ export async function getCampaignAttributionSummary(
     totalConversions: attributions.length,
     firstTouchCount: attributions.filter((a) => a.attributionType === "FIRST_TOUCH").length,
     lastTouchCount: attributions.filter((a) => a.attributionType === "LAST_TOUCH").length,
-    totalValue: attributions.reduce((sum, a) => sum + (a.conversionValue || 0), 0),
+    totalValue: attributions.reduce(
+      (sum, a) => sum + (a.conversionValue || 0),
+      0,
+    ),
     conversionsByType: {
       SIGNUP: 0,
       ENHANCEMENT: 0,

@@ -80,7 +80,9 @@ describe("Campaign Linking API", () => {
 
     it("should return 403 if not admin", async () => {
       mockAuth.mockResolvedValueOnce({ user: { id: "user-1" } });
-      mockRequireAdmin.mockRejectedValueOnce(new Error("Forbidden: Admin access required"));
+      mockRequireAdmin.mockRejectedValueOnce(
+        new Error("Forbidden: Admin access required"),
+      );
 
       const request = createMockRequest();
       const response = await GET(request);
@@ -128,7 +130,9 @@ describe("Campaign Linking API", () => {
       mockRequireAdmin.mockResolvedValueOnce(undefined);
       mockFindMany.mockResolvedValueOnce([]);
 
-      const request = createMockRequest({ searchParams: { platform: "FACEBOOK" } });
+      const request = createMockRequest({
+        searchParams: { platform: "FACEBOOK" },
+      });
       await GET(request);
 
       expect(mockFindMany).toHaveBeenCalledWith({

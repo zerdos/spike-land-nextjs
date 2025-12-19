@@ -30,7 +30,8 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
 describe("HeroSection Component", () => {
   it("should render the main headline", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Your photos deserve better than/)).toBeInTheDocument();
+    expect(screen.getByText(/Your photos deserve better than/))
+      .toBeInTheDocument();
     expect(screen.getByText(/\u201Cgood enough\.\u201D/)).toBeInTheDocument();
   });
 

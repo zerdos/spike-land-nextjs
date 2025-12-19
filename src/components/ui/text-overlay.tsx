@@ -3,7 +3,12 @@ import * as React from "react";
 
 export interface TextOverlayProps {
   children: React.ReactNode;
-  position?: "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center";
+  position?:
+    | "bottom-left"
+    | "bottom-right"
+    | "top-left"
+    | "top-right"
+    | "center";
   gradient?: boolean;
   className?: string;
 }

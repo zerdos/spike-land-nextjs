@@ -46,7 +46,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
   it("should return 401 when not authenticated", async () => {
     mockAuth.mockResolvedValueOnce(null);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -57,7 +59,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
   it("should return 401 when user has no id", async () => {
     mockAuth.mockResolvedValueOnce({ user: {} });
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -71,7 +75,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
     });
     mockIsAdminByUserId.mockResolvedValueOnce(false);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -86,7 +92,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
     mockIsAdminByUserId.mockResolvedValueOnce(true);
     mockFindMany.mockResolvedValueOnce([]);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -138,7 +146,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
 
     mockCreateMarketingClient.mockReturnValueOnce(mockClient);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -215,7 +225,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -223,7 +235,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
     expect(data.campaigns).toEqual([]);
     expect(data.errors).toHaveLength(1);
     // Error messages are sanitized - don't expose internal details to client
-    expect(data.errors[0].error).toBe("Failed to fetch campaigns for this account");
+    expect(data.errors[0].error).toBe(
+      "Failed to fetch campaigns for this account",
+    );
 
     consoleSpy.mockRestore();
   });
@@ -254,7 +268,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
 
     mockCreateMarketingClient.mockReturnValueOnce(mockClient);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     await GET(request);
 
     expect(setCustomerIdMock).toHaveBeenCalledWith("456");
@@ -290,7 +306,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
 
     mockCreateMarketingClient.mockReturnValueOnce(mockClient);
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 
@@ -308,7 +326,9 @@ describe("GET /api/admin/marketing/campaigns", () => {
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const request = new NextRequest("http://localhost/api/admin/marketing/campaigns");
+    const request = new NextRequest(
+      "http://localhost/api/admin/marketing/campaigns",
+    );
     const response = await GET(request);
     const data = await response.json();
 

@@ -1,3 +1,4 @@
+import { tryCatch, tryCatchSync } from "@/lib/try-catch";
 import type { EnhancementTier, JobStatus as PrismaJobStatus } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -109,37 +110,40 @@ export function useParallelEnhancement({
   // Handle SSE message for a specific job
   const handleMessage = useCallback(
     (jobId: string) => (event: MessageEvent) => {
-      try {
-        const data: JobStreamData = JSON.parse(event.data);
+      const { data, error: parseError } = tryCatchSync<JobStreamData>(
+        () => JSON.parse(event.data) as JobStreamData,
+      );
 
-        if (data.type === "connected") {
-          return;
+      if (parseError) {
+        console.error("Failed to parse SSE message:", parseError);
+        return;
+      }
+
+      if (data.type === "connected") {
+        return;
+      }
+
+      if (data.type === "error") {
+        updateJob(jobId, {
+          status: "FAILED",
+          error: data.message || "Unknown error",
+        });
+        onError?.(jobId, data.message || "Unknown error");
+        return;
+      }
+
+      if (data.type === "status" && data.status) {
+        updateJob(jobId, {
+          status: data.status,
+          enhancedUrl: data.enhancedUrl || undefined,
+          enhancedWidth: data.enhancedWidth || undefined,
+          enhancedHeight: data.enhancedHeight || undefined,
+          error: data.errorMessage || undefined,
+        });
+
+        if (data.status === "FAILED") {
+          onError?.(jobId, data.errorMessage || "Enhancement failed");
         }
-
-        if (data.type === "error") {
-          updateJob(jobId, {
-            status: "FAILED",
-            error: data.message || "Unknown error",
-          });
-          onError?.(jobId, data.message || "Unknown error");
-          return;
-        }
-
-        if (data.type === "status" && data.status) {
-          updateJob(jobId, {
-            status: data.status,
-            enhancedUrl: data.enhancedUrl || undefined,
-            enhancedWidth: data.enhancedWidth || undefined,
-            enhancedHeight: data.enhancedHeight || undefined,
-            error: data.errorMessage || undefined,
-          });
-
-          if (data.status === "FAILED") {
-            onError?.(jobId, data.errorMessage || "Enhancement failed");
-          }
-        }
-      } catch (error) {
-        console.error("Failed to parse SSE message:", error);
       }
     },
     [updateJob, onError],
@@ -207,12 +211,12 @@ export function useParallelEnhancement({
   // Start enhancement for multiple tiers
   const startEnhancement = useCallback(
     async (tiers: EnhancementTier[]) => {
-      try {
-        // Reset completion flag
-        hasCalledOnAllCompleteRef.current = false;
+      // Reset completion flag
+      hasCalledOnAllCompleteRef.current = false;
 
-        // Call API to start parallel enhancements
-        const response = await fetch("/api/images/parallel-enhance", {
+      // Call API to start parallel enhancements
+      const { data: response, error: fetchError } = await tryCatch(
+        fetch("/api/images/parallel-enhance", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -221,33 +225,44 @@ export function useParallelEnhancement({
             imageId,
             tiers,
           }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to start enhancement");
-        }
+      if (fetchError) {
+        console.error("Failed to start enhancement:", fetchError);
+        throw fetchError;
+      }
 
-        const data = await response.json();
-        const newJobs: Map<string, JobStatus> = new Map();
-
-        // Initialize job statuses and connect to SSE streams
-        for (const job of data.jobs) {
-          const jobStatus: JobStatus = {
-            jobId: job.jobId,
-            tier: job.tier,
-            status: job.status || "PENDING",
-          };
-
-          newJobs.set(job.jobId, jobStatus);
-          connectToJob(job.jobId);
-        }
-
-        setJobs(newJobs);
-      } catch (error) {
+      if (!response.ok) {
+        const { data: errorData } = await tryCatch(response.json());
+        const errorMessage = errorData?.error || "Failed to start enhancement";
+        const error = new Error(errorMessage);
         console.error("Failed to start enhancement:", error);
         throw error;
       }
+
+      const { data, error: jsonError } = await tryCatch(response.json());
+
+      if (jsonError) {
+        console.error("Failed to start enhancement:", jsonError);
+        throw jsonError;
+      }
+
+      const newJobs: Map<string, JobStatus> = new Map();
+
+      // Initialize job statuses and connect to SSE streams
+      for (const job of data.jobs) {
+        const jobStatus: JobStatus = {
+          jobId: job.jobId,
+          tier: job.tier,
+          status: job.status || "PENDING",
+        };
+
+        newJobs.set(job.jobId, jobStatus);
+        connectToJob(job.jobId);
+      }
+
+      setJobs(newJobs);
     },
     [imageId, connectToJob],
   );

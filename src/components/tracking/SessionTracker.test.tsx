@@ -372,7 +372,9 @@ describe("SessionTracker", () => {
         status: 500,
       });
 
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       // Should not throw
       render(<SessionTracker />);
@@ -388,7 +390,9 @@ describe("SessionTracker", () => {
     it("handles network errors gracefully", async () => {
       mockFetch.mockRejectedValue(new Error("Network error"));
 
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       // Should not throw
       render(<SessionTracker />);

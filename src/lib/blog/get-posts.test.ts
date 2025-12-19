@@ -112,6 +112,22 @@ describe("get-posts", () => {
 
       expect(slugs).toEqual(["post"]);
     });
+
+    it("returns empty array when readdirSync throws an error", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(fs.readdirSync).mockImplementation(() => {
+        throw new Error("Permission denied");
+      });
+
+      const slugs = getPostSlugs();
+
+      expect(slugs).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to read blog directory:",
+        "Permission denied",
+      );
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe("getPostBySlug", () => {
@@ -141,6 +157,83 @@ describe("get-posts", () => {
       getPostBySlug("test-post");
 
       expect(matter).toHaveBeenCalledWith(fileContent);
+    });
+
+    it("returns null when readFileSync throws an error", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      vi.mocked(fs.readFileSync).mockImplementation(() => {
+        throw new Error("File read error");
+      });
+
+      const post = getPostBySlug("test-post");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to read test-post.mdx:",
+        "File read error",
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("returns null when gray-matter throws an error", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      vi.mocked(matter).mockImplementation(() => {
+        throw new Error("Invalid frontmatter format");
+      });
+
+      const post = getPostBySlug("test-post");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to parse frontmatter in test-post.mdx:",
+        "Invalid frontmatter format",
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("returns null when readingTime throws an error", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      vi.mocked(readingTime).mockImplementation(() => {
+        throw new Error("Reading time calculation failed");
+      });
+
+      const post = getPostBySlug("test-post");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to calculate reading time for test-post.mdx:",
+        "Reading time calculation failed",
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("returns null when frontmatter validation fails", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      vi.mocked(matter).mockReturnValue({
+        data: {
+          // Missing required fields like title, date, etc.
+          invalidField: "invalid",
+        },
+        content: "Test content",
+        matter: "",
+        language: "",
+        orig: Buffer.from(""),
+        stringify: vi.fn(),
+      });
+
+      const post = getPostBySlug("test-post");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
 

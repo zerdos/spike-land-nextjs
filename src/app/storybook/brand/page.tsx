@@ -16,7 +16,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sizes</CardTitle>
-            <CardDescription>Available logo sizes for different contexts</CardDescription>
+            <CardDescription>
+              Available logo sizes for different contexts
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-end gap-8">
@@ -34,7 +36,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Variants</CardTitle>
-            <CardDescription>Different layout options for the logo</CardDescription>
+            <CardDescription>
+              Different layout options for the logo
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -83,7 +87,10 @@ export default function BrandPage() {
                     <tr key={size} className="border-t border-border">
                       <td className="p-2 text-sm font-medium">{size}</td>
                       {logoVariants.map((variant) => (
-                        <td key={`${size}-${variant}`} className="p-4 text-center">
+                        <td
+                          key={`${size}-${variant}`}
+                          className="p-4 text-center"
+                        >
                           <div
                             className="inline-flex justify-center p-4 rounded-xl"
                             style={{
@@ -108,7 +115,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Icon Only (showText=false)</CardTitle>
-            <CardDescription>Logo without wordmark for compact spaces</CardDescription>
+            <CardDescription>
+              Logo without wordmark for compact spaces
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-center gap-6">
@@ -152,7 +161,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Variants</CardTitle>
-            <CardDescription>Different layout options for the Spike Land logo</CardDescription>
+            <CardDescription>
+              Different layout options for the Spike Land logo
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -202,7 +213,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sizes</CardTitle>
-            <CardDescription>Avatar sizes using Tailwind classes</CardDescription>
+            <CardDescription>
+              Avatar sizes using Tailwind classes
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-end gap-6">
@@ -257,24 +270,35 @@ export default function BrandPage() {
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex flex-col items-center gap-2">
                 <Avatar>
-                  <AvatarImage src="https://github.com/zerdos.png" alt="Zoltan Erdos" />
+                  <AvatarImage
+                    src="https://github.com/zerdos.png"
+                    alt="Zoltan Erdos"
+                  />
                   <AvatarFallback>ZE</AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">With image</span>
+                <span className="text-xs text-muted-foreground">
+                  With image
+                </span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <Avatar>
                   <AvatarImage src="/invalid-image.jpg" alt="User" />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">Initials fallback</span>
+                <span className="text-xs text-muted-foreground">
+                  Initials fallback
+                </span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <Avatar>
                   <AvatarImage src="/invalid-image.jpg" alt="User" />
-                  <AvatarFallback className="bg-primary text-primary-foreground">AB</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    AB
+                  </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">Styled fallback</span>
+                <span className="text-xs text-muted-foreground">
+                  Styled fallback
+                </span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <Avatar>
@@ -283,7 +307,9 @@ export default function BrandPage() {
                     PX
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">Gradient fallback</span>
+                <span className="text-xs text-muted-foreground">
+                  Gradient fallback
+                </span>
               </div>
             </div>
           </CardContent>
@@ -293,7 +319,9 @@ export default function BrandPage() {
         <Card>
           <CardHeader>
             <CardTitle>Avatar Group</CardTitle>
-            <CardDescription>Stacked avatars for showing multiple users</CardDescription>
+            <CardDescription>
+              Stacked avatars for showing multiple users
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex -space-x-4">

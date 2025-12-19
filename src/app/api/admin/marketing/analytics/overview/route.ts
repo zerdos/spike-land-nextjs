@@ -28,7 +28,9 @@ const querySchema = z.object({
   endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid end date format",
   }),
-  attributionModel: z.enum(["FIRST_TOUCH", "LAST_TOUCH"]).optional().default("FIRST_TOUCH"),
+  attributionModel: z.enum(["FIRST_TOUCH", "LAST_TOUCH"]).optional().default(
+    "FIRST_TOUCH",
+  ),
 });
 
 interface OverviewMetrics {
@@ -299,7 +301,10 @@ async function getDailyMetrics(
   });
 
   // Aggregate by date
-  const dailyMap = new Map<string, { visitors: Set<string>; conversions: number; }>();
+  const dailyMap = new Map<
+    string,
+    { visitors: Set<string>; conversions: number; }
+  >();
 
   // Initialize all dates in range
   const current = new Date(startDate);
@@ -377,7 +382,9 @@ async function getTrafficSources(
         source = "Facebook";
       } else if (utmLower.includes("twitter") || utmLower === "x") {
         source = "Twitter/X";
-      } else if (utmLower.includes("email") || utmLower.includes("newsletter")) {
+      } else if (
+        utmLower.includes("email") || utmLower.includes("newsletter")
+      ) {
         source = "Email";
       } else {
         source = "Other";

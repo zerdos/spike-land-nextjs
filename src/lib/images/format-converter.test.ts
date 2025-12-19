@@ -105,5 +105,13 @@ describe("format-converter", () => {
         convertImageFormat(mockBuffer, { format: "bmp" as ExportFormat }),
       ).rejects.toThrow("Unsupported format: bmp");
     });
+
+    it("should throw error when toBuffer fails", async () => {
+      mockToBuffer.mockRejectedValueOnce(new Error("Buffer conversion failed"));
+
+      await expect(
+        convertImageFormat(mockBuffer, { format: "png" }),
+      ).rejects.toThrow("Buffer conversion failed");
+    });
   });
 });

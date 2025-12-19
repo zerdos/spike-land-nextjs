@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import { Resend } from "resend";
 
 // Lazy initialization to avoid build-time errors
@@ -193,68 +194,29 @@ export async function sendEmail(
   let lastError: string | undefined;
   let retriesUsed = 0;
 
+  // Helper to wrap both getResend() and send() in a single promise
+  const sendEmailAttempt = async () => {
+    const resend = getResend();
+    const from = params.from || process.env.EMAIL_FROM ||
+      "noreply@spike.land";
+    return resend.emails.send({
+      from,
+      to: params.to,
+      subject: params.subject,
+      react: params.react,
+    });
+  };
+
   // Retry loop with exponential backoff
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const resend = getResend();
-      const from = params.from || process.env.EMAIL_FROM ||
-        "noreply@spike.land";
+    const { data: result, error: sendError } = await tryCatch(
+      sendEmailAttempt(),
+    );
 
-      const result = await resend.emails.send({
-        from,
-        to: params.to,
-        subject: params.subject,
-        react: params.react,
-      });
-
-      if (result.error) {
-        lastError = result.error.message;
-
-        // Don't retry on validation errors
-        if (
-          result.error.message?.includes("validation") ||
-          result.error.message?.includes("invalid")
-        ) {
-          return {
-            success: false,
-            error: lastError,
-            retriesUsed,
-          };
-        }
-
-        // Retry on other errors
-        if (attempt < MAX_RETRIES - 1) {
-          const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
-          console.warn(
-            `[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`,
-            lastError,
-          );
-          await sleep(delay);
-          retriesUsed++;
-          continue;
-        }
-      }
-
-      if (result.data && result.data.id) {
-        // Increment rate limit counter on success
-        incrementRateLimit();
-
-        return {
-          success: true,
-          id: result.data.id,
-          rateLimitWarning: rateLimit.warning,
-          retriesUsed,
-        };
-      }
-
-      lastError = "Failed to send email - no ID returned";
-      if (attempt < MAX_RETRIES - 1) {
-        const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
-        await sleep(delay);
-        retriesUsed++;
-      }
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : "Unknown error";
+    if (sendError) {
+      lastError = sendError instanceof Error
+        ? sendError.message
+        : "Unknown error";
 
       // Don't retry on configuration errors
       if (
@@ -276,6 +238,54 @@ export async function sendEmail(
         await sleep(delay);
         retriesUsed++;
       }
+      continue;
+    }
+
+    if (result && result.error) {
+      lastError = result.error.message;
+
+      // Don't retry on validation errors
+      if (
+        result.error.message?.includes("validation") ||
+        result.error.message?.includes("invalid")
+      ) {
+        return {
+          success: false,
+          error: lastError,
+          retriesUsed,
+        };
+      }
+
+      // Retry on other errors
+      if (attempt < MAX_RETRIES - 1) {
+        const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        console.warn(
+          `[Email] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`,
+          lastError,
+        );
+        await sleep(delay);
+        retriesUsed++;
+        continue;
+      }
+    }
+
+    if (result && result.data && result.data.id) {
+      // Increment rate limit counter on success
+      incrementRateLimit();
+
+      return {
+        success: true,
+        id: result.data.id,
+        rateLimitWarning: rateLimit.warning,
+        retriesUsed,
+      };
+    }
+
+    lastError = "Failed to send email - no ID returned";
+    if (attempt < MAX_RETRIES - 1) {
+      const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+      await sleep(delay);
+      retriesUsed++;
     }
   }
 

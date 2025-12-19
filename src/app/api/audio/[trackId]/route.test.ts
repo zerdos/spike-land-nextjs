@@ -55,8 +55,12 @@ describe("GET /api/audio/[trackId]", () => {
   it("returns 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
-    const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(401);
   });
 
@@ -67,8 +71,12 @@ describe("GET /api/audio/[trackId]", () => {
     });
     vi.mocked(isAudioR2Configured).mockReturnValue(false);
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
-    const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(503);
   });
 
@@ -80,7 +88,9 @@ describe("GET /api/audio/[trackId]", () => {
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
 
     const request = new Request("http://localhost/api/audio/track-123");
-    const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const response = await GET(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(400);
   });
 
@@ -97,8 +107,12 @@ describe("GET /api/audio/[trackId]", () => {
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
-    const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(404);
   });
 
@@ -109,17 +123,25 @@ describe("GET /api/audio/[trackId]", () => {
     });
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
-    vi.mocked(downloadAudioFromR2).mockResolvedValue(Buffer.from("test audio data"));
+    vi.mocked(downloadAudioFromR2).mockResolvedValue(
+      Buffer.from("test audio data"),
+    );
     mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
       id: "project-456",
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456");
-    const response = await GET(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("audio/wav");
-    expect(response.headers.get("Content-Disposition")).toContain("track-123.wav");
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "track-123.wav",
+    );
   });
 });
 
@@ -131,10 +153,15 @@ describe("DELETE /api/audio/[trackId]", () => {
   it("returns 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "DELETE",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "DELETE",
+      },
+    );
+    const response = await DELETE(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await DELETE(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(401);
   });
 
@@ -148,7 +175,9 @@ describe("DELETE /api/audio/[trackId]", () => {
     const request = new Request("http://localhost/api/audio/track-123", {
       method: "DELETE",
     });
-    const response = await DELETE(request, { params: Promise.resolve({ trackId: "track-123" }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
+    });
     expect(response.status).toBe(400);
   });
 
@@ -168,10 +197,15 @@ describe("DELETE /api/audio/[trackId]", () => {
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "DELETE",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "DELETE",
+      },
+    );
+    const response = await DELETE(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await DELETE(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.success).toBe(true);
@@ -195,10 +229,15 @@ describe("DELETE /api/audio/[trackId]", () => {
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "DELETE",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "DELETE",
+      },
+    );
+    const response = await DELETE(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await DELETE(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(500);
     const data = await response.json();
     expect(data.error).toBe("Delete failed");
@@ -213,10 +252,15 @@ describe("HEAD /api/audio/[trackId]", () => {
   it("returns 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "HEAD",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "HEAD",
+      },
+    );
+    const response = await HEAD(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await HEAD(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(401);
   });
 
@@ -233,10 +277,15 @@ describe("HEAD /api/audio/[trackId]", () => {
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "HEAD",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "HEAD",
+      },
+    );
+    const response = await HEAD(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await HEAD(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(404);
   });
 
@@ -258,10 +307,15 @@ describe("HEAD /api/audio/[trackId]", () => {
       userId: "user-123",
     });
 
-    const request = new Request("http://localhost/api/audio/track-123?projectId=project-456", {
-      method: "HEAD",
+    const request = new Request(
+      "http://localhost/api/audio/track-123?projectId=project-456",
+      {
+        method: "HEAD",
+      },
+    );
+    const response = await HEAD(request, {
+      params: Promise.resolve({ trackId: "track-123" }),
     });
-    const response = await HEAD(request, { params: Promise.resolve({ trackId: "track-123" }) });
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Length")).toBe("1024");
     expect(response.headers.get("Content-Type")).toBe("audio/wav");

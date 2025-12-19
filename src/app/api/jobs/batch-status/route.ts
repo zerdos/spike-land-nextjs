@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 const MAX_JOB_IDS = 50;
@@ -28,10 +29,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: BatchStatusRequest;
-  try {
-    body = await request.json();
-  } catch {
+  const { data: body, error: parseError } = await tryCatch<BatchStatusRequest>(
+    request.json(),
+  );
+
+  if (parseError) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
@@ -60,9 +62,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
-    // Fetch all jobs in a single query, filtering by userId for security
-    const jobs = await prisma.imageEnhancementJob.findMany({
+  // Fetch all jobs in a single query, filtering by userId for security
+  const { data: jobs, error: dbError } = await tryCatch(
+    prisma.imageEnhancementJob.findMany({
       where: {
         id: { in: jobIds },
         userId: session.user.id,
@@ -72,28 +74,30 @@ export async function POST(request: NextRequest) {
         status: true,
         errorMessage: true,
       },
-    });
+    }),
+  );
 
-    // Create a map for quick lookup
-    const jobMap = new Map(jobs.map((job) => [job.id, job]));
-
-    // Build response maintaining the order of requested jobIds
-    // Jobs not found or not owned by user will be excluded
-    const response: JobStatusResponse[] = jobIds
-      .map((id) => jobMap.get(id))
-      .filter((job): job is NonNullable<typeof job> => job !== undefined)
-      .map((job) => ({
-        id: job.id,
-        status: job.status,
-        errorMessage: job.errorMessage,
-      }));
-
-    return NextResponse.json({ jobs: response });
-  } catch (error) {
-    console.error("Error fetching batch job statuses:", error);
+  if (dbError) {
+    console.error("Error fetching batch job statuses:", dbError);
     return NextResponse.json(
       { error: "Failed to fetch job statuses" },
       { status: 500 },
     );
   }
+
+  // Create a map for quick lookup
+  const jobMap = new Map(jobs.map((job) => [job.id, job]));
+
+  // Build response maintaining the order of requested jobIds
+  // Jobs not found or not owned by user will be excluded
+  const response: JobStatusResponse[] = jobIds
+    .map((id) => jobMap.get(id))
+    .filter((job): job is NonNullable<typeof job> => job !== undefined)
+    .map((job) => ({
+      id: job.id,
+      status: job.status,
+      errorMessage: job.errorMessage,
+    }));
+
+  return NextResponse.json({ jobs: response });
 }

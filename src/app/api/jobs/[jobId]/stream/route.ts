@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest } from "next/server";
 
 interface JobStreamData {
@@ -158,56 +159,13 @@ export async function GET(
         if (isStreamClosed) return;
         pollCount++;
 
-        try {
-          const currentJob = await prisma.imageEnhancementJob.findUnique({
+        const { data: currentJob, error } = await tryCatch(
+          prisma.imageEnhancementJob.findUnique({
             where: { id: jobId },
-          });
+          }),
+        );
 
-          if (!currentJob) {
-            sendEvent({ type: "error", message: "Job not found" });
-            controller.close();
-            isStreamClosed = true;
-            releaseConnection(userId);
-            return;
-          }
-
-          // Log stage transitions for debugging
-          if (currentJob.currentStage !== lastSentStage) {
-            console.log(
-              `[JobStream ${jobId}] Stage transition: ${lastSentStage || "none"} → ${
-                currentJob.currentStage || "none"
-              }`,
-            );
-            lastSentStage = currentJob.currentStage;
-          }
-
-          sendEvent({
-            type: "status",
-            status: currentJob.status,
-            currentStage: currentJob.currentStage,
-            enhancedUrl: currentJob.enhancedUrl,
-            enhancedWidth: currentJob.enhancedWidth,
-            enhancedHeight: currentJob.enhancedHeight,
-            errorMessage: currentJob.errorMessage,
-          });
-
-          // Close stream on terminal states
-          if (
-            currentJob.status === "COMPLETED" ||
-            currentJob.status === "FAILED" ||
-            currentJob.status === "CANCELLED" ||
-            currentJob.status === "REFUNDED"
-          ) {
-            controller.close();
-            isStreamClosed = true;
-            releaseConnection(userId);
-            return;
-          }
-
-          // Calculate next poll interval based on status and poll count
-          const nextInterval = getNextPollInterval(currentJob.status);
-          timeoutId = setTimeout(checkStatus, nextInterval);
-        } catch (error) {
+        if (error) {
           console.error("Error checking job status:", error);
           sendEvent({
             type: "error",
@@ -216,7 +174,53 @@ export async function GET(
           // Don't close stream on transient errors, retry with backoff
           const nextInterval = getNextPollInterval("PROCESSING");
           timeoutId = setTimeout(checkStatus, nextInterval);
+          return;
         }
+
+        if (!currentJob) {
+          sendEvent({ type: "error", message: "Job not found" });
+          controller.close();
+          isStreamClosed = true;
+          releaseConnection(userId);
+          return;
+        }
+
+        // Log stage transitions for debugging
+        if (currentJob.currentStage !== lastSentStage) {
+          console.log(
+            `[JobStream ${jobId}] Stage transition: ${lastSentStage || "none"} → ${
+              currentJob.currentStage || "none"
+            }`,
+          );
+          lastSentStage = currentJob.currentStage;
+        }
+
+        sendEvent({
+          type: "status",
+          status: currentJob.status,
+          currentStage: currentJob.currentStage,
+          enhancedUrl: currentJob.enhancedUrl,
+          enhancedWidth: currentJob.enhancedWidth,
+          enhancedHeight: currentJob.enhancedHeight,
+          errorMessage: currentJob.errorMessage,
+        });
+
+        // Close stream on terminal states
+        if (
+          currentJob.status === "COMPLETED" ||
+          currentJob.status === "FAILED" ||
+          currentJob.status === "CANCELLED" ||
+          currentJob.status === "REFUNDED"
+        ) {
+          controller.close();
+          isStreamClosed = true;
+          releaseConnection(userId);
+          return;
+        }
+
+        // Calculate next poll interval based on status and poll count
+        const nextInterval = getNextPollInterval(currentJob.status);
+        timeoutId = setTimeout(checkStatus, nextInterval);
       };
 
       // Start polling

@@ -104,7 +104,9 @@ describe("Table", () => {
       <Table>
         <TableBody>
           <TableRow>
-            <TableCell className="custom-cell" data-testid="cell">Cell</TableCell>
+            <TableCell className="custom-cell" data-testid="cell">
+              Cell
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>,
@@ -118,7 +120,9 @@ describe("Table", () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="custom-head" data-testid="head">Header</TableHead>
+            <TableHead className="custom-head" data-testid="head">
+              Header
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

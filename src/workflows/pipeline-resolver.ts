@@ -15,6 +15,7 @@ import {
   SYSTEM_DEFAULT_PIPELINE,
 } from "@/lib/ai/pipeline-types";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 /**
  * Result of pipeline resolution
@@ -65,15 +66,13 @@ export async function resolvePipelineConfig(
     });
 
     if (pipeline) {
-      // Increment usage count asynchronously (don't await)
-      prisma.enhancementPipeline
-        .update({
+      // Increment usage count asynchronously (don't await, ignore errors)
+      void tryCatch(
+        prisma.enhancementPipeline.update({
           where: { id: resolvedPipelineId },
           data: { usageCount: { increment: 1 } },
-        })
-        .catch(() => {
-          // Ignore errors from usage count update
-        });
+        }),
+      );
 
       return {
         config: parsePipelineConfig(pipeline.tier, {

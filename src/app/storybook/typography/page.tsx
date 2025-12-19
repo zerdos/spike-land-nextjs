@@ -12,7 +12,9 @@ export default function TypographyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Font Families</CardTitle>
-            <CardDescription>Montserrat for headers, Geist for body</CardDescription>
+            <CardDescription>
+              Montserrat for headers, Geist for body
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -28,14 +30,18 @@ export default function TypographyPage() {
               <Label className="text-xs text-muted-foreground mb-2 block">
                 Geist Sans (Body) - font-sans
               </Label>
-              <p className="font-sans text-lg">The quick brown fox jumps over the lazy dog</p>
+              <p className="font-sans text-lg">
+                The quick brown fox jumps over the lazy dog
+              </p>
             </div>
             <Separator />
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
                 Geist Mono (Code) - font-mono
               </Label>
-              <p className="font-mono text-lg">const pixel = &quot;AI Enhancement&quot;;</p>
+              <p className="font-mono text-lg">
+                const pixel = &quot;AI Enhancement&quot;;
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -94,7 +100,9 @@ export default function TypographyPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-foreground">text-foreground - Primary text</p>
-            <p className="text-muted-foreground">text-muted-foreground - Secondary text</p>
+            <p className="text-muted-foreground">
+              text-muted-foreground - Secondary text
+            </p>
             <p className="text-primary">text-primary - Accent/link text</p>
             <p className="text-destructive">text-destructive - Error text</p>
           </CardContent>

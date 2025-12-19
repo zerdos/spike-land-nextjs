@@ -8,6 +8,7 @@
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { tryCatch } from "@/lib/try-catch";
 import { JobStatus } from "@prisma/client";
 
 export interface CleanupOptions {
@@ -164,18 +165,18 @@ async function cleanupSingleJob(
     userId: job.userId,
   });
 
-  try {
-    jobLogger.info("Cleaning up stuck job", {
-      tokensCost: job.tokensCost,
-      processingStartedAt: job.processingStartedAt?.toISOString(),
-    });
+  jobLogger.info("Cleaning up stuck job", {
+    tokensCost: job.tokensCost,
+    processingStartedAt: job.processingStartedAt?.toISOString(),
+  });
 
-    // Calculate how long the job was stuck
-    const stuckSince = job.processingStartedAt || job.updatedAt;
-    const processingDuration = Date.now() - stuckSince.getTime();
+  // Calculate how long the job was stuck
+  const stuckSince = job.processingStartedAt || job.updatedAt;
+  const processingDuration = Date.now() - stuckSince.getTime();
 
-    // Use transaction to ensure atomic update + refund
-    await prisma.$transaction(async (tx) => {
+  // Use transaction to ensure atomic update + refund
+  const transactionResult = await tryCatch(
+    prisma.$transaction(async (tx) => {
       // Update job status to FAILED
       await tx.imageEnhancementJob.update({
         where: { id: job.id },
@@ -189,35 +190,18 @@ async function cleanupSingleJob(
       });
 
       jobLogger.debug("Job marked as FAILED");
-    });
+    }),
+  );
 
-    // Refund tokens outside transaction to avoid nested transaction issues
-    const refundResult = await TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      job.id,
-      `Job timeout cleanup - stuck for ${Math.round(processingDuration / 1000)}s`,
-    );
-
-    if (!refundResult.success) {
-      throw new Error(`Token refund failed: ${refundResult.error}`);
-    }
-
-    jobLogger.info("Job cleaned up successfully", {
-      tokensRefunded: job.tokensCost,
-      processingDuration: Math.round(processingDuration / 1000),
-    });
-
-    return {
-      success: true,
-      tokensRefunded: job.tokensCost,
-      processingDuration,
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  if (transactionResult.error) {
+    const errorMessage = transactionResult.error instanceof Error
+      ? transactionResult.error.message
+      : String(transactionResult.error);
     jobLogger.error(
       "Failed to cleanup job",
-      error instanceof Error ? error : new Error(errorMessage),
+      transactionResult.error instanceof Error
+        ? transactionResult.error
+        : new Error(errorMessage),
     );
 
     return {
@@ -227,6 +211,58 @@ async function cleanupSingleJob(
       error: errorMessage,
     };
   }
+
+  // Refund tokens outside transaction to avoid nested transaction issues
+  const refundResult = await tryCatch(
+    TokenBalanceManager.refundTokens(
+      job.userId,
+      job.tokensCost,
+      job.id,
+      `Job timeout cleanup - stuck for ${Math.round(processingDuration / 1000)}s`,
+    ),
+  );
+
+  if (refundResult.error) {
+    const errorMessage = refundResult.error instanceof Error
+      ? refundResult.error.message
+      : String(refundResult.error);
+    jobLogger.error(
+      "Failed to cleanup job",
+      refundResult.error instanceof Error
+        ? refundResult.error
+        : new Error(errorMessage),
+    );
+
+    return {
+      success: false,
+      tokensRefunded: 0,
+      processingDuration: 0,
+      error: errorMessage,
+    };
+  }
+
+  if (!refundResult.data.success) {
+    const errorMessage = `Token refund failed: ${refundResult.data.error}`;
+    jobLogger.error("Failed to cleanup job", new Error(errorMessage));
+
+    return {
+      success: false,
+      tokensRefunded: 0,
+      processingDuration: 0,
+      error: errorMessage,
+    };
+  }
+
+  jobLogger.info("Job cleaned up successfully", {
+    tokensRefunded: job.tokensCost,
+    processingDuration: Math.round(processingDuration / 1000),
+  });
+
+  return {
+    success: true,
+    tokensRefunded: job.tokensCost,
+    processingDuration,
+  };
 }
 
 /**
@@ -263,102 +299,108 @@ export async function cleanupStuckJobs(
     batchSize,
   });
 
-  try {
-    // Find stuck jobs
-    const stuckJobs = await findStuckJobs(timeoutMs, batchSize);
+  // Find stuck jobs
+  const findResult = await tryCatch(findStuckJobs(timeoutMs, batchSize));
 
-    if (stuckJobs.length === 0) {
-      cleanupLogger.info("No stuck jobs found");
-      return {
-        totalFound: 0,
-        cleanedUp: 0,
-        failed: 0,
-        tokensRefunded: 0,
-        jobs: [],
-        errors: [],
-      };
-    }
-
-    // If dry run, just return what we found without making changes
-    if (dryRun) {
-      cleanupLogger.info("Dry run - no changes made", {
-        jobsFound: stuckJobs.length,
-      });
-      return {
-        totalFound: stuckJobs.length,
-        cleanedUp: 0,
-        failed: 0,
-        tokensRefunded: 0,
-        jobs: stuckJobs.map((job) => ({
-          id: job.id,
-          userId: job.userId,
-          tokensRefunded: 0,
-          processingDuration: Date.now() -
-            (job.processingStartedAt || job.updatedAt).getTime(),
-        })),
-        errors: [],
-      };
-    }
-
-    // Clean up each job
-    const results = await Promise.all(
-      stuckJobs.map((job) => cleanupSingleJob(job)),
-    );
-
-    // Aggregate results
-    const cleanedUp = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
-    const tokensRefunded = results.reduce(
-      (sum, r) => sum + r.tokensRefunded,
-      0,
-    );
-
-    const jobDetails = stuckJobs.map((job, index) => {
-      const result = results[index];
-      if (!result) {
-        throw new Error(`Missing result for job ${job.id}`);
-      }
-      return {
-        id: job.id,
-        userId: job.userId,
-        tokensRefunded: result.tokensRefunded,
-        processingDuration: result.processingDuration,
-        ...(result.error && { error: result.error }),
-      };
-    });
-
-    const errors = stuckJobs
-      .map((job, index) => {
-        const result = results[index];
-        return {
-          jobId: job.id,
-          error: result?.error || "",
-        };
-      })
-      .filter((e) => e.error);
-
-    cleanupLogger.info("Cleanup completed", {
-      totalFound: stuckJobs.length,
-      cleanedUp,
-      failed,
-      tokensRefunded,
-    });
-
-    return {
-      totalFound: stuckJobs.length,
-      cleanedUp,
-      failed,
-      tokensRefunded,
-      jobs: jobDetails,
-      errors,
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  if (findResult.error) {
+    const errorMessage = findResult.error instanceof Error
+      ? findResult.error.message
+      : String(findResult.error);
     cleanupLogger.error(
       "Cleanup process failed",
-      error instanceof Error ? error : new Error(errorMessage),
+      findResult.error instanceof Error
+        ? findResult.error
+        : new Error(errorMessage),
     );
 
-    throw error;
+    throw findResult.error;
   }
+
+  const stuckJobs = findResult.data;
+
+  if (stuckJobs.length === 0) {
+    cleanupLogger.info("No stuck jobs found");
+    return {
+      totalFound: 0,
+      cleanedUp: 0,
+      failed: 0,
+      tokensRefunded: 0,
+      jobs: [],
+      errors: [],
+    };
+  }
+
+  // If dry run, just return what we found without making changes
+  if (dryRun) {
+    cleanupLogger.info("Dry run - no changes made", {
+      jobsFound: stuckJobs.length,
+    });
+    return {
+      totalFound: stuckJobs.length,
+      cleanedUp: 0,
+      failed: 0,
+      tokensRefunded: 0,
+      jobs: stuckJobs.map((job) => ({
+        id: job.id,
+        userId: job.userId,
+        tokensRefunded: 0,
+        processingDuration: Date.now() -
+          (job.processingStartedAt || job.updatedAt).getTime(),
+      })),
+      errors: [],
+    };
+  }
+
+  // Clean up each job
+  const results = await Promise.all(
+    stuckJobs.map((job) => cleanupSingleJob(job)),
+  );
+
+  // Aggregate results
+  const cleanedUp = results.filter((r) => r.success).length;
+  const failed = results.filter((r) => !r.success).length;
+  const tokensRefunded = results.reduce(
+    (sum, r) => sum + r.tokensRefunded,
+    0,
+  );
+
+  const jobDetails = stuckJobs.map((job, index) => {
+    const result = results[index];
+    if (!result) {
+      throw new Error(`Missing result for job ${job.id}`);
+    }
+    return {
+      id: job.id,
+      userId: job.userId,
+      tokensRefunded: result.tokensRefunded,
+      processingDuration: result.processingDuration,
+      ...(result.error && { error: result.error }),
+    };
+  });
+
+  const errors = stuckJobs
+    .map((job, index) => {
+      const result = results[index];
+      return {
+        jobId: job.id,
+        error: result?.error || "",
+      };
+    })
+    .filter((e) => e.error);
+
+  cleanupLogger.info("Cleanup completed", {
+    totalFound: stuckJobs.length,
+    cleanedUp,
+    failed,
+    tokensRefunded,
+  });
+
+  return {
+    totalFound: stuckJobs.length,
+    cleanedUp,
+    failed,
+    tokensRefunded,
+    jobs: jobDetails,
+    errors,
+  };
 }

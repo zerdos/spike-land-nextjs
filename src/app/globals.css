@@ -342,19 +342,35 @@
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(217 91% 60%) 0%,
+      hsl(221 83% 53%) 100%
+    );
   }
 
   .gradient-purple {
-    background: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(263 70% 50%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(258 90% 66%) 0%,
+      hsl(263 70% 50%) 100%
+    );
   }
 
   .gradient-pink {
-    background: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(338 78% 48%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(330 81% 60%) 0%,
+      hsl(338 78% 48%) 100%
+    );
   }
 
   .gradient-orange {
-    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(21 90% 48%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(25 95% 53%) 0%,
+      hsl(21 90% 48%) 100%
+    );
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -372,11 +388,19 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--accent)),
+      hsl(var(--primary))
+    );
   }
 
   .bg-gradient-hero {
@@ -423,15 +447,31 @@
   /* Grid background pattern for landing page */
   .bg-grid-pattern {
     background-image:
-      linear-gradient(to right, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px);
+      linear-gradient(
+        to right,
+        hsl(var(--grid-inactive) / 0.3) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+      to bottom,
+      hsl(var(--grid-inactive) / 0.3) 1px,
+      transparent 1px
+    );
     background-size: 40px 40px;
   }
 
   .dark .bg-grid-pattern {
     background-image:
-      linear-gradient(to right, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px);
+      linear-gradient(
+        to right,
+        hsl(var(--grid-inactive) / 0.5) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+      to bottom,
+      hsl(var(--grid-inactive) / 0.5) 1px,
+      transparent 1px
+    );
     background-size: 40px 40px;
   }
 

@@ -40,7 +40,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/admin/marketing?error=Invalid callback parameters", request.url),
+        new URL(
+          "/admin/marketing?error=Invalid callback parameters",
+          request.url,
+        ),
       );
     }
 
@@ -103,7 +106,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       console.warn("Could not fetch Google Ads accounts:", accountError);
 
       // Save a placeholder account that user can configure manually
-      const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.trim() || "pending";
+      const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.trim() ||
+        "pending";
 
       // Encrypt tokens before storing
       const encryptedAccessToken = safeEncryptToken(tokens.accessToken);

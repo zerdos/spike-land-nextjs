@@ -18,18 +18,22 @@ describe("StorybookPage (Overview)", () => {
   describe("rendering", () => {
     it("should render the page title", () => {
       render(<StorybookPage />);
-      expect(screen.getByRole("heading", { name: /design system/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /design system/i }))
+        .toBeInTheDocument();
     });
 
     it("should render the page description", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel brand guidelines & component library/i)).toBeInTheDocument();
+      expect(screen.getByText(/pixel brand guidelines & component library/i))
+        .toBeInTheDocument();
     });
 
     it("should render footer content", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/pixel design system v1\.0/i)).toBeInTheDocument();
-      expect(screen.getByText(/part of the spike land platform/i)).toBeInTheDocument();
+      expect(screen.getByText(/pixel design system v1\.0/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/part of the spike land platform/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -88,7 +92,8 @@ describe("StorybookPage (Overview)", () => {
       expect(
         screen.getByText(/color palette, brand colors, dark\/light modes/i),
       ).toBeInTheDocument();
-      expect(screen.getByText(/font families, heading scale, text colors/i)).toBeInTheDocument();
+      expect(screen.getByText(/font families, heading scale, text colors/i))
+        .toBeInTheDocument();
       expect(
         screen.getByText(/button variants, sizes, states, loading indicators/i),
       ).toBeInTheDocument();

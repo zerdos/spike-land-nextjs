@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import sharp from "sharp";
 import { type ExportFormat } from "./format-utils";
 
@@ -61,7 +62,11 @@ export async function convertImageFormat(
       throw new Error(`Unsupported format: ${format}`);
   }
 
-  const buffer = await sharpInstance.toBuffer();
+  const { data: buffer, error } = await tryCatch(sharpInstance.toBuffer());
+
+  if (error) {
+    throw error;
+  }
 
   return {
     buffer,

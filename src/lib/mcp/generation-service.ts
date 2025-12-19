@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { EnhancementTier, getMcpGenerationCost } from "@/lib/tokens/costs";
+import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import sharp from "sharp";
 
@@ -276,27 +277,44 @@ async function processGenerationJob(
     userId: string;
   },
 ): Promise<void> {
-  try {
-    // Generate image
-    const imageBuffer = await generateImageWithGemini({
+  const { data: imageBuffer, error: generateError } = await tryCatch(
+    generateImageWithGemini({
       prompt: params.prompt,
       tier: params.tier,
       negativePrompt: params.negativePrompt,
-    });
+    }),
+  );
 
-    // Get image metadata
-    const metadata = await sharp(imageBuffer).metadata();
+  if (generateError) {
+    await handleGenerationJobFailure(jobId, generateError);
+    return;
+  }
 
-    // Upload to R2
-    const r2Key = `mcp-generated/${params.userId}/${jobId}.jpg`;
-    const uploadResult = await uploadToR2({
+  const { data: metadata, error: metadataError } = await tryCatch(
+    sharp(imageBuffer).metadata(),
+  );
+
+  if (metadataError) {
+    await handleGenerationJobFailure(jobId, metadataError);
+    return;
+  }
+
+  const r2Key = `mcp-generated/${params.userId}/${jobId}.jpg`;
+  const { data: uploadResult, error: uploadError } = await tryCatch(
+    uploadToR2({
       key: r2Key,
       buffer: imageBuffer,
       contentType: "image/jpeg",
-    });
+    }),
+  );
 
-    // Update job with success
-    await prisma.mcpGenerationJob.update({
+  if (uploadError) {
+    await handleGenerationJobFailure(jobId, uploadError);
+    return;
+  }
+
+  const { error: updateError } = await tryCatch(
+    prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.COMPLETED,
@@ -307,46 +325,65 @@ async function processGenerationJob(
         outputSizeBytes: imageBuffer.length,
         processingCompletedAt: new Date(),
       },
-    });
+    }),
+  );
 
-    console.log(`Generation job ${jobId} completed successfully`);
-  } catch (error) {
-    console.error(`Generation job ${jobId} failed:`, error);
+  if (updateError) {
+    await handleGenerationJobFailure(jobId, updateError);
+    return;
+  }
 
-    // Classify error for user-friendly message
-    const classifiedError = classifyError(error);
-    console.log(
-      `Generation job ${jobId} error classified as: ${classifiedError.code}`,
-    );
+  console.log(`Generation job ${jobId} completed successfully`);
+}
 
-    // Update job with failure
-    await prisma.mcpGenerationJob.update({
+/**
+ * Handle generation job failure - logs error, updates job status, and refunds tokens
+ */
+async function handleGenerationJobFailure(
+  jobId: string,
+  error: Error,
+): Promise<void> {
+  console.error(`Generation job ${jobId} failed:`, error);
+
+  // Classify error for user-friendly message
+  const classifiedError = classifyError(error);
+  console.log(
+    `Generation job ${jobId} error classified as: ${classifiedError.code}`,
+  );
+
+  // Update job with failure
+  await tryCatch(
+    prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.FAILED,
         errorMessage: classifiedError.message,
         processingCompletedAt: new Date(),
       },
-    });
+    }),
+  );
 
-    // Refund tokens
-    const job = await prisma.mcpGenerationJob.findUnique({
+  // Refund tokens
+  const { data: job } = await tryCatch(
+    prisma.mcpGenerationJob.findUnique({
       where: { id: jobId },
-    });
+    }),
+  );
 
-    if (job) {
-      await TokenBalanceManager.refundTokens(
-        job.userId,
-        job.tokensCost,
-        jobId,
-        `Generation job failed: ${classifiedError.code}`,
-      );
+  if (job) {
+    await TokenBalanceManager.refundTokens(
+      job.userId,
+      job.tokensCost,
+      jobId,
+      `Generation job failed: ${classifiedError.code}`,
+    );
 
-      await prisma.mcpGenerationJob.update({
+    await tryCatch(
+      prisma.mcpGenerationJob.update({
         where: { id: jobId },
         data: { status: JobStatus.REFUNDED },
-      });
-    }
+      }),
+    );
   }
 }
 
@@ -363,47 +400,83 @@ async function processModificationJob(
     userId: string;
   },
 ): Promise<void> {
-  try {
-    // Store input image in R2 for before/after comparison and retry capability
-    const inputBuffer = Buffer.from(params.imageData, "base64");
-    const inputExtension = params.mimeType.split("/")[1] || "jpg";
-    const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
-    const inputUploadResult = await uploadToR2({
+  // Store input image in R2 for before/after comparison and retry capability
+  const inputBuffer = Buffer.from(params.imageData, "base64");
+  const inputExtension = params.mimeType.split("/")[1] || "jpg";
+  const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
+
+  const { data: inputUploadResult, error: inputUploadError } = await tryCatch(
+    uploadToR2({
       key: inputR2Key,
       buffer: inputBuffer,
       contentType: params.mimeType,
-    });
+    }),
+  );
 
-    // Update job with input image URL
-    await prisma.mcpGenerationJob.update({
+  if (inputUploadError) {
+    await handleModificationJobFailure(jobId, inputUploadError);
+    return;
+  }
+
+  // Update job with input image URL
+  const { error: inputUpdateError } = await tryCatch(
+    prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         inputImageUrl: inputUploadResult.url,
         inputImageR2Key: inputR2Key,
       },
-    });
+    }),
+  );
 
-    // Modify image
-    const imageBuffer = await modifyImageWithGemini({
+  if (inputUpdateError) {
+    await handleModificationJobFailure(jobId, inputUpdateError);
+    return;
+  }
+
+  // Modify image
+  const { data: imageBuffer, error: modifyError } = await tryCatch(
+    modifyImageWithGemini({
       prompt: params.prompt,
       tier: params.tier,
       imageData: params.imageData,
       mimeType: params.mimeType,
-    });
+    }),
+  );
 
-    // Get image metadata
-    const metadata = await sharp(imageBuffer).metadata();
+  if (modifyError) {
+    await handleModificationJobFailure(jobId, modifyError);
+    return;
+  }
 
-    // Upload to R2
-    const r2Key = `mcp-modified/${params.userId}/${jobId}.jpg`;
-    const uploadResult = await uploadToR2({
+  // Get image metadata
+  const { data: metadata, error: metadataError } = await tryCatch(
+    sharp(imageBuffer).metadata(),
+  );
+
+  if (metadataError) {
+    await handleModificationJobFailure(jobId, metadataError);
+    return;
+  }
+
+  // Upload to R2
+  const r2Key = `mcp-modified/${params.userId}/${jobId}.jpg`;
+  const { data: uploadResult, error: uploadError } = await tryCatch(
+    uploadToR2({
       key: r2Key,
       buffer: imageBuffer,
       contentType: "image/jpeg",
-    });
+    }),
+  );
 
-    // Update job with success
-    await prisma.mcpGenerationJob.update({
+  if (uploadError) {
+    await handleModificationJobFailure(jobId, uploadError);
+    return;
+  }
+
+  // Update job with success
+  const { error: updateError } = await tryCatch(
+    prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.COMPLETED,
@@ -414,46 +487,65 @@ async function processModificationJob(
         outputSizeBytes: imageBuffer.length,
         processingCompletedAt: new Date(),
       },
-    });
+    }),
+  );
 
-    console.log(`Modification job ${jobId} completed successfully`);
-  } catch (error) {
-    console.error(`Modification job ${jobId} failed:`, error);
+  if (updateError) {
+    await handleModificationJobFailure(jobId, updateError);
+    return;
+  }
 
-    // Classify error for user-friendly message
-    const classifiedError = classifyError(error);
-    console.log(
-      `Modification job ${jobId} error classified as: ${classifiedError.code}`,
-    );
+  console.log(`Modification job ${jobId} completed successfully`);
+}
 
-    // Update job with failure
-    await prisma.mcpGenerationJob.update({
+/**
+ * Handle modification job failure - logs error, updates job status, and refunds tokens
+ */
+async function handleModificationJobFailure(
+  jobId: string,
+  error: Error,
+): Promise<void> {
+  console.error(`Modification job ${jobId} failed:`, error);
+
+  // Classify error for user-friendly message
+  const classifiedError = classifyError(error);
+  console.log(
+    `Modification job ${jobId} error classified as: ${classifiedError.code}`,
+  );
+
+  // Update job with failure
+  await tryCatch(
+    prisma.mcpGenerationJob.update({
       where: { id: jobId },
       data: {
         status: JobStatus.FAILED,
         errorMessage: classifiedError.message,
         processingCompletedAt: new Date(),
       },
-    });
+    }),
+  );
 
-    // Refund tokens
-    const job = await prisma.mcpGenerationJob.findUnique({
+  // Refund tokens
+  const { data: job } = await tryCatch(
+    prisma.mcpGenerationJob.findUnique({
       where: { id: jobId },
-    });
+    }),
+  );
 
-    if (job) {
-      await TokenBalanceManager.refundTokens(
-        job.userId,
-        job.tokensCost,
-        jobId,
-        `Modification job failed: ${classifiedError.code}`,
-      );
+  if (job) {
+    await TokenBalanceManager.refundTokens(
+      job.userId,
+      job.tokensCost,
+      jobId,
+      `Modification job failed: ${classifiedError.code}`,
+    );
 
-      await prisma.mcpGenerationJob.update({
+    await tryCatch(
+      prisma.mcpGenerationJob.update({
         where: { id: jobId },
         data: { status: JobStatus.REFUNDED },
-      });
-    }
+      }),
+    );
   }
 }
 

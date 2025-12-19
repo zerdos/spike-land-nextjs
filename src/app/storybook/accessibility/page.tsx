@@ -16,7 +16,9 @@ export default function AccessibilityPage() {
         <Card>
           <CardHeader>
             <CardTitle>Color Contrast Checker</CardTitle>
-            <CardDescription>Test color combinations against WCAG 2.1 guidelines</CardDescription>
+            <CardDescription>
+              Test color combinations against WCAG 2.1 guidelines
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ContrastCheckerDemo />
@@ -37,31 +39,41 @@ export default function AccessibilityPage() {
                 <Badge variant="outline" className="font-mono">
                   Tab
                 </Badge>
-                <span className="text-sm">Move focus to next interactive element</span>
+                <span className="text-sm">
+                  Move focus to next interactive element
+                </span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                 <Badge variant="outline" className="font-mono">
                   Shift + Tab
                 </Badge>
-                <span className="text-sm">Move focus to previous interactive element</span>
+                <span className="text-sm">
+                  Move focus to previous interactive element
+                </span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                 <Badge variant="outline" className="font-mono">
                   Enter / Space
                 </Badge>
-                <span className="text-sm">Activate buttons, links, and form controls</span>
+                <span className="text-sm">
+                  Activate buttons, links, and form controls
+                </span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                 <Badge variant="outline" className="font-mono">
                   Escape
                 </Badge>
-                <span className="text-sm">Close modals, dialogs, and dropdowns</span>
+                <span className="text-sm">
+                  Close modals, dialogs, and dropdowns
+                </span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                 <Badge variant="outline" className="font-mono">
                   Arrow Keys
                 </Badge>
-                <span className="text-sm">Navigate within tabs, radio groups, and sliders</span>
+                <span className="text-sm">
+                  Navigate within tabs, radio groups, and sliders
+                </span>
               </div>
             </div>
             <Separator />
@@ -83,7 +95,9 @@ export default function AccessibilityPage() {
         <Card>
           <CardHeader>
             <CardTitle>ARIA Attributes</CardTitle>
-            <CardDescription>Key ARIA attributes used in our components</CardDescription>
+            <CardDescription>
+              Key ARIA attributes used in our components
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,7 +154,9 @@ export default function AccessibilityPage() {
                   </Badge>
                   <span className="font-mono text-sm">150ms</span>
                 </div>
-                <p className="text-sm text-muted-foreground">Quick transitions: tooltips, hovers</p>
+                <p className="text-sm text-muted-foreground">
+                  Quick transitions: tooltips, hovers
+                </p>
               </div>
               <div className="p-4 rounded-lg border border-border space-y-2">
                 <div className="flex items-center justify-between">
@@ -149,7 +165,9 @@ export default function AccessibilityPage() {
                   </Badge>
                   <span className="font-mono text-sm">200ms</span>
                 </div>
-                <p className="text-sm text-muted-foreground">Standard: buttons, cards</p>
+                <p className="text-sm text-muted-foreground">
+                  Standard: buttons, cards
+                </p>
               </div>
               <div className="p-4 rounded-lg border border-border space-y-2">
                 <div className="flex items-center justify-between">
@@ -158,7 +176,9 @@ export default function AccessibilityPage() {
                   </Badge>
                   <span className="font-mono text-sm">300ms</span>
                 </div>
-                <p className="text-sm text-muted-foreground">Longer: modals, accordions</p>
+                <p className="text-sm text-muted-foreground">
+                  Longer: modals, accordions
+                </p>
               </div>
             </div>
             <div className="p-4 rounded-lg bg-muted">

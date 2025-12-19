@@ -322,7 +322,9 @@ describe("Switch Component", () => {
     it("should render with glow shadow when checked", () => {
       const { container } = render(<Switch checked={true} />);
       const switchElement = container.querySelector('button[role="switch"]');
-      expect(switchElement).toHaveClass("data-[state=checked]:shadow-glow-cyan");
+      expect(switchElement).toHaveClass(
+        "data-[state=checked]:shadow-glow-cyan",
+      );
     });
   });
 

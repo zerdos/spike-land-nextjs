@@ -36,7 +36,9 @@ export default function ComparisonPage() {
             </div>
             <Separator />
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Different Aspect Ratios</Label>
+              <Label className="text-xs text-muted-foreground">
+                Different Aspect Ratios
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Badge variant="outline">16:9</Badge>

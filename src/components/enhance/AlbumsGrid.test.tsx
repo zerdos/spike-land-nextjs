@@ -575,8 +575,12 @@ describe("AlbumsGrid", () => {
         "[class*='overflow-hidden']",
       );
 
-      const imageFile = new File(["content"], "test.jpg", { type: "image/jpeg" });
-      const textFile = new File(["content"], "test.txt", { type: "text/plain" });
+      const imageFile = new File(["content"], "test.jpg", {
+        type: "image/jpeg",
+      });
+      const textFile = new File(["content"], "test.txt", {
+        type: "text/plain",
+      });
       const dataTransfer = {
         files: [imageFile, textFile],
       };
@@ -604,7 +608,9 @@ describe("AlbumsGrid", () => {
         "[class*='overflow-hidden']",
       );
 
-      const textFile = new File(["content"], "test.txt", { type: "text/plain" });
+      const textFile = new File(["content"], "test.txt", {
+        type: "text/plain",
+      });
       const dataTransfer = {
         files: [textFile],
       };

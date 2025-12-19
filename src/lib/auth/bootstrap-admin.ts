@@ -7,6 +7,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
 
 /**
@@ -35,25 +36,34 @@ export async function hasAnyAdmin(): Promise<boolean> {
  * @returns Promise<boolean> - true if user was promoted to admin, false otherwise
  */
 export async function bootstrapAdminIfNeeded(userId: string): Promise<boolean> {
-  try {
-    // Check if any admin already exists
-    const adminExists = await hasAnyAdmin();
+  // Check if any admin already exists
+  const { data: adminExists, error: checkError } = await tryCatch(
+    hasAnyAdmin(),
+  );
 
-    // If admin already exists, don't promote this user
-    if (adminExists) {
-      return false;
-    }
-
-    // No admin exists - promote this user to ADMIN
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: UserRole.ADMIN },
-    });
-
-    console.log(`First user ${userId} promoted to ADMIN role`);
-    return true;
-  } catch (error) {
-    console.error("Failed to bootstrap admin:", error);
+  if (checkError) {
+    console.error("Failed to bootstrap admin:", checkError);
     return false;
   }
+
+  // If admin already exists, don't promote this user
+  if (adminExists) {
+    return false;
+  }
+
+  // No admin exists - promote this user to ADMIN
+  const { error: updateError } = await tryCatch(
+    prisma.user.update({
+      where: { id: userId },
+      data: { role: UserRole.ADMIN },
+    }),
+  );
+
+  if (updateError) {
+    console.error("Failed to bootstrap admin:", updateError);
+    return false;
+  }
+
+  console.log(`First user ${userId} promoted to ADMIN role`);
+  return true;
 }
