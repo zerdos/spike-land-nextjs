@@ -461,8 +461,19 @@ describe("generation-service", () => {
         negativePrompt: "ugly",
       });
 
-      // Wait for background processing
-      await vi.advanceTimersByTimeAsync(100);
+      // Wait for background processing to complete - need to flush multiple async steps
+      await vi.waitFor(
+        () => {
+          expect(mockMcpGenerationJob.update).toHaveBeenCalledWith(
+            expect.objectContaining({
+              data: expect.objectContaining({
+                status: JobStatus.COMPLETED,
+              }),
+            }),
+          );
+        },
+        { timeout: 1000 },
+      );
 
       // Verify Gemini was called with correct params
       expect(mockGeminiClient.generateImageWithGemini).toHaveBeenCalledWith({
@@ -650,6 +661,7 @@ describe("generation-service", () => {
         tier: "2K",
         imageData: inputBase64,
         mimeType: "image/png",
+        aspectRatio: "1:1",
       });
 
       // Verify output was uploaded

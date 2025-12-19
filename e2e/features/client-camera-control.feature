@@ -19,7 +19,7 @@ Feature: Client Camera Control
     Given I am connected with camera enabled
     When I click the client camera "Toggle Camera" button
     Then my camera should be disabled
-    And I should see "Camera Off" indicator
+    And I should see "Camera Off" indicator on the client screen
     When I click the client camera "Toggle Camera" button
     Then my camera should be enabled
     And I should see my camera preview
@@ -28,10 +28,10 @@ Feature: Client Camera Control
     Given I am connected with camera enabled
     When I click the client camera "Toggle Microphone" button
     Then my microphone should be muted
-    And I should see "Microphone Muted" indicator
+    And I should see "Microphone Muted" indicator on the client screen
     When I click the client camera "Toggle Microphone" button
     Then my microphone should be unmuted
-    And I should see "Microphone Active" indicator
+    And I should see "Microphone Active" indicator on the client screen
 
   Scenario: Client can adjust zoom level
     Given I am connected with camera enabled
@@ -53,7 +53,7 @@ Feature: Client Camera Control
     When I click the client camera "Share Screen" button
     And I grant screen sharing permissions
     Then my video feed should switch to screen sharing
-    And I should see "Sharing Screen" indicator
+    And I should see "Sharing Screen" indicator on the client screen
     When I click the client camera "Stop Sharing" button
     Then my video feed should switch back to camera
     And I should see my camera preview

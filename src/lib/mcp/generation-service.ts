@@ -1,3 +1,4 @@
+import { type AspectRatio, detectAspectRatio } from "@/lib/ai/aspect-ratio";
 import {
   DEFAULT_MODEL,
   generateImageWithGemini,
@@ -93,6 +94,8 @@ export interface CreateGenerationJobParams {
   prompt: string;
   tier: EnhancementTier;
   negativePrompt?: string;
+  /** Optional aspect ratio for the generated image (default: 1:1) */
+  aspectRatio?: AspectRatio;
 }
 
 export interface CreateModificationJobParams {
@@ -131,7 +134,7 @@ async function checkConcurrentJobLimit(userId: string): Promise<boolean> {
 export async function createGenerationJob(
   params: CreateGenerationJobParams,
 ): Promise<JobResult> {
-  const { userId, apiKeyId, prompt, tier, negativePrompt } = params;
+  const { userId, apiKeyId, prompt, tier, negativePrompt, aspectRatio } = params;
   const tokensCost = getMcpGenerationCost(tier);
 
   // Security: Check concurrent job limit to prevent burst attacks
@@ -182,6 +185,7 @@ export async function createGenerationJob(
     prompt,
     tier: tier.replace("TIER_", "") as "1K" | "2K" | "4K",
     negativePrompt,
+    aspectRatio,
     userId,
   }).catch((error) => {
     console.error(`Generation job ${job.id} failed:`, error);
@@ -274,6 +278,7 @@ async function processGenerationJob(
     prompt: string;
     tier: "1K" | "2K" | "4K";
     negativePrompt?: string;
+    aspectRatio?: AspectRatio;
     userId: string;
   },
 ): Promise<void> {
@@ -282,6 +287,7 @@ async function processGenerationJob(
       prompt: params.prompt,
       tier: params.tier,
       negativePrompt: params.negativePrompt,
+      aspectRatio: params.aspectRatio,
     }),
   );
 
@@ -405,6 +411,25 @@ async function processModificationJob(
   const inputExtension = params.mimeType.split("/")[1] || "jpg";
   const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
 
+  // Get input image metadata to detect aspect ratio
+  const { data: inputMetadata, error: inputMetadataError } = await tryCatch(
+    sharp(inputBuffer).metadata(),
+  );
+
+  if (inputMetadataError) {
+    await handleModificationJobFailure(jobId, inputMetadataError);
+    return;
+  }
+
+  // Auto-detect aspect ratio from input image dimensions
+  const detectedAspectRatio = detectAspectRatio(
+    inputMetadata.width || 1024,
+    inputMetadata.height || 1024,
+  );
+  console.log(
+    `Modification job ${jobId}: detected aspect ratio ${detectedAspectRatio} from ${inputMetadata.width}x${inputMetadata.height}`,
+  );
+
   const { data: inputUploadResult, error: inputUploadError } = await tryCatch(
     uploadToR2({
       key: inputR2Key,
@@ -434,13 +459,14 @@ async function processModificationJob(
     return;
   }
 
-  // Modify image
+  // Modify image with auto-detected aspect ratio
   const { data: imageBuffer, error: modifyError } = await tryCatch(
     modifyImageWithGemini({
       prompt: params.prompt,
       tier: params.tier,
       imageData: params.imageData,
       mimeType: params.mimeType,
+      aspectRatio: detectedAspectRatio,
     }),
   );
 

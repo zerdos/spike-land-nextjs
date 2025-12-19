@@ -190,6 +190,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           cropDimensions: null,
           pipelineId: null,
           sourceImageId: null,
+          isBlend: true, // Auto-enhance is always a blend (file upload)
         };
 
         setImage((prev: ImageWithJobs) => ({
@@ -271,6 +272,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         pipelineId: null,
         // Blend source (file upload - not stored, no sourceImageId)
         sourceImageId: null,
+        // Track blend jobs
+        isBlend: !!blendImageData,
       };
 
       setImage((prev: ImageWithJobs) => ({
@@ -461,6 +464,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                     currentStage: job.currentStage,
                     sizeBytes: job.enhancedSizeBytes,
                     sourceImageId: job.sourceImageId,
+                    isBlend: job.isBlend,
                   }))}
                   selectedVersionId={selectedVersionId || undefined}
                   onVersionSelect={setSelectedVersionId}

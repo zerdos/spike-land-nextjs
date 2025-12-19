@@ -212,7 +212,7 @@ Feature: Image Enhancement
 
   @fast @requires-db
   Scenario: Enhancement page displays user's images only
-    Given I am logged in as "User A" with email="usera@example.com"
+    Given I am logged in as "User A" with email "usera@example.com"
     And I have uploaded images
     And other users have uploaded images
     When I visit "/apps/pixel"

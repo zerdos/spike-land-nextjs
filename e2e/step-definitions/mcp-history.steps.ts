@@ -171,13 +171,7 @@ When("I click the type filter dropdown", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-Then(
-  "I should see {string} option",
-  async function(this: CustomWorld, optionText: string) {
-    const option = this.page.getByRole("option", { name: optionText });
-    await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should see {string} option" step moved to common.steps.ts
 
 // NOTE: "I select {string} from the type filter" is defined in common.steps.ts
 

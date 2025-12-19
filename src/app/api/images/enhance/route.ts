@@ -101,10 +101,13 @@ export async function POST(request: NextRequest) {
   const { imageId, tier, blendSource } = body as {
     imageId: string;
     tier: EnhancementTier;
-    /** Optional: base64 image data for blending (uploaded file, not stored) */
+    /** Optional: blend source for image mixing */
     blendSource?: {
-      base64: string;
-      mimeType: string;
+      // Option A: Upload (existing) - base64 data from file drop
+      base64?: string;
+      mimeType?: string;
+      // Option B: Stored image (new) - reference to existing image by ID
+      imageId?: string;
     };
   };
 
@@ -160,56 +163,177 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Variables to track blend source for job creation
+  let resolvedBlendSource: { base64: string; mimeType: string; } | null = null;
+  let sourceImageId: string | null = null;
+
   // Validate blend source data (if provided)
   if (blendSource) {
-    if (!blendSource.base64 || typeof blendSource.base64 !== "string") {
-      requestLogger.warn("Invalid blend source - missing base64 data");
-      return NextResponse.json(
-        {
-          error: "Invalid blend image data",
-          title: "Invalid blend",
-          suggestion: "Please try dropping the image again.",
-        },
-        { status: 400, headers: { "X-Request-ID": requestId } },
+    // Option B: Blend with stored image by ID
+    if (blendSource.imageId) {
+      const { data: sourceImage, error: sourceError } = await tryCatch(
+        prisma.enhancedImage.findUnique({
+          where: { id: blendSource.imageId },
+          select: {
+            id: true,
+            userId: true,
+            originalUrl: true,
+            originalFormat: true,
+          },
+        }),
       );
-    }
 
-    if (!blendSource.mimeType || !blendSource.mimeType.startsWith("image/")) {
-      requestLogger.warn("Invalid blend source - invalid mimeType", {
+      if (sourceError || !sourceImage) {
+        requestLogger.warn("Blend source image not found", {
+          sourceImageId: blendSource.imageId,
+        });
+        return NextResponse.json(
+          {
+            error: "Blend source image not found",
+            title: "Image not found",
+            suggestion: "The selected image may have been deleted.",
+          },
+          { status: 404, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      // Verify user owns the source image
+      if (sourceImage.userId !== session.user.id) {
+        requestLogger.warn("User does not own blend source image", {
+          sourceImageId: blendSource.imageId,
+          userId: session.user.id,
+        });
+        return NextResponse.json(
+          {
+            error: "Access denied to blend source image",
+            title: "Access denied",
+            suggestion: "You can only blend with your own images.",
+          },
+          { status: 403, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      // Fetch the image from R2 and convert to base64
+      const { data: fetchResponse, error: fetchError } = await tryCatch(
+        fetch(sourceImage.originalUrl, {
+          headers: { "Accept": "image/*" },
+        }),
+      );
+
+      if (fetchError || !fetchResponse || !fetchResponse.ok) {
+        requestLogger.error(
+          "Failed to fetch blend source image from R2",
+          fetchError instanceof Error ? fetchError : new Error("Fetch failed"),
+          { sourceImageId: blendSource.imageId, url: sourceImage.originalUrl },
+        );
+        return NextResponse.json(
+          {
+            error: "Failed to load blend source image",
+            title: "Image load failed",
+            suggestion: "Please try again or select a different image.",
+          },
+          { status: 500, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      const { data: arrayBuffer, error: bufferError } = await tryCatch(
+        fetchResponse.arrayBuffer(),
+      );
+
+      if (bufferError || !arrayBuffer) {
+        requestLogger.error(
+          "Failed to read blend source image data",
+          bufferError instanceof Error ? bufferError : new Error("Buffer read failed"),
+          { sourceImageId: blendSource.imageId },
+        );
+        return NextResponse.json(
+          {
+            error: "Failed to process blend source image",
+            title: "Processing failed",
+            suggestion: "Please try again or select a different image.",
+          },
+          { status: 500, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      const mimeType = fetchResponse.headers.get("content-type") ||
+        `image/${sourceImage.originalFormat || "jpeg"}`;
+
+      resolvedBlendSource = { base64, mimeType };
+      sourceImageId = sourceImage.id;
+
+      requestLogger.info("Blend mode: stored image resolved", {
+        sourceImageId: sourceImage.id,
+        targetImageId: imageId,
+        mimeType,
+      });
+    } // Option A: Blend with uploaded file (base64)
+    else if (blendSource.base64) {
+      if (typeof blendSource.base64 !== "string") {
+        requestLogger.warn("Invalid blend source - invalid base64 data");
+        return NextResponse.json(
+          {
+            error: "Invalid blend image data",
+            title: "Invalid blend",
+            suggestion: "Please try dropping the image again.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      if (!blendSource.mimeType || !blendSource.mimeType.startsWith("image/")) {
+        requestLogger.warn("Invalid blend source - invalid mimeType", {
+          mimeType: blendSource.mimeType,
+        });
+        return NextResponse.json(
+          {
+            error: "Invalid blend image type",
+            title: "Invalid blend",
+            suggestion: "Please use a valid image file (JPEG, PNG, WebP, or GIF).",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      // Validate base64 size (rough estimate: base64 adds ~33% overhead)
+      const estimatedSize = (blendSource.base64.length * 3) / 4;
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      if (estimatedSize > maxSize) {
+        requestLogger.warn("Blend source too large", {
+          estimatedSize,
+          maxSize,
+        });
+        return NextResponse.json(
+          {
+            error: "Blend image is too large",
+            title: "File too large",
+            suggestion: "Please use an image smaller than 20MB.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      resolvedBlendSource = {
+        base64: blendSource.base64,
         mimeType: blendSource.mimeType,
+      };
+
+      requestLogger.info("Blend mode: uploaded file validated", {
+        mimeType: blendSource.mimeType,
+        targetImageId: imageId,
       });
+    } else {
+      requestLogger.warn("Invalid blend source - no imageId or base64 provided");
       return NextResponse.json(
         {
-          error: "Invalid blend image type",
+          error: "Invalid blend source",
           title: "Invalid blend",
-          suggestion: "Please use a valid image file (JPEG, PNG, WebP, or GIF).",
+          suggestion: "Please provide either an image ID or base64 data.",
         },
         { status: 400, headers: { "X-Request-ID": requestId } },
       );
     }
-
-    // Validate base64 size (rough estimate: base64 adds ~33% overhead)
-    const estimatedSize = (blendSource.base64.length * 3) / 4;
-    const maxSize = 20 * 1024 * 1024; // 20MB
-    if (estimatedSize > maxSize) {
-      requestLogger.warn("Blend source too large", {
-        estimatedSize,
-        maxSize,
-      });
-      return NextResponse.json(
-        {
-          error: "Blend image is too large",
-          title: "File too large",
-          suggestion: "Please use an image smaller than 20MB.",
-        },
-        { status: 400, headers: { "X-Request-ID": requestId } },
-      );
-    }
-
-    requestLogger.info("Blend mode: source image validated", {
-      mimeType: blendSource.mimeType,
-      targetImageId: imageId,
-    });
   }
 
   const tokenCost = ENHANCEMENT_COSTS[tier];
@@ -277,7 +401,10 @@ export async function POST(request: NextRequest) {
         tokensCost: tokenCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
-        // Note: sourceImageId is kept null for uploaded blends since we don't store the blend source
+        // Set sourceImageId when blending with stored image (null for uploaded files)
+        sourceImageId: sourceImageId,
+        // Track blend jobs (both file upload and stored image blends)
+        isBlend: !!resolvedBlendSource,
       },
     }),
   );
@@ -312,7 +439,8 @@ export async function POST(request: NextRequest) {
   requestLogger.info("Enhancement job created", {
     jobId: job.id,
     tier,
-    isBlend: !!blendSource,
+    isBlend: !!resolvedBlendSource,
+    sourceImageId: sourceImageId,
   });
 
   // Track enhancement conversion attribution for campaign analytics (first enhancement only)
@@ -336,7 +464,7 @@ export async function POST(request: NextRequest) {
     originalR2Key: image.originalR2Key,
     tier,
     tokensCost: tokenCost,
-    blendSource: blendSource || null, // For blend enhancement (uploaded file, not stored)
+    blendSource: resolvedBlendSource, // Resolved blend source (from stored image or uploaded file)
   };
 
   if (isVercelEnvironment()) {

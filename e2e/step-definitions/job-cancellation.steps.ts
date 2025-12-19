@@ -120,13 +120,7 @@ Given(
   },
 );
 
-Given(
-  "I have {int} tokens",
-  async function(this: CustomWorld, balance: number) {
-    await mockTokenBalance(this, balance);
-    (this as CustomWorld & { tokenBalance: number; }).tokenBalance = balance;
-  },
-);
+// NOTE: "I have {int} tokens" step moved to common.steps.ts
 
 Given("I mock a failed job cancellation", async function(this: CustomWorld) {
   await world.page.route("**/api/jobs/**/cancel", async (route) => {
@@ -147,25 +141,7 @@ When(
   },
 );
 
-When("I confirm the cancellation", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**/cancel", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        success: true,
-        job: mockCancelledJob,
-        tokensRefunded: 2,
-        newBalance: 12,
-      }),
-    });
-  });
-
-  const confirmButton = this.page.getByRole("button", { name: /confirm/i });
-  await expect(confirmButton).toBeVisible();
-  await confirmButton.click();
-  await this.page.waitForLoadState("networkidle");
-});
+// NOTE: "I confirm the cancellation" step moved to common.steps.ts
 
 When("I dismiss the cancellation dialog", async function(this: CustomWorld) {
   const cancelButton = this.page.getByRole("button", {
@@ -211,10 +187,7 @@ When("I cancel the job", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 });
 
-Then("I should see a confirmation dialog", async function(this: CustomWorld) {
-  const dialog = this.page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-});
+// NOTE: "I should see a confirmation dialog" step moved to common.steps.ts
 
 Then(
   "the job status should be {string}",
@@ -224,15 +197,7 @@ Then(
   },
 );
 
-// Removed duplicate - using common.steps.ts
-
-Then("my tokens should be refunded", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(500);
-  const worldWithBalance = this as CustomWorld & { tokenBalance?: number; };
-  if (worldWithBalance.tokenBalance !== undefined) {
-    await mockTokenBalance(this, worldWithBalance.tokenBalance + 2);
-  }
-});
+// NOTE: "my tokens should be refunded" step moved to common.steps.ts
 
 Then(
   "I should not see a cancel button for the job",
@@ -298,3 +263,9 @@ Then(
 );
 
 // Removed duplicate - using common.steps.ts
+
+// "I view the image enhancement page"
+When("I view the image enhancement page", async function(this: CustomWorld) {
+  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+  await this.page.waitForLoadState("networkidle");
+});

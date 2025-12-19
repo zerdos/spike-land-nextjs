@@ -25,10 +25,7 @@ function _createMockFiles(
 }
 
 // Given steps
-Given("I am on the enhance page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/pixel`);
-  await this.page.waitForLoadState("networkidle");
-});
+// NOTE: "I am on the enhance page" step moved to common.steps.ts
 
 Given(
   "I mock batch upload with varying speeds",
@@ -159,19 +156,7 @@ Given(
   },
 );
 
-Given(
-  "I have {int} tokens",
-  async function(this: CustomWorld, tokenCount: number) {
-    // Mock token balance
-    await this.page.route("**/api/tokens/balance", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ balance: tokenCount }),
-      });
-    });
-  },
-);
+// NOTE: "I have {int} tokens" step moved to common.steps.ts
 
 Given(
   "I have {int} images selected",
@@ -366,12 +351,7 @@ When(
   },
 );
 
-When("I confirm the batch enhancement", async function(this: CustomWorld) {
-  const confirmButton = this.page.getByRole("button", {
-    name: /Confirm|Enhance/i,
-  });
-  await confirmButton.click();
-});
+// NOTE: "I confirm the batch enhancement" step moved to common.steps.ts
 
 When(
   "I try to batch enhance with {string}",
@@ -573,13 +553,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} indicator",
-  async function(this: CustomWorld, text: string) {
-    const indicator = this.page.getByText(text);
-    await expect(indicator).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} indicator" step moved to common.steps.ts
 
 // Removed duplicate - using common.steps.ts
 
@@ -588,13 +562,7 @@ Then("I should see a tier selection modal", async function(this: CustomWorld) {
   await expect(modal).toBeVisible();
 });
 
-Then(
-  "I should see {string} option",
-  async function(this: CustomWorld, optionText: string) {
-    const option = this.page.getByText(optionText);
-    await expect(option).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} option" step moved to common.steps.ts
 
 Then(
   "each tier should show total token cost for {int} images",
@@ -638,11 +606,7 @@ Then("the enhancement should not proceed", async function(this: CustomWorld) {
 });
 
 // Removed duplicate - using common.steps.ts
-
-Then("no enhancements should start", async function(this: CustomWorld) {
-  // Verify no processing indicators
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "no enhancements should start" step moved to common.steps.ts
 
 Then("images should remain selected", async function(this: CustomWorld) {
   const checkedBoxes = this.page.locator('input[type="checkbox"]:checked');

@@ -659,10 +659,7 @@ Then(
   },
 );
 
-Then("the dialog should close", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="alertdialog"]');
-  await expect(dialog).not.toBeVisible();
-});
+// NOTE: "the dialog should close" step moved to common.steps.ts
 
 Then(
   "{string} should still be in {string} section",
@@ -744,15 +741,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} option",
-  async function(this: CustomWorld, optionText: string) {
-    const option = this.page.getByRole("option", {
-      name: new RegExp(optionText, "i"),
-    });
-    await expect(option).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} option" step moved to common.steps.ts
 
 Then(
   "the callback URL should be {string}",
@@ -795,3 +784,36 @@ Then(
     await expect(grid.first()).toBeVisible();
   },
 );
+
+// ======= MISSING STEP DEFINITIONS =======
+
+// "I visit my image detail page"
+When("I visit my image detail page", async function(this: CustomWorld) {
+  // Navigate to an image detail page
+  await this.page.goto(`${this.baseUrl}/pixel/test-image-id`);
+  await this.page.waitForLoadState("networkidle");
+});
+
+// "I select the {string} pipeline"
+When(
+  "I select the {string} pipeline",
+  async function(this: CustomWorld, pipelineName: string) {
+    const pipelineSelector = this.page.locator('[data-testid="pipeline-selector"]')
+      .or(this.page.getByRole("combobox").filter({ hasText: /pipeline/i }));
+    await pipelineSelector.click();
+    await this.page.waitForTimeout(200);
+
+    const option = this.page.locator('[role="option"]').filter({
+      hasText: new RegExp(pipelineName, "i"),
+    });
+    await option.click();
+    await this.page.waitForTimeout(200);
+  },
+);
+
+// "I start enhancement"
+When("I start enhancement", async function(this: CustomWorld) {
+  const enhanceButton = this.page.getByRole("button", { name: /enhance|start/i });
+  await enhanceButton.click();
+  await this.page.waitForTimeout(500);
+});

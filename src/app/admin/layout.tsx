@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { Link } from "@/components/ui/link";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
@@ -16,16 +17,34 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
+  // Check for E2E bypass header (only in non-production)
+  const headersList = await headers();
+  const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+  const isE2EBypass = process.env.NODE_ENV !== "production" &&
+    e2eBypassSecret &&
+    e2eBypassHeader === e2eBypassSecret;
+
+  // Always get session (auth() handles E2E bypass internally)
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/");
   }
 
-  const userIsAdmin = await isAdminByUserId(session.user.id);
-
-  if (!userIsAdmin) {
-    redirect("/");
+  // For E2E bypass, check role from session (set via e2e-user-role cookie)
+  // For regular users, check role from database
+  if (isE2EBypass) {
+    // E2E session has role from cookie, check if admin
+    const role = session.user.role;
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      redirect("/");
+    }
+  } else {
+    const userIsAdmin = await isAdminByUserId(session.user.id);
+    if (!userIsAdmin) {
+      redirect("/");
+    }
   }
 
   const navItems = [
@@ -39,6 +58,7 @@ export default async function AdminLayout({
     { href: "/admin/photos", label: "Photos", icon: "📸" },
     { href: "/admin/gallery", label: "Featured Gallery", icon: "🖼️" },
     { href: "/admin/feedback", label: "Feedback", icon: "💬" },
+    { href: "/admin/errors", label: "Error Logs", icon: "🐛" },
     { href: "/admin/marketing", label: "Marketing", icon: "📣" },
     { href: "/admin/emails", label: "Email Logs", icon: "📧" },
     { href: "/admin/sitemap", label: "Sitemap Preview", icon: "🗺️" },

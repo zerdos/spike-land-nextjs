@@ -10,6 +10,7 @@ export interface GenerateRequest {
   prompt: string;
   tier?: "TIER_1K" | "TIER_2K" | "TIER_4K";
   negativePrompt?: string;
+  aspectRatio?: string;
 }
 
 export interface ModifyRequest {
@@ -26,23 +27,25 @@ export interface JobResponse {
   error?: string;
 }
 
+export interface Job {
+  id: string;
+  type: "GENERATE" | "MODIFY";
+  tier: string;
+  tokensCost: number;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "REFUNDED";
+  prompt: string;
+  inputImageUrl?: string | null;
+  outputImageUrl?: string | null;
+  outputWidth?: number | null;
+  outputHeight?: number | null;
+  errorMessage?: string | null;
+  createdAt: string;
+  processingStartedAt?: string | null;
+  processingCompletedAt?: string | null;
+}
+
 export interface JobStatus {
-  job: {
-    id: string;
-    type: "GENERATE" | "MODIFY";
-    tier: string;
-    tokensCost: number;
-    status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "REFUNDED";
-    prompt: string;
-    inputImageUrl?: string;
-    outputImageUrl?: string;
-    outputWidth?: number;
-    outputHeight?: number;
-    errorMessage?: string;
-    createdAt: string;
-    processingStartedAt?: string;
-    processingCompletedAt?: string;
-  };
+  job: Job;
 }
 
 export interface BalanceResponse {
@@ -104,6 +107,7 @@ export class SpikeLandClient {
       prompt: params.prompt,
       tier: params.tier || "TIER_1K",
       negativePrompt: params.negativePrompt,
+      aspectRatio: params.aspectRatio,
     });
   }
 
@@ -123,7 +127,8 @@ export class SpikeLandClient {
    * Get the status of a job
    */
   async getJobStatus(jobId: string): Promise<JobStatus> {
-    return this.request<JobStatus>(`/api/mcp/jobs/${jobId}`);
+    const job = await this.request<Job>(`/api/mcp/jobs/${jobId}`);
+    return { job };
   }
 
   /**
