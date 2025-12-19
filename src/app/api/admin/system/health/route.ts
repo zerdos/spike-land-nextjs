@@ -28,16 +28,18 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const adminResult = await tryCatch(requireAdminByUserId(session.user.id));
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
-  if (adminResult.error) {
-    const errorMessage = adminResult.error instanceof Error
-      ? adminResult.error.message
+  if (adminError) {
+    const errorMessage = adminError instanceof Error
+      ? adminError.message
       : "Unknown error";
+    console.error("Admin check failed:", adminError);
     if (errorMessage.includes("Forbidden")) {
       return NextResponse.json({ error: errorMessage }, { status: 403 });
     }
-    console.error("Failed to verify admin:", adminResult.error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

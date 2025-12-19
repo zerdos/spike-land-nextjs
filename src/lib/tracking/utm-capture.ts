@@ -70,6 +70,8 @@ export function captureUTMParams(url: URL): UTMParams {
   return params;
 }
 
+import { tryCatchSync } from "@/lib/try-catch";
+
 /**
  * Get stored UTM parameters from cookie (server-side)
  *
@@ -91,14 +93,17 @@ export async function getUTMFromCookies(): Promise<UTMParams | null> {
     return null;
   }
 
-  try {
-    const params = JSON.parse(utmCookie.value) as UTMParams;
-    // Validate that at least one UTM param exists
-    const hasValidParam = UTM_PARAM_KEYS.some((key) => params[key]);
-    return hasValidParam ? params : null;
-  } catch {
+  const { data: params } = tryCatchSync<UTMParams>(() =>
+    JSON.parse(utmCookie.value)
+  );
+
+  if (!params) {
     return null;
   }
+
+  // Validate that at least one UTM param exists
+  const hasValidParam = UTM_PARAM_KEYS.some((key) => params[key]);
+  return hasValidParam ? params : null;
 }
 
 /**

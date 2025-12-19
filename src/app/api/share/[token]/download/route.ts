@@ -19,47 +19,63 @@ interface RouteContext {
  * - Success: Image blob with Content-Disposition header
  * - Error: JSON with error message
  */
+import { tryCatch } from "@/lib/try-catch";
+
 export async function GET(request: NextRequest, context: RouteContext) {
-  try {
-    const { token } = await context.params;
-    const type = request.nextUrl.searchParams.get("type");
+  const { data: params, error: paramsError } = await tryCatch(context.params);
+  if (paramsError) {
+    return NextResponse.json(
+      { error: "Invalid parameters" },
+      { status: 400 },
+    );
+  }
+  const { token } = params;
+  const type = request.nextUrl.searchParams.get("type");
 
-    // Validate type parameter
-    if (!type || !["original", "enhanced"].includes(type)) {
-      return NextResponse.json(
-        { error: "Invalid type. Must be 'original' or 'enhanced'" },
-        { status: 400 },
-      );
-    }
+  // Validate type parameter
+  if (!type || !["original", "enhanced"].includes(type)) {
+    return NextResponse.json(
+      { error: "Invalid type. Must be 'original' or 'enhanced'" },
+      { status: 400 },
+    );
+  }
 
-    // Rate limiting by IP (for public access)
-    const ip = request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-    const rateLimitResult = await checkRateLimit(
+  // Rate limiting by IP (for public access)
+  const ip = request.headers.get("x-forwarded-for") ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  const { data: rateLimitResult, error: rateLimitError } = await tryCatch(
+    checkRateLimit(
       `share-download:${ip}`,
       rateLimitConfigs.general,
+    )
+  );
+
+  if (rateLimitError) {
+    console.error("Rate limit check failed:", rateLimitError);
+    // Proceed or block? Let's assume fail-open for now or consistent error
+  }
+
+  if (rateLimitResult?.isLimited) {
+    return NextResponse.json(
+      {
+        error: "Too many download requests",
+        retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          ),
+        },
+      },
     );
+  }
 
-    if (rateLimitResult.isLimited) {
-      return NextResponse.json(
-        {
-          error: "Too many download requests",
-          retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
-          },
-        },
-      );
-    }
-
-    // Validate share token and get image data
-    const image = await prisma.enhancedImage.findUnique({
+  // Validate share token and get image data
+  const { data: image, error: dbError } = await tryCatch(
+    prisma.enhancedImage.findUnique({
       where: { shareToken: token },
       include: {
         enhancementJobs: {
@@ -71,83 +87,81 @@ export async function GET(request: NextRequest, context: RouteContext) {
           take: 1,
         },
       },
-    });
+    })
+  );
 
-    if (!image) {
-      return NextResponse.json(
-        { error: "Image not found" },
-        { status: 404 },
-      );
-    }
-
-    // Get the appropriate URL
-    let url: string | null = null;
-    let filename: string;
-
-    if (type === "enhanced") {
-      const latestEnhancement = image.enhancementJobs[0];
-      if (!latestEnhancement?.enhancedUrl) {
-        return NextResponse.json(
-          { error: "Enhanced image not available" },
-          { status: 404 },
-        );
-      }
-      url = latestEnhancement.enhancedUrl;
-      const tierSuffix = latestEnhancement.tier.toLowerCase().replace(
-        "tier_",
-        "",
-      );
-      filename = `${image.name}_enhanced_${tierSuffix}`;
-    } else {
-      url = image.originalUrl;
-      filename = `${image.name}_original`;
-    }
-
-    // Proxy the download
-    const imageResponse = await fetch(url);
-
-    if (!imageResponse.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch image" },
-        { status: 502 },
-      );
-    }
-
-    // Get content type from response or default to jpeg
-    const contentType = imageResponse.headers.get("Content-Type") ||
-      "image/jpeg";
-
-    // Determine file extension from content type
-    const extensionMap: Record<string, string> = {
-      "image/jpeg": "jpg",
-      "image/png": "png",
-      "image/webp": "webp",
-      "image/gif": "gif",
-    };
-    const extension = extensionMap[contentType] || "jpg";
-
-    // Sanitize filename
-    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9_-]/g, "_");
-
-    // Return the image with download headers
-    return new NextResponse(imageResponse.body, {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${sanitizedFilename}.${extension}"`,
-        "Cache-Control": "private, max-age=3600",
-        "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-      },
-    });
-  } catch (error) {
-    console.error("Error in share download API:", error);
+  if (dbError) {
+    console.error("Database error:", dbError);
     return NextResponse.json(
-      {
-        error: error instanceof Error
-          ? error.message
-          : "Failed to download image",
-      },
+      { error: "Failed to download image" },
       { status: 500 },
     );
   }
+
+  if (!image) {
+    return NextResponse.json(
+      { error: "Image not found" },
+      { status: 404 },
+    );
+  }
+
+  // Get the appropriate URL
+  let url: string | null = null;
+  let filename: string;
+
+  if (type === "enhanced") {
+    const latestEnhancement = image.enhancementJobs[0];
+    if (!latestEnhancement?.enhancedUrl) {
+      return NextResponse.json(
+        { error: "Enhanced image not available" },
+        { status: 404 },
+      );
+    }
+    url = latestEnhancement.enhancedUrl;
+    const tierSuffix = latestEnhancement.tier.toLowerCase().replace(
+      "tier_",
+      "",
+    );
+    filename = `${image.name}_enhanced_${tierSuffix}`;
+  } else {
+    url = image.originalUrl;
+    filename = `${image.name}_original`;
+  }
+
+  // Proxy the download
+  const { data: imageResponse, error: fetchError } = await tryCatch(fetch(url));
+
+  if (fetchError || !imageResponse.ok) {
+    return NextResponse.json(
+      { error: "Failed to fetch image" },
+      { status: 502 },
+    );
+  }
+
+  // Get content type from response or default to jpeg
+  const contentType = imageResponse.headers.get("Content-Type") ||
+    "image/jpeg";
+
+  // Determine file extension from content type
+  const extensionMap: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  const extension = extensionMap[contentType] || "jpg";
+
+  // Sanitize filename
+  const sanitizedFilename = filename.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+  // Return the image with download headers
+  return new NextResponse(imageResponse.body, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename="${sanitizedFilename}.${extension}"`,
+      "Cache-Control": "private, max-age=3600",
+      "X-RateLimit-Remaining": String(rateLimitResult?.remaining ?? 0),
+    },
+  });
 }

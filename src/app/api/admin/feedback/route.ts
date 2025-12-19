@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (adminError) {
-    console.error("Failed to fetch feedback:", adminError);
+    console.error("Admin check failed:", adminError);
     if (
       adminError instanceof Error && adminError.message.includes("Forbidden")
     ) {
@@ -176,7 +176,7 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (adminError) {
-    console.error("Failed to update feedback:", adminError);
+    console.error("Admin check failed:", adminError);
     if (
       adminError instanceof Error && adminError.message.includes("Forbidden")
     ) {

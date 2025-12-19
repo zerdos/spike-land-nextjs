@@ -24,7 +24,17 @@ async function handleGetEmailLogs(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search");
@@ -138,7 +148,17 @@ async function handlePostEmailAction(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 
   const body = await request.json();
   const { action } = body;

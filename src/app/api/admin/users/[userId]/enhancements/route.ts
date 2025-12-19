@@ -23,7 +23,17 @@ async function handleGetUserEnhancements(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 
   const { userId } = await params;
 

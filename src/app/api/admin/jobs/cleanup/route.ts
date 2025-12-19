@@ -38,14 +38,16 @@ export async function POST(request: NextRequest) {
   );
 
   if (adminError) {
-    console.error("Jobs cleanup failed:", adminError);
-    if (adminError.message.includes("Forbidden")) {
+    console.error("Admin check failed:", adminError);
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(
       {
         error: "Failed to cleanup stuck jobs",
-        details: adminError.message,
+        details: adminError instanceof Error ? adminError.message : "Internal Server Error",
       },
       { status: 500 },
     );

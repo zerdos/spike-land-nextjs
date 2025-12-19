@@ -62,6 +62,8 @@ export function encryptToken(plaintext: string): string {
   return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 }
 
+import { tryCatchSync } from "@/lib/try-catch";
+
 /**
  * Decrypt an encrypted token
  *
@@ -89,7 +91,7 @@ export function decryptToken(encryptedData: string): string {
 
   const key = getEncryptionKey();
 
-  try {
+  const { data: decrypted, error } = tryCatchSync<string>(() => {
     const decipher = crypto.createDecipheriv(
       ALGORITHM,
       key,
@@ -97,15 +99,19 @@ export function decryptToken(encryptedData: string): string {
     );
     decipher.setAuthTag(Buffer.from(authTagHex, "hex"));
 
-    let decrypted = decipher.update(encrypted, "hex", "utf8");
-    decrypted += decipher.final("utf8");
-    return decrypted;
-  } catch {
+    let res = decipher.update(encrypted, "hex", "utf8");
+    res += decipher.final("utf8");
+    return res;
+  });
+
+  if (error) {
     // Don't expose crypto details in error message
     throw new Error(
       "Failed to decrypt token. The data may be corrupted or the encryption key may have changed.",
     );
   }
+
+  return decrypted!;
 }
 
 /**
@@ -158,9 +164,11 @@ export function safeEncryptToken(
 ): string {
   if (!plaintext) return plaintext;
 
-  try {
-    return encryptToken(plaintext);
-  } catch (error) {
+  const { data: encrypted, error } = tryCatchSync<string>(() =>
+    encryptToken(plaintext)
+  );
+
+  if (error) {
     // Only catch the "not configured" error, not "wrong length" errors
     if (
       error instanceof Error &&
@@ -179,6 +187,8 @@ export function safeEncryptToken(
     }
     throw error;
   }
+
+  return encrypted!;
 }
 
 /**
@@ -196,9 +206,11 @@ export function safeDecryptToken(data: string): string {
     return data;
   }
 
-  try {
-    return decryptToken(data);
-  } catch (error) {
+  const { data: decrypted, error } = tryCatchSync<string>(() =>
+    decryptToken(data)
+  );
+
+  if (error) {
     // If decryption fails, it might be an old unencrypted token that
     // happens to match the format. Return as-is.
     if (process.env.NODE_ENV === "development") {
@@ -209,4 +221,6 @@ export function safeDecryptToken(data: string): string {
     }
     return data;
   }
+
+  return decrypted!;
 }

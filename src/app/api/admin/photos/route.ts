@@ -34,16 +34,18 @@ export async function GET(request: NextRequest) {
   }
 
   // Check admin access
-  const adminResult = await tryCatch(requireAdminByUserId(session.user.id));
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
-  if (adminResult.error) {
-    const errorMessage = adminResult.error instanceof Error
-      ? adminResult.error.message
+  if (adminError) {
+    const errorMessage = adminError instanceof Error
+      ? adminError.message
       : "Access denied";
+    console.error("Admin check failed:", adminError);
     if (errorMessage.includes("Forbidden")) {
       return NextResponse.json({ error: errorMessage }, { status: 403 });
     }
-    console.error("Admin check failed:", adminResult.error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -69,6 +69,8 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+import { tryCatch } from "@/lib/try-catch";
+
 /**
  * Retry an async operation with exponential backoff
  *
@@ -100,39 +102,40 @@ export async function retryWithBackoff<T>(
   let attempt = 0;
 
   while (attempt < opts.maxAttempts) {
-    try {
-      const data = await operation();
+    const { data, error } = await tryCatch(operation());
+
+    if (!error) {
       return {
         success: true,
         data,
         attempts: attempt + 1,
       };
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      attempt++;
-
-      // Check if we should retry
-      const shouldRetry = opts.shouldRetry(lastError, attempt);
-
-      // If this was the last attempt or we shouldn't retry, throw
-      if (attempt >= opts.maxAttempts || !shouldRetry) {
-        break;
-      }
-
-      // Calculate delay and wait
-      const delayMs = calculateDelay(
-        attempt - 1, // 0-indexed for calculation
-        opts.initialDelayMs,
-        opts.maxDelayMs,
-        opts.backoffMultiplier,
-      );
-
-      // Call retry callback
-      opts.onRetry(lastError, attempt, delayMs);
-
-      // Wait before next attempt
-      await sleep(delayMs);
     }
+
+    lastError = error instanceof Error ? error : new Error(String(error));
+    attempt++;
+
+    // Check if we should retry
+    const shouldRetry = opts.shouldRetry(lastError, attempt);
+
+    // If this was the last attempt or we shouldn't retry, throw
+    if (attempt >= opts.maxAttempts || !shouldRetry) {
+      break;
+    }
+
+    // Calculate delay and wait
+    const delayMs = calculateDelay(
+      attempt - 1, // 0-indexed for calculation
+      opts.initialDelayMs,
+      opts.maxDelayMs,
+      opts.backoffMultiplier,
+    );
+
+    // Call retry callback
+    opts.onRetry(lastError, attempt, delayMs);
+
+    // Wait before next attempt
+    await sleep(delayMs);
   }
 
   return {

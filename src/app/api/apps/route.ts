@@ -2,23 +2,41 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { appCreationSchema } from "@/lib/validations/app";
 import { NextRequest, NextResponse } from "next/server";
-import { ZodError } from "zod";
+
+import { tryCatch } from "@/lib/try-catch";
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    const body = await request.json();
-    const validatedData = appCreationSchema.parse(body);
+  const { data: body, error: jsonError } = await tryCatch(request.json());
 
-    const app = await prisma.app.create({
+  if (jsonError) {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 },
+    );
+  }
+
+  const parseResult = appCreationSchema.safeParse(body);
+
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Validation error", details: parseResult.error.issues },
+      { status: 400 },
+    );
+  }
+
+  const validatedData = parseResult.data;
+
+  const { data: app, error: createError } = await tryCatch(
+    prisma.app.create({
       data: {
         name: validatedData.name,
         description: validatedData.description,
@@ -42,37 +60,32 @@ export async function POST(request: NextRequest) {
         requirements: true,
         monetizationModels: true,
       },
-    });
+    })
+  );
 
-    return NextResponse.json(app, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 },
-      );
-    }
-
-    console.error("Error creating app:", error);
+  if (createError) {
+    console.error("Error creating app:", createError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(app, { status: 201 });
 }
 
 export async function GET() {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    const apps = await prisma.app.findMany({
+  const { data: apps, error: fetchError } = await tryCatch(
+    prisma.app.findMany({
       where: {
         userId: session.user.id,
         status: {
@@ -94,16 +107,18 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    })
+  );
 
-    return NextResponse.json(apps);
-  } catch (error) {
-    console.error("Error fetching apps:", error);
+  if (fetchError) {
+    console.error("Error fetching apps:", fetchError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(apps);
 }
 
 function mapMonetizationModelToEnum(model: string) {

@@ -1,40 +1,34 @@
 import { NextResponse } from "next/server";
 
-interface ImageErrorLog {
-  type: string;
-  versionId: string;
-  tier: string;
-  url: string;
-  timestamp: string;
-}
+import { tryCatch } from "@/lib/try-catch";
 
 export async function POST(request: Request) {
-  try {
-    const body: ImageErrorLog = await request.json();
+  const { data: body, error } = await tryCatch(request.json());
 
-    // Log to server console - this will appear in Vercel logs
-    console.error(
-      "[ENHANCED_IMAGE_LOAD_ERROR]",
-      JSON.stringify(
-        {
-          type: body.type,
-          versionId: body.versionId,
-          tier: body.tier,
-          url: body.url,
-          timestamp: body.timestamp,
-          serverTimestamp: new Date().toISOString(),
-        },
-        null,
-        2,
-      ),
-    );
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[Image Error Logging] Failed to process error log:", error);
+  if (error) {
+    console.error("[Image Error Logging] Failed to parse request body:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to log error" },
-      { status: 500 },
+      { success: false, error: "Invalid JSON body" },
+      { status: 400 },
     );
   }
+
+  // Log to server console - this will appear in Vercel logs
+  console.error(
+    "[ENHANCED_IMAGE_LOAD_ERROR]",
+    JSON.stringify(
+      {
+        type: body.type,
+        versionId: body.versionId,
+        tier: body.tier,
+        url: body.url,
+        timestamp: body.timestamp,
+        serverTimestamp: new Date().toISOString(),
+      },
+      null,
+      2,
+    ),
+  );
+
+  return NextResponse.json({ success: true });
 }
