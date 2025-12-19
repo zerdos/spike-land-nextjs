@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type GalleryImage,
   ImageSelectorDialog,
   ImageSlot,
   MixHistory,
@@ -17,7 +18,7 @@ import { type MixHistoryItem, useMixHistory } from "@/hooks/useMixHistory";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Coins, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Coins, Sparkles, Upload } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useCallback, useState } from "react";
 
@@ -25,10 +26,14 @@ type SelectorTarget = "image1" | "image2" | null;
 
 export function PhotoMixClient() {
   const router = useRouter();
-  const { balance, isLowBalance, isLoading: isBalanceLoading, refetch: refetchBalance } =
-    useTokenBalance({
-      autoRefreshOnFocus: true,
-    });
+  const {
+    balance,
+    isLowBalance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useTokenBalance({
+    autoRefreshOnFocus: true,
+  });
   const { refetch: refetchHistory } = useMixHistory();
 
   // Image selection state
@@ -39,6 +44,7 @@ export function PhotoMixClient() {
   // Processing state
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [isCreatingMix, setIsCreatingMix] = useState(false);
+  const [needsUpload, setNeedsUpload] = useState(false);
 
   // Select tier (default to 1K for quick mixes)
   const [selectedTier] = useState<EnhancementTier>("TIER_1K");
@@ -46,6 +52,9 @@ export function PhotoMixClient() {
 
   const canCreateMix = image1 !== null && image2 !== null && !activeJobId && !isCreatingMix;
   const hasEnoughTokens = balance >= tokenCost;
+
+  // Check if we need to upload images first (both must be gallery images OR we handle uploads)
+  const hasUploadedImages = image1?.type === "upload" || image2?.type === "upload";
 
   const handleImage1Select = useCallback((image: SelectedImage) => {
     setImage1(image);
@@ -55,39 +64,109 @@ export function PhotoMixClient() {
     setImage2(image);
   }, []);
 
-  const handleOpenSelector = useCallback((target: SelectorTarget) => {
+  const handleOpenGallery = useCallback((target: SelectorTarget) => {
     setSelectorTarget(target);
   }, []);
 
   const handleSelectorSelect = useCallback(
-    (image: SelectedImage) => {
+    (selectedImg: { id: string; url: string; name: string; width: number; height: number; }) => {
+      // Convert to GalleryImage type
+      const galleryImage: GalleryImage = {
+        type: "gallery",
+        id: selectedImg.id,
+        url: selectedImg.url,
+        name: selectedImg.name,
+        width: selectedImg.width,
+        height: selectedImg.height,
+      };
+
       if (selectorTarget === "image1") {
-        handleImage1Select(image);
+        handleImage1Select(galleryImage);
       } else if (selectorTarget === "image2") {
-        handleImage2Select(image);
+        handleImage2Select(galleryImage);
       }
       setSelectorTarget(null);
     },
     [selectorTarget, handleImage1Select, handleImage2Select],
   );
 
+  const uploadImageAndGetId = async (
+    image: SelectedImage,
+  ): Promise<string> => {
+    if (image.type === "gallery") {
+      return image.id;
+    }
+
+    // Upload the image first
+    const formData = new FormData();
+    // Convert base64 back to blob
+    const byteCharacters = atob(image.base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: image.mimeType });
+    const file = new File([blob], image.name, { type: image.mimeType });
+
+    formData.append("file", file);
+
+    const uploadResponse = await fetch("/api/images/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json();
+      throw new Error(error.error || "Failed to upload image");
+    }
+
+    const uploadResult = await uploadResponse.json();
+    return uploadResult.image.id;
+  };
+
   const handleCreateMix = useCallback(async () => {
     if (!image1 || !image2) return;
 
     setIsCreatingMix(true);
+    setNeedsUpload(hasUploadedImages);
 
     try {
+      // If either image is an upload, we need to upload it first
+      let targetImageId: string;
+      let blendSource: { imageId?: string; base64?: string; mimeType?: string; };
+
+      if (image1.type === "upload") {
+        // Upload image1 first to use as target
+        targetImageId = await uploadImageAndGetId(image1);
+      } else {
+        targetImageId = image1.id;
+      }
+
+      if (image2.type === "upload") {
+        // For image2, we can either upload it or send as base64
+        // Sending as base64 is simpler for blending
+        blendSource = {
+          base64: image2.base64,
+          mimeType: image2.mimeType,
+        };
+      } else {
+        blendSource = {
+          imageId: image2.id,
+        };
+      }
+
+      setNeedsUpload(false);
+
       const response = await fetch("/api/images/enhance", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          imageId: image1.id, // Target image
+          imageId: targetImageId,
           tier: selectedTier,
-          blendSource: {
-            imageId: image2.id, // Source image for blending
-          },
+          blendSource,
         }),
       });
 
@@ -104,8 +183,9 @@ export function PhotoMixClient() {
       alert(error instanceof Error ? error.message : "Failed to create mix");
     } finally {
       setIsCreatingMix(false);
+      setNeedsUpload(false);
     }
-  }, [image1, image2, selectedTier, refetchBalance]);
+  }, [image1, image2, selectedTier, refetchBalance, hasUploadedImages]);
 
   const handleMixComplete = useCallback(
     (_result: MixResult) => {
@@ -126,15 +206,29 @@ export function PhotoMixClient() {
     handleCreateMix();
   }, [handleCreateMix]);
 
-  const handleHistoryClick = useCallback((mix: MixHistoryItem) => {
-    // Navigate to the result image detail page
-    if (mix.targetImage) {
-      router.push(`/apps/pixel/${mix.targetImage.id}`);
-    }
-  }, [router]);
+  const handleHistoryClick = useCallback(
+    (mix: MixHistoryItem) => {
+      // Navigate to the result image detail page
+      if (mix.targetImage) {
+        router.push(`/apps/pixel/${mix.targetImage.id}`);
+      }
+    },
+    [router],
+  );
 
-  const handleClearImage1 = useCallback(() => setImage1(null), []);
-  const handleClearImage2 = useCallback(() => setImage2(null), []);
+  const handleClearImage1 = useCallback(() => {
+    if (image1?.type === "upload") {
+      URL.revokeObjectURL(image1.url);
+    }
+    setImage1(null);
+  }, [image1]);
+
+  const handleClearImage2 = useCallback(() => {
+    if (image2?.type === "upload") {
+      URL.revokeObjectURL(image2.url);
+    }
+    setImage2(null);
+  }, [image2]);
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4 max-w-4xl">
@@ -188,7 +282,7 @@ export function PhotoMixClient() {
               image={image1}
               onImageSelect={handleImage1Select}
               onImageClear={handleClearImage1}
-              onOpenSelector={() => handleOpenSelector("image1")}
+              onOpenGallery={() => handleOpenGallery("image1")}
               disabled={activeJobId !== null}
             />
             <ImageSlot
@@ -196,7 +290,7 @@ export function PhotoMixClient() {
               image={image2}
               onImageSelect={handleImage2Select}
               onImageClear={handleClearImage2}
-              onOpenSelector={() => handleOpenSelector("image2")}
+              onOpenGallery={() => handleOpenGallery("image2")}
               disabled={activeJobId !== null}
             />
           </div>
@@ -212,11 +306,12 @@ export function PhotoMixClient() {
               ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating Mix...
+                  {needsUpload ? "Uploading images..." : "Creating Mix..."}
                 </>
               )
               : (
                 <>
+                  {hasUploadedImages && <Upload className="mr-2 h-4 w-4" />}
                   <Sparkles className="mr-2 h-4 w-4" />
                   Create Mix ({tokenCost} tokens)
                 </>
@@ -268,9 +363,9 @@ export function PhotoMixClient() {
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">How it works</h3>
                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                  <li>Select your first input photo</li>
-                  <li>Select a second photo to blend with</li>
-                  <li>Click &quot;Create Mix&quot; to generate</li>
+                  <li>Drop or select your first photo</li>
+                  <li>Drop or select a second photo</li>
+                  <li>Click &quot;Create Mix&quot; to blend</li>
                   <li>Download your unique creation</li>
                 </ol>
               </div>
@@ -309,7 +404,13 @@ export function PhotoMixClient() {
         open={selectorTarget !== null}
         onOpenChange={(open) => !open && setSelectorTarget(null)}
         onSelect={handleSelectorSelect}
-        excludeImageId={selectorTarget === "image1" ? image2?.id : image1?.id}
+        excludeImageId={selectorTarget === "image1"
+          ? image2?.type === "gallery"
+            ? image2.id
+            : undefined
+          : image1?.type === "gallery"
+          ? image1.id
+          : undefined}
         title={selectorTarget === "image1"
           ? "Select Input Photo 1"
           : "Select Input Photo 2"}

@@ -99,6 +99,7 @@ export function ImageSelectorDialog({
   const handleSelect = useCallback(
     (image: UserImage) => {
       onSelect({
+        type: "gallery",
         id: image.id,
         url: image.url,
         name: image.name,
