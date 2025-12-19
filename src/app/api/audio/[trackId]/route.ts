@@ -29,7 +29,11 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (authError) {
     console.error("Error downloading audio:", authError);
     return NextResponse.json(
-      { error: authError instanceof Error ? authError.message : "Internal server error" },
+      {
+        error: authError instanceof Error
+          ? authError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -52,7 +56,11 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (paramsError) {
     console.error("Error downloading audio:", paramsError);
     return NextResponse.json(
-      { error: paramsError instanceof Error ? paramsError.message : "Internal server error" },
+      {
+        error: paramsError instanceof Error
+          ? paramsError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -77,7 +85,11 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (projectError) {
     console.error("Error downloading audio:", projectError);
     return NextResponse.json(
-      { error: projectError instanceof Error ? projectError.message : "Internal server error" },
+      {
+        error: projectError instanceof Error
+          ? projectError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -92,11 +104,17 @@ export async function GET(request: Request, { params }: RouteParams) {
   const key = generateAudioKey(session.user.id, projectId, trackId, format);
 
   // Download from R2
-  const { data: buffer, error: downloadError } = await tryCatch(downloadAudioFromR2(key));
+  const { data: buffer, error: downloadError } = await tryCatch(
+    downloadAudioFromR2(key),
+  );
   if (downloadError) {
     console.error("Error downloading audio:", downloadError);
     return NextResponse.json(
-      { error: downloadError instanceof Error ? downloadError.message : "Internal server error" },
+      {
+        error: downloadError instanceof Error
+          ? downloadError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -128,7 +146,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   if (authError) {
     console.error("Error deleting audio:", authError);
     return NextResponse.json(
-      { error: authError instanceof Error ? authError.message : "Internal server error" },
+      {
+        error: authError instanceof Error
+          ? authError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -151,7 +173,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   if (paramsError) {
     console.error("Error deleting audio:", paramsError);
     return NextResponse.json(
-      { error: paramsError instanceof Error ? paramsError.message : "Internal server error" },
+      {
+        error: paramsError instanceof Error
+          ? paramsError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -176,7 +202,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   if (projectError) {
     console.error("Error deleting audio:", projectError);
     return NextResponse.json(
-      { error: projectError instanceof Error ? projectError.message : "Internal server error" },
+      {
+        error: projectError instanceof Error
+          ? projectError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -191,11 +221,17 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   const key = generateAudioKey(session.user.id, projectId, trackId, format);
 
   // Delete from R2
-  const { data: result, error: deleteError } = await tryCatch(deleteAudioFromR2(key));
+  const { data: result, error: deleteError } = await tryCatch(
+    deleteAudioFromR2(key),
+  );
   if (deleteError) {
     console.error("Error deleting audio:", deleteError);
     return NextResponse.json(
-      { error: deleteError instanceof Error ? deleteError.message : "Internal server error" },
+      {
+        error: deleteError instanceof Error
+          ? deleteError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -261,7 +297,9 @@ export async function HEAD(request: Request, { params }: RouteParams) {
   const key = generateAudioKey(session.user.id, projectId, trackId, format);
 
   // Get metadata from R2
-  const { data: metadata, error: metadataError } = await tryCatch(getAudioMetadata(key));
+  const { data: metadata, error: metadataError } = await tryCatch(
+    getAudioMetadata(key),
+  );
   if (metadataError) {
     return new NextResponse(null, { status: 500 });
   }

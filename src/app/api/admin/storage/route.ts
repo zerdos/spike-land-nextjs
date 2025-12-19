@@ -41,7 +41,9 @@ export async function GET() {
 
   if (adminError) {
     console.error("Failed to fetch storage stats:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(
@@ -69,7 +71,9 @@ export async function GET() {
   }
 
   // Get storage statistics from R2
-  const { data: result, error: statsError } = await tryCatch(listR2StorageStats());
+  const { data: result, error: statsError } = await tryCatch(
+    listR2StorageStats(),
+  );
 
   if (statsError) {
     console.error("Failed to fetch storage stats:", statsError);

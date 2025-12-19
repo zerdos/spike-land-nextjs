@@ -32,7 +32,9 @@ export async function GET() {
 
   if (adminError) {
     console.error("Failed to fetch dashboard metrics:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(

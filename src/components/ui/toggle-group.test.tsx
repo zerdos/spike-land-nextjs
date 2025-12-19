@@ -33,7 +33,11 @@ describe("ToggleGroup", () => {
   it("allows multiple selection", () => {
     const onChange = vi.fn();
     render(
-      <ToggleGroup type="multiple" defaultValue={["a"]} onValueChange={onChange}>
+      <ToggleGroup
+        type="multiple"
+        defaultValue={["a"]}
+        onValueChange={onChange}
+      >
         <ToggleGroupItem value="a">Option A</ToggleGroupItem>
         <ToggleGroupItem value="b">Option B</ToggleGroupItem>
       </ToggleGroup>,

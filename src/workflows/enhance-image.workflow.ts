@@ -286,7 +286,13 @@ async function autoCropStep(
   }
 
   const { data, error } = await tryCatch(
-    performCropOperations(imageBuffer, cropRegion, originalR2Key, jobId, mimeType),
+    performCropOperations(
+      imageBuffer,
+      cropRegion,
+      originalR2Key,
+      jobId,
+      mimeType,
+    ),
   );
 
   if (error) {

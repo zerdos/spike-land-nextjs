@@ -149,7 +149,9 @@ export async function POST(request: NextRequest) {
     if (!parseResult.success) {
       const firstError = parseResult.error.issues[0];
       return NextResponse.json(
-        { error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}` },
+        {
+          error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}`,
+        },
         { status: 400 },
       );
     }

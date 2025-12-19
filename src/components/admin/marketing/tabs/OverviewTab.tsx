@@ -47,7 +47,14 @@ interface OverviewData {
   }>;
 }
 
-const TRAFFIC_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const TRAFFIC_COLORS = [
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+];
 
 interface OverviewTabProps {
   className?: string;
@@ -58,8 +65,12 @@ export function OverviewTab({ className }: OverviewTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [datePreset, setDatePreset] = useState<DateRangePreset>("30d");
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromPreset("30d"));
-  const [attribution, setAttribution] = useState<AttributionModel>("first-touch");
+  const [dateRange, setDateRange] = useState<DateRange>(
+    getDateRangeFromPreset("30d"),
+  );
+  const [attribution, setAttribution] = useState<AttributionModel>(
+    "first-touch",
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -67,14 +78,18 @@ export function OverviewTab({ className }: OverviewTabProps) {
 
     try {
       // Convert frontend format (first-touch) to API format (FIRST_TOUCH)
-      const apiAttributionModel = attribution === "first-touch" ? "FIRST_TOUCH" : "LAST_TOUCH";
+      const apiAttributionModel = attribution === "first-touch"
+        ? "FIRST_TOUCH"
+        : "LAST_TOUCH";
       const params = new URLSearchParams({
         startDate: formatDateForAPI(dateRange.startDate),
         endDate: formatDateForAPI(dateRange.endDate),
         attributionModel: apiAttributionModel,
       });
 
-      const response = await fetch(`/api/admin/marketing/analytics/overview?${params}`);
+      const response = await fetch(
+        `/api/admin/marketing/analytics/overview?${params}`,
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch overview data");

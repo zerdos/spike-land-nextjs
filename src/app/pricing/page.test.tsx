@@ -11,7 +11,11 @@ vi.mock("next-auth/react", () => ({
 // Mock next/image
 vi.mock("next/image", () => ({
   default: function MockImage(
-    { src, alt, ...props }: { src: string; alt: string; [key: string]: unknown; },
+    { src, alt, ...props }: {
+      src: string;
+      alt: string;
+      [key: string]: unknown;
+    },
   ) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} {...props} />;
@@ -23,7 +27,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Helper to setup fetch mocks for authenticated users
-function setupAuthenticatedFetchMock(checkoutResponse?: { url?: string; error?: string; }) {
+function setupAuthenticatedFetchMock(
+  checkoutResponse?: { url?: string; error?: string; },
+) {
   mockFetch.mockImplementation((url: string) => {
     if (url === "/api/tokens/balance") {
       return Promise.resolve({
@@ -33,7 +39,10 @@ function setupAuthenticatedFetchMock(checkoutResponse?: { url?: string; error?: 
     }
     if (url === "/api/stripe/checkout") {
       return Promise.resolve({
-        json: () => Promise.resolve(checkoutResponse ?? { url: "https://checkout.stripe.com/123" }),
+        json: () =>
+          Promise.resolve(
+            checkoutResponse ?? { url: "https://checkout.stripe.com/123" },
+          ),
       });
     }
     return Promise.reject(new Error(`Unexpected fetch: ${url}`));

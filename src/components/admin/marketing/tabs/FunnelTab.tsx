@@ -50,7 +50,9 @@ export function FunnelTab({ className }: FunnelTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [datePreset, setDatePreset] = useState<DateRangePreset>("30d");
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromPreset("30d"));
+  const [dateRange, setDateRange] = useState<DateRange>(
+    getDateRangeFromPreset("30d"),
+  );
   const [selectedCampaign, setSelectedCampaign] = useState<string>("all");
 
   const fetchData = useCallback(async () => {
@@ -67,7 +69,9 @@ export function FunnelTab({ className }: FunnelTabProps) {
         params.set("utmCampaign", selectedCampaign);
       }
 
-      const response = await fetch(`/api/admin/marketing/analytics/funnel?${params}`);
+      const response = await fetch(
+        `/api/admin/marketing/analytics/funnel?${params}`,
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch funnel data");
@@ -164,7 +168,9 @@ export function FunnelTab({ className }: FunnelTabProps) {
                           <div className="flex items-center justify-between text-white">
                             <div>
                               <p className="font-semibold">{stage.name}</p>
-                              <p className="text-2xl font-bold">{stage.count.toLocaleString()}</p>
+                              <p className="text-2xl font-bold">
+                                {stage.count.toLocaleString()}
+                              </p>
                             </div>
                             <div className="text-right">
                               {index > 0 && (
@@ -197,7 +203,8 @@ export function FunnelTab({ className }: FunnelTabProps) {
                             </svg>
                             <span>
                               {stage.dropoffRate.toFixed(1)}% drop-off (
-                              {(stage.count - (data.stages[index + 1]?.count ?? 0))
+                              {(stage.count -
+                                (data.stages[index + 1]?.count ?? 0))
                                 .toLocaleString()} users)
                             </span>
                           </div>
@@ -217,24 +224,30 @@ export function FunnelTab({ className }: FunnelTabProps) {
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">Total Visitors</p>
-              <p className="text-2xl font-bold">{data.stages[0]?.count.toLocaleString() || 0}</p>
+              <p className="text-2xl font-bold">
+                {data.stages[0]?.count.toLocaleString() || 0}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">Total Purchases</p>
               <p className="text-2xl font-bold">
-                {data.stages[data.stages.length - 1]?.count.toLocaleString() || 0}
+                {data.stages[data.stages.length - 1]?.count.toLocaleString() ||
+                  0}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Overall Conversion Rate</p>
+              <p className="text-sm text-muted-foreground">
+                Overall Conversion Rate
+              </p>
               <p className="text-2xl font-bold">
                 {data.stages[0]?.count
                   ? (
-                    ((data.stages[data.stages.length - 1]?.count ?? 0) / data.stages[0].count) * 100
+                    ((data.stages[data.stages.length - 1]?.count ?? 0) /
+                      data.stages[0].count) * 100
                   ).toFixed(2)
                   : 0}%
               </p>

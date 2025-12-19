@@ -57,7 +57,9 @@ function formatTimeRemaining(ms: number): string {
 export default function PricingPage() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
-  const [timeUntilNextToken, setTimeUntilNextToken] = useState<number | null>(null);
+  const [timeUntilNextToken, setTimeUntilNextToken] = useState<number | null>(
+    null,
+  );
   const isAuthenticated = status === "authenticated" && session?.user;
 
   // Fetch token balance for logged-in users to get regeneration time
@@ -150,7 +152,9 @@ export default function PricingPage() {
           <CardHeader className="text-center pb-2">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Gift className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl">Free Tokens Every 15 Minutes!</CardTitle>
+              <CardTitle className="text-2xl">
+                Free Tokens Every 15 Minutes!
+              </CardTitle>
             </div>
             <CardDescription className="text-base">
               No credit card required. Just sign in and start enhancing your photos.
@@ -196,7 +200,9 @@ export default function PricingPage() {
             {/* Next Token Countdown for logged in users */}
             {isAuthenticated && (
               <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <p className="text-sm text-muted-foreground mb-1">Your current balance</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Your current balance
+                </p>
                 <p className="text-2xl font-bold text-primary mb-2">
                   {balanceLoading ? "..." : `${balance} tokens`}
                 </p>
@@ -342,19 +348,19 @@ export default function PricingPage() {
                           isPopular && "bg-primary hover:bg-primary/90",
                           isBestValue && "bg-green-500 hover:bg-green-600",
                         )}
-                        variant={isPopular || isBestValue ? "default" : "outline"}
+                        variant={isPopular || isBestValue
+                          ? "default"
+                          : "outline"}
                         disabled={loading === id}
                         onClick={() => handlePurchase(id)}
                         data-testid={`buy-button-${id}`}
                       >
-                        {loading === id
-                          ? "Redirecting to checkout..."
-                          : (
-                            <>
-                              <Zap className="h-4 w-4 mr-1.5" />
-                              Buy Now
-                            </>
-                          )}
+                        {loading === id ? "Redirecting to checkout..." : (
+                          <>
+                            <Zap className="h-4 w-4 mr-1.5" />
+                            Buy Now
+                          </>
+                        )}
                       </Button>
                     </CardFooter>
                   )}

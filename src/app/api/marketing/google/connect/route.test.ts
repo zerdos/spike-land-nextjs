@@ -5,7 +5,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock modules before importing the route
-const mockGetAuthUrl = vi.fn().mockReturnValue("https://accounts.google.com/oauth");
+const mockGetAuthUrl = vi.fn().mockReturnValue(
+  "https://accounts.google.com/oauth",
+);
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),

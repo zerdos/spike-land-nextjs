@@ -1182,7 +1182,9 @@ describe("AuthButtons Component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/this account was created with google, facebook, or github/i),
+          screen.getByText(
+            /this account was created with google, facebook, or github/i,
+          ),
         ).toBeInTheDocument();
       });
     });

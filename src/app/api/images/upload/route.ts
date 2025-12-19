@@ -148,7 +148,10 @@ async function handleUpload(
   // Validate that the tier has a defined cost
   const tokenCost = ENHANCEMENT_COSTS[defaultTier];
   if (tokenCost === undefined) {
-    requestLogger.error("Invalid enhancement tier", new Error(`Unknown tier: ${defaultTier}`));
+    requestLogger.error(
+      "Invalid enhancement tier",
+      new Error(`Unknown tier: ${defaultTier}`),
+    );
     return NextResponse.json(
       { error: "Invalid enhancement tier configuration" },
       { status: 500, headers: { "X-Request-ID": requestId } },
@@ -162,7 +165,12 @@ async function handleUpload(
     amount: tokenCost,
     source: "image_upload_enhancement",
     sourceId: `pending-${requestId}`, // Temporary ID until image is created
-    metadata: { tier: defaultTier, requestId, albumId: albumId || null, status: "pending" },
+    metadata: {
+      tier: defaultTier,
+      requestId,
+      albumId: albumId || null,
+      status: "pending",
+    },
   });
 
   if (!consumeResult.success) {
@@ -325,7 +333,9 @@ async function handleUpload(
       if (updateError) {
         requestLogger.error(
           "Failed to store workflowRunId",
-          updateError instanceof Error ? updateError : new Error(String(updateError)),
+          updateError instanceof Error
+            ? updateError
+            : new Error(String(updateError)),
           { jobId: job.id },
         );
       }
@@ -336,7 +346,9 @@ async function handleUpload(
     });
   } else {
     // Development: Run enhancement directly
-    requestLogger.info("Running enhancement directly (dev mode)", { jobId: job.id });
+    requestLogger.info("Running enhancement directly (dev mode)", {
+      jobId: job.id,
+    });
     enhanceImageDirect(enhancementInput).catch((error) => {
       requestLogger.error(
         "Direct enhancement failed",

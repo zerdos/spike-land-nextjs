@@ -146,10 +146,13 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
       }
     }
 
-    const client = createMarketingClient(account.platform as MarketingPlatform, {
-      accessToken: decryptToken(account.accessToken),
-      customerId: account.accountId,
-    });
+    const client = createMarketingClient(
+      account.platform as MarketingPlatform,
+      {
+        accessToken: decryptToken(account.accessToken),
+        customerId: account.accountId,
+      },
+    );
 
     // Fetch campaigns
     const { data: campaigns, error: campaignsError } = await tryCatch(

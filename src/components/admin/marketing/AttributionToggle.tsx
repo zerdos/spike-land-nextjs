@@ -17,7 +17,12 @@ export function AttributionToggle({
   className,
 }: AttributionToggleProps) {
   return (
-    <div className={cn("flex items-center gap-1 rounded-lg bg-muted p-1", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-lg bg-muted p-1",
+        className,
+      )}
+    >
       <Button
         variant="ghost"
         size="sm"

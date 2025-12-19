@@ -37,7 +37,9 @@ export async function ensureUserAlbums(userId: string): Promise<UserAlbums> {
   );
 
   if (findError) {
-    throw new Error(`Failed to fetch albums for user ${userId}: ${findError.message}`);
+    throw new Error(
+      `Failed to fetch albums for user ${userId}: ${findError.message}`,
+    );
   }
 
   const existingPrivate = existingAlbums.find(
@@ -80,7 +82,9 @@ export async function ensureUserAlbums(userId: string): Promise<UserAlbums> {
     );
 
     if (createError) {
-      throw new Error(`Failed to create albums for user ${userId}: ${createError.message}`);
+      throw new Error(
+        `Failed to create albums for user ${userId}: ${createError.message}`,
+      );
     }
   }
 
@@ -109,7 +113,9 @@ export async function ensureUserAlbums(userId: string): Promise<UserAlbums> {
   );
 
   if (fetchError) {
-    throw new Error(`Failed to fetch albums for user ${userId}: ${fetchError.message}`);
+    throw new Error(
+      `Failed to fetch albums for user ${userId}: ${fetchError.message}`,
+    );
   }
 
   const [privateAlbum, publicAlbum] = albums;

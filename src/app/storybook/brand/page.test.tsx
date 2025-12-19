@@ -17,16 +17,16 @@ vi.mock("@/components/brand", () => ({
 
 // Mock avatar component
 vi.mock("@/components/ui/avatar", () => ({
-  Avatar: ({ children, className }: { children: React.ReactNode; className?: string; }) => (
-    <div data-testid="avatar" className={className}>{children}</div>
-  ),
+  Avatar: (
+    { children, className }: { children: React.ReactNode; className?: string; },
+  ) => <div data-testid="avatar" className={className}>{children}</div>,
   AvatarImage: ({ src, alt }: { src: string; alt: string; }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img data-testid="avatar-image" src={src} alt={alt} />
   ),
-  AvatarFallback: ({ children, className }: { children: React.ReactNode; className?: string; }) => (
-    <span data-testid="avatar-fallback" className={className}>{children}</span>
-  ),
+  AvatarFallback: (
+    { children, className }: { children: React.ReactNode; className?: string; },
+  ) => <span data-testid="avatar-fallback" className={className}>{children}</span>,
 }));
 
 import BrandPage from "./page";
@@ -41,7 +41,9 @@ describe("BrandPage", () => {
     it("should render the section description", () => {
       render(<BrandPage />);
       expect(
-        screen.getByText(/the pixel logo represents transformation and digital magic/i),
+        screen.getByText(
+          /the pixel logo represents transformation and digital magic/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -64,7 +66,8 @@ describe("BrandPage", () => {
     it("should render complete matrix card", () => {
       render(<BrandPage />);
       expect(screen.getByText("Complete Matrix")).toBeInTheDocument();
-      expect(screen.getByText(/all size and variant combinations/i)).toBeInTheDocument();
+      expect(screen.getByText(/all size and variant combinations/i))
+        .toBeInTheDocument();
     });
 
     it("should render icon only card", () => {

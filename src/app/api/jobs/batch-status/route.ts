@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: body, error: parseError } = await tryCatch<BatchStatusRequest>(request.json());
+  const { data: body, error: parseError } = await tryCatch<BatchStatusRequest>(
+    request.json(),
+  );
 
   if (parseError) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });

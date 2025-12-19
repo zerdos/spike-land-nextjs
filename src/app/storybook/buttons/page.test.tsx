@@ -21,18 +21,25 @@ describe("ButtonsPage", () => {
     it("should render variants card", () => {
       render(<ButtonsPage />);
       expect(screen.getByText("Variants")).toBeInTheDocument();
-      expect(screen.getByText(/different button styles for various contexts/i)).toBeInTheDocument();
+      expect(screen.getByText(/different button styles for various contexts/i))
+        .toBeInTheDocument();
     });
 
     it("should render all button variants", () => {
       render(<ButtonsPage />);
       // Multiple buttons with same text exist due to complete matrix, use getAllBy
-      expect(screen.getAllByRole("button", { name: "default" }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole("button", { name: "secondary" }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole("button", { name: "outline" }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole("button", { name: "ghost" }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole("button", { name: "destructive" }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole("button", { name: "link" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "default" }).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "secondary" }).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "outline" }).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "ghost" }).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "destructive" }).length)
+        .toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "link" }).length)
+        .toBeGreaterThan(0);
     });
   });
 
@@ -48,12 +55,14 @@ describe("ButtonsPage", () => {
     it("should render states card", () => {
       render(<ButtonsPage />);
       expect(screen.getByText("States")).toBeInTheDocument();
-      expect(screen.getByText(/button interaction states/i)).toBeInTheDocument();
+      expect(screen.getByText(/button interaction states/i))
+        .toBeInTheDocument();
     });
 
     it("should render default button", () => {
       render(<ButtonsPage />);
-      expect(screen.getByRole("button", { name: "Default" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Default" }))
+        .toBeInTheDocument();
     });
 
     it("should render disabled button", () => {
@@ -67,7 +76,9 @@ describe("ButtonsPage", () => {
       render(<ButtonsPage />);
       expect(screen.getByText("Loading States")).toBeInTheDocument();
       expect(
-        screen.getByText(/buttons with loading indicator for async operations/i),
+        screen.getByText(
+          /buttons with loading indicator for async operations/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -76,7 +87,8 @@ describe("ButtonsPage", () => {
     it("should render complete matrix card", () => {
       render(<ButtonsPage />);
       expect(screen.getByText("Complete Matrix")).toBeInTheDocument();
-      expect(screen.getByText(/all variant and size combinations/i)).toBeInTheDocument();
+      expect(screen.getByText(/all variant and size combinations/i))
+        .toBeInTheDocument();
     });
 
     it("should render a table with variants and sizes", () => {

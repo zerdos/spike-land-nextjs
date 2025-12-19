@@ -469,7 +469,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     fileInputRef.current?.click();
   };
 
-  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length > 0) {
       await upload(files);
@@ -881,7 +883,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     onClick={(e) => {
                       if (!isSelectionMode && !draggedImageId) {
                         e.stopPropagation();
-                        router.push(ROUTES.imageDetail(image.id, `/albums/${albumId}`));
+                        router.push(
+                          ROUTES.imageDetail(image.id, `/albums/${albumId}`),
+                        );
                       }
                     }}
                   >

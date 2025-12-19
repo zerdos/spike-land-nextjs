@@ -14,7 +14,9 @@ export async function GET(
     console.error("Error in GET image API:", authError);
     return NextResponse.json(
       {
-        error: authError instanceof Error ? authError.message : "Failed to fetch image",
+        error: authError instanceof Error
+          ? authError.message
+          : "Failed to fetch image",
       },
       { status: 500 },
     );
@@ -44,7 +46,9 @@ export async function GET(
     console.error("Error in GET image API:", findError);
     return NextResponse.json(
       {
-        error: findError instanceof Error ? findError.message : "Failed to fetch image",
+        error: findError instanceof Error
+          ? findError.message
+          : "Failed to fetch image",
       },
       { status: 500 },
     );
@@ -113,7 +117,9 @@ export async function DELETE(
   if (authError) {
     console.error("Error in delete API:", authError);
     return NextResponse.json(
-      { error: authError instanceof Error ? authError.message : "Delete failed" },
+      {
+        error: authError instanceof Error ? authError.message : "Delete failed",
+      },
       { status: 500 },
     );
   }
@@ -137,7 +143,9 @@ export async function DELETE(
   if (findError) {
     console.error("Error in delete API:", findError);
     return NextResponse.json(
-      { error: findError instanceof Error ? findError.message : "Delete failed" },
+      {
+        error: findError instanceof Error ? findError.message : "Delete failed",
+      },
       { status: 500 },
     );
   }
@@ -196,7 +204,11 @@ export async function DELETE(
   if (deleteError) {
     console.error("Error in delete API:", deleteError);
     return NextResponse.json(
-      { error: deleteError instanceof Error ? deleteError.message : "Delete failed" },
+      {
+        error: deleteError instanceof Error
+          ? deleteError.message
+          : "Delete failed",
+      },
       { status: 500 },
     );
   }

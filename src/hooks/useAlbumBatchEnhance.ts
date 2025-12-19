@@ -258,7 +258,10 @@ export function useAlbumBatchEnhance({
           response.json(),
         );
         const errorMessage = errorData?.error || "Batch enhancement failed";
-        console.error("Error starting batch enhancement:", new Error(errorMessage));
+        console.error(
+          "Error starting batch enhancement:",
+          new Error(errorMessage),
+        );
         setIsProcessing(false);
 
         if (onError && !isCancelledRef.current) {

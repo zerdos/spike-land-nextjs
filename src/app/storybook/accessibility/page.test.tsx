@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock ContrastCheckerDemo component
 vi.mock("@/components/storybook", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@/components/storybook")>();
+  const original = await importOriginal<
+    typeof import("@/components/storybook")
+  >();
   return {
     ...original,
     ContrastCheckerDemo: () => <div data-testid="contrast-checker-demo">ContrastCheckerDemo</div>,
@@ -22,7 +24,9 @@ describe("AccessibilityPage", () => {
     it("should render the section description", () => {
       render(<AccessibilityPage />);
       expect(
-        screen.getByText(/tools and guidelines for ensuring accessible components/i),
+        screen.getByText(
+          /tools and guidelines for ensuring accessible components/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -31,7 +35,11 @@ describe("AccessibilityPage", () => {
     it("should render color contrast checker card", () => {
       render(<AccessibilityPage />);
       expect(screen.getByText("Color Contrast Checker")).toBeInTheDocument();
-      expect(screen.getByText(/test color combinations against wcag 2\.1 guidelines/i))
+      expect(
+        screen.getByText(
+          /test color combinations against wcag 2\.1 guidelines/i,
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -46,7 +54,9 @@ describe("AccessibilityPage", () => {
       render(<AccessibilityPage />);
       expect(screen.getByText("Keyboard Navigation")).toBeInTheDocument();
       expect(
-        screen.getByText(/expected keyboard behavior for interactive components/i),
+        screen.getByText(
+          /expected keyboard behavior for interactive components/i,
+        ),
       ).toBeInTheDocument();
     });
 
@@ -61,9 +71,12 @@ describe("AccessibilityPage", () => {
 
     it("should render test area buttons", () => {
       render(<AccessibilityPage />);
-      expect(screen.getByRole("button", { name: "Button 1" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Button 2" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Button 3" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Button 1" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Button 2" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Button 3" }))
+        .toBeInTheDocument();
     });
   });
 
@@ -71,7 +84,8 @@ describe("AccessibilityPage", () => {
     it("should render ARIA attributes card", () => {
       render(<AccessibilityPage />);
       expect(screen.getByText("ARIA Attributes")).toBeInTheDocument();
-      expect(screen.getByText(/key aria attributes used in our components/i)).toBeInTheDocument();
+      expect(screen.getByText(/key aria attributes used in our components/i))
+        .toBeInTheDocument();
     });
 
     it("should render ARIA attribute examples", () => {
@@ -88,7 +102,9 @@ describe("AccessibilityPage", () => {
       render(<AccessibilityPage />);
       expect(screen.getByText("Animation Tokens")).toBeInTheDocument();
       expect(
-        screen.getByText(/css custom properties for consistent animation durations/i),
+        screen.getByText(
+          /css custom properties for consistent animation durations/i,
+        ),
       ).toBeInTheDocument();
     });
 

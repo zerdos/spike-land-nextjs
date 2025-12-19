@@ -285,7 +285,10 @@ describe("coverage-helper", () => {
         "high-coverage.js": {
           path: "high-coverage.js",
           statementMap: {
-            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
+            "0": {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 10 },
+            },
           },
           fnMap: {},
           branchMap: {},
@@ -296,7 +299,10 @@ describe("coverage-helper", () => {
         "low-coverage.js": {
           path: "low-coverage.js",
           statementMap: {
-            "0": { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
+            "0": {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 10 },
+            },
           },
           fnMap: {},
           branchMap: {},

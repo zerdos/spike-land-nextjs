@@ -538,7 +538,9 @@ export async function analyzeImageV2(
   if (analysisError) {
     console.warn(
       "Vision analysis failed, using fallback:",
-      analysisError instanceof Error ? analysisError.message : String(analysisError),
+      analysisError instanceof Error
+        ? analysisError.message
+        : String(analysisError),
     );
     structuredAnalysis = getDefaultAnalysis();
   } else {
@@ -711,7 +713,9 @@ export async function enhanceImageWithGemini(
       console.error("Failed to initiate Gemini API stream:", streamInitError);
       throw new Error(
         `Failed to start image enhancement: ${
-          streamInitError instanceof Error ? streamInitError.message : "Unknown error"
+          streamInitError instanceof Error
+            ? streamInitError.message
+            : "Unknown error"
         }`,
       );
     }
@@ -774,7 +778,10 @@ export async function enhanceImageWithGemini(
         if (timedOut) {
           throw chunkError; // Re-throw timeout error
         }
-        console.error(`Error processing stream at chunk ${chunkCount}:`, chunkError);
+        console.error(
+          `Error processing stream at chunk ${chunkCount}:`,
+          chunkError,
+        );
         throw new Error(
           `Stream processing failed: ${
             chunkError instanceof Error ? chunkError.message : "Unknown error"
@@ -980,7 +987,9 @@ async function processGeminiStream(
     console.error("Failed to initiate Gemini API stream:", streamInitError);
     throw new Error(
       `Failed to start image generation: ${
-        streamInitError instanceof Error ? streamInitError.message : "Unknown error"
+        streamInitError instanceof Error
+          ? streamInitError.message
+          : "Unknown error"
       }`,
     );
   }
@@ -1041,7 +1050,10 @@ async function processGeminiStream(
       if (timedOut) {
         throw chunkError;
       }
-      console.error(`Error processing stream at chunk ${chunkCount}:`, chunkError);
+      console.error(
+        `Error processing stream at chunk ${chunkCount}:`,
+        chunkError,
+      );
       throw new Error(
         `Stream processing failed: ${
           chunkError instanceof Error ? chunkError.message : "Unknown error"

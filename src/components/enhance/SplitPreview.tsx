@@ -60,7 +60,8 @@ export function SplitPreview({
   >(null);
 
   // Auto-detect dimensions if not provided (or invalid)
-  const shouldAutoDetect = width === undefined || height === undefined || !Number.isFinite(width) ||
+  const shouldAutoDetect = width === undefined || height === undefined ||
+    !Number.isFinite(width) ||
     !Number.isFinite(height) || width <= 0 || height <= 0;
 
   useEffect(() => {
@@ -68,7 +69,10 @@ export function SplitPreview({
 
     const img = new window.Image();
     img.onload = () => {
-      setDetectedDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+      setDetectedDimensions({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
     };
     img.src = originalUrl;
   }, [originalUrl, shouldAutoDetect]);

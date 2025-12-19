@@ -21,7 +21,10 @@ const Switch = React.forwardRef<
     <div className="relative w-full h-full flex items-center justify-between px-1.5">
       {/* ON State Indicator */}
       <div className="flex items-center justify-center opacity-0 transition-opacity duration-200 group-data-[state=checked]:opacity-100">
-        <Check className="h-3.5 w-3.5 text-primary-foreground font-bold" strokeWidth={3} />
+        <Check
+          className="h-3.5 w-3.5 text-primary-foreground font-bold"
+          strokeWidth={3}
+        />
       </div>
 
       {/* OFF State Indicator */}

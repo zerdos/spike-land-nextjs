@@ -475,7 +475,9 @@ export async function validateReferralAfterVerification(
       return {
         success: false,
         shouldGrantRewards: false,
-        error: updateError instanceof Error ? updateError.message : "Unknown error",
+        error: updateError instanceof Error
+          ? updateError.message
+          : "Unknown error",
       };
     }
 

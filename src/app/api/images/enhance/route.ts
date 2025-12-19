@@ -287,12 +287,14 @@ export async function POST(request: NextRequest) {
   });
 
   // Track enhancement conversion attribution for campaign analytics (first enhancement only)
-  await attributeConversion(session.user.id, "ENHANCEMENT", tokenCost).catch((error) => {
-    requestLogger.warn("Failed to track enhancement attribution", {
-      userId: session.user.id,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  });
+  await attributeConversion(session.user.id, "ENHANCEMENT", tokenCost).catch(
+    (error) => {
+      requestLogger.warn("Failed to track enhancement attribution", {
+        userId: session.user.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    },
+  );
 
   const enhancementInput: EnhanceImageInput = {
     jobId: job.id,

@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock ColorSwatch component
 vi.mock("@/components/storybook", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@/components/storybook")>();
+  const original = await importOriginal<
+    typeof import("@/components/storybook")
+  >();
   return {
     ...original,
     ColorSwatch: ({ name }: { name: string; }) => <div data-testid="color-swatch">{name}</div>,
@@ -22,7 +24,9 @@ describe("ColorsPage", () => {
     it("should render the section description", () => {
       render(<ColorsPage />);
       expect(
-        screen.getByText(/brand colors optimized for both light and dark modes/i),
+        screen.getByText(
+          /brand colors optimized for both light and dark modes/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -31,25 +35,29 @@ describe("ColorsPage", () => {
     it("should render brand colors card", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Brand Colors")).toBeInTheDocument();
-      expect(screen.getByText(/primary brand accent colors/i)).toBeInTheDocument();
+      expect(screen.getByText(/primary brand accent colors/i))
+        .toBeInTheDocument();
     });
 
     it("should render dark mode palette card", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Dark Mode Palette")).toBeInTheDocument();
-      expect(screen.getByText(/colors optimized for dark backgrounds/i)).toBeInTheDocument();
+      expect(screen.getByText(/colors optimized for dark backgrounds/i))
+        .toBeInTheDocument();
     });
 
     it("should render light mode palette card", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Light Mode Palette")).toBeInTheDocument();
-      expect(screen.getByText(/colors optimized for light backgrounds/i)).toBeInTheDocument();
+      expect(screen.getByText(/colors optimized for light backgrounds/i))
+        .toBeInTheDocument();
     });
 
     it("should render glow effects card", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Glow Effects")).toBeInTheDocument();
-      expect(screen.getByText(/cyan glow utilities for emphasis/i)).toBeInTheDocument();
+      expect(screen.getByText(/cyan glow utilities for emphasis/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -70,8 +78,10 @@ describe("ColorsPage", () => {
   describe("glow effect demos", () => {
     it("should render glow buttons", () => {
       render(<ColorsPage />);
-      expect(screen.getByRole("button", { name: /primary button/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /fuchsia button/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /primary button/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /fuchsia button/i }))
+        .toBeInTheDocument();
     });
 
     it("should render glow input", () => {

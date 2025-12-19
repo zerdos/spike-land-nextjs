@@ -27,7 +27,9 @@ const querySchema = z.object({
   endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid end date format",
   }),
-  attributionModel: z.enum(["FIRST_TOUCH", "LAST_TOUCH"]).nullish().default("FIRST_TOUCH"),
+  attributionModel: z.enum(["FIRST_TOUCH", "LAST_TOUCH"]).nullish().default(
+    "FIRST_TOUCH",
+  ),
   platform: z.string().nullish(),
   limit: z.coerce.number().min(1).max(100).nullish().default(50),
   offset: z.coerce.number().min(0).nullish().default(0),
@@ -132,7 +134,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         });
 
         // Calculate bounce rates per campaign
-        const bounceRates = new Map<string, { total: number; bounced: number; }>();
+        const bounceRates = new Map<
+          string,
+          { total: number; bounced: number; }
+        >();
         for (const session of sessionsWithPageCount) {
           const key = `${session.utmCampaign || "Direct"}|${session.utmSource || "direct"}`;
           const current = bounceRates.get(key) || { total: 0, bounced: 0 };
@@ -164,7 +169,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         // Aggregate attribution data by campaign
         const attributionsByKey = new Map<
           string,
-          { signups: number; enhancements: number; purchases: number; revenue: number; }
+          {
+            signups: number;
+            enhancements: number;
+            purchases: number;
+            revenue: number;
+          }
         >();
 
         for (const attr of attributions) {
@@ -237,7 +247,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Apply pagination (done after caching since pagination params vary)
     const total = allCampaigns.length;
-    const paginatedCampaigns = allCampaigns.slice(offset ?? 0, (offset ?? 0) + (limit ?? 50));
+    const paginatedCampaigns = allCampaigns.slice(
+      offset ?? 0,
+      (offset ?? 0) + (limit ?? 50),
+    );
 
     const response: CampaignResponse = {
       campaigns: paginatedCampaigns,
@@ -265,7 +278,10 @@ function determinePlatform(utmSource: string | null): string {
 
   const source = utmSource.toLowerCase();
 
-  if (source.includes("facebook") || source.includes("fb") || source.includes("instagram")) {
+  if (
+    source.includes("facebook") || source.includes("fb") ||
+    source.includes("instagram")
+  ) {
     return "Facebook";
   }
   if (source.includes("google") || source.includes("gclid")) {

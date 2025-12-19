@@ -36,7 +36,9 @@ export default function ColorsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Dark Mode Palette</CardTitle>
-            <CardDescription>Colors optimized for dark backgrounds</CardDescription>
+            <CardDescription>
+              Colors optimized for dark backgrounds
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,7 +51,9 @@ export default function ColorsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Light Mode Palette</CardTitle>
-            <CardDescription>Colors optimized for light backgrounds</CardDescription>
+            <CardDescription>
+              Colors optimized for light backgrounds
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,19 +72,25 @@ export default function ColorsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Button with glow */}
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Primary Button</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Primary Button
+                </Label>
                 <Button className="shadow-glow-cyan">Primary Button</Button>
               </div>
 
               {/* Input with glow */}
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Text Input</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Text Input
+                </Label>
                 <Input placeholder="Text Input" className="input-glow-cyan" />
               </div>
 
               {/* Fuchsia glow button */}
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Fuchsia Glow</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Fuchsia Glow
+                </Label>
                 <Button className="bg-[#FF00FF] hover:bg-[#FF00FF]/90 shadow-glow-fuchsia">
                   Fuchsia Button
                 </Button>
@@ -88,7 +98,9 @@ export default function ColorsPage() {
 
               {/* Gradient glow */}
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Gradient Glow</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Gradient Glow
+                </Label>
                 <div className="h-10 rounded-xl gradient-cyan-fuchsia shadow-glow-gradient flex items-center justify-center">
                   <span className="text-white font-bold text-sm">Gradient</span>
                 </div>

@@ -141,76 +141,78 @@ export class TokenBalanceManager {
 
     // Use transaction to ensure atomic update
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: result, error } = await tryCatch(prisma.$transaction(async (tx: any) => {
-      // Get or create balance
-      let tokenBalance = await tx.userTokenBalance.findUnique({
-        where: { userId },
-      });
+    const { data: result, error } = await tryCatch(
+      prisma.$transaction(async (tx: any) => {
+        // Get or create balance
+        let tokenBalance = await tx.userTokenBalance.findUnique({
+          where: { userId },
+        });
 
-      if (!tokenBalance) {
-        // Ensure User record exists before creating UserTokenBalance
-        // This handles cases where NextAuth uses JWT strategy without database adapter
-        await tx.user.upsert({
-          where: { id: userId },
-          update: {},
-          create: {
-            id: userId,
+        if (!tokenBalance) {
+          // Ensure User record exists before creating UserTokenBalance
+          // This handles cases where NextAuth uses JWT strategy without database adapter
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          });
+
+          // Create initial balance with 0 tokens
+          tokenBalance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: MAX_TOKEN_BALANCE,
+              lastRegeneration: new Date(),
+            },
+          });
+
+          consumeLogger.info("Created initial token balance for new user");
+        }
+
+        // Check if sufficient balance
+        if (tokenBalance.balance < amount) {
+          const insufficientError = new Error(
+            `Insufficient tokens. Required: ${amount}, Available: ${tokenBalance.balance}`,
+          );
+          consumeLogger.warn("Insufficient tokens", {
+            required: amount,
+            available: tokenBalance.balance,
+          });
+          throw insufficientError;
+        }
+
+        // Update balance
+        const updatedBalance = await tx.userTokenBalance.update({
+          where: { userId },
+          data: {
+            balance: {
+              decrement: amount,
+            },
           },
         });
 
-        // Create initial balance with 0 tokens
-        tokenBalance = await tx.userTokenBalance.create({
+        // Create transaction record
+        const transaction = await tx.tokenTransaction.create({
           data: {
             userId,
-            balance: MAX_TOKEN_BALANCE,
-            lastRegeneration: new Date(),
+            amount: -amount,
+            type: TokenTransactionType.SPEND_ENHANCEMENT,
+            source,
+            sourceId,
+            balanceAfter: updatedBalance.balance,
+            ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
           },
         });
 
-        consumeLogger.info("Created initial token balance for new user");
-      }
-
-      // Check if sufficient balance
-      if (tokenBalance.balance < amount) {
-        const insufficientError = new Error(
-          `Insufficient tokens. Required: ${amount}, Available: ${tokenBalance.balance}`,
-        );
-        consumeLogger.warn("Insufficient tokens", {
-          required: amount,
-          available: tokenBalance.balance,
+        consumeLogger.info("Tokens consumed successfully", {
+          newBalance: updatedBalance.balance,
         });
-        throw insufficientError;
-      }
 
-      // Update balance
-      const updatedBalance = await tx.userTokenBalance.update({
-        where: { userId },
-        data: {
-          balance: {
-            decrement: amount,
-          },
-        },
-      });
-
-      // Create transaction record
-      const transaction = await tx.tokenTransaction.create({
-        data: {
-          userId,
-          amount: -amount,
-          type: TokenTransactionType.SPEND_ENHANCEMENT,
-          source,
-          sourceId,
-          balanceAfter: updatedBalance.balance,
-          ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
-        },
-      });
-
-      consumeLogger.info("Tokens consumed successfully", {
-        newBalance: updatedBalance.balance,
-      });
-
-      return { transaction, balance: updatedBalance.balance };
-    }));
+        return { transaction, balance: updatedBalance.balance };
+      }),
+    );
 
     if (error) {
       const errorMessage = error instanceof Error
@@ -278,78 +280,80 @@ export class TokenBalanceManager {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: result, error } = await tryCatch(prisma.$transaction(async (tx: any) => {
-      // Get or create balance
-      let tokenBalance = await tx.userTokenBalance.findUnique({
-        where: { userId },
-      });
+    const { data: result, error } = await tryCatch(
+      prisma.$transaction(async (tx: any) => {
+        // Get or create balance
+        let tokenBalance = await tx.userTokenBalance.findUnique({
+          where: { userId },
+        });
 
-      if (!tokenBalance) {
-        // Ensure User record exists before creating UserTokenBalance
-        await tx.user.upsert({
-          where: { id: userId },
-          update: {},
-          create: {
-            id: userId,
+        if (!tokenBalance) {
+          // Ensure User record exists before creating UserTokenBalance
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+            },
+          });
+
+          tokenBalance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: MAX_TOKEN_BALANCE,
+              lastRegeneration: new Date(),
+            },
+          });
+
+          addLogger.info("Created initial token balance for new user");
+        }
+
+        // Cap balance at maximum for regeneration
+        let newBalance = tokenBalance.balance + amount;
+        const wasCapped = false;
+        if (type === TokenTransactionType.EARN_REGENERATION) {
+          const beforeCap = newBalance;
+          newBalance = Math.min(newBalance, MAX_TOKEN_BALANCE);
+          if (beforeCap > newBalance) {
+            addLogger.debug("Balance capped at maximum", {
+              requested: beforeCap,
+              capped: newBalance,
+            });
+          }
+        }
+
+        // Update balance
+        const updatedBalance = await tx.userTokenBalance.update({
+          where: { userId },
+          data: {
+            balance: newBalance,
+            ...(type === TokenTransactionType.EARN_REGENERATION && {
+              lastRegeneration: new Date(),
+            }),
           },
         });
 
-        tokenBalance = await tx.userTokenBalance.create({
+        // Create transaction record
+        const transaction = await tx.tokenTransaction.create({
           data: {
             userId,
-            balance: MAX_TOKEN_BALANCE,
-            lastRegeneration: new Date(),
+            amount,
+            type,
+            source: source ?? null,
+            sourceId: sourceId ?? null,
+            balanceAfter: updatedBalance.balance,
+            ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
           },
         });
 
-        addLogger.info("Created initial token balance for new user");
-      }
+        addLogger.info("Tokens added successfully", {
+          newBalance: updatedBalance.balance,
+          wasCapped,
+        });
 
-      // Cap balance at maximum for regeneration
-      let newBalance = tokenBalance.balance + amount;
-      const wasCapped = false;
-      if (type === TokenTransactionType.EARN_REGENERATION) {
-        const beforeCap = newBalance;
-        newBalance = Math.min(newBalance, MAX_TOKEN_BALANCE);
-        if (beforeCap > newBalance) {
-          addLogger.debug("Balance capped at maximum", {
-            requested: beforeCap,
-            capped: newBalance,
-          });
-        }
-      }
-
-      // Update balance
-      const updatedBalance = await tx.userTokenBalance.update({
-        where: { userId },
-        data: {
-          balance: newBalance,
-          ...(type === TokenTransactionType.EARN_REGENERATION && {
-            lastRegeneration: new Date(),
-          }),
-        },
-      });
-
-      // Create transaction record
-      const transaction = await tx.tokenTransaction.create({
-        data: {
-          userId,
-          amount,
-          type,
-          source: source ?? null,
-          sourceId: sourceId ?? null,
-          balanceAfter: updatedBalance.balance,
-          ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
-        },
-      });
-
-      addLogger.info("Tokens added successfully", {
-        newBalance: updatedBalance.balance,
-        wasCapped,
-      });
-
-      return { transaction, balance: updatedBalance.balance };
-    }));
+        return { transaction, balance: updatedBalance.balance };
+      }),
+    );
 
     if (error) {
       const errorMessage = error instanceof Error

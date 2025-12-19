@@ -204,7 +204,9 @@ export async function POST(request: NextRequest) {
         return {
           imageId,
           success: false,
-          error: upsertError instanceof Error ? upsertError.message : "Unknown error",
+          error: upsertError instanceof Error
+            ? upsertError.message
+            : "Unknown error",
         };
       }
 

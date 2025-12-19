@@ -39,11 +39,14 @@ function getAudioR2Config() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim();
   const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim();
-  const bucket = process.env.CLOUDFLARE_R2_AUDIO_BUCKET_NAME?.trim() || "audio-mixer";
+  const bucket = process.env.CLOUDFLARE_R2_AUDIO_BUCKET_NAME?.trim() ||
+    "audio-mixer";
   const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT?.trim();
 
   if (!accountId || !accessKeyId || !secretAccessKey || !endpoint) {
-    throw new Error("Cloudflare R2 credentials are not configured for audio storage");
+    throw new Error(
+      "Cloudflare R2 credentials are not configured for audio storage",
+    );
   }
 
   return { accountId, accessKeyId, secretAccessKey, bucket, endpoint };
@@ -109,7 +112,10 @@ export function generateAudioKey(
  * Generate R2 key for project metadata
  * Pattern: users/{userId}/audio-projects/{projectId}/metadata.json
  */
-export function generateProjectMetadataKey(userId: string, projectId: string): string {
+export function generateProjectMetadataKey(
+  userId: string,
+  projectId: string,
+): string {
   return `users/${userId}/audio-projects/${projectId}/metadata.json`;
 }
 
@@ -172,7 +178,9 @@ export function validateAudioFile(
 /**
  * Upload an audio file to Cloudflare R2
  */
-export async function uploadAudioToR2(params: UploadAudioParams): Promise<UploadAudioResult> {
+export async function uploadAudioToR2(
+  params: UploadAudioParams,
+): Promise<UploadAudioResult> {
   const { key, buffer, contentType, metadata } = params;
 
   // Validate before upload
@@ -275,7 +283,9 @@ export async function downloadAudioFromR2(key: string): Promise<Buffer | null> {
 /**
  * Delete an audio file from Cloudflare R2
  */
-export async function deleteAudioFromR2(key: string): Promise<DeleteAudioResult> {
+export async function deleteAudioFromR2(
+  key: string,
+): Promise<DeleteAudioResult> {
   const client = getAudioR2Client();
   const bucket = getAudioBucketName();
 
@@ -303,7 +313,9 @@ export async function deleteAudioFromR2(key: string): Promise<DeleteAudioResult>
 /**
  * Get metadata for an audio file
  */
-export async function getAudioMetadata(key: string): Promise<AudioMetadata | null> {
+export async function getAudioMetadata(
+  key: string,
+): Promise<AudioMetadata | null> {
   const client = getAudioR2Client();
   const bucket = getAudioBucketName();
 
@@ -420,7 +432,8 @@ export function isAudioR2Configured(): boolean {
     process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
     process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
     process.env.CLOUDFLARE_R2_ENDPOINT &&
-    (process.env.CLOUDFLARE_R2_AUDIO_PUBLIC_URL || process.env.CLOUDFLARE_R2_PUBLIC_URL)
+    (process.env.CLOUDFLARE_R2_AUDIO_PUBLIC_URL ||
+      process.env.CLOUDFLARE_R2_PUBLIC_URL)
   );
 }
 

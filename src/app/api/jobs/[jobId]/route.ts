@@ -74,7 +74,10 @@ type DeleteJobResult =
   | { status: "invalidStatus"; jobStatus: JobStatus; }
   | { status: "success"; };
 
-async function deleteJobHandler(jobId: string, userId: string): Promise<DeleteJobResult> {
+async function deleteJobHandler(
+  jobId: string,
+  userId: string,
+): Promise<DeleteJobResult> {
   const job = await prisma.imageEnhancementJob.findUnique({
     where: { id: jobId },
   });
@@ -110,7 +113,9 @@ export async function DELETE(
 
   const { jobId } = await params;
 
-  const { data, error } = await tryCatch(deleteJobHandler(jobId, session.user.id));
+  const { data, error } = await tryCatch(
+    deleteJobHandler(jobId, session.user.id),
+  );
 
   if (error) {
     console.error("Error deleting job:", error);

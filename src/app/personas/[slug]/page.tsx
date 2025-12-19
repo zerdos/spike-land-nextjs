@@ -24,7 +24,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: PageProps,
+): Promise<Metadata> {
   const { slug } = await params;
   const persona = getPersonaBySlug(slug);
 
@@ -56,7 +58,9 @@ function getPersonaNavigation(slug: string): {
   const currentIndex = PERSONAS.findIndex((p) => p.slug === slug);
   return {
     prev: currentIndex > 0 ? PERSONAS[currentIndex - 1] ?? null : null,
-    next: currentIndex < PERSONAS.length - 1 ? PERSONAS[currentIndex + 1] ?? null : null,
+    next: currentIndex < PERSONAS.length - 1
+      ? PERSONAS[currentIndex + 1] ?? null
+      : null,
   };
 }
 

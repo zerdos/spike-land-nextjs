@@ -152,7 +152,9 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   // Step 1b: Prepare blend source data (if provided - already base64 from client upload)
   let sourceImageData: ReferenceImageData | null = null;
   if (blendSource) {
-    console.log(`[Dev Enhancement] Using uploaded blend source (${blendSource.mimeType})`);
+    console.log(
+      `[Dev Enhancement] Using uploaded blend source (${blendSource.mimeType})`,
+    );
     sourceImageData = {
       imageData: blendSource.base64,
       mimeType: blendSource.mimeType,
@@ -384,7 +386,9 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
   const { jobId, userId, tokensCost } = input;
 
-  const { data: enhancedUrl, error } = await tryCatch(processEnhancement(input));
+  const { data: enhancedUrl, error } = await tryCatch(
+    processEnhancement(input),
+  );
 
   if (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

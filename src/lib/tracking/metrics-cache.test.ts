@@ -71,7 +71,9 @@ describe("Metrics Cache", () => {
       };
       mockFindUnique.mockResolvedValueOnce(validCache);
 
-      const result = await getCachedMetrics<{ visitors: number; revenue: number; }>("test-key");
+      const result = await getCachedMetrics<
+        { visitors: number; revenue: number; }
+      >("test-key");
 
       expect(result).toEqual({ visitors: 100, revenue: 500 });
     });
@@ -116,7 +118,9 @@ describe("Metrics Cache", () => {
 
       // Should expire approximately 600 seconds from now
       const expectedMinExpiry = beforeCall + 600 * 1000;
-      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(expectedMinExpiry - 1000);
+      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
+        expectedMinExpiry - 1000,
+      );
       expect(expiresAt.getTime()).toBeLessThanOrEqual(expectedMinExpiry + 1000);
     });
 
@@ -124,7 +128,8 @@ describe("Metrics Cache", () => {
       mockUpsert.mockRejectedValueOnce(new Error("Database error"));
 
       // Should not throw
-      await expect(setCachedMetrics("test-key", { value: 42 })).resolves.not.toThrow();
+      await expect(setCachedMetrics("test-key", { value: 42 })).resolves.not
+        .toThrow();
     });
   });
 
@@ -201,7 +206,9 @@ describe("Metrics Cache", () => {
         model: "FIRST_TOUCH",
       });
 
-      expect(key).toBe("campaigns:endDate:2024-01-31:model:FIRST_TOUCH:startDate:2024-01-01");
+      expect(key).toBe(
+        "campaigns:endDate:2024-01-31:model:FIRST_TOUCH:startDate:2024-01-01",
+      );
     });
 
     it("should exclude undefined parameters", () => {
@@ -284,7 +291,9 @@ describe("Metrics Cache", () => {
       const expiresAt = call.create.expiresAt as Date;
       const expectedMinExpiry = Date.now() + 1800 * 1000;
 
-      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(expectedMinExpiry - 1000);
+      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
+        expectedMinExpiry - 1000,
+      );
     });
   });
 });

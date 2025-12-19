@@ -21,7 +21,11 @@ export async function POST(request: Request) {
   if (authError) {
     console.error("Error in audio upload:", authError);
     return NextResponse.json(
-      { error: authError instanceof Error ? authError.message : "Internal server error" },
+      {
+        error: authError instanceof Error
+          ? authError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -41,11 +45,17 @@ export async function POST(request: Request) {
   }
 
   // Parse form data
-  const { data: formData, error: formDataError } = await tryCatch(request.formData());
+  const { data: formData, error: formDataError } = await tryCatch(
+    request.formData(),
+  );
   if (formDataError) {
     console.error("Error in audio upload:", formDataError);
     return NextResponse.json(
-      { error: formDataError instanceof Error ? formDataError.message : "Internal server error" },
+      {
+        error: formDataError instanceof Error
+          ? formDataError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -88,7 +98,11 @@ export async function POST(request: Request) {
   if (projectError) {
     console.error("Error in audio upload:", projectError);
     return NextResponse.json(
-      { error: projectError instanceof Error ? projectError.message : "Internal server error" },
+      {
+        error: projectError instanceof Error
+          ? projectError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -108,11 +122,17 @@ export async function POST(request: Request) {
   }
 
   // Convert file to buffer
-  const { data: arrayBuffer, error: bufferError } = await tryCatch(file.arrayBuffer());
+  const { data: arrayBuffer, error: bufferError } = await tryCatch(
+    file.arrayBuffer(),
+  );
   if (bufferError) {
     console.error("Error in audio upload:", bufferError);
     return NextResponse.json(
-      { error: bufferError instanceof Error ? bufferError.message : "Internal server error" },
+      {
+        error: bufferError instanceof Error
+          ? bufferError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -140,7 +160,11 @@ export async function POST(request: Request) {
   if (uploadError) {
     console.error("Error in audio upload:", uploadError);
     return NextResponse.json(
-      { error: uploadError instanceof Error ? uploadError.message : "Internal server error" },
+      {
+        error: uploadError instanceof Error
+          ? uploadError.message
+          : "Internal server error",
+      },
       { status: 500 },
     );
   }

@@ -11,7 +11,8 @@ describe("getDateRangeFromPreset", () => {
   it("returns 7 day range for 7d preset", () => {
     const range = getDateRangeFromPreset("7d");
     const daysDiff = Math.round(
-      (range.endDate.getTime() - range.startDate.getTime()) / (1000 * 60 * 60 * 24),
+      (range.endDate.getTime() - range.startDate.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     expect(daysDiff).toBe(7);
   });
@@ -19,7 +20,8 @@ describe("getDateRangeFromPreset", () => {
   it("returns 30 day range for 30d preset", () => {
     const range = getDateRangeFromPreset("30d");
     const daysDiff = Math.round(
-      (range.endDate.getTime() - range.startDate.getTime()) / (1000 * 60 * 60 * 24),
+      (range.endDate.getTime() - range.startDate.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     expect(daysDiff).toBe(30);
   });
@@ -27,7 +29,8 @@ describe("getDateRangeFromPreset", () => {
   it("returns 90 day range for 90d preset", () => {
     const range = getDateRangeFromPreset("90d");
     const daysDiff = Math.round(
-      (range.endDate.getTime() - range.startDate.getTime()) / (1000 * 60 * 60 * 24),
+      (range.endDate.getTime() - range.startDate.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     expect(daysDiff).toBe(90);
   });
@@ -35,7 +38,8 @@ describe("getDateRangeFromPreset", () => {
   it("returns 30 day range as default for custom preset", () => {
     const range = getDateRangeFromPreset("custom");
     const daysDiff = Math.round(
-      (range.endDate.getTime() - range.startDate.getTime()) / (1000 * 60 * 60 * 24),
+      (range.endDate.getTime() - range.startDate.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     expect(daysDiff).toBe(30);
   });

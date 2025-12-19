@@ -54,7 +54,8 @@ describe("pipeline-resolver", () => {
         await resolvePipelineConfig();
 
         expect(mockPrisma.album.findUnique).not.toHaveBeenCalled();
-        expect(mockPrisma.enhancementPipeline.findUnique).not.toHaveBeenCalled();
+        expect(mockPrisma.enhancementPipeline.findUnique).not
+          .toHaveBeenCalled();
       });
     });
 
@@ -185,7 +186,10 @@ describe("pipeline-resolver", () => {
       it("should return system default when pipeline not found", async () => {
         mockPrisma.enhancementPipeline.findUnique.mockResolvedValue(null);
 
-        const result = await resolvePipelineConfig(undefined, "nonexistent-pipeline");
+        const result = await resolvePipelineConfig(
+          undefined,
+          "nonexistent-pipeline",
+        );
 
         expect(result).toEqual({
           config: SYSTEM_DEFAULT_PIPELINE,
@@ -207,7 +211,9 @@ describe("pipeline-resolver", () => {
 
         const result = await resolvePipelineConfig(undefined, "pipeline-123");
 
-        expect(result.config.analysis).toEqual(SYSTEM_DEFAULT_PIPELINE.analysis);
+        expect(result.config.analysis).toEqual(
+          SYSTEM_DEFAULT_PIPELINE.analysis,
+        );
       });
 
       it("should use default autoCrop config when null", async () => {
@@ -222,7 +228,9 @@ describe("pipeline-resolver", () => {
 
         const result = await resolvePipelineConfig(undefined, "pipeline-123");
 
-        expect(result.config.autoCrop).toEqual(SYSTEM_DEFAULT_PIPELINE.autoCrop);
+        expect(result.config.autoCrop).toEqual(
+          SYSTEM_DEFAULT_PIPELINE.autoCrop,
+        );
       });
 
       it("should use default prompt config when null", async () => {
@@ -252,7 +260,9 @@ describe("pipeline-resolver", () => {
 
         const result = await resolvePipelineConfig(undefined, "pipeline-123");
 
-        expect(result.config.generation).toEqual(SYSTEM_DEFAULT_PIPELINE.generation);
+        expect(result.config.generation).toEqual(
+          SYSTEM_DEFAULT_PIPELINE.generation,
+        );
       });
     });
 

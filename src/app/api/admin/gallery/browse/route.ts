@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
 
   if (adminError) {
     console.error("Failed to browse images:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(

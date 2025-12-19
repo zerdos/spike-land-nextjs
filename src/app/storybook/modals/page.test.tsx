@@ -35,9 +35,12 @@ describe("ModalsPage", () => {
   describe("enhancement settings dialog section", () => {
     it("should render enhancement settings dialog card", () => {
       render(<ModalsPage />);
-      expect(screen.getByText("Enhancement Settings Dialog")).toBeInTheDocument();
+      expect(screen.getByText("Enhancement Settings Dialog"))
+        .toBeInTheDocument();
       expect(
-        screen.getByText(/modal dialog with card-based tier selection for image enhancement/i),
+        screen.getByText(
+          /modal dialog with card-based tier selection for image enhancement/i,
+        ),
       ).toBeInTheDocument();
     });
 
@@ -53,12 +56,14 @@ describe("ModalsPage", () => {
     it("should render sheet card", () => {
       render(<ModalsPage />);
       expect(screen.getByText("Sheet")).toBeInTheDocument();
-      expect(screen.getByText(/slide-out panel for navigation or settings/i)).toBeInTheDocument();
+      expect(screen.getByText(/slide-out panel for navigation or settings/i))
+        .toBeInTheDocument();
     });
 
     it("should render sheet trigger button", () => {
       render(<ModalsPage />);
-      expect(screen.getByRole("button", { name: /open sheet \(right\)/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /open sheet \(right\)/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -73,7 +78,8 @@ describe("ModalsPage", () => {
 
     it("should render alert dialog trigger button", () => {
       render(<ModalsPage />);
-      expect(screen.getByRole("button", { name: /delete image/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete image/i }))
+        .toBeInTheDocument();
     });
   });
 });

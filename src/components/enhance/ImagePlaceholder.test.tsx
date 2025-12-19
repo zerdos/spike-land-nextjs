@@ -12,7 +12,11 @@ class MockFileReader {
     // Simulate async load
     setTimeout(() => {
       if (this.onload) {
-        this.onload({ target: { result: this.result } } as unknown as ProgressEvent<FileReader>);
+        this.onload(
+          { target: { result: this.result } } as unknown as ProgressEvent<
+            FileReader
+          >,
+        );
       }
     }, 0);
   }
@@ -152,11 +156,17 @@ describe("ImagePlaceholder", () => {
   it("applies custom className", () => {
     const file = createMockFile();
     const { container } = render(
-      <ImagePlaceholder file={file} status="uploading" className="custom-placeholder" />,
+      <ImagePlaceholder
+        file={file}
+        status="uploading"
+        className="custom-placeholder"
+      />,
     );
 
     expect(container.firstChild).toHaveProperty("className");
-    expect((container.firstChild as HTMLElement).className).toContain("custom-placeholder");
+    expect((container.firstChild as HTMLElement).className).toContain(
+      "custom-placeholder",
+    );
   });
 
   it("shows loading spinner during uploading and processing", () => {

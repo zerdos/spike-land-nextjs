@@ -206,7 +206,9 @@ export async function checkRateLimit(
   const useKV = await isKVAvailable();
 
   if (useKV) {
-    const { data, error } = await tryCatch(checkRateLimitKV(identifier, config));
+    const { data, error } = await tryCatch(
+      checkRateLimitKV(identifier, config),
+    );
 
     if (error) {
       console.error(

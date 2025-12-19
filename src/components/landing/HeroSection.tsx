@@ -25,7 +25,9 @@ export function HeroSection({
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
             Your photos deserve better than <br className="hidden sm:block" />
-            <span className="text-gradient-primary">&ldquo;good enough.&rdquo;</span>
+            <span className="text-gradient-primary">
+              &ldquo;good enough.&rdquo;
+            </span>
           </h1>
 
           {/* Subheadline */}

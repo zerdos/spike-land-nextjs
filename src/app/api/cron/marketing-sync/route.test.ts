@@ -152,7 +152,9 @@ describe("Marketing Sync Cron Job", () => {
 
   it("should return 500 on sync failure", async () => {
     process.env.CRON_SECRET = "test-secret";
-    mockSyncExternalCampaigns.mockRejectedValueOnce(new Error("Database connection failed"));
+    mockSyncExternalCampaigns.mockRejectedValueOnce(
+      new Error("Database connection failed"),
+    );
 
     const request = createMockRequest({
       authorization: "Bearer test-secret",

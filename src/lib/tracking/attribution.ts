@@ -80,7 +80,8 @@ export async function createAttribution(
   } = params;
 
   // Determine platform from UTM params if not provided
-  const derivedPlatform = platform || (utmParams ? getPlatformFromUTM(utmParams) : "DIRECT");
+  const derivedPlatform = platform ||
+    (utmParams ? getPlatformFromUTM(utmParams) : "DIRECT");
 
   await prisma.campaignAttribution.create({
     data: {
@@ -423,7 +424,10 @@ export async function getCampaignAttributionSummary(
     totalConversions: attributions.length,
     firstTouchCount: attributions.filter((a) => a.attributionType === "FIRST_TOUCH").length,
     lastTouchCount: attributions.filter((a) => a.attributionType === "LAST_TOUCH").length,
-    totalValue: attributions.reduce((sum, a) => sum + (a.conversionValue || 0), 0),
+    totalValue: attributions.reduce(
+      (sum, a) => sum + (a.conversionValue || 0),
+      0,
+    ),
     conversionsByType: {
       SIGNUP: 0,
       ENHANCEMENT: 0,

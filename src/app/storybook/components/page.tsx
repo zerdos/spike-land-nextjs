@@ -36,7 +36,9 @@ export default function ComponentsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Cards</CardTitle>
-            <CardDescription>Container components with glass-morphism</CardDescription>
+            <CardDescription>
+              Container components with glass-morphism
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -182,12 +184,18 @@ export default function ComponentsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Separators</CardTitle>
-            <CardDescription>Visual dividers for content sections</CardDescription>
+            <CardDescription>
+              Visual dividers for content sections
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">Content above separator</p>
+            <p className="text-sm text-muted-foreground">
+              Content above separator
+            </p>
             <Separator />
-            <p className="text-sm text-muted-foreground">Content below separator</p>
+            <p className="text-sm text-muted-foreground">
+              Content below separator
+            </p>
           </CardContent>
         </Card>
 
@@ -207,7 +215,9 @@ export default function ComponentsPage() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
-                <AccordionTrigger>How do enhancement tiers work?</AccordionTrigger>
+                <AccordionTrigger>
+                  How do enhancement tiers work?
+                </AccordionTrigger>
                 <AccordionContent>
                   We offer three enhancement tiers: Standard (1 token), Pro (2 tokens), and Max (3
                   tokens). Each tier provides progressively better results.
@@ -228,7 +238,9 @@ export default function ComponentsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Tabs</CardTitle>
-            <CardDescription>Tabbed content panels for organizing information</CardDescription>
+            <CardDescription>
+              Tabbed content panels for organizing information
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="overview" className="w-full">
@@ -266,17 +278,26 @@ export default function ComponentsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Textarea</CardTitle>
-            <CardDescription>Multi-line text input for longer content</CardDescription>
+            <CardDescription>
+              Multi-line text input for longer content
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="textarea-default">Default Textarea</Label>
-                <Textarea id="textarea-default" placeholder="Type your message here..." />
+                <Textarea
+                  id="textarea-default"
+                  placeholder="Type your message here..."
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="textarea-disabled">Disabled Textarea</Label>
-                <Textarea id="textarea-disabled" placeholder="This textarea is disabled" disabled />
+                <Textarea
+                  id="textarea-disabled"
+                  placeholder="This textarea is disabled"
+                  disabled
+                />
               </div>
             </div>
             <div className="space-y-2">

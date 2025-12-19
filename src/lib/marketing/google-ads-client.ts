@@ -410,8 +410,14 @@ export class GoogleAdsClient implements IMarketingClient {
     endDate: Date,
   ): Promise<CampaignMetrics> {
     const customerId = accountId.replace(/-/g, "");
-    const startStr = (startDate.toISOString().split("T")[0] ?? "").replace(/-/g, "");
-    const endStr = (endDate.toISOString().split("T")[0] ?? "").replace(/-/g, "");
+    const startStr = (startDate.toISOString().split("T")[0] ?? "").replace(
+      /-/g,
+      "",
+    );
+    const endStr = (endDate.toISOString().split("T")[0] ?? "").replace(
+      /-/g,
+      "",
+    );
 
     const results = await this.query<{
       metrics: {

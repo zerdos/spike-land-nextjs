@@ -353,13 +353,14 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
       );
 
       // Check attribution calls have utmCampaign filter
-      expect(vi.mocked(prisma.campaignAttribution.findMany)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            utmCampaign: "brand",
+      expect(vi.mocked(prisma.campaignAttribution.findMany))
+        .toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              utmCampaign: "brand",
+            }),
           }),
-        }),
-      );
+        );
     });
 
     it("should filter by platform", async () => {
@@ -383,16 +384,17 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         }),
       );
 
-      expect(vi.mocked(prisma.campaignAttribution.findMany)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            platform: {
-              contains: "google",
-              mode: "insensitive",
-            },
+      expect(vi.mocked(prisma.campaignAttribution.findMany))
+        .toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              platform: {
+                contains: "google",
+                mode: "insensitive",
+              },
+            }),
           }),
-        }),
-      );
+        );
     });
 
     it("should filter by both utmCampaign and platform", async () => {

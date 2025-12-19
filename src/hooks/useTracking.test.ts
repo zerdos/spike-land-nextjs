@@ -87,7 +87,9 @@ describe("useTracking", () => {
     });
 
     it("does not track events when no session exists", async () => {
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 
@@ -104,7 +106,9 @@ describe("useTracking", () => {
     });
 
     it("does not track conversions when no session exists", async () => {
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 
@@ -245,7 +249,9 @@ describe("useTracking", () => {
 
     it("handles API errors gracefully for trackEvent", async () => {
       mockFetch.mockResolvedValue({ ok: false, status: 500 });
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 
@@ -263,7 +269,9 @@ describe("useTracking", () => {
 
     it("handles network errors gracefully for trackEvent", async () => {
       mockFetch.mockRejectedValue(new Error("Network error"));
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 
@@ -282,7 +290,9 @@ describe("useTracking", () => {
 
     it("handles API errors gracefully for trackConversion", async () => {
       mockFetch.mockResolvedValue({ ok: false, status: 500 });
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 
@@ -299,7 +309,9 @@ describe("useTracking", () => {
 
     it("handles API errors gracefully for trackConversionStarted", async () => {
       mockFetch.mockResolvedValue({ ok: false, status: 500 });
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const { result } = renderHook(() => useTracking());
 

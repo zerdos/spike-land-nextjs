@@ -232,7 +232,11 @@ export function useMultiFileUpload(
    * Upload all files sequentially
    */
   const uploadSequential = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
+    async (
+      fileStatuses: FileUploadStatus[],
+      signal: AbortSignal,
+      targetAlbumId?: string,
+    ) => {
       for (const fileStatus of fileStatuses) {
         if (signal.aborted) break;
         await uploadSingleFile(fileStatus, signal, targetAlbumId);
@@ -245,7 +249,11 @@ export function useMultiFileUpload(
    * Upload all files in parallel
    */
   const uploadParallel = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
+    async (
+      fileStatuses: FileUploadStatus[],
+      signal: AbortSignal,
+      targetAlbumId?: string,
+    ) => {
       await Promise.all(
         fileStatuses.map((fileStatus) => uploadSingleFile(fileStatus, signal, targetAlbumId)),
       );
@@ -294,7 +302,11 @@ export function useMultiFileUpload(
         if (parallel) {
           await uploadParallel(fileStatuses, controller.signal, targetAlbumId);
         } else {
-          await uploadSequential(fileStatuses, controller.signal, targetAlbumId);
+          await uploadSequential(
+            fileStatuses,
+            controller.signal,
+            targetAlbumId,
+          );
         }
 
         // Call onUploadComplete callback

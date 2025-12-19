@@ -22,7 +22,13 @@ const tokenPackages = [
   { id: 1, name: "Starter", tokens: 5, price: "$4.99", perToken: "$1.00" },
   { id: 2, name: "Basic", tokens: 15, price: "$12.99", perToken: "$0.87" },
   { id: 3, name: "Pro", tokens: 50, price: "$39.99", perToken: "$0.80" },
-  { id: 4, name: "Enterprise", tokens: 200, price: "$149.99", perToken: "$0.75" },
+  {
+    id: 4,
+    name: "Enterprise",
+    tokens: 200,
+    price: "$149.99",
+    perToken: "$0.75",
+  },
 ];
 
 const enhancementHistory = [
@@ -35,18 +41,27 @@ const enhancementHistory = [
 export default function DataDisplayPage() {
   return (
     <div className="space-y-12">
-      <Section title="Data Display" description="Components for displaying structured data">
+      <Section
+        title="Data Display"
+        description="Components for displaying structured data"
+      >
         {/* Table */}
         <Card>
           <CardHeader>
             <CardTitle>Table</CardTitle>
-            <CardDescription>Display tabular data with headers and rows</CardDescription>
+            <CardDescription>
+              Display tabular data with headers and rows
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Token Packages</Label>
+              <Label className="text-xs text-muted-foreground">
+                Token Packages
+              </Label>
               <Table>
-                <TableCaption>Available token packages for image enhancement</TableCaption>
+                <TableCaption>
+                  Available token packages for image enhancement
+                </TableCaption>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Package</TableHead>
@@ -71,7 +86,9 @@ export default function DataDisplayPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Enhancement History</Label>
+              <Label className="text-xs text-muted-foreground">
+                Enhancement History
+              </Label>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -84,14 +101,18 @@ export default function DataDisplayPage() {
                 <TableBody>
                   {enhancementHistory.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-mono text-xs">{item.id}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {item.id}
+                      </TableCell>
                       <TableCell>{item.date}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{item.tier}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge
-                          variant={item.status === "completed" ? "default" : "secondary"}
+                          variant={item.status === "completed"
+                            ? "default"
+                            : "secondary"}
                           className={item.status === "completed"
                             ? "bg-green-500/10 text-green-500 border-green-500/20"
                             : "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"}
@@ -111,11 +132,15 @@ export default function DataDisplayPage() {
         <Card>
           <CardHeader>
             <CardTitle>Toggle Group</CardTitle>
-            <CardDescription>Single or multiple selection toggle buttons</CardDescription>
+            <CardDescription>
+              Single or multiple selection toggle buttons
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">Single Selection (View Mode)</Label>
+              <Label className="text-xs text-muted-foreground">
+                Single Selection (View Mode)
+              </Label>
               <ToggleGroup type="single" defaultValue="grid">
                 <ToggleGroupItem value="grid" aria-label="Grid view">
                   <Grid2X2 className="h-4 w-4" />
@@ -147,7 +172,9 @@ export default function DataDisplayPage() {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">With Text Labels</Label>
+              <Label className="text-xs text-muted-foreground">
+                With Text Labels
+              </Label>
               <ToggleGroup type="single" defaultValue="standard">
                 <ToggleGroupItem value="standard">Standard</ToggleGroupItem>
                 <ToggleGroupItem value="pro">Pro</ToggleGroupItem>
@@ -156,7 +183,9 @@ export default function DataDisplayPage() {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">Multiple Selection</Label>
+              <Label className="text-xs text-muted-foreground">
+                Multiple Selection
+              </Label>
               <ToggleGroup type="multiple" defaultValue={["bold", "underline"]}>
                 <ToggleGroupItem value="bold" className="font-bold">
                   B
@@ -206,7 +235,9 @@ export default function DataDisplayPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Copy API Key</Label>
+              <Label className="text-xs text-muted-foreground">
+                Copy API Key
+              </Label>
               <div className="flex items-center gap-2">
                 <Input
                   value="pk_live_51xxx...xxx"
