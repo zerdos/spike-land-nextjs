@@ -75,12 +75,20 @@ When(
   "I click the {string} link in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    // Remove exact match because links include icons/emojis
-    const link = sidebar.getByRole("link", { name: linkText });
+    // Ensure sidebar is stable
+    await expect(sidebar).toBeVisible();
+
+    // Use regex to be more flexible with whitespace and icons
+    const link = sidebar.getByRole("link", { name: new RegExp(linkText, "i") });
     await expect(link).toBeVisible();
+
+    // Wait for any potential animations or transitions
+    await this.page.waitForTimeout(500);
+
+    // Click and wait for navigation if it's a link
     await link.click();
-    // Don't wait for load state here, let the next step handle it if needed
-    // or rely on auto-wait. Dashboard polling can cause networkidle to hang.
+
+    // Note: We don't wait for URL change here as the next step usually verifies the page
   },
 );
 

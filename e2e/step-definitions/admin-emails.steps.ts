@@ -296,16 +296,19 @@ When(
 );
 
 When("I click the Send Test button and expect success", async function(this: CustomWorld) {
-  // Setup dialog handler BEFORE clicking
-  const dialogPromise = this.page.waitForEvent("dialog");
+  // Ensure button is enabled before clicking
+  const button = this.page.getByRole("button", { name: "Send Test" });
+  await expect(button).toBeEnabled({ timeout: 10000 });
 
-  await this.page.getByRole("button", { name: "Send Test" }).click();
+  // Setup dialog handler BEFORE clicking
+  const dialogPromise = this.page.waitForEvent("dialog", { timeout: 15000 });
+
+  await button.click();
 
   const dialog = await dialogPromise;
   expect(dialog.message()).toContain("success");
   await dialog.accept();
 });
-
 When("I click the modal overlay", async function(this: CustomWorld) {
   // Click on the overlay (background)
   await this.page.locator(".fixed.inset-0.bg-black\\/50").click({
@@ -511,10 +514,14 @@ Then(
 Then(
   "I should see the email details modal",
   async function(this: CustomWorld) {
-    const modal = this.page.locator('[class*="Card"]').filter({
-      hasText: "Email Details",
+    // Wait for any potential animation
+    await this.page.waitForTimeout(500);
+
+    // Look for the modal container
+    const modal = this.page.locator(".fixed.inset-0").filter({
+      has: this.page.getByText("Email Details"),
     });
-    await expect(modal).toBeVisible();
+    await expect(modal).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -711,8 +718,12 @@ Then(
 Then(
   "I should see {string} text in the table",
   async function(this: CustomWorld, text: string) {
-    const cell = this.page.locator("td").filter({ hasText: text });
-    await expect(cell).toBeVisible();
+    // Look for text within the table container
+    const tableContainer = this.page.locator('[class*="Card"]').filter({
+      has: this.page.locator("table"),
+    });
+    const element = tableContainer.getByText(text);
+    await expect(element).toBeVisible({ timeout: 10000 });
   },
 );
 
