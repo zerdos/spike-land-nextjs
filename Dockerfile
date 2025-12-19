@@ -199,10 +199,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -u 1001 -g nodejs nextjs
 
 # Copy ONLY production artifacts (standalone mode)
-# --link creates independent layers for better cache reuse
-COPY --link --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --link --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --link --from=build --chown=nextjs:nodejs /app/public ./public
+# Note: --link is incompatible with --chown when user is created in same stage
+COPY --from=build --chown=1001:1001 /app/.next/standalone ./
+COPY --from=build --chown=1001:1001 /app/.next/static ./.next/static
+COPY --from=build --chown=1001:1001 /app/public ./public
 
 USER nextjs
 ENV NODE_ENV=production PORT=3000
