@@ -69,10 +69,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { error: adminError } = await tryCatch(requireAdminByUserId(session.user.id));
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
   if (adminError) {
-    console.error("Failed to fetch campaign performance:", adminError);
+    console.error("Admin check failed:", adminError);
     if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }

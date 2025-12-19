@@ -11,111 +11,128 @@ import { GoogleAdsClient } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+import { tryCatch } from "@/lib/try-catch";
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const { data: session, error: authError } = await tryCatch(auth());
+
+  if (authError || !session?.user?.id) {
+    return NextResponse.redirect(
+      new URL("/login?error=Unauthorized", request.url),
+    );
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
+
+  // Handle OAuth errors
+  if (error) {
+    console.error("Google OAuth error:", error, errorDescription);
+    return NextResponse.redirect(
+      new URL(
+        `/admin/marketing?error=${encodeURIComponent(errorDescription || error)}`,
+        request.url,
+      ),
+    );
+  }
+
+  if (!code || !state) {
+    return NextResponse.redirect(
+      new URL(
+        "/admin/marketing?error=Invalid callback parameters",
+        request.url,
+      ),
+    );
+  }
+
+  // Verify state
+  let stateData: { userId: string; timestamp: number; nonce?: string; };
   try {
-    const session = await auth();
+    stateData = JSON.parse(
+      Buffer.from(state, "base64url").toString("utf-8"),
+    );
+  } catch {
+    return NextResponse.redirect(
+      new URL("/admin/marketing?error=Invalid state parameter", request.url),
+    );
+  }
 
-    if (!session?.user?.id) {
-      return NextResponse.redirect(
-        new URL("/login?error=Unauthorized", request.url),
-      );
-    }
+  // Verify user ID matches
+  if (stateData.userId !== session.user.id) {
+    return NextResponse.redirect(
+      new URL("/admin/marketing?error=User mismatch", request.url),
+    );
+  }
 
-    const searchParams = request.nextUrl.searchParams;
-    const code = searchParams.get("code");
-    const state = searchParams.get("state");
-    const error = searchParams.get("error");
-    const errorDescription = searchParams.get("error_description");
+  // Check timestamp (expire after 10 minutes)
+  if (Date.now() - stateData.timestamp > 10 * 60 * 1000) {
+    return NextResponse.redirect(
+      new URL("/admin/marketing?error=OAuth session expired", request.url),
+    );
+  }
 
-    // Handle OAuth errors
-    if (error) {
-      console.error("Google OAuth error:", error, errorDescription);
-      return NextResponse.redirect(
-        new URL(
-          `/admin/marketing?error=${encodeURIComponent(errorDescription || error)}`,
-          request.url,
-        ),
-      );
-    }
+  // Verify nonce from cookie to prevent replay attacks
+  const storedNonce = request.cookies.get("google_oauth_nonce")?.value;
+  if (stateData.nonce && stateData.nonce !== storedNonce) {
+    return NextResponse.redirect(
+      new URL("/admin/marketing?error=Invalid security token", request.url),
+    );
+  }
 
-    if (!code || !state) {
-      return NextResponse.redirect(
-        new URL(
-          "/admin/marketing?error=Invalid callback parameters",
-          request.url,
-        ),
-      );
-    }
+  // Exchange code for tokens
+  const client = new GoogleAdsClient();
+  // Use explicit callback URL if set, otherwise compute from base URL
+  const redirectUri = process.env.GOOGLE_ADS_CALLBACK_URL || (() => {
+    const baseUrl = process.env.NEXTAUTH_URL ||
+      process.env.VERCEL_URL ||
+      "http://localhost:3000";
+    return `${
+      baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+    }/api/marketing/google/callback`;
+  })();
 
-    // Verify state
-    let stateData: { userId: string; timestamp: number; nonce?: string; };
-    try {
-      stateData = JSON.parse(
-        Buffer.from(state, "base64url").toString("utf-8"),
-      );
-    } catch {
-      return NextResponse.redirect(
-        new URL("/admin/marketing?error=Invalid state parameter", request.url),
-      );
-    }
+  const { data: tokens, error: tokenError } = await tryCatch(
+    client.exchangeCodeForTokens(code, redirectUri)
+  );
 
-    // Verify user ID matches
-    if (stateData.userId !== session.user.id) {
-      return NextResponse.redirect(
-        new URL("/admin/marketing?error=User mismatch", request.url),
-      );
-    }
+  if (tokenError || !tokens) {
+    console.error("Token exchange failed:", tokenError);
+    const response = NextResponse.redirect(
+      new URL(
+        "/admin/marketing?error=Failed to connect Google Ads account. Please try again.",
+        request.url,
+      ),
+    );
+    response.cookies.delete("google_oauth_nonce");
+    return response;
+  }
 
-    // Check timestamp (expire after 10 minutes)
-    if (Date.now() - stateData.timestamp > 10 * 60 * 1000) {
-      return NextResponse.redirect(
-        new URL("/admin/marketing?error=OAuth session expired", request.url),
-      );
-    }
+  // Get accessible customer accounts
+  client.setAccessToken(tokens.accessToken);
 
-    // Verify nonce from cookie to prevent replay attacks
-    const storedNonce = request.cookies.get("google_oauth_nonce")?.value;
-    if (stateData.nonce && stateData.nonce !== storedNonce) {
-      return NextResponse.redirect(
-        new URL("/admin/marketing?error=Invalid security token", request.url),
-      );
-    }
+  const { data: accounts, error: accountError } = await tryCatch(
+    client.getAccounts()
+  );
 
-    // Exchange code for tokens
-    const client = new GoogleAdsClient();
-    // Use explicit callback URL if set, otherwise compute from base URL
-    const redirectUri = process.env.GOOGLE_ADS_CALLBACK_URL || (() => {
-      const baseUrl = process.env.NEXTAUTH_URL ||
-        process.env.VERCEL_URL ||
-        "http://localhost:3000";
-      return `${
-        baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
-      }/api/marketing/google/callback`;
-    })();
+  if (accountError || !accounts) {
+    // If we can't get accounts (e.g., no developer token), save connection with manual setup required
+    console.warn("Could not fetch Google Ads accounts:", accountError);
 
-    const tokens = await client.exchangeCodeForTokens(code, redirectUri);
+    // Save a placeholder account that user can configure manually
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.trim() ||
+      "pending";
 
-    // Get accessible customer accounts
-    client.setAccessToken(tokens.accessToken);
+    // Encrypt tokens before storing
+    const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
+    const encryptedRefreshToken = tokens.refreshToken
+      ? safeEncryptToken(tokens.refreshToken)
+      : null;
 
-    let accounts;
-    try {
-      accounts = await client.getAccounts();
-    } catch (accountError) {
-      // If we can't get accounts (e.g., no developer token), save connection with manual setup required
-      console.warn("Could not fetch Google Ads accounts:", accountError);
-
-      // Save a placeholder account that user can configure manually
-      const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.trim() ||
-        "pending";
-
-      // Encrypt tokens before storing
-      const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
-      const encryptedRefreshToken = tokens.refreshToken
-        ? safeEncryptToken(tokens.refreshToken)
-        : null;
-
-      await prisma.marketingAccount.upsert({
+    const { error: dbError } = await tryCatch(
+      prisma.marketingAccount.upsert({
         where: {
           userId_platform_accountId: {
             userId: session.user.id,
@@ -140,81 +157,98 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           expiresAt: tokens.expiresAt,
           isActive: true,
         },
-      });
+      })
+    );
 
-      return NextResponse.redirect(
+    if (dbError) {
+      console.error("Failed to save placeholder account:", dbError);
+      const response = NextResponse.redirect(
         new URL(
-          "/admin/marketing?success=Google Ads connected. Please configure your Customer ID in settings.",
+          "/admin/marketing?error=Failed to save account information.",
           request.url,
         ),
       );
+      response.cookies.delete("google_oauth_nonce");
+      return response;
     }
 
-    if (accounts.length === 0) {
-      return NextResponse.redirect(
-        new URL(
-          "/admin/marketing?error=No Google Ads accounts found. Make sure you have access to at least one Google Ads account.",
-          request.url,
-        ),
-      );
-    }
-
-    // Encrypt tokens before storing
-    const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
-    const encryptedRefreshToken = tokens.refreshToken
-      ? safeEncryptToken(tokens.refreshToken)
-      : null;
-
-    // Save accounts to database
-    for (const account of accounts) {
-      await prisma.marketingAccount.upsert({
-        where: {
-          userId_platform_accountId: {
-            userId: session.user.id,
-            platform: "GOOGLE_ADS",
-            accountId: account.accountId,
-          },
-        },
-        update: {
-          accountName: account.accountName,
-          accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
-          expiresAt: tokens.expiresAt,
-          isActive: true,
-          updatedAt: new Date(),
-        },
-        create: {
-          userId: session.user.id,
-          platform: "GOOGLE_ADS",
-          accountId: account.accountId,
-          accountName: account.accountName,
-          accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
-          expiresAt: tokens.expiresAt,
-          isActive: true,
-        },
-      });
-    }
-
-    // Clear the nonce cookie after successful use
-    const response = NextResponse.redirect(
+    return NextResponse.redirect(
       new URL(
-        `/admin/marketing?success=Connected ${accounts.length} Google Ads account(s)`,
+        "/admin/marketing?success=Google Ads connected. Please configure your Customer ID in settings.",
         request.url,
       ),
     );
-    response.cookies.delete("google_oauth_nonce");
-    return response;
-  } catch (error) {
-    console.error("Google callback error:", error);
-    // Don't expose internal error details to client
+  }
+
+  if (accounts.length === 0) {
+    return NextResponse.redirect(
+      new URL(
+        "/admin/marketing?error=No Google Ads accounts found. Make sure you have access to at least one Google Ads account.",
+        request.url,
+      ),
+    );
+  }
+
+  // Encrypt tokens before storing
+  const encryptedAccessToken = safeEncryptToken(tokens.accessToken);
+  const encryptedRefreshToken = tokens.refreshToken
+    ? safeEncryptToken(tokens.refreshToken)
+    : null;
+
+  // Save accounts to database
+  const { error: dbError } = await tryCatch(
+    Promise.all(
+      accounts.map((account) =>
+        prisma.marketingAccount.upsert({
+          where: {
+            userId_platform_accountId: {
+              userId: session.user.id,
+              platform: "GOOGLE_ADS",
+              accountId: account.accountId,
+            },
+          },
+          update: {
+            accountName: account.accountName,
+            accessToken: encryptedAccessToken,
+            refreshToken: encryptedRefreshToken,
+            expiresAt: tokens.expiresAt,
+            isActive: true,
+            updatedAt: new Date(),
+          },
+          create: {
+            userId: session.user.id,
+            platform: "GOOGLE_ADS",
+            accountId: account.accountId,
+            accountName: account.accountName,
+            accessToken: encryptedAccessToken,
+            refreshToken: encryptedRefreshToken,
+            expiresAt: tokens.expiresAt,
+            isActive: true,
+          },
+        })
+      )
+    )
+  );
+
+  if (dbError) {
+    console.error("Failed to save accounts:", dbError);
     const response = NextResponse.redirect(
       new URL(
-        "/admin/marketing?error=Failed to connect Google Ads account. Please try again.",
+        "/admin/marketing?error=Failed to save account information.",
         request.url,
       ),
     );
     response.cookies.delete("google_oauth_nonce");
     return response;
   }
+
+  // Clear the nonce cookie after successful use
+  const response = NextResponse.redirect(
+    new URL(
+      `/admin/marketing?success=Connected ${accounts.length} Google Ads account(s)`,
+      request.url,
+    ),
+  );
+  response.cookies.delete("google_oauth_nonce");
+  return response;
 }

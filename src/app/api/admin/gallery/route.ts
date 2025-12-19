@@ -46,7 +46,13 @@ async function getHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    return handleError(adminError, "fetch gallery items");
+  }
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -146,7 +152,13 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    return handleError(adminError, "create gallery item");
+  }
 
   const body = await request.json();
 
@@ -229,7 +241,13 @@ async function patchHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    return handleError(adminError, "update gallery item");
+  }
 
   const body = await request.json();
 
@@ -303,7 +321,13 @@ async function deleteHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    return handleError(adminError, "delete gallery item");
+  }
 
   const { searchParams } = new URL(request.url);
   const itemId = searchParams.get("id");

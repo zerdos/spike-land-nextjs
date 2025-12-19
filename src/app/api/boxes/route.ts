@@ -9,14 +9,16 @@ const createBoxSchema = z.object({
   tierId: z.string().min(1, "Tier ID is required"),
 });
 
+import { tryCatch } from "@/lib/try-catch";
+
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError || !session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  try {
-    const boxes = await prisma.box.findMany({
+  const { data: boxes, error: boxesError } = await tryCatch(
+    prisma.box.findMany({
       where: {
         userId: session.user.id,
         deletedAt: null,
@@ -27,58 +29,82 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    })
+  );
 
-    return NextResponse.json(boxes);
-  } catch (error) {
-    console.error("[BOXES_GET]", error);
+  if (boxesError) {
+    console.error("[BOXES_GET]", boxesError);
     return new NextResponse("Internal Error", { status: 500 });
   }
+
+  return NextResponse.json(boxes);
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError || !session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  try {
-    const json = await req.json();
-    const body = createBoxSchema.parse(json);
+  const { data: json, error: jsonError } = await tryCatch(req.json());
+  if (jsonError) {
+    return new NextResponse("Invalid JSON", { status: 400 });
+  }
 
-    // Verify tier exists
-    const tier = await prisma.boxTier.findUnique({
+  const parseResult = createBoxSchema.safeParse(json);
+
+  if (!parseResult.success) {
+    return new NextResponse(JSON.stringify(parseResult.error.flatten()), { status: 400 });
+  }
+
+  const body = parseResult.data;
+
+  // Verify tier exists
+  const { data: tier, error: tierError } = await tryCatch(
+    prisma.boxTier.findUnique({
       where: { id: body.tierId },
-    });
+    })
+  );
 
-    if (!tier) {
-      return new NextResponse("Invalid Tier", { status: 400 });
-    }
+  if (tierError) {
+    console.error("Database error (tier lookup):", tierError);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
 
-    // Check user balance and consume tokens
-    const cost = tier.pricePerHour; // Charge 1 hour upfront
+  if (!tier) {
+    return new NextResponse("Invalid Tier", { status: 400 });
+  }
 
-    // Lazy import to avoid circular dependencies if any
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
-    );
+  // Check user balance and consume tokens
+  const cost = tier.pricePerHour; // Charge 1 hour upfront
 
-    const hasBalance = await TokenBalanceManager.hasEnoughTokens(
-      session.user.id,
-      cost,
-    );
-    if (!hasBalance) {
-      return new NextResponse("Insufficient Tokens", { status: 402 });
-    }
+  // Lazy import to avoid circular dependencies if any
+  const { TokenBalanceManager } = await import(
+    "@/lib/tokens/balance-manager"
+  );
 
-    // TODO: Phase 1 - Mocking the Docker container creation
-    // In real implementation, this would trigger a workflow/cloud function
-    // For now, we just create the DB record
+  const { data: hasBalance, error: balanceError } = await tryCatch(
+    TokenBalanceManager.hasEnoughTokens(session.user.id, cost)
+  );
 
-    // We should ideally wrap this in a transaction, but for Phase 1 separate calls are okay
-    // or we can consume AFTER successful creation, but easier to consume first
+  if (balanceError) {
+    console.error("Token balance check error:", balanceError);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
 
-    const tokenResult = await TokenBalanceManager.consumeTokens({
+  if (!hasBalance) {
+    return new NextResponse("Insufficient Tokens", { status: 402 });
+  }
+
+  // TODO: Phase 1 - Mocking the Docker container creation
+  // In real implementation, this would trigger a workflow/cloud function
+  // For now, we just create the DB record
+
+  // We should ideally wrap this in a transaction, but for Phase 1 separate calls are okay
+  // or we can consume AFTER successful creation, but easier to consume first
+
+  const { data: tokenResult, error: tokenError } = await tryCatch(
+    TokenBalanceManager.consumeTokens({
       userId: session.user.id,
       amount: cost,
       source: "box_creation",
@@ -87,53 +113,59 @@ export async function POST(req: Request) {
         tierId: tier.id,
         tierName: tier.name,
       },
-    });
+    })
+  );
 
-    if (!tokenResult.success) {
-      return new NextResponse("Failed to process payment", { status: 500 });
-    }
+  if (tokenError || !tokenResult?.success) {
+    console.error("Token consumption error:", tokenError);
+    return new NextResponse("Failed to process payment", { status: 500 });
+  }
 
-    let box;
-    try {
-      box = await prisma.box.create({
-        data: {
-          name: body.name,
-          userId: session.user.id,
-          tierId: body.tierId,
-          status: BoxStatus.CREATING,
-          connectionUrl: null,
-        },
-      });
+  const { data: box, error: createError } = await tryCatch(
+    prisma.box.create({
+      data: {
+        name: body.name,
+        userId: session.user.id,
+        tierId: body.tierId,
+        status: BoxStatus.CREATING,
+        connectionUrl: null,
+      },
+    })
+  );
 
-      // Create action log
-      await prisma.boxAction.create({
-        data: {
-          boxId: box.id,
-          action: "CREATE",
-          status: "COMPLETED",
-          metadata: { cost },
-        },
-      });
-    } catch (err) {
-      // Refund if creation fails
-      await TokenBalanceManager.refundTokens(
+  if (createError) {
+    // Refund if creation fails
+    await tryCatch(
+      TokenBalanceManager.refundTokens(
         session.user.id,
         cost,
         "pending",
         "Box creation failed",
-      );
-      throw err;
-    }
-
-    // Simulate async provisioning (optional, logic would be in a separate worker)
-    // For Phase 1, we might just assume it "starts" quickly or stays in CREATING
-
-    return NextResponse.json(box);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return new NextResponse(JSON.stringify(error.flatten()), { status: 400 });
-    }
-    console.error("[BOXES_POST]", error);
+      )
+    );
+    console.error("Box creation failed:", createError);
     return new NextResponse("Internal Error", { status: 500 });
   }
+
+  // Create action log
+  const { error: actionError } = await tryCatch(
+    prisma.boxAction.create({
+      data: {
+        boxId: box.id,
+        action: "CREATE",
+        status: "COMPLETED",
+        metadata: { cost },
+      },
+    })
+  );
+
+  if (actionError) {
+    console.error("Failed to log box action:", actionError);
+    // Non-fatal error
+  }
+
+  // Simulate async provisioning (optional, logic would be in a separate worker)
+  // For Phase 1, we might just assume it "starts" quickly or stays in CREATING
+
+  return NextResponse.json(box);
 }

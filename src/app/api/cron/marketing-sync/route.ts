@@ -42,62 +42,77 @@ function validateCronSecret(request: NextRequest): boolean {
   return cronSecretHeader === cronSecret;
 }
 
+import { tryCatch } from "@/lib/try-catch";
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
 
-  try {
-    // Validate cron secret
-    if (!validateCronSecret(request)) {
-      console.error("Marketing sync cron: Invalid or missing CRON_SECRET");
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  // Validate cron secret
+  if (!validateCronSecret(request)) {
+    console.error("Marketing sync cron: Invalid or missing CRON_SECRET");
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    console.log("Marketing sync cron: Starting sync...");
+  console.log("Marketing sync cron: Starting sync...");
 
-    // Run the sync
-    const syncResult = await syncExternalCampaigns();
+  // Run the sync
+  const { data: syncResult, error: syncError } = await tryCatch(
+    syncExternalCampaigns()
+  );
 
-    // Also cleanup expired cache entries
-    const expiredCacheCleanedUp = await cleanupExpiredCache();
-
+  if (syncError) {
     const duration = Date.now() - startTime;
-
-    const response = {
-      success: true,
-      synced: syncResult.synced,
-      errors: syncResult.errors,
-      cacheCleanedUp: expiredCacheCleanedUp,
-      durationMs: duration,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (syncResult.errors.length > 0) {
-      console.warn(
-        `Marketing sync cron: Completed with ${syncResult.errors.length} errors`,
-        syncResult.errors,
-      );
-    } else {
-      console.log(
-        `Marketing sync cron: Completed successfully. Synced ${syncResult.synced} campaigns in ${duration}ms`,
-      );
-    }
-
-    return NextResponse.json(response);
-  } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error("Marketing sync cron: Failed", error);
-
+    console.error("Marketing sync cron: Failed", syncError);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: syncError instanceof Error ? syncError.message : "Unknown error",
         durationMs: duration,
         timestamp: new Date().toISOString(),
       },
       { status: 500 },
     );
   }
+
+  // Also cleanup expired cache entries
+  const { data: expiredCacheCleanedUp, error: cleanupError } = await tryCatch(
+    cleanupExpiredCache()
+  );
+
+  if (cleanupError) {
+    console.warn(
+      "Marketing sync cron: Failed to cleanup expired cache",
+      cleanupError,
+    );
+    // Don't fail the whole job if cache cleanup fails
+  }
+
+  const duration = Date.now() - startTime;
+
+  const response = {
+    success: true,
+    synced: syncResult?.synced || 0,
+    errors: syncResult?.errors || [],
+    cacheCleanedUp: expiredCacheCleanedUp || 0,
+    durationMs: duration,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (syncResult && syncResult.errors.length > 0) {
+    console.warn(
+      `Marketing sync cron: Completed with ${syncResult.errors.length} errors`,
+      syncResult.errors,
+    );
+  } else {
+    console.log(
+      `Marketing sync cron: Completed successfully. Synced ${
+        syncResult?.synced || 0
+      } campaigns in ${duration}ms`,
+    );
+  }
+
+  return NextResponse.json(response);
 }

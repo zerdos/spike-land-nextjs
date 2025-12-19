@@ -55,45 +55,57 @@ interface OverviewMetrics {
   }>;
 }
 
+import { tryCatch } from "@/lib/try-catch";
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 
-    await requireAdminByUserId(session.user.id);
+  // Parse and validate query parameters
+  const searchParams = request.nextUrl.searchParams;
+  const parseResult = querySchema.safeParse({
+    startDate: searchParams.get("startDate"),
+    endDate: searchParams.get("endDate"),
+    attributionModel: searchParams.get("attributionModel") || "FIRST_TOUCH",
+  });
 
-    // Parse and validate query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const parseResult = querySchema.safeParse({
-      startDate: searchParams.get("startDate"),
-      endDate: searchParams.get("endDate"),
-      attributionModel: searchParams.get("attributionModel") || "FIRST_TOUCH",
-    });
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Invalid parameters", details: parseResult.error.flatten() },
+      { status: 400 },
+    );
+  }
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid parameters", details: parseResult.error.flatten() },
-        { status: 400 },
-      );
-    }
+  const { startDate, endDate, attributionModel } = parseResult.data;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999); // Include entire end day
 
-    const { startDate, endDate, attributionModel } = parseResult.data;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999); // Include entire end day
+  // Build cache key for this query
+  const cacheKey = buildCacheKey("overview", {
+    startDate,
+    endDate,
+    attributionModel,
+  });
 
-    // Build cache key for this query
-    const cacheKey = buildCacheKey("overview", {
-      startDate,
-      endDate,
-      attributionModel,
-    });
-
-    // Use cached metrics or compute fresh
-    const response = await getOrComputeMetrics<OverviewMetrics>(
+  // Use cached metrics or compute fresh
+  const { data: response, error: cacheError } = await tryCatch(
+    getOrComputeMetrics<OverviewMetrics>(
       cacheKey,
       async () => {
         // Calculate previous period for trends
@@ -102,24 +114,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const previousEnd = new Date(start.getTime() - 1);
 
         // Query current period metrics
-        const currentMetrics = await getRawMetrics(
-          start,
-          end,
-          attributionModel as AttributionType,
+        const { data: currentMetrics, error: currentError } = await tryCatch(
+          getRawMetrics(start, end, attributionModel as AttributionType)
         );
+
+        if (currentError || !currentMetrics) throw currentError;
 
         // Query previous period metrics for trends
-        const previousMetrics = await getRawMetrics(
-          previousStart,
-          previousEnd,
-          attributionModel as AttributionType,
+        const { data: previousMetrics, error: previousError } = await tryCatch(
+          getRawMetrics(
+            previousStart,
+            previousEnd,
+            attributionModel as AttributionType,
+          )
         );
 
+        if (previousError || !previousMetrics) throw previousError;
+
         // Get daily breakdown
-        const daily = await getDailyMetrics(start, end);
+        const { data: daily, error: dailyError } = await tryCatch(
+          getDailyMetrics(start, end)
+        );
+
+        if (dailyError || !daily) throw dailyError;
 
         // Get traffic sources breakdown
-        const trafficSources = await getTrafficSources(start, end);
+        const { data: trafficSources, error: trafficError } = await tryCatch(
+          getTrafficSources(start, end)
+        );
+
+        if (trafficError || !trafficSources) throw trafficError;
 
         // Build response in expected format
         return {
@@ -150,19 +174,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         };
       },
       300, // Cache for 5 minutes
-    );
+    )
+  );
 
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Failed to fetch campaign overview:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (cacheError) {
+    console.error("Failed to fetch campaign overview:", cacheError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(response);
 }
 
 interface RawMetrics {
