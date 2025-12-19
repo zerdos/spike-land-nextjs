@@ -1,3 +1,4 @@
+import { isValidAspectRatio, SUPPORTED_ASPECT_RATIOS } from "@/lib/ai/aspect-ratio";
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
@@ -29,6 +30,8 @@ const MAX_PROMPT_LENGTH = 4000;
  *     prompt: string (required) - Text description of the image to generate
  *     tier: "TIER_1K" | "TIER_2K" | "TIER_4K" (required) - Output resolution
  *     negativePrompt?: string - Things to avoid in the generation
+ *     aspectRatio?: string - Output aspect ratio (default: "1:1")
+ *       Supported: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
  *   }
  *
  * Response:
