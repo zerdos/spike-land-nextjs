@@ -298,6 +298,7 @@ model ImageEnhancementJob {
   // Blend enhancement - optional source image for image-to-image blending
   sourceImageId String?
   sourceImage   EnhancedImage? @relation("BlendSource", fields: [sourceImageId], references: [id], onDelete: SetNull)
+  isBlend       Boolean         @default(false) // True when job uses blend enhancement (file upload or stored image)
 
   image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)

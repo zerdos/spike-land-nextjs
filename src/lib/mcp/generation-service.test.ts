@@ -661,6 +661,7 @@ describe("generation-service", () => {
         tier: "2K",
         imageData: inputBase64,
         mimeType: "image/png",
+        aspectRatio: "1:1",
       });
 
       // Verify output was uploaded
