@@ -2,6 +2,7 @@ import { authenticateMcpRequest } from "@/lib/mcp/auth";
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { tryCatch } from "@/lib/try-catch";
 
 // Schema for task result update
 const taskResultSchema = z.object({
@@ -27,24 +28,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing boxId" }, { status: 400 });
   }
 
-  try {
-    // Verify box ownership
-    const box = await prisma.box.findUnique({
+  // Verify box ownership
+  const { data: box, error: boxError } = await tryCatch(
+    prisma.box.findUnique({
       where: { id: boxId },
       select: { userId: true },
+    })
+  );
+
+  if (boxError) {
+    console.error("Database error (box lookup):", boxError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+
+  if (!box) {
+    return NextResponse.json({ error: "Box not found" }, { status: 404 });
+  }
+
+  if (box.userId !== authResult.userId) {
+    return NextResponse.json({ error: "Unauthorized access to box" }, {
+      status: 403,
     });
+  }
 
-    if (!box) {
-      return NextResponse.json({ error: "Box not found" }, { status: 404 });
-    }
-
-    if (box.userId !== authResult.userId) {
-      return NextResponse.json({ error: "Unauthorized access to box" }, {
-        status: 403,
-      });
-    }
-
-    const tasks = await prisma.agentTask.findMany({
+  const { data: tasks, error: tasksError } = await tryCatch(
+    prisma.agentTask.findMany({
       where: {
         boxId,
         status: "PENDING",
@@ -52,15 +60,15 @@ export async function GET(req: NextRequest) {
       orderBy: {
         createdAt: "asc",
       },
-    });
+    })
+  );
 
-    return NextResponse.json({ tasks });
-  } catch (error) {
-    console.error("Failed to fetch agent tasks:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, {
-      status: 500,
-    });
+  if (tasksError) {
+    console.error("Failed to fetch agent tasks:", tasksError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+
+  return NextResponse.json({ tasks });
 }
 
 // POST /api/v1/agent/tasks
@@ -71,48 +79,62 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: authResult.error }, { status: 401 });
   }
 
-  try {
-    const body = await req.json();
-    const { taskId, status, result, error } = taskResultSchema.parse(body);
+  const { data: body, error: jsonError } = await tryCatch(req.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    // Verify task ownership
-    const task = await prisma.agentTask.findUnique({
+  const parseResult = taskResultSchema.safeParse(body);
+
+  if (!parseResult.success) {
+    return NextResponse.json({
+      error: "Invalid request body",
+      details: parseResult.error.flatten(),
+    }, {
+      status: 400,
+    });
+  }
+
+  const { taskId, status, result, error } = parseResult.data;
+
+  // Verify task ownership
+  const { data: task, error: taskError } = await tryCatch(
+    prisma.agentTask.findUnique({
       where: { id: taskId },
       include: { box: true },
+    })
+  );
+
+  if (taskError) {
+    console.error("Database error (task lookup):", taskError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+
+  if (!task) {
+    return NextResponse.json({ error: "Task not found" }, { status: 404 });
+  }
+
+  if (task.box.userId !== authResult.userId) {
+    return NextResponse.json({ error: "Unauthorized access to task" }, {
+      status: 403,
     });
+  }
 
-    if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    if (task.box.userId !== authResult.userId) {
-      return NextResponse.json({ error: "Unauthorized access to task" }, {
-        status: 403,
-      });
-    }
-
-    const updatedTask = await prisma.agentTask.update({
+  const { data: updatedTask, error: updateError } = await tryCatch(
+    prisma.agentTask.update({
       where: { id: taskId },
       data: {
         status,
         result: result ?? undefined,
         error: error ?? undefined,
       },
-    });
+    })
+  );
 
-    return NextResponse.json({ success: true, task: updatedTask });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        error: "Invalid request body",
-        details: error.flatten(),
-      }, {
-        status: 400,
-      });
-    }
-    console.error("Failed to update agent task:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, {
-      status: 500,
-    });
+  if (updateError) {
+    console.error("Failed to update agent task:", updateError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+
+  return NextResponse.json({ success: true, task: updatedTask });
 }

@@ -48,7 +48,13 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    return handleError(adminError, "reorder gallery item");
+  }
 
   const body = await request.json();
 
@@ -115,7 +121,13 @@ async function patchHandler(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    return handleError(adminError, "reorder gallery items");
+  }
 
   const body = await request.json();
 

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (adminError) {
-    console.error("Failed to browse images:", adminError);
+    console.error("Admin check failed:", adminError);
     if (
       adminError instanceof Error && adminError.message.includes("Forbidden")
     ) {

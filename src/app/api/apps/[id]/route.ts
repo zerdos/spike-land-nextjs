@@ -3,25 +3,29 @@ import prisma from "@/lib/prisma";
 import { appCreationSchema } from "@/lib/validations/app";
 import type { MonetizationType, RequirementPriority, RequirementStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { tryCatch } from "@/lib/try-catch";
 
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
 ) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    const { id } = await context.params;
+  const { data: params, error: paramsError } = await tryCatch(context.params);
+  if (paramsError) {
+    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+  }
+  const { id } = params;
 
-    const app = await prisma.app.findFirst({
+  const { data: app, error: fetchError } = await tryCatch(
+    prisma.app.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -41,42 +45,48 @@ export async function GET(
           },
         },
       },
-    });
+    })
+  );
 
-    if (!app) {
-      return NextResponse.json(
-        { error: "App not found" },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(app);
-  } catch (error) {
-    console.error("Error fetching app:", error);
+  if (fetchError) {
+    console.error("Error fetching app:", fetchError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  if (!app) {
+    return NextResponse.json(
+      { error: "App not found" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json(app);
 }
 
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
 ) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    const { id } = await context.params;
+  const { data: params, error: paramsError } = await tryCatch(context.params);
+  if (paramsError) {
+    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+  }
+  const { id } = params;
 
-    const existingApp = await prisma.app.findFirst({
+  const { data: existingApp, error: fetchError } = await tryCatch(
+    prisma.app.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -84,41 +94,64 @@ export async function PATCH(
           not: "DELETED",
         },
       },
-    });
+    })
+  );
 
-    if (!existingApp) {
-      return NextResponse.json(
-        { error: "App not found" },
-        { status: 404 },
-      );
-    }
+  if (fetchError) {
+    console.error("Error fetching app for update:", fetchError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    const body = await request.json();
-    const validatedData = appCreationSchema.partial().parse(body);
+  if (!existingApp) {
+    return NextResponse.json(
+      { error: "App not found" },
+      { status: 404 },
+    );
+  }
 
-    const updateData: {
-      name?: string;
-      description?: string;
-      requirements?: {
-        create: {
-          description: string;
-          priority: RequirementPriority;
-          status: RequirementStatus;
-        };
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parseResult = appCreationSchema.partial().safeParse(body);
+
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Validation error", details: parseResult.error.issues },
+      { status: 400 },
+    );
+  }
+
+  const validatedData = parseResult.data;
+
+  const updateData: {
+    name?: string;
+    description?: string;
+    requirements?: {
+      create: {
+        description: string;
+        priority: RequirementPriority;
+        status: RequirementStatus;
       };
-      monetizationModels?: {
-        create: { type: MonetizationType; features: string[]; };
-      };
-    } = {};
+    };
+    monetizationModels?: {
+      create: { type: MonetizationType; features: string[]; };
+    };
+  } = {};
 
-    if (validatedData.name !== undefined) {
-      updateData.name = validatedData.name;
-    }
-    if (validatedData.description !== undefined) {
-      updateData.description = validatedData.description;
-    }
+  if (validatedData.name !== undefined) {
+    updateData.name = validatedData.name;
+  }
+  if (validatedData.description !== undefined) {
+    updateData.description = validatedData.description;
+  }
 
-    const app = await prisma.app.update({
+  const { data: app, error: updateError } = await tryCatch(
+    prisma.app.update({
       where: { id },
       data: updateData,
       include: {
@@ -133,42 +166,41 @@ export async function PATCH(
           },
         },
       },
-    });
+    })
+  );
 
-    return NextResponse.json(app);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 },
-      );
-    }
-
-    console.error("Error updating app:", error);
+  if (updateError) {
+    console.error("Error updating app:", updateError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(app);
 }
 
 export async function DELETE(
   _request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
 ) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
 
-    const { id } = await context.params;
+  const { data: params, error: paramsError } = await tryCatch(context.params);
+  if (paramsError) {
+    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+  }
+  const { id } = params;
 
-    const existingApp = await prisma.app.findFirst({
+  const { data: existingApp, error: fetchError } = await tryCatch(
+    prisma.app.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -176,26 +208,38 @@ export async function DELETE(
           not: "DELETED",
         },
       },
-    });
+    })
+  );
 
-    if (!existingApp) {
-      return NextResponse.json(
-        { error: "App not found" },
-        { status: 404 },
-      );
-    }
-
-    await prisma.app.update({
-      where: { id },
-      data: { status: "DELETED" },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting app:", error);
+  if (fetchError) {
+    console.error("Error fetching app for deletion:", fetchError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  if (!existingApp) {
+    return NextResponse.json(
+      { error: "App not found" },
+      { status: 404 },
+    );
+  }
+
+  const { error: deleteError } = await tryCatch(
+    prisma.app.update({
+      where: { id },
+      data: { status: "DELETED" },
+    })
+  );
+
+  if (deleteError) {
+    console.error("Error deleting app:", deleteError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }

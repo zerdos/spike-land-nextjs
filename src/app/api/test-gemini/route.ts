@@ -1,37 +1,44 @@
 import { auth } from "@/auth";
 import { analyzeImage } from "@/lib/ai/gemini-client";
 import { NextRequest, NextResponse } from "next/server";
+import { tryCatch } from "@/lib/try-catch";
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const { data: session, error: authError } = await tryCatch(auth());
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const body = await request.json();
-    const { imageData, mimeType } = body;
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    if (!imageData || !mimeType) {
-      return NextResponse.json(
-        { error: "Missing imageData or mimeType" },
-        { status: 400 },
-      );
-    }
+  const { imageData, mimeType } = body;
 
-    // Analyze the image with Gemini
-    const analysis = await analyzeImage(imageData, mimeType);
-
-    return NextResponse.json({
-      success: true,
-      analysis,
-      userId: session.user.id,
-    });
-  } catch (error) {
-    console.error("Error in test-gemini API:", error);
+  if (!imageData || !mimeType) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Missing imageData or mimeType" },
+      { status: 400 },
+    );
+  }
+
+  // Analyze the image with Gemini
+  const { data: analysis, error: analyzeError } = await tryCatch(
+    analyzeImage(imageData, mimeType)
+  );
+
+  if (analyzeError) {
+    console.error("Error in test-gemini API:", analyzeError);
+    return NextResponse.json(
+      { error: analyzeError instanceof Error ? analyzeError.message : "Unknown error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({
+    success: true,
+    analysis,
+    userId: session.user.id,
+  });
 }

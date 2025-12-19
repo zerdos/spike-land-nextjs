@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 const DEFAULT_TTL_SECONDS = 300; // 5 minutes
 
@@ -16,31 +17,34 @@ const DEFAULT_TTL_SECONDS = 300; // 5 minutes
  * @returns The cached metrics or null if not found/expired
  */
 export async function getCachedMetrics<T>(cacheKey: string): Promise<T | null> {
-  try {
-    const cached = await prisma.campaignMetricsCache.findUnique({
+  const { data: cached, error } = await tryCatch(
+    prisma.campaignMetricsCache.findUnique({
       where: { cacheKey },
-    });
+    })
+  );
 
-    if (!cached) {
-      return null;
-    }
-
-    // Check if cache has expired
-    if (new Date() > cached.expiresAt) {
-      // Optionally delete expired cache entry
-      await prisma.campaignMetricsCache.delete({
-        where: { cacheKey },
-      }).catch(() => {
-        // Ignore deletion errors (entry may have been deleted by cleanup job)
-      });
-      return null;
-    }
-
-    return cached.metrics as T;
-  } catch (error) {
+  if (error) {
     console.error("Error fetching cached metrics:", error);
     return null;
   }
+
+  if (!cached) {
+    return null;
+  }
+
+  // Check if cache has expired
+  if (new Date() > cached.expiresAt) {
+    // Optionally delete expired cache entry
+    // Fire and forget, ignore result
+    void tryCatch(
+      prisma.campaignMetricsCache.delete({
+        where: { cacheKey },
+      })
+    );
+    return null;
+  }
+
+  return cached.metrics as T;
 }
 
 /**
@@ -55,11 +59,11 @@ export async function setCachedMetrics(
   metrics: unknown,
   ttlSeconds: number = DEFAULT_TTL_SECONDS,
 ): Promise<void> {
-  try {
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
 
-    await prisma.campaignMetricsCache.upsert({
+  const { error } = await tryCatch(
+    prisma.campaignMetricsCache.upsert({
       where: { cacheKey },
       update: {
         metrics: metrics as object,
@@ -72,8 +76,10 @@ export async function setCachedMetrics(
         computedAt: now,
         expiresAt,
       },
-    });
-  } catch (error) {
+    })
+  );
+
+  if (error) {
     console.error("Error setting cached metrics:", error);
     // Cache failures should not break the main flow
   }
@@ -87,26 +93,32 @@ export async function setCachedMetrics(
  * @returns Number of invalidated entries
  */
 export async function invalidateCache(pattern?: string): Promise<number> {
-  try {
-    if (pattern) {
-      // Use raw query for pattern matching since Prisma doesn't support LIKE on unique fields easily
-      const result = await prisma.campaignMetricsCache.deleteMany({
+  let result;
+
+  if (pattern) {
+    // Use raw query for pattern matching since Prisma doesn't support LIKE on unique fields easily
+    result = await tryCatch(
+      prisma.campaignMetricsCache.deleteMany({
         where: {
           cacheKey: {
             contains: pattern,
           },
         },
-      });
-      return result.count;
-    } else {
-      // Delete all cache entries
-      const result = await prisma.campaignMetricsCache.deleteMany({});
-      return result.count;
-    }
-  } catch (error) {
+      })
+    );
+  } else {
+    // Delete all cache entries
+    result = await tryCatch(prisma.campaignMetricsCache.deleteMany({}));
+  }
+
+  const { data, error } = result;
+
+  if (error) {
     console.error("Error invalidating cache:", error);
     return 0;
   }
+
+  return data?.count || 0;
 }
 
 /**
@@ -117,19 +129,22 @@ export async function invalidateCache(pattern?: string): Promise<number> {
  * @returns Number of deleted entries
  */
 export async function cleanupExpiredCache(): Promise<number> {
-  try {
-    const result = await prisma.campaignMetricsCache.deleteMany({
+  const { data, error } = await tryCatch(
+    prisma.campaignMetricsCache.deleteMany({
       where: {
         expiresAt: {
           lt: new Date(),
         },
       },
-    });
-    return result.count;
-  } catch (error) {
+    })
+  );
+
+  if (error) {
     console.error("Error cleaning up expired cache:", error);
     return 0;
   }
+
+  return data?.count || 0;
 }
 
 /**

@@ -28,23 +28,16 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const adminResult = await tryCatch(requireAdminByUserId(session.user.id));
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
-  if (adminResult.error) {
-    console.error("Failed to fetch token analytics:", adminResult.error);
-    if (
-      adminResult.error instanceof Error &&
-      adminResult.error.message.includes("Forbidden")
-    ) {
-      return NextResponse.json(
-        { error: adminResult.error.message },
-        { status: 403 },
-      );
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 
   // Get date ranges

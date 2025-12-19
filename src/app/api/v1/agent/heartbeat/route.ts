@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { tryCatch } from "@/lib/try-catch";
 
 const heartbeatSchema = z.object({
   boxId: z.string(),
@@ -9,47 +10,55 @@ const heartbeatSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { boxId, status: _status, load: _load } = heartbeatSchema.parse(body);
+  const { data: body, error: jsonError } = await tryCatch(req.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    // Verify box exists
-    const box = await prisma.box.findUnique({
-      where: { id: boxId },
-    });
+  const parseResult = heartbeatSchema.safeParse(body);
 
-    if (!box) {
-      return NextResponse.json({ error: "Box not found" }, { status: 404 });
-    }
-
-    // Update box status if it was STOPPED/TERMINATED but is now reporting in?
-    // Or just update metadata. For now, we trust the agent is RUNNING if it heartbeats.
-    if (box.status !== "RUNNING") {
-      await prisma.box.update({
-        where: { id: boxId },
-        data: { status: "RUNNING" },
-      });
-    }
-
-    // In a real system, we'd store the heartbeat/load metric in a time-series DB or separate table.
-    // For Phase 1, we just acknowledge.
-
+  if (!parseResult.success) {
     return NextResponse.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        error: "Invalid request body",
-        details: error.flatten(),
-      }, {
-        status: 400,
-      });
-    }
-    console.error("Heartbeat error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, {
-      status: 500,
+      error: "Invalid request body",
+      details: parseResult.error.flatten(),
+    }, {
+      status: 400,
     });
   }
+
+  const { boxId } = parseResult.data;
+
+  const { data: box, error: dbError } = await tryCatch(
+    prisma.box.findUnique({
+      where: { id: boxId },
+    })
+  );
+
+  if (dbError) {
+    console.error("Database error:", dbError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+
+  if (!box) {
+    return NextResponse.json({ error: "Box not found" }, { status: 404 });
+  }
+
+  if (box.status !== "RUNNING") {
+    const { error: updateError } = await tryCatch(
+      prisma.box.update({
+        where: { id: boxId },
+        data: { status: "RUNNING" },
+      })
+    );
+
+    if (updateError) {
+      console.error("Failed to update box status:", updateError);
+      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+  });
 }

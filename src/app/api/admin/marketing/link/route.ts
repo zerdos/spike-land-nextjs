@@ -46,193 +46,240 @@ interface CampaignLinkResponse {
   updatedAt: Date;
 }
 
+import { tryCatch } from "@/lib/try-catch";
+
 /**
  * GET - List all campaign links
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    console.error("Admin check failed:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 
-    await requireAdminByUserId(session.user.id);
+  // Optional filtering by platform
+  const searchParams = request.nextUrl.searchParams;
+  const platform = searchParams.get("platform");
 
-    // Optional filtering by platform
-    const searchParams = request.nextUrl.searchParams;
-    const platform = searchParams.get("platform");
-
-    const links = await prisma.campaignLink.findMany({
+  const { data: links, error: fetchError } = await tryCatch(
+    prisma.campaignLink.findMany({
       where: platform ? { platform } : undefined,
       orderBy: [
         { platform: "asc" },
         { utmCampaign: "asc" },
       ],
-    });
+    })
+  );
 
-    return NextResponse.json({
-      links: links as CampaignLinkResponse[],
-      total: links.length,
-    });
-  } catch (error) {
-    console.error("Failed to fetch campaign links:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (fetchError) {
+    console.error("Failed to fetch campaign links:", fetchError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({
+    links: (links || []) as CampaignLinkResponse[],
+    total: links?.length || 0,
+  });
 }
 
 /**
  * POST - Create a new campaign link
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
-    const body = await request.json();
-    const parseResult = createLinkSchema.safeParse(body);
+  if (adminError) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid request body", details: parseResult.error.flatten() },
-        { status: 400 },
-      );
-    }
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    const { utmCampaign, platform, externalCampaignId, externalCampaignName } = parseResult.data;
+  const parseResult = createLinkSchema.safeParse(body);
 
-    // Check if link already exists
-    const existingLink = await prisma.campaignLink.findUnique({
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Invalid request body", details: parseResult.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  const { utmCampaign, platform, externalCampaignId, externalCampaignName } = parseResult.data;
+
+  // Check if link already exists
+  const { data: existingLink, error: checkError } = await tryCatch(
+    prisma.campaignLink.findUnique({
       where: {
         utmCampaign_platform: {
           utmCampaign,
           platform,
         },
       },
-    });
+    })
+  );
 
-    if (existingLink) {
-      // Update existing link
-      const updatedLink = await prisma.campaignLink.update({
+  if (checkError) {
+    console.error("Database error checking existing link:", checkError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (existingLink) {
+    // Update existing link
+    const { data: updatedLink, error: updateError } = await tryCatch(
+      prisma.campaignLink.update({
         where: { id: existingLink.id },
         data: {
           externalCampaignId,
           externalCampaignName,
           updatedAt: new Date(),
         },
-      });
+      })
+    );
 
-      return NextResponse.json({
-        link: updatedLink as CampaignLinkResponse,
-        updated: true,
-      });
+    if (updateError) {
+      console.error("Failed to update campaign link:", updateError);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
 
-    // Create new link
-    const newLink = await prisma.campaignLink.create({
+    return NextResponse.json({
+      link: updatedLink as CampaignLinkResponse,
+      updated: true,
+    });
+  }
+
+  // Create new link
+  const { data: newLink, error: createError } = await tryCatch(
+    prisma.campaignLink.create({
       data: {
         utmCampaign,
         platform,
         externalCampaignId,
         externalCampaignName,
       },
-    });
+    })
+  );
 
-    return NextResponse.json(
-      { link: newLink as CampaignLinkResponse, created: true },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Failed to create campaign link:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (createError) {
+    console.error("Failed to create campaign link:", createError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json(
+    { link: newLink as CampaignLinkResponse, created: true },
+    { status: 201 },
+  );
 }
 
 /**
  * DELETE - Remove a campaign link
  */
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
 
-    const body = await request.json();
-    const parseResult = deleteLinkSchema.safeParse(body);
+  if (adminError) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid request body", details: parseResult.error.flatten() },
-        { status: 400 },
-      );
-    }
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    const { id, utmCampaign, platform } = parseResult.data;
+  const parseResult = deleteLinkSchema.safeParse(body);
 
-    let deletedLink;
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Invalid request body", details: parseResult.error.flatten() },
+      { status: 400 },
+    );
+  }
 
-    if (id) {
-      // Delete by ID
-      deletedLink = await prisma.campaignLink.delete({
+  const { id, utmCampaign, platform } = parseResult.data;
+
+  let deletedLinkResult;
+
+  if (id) {
+    // Delete by ID
+    deletedLinkResult = await tryCatch(
+      prisma.campaignLink.delete({
         where: { id },
-      });
-    } else if (utmCampaign && platform) {
-      // Delete by composite key
-      deletedLink = await prisma.campaignLink.delete({
+      })
+    );
+  } else if (utmCampaign && platform) {
+    // Delete by composite key
+    deletedLinkResult = await tryCatch(
+      prisma.campaignLink.delete({
         where: {
           utmCampaign_platform: {
             utmCampaign,
             platform,
           },
         },
-      });
-    }
+      })
+    );
+  } else {
+    // Should be caught by Zod validation, but just in case
+    return NextResponse.json(
+      { error: "Invalid delete parameters" },
+      { status: 400 },
+    );
+  }
 
-    if (!deletedLink) {
+  const { data: deletedLink, error: deleteError } = deletedLinkResult;
+
+  if (deleteError) {
+    console.error("Failed to delete campaign link:", deleteError);
+
+    // Handle Prisma not found error (P2025)
+    // @ts-expect-error - Prisma error typing
+    if (deleteError.code === "P2025" || deleteError.message?.includes("Record to delete does not exist")) {
       return NextResponse.json(
         { error: "Campaign link not found" },
         { status: 404 },
       );
-    }
-
-    return NextResponse.json({ success: true, deleted: deletedLink });
-  } catch (error) {
-    console.error("Failed to delete campaign link:", error);
-
-    // Handle Prisma not found error
-    if (
-      error instanceof Error &&
-      error.message.includes("Record to delete does not exist")
-    ) {
-      return NextResponse.json(
-        { error: "Campaign link not found" },
-        { status: 404 },
-      );
-    }
-
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
     }
 
     return NextResponse.json(
@@ -240,4 +287,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ success: true, deleted: deletedLink });
 }

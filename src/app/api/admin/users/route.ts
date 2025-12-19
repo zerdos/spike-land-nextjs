@@ -26,7 +26,19 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search");
@@ -170,7 +182,19 @@ async function handlePatchUser(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
   const body = await request.json();
   const { userId, action, value } = body;
@@ -367,7 +391,19 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await requireAdminByUserId(session.user.id);
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id)
+  );
+
+  if (adminError) {
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("userId");

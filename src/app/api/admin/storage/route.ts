@@ -40,7 +40,7 @@ export async function GET() {
   );
 
   if (adminError) {
-    console.error("Failed to fetch storage stats:", adminError);
+    console.error("Admin check failed:", adminError);
     if (
       adminError instanceof Error && adminError.message.includes("Forbidden")
     ) {
