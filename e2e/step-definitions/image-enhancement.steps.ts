@@ -117,17 +117,7 @@ async function mockJobStatus(world: CustomWorld, status: string) {
   });
 }
 
-// Background steps
-Given("I am on the enhance page", async function(this: CustomWorld) {
-  // Use stored token balance if set by previous step, otherwise default to 10
-  const worldWithBalance = this as CustomWorld & {
-    desiredTokenBalance?: number;
-  };
-  const tokenBalance = worldWithBalance.desiredTokenBalance ?? 10;
-  await mockTokenBalance(this, tokenBalance);
-  await this.page.goto(`${this.baseUrl}/pixel`);
-  await this.page.waitForLoadState("networkidle");
-});
+// NOTE: "I am on the enhance page" step moved to common.steps.ts
 
 Given("I have an uploaded image", async function(this: CustomWorld) {
   // Mock the images list API
@@ -225,25 +215,7 @@ Given("I have no uploaded images", async function(this: CustomWorld) {
   await mockTokenBalance(this, 10);
 });
 
-Given(
-  "I have at least {int} tokens",
-  async function(this: CustomWorld, tokenCount: number) {
-    await mockTokenBalance(this, tokenCount);
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
-  },
-);
-
-Given(
-  "I have {int} tokens",
-  async function(this: CustomWorld, tokenCount: number) {
-    // Store the desired token count for use by subsequent steps
-    (this as CustomWorld & { desiredTokenBalance?: number; })
-      .desiredTokenBalance = tokenCount;
-    // Also set up the mock immediately in case we're already on a page
-    await mockTokenBalance(this, tokenCount);
-  },
-);
+// NOTE: "I have at least {int} tokens" and "I have {int} tokens" steps moved to common.steps.ts
 
 Given(
   "I have less than {int} tokens",
@@ -404,13 +376,7 @@ When(
   },
 );
 
-When("I click the enhance button", async function(this: CustomWorld) {
-  const enhanceButton = this.page.getByRole("button", {
-    name: /enhance|start/i,
-  });
-  await enhanceButton.click();
-  await this.page.waitForTimeout(500);
-});
+// NOTE: "I click the enhance button" step moved to common.steps.ts
 
 When("I try to enhance the image", async function(this: CustomWorld) {
   await mockEnhancement(this, false);
@@ -475,11 +441,7 @@ When("I attempt to delete an image", async function(this: CustomWorld) {
   await this.page.waitForTimeout(100);
 });
 
-When("I cancel the deletion confirmation", async function(this: CustomWorld) {
-  this.page.on("dialog", async (dialog) => {
-    await dialog.dismiss();
-  });
-});
+// NOTE: "I cancel the deletion confirmation" step moved to common.steps.ts
 
 When(
   "I click on a different version in the grid",
@@ -665,15 +627,7 @@ Then(
   },
 );
 
-Then(
-  "I should see an insufficient tokens warning",
-  async function(this: CustomWorld) {
-    const warning = this.page.getByText(
-      /insufficient.*tokens?|not enough tokens?/i,
-    );
-    await expect(warning).toBeVisible();
-  },
-);
+// NOTE: "I should see an insufficient tokens warning" step moved to common.steps.ts
 
 Then("I should see a purchase prompt", async function(this: CustomWorld) {
   const purchasePrompt = this.page.getByText(
@@ -732,17 +686,7 @@ Then("the comparison slider should update", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-Then(
-  "the selected version should be highlighted",
-  async function(this: CustomWorld) {
-    const selectedVersion = this.page.locator(
-      '[data-version-id][data-selected="true"]',
-    ).or(
-      this.page.locator("[data-version-id].selected"),
-    );
-    await expect(selectedVersion).toBeVisible();
-  },
-);
+// NOTE: "the selected version should be highlighted" step moved to common.steps.ts
 
 Then(
   "the image should be removed from the list",
@@ -801,15 +745,7 @@ Then("I can select token packages", async function(this: CustomWorld) {
   await this.page.waitForTimeout(200);
 });
 
-Then(
-  "the enhance button should be disabled",
-  async function(this: CustomWorld) {
-    const button = this.page.getByRole("button", { name: /enhance|start/i });
-    await expect(button).toBeDisabled();
-  },
-);
-
-// Removed duplicate - using common.steps.ts
+// NOTE: "the enhance button should be disabled" step moved to common.steps.ts
 
 Then(
   "the enhancement status should show as failed",

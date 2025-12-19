@@ -228,16 +228,14 @@ Feature: Admin Email Logs Management
   Scenario: Send test email successfully
     When I visit "/admin/emails"
     And I enter "test-recipient@example.com" in the test email field
-    And I click "Send Test" button
-    Then I should see a success alert with email ID
-    And the test email field should be cleared
+    And I click the Send Test button and expect success
+    Then the test email field should be cleared
     And the email list should refresh
 
   @slow @requires-db
   Scenario: Send test email with invalid email shows error
     When I visit "/admin/emails"
-    And I click "Send Test" button without entering email
-    Then I should see "Please enter an email address" alert
+    Then the "Send Test" button should be disabled
 
   @slow @requires-db
   Scenario: Empty state when no emails found

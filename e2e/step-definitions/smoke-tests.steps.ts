@@ -29,17 +29,40 @@ Then(
 Then(
   "I should be redirected or see access denied",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
-    const url = this.page.url();
+    // Wait for either redirect (URL change) or access denied message
+    // The redirect might happen after networkidle, so we need to poll
+    const startTime = Date.now();
+    const timeout = 10000; // 10 seconds max
 
-    const isRedirected = url.includes("/auth/signin") ||
-      !url.includes("/admin");
-    const accessDenied = await this.page.getByText(
-      /access denied|forbidden|unauthorized/i,
-    )
-      .isVisible().catch(() => false);
+    while (Date.now() - startTime < timeout) {
+      await this.page.waitForLoadState("networkidle");
+      const url = this.page.url();
 
-    expect(isRedirected || accessDenied).toBe(true);
+      const isRedirected = url.includes("/auth/signin") ||
+        !url.includes("/admin");
+
+      if (isRedirected) {
+        return; // Redirect happened, test passes
+      }
+
+      const accessDenied = await this.page.getByText(
+        /access denied|forbidden|unauthorized/i,
+      )
+        .isVisible().catch(() => false);
+
+      if (accessDenied) {
+        return; // Access denied shown, test passes
+      }
+
+      // Wait a bit before checking again
+      await this.page.waitForTimeout(100);
+    }
+
+    // If we get here, neither condition was met
+    const finalUrl = this.page.url();
+    throw new Error(
+      `Expected redirect away from /admin or access denied message, but still on: ${finalUrl}`,
+    );
   },
 );
 

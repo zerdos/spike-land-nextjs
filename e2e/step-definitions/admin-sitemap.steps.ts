@@ -336,10 +336,7 @@ Then("I should see a path input field", async function(this: CustomWorld) {
   await expect(input).toBeVisible();
 });
 
-Then("the dialog should close", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  await expect(dialog).not.toBeVisible();
-});
+// NOTE: "the dialog should close" step moved to common.steps.ts
 
 Then(
   "I should see a new preview card for {string}",
@@ -349,13 +346,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} error",
-  async function(this: CustomWorld, error: string) {
-    const errorText = this.page.locator(`text=${error}`);
-    await expect(errorText).toBeVisible();
-  },
-);
+// NOTE: "I should see {string} error" step moved to common.steps.ts
 
 Then(
   "I should not see a preview card for {string}",

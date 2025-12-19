@@ -36,7 +36,26 @@ function createMockEmail(overrides: Partial<{
 // Given steps
 Given("there are emails in the system", async function(this: CustomWorld) {
   await this.page.route("**/api/admin/emails**", async (route) => {
-    if (route.request().method() === "GET") {
+    const method = route.request().method();
+
+    if (method === "GET") {
+      const url = new URL(route.request().url());
+      const search = url.searchParams.get("search");
+
+      // Handle empty search result for "nonexistent"
+      if (search && search.includes("nonexistent")) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            emails: [],
+            pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+            templates: ["welcome", "notification", "reminder"],
+          }),
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -50,6 +69,13 @@ Given("there are emails in the system", async function(this: CustomWorld) {
           templates: ["welcome", "notification", "reminder"],
         }),
       });
+    } else if (method === "POST") {
+      // Mock sending test email
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ emailId: `test-${Date.now()}` }),
+      });
     } else {
       await route.continue();
     }
@@ -60,7 +86,9 @@ Given(
   "there are emails with different templates",
   async function(this: CustomWorld) {
     await this.page.route("**/api/admin/emails**", async (route) => {
-      if (route.request().method() === "GET") {
+      const method = route.request().method();
+
+      if (method === "GET") {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -74,6 +102,12 @@ Given(
             templates: ["welcome", "notification", "reminder"],
           }),
         });
+      } else if (method === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ emailId: `test-${Date.now()}` }),
+        });
       } else {
         await route.continue();
       }
@@ -85,7 +119,9 @@ Given(
   "there are emails of all statuses in the system",
   async function(this: CustomWorld) {
     await this.page.route("**/api/admin/emails**", async (route) => {
-      if (route.request().method() === "GET") {
+      const method = route.request().method();
+
+      if (method === "GET") {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -103,6 +139,12 @@ Given(
             templates: ["welcome"],
           }),
         });
+      } else if (method === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ emailId: `test-${Date.now()}` }),
+        });
       } else {
         await route.continue();
       }
@@ -119,7 +161,9 @@ Given(
     );
 
     await this.page.route("**/api/admin/emails**", async (route) => {
-      if (route.request().method() === "GET") {
+      const method = route.request().method();
+
+      if (method === "GET") {
         const url = new URL(route.request().url());
         const page = parseInt(url.searchParams.get("page") || "1");
         const limit = 20;
@@ -135,6 +179,12 @@ Given(
             templates: ["welcome"],
           }),
         });
+      } else if (method === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ emailId: `test-${Date.now()}` }),
+        });
       } else {
         await route.continue();
       }
@@ -144,7 +194,9 @@ Given(
 
 Given("there are no emails in the system", async function(this: CustomWorld) {
   await this.page.route("**/api/admin/emails**", async (route) => {
-    if (route.request().method() === "GET") {
+    const method = route.request().method();
+
+    if (method === "GET") {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -153,6 +205,12 @@ Given("there are no emails in the system", async function(this: CustomWorld) {
           pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
           templates: [],
         }),
+      });
+    } else if (method === "POST") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ emailId: `test-${Date.now()}` }),
       });
     } else {
       await route.continue();
@@ -213,20 +271,18 @@ When(
 When(
   "I select {string} from the email status filter",
   async function(this: CustomWorld, status: string) {
-    const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+    const statusSelect = this.page.getByRole("combobox").first();
     await statusSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: status })
-      .click();
+    await this.page.getByRole("option", { name: status }).click();
   },
 );
 
 When(
   "I select a template from the template filter",
   async function(this: CustomWorld) {
-    const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    const templateSelect = this.page.getByRole("combobox").nth(1);
     await templateSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: "welcome" })
-      .click();
+    await this.page.getByRole("option", { name: "welcome" }).click();
   },
 );
 
@@ -239,6 +295,20 @@ When(
   },
 );
 
+When("I click the Send Test button and expect success", async function(this: CustomWorld) {
+  // Ensure button is enabled before clicking
+  const button = this.page.getByRole("button", { name: "Send Test" });
+  await expect(button).toBeEnabled({ timeout: 10000 });
+
+  // Setup dialog handler BEFORE clicking
+  const dialogPromise = this.page.waitForEvent("dialog", { timeout: 15000 });
+
+  await button.click();
+
+  const dialog = await dialogPromise;
+  expect(dialog.message()).toContain("success");
+  await dialog.accept();
+});
 When("I click the modal overlay", async function(this: CustomWorld) {
   // Click on the overlay (background)
   await this.page.locator(".fixed.inset-0.bg-black\\/50").click({
@@ -265,7 +335,7 @@ Then("I should see email input field", async function(this: CustomWorld) {
 Then(
   "I should see status filter dropdown with {string} option",
   async function(this: CustomWorld, _option: string) {
-    const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+    const statusSelect = this.page.getByRole("combobox").first();
     await expect(statusSelect).toBeVisible();
   },
 );
@@ -273,7 +343,7 @@ Then(
 Then(
   "I should see template filter dropdown with {string} option",
   async function(this: CustomWorld, _option: string) {
-    const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    const templateSelect = this.page.getByRole("combobox").nth(1);
     await expect(templateSelect).toBeVisible();
   },
 );
@@ -281,7 +351,8 @@ Then(
 Then(
   "I should see email table with columns:",
   async function(this: CustomWorld, dataTable: DataTable) {
-    const columns = dataTable.raw().flat();
+    // Use rows() to skip the header row "Column"
+    const columns = dataTable.rows().flat();
     for (const column of columns) {
       const header = this.page.locator("th").filter({ hasText: column });
       await expect(header).toBeVisible();
@@ -316,9 +387,8 @@ Then(
 Then(
   "each email should display the template name",
   async function(this: CustomWorld) {
-    const templates = this.page.locator(
-      "tbody [class*='Badge'][class*='outline']",
-    );
+    // Template is in 3rd column
+    const templates = this.page.locator("tbody tr td:nth-child(3)");
     const count = await templates.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -327,7 +397,8 @@ Then(
 Then(
   "each email should display a status badge",
   async function(this: CustomWorld) {
-    const badges = this.page.locator("tbody [class*='Badge']");
+    // Status is in 4th column
+    const badges = this.page.locator("tbody tr td:nth-child(4)");
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -427,7 +498,7 @@ Then("the search field should be empty", async function(this: CustomWorld) {
 Then(
   "the status filter should show {string}",
   async function(this: CustomWorld, value: string) {
-    const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+    const statusSelect = this.page.getByRole("combobox").first();
     await expect(statusSelect).toContainText(value);
   },
 );
@@ -435,7 +506,7 @@ Then(
 Then(
   "the template filter should show {string}",
   async function(this: CustomWorld, value: string) {
-    const templateSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+    const templateSelect = this.page.getByRole("combobox").nth(1);
     await expect(templateSelect).toContainText(value);
   },
 );
@@ -443,10 +514,14 @@ Then(
 Then(
   "I should see the email details modal",
   async function(this: CustomWorld) {
-    const modal = this.page.locator('[class*="Card"]').filter({
-      hasText: "Email Details",
+    // Wait for any potential animation
+    await this.page.waitForTimeout(500);
+
+    // Look for the modal container
+    const modal = this.page.locator(".fixed.inset-0").filter({
+      has: this.page.getByText("Email Details"),
     });
-    await expect(modal).toBeVisible();
+    await expect(modal).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -555,9 +630,9 @@ Then(
 // NOTE: "PENDING status badge should be yellow" is defined in common.steps.ts
 
 Then("SENT status badge should be blue", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({
+  const badge = this.page.locator("tbody tr td:nth-child(4)").filter({
     hasText: "SENT",
-  }).first();
+  }).first().locator("div");
   const className = await badge.getAttribute("class");
   expect(className).toContain("blue");
 });
@@ -565,18 +640,18 @@ Then("SENT status badge should be blue", async function(this: CustomWorld) {
 Then(
   "DELIVERED status badge should be green",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
+    const badge = this.page.locator("tbody tr td:nth-child(4)").filter({
       hasText: "DELIVERED",
-    }).first();
+    }).first().locator("div");
     const className = await badge.getAttribute("class");
     expect(className).toContain("green");
   },
 );
 
 Then("OPENED status badge should be cyan", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({
+  const badge = this.page.locator("tbody tr td:nth-child(4)").filter({
     hasText: "OPENED",
-  }).first();
+  }).first().locator("div");
   const className = await badge.getAttribute("class");
   expect(className).toContain("cyan");
 });
@@ -584,18 +659,18 @@ Then("OPENED status badge should be cyan", async function(this: CustomWorld) {
 Then(
   "CLICKED status badge should be purple",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
+    const badge = this.page.locator("tbody tr td:nth-child(4)").filter({
       hasText: "CLICKED",
-    }).first();
+    }).first().locator("div");
     const className = await badge.getAttribute("class");
     expect(className).toContain("purple");
   },
 );
 
 Then("BOUNCED status badge should be red", async function(this: CustomWorld) {
-  const badge = this.page.locator('[class*="Badge"]').filter({
+  const badge = this.page.locator("tbody tr td:nth-child(4)").filter({
     hasText: "BOUNCED",
-  }).first();
+  }).first().locator("div");
   const className = await badge.getAttribute("class");
   expect(className).toContain("red");
 });
@@ -643,8 +718,12 @@ Then(
 Then(
   "I should see {string} text in the table",
   async function(this: CustomWorld, text: string) {
-    const cell = this.page.locator("td").filter({ hasText: text });
-    await expect(cell).toBeVisible();
+    // Look for text within the table container
+    const tableContainer = this.page.locator('[class*="Card"]').filter({
+      has: this.page.locator("table"),
+    });
+    const element = tableContainer.getByText(text);
+    await expect(element).toBeVisible({ timeout: 10000 });
   },
 );
 

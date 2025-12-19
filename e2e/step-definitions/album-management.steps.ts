@@ -880,12 +880,7 @@ Then(
   },
 );
 
-Then(
-  "I should be redirected to {string}",
-  async function(this: CustomWorld, path: string) {
-    await expect(this.page).toHaveURL(new RegExp(path), { timeout: 5000 });
-  },
-);
+// NOTE: "I should be redirected to {string}" step moved to common.steps.ts
 
 Then(
   "the images should still exist in my library",
@@ -955,13 +950,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} error",
-  async function(this: CustomWorld, errorText: string) {
-    const errorMessage = this.page.getByText(new RegExp(errorText, "i"));
-    await expect(errorMessage).toBeVisible({ timeout: 5000 });
-  },
-);
+// NOTE: "I should see {string} error" step moved to common.steps.ts
 
 Then("the shareable URL should be removed", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);

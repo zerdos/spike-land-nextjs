@@ -213,13 +213,7 @@ Then(
   },
 );
 
-Then(
-  "I should not see {string} text",
-  async function(this: CustomWorld, text: string) {
-    const element = this.page.getByText(new RegExp(text, "i"));
-    await expect(element).not.toBeVisible();
-  },
-);
+// NOTE: "I should not see {string} text" step moved to common.steps.ts
 
 Then(
   "I should see {string} enhancement cost",

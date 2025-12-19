@@ -116,46 +116,7 @@ Then(
   },
 );
 
-When(
-  "I type {string} in the {string} field",
-  async function(this: CustomWorld, value: string, fieldName: string) {
-    // Try to find by testid first, fall back to label for backward compatibility
-    let field;
-    try {
-      const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
-      const suffixes = ["input", "textarea", "field"];
-      for (const suffix of suffixes) {
-        try {
-          field = this.page.getByTestId(`${testId}-${suffix}`);
-          await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
-          break;
-        } catch {
-          continue;
-        }
-      }
-      if (!field) {
-        field = this.page.getByTestId(testId);
-      }
-    } catch {
-      field = this.page.getByLabel(new RegExp(fieldName, "i"));
-    }
-
-    await expect(field).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await field.fill(value);
-
-    // Store in world for later verification
-    if (!this.wizardFormData) {
-      this.wizardFormData = {};
-    }
-    if (fieldName.toLowerCase().includes("name")) {
-      this.wizardFormData.name = value;
-    } else if (fieldName.toLowerCase().includes("description")) {
-      this.wizardFormData.description = value;
-    } else if (fieldName.toLowerCase().includes("requirements")) {
-      this.wizardFormData.requirements = value;
-    }
-  },
-);
+// NOTE: "I type {string} in the {string} field" step moved to common.steps.ts
 
 // NOTE: "the {string} button should be disabled" is defined in common.steps.ts
 // NOTE: "the {string} button should be enabled" is defined in common.steps.ts
@@ -197,13 +158,7 @@ When(
   },
 );
 
-Then(
-  "the {string} field should contain {string}",
-  async function(this: CustomWorld, fieldName: string, value: string) {
-    const field = this.page.getByLabel(new RegExp(fieldName, "i"));
-    await expect(field).toHaveValue(value);
-  },
-);
+// NOTE: "the {string} field should contain {string}" step moved to common.steps.ts
 
 Given(
   "I complete step 1 and 2 with valid data",

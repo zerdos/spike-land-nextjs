@@ -241,7 +241,9 @@ Then("I should see enhancement statistics", async function(this: CustomWorld) {
 Then(
   "I should see {string} button disabled",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: buttonText });
+    const button = this.page
+      .getByRole("button", { name: buttonText })
+      .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
     await expect(button).toBeDisabled();
   },
 );
@@ -249,7 +251,9 @@ Then(
 Then(
   "I should see {string} button enabled",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: buttonText });
+    const button = this.page
+      .getByRole("button", { name: buttonText })
+      .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
     await expect(button).toBeEnabled();
   },
 );
@@ -262,13 +266,7 @@ Then(
   },
 );
 
-Then(
-  "the URL should contain {string}",
-  async function(this: CustomWorld, param: string) {
-    const url = this.page.url();
-    expect(url).toContain(param);
-  },
-);
+// NOTE: "the URL should contain {string}" step moved to authentication.steps.ts
 
 Then(
   "the photos should be filtered by date range",
