@@ -79,9 +79,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { imageId, tier } = body as {
+    const { imageId, tier, blendSource } = body as {
       imageId: string;
       tier: EnhancementTier;
+      /** Optional: base64 image data for blending (uploaded file, not stored) */
+      blendSource?: {
+        base64: string;
+        mimeType: string;
+      };
     };
 
     if (!imageId || !tier) {
@@ -134,6 +139,58 @@ export async function POST(request: NextRequest) {
         },
         { status: 404, headers: { "X-Request-ID": requestId } },
       );
+    }
+
+    // Validate blend source data (if provided)
+    if (blendSource) {
+      if (!blendSource.base64 || typeof blendSource.base64 !== "string") {
+        requestLogger.warn("Invalid blend source - missing base64 data");
+        return NextResponse.json(
+          {
+            error: "Invalid blend image data",
+            title: "Invalid blend",
+            suggestion: "Please try dropping the image again.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      if (!blendSource.mimeType || !blendSource.mimeType.startsWith("image/")) {
+        requestLogger.warn("Invalid blend source - invalid mimeType", {
+          mimeType: blendSource.mimeType,
+        });
+        return NextResponse.json(
+          {
+            error: "Invalid blend image type",
+            title: "Invalid blend",
+            suggestion: "Please use a valid image file (JPEG, PNG, WebP, or GIF).",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      // Validate base64 size (rough estimate: base64 adds ~33% overhead)
+      const estimatedSize = (blendSource.base64.length * 3) / 4;
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      if (estimatedSize > maxSize) {
+        requestLogger.warn("Blend source too large", {
+          estimatedSize,
+          maxSize,
+        });
+        return NextResponse.json(
+          {
+            error: "Blend image is too large",
+            title: "File too large",
+            suggestion: "Please use an image smaller than 20MB.",
+          },
+          { status: 400, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      requestLogger.info("Blend mode: source image validated", {
+        mimeType: blendSource.mimeType,
+        targetImageId: imageId,
+      });
     }
 
     const tokenCost = ENHANCEMENT_COSTS[tier];
@@ -200,10 +257,15 @@ export async function POST(request: NextRequest) {
         tokensCost: tokenCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
+        // Note: sourceImageId is kept null for uploaded blends since we don't store the blend source
       },
     });
 
-    requestLogger.info("Enhancement job created", { jobId: job.id, tier });
+    requestLogger.info("Enhancement job created", {
+      jobId: job.id,
+      tier,
+      isBlend: !!blendSource,
+    });
 
     // Track enhancement conversion attribution for campaign analytics (first enhancement only)
     await attributeConversion(session.user.id, "ENHANCEMENT", tokenCost).catch((error) => {
@@ -220,6 +282,7 @@ export async function POST(request: NextRequest) {
       originalR2Key: image.originalR2Key,
       tier,
       tokensCost: tokenCost,
+      blendSource: blendSource || null, // For blend enhancement (uploaded file, not stored)
     };
 
     if (isVercelEnvironment()) {

@@ -250,6 +250,7 @@ model EnhancedImage {
   albumImages          AlbumImage[]
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   enhancementJobs      ImageEnhancementJob[]
+  blendTargetJobs      ImageEnhancementJob[] @relation("BlendSource")
   featuredGalleryItems FeaturedGalleryItem[]
 
   @@index([userId, createdAt])
@@ -292,6 +293,10 @@ model ImageEnhancementJob {
   // Pipeline reference for audit trail
   pipelineId String?
   pipeline   EnhancementPipeline? @relation(fields: [pipelineId], references: [id])
+
+  // Blend enhancement - optional source image for image-to-image blending
+  sourceImageId String?
+  sourceImage   EnhancedImage? @relation("BlendSource", fields: [sourceImageId], references: [id], onDelete: SetNull)
 
   image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)

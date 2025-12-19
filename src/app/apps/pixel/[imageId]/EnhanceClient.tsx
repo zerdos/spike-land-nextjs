@@ -1,6 +1,10 @@
 "use client";
 
 import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
+import {
+  type BlendImageData,
+  DroppableEnhanceZone,
+} from "@/components/enhance/DroppableEnhanceZone";
 import { EnhancementHistoryGrid } from "@/components/enhance/EnhancementHistoryGrid";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ExportSelector } from "@/components/enhance/export-selector";
@@ -14,7 +18,7 @@ import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Coins } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Coins, Layers } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -37,6 +41,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       (job: ImageEnhancementJob) => job.status === "PROCESSING" || job.status === "PENDING",
     )?.id || null,
   );
+
+  // Blend mode state (file upload - not stored)
+  const [blendImageData, setBlendImageData] = useState<BlendImageData | null>(null);
+  const [showBlendDialog, setShowBlendDialog] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -112,6 +120,15 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     }
   }, [streamJob, activeJobId]);
 
+  // Handle image drop for blending (file upload)
+  const handleImageDrop = useCallback(
+    (imageData: BlendImageData) => {
+      setBlendImageData(imageData);
+      setShowBlendDialog(true);
+    },
+    [],
+  );
+
   const handleEnhance = async (tier: EnhancementTier) => {
     try {
       const response = await fetch("/api/images/enhance", {
@@ -122,6 +139,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         body: JSON.stringify({
           imageId: image.id,
           tier,
+          // For blend enhancement: pass base64 image data (not stored)
+          blendSource: blendImageData
+            ? { base64: blendImageData.base64, mimeType: blendImageData.mimeType }
+            : undefined,
         }),
       });
 
@@ -163,6 +184,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         cropDimensions: null,
         // Pipeline reference
         pipelineId: null,
+        // Blend source (file upload - not stored, no sourceImageId)
+        sourceImageId: null,
       };
 
       setImage((prev: ImageWithJobs) => ({
@@ -172,6 +195,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
       setActiveJobId(result.jobId);
       refetchBalance();
+
+      // Reset blend state after triggering enhancement
+      setBlendImageData(null);
+      setShowBlendDialog(false);
     } catch (error) {
       console.error("Enhancement request failed:", error);
       alert(error instanceof Error ? error.message : "Enhancement failed");
@@ -275,125 +302,165 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         <h1 className="text-3xl font-bold">Pixel Image Enhancement</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-        {/* Left Column - Main Content */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {selectedVersion
-                  ? "Before & After Comparison"
-                  : "Original Image"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedVersion && selectedVersion.enhancedUrl
-                ? (
-                  <ComparisonViewToggle
-                    originalUrl={image.originalUrl}
-                    enhancedUrl={selectedVersion.enhancedUrl}
-                    width={image.originalWidth || 1024}
-                    height={image.originalHeight || 1024}
-                  />
-                )
-                : (
-                  <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
-                    <Image
-                      src={image.originalUrl}
-                      alt="Original image"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Enhancement History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EnhancementHistoryGrid
-                versions={image.enhancementJobs.map((
-                  job: ImageEnhancementJob,
-                ) => ({
-                  id: job.id,
-                  tier: job.tier,
-                  enhancedUrl: job.enhancedUrl || "",
-                  width: job.enhancedWidth || 0,
-                  height: job.enhancedHeight || 0,
-                  createdAt: job.createdAt,
-                  status: job.status,
-                  currentStage: job.currentStage,
-                  sizeBytes: job.enhancedSizeBytes,
-                }))}
-                selectedVersionId={selectedVersionId || undefined}
-                onVersionSelect={setSelectedVersionId}
-                onJobCancel={handleJobCancel}
-                onJobDelete={handleJobDelete}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Sidebar */}
-        <div>
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-              {/* Balance Display */}
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Coins className="h-5 w-5 text-yellow-500" />
-                  Your Balance
-                </span>
-                <span className="text-lg font-bold">{isLoading ? "..." : `${balance} tokens`}</span>
-              </div>
-
-              <Separator />
-
-              {/* Enhancement Settings */}
-              <EnhancementSettings
-                onEnhance={handleEnhance}
-                currentBalance={balance}
-                isProcessing={activeJobId !== null}
-                completedVersions={completedVersions.map((
-                  job: ImageEnhancementJob,
-                ) => ({
-                  tier: job.tier,
-                  url: job.enhancedUrl || "",
-                }))}
-                onBalanceRefresh={refetchBalance}
-                asCard={false}
-              />
-
-              <Separator />
-
-              {/* Actions */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Actions</h3>
-                {selectedVersion && selectedVersion.enhancedUrl && (
-                  <ExportSelector
-                    imageId={selectedVersion.id}
-                    fileName={image.name}
-                    originalSizeBytes={selectedVersion.enhancedSizeBytes ||
-                      undefined}
-                  />
-                )}
-                {/* Only show Share when there's a successful enhancement */}
-                {selectedVersion && selectedVersion.enhancedUrl && (
-                  <ShareButton
-                    imageId={image.id}
-                    shareToken={image.shareToken}
-                    imageName={image.name}
-                    className="w-full"
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      {/* Blend tip */}
+      <div className="mb-4 p-3 bg-muted/50 rounded-lg border border-dashed">
+        <p className="text-sm text-muted-foreground flex items-center gap-2">
+          <Layers className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>Tip:</strong>{" "}
+            Drag a photo from your computer and drop it here to create a blended enhancement
+          </span>
+        </p>
       </div>
+
+      <DroppableEnhanceZone onImageDrop={handleImageDrop} disabled={activeJobId !== null}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+          {/* Left Column - Main Content */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {selectedVersion
+                    ? "Before & After Comparison"
+                    : "Original Image"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedVersion && selectedVersion.enhancedUrl
+                  ? (
+                    <ComparisonViewToggle
+                      originalUrl={image.originalUrl}
+                      enhancedUrl={selectedVersion.enhancedUrl}
+                      width={image.originalWidth || 1024}
+                      height={image.originalHeight || 1024}
+                    />
+                  )
+                  : (
+                    <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
+                      <Image
+                        src={image.originalUrl}
+                        alt="Original image"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Enhancement History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EnhancementHistoryGrid
+                  versions={image.enhancementJobs.map((
+                    job: ImageEnhancementJob,
+                  ) => ({
+                    id: job.id,
+                    tier: job.tier,
+                    enhancedUrl: job.enhancedUrl || "",
+                    width: job.enhancedWidth || 0,
+                    height: job.enhancedHeight || 0,
+                    createdAt: job.createdAt,
+                    status: job.status,
+                    currentStage: job.currentStage,
+                    sizeBytes: job.enhancedSizeBytes,
+                    sourceImageId: job.sourceImageId,
+                  }))}
+                  selectedVersionId={selectedVersionId || undefined}
+                  onVersionSelect={setSelectedVersionId}
+                  onJobCancel={handleJobCancel}
+                  onJobDelete={handleJobDelete}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div>
+            <Card>
+              <CardContent className="pt-6 space-y-6">
+                {/* Balance Display */}
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <Coins className="h-5 w-5 text-yellow-500" />
+                    Your Balance
+                  </span>
+                  <span className="text-lg font-bold">
+                    {isLoading ? "..." : `${balance} tokens`}
+                  </span>
+                </div>
+
+                <Separator />
+
+                {/* Enhancement Settings */}
+                <EnhancementSettings
+                  onEnhance={handleEnhance}
+                  currentBalance={balance}
+                  isProcessing={activeJobId !== null}
+                  completedVersions={completedVersions.map((
+                    job: ImageEnhancementJob,
+                  ) => ({
+                    tier: job.tier,
+                    url: job.enhancedUrl || "",
+                  }))}
+                  onBalanceRefresh={refetchBalance}
+                  asCard={false}
+                />
+
+                <Separator />
+
+                {/* Actions */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">Actions</h3>
+                  {selectedVersion && selectedVersion.enhancedUrl && (
+                    <ExportSelector
+                      imageId={selectedVersion.id}
+                      fileName={image.name}
+                      originalSizeBytes={selectedVersion.enhancedSizeBytes ||
+                        undefined}
+                    />
+                  )}
+                  {/* Only show Share when there's a successful enhancement */}
+                  {selectedVersion && selectedVersion.enhancedUrl && (
+                    <ShareButton
+                      imageId={image.id}
+                      shareToken={image.shareToken}
+                      imageName={image.name}
+                      className="w-full"
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </DroppableEnhanceZone>
+
+      {/* Blend Enhancement Dialog */}
+      {blendImageData && (
+        <EnhancementSettings
+          open={showBlendDialog}
+          onOpenChange={(open) => {
+            setShowBlendDialog(open);
+            if (!open) {
+              setBlendImageData(null);
+            }
+          }}
+          onEnhance={handleEnhance}
+          currentBalance={balance}
+          isProcessing={activeJobId !== null}
+          completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
+            tier: job.tier,
+            url: job.enhancedUrl || "",
+          }))}
+          onBalanceRefresh={refetchBalance}
+          imageUrl={image.originalUrl}
+          imageName={`Blend: ${image.name} + ${blendImageData.fileName}`}
+          trigger={null}
+        />
+      )}
     </div>
   );
 }
