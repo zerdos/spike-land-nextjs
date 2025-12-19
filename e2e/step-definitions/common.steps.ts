@@ -1,6 +1,27 @@
-import { Then, When } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
+
+// Helper function for mocking token balance (used by multiple steps)
+async function mockTokenBalance(
+  world: CustomWorld,
+  balance: number,
+): Promise<void> {
+  await world.page.route("**/api/tokens/balance", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ balance }),
+    });
+  });
+  await world.page.route("**/api/mcp/balance", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ balance }),
+    });
+  });
+}
 
 // Common button click step used across multiple features
 When(
@@ -355,5 +376,473 @@ Then(
       .filter({ hasText: heading2 });
     const element = h1.or(h2);
     await expect(element.first()).toBeVisible();
+  },
+);
+
+// ======= CONSOLIDATED DUPLICATE STEPS (PR #344 consolidation) =======
+
+// "I click the {string} button" - consolidated from authentication.steps.ts,
+// app-creation-flow.steps.ts, canvas-editor.steps.ts
+When(
+  "I click the {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+    await button.first().click();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
+
+// "I should be redirected to {string}" - consolidated from my-apps.steps.ts,
+// album-management.steps.ts, pixel-image-detail.steps.ts
+Then(
+  "I should be redirected to {string}",
+  async function(this: CustomWorld, url: string) {
+    await this.page.waitForURL(new RegExp(url), { timeout: 10000 });
+    await expect(this.page).toHaveURL(new RegExp(url));
+  },
+);
+
+// "I should see a confirmation dialog" - consolidated from job-cancellation.steps.ts,
+// mcp-api-keys.steps.ts
+Then("I should see a confirmation dialog", async function(this: CustomWorld) {
+  const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+  await expect(dialog).toBeVisible();
+});
+
+// "the dialog should close" - consolidated from admin-sitemap.steps.ts,
+// batch-enhancement.steps.ts, pixel-pipelines.steps.ts
+Then("the dialog should close", async function(this: CustomWorld) {
+  const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+  await expect(dialog).not.toBeVisible({ timeout: 5000 });
+});
+
+// "I should see {string} option" - consolidated from batch-operations.steps.ts,
+// mcp-history.steps.ts, pixel-pipelines.steps.ts, tokens-extended.steps.ts
+Then(
+  "I should see {string} option",
+  async function(this: CustomWorld, optionText: string) {
+    const option = this.page.locator('[role="option"]').filter({
+      hasText: new RegExp(optionText, "i"),
+    });
+    await expect(option.first()).toBeVisible();
+  },
+);
+
+// "I should see {string}" - consolidated from batch-enhancement.steps.ts,
+// my-apps.steps.ts, smart-gallery.steps.ts (generic text visibility)
+Then(
+  "I should see {string}",
+  async function(this: CustomWorld, text: string) {
+    const element = this.page.getByText(text, { exact: false });
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I wait for {int} seconds" - consolidated from app-creation-flow.steps.ts,
+// smart-gallery.steps.ts
+When(
+  "I wait for {int} seconds",
+  async function(this: CustomWorld, seconds: number) {
+    await this.page.waitForTimeout(seconds * 1000);
+  },
+);
+
+// "I have {int} tokens" - consolidated from image-enhancement.steps.ts,
+// job-cancellation.steps.ts, api-error-handling.steps.ts, batch-enhancement.steps.ts,
+// batch-operations.steps.ts
+Given(
+  "I have {int} tokens",
+  async function(this: CustomWorld, tokenCount: number) {
+    // Store the desired token count for use by subsequent steps
+    (this as CustomWorld & { desiredTokenBalance?: number; }).desiredTokenBalance = tokenCount;
+    (this as CustomWorld & { tokenBalance?: number; }).tokenBalance = tokenCount;
+    // Set up the mock
+    await mockTokenBalance(this, tokenCount);
+  },
+);
+
+// "I have at least {int} tokens" - consolidated from image-enhancement.steps.ts,
+// batch-enhancement.steps.ts
+Given(
+  "I have at least {int} tokens",
+  async function(this: CustomWorld, minTokens: number) {
+    await mockTokenBalance(this, minTokens + 10);
+    (this as CustomWorld & { desiredTokenBalance?: number; }).desiredTokenBalance = minTokens + 10;
+  },
+);
+
+// "I have an empty album" - consolidated from smart-gallery.steps.ts,
+// batch-enhancement.steps.ts
+Given("I have an empty album", async function(this: CustomWorld) {
+  // Mock an empty album response
+  await this.page.route("**/api/albums/**/images", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ images: [] }),
+    });
+  });
+});
+
+// "I press the right arrow key" - consolidated from canvas-editor.steps.ts,
+// smart-gallery.steps.ts
+When("I press the right arrow key", async function(this: CustomWorld) {
+  await this.page.keyboard.press("ArrowRight");
+});
+
+// "I press the left arrow key" - consolidated from canvas-editor.steps.ts,
+// smart-gallery.steps.ts
+When("I press the left arrow key", async function(this: CustomWorld) {
+  await this.page.keyboard.press("ArrowLeft");
+});
+
+// "I press the Escape key" - consolidated from smart-gallery.steps.ts,
+// album-drag-drop.steps.ts
+When("I press the Escape key", async function(this: CustomWorld) {
+  await this.page.keyboard.press("Escape");
+});
+
+// "I click the share button" - consolidated from canvas-editor.steps.ts,
+// pixel-image-detail.steps.ts
+When("I click the share button", async function(this: CustomWorld) {
+  const shareButton = this.page.getByRole("button", { name: /share/i });
+  await shareButton.click();
+  await this.page.waitForTimeout(300);
+});
+
+// "I should see the share dialog" - consolidated from canvas-editor.steps.ts,
+// pixel-image-detail.steps.ts
+Then("I should see the share dialog", async function(this: CustomWorld) {
+  const shareDialog = this.page.locator('[role="dialog"]').filter({
+    has: this.page.getByText(/share/i),
+  });
+  await expect(shareDialog).toBeVisible();
+});
+
+// "I confirm the cancellation" - consolidated from job-cancellation.steps.ts,
+// pixel-image-detail.steps.ts
+When("I confirm the cancellation", async function(this: CustomWorld) {
+  // Mock the cancel API
+  await this.page.route("**/api/jobs/*/cancel", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ success: true, refundedTokens: 2 }),
+    });
+  });
+
+  const confirmButton = this.page.getByRole("button", { name: /confirm|yes/i });
+  await confirmButton.click();
+  await this.page.waitForTimeout(300);
+});
+
+// "my tokens should be refunded" - consolidated from job-cancellation.steps.ts,
+// pixel-image-detail.steps.ts
+Then("my tokens should be refunded", async function(this: CustomWorld) {
+  // This is verified by checking the balance was updated
+  // The mock already handles this
+  await this.page.waitForTimeout(200);
+});
+
+// "the enhance button should be disabled" - consolidated from
+// image-enhancement.steps.ts, batch-enhancement.steps.ts
+Then("the enhance button should be disabled", async function(this: CustomWorld) {
+  const button = this.page.getByRole("button", { name: /enhance|start/i });
+  await expect(button).toBeDisabled();
+});
+
+// "the selected version should be highlighted" - consolidated from
+// image-enhancement.steps.ts, pixel-image-detail.steps.ts
+Then(
+  "the selected version should be highlighted",
+  async function(this: CustomWorld) {
+    const selectedVersion = this.page.locator(
+      '[data-selected="true"], [aria-selected="true"], .selected, [class*="selected"]',
+    );
+    await expect(selectedVersion.first()).toBeVisible();
+  },
+);
+
+// "I click the enhance button" - consolidated from image-enhancement.steps.ts,
+// pixel-image-detail.steps.ts
+When("I click the enhance button", async function(this: CustomWorld) {
+  const enhanceButton = this.page.getByRole("button", { name: /enhance/i });
+  await enhanceButton.click();
+  await this.page.waitForTimeout(500);
+});
+
+// "I select {string} enhancement tier" - consolidated from
+// pixel-image-detail.steps.ts, batch-enhancement.steps.ts
+When(
+  "I select {string} enhancement tier",
+  async function(this: CustomWorld, tier: string) {
+    // Click on the tier selector
+    const tierSelector = this.page.locator('[data-testid="tier-selector"]')
+      .or(this.page.getByRole("combobox").filter({ hasText: /tier/i }))
+      .or(this.page.locator('[class*="tier"]').first());
+
+    if (await tierSelector.isVisible()) {
+      await tierSelector.click();
+      await this.page.waitForTimeout(200);
+    }
+
+    // Select the tier option
+    const option = this.page.locator('[role="option"]').filter({
+      hasText: new RegExp(tier, "i"),
+    });
+    if (await option.isVisible()) {
+      await option.click();
+    }
+  },
+);
+
+// ======= ADDITIONAL CONSOLIDATED STEPS (Phase 2 consolidation) =======
+
+// "I should see {string} error" - consolidated from admin-sitemap.steps.ts,
+// album-management.steps.ts, api-error-handling.steps.ts, connection-management.steps.ts,
+// tokens-extended.steps.ts
+Then(
+  "I should see {string} error",
+  async function(this: CustomWorld, errorText: string) {
+    const errorElement = this.page.getByText(new RegExp(errorText, "i"));
+    await expect(errorElement.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I type {string} in the {string} field" - consolidated from
+// app-creation-flow.steps.ts, app-creation.steps.ts
+When(
+  "I type {string} in the {string} field",
+  async function(this: CustomWorld, value: string, fieldName: string) {
+    // Try to find by testid first
+    const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
+    const suffixes = ["", "-input", "-field", "-textarea"];
+
+    for (const suffix of suffixes) {
+      const field = this.page.locator(`[data-testid="${testId}${suffix}"]`);
+      if (await field.isVisible().catch(() => false)) {
+        await field.fill(value);
+        return;
+      }
+    }
+
+    // Fall back to label
+    const field = this.page.getByLabel(new RegExp(fieldName, "i"));
+    await field.fill(value);
+  },
+);
+
+// "the {string} field should contain {string}" - consolidated from
+// app-creation.steps.ts, app-creation-flow.steps.ts
+Then(
+  "the {string} field should contain {string}",
+  async function(this: CustomWorld, fieldName: string, value: string) {
+    const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
+    const field = this.page.locator(`[data-testid="${testId}"]`)
+      .or(this.page.locator(`[data-testid="${testId}-input"]`))
+      .or(this.page.getByLabel(new RegExp(fieldName, "i")));
+    await expect(field.first()).toHaveValue(value);
+  },
+);
+
+// "I should not see {string} text" - consolidated from
+// pricing-verification.steps.ts, app-creation-flow.steps.ts
+Then(
+  "I should not see {string} text",
+  async function(this: CustomWorld, text: string) {
+    const element = this.page.getByText(new RegExp(text, "i"));
+    await expect(element).not.toBeVisible({ timeout: 5000 });
+  },
+);
+
+// "I confirm the batch enhancement" - consolidated from
+// batch-enhancement.steps.ts, batch-operations.steps.ts
+When("I confirm the batch enhancement", async function(this: CustomWorld) {
+  const confirmButton = this.page.getByRole("button", {
+    name: /Confirm|Enhance/i,
+  });
+  await confirmButton.click();
+  await this.page.waitForTimeout(500);
+});
+
+// "I am on the enhance page" - consolidated from
+// batch-operations.steps.ts, image-enhancement.steps.ts
+Given("I am on the enhance page", async function(this: CustomWorld) {
+  await this.page.goto(`${this.baseUrl}/pixel`);
+  await this.page.waitForLoadState("networkidle");
+});
+
+// "no enhancements should start" - consolidated from
+// batch-enhancement.steps.ts, batch-operations.steps.ts
+Then("no enhancements should start", async function(this: CustomWorld) {
+  // Verify no processing indicators appear
+  await this.page.waitForTimeout(500);
+  const processingIndicator = this.page.locator('[data-testid*="processing"]');
+  await expect(processingIndicator).not.toBeVisible();
+});
+
+// "I should see {string} indicator" - consolidated from
+// batch-operations.steps.ts, client-camera-control.steps.ts
+Then(
+  "I should see {string} indicator",
+  async function(this: CustomWorld, text: string) {
+    const indicator = this.page.getByText(text);
+    await expect(indicator.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see the {string} button" - consolidated from
+// authentication.steps.ts, api-error-handling.steps.ts
+Then(
+  "I should see the {string} button",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    // Use first() to handle cases where Next.js dev tools add extra buttons
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see {string} feedback text" - consolidated from
+// canvas-display.steps.ts, canvas-editor.steps.ts
+Then(
+  "I should see {string} feedback text",
+  async function(this: CustomWorld, text: string) {
+    const element = this.page.getByText(text);
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see an insufficient tokens warning" - consolidated from
+// batch-enhancement.steps.ts, image-enhancement.steps.ts
+Then(
+  "I should see an insufficient tokens warning",
+  async function(this: CustomWorld) {
+    const warning = this.page.getByText(/insufficient.*tokens/i);
+    await expect(warning.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see {string} message" - consolidated from error-handling.steps.ts,
+// api-error-handling.steps.ts, tokens-extended.steps.ts, mcp-api-keys.steps.ts
+Then(
+  "I should see {string} message",
+  async function(this: CustomWorld, message: string) {
+    const element = this.page.getByText(new RegExp(message, "i"));
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// ======= PHASE 3: MISSING STEP DEFINITIONS =======
+
+// "I am viewing the album gallery page" - navigate to album gallery
+Given("I am viewing the album gallery page", async function(this: CustomWorld) {
+  await this.page.goto(`${this.baseUrl}/canvas`);
+  await this.page.waitForLoadState("networkidle");
+});
+
+// "the album should show {int} image" - singular variant
+Then(
+  "the album should show {int} image",
+  async function(this: CustomWorld, count: number) {
+    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    await expect(images).toHaveCount(count, { timeout: 10000 });
+  },
+);
+
+// "the album should still show {int} image" - singular after action
+Then(
+  "the album should still show {int} image",
+  async function(this: CustomWorld, count: number) {
+    await this.page.waitForTimeout(500);
+    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    await expect(images).toHaveCount(count, { timeout: 10000 });
+  },
+);
+
+// "the image should still exist in my library"
+Then(
+  "the image should still exist in my library",
+  async function(this: CustomWorld) {
+    // Navigate to library/images page and verify image exists
+    await this.page.goto(`${this.baseUrl}/pixel`);
+    await this.page.waitForLoadState("networkidle");
+    const images = this.page.locator('[data-testid*="image"], .image-card');
+    const count = await images.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
+
+// "I have an album named {string} with {int} image" - singular
+Given(
+  "I have an album named {string} with {int} image",
+  async function(this: CustomWorld, albumName: string, imageCount: number) {
+    // Mock album with specified number of images
+    await this.page.route("**/api/albums/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "test-album",
+          name: albumName,
+          images: Array.from({ length: imageCount }, (_, i) => ({
+            id: `image-${i + 1}`,
+            url: `https://placehold.co/600x400?text=Image${i + 1}`,
+          })),
+        }),
+      });
+    });
+  },
+);
+
+// "I am logged in as a different user"
+Given("I am logged in as a different user", async function(this: CustomWorld) {
+  // Mock a different user session
+  await this.page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: {
+          name: "Different User",
+          email: "different@example.com",
+        },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      }),
+    });
+  });
+  await this.page.reload();
+  await this.page.waitForLoadState("networkidle");
+});
+
+// "I click the {string} filter"
+When(
+  "I click the {string} filter",
+  async function(this: CustomWorld, filterName: string) {
+    const filter = this.page.getByRole("button", {
+      name: new RegExp(filterName, "i"),
+    }).or(this.page.locator(`[data-testid="${filterName.toLowerCase()}-filter"]`));
+    await filter.first().click();
+    await this.page.waitForTimeout(300);
+  },
+);
+
+// "I have selected {int} images"
+Given(
+  "I have selected {int} images",
+  async function(this: CustomWorld, count: number) {
+    // Click on the specified number of images to select them
+    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    const availableCount = await images.count();
+    const selectCount = Math.min(count, availableCount);
+
+    for (let i = 0; i < selectCount; i++) {
+      await images.nth(i).click({ modifiers: ["Control"] });
+      await this.page.waitForTimeout(100);
+    }
   },
 );

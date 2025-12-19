@@ -179,10 +179,7 @@ When(
   },
 );
 
-Then("I should see a confirmation dialog", async function(this: CustomWorld) {
-  const dialog = this.page.getByRole("alertdialog");
-  await expect(dialog).toBeVisible({ timeout: 10000 });
-});
+// NOTE: "I should see a confirmation dialog" step moved to common.steps.ts
 
 Then(
   "I should be able to cancel the deletion",
@@ -202,13 +199,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string} message",
-  async function(this: CustomWorld, message: string) {
-    const text = this.page.getByText(new RegExp(message, "i"));
-    await expect(text.first()).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see {string} message" step moved to common.steps.ts
 
 Then(
   "I should see instructions to create an API key",

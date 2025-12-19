@@ -356,37 +356,10 @@ Then(
   },
 );
 
-Then(
-  "I should see the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should see the {string} button" step moved to common.steps.ts
 
 // MCP API Specific Errors
-Given(
-  "I have {int} tokens",
-  async function(this: CustomWorld, balance: number) {
-    await this.page.route("**/api/tokens/balance", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ balance }),
-      });
-    });
-
-    await this.page.route("**/api/mcp/balance", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ balance }),
-      });
-    });
-  },
-);
+// NOTE: "I have {int} tokens" step moved to common.steps.ts
 
 When(
   "I attempt to generate an image via MCP",
@@ -403,14 +376,7 @@ When(
   },
 );
 
-Then(
-  "I should see {string} error",
-  async function(this: CustomWorld, errorText: string) {
-    await waitForTextWithRetry(this.page, new RegExp(errorText, "i"), {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-  },
-);
+// NOTE: "I should see {string} error" step moved to common.steps.ts
 
 Then(
   "I should see the option to purchase tokens",

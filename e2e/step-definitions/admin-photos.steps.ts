@@ -262,13 +262,7 @@ Then(
   },
 );
 
-Then(
-  "the URL should contain {string}",
-  async function(this: CustomWorld, param: string) {
-    const url = this.page.url();
-    expect(url).toContain(param);
-  },
-);
+// NOTE: "the URL should contain {string}" step moved to authentication.steps.ts
 
 Then(
   "the photos should be filtered by date range",

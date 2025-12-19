@@ -176,24 +176,9 @@ When(
   },
 );
 
-Then(
-  "I should see {string} message",
-  async function(this: CustomWorld, message: string) {
-    await waitForTextWithRetry(this.page, new RegExp(message, "i"), {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-  },
-);
+// NOTE: "I should see {string} message" step moved to common.steps.ts
 
-Then(
-  "I should see {string} option",
-  async function(this: CustomWorld, optionText: string) {
-    const option = this.page.getByRole("button", {
-      name: new RegExp(optionText, "i"),
-    });
-    await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should see {string} option" step moved to common.steps.ts
 
 When(
   "I click the {string} option",
@@ -231,15 +216,7 @@ Then(
 );
 
 // Voucher Extended Steps
-
-Then(
-  "I should see {string} error",
-  async function(this: CustomWorld, errorText: string) {
-    await waitForTextWithRetry(this.page, new RegExp(errorText, "i"), {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-  },
-);
+// NOTE: "I should see {string} error" step moved to common.steps.ts
 
 Given(
   "the voucher API returns a server error",
@@ -265,10 +242,7 @@ Then("I should see success message", async function(this: CustomWorld) {
   });
 });
 
-Then("the modal should close", async function(this: CustomWorld) {
-  const modal = this.page.getByText("Get More Tokens");
-  await expect(modal).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-});
+// NOTE: "the modal should close" step moved to common.steps.ts
 
 // Token Balance API Error Steps
 

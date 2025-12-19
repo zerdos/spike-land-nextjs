@@ -240,26 +240,10 @@ Given(
   },
 );
 
-Given("I have an empty album", async function(this: CustomWorld) {
-  await mockAlbum(this, 0);
-});
-
-Given(
-  "I have at least {int} tokens",
-  async function(this: CustomWorld, tokenCount: number) {
-    await mockTokenBalance(this, tokenCount);
-  },
-);
+// NOTE: "I have an empty album", "I have at least {int} tokens", and "I have {int} tokens" steps moved to common.steps.ts
 
 Given(
   "I have only {int} tokens",
-  async function(this: CustomWorld, tokenCount: number) {
-    await mockTokenBalance(this, tokenCount);
-  },
-);
-
-Given(
-  "I have {int} tokens",
   async function(this: CustomWorld, tokenCount: number) {
     await mockTokenBalance(this, tokenCount);
   },
@@ -387,27 +371,8 @@ When("I navigate to my album", async function(this: CustomWorld) {
 
 // NOTE: "I click {string} button" is defined in common.steps.ts
 // NOTE: "I click {string} button in the dialog" is defined in common.steps.ts
-
-When(
-  "I select {string} enhancement tier",
-  async function(this: CustomWorld, tier: string) {
-    const tierOption = this.page.getByText(tier);
-    await expect(tierOption).toBeVisible();
-    await tierOption.click();
-    await this.page.waitForTimeout(200);
-  },
-);
-
-When(
-  "I confirm the batch enhancement",
-  async function(this: CustomWorld) {
-    await mockBatchEnhancement(this);
-    await mockJobStatusPolling(this);
-    const confirmButton = this.page.getByRole("button", { name: /Enhance/i });
-    await confirmButton.click();
-    await this.page.waitForTimeout(500);
-  },
-);
+// NOTE: "I select {string} enhancement tier" step moved to common.steps.ts
+// NOTE: "I confirm the batch enhancement" step moved to common.steps.ts
 
 When("enhancements are processing", async function(this: CustomWorld) {
   await this.page.waitForTimeout(1000);
@@ -493,21 +458,9 @@ Then(
   },
 );
 
-Then(
-  "I should see an insufficient tokens warning",
-  async function(this: CustomWorld) {
-    const warning = this.page.getByText(/insufficient.*tokens/i);
-    await expect(warning).toBeVisible();
-  },
-);
+// NOTE: "I should see an insufficient tokens warning" step moved to common.steps.ts
 
-Then(
-  "the enhance button should be disabled",
-  async function(this: CustomWorld) {
-    const enhanceButton = this.page.getByRole("button", { name: /Enhance/i });
-    await expect(enhanceButton).toBeDisabled();
-  },
-);
+// NOTE: "the enhance button should be disabled" step moved to common.steps.ts
 
 Then(
   "the batch enhancement dialog should close",
@@ -517,13 +470,7 @@ Then(
   },
 );
 
-Then("no enhancements should start", async function(this: CustomWorld) {
-  // Verify no processing indicators appear
-  await this.page.waitForTimeout(500);
-  const processingIndicators = this.page.locator('[data-testid*="processing"]');
-  const count = await processingIndicators.count();
-  expect(count).toBe(0);
-});
+// NOTE: "no enhancements should start" step moved to common.steps.ts
 
 Then("no tokens should be deducted", async function(this: CustomWorld) {
   const batchWorld = this as BatchEnhancementWorld;
@@ -681,10 +628,7 @@ Then(
   },
 );
 
-Then("the dialog should close", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  await expect(dialog).not.toBeVisible();
-});
+// NOTE: "the dialog should close" step moved to common.steps.ts
 
 Then(
   "enhancements should continue in background",

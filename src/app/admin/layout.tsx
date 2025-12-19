@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { Link } from "@/components/ui/link";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
@@ -16,16 +17,28 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  const session = await auth();
+  // Check for E2E bypass header (only in non-production)
+  const headersList = await headers();
+  const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+  const isE2EBypass = process.env.NODE_ENV !== "production" &&
+    e2eBypassSecret &&
+    e2eBypassHeader === e2eBypassSecret;
 
-  if (!session?.user?.id) {
-    redirect("/");
-  }
+  let session = null;
 
-  const userIsAdmin = await isAdminByUserId(session.user.id);
+  if (!isE2EBypass) {
+    session = await auth();
 
-  if (!userIsAdmin) {
-    redirect("/");
+    if (!session?.user?.id) {
+      redirect("/");
+    }
+
+    const userIsAdmin = await isAdminByUserId(session.user.id);
+
+    if (!userIsAdmin) {
+      redirect("/");
+    }
   }
 
   const navItems = [
@@ -54,7 +67,9 @@ export default async function AdminLayout({
             <div className="border-b border-neutral-200 p-6 dark:border-neutral-800">
               <h1 className="text-xl font-semibold">Admin Dashboard</h1>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {session.user.name || session.user.email}
+                {isE2EBypass
+                  ? "E2E Test User"
+                  : session?.user?.name || session?.user?.email}
               </p>
             </div>
 

@@ -10,12 +10,7 @@ Then("I should see an error page", async function(this: CustomWorld) {
   await expect(errorPage).toBeVisible();
 });
 
-Then(
-  "I should see {string} message",
-  async function(this: CustomWorld, message: string) {
-    await assertTextVisible(this.page, message);
-  },
-);
+// NOTE: "I should see {string} message" step moved to common.steps.ts
 
 Then(
   "I should see error code {string} displayed",

@@ -208,14 +208,7 @@ When(
   },
 );
 
-Then(
-  "I should see the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    // Use first() to handle cases where Next.js dev tools add extra buttons
-    const button = this.page.getByRole("button", { name: buttonText }).first();
-    await expect(button).toBeVisible();
-  },
-);
+// NOTE: "I should see the {string} button" step moved to common.steps.ts
 
 // Removed duplicate - using common.steps.ts
 
@@ -418,15 +411,7 @@ When(
   },
 );
 
-When(
-  "I click the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: buttonText });
-    await expect(button).toBeVisible();
-    await button.click();
-    await this.page.waitForLoadState("networkidle");
-  },
-);
+// NOTE: "I click the {string} button" step moved to common.steps.ts
 
 Then(
   "the URL should contain {string}",

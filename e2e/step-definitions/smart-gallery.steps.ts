@@ -123,13 +123,7 @@ Given(
   },
 );
 
-Given("I have an empty album", async function(this: CustomWorld) {
-  testContext.albumId = "empty-album";
-  testContext.shareToken = "empty-token";
-  testContext.imageCount = 0;
-
-  await mockGalleryAPI(this, []);
-});
+// NOTE: "I have an empty album" step moved to common.steps.ts
 
 Given(
   "I have an album with images that have no enhanced versions",
@@ -360,20 +354,7 @@ Then(
 // =====================================
 // KEYBOARD NAVIGATION STEPS
 // =====================================
-
-When("I press the right arrow key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
-
-  await this.page.keyboard.press("ArrowRight");
-  await this.page.waitForTimeout(200);
-});
-
-When("I press the left arrow key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
-
-  await this.page.keyboard.press("ArrowLeft");
-  await this.page.waitForTimeout(200);
-});
+// NOTE: "I press the right arrow key", "I press the left arrow key" steps moved to common.steps.ts
 
 When("I press the spacebar key", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -389,12 +370,7 @@ When("I press the Enter key", async function(this: CustomWorld) {
   await this.page.waitForTimeout(400);
 });
 
-When("I press the Escape key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
-
-  await this.page.keyboard.press("Escape");
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "I press the Escape key" step moved to common.steps.ts
 
 When("I press Tab to navigate", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -888,14 +864,7 @@ When("I do not move the mouse for {int} seconds", async function(
   await this.page.waitForTimeout(seconds * 1000);
 });
 
-When(
-  "I wait for {int} seconds",
-  async function(this: CustomWorld, seconds: number) {
-    if (shouldSkipGalleryTests) return "skipped";
-
-    await this.page.waitForTimeout(seconds * 1000);
-  },
-);
+// NOTE: "I wait for {int} seconds" step moved to common.steps.ts
 
 When("I click the previous button", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return "skipped";
@@ -995,15 +964,7 @@ Then(
   },
 );
 
-Then(
-  "I should see {string}",
-  async function(this: CustomWorld, expectedText: string) {
-    if (shouldSkipGalleryTests) return "skipped";
-
-    const text = this.page.getByText(expectedText);
-    await expect(text).toBeVisible({ timeout: 5000 });
-  },
-);
+// NOTE: "I should see {string}" step moved to common.steps.ts
 
 Then(
   "the slideshow should show the original image",
@@ -1200,5 +1161,17 @@ Then(
     if (degrees !== 0) {
       expect(transform).not.toBe("none");
     }
+  },
+);
+
+// "the image should still have a green glow border" - verify selection persists
+Then(
+  "the image should still have a green glow border",
+  async function(this: CustomWorld) {
+    if (shouldSkipGalleryTests) return "skipped";
+
+    const selected = this.page.locator('[aria-selected="true"]');
+    await expect(selected).toBeVisible();
+    await expect(selected).toHaveClass(/ring-green-500/);
   },
 );

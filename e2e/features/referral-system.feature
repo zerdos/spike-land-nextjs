@@ -40,17 +40,17 @@ Feature: Referral System
   Scenario: Share on Twitter button is visible
     When I visit "/referrals"
     Then I should see "Share on Twitter" button
-    And the Twitter share button should be clickable
+    And the "Twitter" share button should be clickable
 
   Scenario: Share on Facebook button is visible
     When I visit "/referrals"
     Then I should see "Share on Facebook" button
-    And the Facebook share button should be clickable
+    And the "Facebook" share button should be clickable
 
   Scenario: Share on LinkedIn button is visible
     When I visit "/referrals"
     Then I should see "Share on LinkedIn" button
-    And the LinkedIn share button should be clickable
+    And the "LinkedIn" share button should be clickable
 
   Scenario: Referral code is displayed
     When I visit "/referrals"
