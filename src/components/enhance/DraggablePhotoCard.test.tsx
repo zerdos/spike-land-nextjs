@@ -355,10 +355,10 @@ describe("DraggablePhotoCard", () => {
   });
 
   describe("touch action", () => {
-    it("has touch-action none for proper mobile behavior", () => {
+    it("has touch-action pan-y for proper mobile scrolling and drag behavior", () => {
       render(<DraggablePhotoCard {...defaultProps} />);
       const wrapper = screen.getByRole("listitem");
-      expect(wrapper.style.touchAction).toBe("none");
+      expect(wrapper.style.touchAction).toBe("pan-y");
     });
   });
 });
