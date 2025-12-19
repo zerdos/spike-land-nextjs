@@ -70,6 +70,23 @@ module.exports = {
     timeout: 10000, // 30 second timeout for CI
     parallel: 1, // Run 4 scenarios in parallel
   },
+  local: {
+    paths: ["e2e/features/**/*.feature"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    requireModule: ["tsx/cjs"],
+    format: [
+      "progress",
+      "html:e2e/reports/cucumber-report-ci.html",
+      "json:e2e/reports/cucumber-report-ci.json",
+    ],
+    formatOptions: { snippetInterface: "async-await" },
+    publishQuiet: true,
+    failFast: true, // In CI, run all tests to get full report
+    retry: 0, // Retry once in CI to handle transient issues
+    tags: "not @skip and not @flaky", // Skip db-dependent tests (no seeded test data in CI)
+    timeout: 10000, // 30 second timeout for CI
+    parallel: 8, // Run 4 scenarios in parallel
+  },
   // Coverage profile - collect V8 coverage during E2E tests
   coverage: {
     paths: ["e2e/features/**/*.feature"],
