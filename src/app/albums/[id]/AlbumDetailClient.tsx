@@ -431,27 +431,22 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     setBlendDropTargetId(null);
   };
 
-  // Helper function to fetch image URL and convert to base64
+  // Helper function to fetch image URL and convert to base64 via API proxy
+  // Uses server-side fetch to bypass CORS restrictions on R2 bucket
   const fetchImageAsBase64 = useCallback(
     async (url: string): Promise<{ base64: string; mimeType: string; }> => {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const mimeType = blob.type || "image/jpeg";
-
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          const base64 = dataUrl.split(",")[1];
-          if (base64) {
-            resolve({ base64, mimeType });
-          } else {
-            reject(new Error("Failed to convert image to base64"));
-          }
-        };
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
+      const response = await fetch("/api/images/fetch-base64", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to fetch image");
+      }
+
+      return response.json();
     },
     [],
   );
@@ -477,8 +472,8 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
   );
 
   const handleBlendDragOver = useCallback((e: React.DragEvent, targetImageId: string) => {
-    // Check if this is a blend drag operation
-    if (!e.dataTransfer.types.includes("application/x-blend-image")) {
+    // Check if this is a blend drag operation (with null safety for tests)
+    if (!e.dataTransfer?.types?.includes("application/x-blend-image")) {
       return;
     }
 
@@ -1021,7 +1016,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     }}
                     onDrop={(e) => {
                       // Try blend drop first, then regular drop
-                      if (e.dataTransfer.types.includes("application/x-blend-image")) {
+                      if (e.dataTransfer?.types?.includes("application/x-blend-image")) {
                         handleBlendDrop(e, image.id);
                       } else {
                         handleDrop(e, image.id);

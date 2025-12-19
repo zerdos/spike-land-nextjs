@@ -1,8 +1,21 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { useSession } from "next-auth/react";
+import { describe, expect, it, type Mock, vi } from "vitest";
 import { PlatformHero } from "./PlatformHero";
 
+// Mock next-auth
+vi.mock("next-auth/react", () => ({
+  useSession: vi.fn(),
+}));
+
+const mockUseSession = useSession as Mock;
+
 describe("PlatformHero Component", () => {
+  beforeEach(() => {
+    // Default to logged out state
+    mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
+  });
+
   it("should render the main headline", () => {
     render(<PlatformHero />);
     const headline = screen.getByRole("heading", { level: 1 });
@@ -19,11 +32,23 @@ describe("PlatformHero Component", () => {
     expect(screen.getByText(/Free to try/)).toBeInTheDocument();
   });
 
-  it("should render primary CTA button linking to Pixel app", () => {
+  it("should link to /pixel when not logged in", () => {
+    mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
     render(<PlatformHero />);
     const ctaLink = screen.getByRole("link", { name: /Restore Your Photos/i });
     expect(ctaLink).toBeInTheDocument();
     expect(ctaLink).toHaveAttribute("href", "/pixel");
+  });
+
+  it("should link to /apps/pixel when logged in", () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { id: "user-123", name: "Test User" } },
+      status: "authenticated",
+    });
+    render(<PlatformHero />);
+    const ctaLink = screen.getByRole("link", { name: /Restore Your Photos/i });
+    expect(ctaLink).toBeInTheDocument();
+    expect(ctaLink).toHaveAttribute("href", "/apps/pixel");
   });
 
   it("should render secondary CTA button linking to blog", () => {
