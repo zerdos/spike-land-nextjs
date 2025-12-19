@@ -158,7 +158,7 @@ Then("my camera should be disabled", async function(this: VideoWallWorld) {
 });
 
 Then(
-  "I should see {string} indicator",
+  "I should see {string} indicator on the client screen",
   async function(this: VideoWallWorld, indicatorText: string) {
     const clientContext = this.getClientContext("main-client");
     if (!clientContext) {

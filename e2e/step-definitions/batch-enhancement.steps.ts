@@ -544,14 +544,6 @@ Then(
 );
 
 Then(
-  "I should see {string}",
-  async function(this: CustomWorld, text: string) {
-    const element = this.page.getByText(text, { exact: false });
-    await expect(element).toBeVisible();
-  },
-);
-
-Then(
   "total cost should be {string}",
   async function(this: CustomWorld, cost: string) {
     const costElement = this.page.getByText(cost, { exact: false });

@@ -511,15 +511,6 @@ When("I try to create another API key", async function(this: CustomWorld) {
 });
 
 Then(
-  "I should see {string} message",
-  async function(this: CustomWorld, message: string) {
-    await waitForTextWithRetry(this.page, new RegExp(message, "i"), {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-  },
-);
-
-Then(
   "I should see instructions to revoke an existing key",
   async function(this: CustomWorld) {
     await waitForTextWithRetry(this.page, /revoke.*existing/i, {
