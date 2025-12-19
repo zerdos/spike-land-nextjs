@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";
 import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -29,21 +30,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    // Parse pagination parameters from URL
-    const { searchParams } = new URL(request.url);
-    const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
-    const limit = Math.min(
-      MAX_PAGE_SIZE,
-      Math.max(
-        1,
-        parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10),
-      ),
-    );
-    const skip = page * limit;
+  // Parse pagination parameters from URL
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
+  const limit = Math.min(
+    MAX_PAGE_SIZE,
+    Math.max(
+      1,
+      parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10),
+    ),
+  );
+  const skip = page * limit;
 
-    // Get total count for pagination metadata
-    const totalCount = await prisma.enhancementPipeline.count({
+  // Get total count for pagination metadata
+  const { data: totalCount, error: countError } = await tryCatch(
+    prisma.enhancementPipeline.count({
       where: {
         OR: [
           { userId: session.user.id },
@@ -51,9 +52,19 @@ export async function GET(request: Request) {
           { userId: null },
         ],
       },
-    });
+    }),
+  );
 
-    const pipelines = await prisma.enhancementPipeline.findMany({
+  if (countError) {
+    console.error("Error listing pipelines:", countError);
+    return NextResponse.json(
+      { error: "Failed to list pipelines" },
+      { status: 500 },
+    );
+  }
+
+  const { data: pipelines, error: pipelinesError } = await tryCatch(
+    prisma.enhancementPipeline.findMany({
       where: {
         OR: [
           { userId: session.user.id }, // User's own pipelines
@@ -83,32 +94,34 @@ export async function GET(request: Request) {
       },
       skip,
       take: limit,
-    });
+    }),
+  );
 
-    // Add isOwner and isSystemDefault flags
-    const pipelinesWithFlags = pipelines.map((p) => ({
-      ...p,
-      isOwner: p.userId === session.user.id,
-      isSystemDefault: p.userId === null,
-    }));
-
-    return NextResponse.json({
-      pipelines: pipelinesWithFlags,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasMore: skip + pipelines.length < totalCount,
-      },
-    });
-  } catch (error) {
-    console.error("Error listing pipelines:", error);
+  if (pipelinesError) {
+    console.error("Error listing pipelines:", pipelinesError);
     return NextResponse.json(
       { error: "Failed to list pipelines" },
       { status: 500 },
     );
   }
+
+  // Add isOwner and isSystemDefault flags
+  const pipelinesWithFlags = pipelines.map((p) => ({
+    ...p,
+    isOwner: p.userId === session.user.id,
+    isSystemDefault: p.userId === null,
+  }));
+
+  return NextResponse.json({
+    pipelines: pipelinesWithFlags,
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      hasMore: skip + pipelines.length < totalCount,
+    },
+  });
 }
 
 /**

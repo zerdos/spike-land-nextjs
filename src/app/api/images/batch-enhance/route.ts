@@ -202,8 +202,10 @@ export async function POST(request: NextRequest) {
     console.log("Running batch enhancement directly (dev mode)", { batchId });
 
     // Fire and forget - don't await, let it run in the background
-    batchEnhanceImagesDirect(batchInput).catch((error) => {
-      console.error("Direct batch enhancement failed:", error);
+    void tryCatch(batchEnhanceImagesDirect(batchInput)).then(({ error }) => {
+      if (error) {
+        console.error("Direct batch enhancement failed:", error);
+      }
     });
   }
 

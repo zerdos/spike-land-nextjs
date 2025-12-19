@@ -86,6 +86,12 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
       return;
     }
 
+    if (!response) {
+      setError(new Error("No response from server"));
+      setIsLoading(false);
+      return;
+    }
+
     if (!response.ok) {
       setError(new Error("Failed to fetch token balance"));
       setIsLoading(false);

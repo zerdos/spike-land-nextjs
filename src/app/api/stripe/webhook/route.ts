@@ -176,15 +176,16 @@ async function handleCheckoutCompleted(
     console.log(`[Stripe] Credited ${tokenAmount} tokens to user ${userId}`);
 
     // Track purchase conversion attribution for campaign analytics
-    await attributeConversion(
-      userId,
-      "PURCHASE",
-      (session.amount_total || 0) / 100,
-    ).catch(
-      (error) => {
-        console.error("Failed to track purchase attribution:", error);
-      },
+    const { error: attributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
     );
+    if (attributionError) {
+      console.error("Failed to track purchase attribution:", attributionError);
+    }
   }
 
   if (type === "subscription" && planId && tokensPerMonth) {
@@ -271,18 +272,19 @@ async function handleCheckoutCompleted(
     );
 
     // Track purchase conversion attribution for campaign analytics (subscription)
-    await attributeConversion(
-      userId,
-      "PURCHASE",
-      (session.amount_total || 0) / 100,
-    ).catch(
-      (error) => {
-        console.error(
-          "Failed to track subscription purchase attribution:",
-          error,
-        );
-      },
+    const { error: subscriptionAttributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
     );
+    if (subscriptionAttributionError) {
+      console.error(
+        "Failed to track subscription purchase attribution:",
+        subscriptionAttributionError,
+      );
+    }
   }
 }
 

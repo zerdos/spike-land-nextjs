@@ -153,39 +153,50 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
 
   // Handle post-signup tasks (same as OAuth signup in auth.ts handleSignIn)
   // Bootstrap admin role for first user
-  await bootstrapAdminIfNeeded(newUser.id).catch((error) => {
-    console.error("Failed to bootstrap admin:", error);
-  });
+  const { error: bootstrapError } = await tryCatch(
+    bootstrapAdminIfNeeded(newUser.id),
+  );
+  if (bootstrapError) {
+    console.error("Failed to bootstrap admin:", bootstrapError);
+  }
 
   // Assign referral code to new user
-  await assignReferralCodeToUser(newUser.id).catch((error) => {
-    console.error("Failed to assign referral code:", error);
-  });
+  const { error: referralCodeError } = await tryCatch(
+    assignReferralCodeToUser(newUser.id),
+  );
+  if (referralCodeError) {
+    console.error("Failed to assign referral code:", referralCodeError);
+  }
 
   // Link referral if cookie exists
-  await linkReferralOnSignup(newUser.id).catch((error) => {
-    console.error("Failed to link referral on signup:", error);
-  });
+  const { error: linkReferralError } = await tryCatch(
+    linkReferralOnSignup(newUser.id),
+  );
+  if (linkReferralError) {
+    console.error("Failed to link referral on signup:", linkReferralError);
+  }
 
   // Create default private and public albums
-  await ensureUserAlbums(newUser.id).catch((error) => {
-    console.error("Failed to create default albums:", error);
-  });
+  const { error: albumsError } = await tryCatch(ensureUserAlbums(newUser.id));
+  if (albumsError) {
+    console.error("Failed to create default albums:", albumsError);
+  }
 
   // Process referral rewards (email-based signup = email verified)
-  const validation = await validateReferralAfterVerification(
-    newUser.id,
-  ).catch((error) => {
-    console.error("Failed to validate referral:", error);
-    return null;
-  });
+  const { data: validation, error: validationError } = await tryCatch(
+    validateReferralAfterVerification(newUser.id),
+  );
+  if (validationError) {
+    console.error("Failed to validate referral:", validationError);
+  }
 
   if (validation?.shouldGrantRewards && validation.referralId) {
-    await completeReferralAndGrantRewards(validation.referralId).catch(
-      (error) => {
-        console.error("Failed to grant referral rewards:", error);
-      },
+    const { error: rewardsError } = await tryCatch(
+      completeReferralAndGrantRewards(validation.referralId),
     );
+    if (rewardsError) {
+      console.error("Failed to grant referral rewards:", rewardsError);
+    }
   }
 
   return NextResponse.json({

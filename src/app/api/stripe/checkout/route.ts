@@ -28,7 +28,15 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: CheckoutRequest = await request.json();
+  const { data: body, error: bodyError } = await tryCatch<CheckoutRequest>(
+    request.json(),
+  );
+  if (bodyError) {
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
+  }
+
   const { packageId, planId, mode } = body;
 
   if (mode === "payment" && !packageId) {
@@ -44,27 +52,55 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
   }
 
   // Get or create Stripe customer
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { stripeCustomerId: true, email: true, name: true },
-  });
+  const { data: user, error: userError } = await tryCatch(
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeCustomerId: true, email: true, name: true },
+    }),
+  );
+
+  if (userError) {
+    console.error("Error fetching user:", userError);
+    return NextResponse.json({ error: "Failed to fetch user" }, {
+      status: 500,
+    });
+  }
 
   let stripeCustomerId = user?.stripeCustomerId;
 
   if (!stripeCustomerId) {
-    const customer = await stripe.customers.create({
-      email: session.user.email,
-      name: session.user.name || undefined,
-      metadata: {
-        userId: session.user.id,
-      },
-    });
+    const { data: customer, error: customerError } = await tryCatch(
+      stripe.customers.create({
+        email: session.user.email,
+        name: session.user.name || undefined,
+        metadata: {
+          userId: session.user.id,
+        },
+      }),
+    );
+
+    if (customerError) {
+      console.error("Error creating Stripe customer:", customerError);
+      return NextResponse.json({ error: "Failed to create customer" }, {
+        status: 500,
+      });
+    }
+
     stripeCustomerId = customer.id;
 
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { stripeCustomerId },
-    });
+    const { error: updateError } = await tryCatch(
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { stripeCustomerId },
+      }),
+    );
+
+    if (updateError) {
+      console.error("Error updating user with Stripe customer ID:", updateError);
+      return NextResponse.json({ error: "Failed to update user" }, {
+        status: 500,
+      });
+    }
   }
 
   // Build checkout session based on mode
@@ -91,32 +127,42 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: stripeCustomerId,
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "gbp",
-            product_data: {
-              name: pkg.name,
-              description: `${pkg.tokens} tokens for AI image enhancement`,
+    const { data: checkoutSession, error: checkoutError } = await tryCatch(
+      stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        mode: "payment",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "gbp",
+              product_data: {
+                name: pkg.name,
+                description: `${pkg.tokens} tokens for AI image enhancement`,
+              },
+              unit_amount: Math.round(pkg.price * 100), // Convert to pence
             },
-            unit_amount: Math.round(pkg.price * 100), // Convert to pence
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        metadata: {
+          userId: session.user.id,
+          packageId,
+          tokens: pkg.tokens.toString(),
+          type: "token_purchase",
         },
-      ],
-      metadata: {
-        userId: session.user.id,
-        packageId,
-        tokens: pkg.tokens.toString(),
-        type: "token_purchase",
-      },
-      success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
-    });
+        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?canceled=true`,
+      }),
+    );
+
+    if (checkoutError) {
+      console.error("Error creating payment checkout session:", checkoutError);
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -145,9 +191,19 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if user already has an active subscription
-    const existingSubscription = await prisma.subscription.findUnique({
-      where: { userId: session.user.id },
-    });
+    const { data: existingSubscription, error: subscriptionError } = await tryCatch(
+      prisma.subscription.findUnique({
+        where: { userId: session.user.id },
+      }),
+    );
+
+    if (subscriptionError) {
+      console.error("Error checking existing subscription:", subscriptionError);
+      return NextResponse.json(
+        { error: "Failed to check subscription status" },
+        { status: 500 },
+      );
+    }
 
     if (existingSubscription && existingSubscription.status === "ACTIVE") {
       return NextResponse.json(
@@ -158,36 +214,49 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: stripeCustomerId,
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "gbp",
-            product_data: {
-              name: `${plan.name} Plan`,
-              description: `${plan.tokensPerMonth} tokens/month for AI image enhancement`,
+    const { data: checkoutSession, error: checkoutError } = await tryCatch(
+      stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "gbp",
+              product_data: {
+                name: `${plan.name} Plan`,
+                description: `${plan.tokensPerMonth} tokens/month for AI image enhancement`,
+              },
+              unit_amount: Math.round(plan.priceGBP * 100),
+              recurring: {
+                interval: "month",
+              },
             },
-            unit_amount: Math.round(plan.priceGBP * 100),
-            recurring: {
-              interval: "month",
-            },
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        metadata: {
+          userId: session.user.id,
+          planId,
+          tokensPerMonth: plan.tokensPerMonth.toString(),
+          maxRollover: plan.maxRollover.toString(),
+          type: "subscription",
         },
-      ],
-      metadata: {
-        userId: session.user.id,
-        planId,
-        tokensPerMonth: plan.tokensPerMonth.toString(),
-        maxRollover: plan.maxRollover.toString(),
-        type: "subscription",
-      },
-      success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
-    });
+        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?canceled=true`,
+      }),
+    );
+
+    if (checkoutError) {
+      console.error(
+        "Error creating subscription checkout session:",
+        checkoutError,
+      );
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       success: true,

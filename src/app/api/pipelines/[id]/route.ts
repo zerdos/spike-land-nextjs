@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { EnhancementTier, PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -21,8 +22,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   const { id } = await params;
 
-  try {
-    const pipeline = await prisma.enhancementPipeline.findUnique({
+  const { data: pipeline, error } = await tryCatch(
+    prisma.enhancementPipeline.findUnique({
       where: { id },
       select: {
         id: true,
@@ -46,46 +47,48 @@ export async function GET(_request: Request, { params }: RouteParams) {
           },
         },
       },
-    });
+    }),
+  );
 
-    if (!pipeline) {
-      return NextResponse.json({ error: "Pipeline not found" }, {
-        status: 404,
-      });
-    }
-
-    // Check access
-    const isOwner = pipeline.userId === session.user.id;
-    const isSystemDefault = pipeline.userId === null;
-    const isPublic = pipeline.visibility === PipelineVisibility.PUBLIC;
-
-    // Check for share token in query string for LINK visibility
-    const url = new URL(_request.url);
-    const providedToken = url.searchParams.get("token");
-    const hasValidToken = pipeline.visibility === PipelineVisibility.LINK &&
-      pipeline.shareToken &&
-      providedToken === pipeline.shareToken;
-
-    if (!isOwner && !isSystemDefault && !isPublic && !hasValidToken) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    return NextResponse.json({
-      pipeline: {
-        ...pipeline,
-        isOwner,
-        isSystemDefault,
-        albumCount: pipeline._count.albums,
-        jobCount: pipeline._count.jobs,
-      },
-    });
-  } catch (error) {
+  if (error) {
     console.error("Error fetching pipeline:", error);
     return NextResponse.json(
       { error: "Failed to fetch pipeline" },
       { status: 500 },
     );
   }
+
+  if (!pipeline) {
+    return NextResponse.json({ error: "Pipeline not found" }, {
+      status: 404,
+    });
+  }
+
+  // Check access
+  const isOwner = pipeline.userId === session.user.id;
+  const isSystemDefault = pipeline.userId === null;
+  const isPublic = pipeline.visibility === PipelineVisibility.PUBLIC;
+
+  // Check for share token in query string for LINK visibility
+  const url = new URL(_request.url);
+  const providedToken = url.searchParams.get("token");
+  const hasValidToken = pipeline.visibility === PipelineVisibility.LINK &&
+    pipeline.shareToken &&
+    providedToken === pipeline.shareToken;
+
+  if (!isOwner && !isSystemDefault && !isPublic && !hasValidToken) {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
+  return NextResponse.json({
+    pipeline: {
+      ...pipeline,
+      isOwner,
+      isSystemDefault,
+      albumCount: pipeline._count.albums,
+      jobCount: pipeline._count.jobs,
+    },
+  });
 }
 
 /**

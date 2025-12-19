@@ -287,14 +287,18 @@ export async function POST(request: NextRequest) {
   });
 
   // Track enhancement conversion attribution for campaign analytics (first enhancement only)
-  await attributeConversion(session.user.id, "ENHANCEMENT", tokenCost).catch(
-    (error) => {
+  // Fire-and-forget: don't block the response on attribution tracking
+  void (async () => {
+    const { error } = await tryCatch(
+      attributeConversion(session.user.id, "ENHANCEMENT", tokenCost),
+    );
+    if (error) {
       requestLogger.warn("Failed to track enhancement attribution", {
         userId: session.user.id,
         error: error instanceof Error ? error.message : String(error),
       });
-    },
-  );
+    }
+  })();
 
   const enhancementInput: EnhanceImageInput = {
     jobId: job.id,
@@ -342,15 +346,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Fire and forget - don't await, let it run in the background
-    enhanceImageDirect(enhancementInput).catch((error) => {
-      requestLogger.error(
-        "Direct enhancement failed",
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          jobId: job.id,
-        },
-      );
-    });
+    void (async () => {
+      const { error } = await tryCatch(enhanceImageDirect(enhancementInput));
+      if (error) {
+        requestLogger.error(
+          "Direct enhancement failed",
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            jobId: job.id,
+          },
+        );
+      }
+    })();
   }
 
   return NextResponse.json(

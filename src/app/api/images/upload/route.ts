@@ -349,13 +349,21 @@ async function handleUpload(
     requestLogger.info("Running enhancement directly (dev mode)", {
       jobId: job.id,
     });
-    enhanceImageDirect(enhancementInput).catch((error) => {
-      requestLogger.error(
-        "Direct enhancement failed",
-        error instanceof Error ? error : new Error(String(error)),
-        { jobId: job.id },
+    // Fire-and-forget: start enhancement in background and log any errors
+    void (async () => {
+      const { error: enhanceError } = await tryCatch(
+        enhanceImageDirect(enhancementInput),
       );
-    });
+      if (enhanceError) {
+        requestLogger.error(
+          "Direct enhancement failed",
+          enhanceError instanceof Error
+            ? enhanceError
+            : new Error(String(enhanceError)),
+          { jobId: job.id },
+        );
+      }
+    })();
   }
 
   requestLogger.info("Upload completed successfully with auto-enhancement", {
