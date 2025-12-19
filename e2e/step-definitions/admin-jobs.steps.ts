@@ -732,10 +732,7 @@ Then(
   },
 );
 
-Then("I should see the tier information", async function(this: CustomWorld) {
-  const tier = this.page.locator("text=/Tier.*[12]?K/i");
-  await expect(tier.first()).toBeVisible();
-});
+// NOTE: "I should see the tier information" step moved to common.steps.ts
 
 Then("I should see the tokens cost", async function(this: CustomWorld) {
   const tokens = this.page.locator("text=/\\d+ tokens/");

@@ -51,6 +51,26 @@ async function main() {
   });
   console.log("Created test user:", testUser.id);
 
+  // 1b. Create/update admin user
+  const ADMIN_USER_ID = "admin-user-id";
+  const ADMIN_USER_EMAIL = "admin@example.com";
+  const adminUser = await prisma.user.upsert({
+    where: { id: ADMIN_USER_ID },
+    update: {
+      name: "Admin User",
+      email: ADMIN_USER_EMAIL,
+      role: "ADMIN",
+    },
+    create: {
+      id: ADMIN_USER_ID,
+      name: "Admin User",
+      email: ADMIN_USER_EMAIL,
+      emailVerified: new Date(),
+      role: "ADMIN",
+    },
+  });
+  console.log("Created admin user:", adminUser.id);
+
   // 2. Ensure test user has token balance
   await prisma.userTokenBalance.upsert({
     where: { userId: TEST_USER_ID },

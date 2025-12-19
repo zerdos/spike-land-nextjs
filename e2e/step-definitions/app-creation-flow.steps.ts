@@ -36,89 +36,11 @@ Then(
   },
 );
 
-When(
-  "I type {string} in the {string} field",
-  async function(this: CustomWorld, value: string, fieldName: string) {
-    // Try to find by testid first, then by label
-    let field;
-    const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
+// NOTE: "I type {string} in the {string} field" step moved to common.steps.ts
 
-    // Try common testid patterns
-    const testIds = [
-      `${testId}-input`,
-      `${testId}-textarea`,
-      `${testId}-field`,
-      `monetization-${testId}-input`,
-      `app-${testId}-input`,
-      `app-${testId}-textarea`,
-    ];
+// NOTE: "I wait for {int} seconds" step moved to common.steps.ts
 
-    for (const id of testIds) {
-      try {
-        field = this.page.getByTestId(id);
-        if (await field.isVisible({ timeout: 500 })) {
-          break;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    // Fall back to label
-    if (
-      !field || !(await field.isVisible({ timeout: 500 }).catch(() => false))
-    ) {
-      field = this.page.getByLabel(new RegExp(fieldName, "i"));
-    }
-
-    await expect(field).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await field.fill(value);
-  },
-);
-
-// Wait step for draft auto-save
-When(
-  "I wait for {int} seconds",
-  async function(this: CustomWorld, seconds: number) {
-    await this.page.waitForTimeout(seconds * 1000);
-  },
-);
-
-// Draft persistence steps
-Then(
-  "the {string} field should contain {string}",
-  async function(this: CustomWorld, fieldName: string, value: string) {
-    const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
-    let field;
-
-    // Try common testid patterns
-    const testIds = [
-      `app-${testId}-input`,
-      `app-${testId}-textarea`,
-      `${testId}-input`,
-      `${testId}-textarea`,
-    ];
-
-    for (const id of testIds) {
-      try {
-        field = this.page.getByTestId(id);
-        if (await field.isVisible({ timeout: 500 })) {
-          break;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    if (
-      !field || !(await field.isVisible({ timeout: 500 }).catch(() => false))
-    ) {
-      field = this.page.getByLabel(new RegExp(fieldName, "i"));
-    }
-
-    await expect(field).toHaveValue(value, { timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "the {string} field should contain {string}" step moved to common.steps.ts
 
 // Navigation validation steps
 When(
@@ -184,18 +106,7 @@ Then(
   },
 );
 
-// Cancel flow steps
-When(
-  "I click the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await button.click();
-    await waitForPageLoad(this.page);
-  },
-);
+// NOTE: "I click the {string} button" step moved to common.steps.ts
 
 Then(
   "I should see the unsaved changes confirmation dialog",
@@ -354,10 +265,4 @@ Given(
   },
 );
 
-Then(
-  "I should not see {string} text",
-  async function(this: CustomWorld, text: string) {
-    const element = this.page.getByText(text, { exact: false });
-    await expect(element).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should not see {string} text" step moved to common.steps.ts

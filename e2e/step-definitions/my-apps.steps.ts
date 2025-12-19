@@ -54,10 +54,7 @@ Then(
   },
 );
 
-Then("I should see {string}", async function(this: CustomWorld, text: string) {
-  const element = this.page.getByText(text, { exact: false });
-  await expect(element).toBeVisible();
-});
+// NOTE: "I should see {string}" step moved to common.steps.ts
 
 // NOTE: "I should see the {string} button" step is defined in authentication.steps.ts
 
@@ -69,13 +66,7 @@ Then("the button should be enabled", async function(this: CustomWorld) {
 
 // NOTE: "I click the {string} button" step is defined in authentication.steps.ts
 
-Then(
-  "I should be redirected to {string}",
-  async function(this: CustomWorld, url: string) {
-    await this.page.waitForURL(new RegExp(url));
-    await expect(this.page).toHaveURL(new RegExp(url));
-  },
-);
+// NOTE: "I should be redirected to {string}" step moved to common.steps.ts
 
 Then(
   "I should see the app creation wizard",

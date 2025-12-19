@@ -806,19 +806,8 @@ When("the display page is closed", async function(this: VideoWallWorld) {
   await this.displayPage.close();
 });
 
-Then(
-  "I should see {string} error",
-  async function(this: VideoWallWorld, errorMessage: string) {
-    const clientContext = this.getClientContext("reconnect-client") ||
-      this.getAllClientContexts()[0];
-    if (!clientContext) {
-      throw new Error("Client context not found");
-    }
-
-    const error = clientContext.page.getByText(errorMessage);
-    await expect(error).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see {string} error" step moved to common.steps.ts
+// For VideoWallWorld contexts, use the generic implementation which uses this.page
 
 Then(
   "I should see option to return to home or retry",

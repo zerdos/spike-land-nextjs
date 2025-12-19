@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForTextWithRetry } from "../support/helpers/retry-helper";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CanvasEditorPage } from "../support/page-objects/CanvasEditorPage";
 import { CustomWorld } from "../support/world";
 
@@ -214,16 +214,7 @@ When("I click the previous arrow button", async function(this: CustomWorld) {
   await canvasPage.clickPreviousArrow();
 });
 
-When("I press the right arrow key", async function(this: CustomWorld) {
-  const canvasPage = getCanvasPage(this);
-  this.initialImageSrc = await canvasPage.getDisplayedImageSrc() || undefined;
-  await canvasPage.pressArrowKey("right");
-});
-
-When("I press the left arrow key", async function(this: CustomWorld) {
-  const canvasPage = getCanvasPage(this);
-  await canvasPage.pressArrowKey("left");
-});
+// NOTE: "I press the right arrow key" and "I press the left arrow key" steps moved to common.steps.ts
 
 Then("the next image should be displayed", async function(this: CustomWorld) {
   const canvasPage = getCanvasPage(this);
@@ -539,16 +530,7 @@ When("I see the image error placeholder", async function(this: CustomWorld) {
   await expect(placeholder).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
-When(
-  "I click the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await button.click();
-    await this.page.waitForTimeout(500);
-  },
-);
+// NOTE: "I click the {string} button" step moved to common.steps.ts
 
 Then("the image should attempt to reload", async function(this: CustomWorld) {
   // Verify loading state appears briefly
@@ -627,16 +609,7 @@ Then(
   },
 );
 
-// Share functionality
-When("I click the share button", async function(this: CustomWorld) {
-  const canvasPage = getCanvasPage(this);
-  await canvasPage.clickShare();
-});
-
-Then("I should see the share dialog", async function(this: CustomWorld) {
-  const canvasPage = getCanvasPage(this);
-  await canvasPage.verifyShareDialogVisible();
-});
+// NOTE: "I click the share button" and "I should see the share dialog" steps moved to common.steps.ts
 
 Then(
   "I should see the shareable canvas URL",
@@ -658,9 +631,4 @@ When("I click the copy URL button", async function(this: CustomWorld) {
   await canvasPage.clickCopyUrl();
 });
 
-Then(
-  "I should see {string} feedback text",
-  async function(this: CustomWorld, text: string) {
-    await waitForTextWithRetry(this.page, text, { timeout: TIMEOUTS.DEFAULT });
-  },
-);
+// NOTE: "I should see {string} feedback text" step moved to common.steps.ts

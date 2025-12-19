@@ -427,17 +427,7 @@ When("I click the {string} button in the QR panel", async function(
   await button.click();
 });
 
-Then("I should see {string} feedback text", async function(
-  this: CustomWorld,
-  text: string,
-) {
-  if (shouldSkipCanvasTests) {
-    return "skipped";
-  }
-
-  const feedback = this.page.getByText(text);
-  await expect(feedback).toBeVisible({ timeout: 5000 });
-});
+// NOTE: "I should see {string} feedback text" step moved to common.steps.ts
 
 Then(
   "the clipboard should contain the canvas URL",

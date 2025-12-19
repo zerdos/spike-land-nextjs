@@ -473,10 +473,7 @@ When("I release the drag", async function(this: CustomWorld) {
   await this.page.waitForTimeout(300);
 });
 
-When("I press the Escape key", async function(this: CustomWorld) {
-  await this.page.keyboard.press("Escape");
-  await this.page.waitForTimeout(200);
-});
+// NOTE: "I press the Escape key" step moved to common.steps.ts
 
 When("I enable selection mode", async function(this: CustomWorld) {
   const selectButton = this.page.getByRole("button", { name: /^select$/i });

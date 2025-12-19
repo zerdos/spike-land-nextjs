@@ -273,12 +273,7 @@ When(
   },
 );
 
-// Share functionality
-When("I click the share button", async function(this: CustomWorld) {
-  const shareButton = this.page.getByRole("button", { name: /share/i });
-  await shareButton.click();
-  await this.page.waitForTimeout(300);
-});
+// NOTE: "I click the share button" step moved to common.steps.ts
 
 // Export functionality
 When("I click on the export options", async function(this: CustomWorld) {
@@ -290,24 +285,7 @@ When("I click on the export options", async function(this: CustomWorld) {
   await this.page.waitForTimeout(200);
 });
 
-// Enhancement actions
-When(
-  "I select {string} enhancement tier",
-  async function(this: CustomWorld, tier: string) {
-    const tierOption = this.page.locator(`[data-tier="${tier}"]`).or(
-      this.page.getByText(tier),
-    );
-    await tierOption.click();
-  },
-);
-
-When("I click the enhance button", async function(this: CustomWorld) {
-  const enhanceButton = this.page.getByRole("button", {
-    name: /enhance|start/i,
-  });
-  await enhanceButton.click();
-  await this.page.waitForTimeout(500);
-});
+// NOTE: "I select {string} enhancement tier" and "I click the enhance button" steps moved to common.steps.ts
 
 When(
   "I start a new enhancement with {string}",
@@ -348,22 +326,7 @@ When(
   },
 );
 
-When("I confirm the cancellation", async function(this: CustomWorld) {
-  // Mock the cancel API
-  await this.page.route("**/api/jobs/*/cancel", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ success: true, refundedTokens: 2 }),
-    });
-  });
-
-  const confirmButton = this.page.getByRole("button", { name: /confirm|yes/i });
-  if (await confirmButton.isVisible()) {
-    await confirmButton.click();
-    await this.page.waitForTimeout(300);
-  }
-});
+// NOTE: "I confirm the cancellation" step moved to common.steps.ts
 
 When(
   "I click the delete button on a completed version",
@@ -438,19 +401,7 @@ Then(
   },
 );
 
-Then(
-  "the selected version should be highlighted",
-  async function(this: CustomWorld) {
-    const selectedVersion = this.page.locator(
-      '[data-version-id][data-selected="true"]',
-    ).or(
-      this.page.locator("[data-version-id].ring-2"),
-    ).or(
-      this.page.locator("[data-version-id].border-primary"),
-    );
-    await expect(selectedVersion).toBeVisible();
-  },
-);
+// NOTE: "the selected version should be highlighted" step moved to common.steps.ts
 
 Then("I should see the export selector", async function(this: CustomWorld) {
   const exportSelector = this.page.locator('[data-testid="export-selector"]')
@@ -468,12 +419,7 @@ Then(
   },
 );
 
-Then("I should see the share dialog", async function(this: CustomWorld) {
-  const shareDialog = this.page.locator('[role="dialog"]').filter({
-    has: this.page.getByText(/share/i),
-  });
-  await expect(shareDialog).toBeVisible();
-});
+// NOTE: "I should see the share dialog" step moved to common.steps.ts
 
 Then(
   "I should be able to copy the share link",
@@ -538,11 +484,7 @@ Then(
   },
 );
 
-Then("my tokens should be refunded", async function(this: CustomWorld) {
-  // This is verified by checking the balance was updated
-  // The mock already handles this
-  await this.page.waitForTimeout(200);
-});
+// NOTE: "my tokens should be refunded" step moved to common.steps.ts
 
 Then(
   "the version should be removed from the history",
@@ -588,13 +530,7 @@ Then(
   },
 );
 
-Then(
-  "I should be redirected to {string}",
-  async function(this: CustomWorld, path: string) {
-    await this.page.waitForURL(`**${path}`, { timeout: 5000 });
-    expect(this.page.url()).toContain(path);
-  },
-);
+// NOTE: "I should be redirected to {string}" step moved to common.steps.ts
 
 Then("I should see a not found error", async function(this: CustomWorld) {
   const notFound = this.page.getByText(/not found|404/i);
