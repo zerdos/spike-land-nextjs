@@ -16,8 +16,13 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Environment files (use build args instead)
-.env*
+# Environment files
+# Allow .env.local for dev container, exclude others
+.env
+.env.production
+.env.development
+.env.test
+!.env.local
 !.env.example
 
 # IDE and OS

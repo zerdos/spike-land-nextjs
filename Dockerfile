@@ -76,6 +76,17 @@ COPY apps ./apps
 COPY public ./public
 
 # ============================================================================
+# STAGE: Development server (for docker-compose)
+# Use: docker-compose up or docker build --target dev
+# ============================================================================
+FROM source AS dev
+# Copy .env.local for development (contains all required env vars)
+COPY .env.local .env.local
+ENV NODE_ENV=development
+EXPOSE 3000
+CMD ["yarn", "dev"]
+
+# ============================================================================
 # STAGE 4: Lint (PARALLEL with build - uses BuildKit)
 # ============================================================================
 FROM source AS lint
