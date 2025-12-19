@@ -7,6 +7,7 @@ export interface GenerateRequest {
     prompt: string;
     tier?: "TIER_1K" | "TIER_2K" | "TIER_4K";
     negativePrompt?: string;
+    aspectRatio?: string;
 }
 export interface ModifyRequest {
     prompt: string;

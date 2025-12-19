@@ -1,4 +1,8 @@
-import { isValidAspectRatio, SUPPORTED_ASPECT_RATIOS } from "@/lib/ai/aspect-ratio";
+import {
+  type AspectRatio,
+  isValidAspectRatio,
+  SUPPORTED_ASPECT_RATIOS,
+} from "@/lib/ai/aspect-ratio";
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
@@ -73,18 +77,18 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse and validate request body
-  const { data: body, error: jsonError } = await tryCatch<
-    { prompt?: string; tier?: string; negativePrompt?: string; }
-  >(request.json());
+  const { data: body, error: jsonError } = await tryCatch<{
+    prompt?: string;
+    tier?: string;
+    negativePrompt?: string;
+    aspectRatio?: string;
+  }>(request.json());
 
   if (jsonError) {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { prompt, tier, negativePrompt } = body;
+  const { prompt, tier, negativePrompt, aspectRatio } = body;
 
   // Validate prompt
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -115,6 +119,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate aspectRatio if provided
+  if (aspectRatio && !isValidAspectRatio(aspectRatio)) {
+    return NextResponse.json(
+      {
+        error: `Invalid aspectRatio. Must be one of: ${SUPPORTED_ASPECT_RATIOS.join(", ")}`,
+      },
+      { status: 400 },
+    );
+  }
+
   const { data: result, error: jobError } = await tryCatch(
     createGenerationJob({
       userId: userId!,
@@ -122,6 +136,7 @@ export async function POST(request: NextRequest) {
       prompt: prompt.trim(),
       tier: tier as EnhancementTier,
       negativePrompt: negativePrompt?.trim(),
+      aspectRatio: aspectRatio as AspectRatio | undefined,
     }),
   );
 
