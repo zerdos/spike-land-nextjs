@@ -25,7 +25,7 @@ type ErrorEnvironment = "FRONTEND" | "BACKEND";
 
 interface ErrorLog {
   id: string;
-  timestamp: string;
+  timestamp: string | Date;
   message: string;
   stack: string | null;
   sourceFile: string | null;
@@ -37,7 +37,8 @@ interface ErrorLog {
   environment: ErrorEnvironment;
   errorType: string | null;
   errorCode: string | null;
-  metadata: Record<string, unknown> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: any;
 }
 
 interface Pagination {
@@ -75,8 +76,8 @@ const ERROR_TYPE_COLORS: Record<string, string> = {
   ReferenceError: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
 };
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+function formatDate(dateInput: string | Date): string {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",

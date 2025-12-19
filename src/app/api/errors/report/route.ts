@@ -5,7 +5,7 @@
  * Rate limited to prevent abuse.
  */
 
-import { reportErrorFromApi } from "@/lib/errors/error-reporter";
+import { reportErrorToDatabase } from "@/lib/errors/error-reporter.server";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -23,6 +23,7 @@ interface ErrorReport {
   userId?: string;
   metadata?: Record<string, unknown>;
   timestamp?: string;
+  environment?: "FRONTEND" | "BACKEND";
 }
 
 interface RequestBody {
@@ -40,13 +41,12 @@ export async function POST(request: Request) {
     const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
 
     // Rate limit: 20 requests per minute per IP
-    const { allowed, remaining } = await checkRateLimit(
+    const { isLimited, remaining } = await checkRateLimit(
       `error-report:${ip}`,
-      20,
-      60,
+      { maxRequests: 20, windowMs: 60000 },
     );
 
-    if (!allowed) {
+    if (isLimited) {
       return NextResponse.json(
         { error: "Rate limit exceeded" },
         {
@@ -80,9 +80,9 @@ export async function POST(request: Request) {
       }
 
       // Sanitize and validate fields
-      const sanitizedError: ErrorReport = {
+      const sanitizedError = {
         message: error.message.slice(0, 10000), // Limit message length
-        stack: error.stack?.slice(0, 50000), // Limit stack length
+        stack: error.stack?.slice(0, 50000),
         sourceFile: error.sourceFile?.slice(0, 500),
         sourceLine: typeof error.sourceLine === "number" ? error.sourceLine : undefined,
         sourceColumn: typeof error.sourceColumn === "number"
@@ -94,11 +94,14 @@ export async function POST(request: Request) {
         route: error.route?.slice(0, 500),
         userId: error.userId?.slice(0, 100),
         metadata: typeof error.metadata === "object" ? error.metadata : undefined,
-        timestamp: error.timestamp,
+        timestamp: error.timestamp || new Date().toISOString(),
+        environment: error.environment === "BACKEND" ? "BACKEND" as const : "FRONTEND" as const,
       };
 
       try {
-        await reportErrorFromApi(sanitizedError);
+        // Use environment from payload, default to FRONTEND
+        const env = sanitizedError.environment === "BACKEND" ? "BACKEND" : "FRONTEND";
+        await reportErrorToDatabase(sanitizedError, env);
         successCount++;
       } catch {
         failCount++;
@@ -117,7 +120,6 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error("[ErrorReport API] Failed to process request:", error);
     return NextResponse.json(
       { error: "Internal server error" },

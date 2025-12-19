@@ -420,7 +420,6 @@ export const auth = async (...args: any[]) => {
   // @ts-expect-error - auth accepts variable arguments
   return originalAuth(...args);
 };
-
 export { handlers, signIn, signOut };
 
 // Export for use in data migration

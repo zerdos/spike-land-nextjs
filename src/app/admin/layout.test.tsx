@@ -16,9 +16,15 @@ vi.mock("@/lib/auth/admin-middleware", () => ({
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
+vi.mock("next/headers", () => ({
+  headers: vi.fn().mockResolvedValue({
+    get: vi.fn().mockReturnValue(null), // No E2E bypass by default
+  }),
+}));
 
 const { auth } = await import("@/auth");
 const { isAdminByUserId } = await import("@/lib/auth/admin-middleware");
+const { headers } = await import("next/headers");
 
 describe("AdminLayout", () => {
   beforeEach(() => {
@@ -112,5 +118,31 @@ describe("AdminLayout", () => {
     render(result);
 
     expect(screen.getByText("admin@example.com")).toBeInTheDocument();
+  });
+
+  it("should bypass auth when E2E bypass header is present", async () => {
+    // Setup E2E bypass
+    const mockGet = vi.fn().mockReturnValue("test-secret");
+    vi.mocked(headers).mockResolvedValue({
+      get: mockGet,
+    } as any);
+
+    const originalNodeEnv = process.env.NODE_ENV;
+    const originalBypassSecret = process.env.E2E_BYPASS_SECRET;
+    process.env.NODE_ENV = "test";
+    process.env.E2E_BYPASS_SECRET = "test-secret";
+
+    const result = await AdminLayout({ children: <div>Test Content</div> });
+    render(result);
+
+    // Verify E2E Test User is displayed instead of real user
+    expect(screen.getByText("E2E Test User")).toBeInTheDocument();
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
+    // Auth should not be called when bypass is active
+    expect(auth).not.toHaveBeenCalled();
+
+    // Restore env
+    process.env.NODE_ENV = originalNodeEnv;
+    process.env.E2E_BYPASS_SECRET = originalBypassSecret;
   });
 });

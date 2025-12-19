@@ -3,10 +3,11 @@
  *
  * Handles error reporting from both frontend and backend.
  * - Frontend: batches and sends to /api/errors/report
- * - Backend: writes directly to database
+ * - Backend: logs to console (actual DB write happens via server-only module)
+ *
+ * This module is frontend-safe (no Prisma imports).
+ * For server-side DB writes, use error-reporter.server.ts
  */
-
-import type { ErrorEnvironment } from "@prisma/client";
 
 export interface CallSite {
   file?: string;
@@ -62,6 +63,7 @@ export function captureCallSite(): CallSite {
   // Find the first line that's NOT from try-catch.ts or error-reporter.ts
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
+    if (!line) continue;
     if (
       !line.includes("try-catch.ts") &&
       !line.includes("try-catch.js") &&
@@ -71,7 +73,7 @@ export function captureCallSite(): CallSite {
     ) {
       // Parse: "    at functionName (file:line:column)" or "    at file:line:column"
       const match = line.match(/at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?/);
-      if (match) {
+      if (match && match[2] && match[3] && match[4]) {
         return {
           caller: match[1] || undefined,
           file: match[2],
@@ -125,44 +127,39 @@ async function flushErrors(): Promise<void> {
     });
   } catch (e) {
     // Silently fail - don't cause more errors
-    // eslint-disable-next-line no-console
     console.error("[ErrorReporter] Failed to send errors:", e);
   }
 }
 
 /**
- * Report error directly to database (backend)
+ * Report error on backend (console log only)
+ * Actual DB write should be done via server-only module in API routes
  */
-async function reportErrorBackend(
+function reportErrorBackend(
   error: PendingError,
-  environment: ErrorEnvironment,
-): Promise<void> {
-  try {
-    // Dynamic import to avoid circular dependencies
-    const prisma = (await import("@/lib/prisma")).default;
+  environment: "FRONTEND" | "BACKEND",
+): void {
+  // Log to console for visibility
+  console.error(
+    `[ErrorReporter] ${environment} error:`,
+    error.message,
+    error.sourceFile ? `at ${error.sourceFile}:${error.sourceLine}` : "",
+  );
 
-    await prisma.errorLog.create({
-      data: {
-        message: error.message,
-        stack: error.stack,
-        sourceFile: error.sourceFile,
-        sourceLine: error.sourceLine,
-        sourceColumn: error.sourceColumn,
-        callerName: error.callerName,
-        errorType: error.errorType,
-        errorCode: error.errorCode,
-        route: error.route,
-        userId: error.userId,
-        environment,
-        metadata: error.metadata
-          ? JSON.parse(JSON.stringify(error.metadata))
-          : null,
-      },
+  // For backend errors, we need to write to DB
+  // But we can't import Prisma here (breaks client bundling)
+  // So we send to our own API endpoint
+  if (environment === "BACKEND") {
+    // Fire-and-forget POST to our error API
+    void fetch("/api/errors/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        errors: [{ ...error, environment: "BACKEND" }],
+      }),
+    }).catch((e) => {
+      console.error("[ErrorReporter] Failed to report backend error:", e);
     });
-  } catch (e) {
-    // Silently fail - don't cause more errors
-    // eslint-disable-next-line no-console
-    console.error("[ErrorReporter] Failed to save error to database:", e);
   }
 }
 
@@ -191,51 +188,21 @@ export function reportError(
   };
 
   if (isServer) {
-    // Backend: report directly (fire-and-forget)
-    void reportErrorBackend(pendingError, "BACKEND");
+    // Backend: log and report via API (fire-and-forget)
+    reportErrorBackend(pendingError, "BACKEND");
   } else {
     // Frontend: queue for batching
     queueError(pendingError);
   }
 }
 
-/**
- * Report error from API endpoint (for frontend errors received via POST)
- */
-export async function reportErrorFromApi(
-  error: PendingError,
-): Promise<void> {
-  try {
-    const prisma = (await import("@/lib/prisma")).default;
-
-    await prisma.errorLog.create({
-      data: {
-        message: error.message,
-        stack: error.stack,
-        sourceFile: error.sourceFile,
-        sourceLine: error.sourceLine,
-        sourceColumn: error.sourceColumn,
-        callerName: error.callerName,
-        errorType: error.errorType,
-        errorCode: error.errorCode,
-        route: error.route,
-        userId: error.userId,
-        environment: "FRONTEND",
-        metadata: error.metadata
-          ? JSON.parse(JSON.stringify(error.metadata))
-          : null,
-        timestamp: error.timestamp ? new Date(error.timestamp) : new Date(),
-      },
-    });
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error("[ErrorReporter] Failed to save frontend error:", e);
-    throw e; // Re-throw so the API can return an error response
-  }
-}
-
 // Flush on page unload (frontend only)
-if (!isServer && typeof window !== "undefined") {
+// Guard against test environments where window exists but lacks addEventListener
+if (
+  !isServer &&
+  typeof window !== "undefined" &&
+  typeof window.addEventListener === "function"
+) {
   window.addEventListener("beforeunload", () => {
     if (pendingErrors.length > 0) {
       // Use sendBeacon for reliable delivery

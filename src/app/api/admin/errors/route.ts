@@ -147,7 +147,6 @@ export async function GET(request: Request) {
   );
 
   if (error) {
-    // eslint-disable-next-line no-console
     console.error("[Admin Errors API] Failed to fetch errors:", error);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -101,7 +101,6 @@ export async function GET() {
   );
 
   if (error) {
-    // eslint-disable-next-line no-console
     console.error("[Admin Error Stats API] Failed to fetch stats:", error);
     return NextResponse.json(
       { error: "Internal server error" },

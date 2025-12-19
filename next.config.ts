@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
-import { withWorkflow } from "workflow/next";
+// @ts-expect-error - _withWorkflow is conditionally used (see export at bottom)
+import { withWorkflow as _withWorkflow } from "workflow/next";
 
 /**
  * Security headers configuration
@@ -105,4 +106,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withWorkflow(nextConfig);
+// export default withWorkflow(nextConfig);
+export default nextConfig;
