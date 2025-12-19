@@ -255,11 +255,11 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/apps/pixel")}
+          onClick={() => router.back()}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Images
+          Back
         </Button>
 
         <h1 className="text-3xl font-bold">Pixel Image Enhancement</h1>
