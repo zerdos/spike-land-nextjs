@@ -881,7 +881,7 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     onClick={(e) => {
                       if (!isSelectionMode && !draggedImageId) {
                         e.stopPropagation();
-                        router.push(ROUTES.imageDetail(image.id));
+                        router.push(ROUTES.imageDetail(image.id, `/albums/${albumId}`));
                       }
                     }}
                   >

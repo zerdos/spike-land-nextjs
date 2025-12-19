@@ -283,13 +283,16 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           variant="ghost"
           size="sm"
           onClick={() => {
-            // Try to go back if there's navigation history
-            // window.history.state.idx > 0 indicates there are previous entries in the history stack
-            if (typeof window !== "undefined" && window.history.state?.idx > 0) {
+            const from = searchParams.get("from");
+            // Priority 1: Use explicit referrer from URL (most reliable)
+            // Security: only allow internal paths starting with /
+            if (from && from.startsWith("/")) {
+              router.push(from);
+            } else if (typeof window !== "undefined" && window.history.state?.idx > 0) {
+              // Priority 2: Use browser history if available
               router.back();
             } else {
-              // Fallback: navigate to the main pixel page if no history exists
-              // This handles cases where user accessed the image directly via URL, bookmark, or new tab
+              // Priority 3: Fallback to main pixel page
               router.push("/apps/pixel");
             }
           }}
