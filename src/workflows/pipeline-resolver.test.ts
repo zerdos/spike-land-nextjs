@@ -28,15 +28,14 @@ import { resolvePipelineConfig } from "./pipeline-resolver";
 describe("pipeline-resolver", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default mock for tryCatch - just execute the promise
-    mockTryCatch.mockImplementation(async (promise: Promise<unknown>) => {
-      try {
-        const data = await promise;
-        return { data, error: null };
-      } catch (error) {
-        return { data: null, error };
-      }
-    });
+    // Default mock for tryCatch - just execute the promise using the same pattern
+    mockTryCatch.mockImplementation(
+      async <T>(promise: Promise<T>): Promise<{ data: T | null; error: Error | null; }> =>
+        promise.then(
+          (data) => ({ data, error: null }),
+          (error: Error) => ({ data: null, error }),
+        ),
+    );
   });
 
   describe("resolvePipelineConfig", () => {

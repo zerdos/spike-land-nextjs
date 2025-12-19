@@ -97,23 +97,39 @@ export class FacebookMarketingClient implements IMarketingClient {
 
     const url = new URL(`${FACEBOOK_GRAPH_API_BASE}${endpoint}`);
 
-    const response = await fetch(url.toString(), {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch(url.toString(), {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+      }),
+    );
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (fetchError || !response) {
       throw new Error(
-        `Facebook API Error: ${error.error?.message || response.statusText}`,
+        `Facebook API Error: ${fetchError?.message || "Network error"}`,
       );
     }
 
-    return response.json();
+    if (!response.ok) {
+      const { data: errorData } = await tryCatch(response.json());
+      throw new Error(
+        `Facebook API Error: ${errorData?.error?.message || response.statusText}`,
+      );
+    }
+
+    const { data, error: jsonError } = await tryCatch<T>(response.json());
+
+    if (jsonError || data === null || data === undefined) {
+      throw new Error(
+        `Facebook API Error: ${jsonError?.message || "Invalid response"}`,
+      );
+    }
+
+    return data;
   }
 
   /**
@@ -144,18 +160,26 @@ export class FacebookMarketingClient implements IMarketingClient {
       code,
     });
 
-    const response = await fetch(
-      `${FACEBOOK_GRAPH_API_BASE}/oauth/access_token?${params}`,
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch(`${FACEBOOK_GRAPH_API_BASE}/oauth/access_token?${params}`),
     );
 
+    if (fetchError || !response) {
+      throw new Error(`Failed to exchange code: ${fetchError?.message || "Network error"}`);
+    }
+
     if (!response.ok) {
-      const error = await response.json();
+      const { data: errorData } = await tryCatch(response.json());
       throw new Error(
-        `Failed to exchange code: ${error.error?.message || response.statusText}`,
+        `Failed to exchange code: ${errorData?.error?.message || response.statusText}`,
       );
     }
 
-    const data = await response.json();
+    const { data, error: jsonError } = await tryCatch(response.json());
+
+    if (jsonError || !data) {
+      throw new Error(`Failed to exchange code: ${jsonError?.message || "Invalid response"}`);
+    }
 
     // Exchange short-lived token for long-lived token
     const longLivedToken = await this.getLongLivedToken(data.access_token);
@@ -182,16 +206,23 @@ export class FacebookMarketingClient implements IMarketingClient {
       fb_exchange_token: shortLivedToken,
     });
 
-    const response = await fetch(
-      `${FACEBOOK_GRAPH_API_BASE}/oauth/access_token?${params}`,
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch(`${FACEBOOK_GRAPH_API_BASE}/oauth/access_token?${params}`),
     );
 
-    if (!response.ok) {
+    if (fetchError || !response || !response.ok) {
       // Return original token if exchange fails
       return { access_token: shortLivedToken };
     }
 
-    return response.json();
+    const { data, error: jsonError } = await tryCatch(response.json());
+
+    if (jsonError || !data) {
+      // Return original token if parsing fails
+      return { access_token: shortLivedToken };
+    }
+
+    return data;
   }
 
   /**

@@ -179,21 +179,35 @@ export async function getReferralStats(userId: string): Promise<{
   pendingReferrals: number;
   tokensEarned: number;
 }> {
-  const [totalReferrals, completedReferrals, pendingReferrals, referrals] = await Promise.all([
-    prisma.referral.count({
-      where: { referrerId: userId },
-    }),
-    prisma.referral.count({
-      where: { referrerId: userId, status: "COMPLETED" },
-    }),
-    prisma.referral.count({
-      where: { referrerId: userId, status: "PENDING" },
-    }),
-    prisma.referral.findMany({
-      where: { referrerId: userId, status: "COMPLETED" },
-      select: { tokensGranted: true },
-    }),
-  ]);
+  const { data: results, error } = await tryCatch(
+    Promise.all([
+      prisma.referral.count({
+        where: { referrerId: userId },
+      }),
+      prisma.referral.count({
+        where: { referrerId: userId, status: "COMPLETED" },
+      }),
+      prisma.referral.count({
+        where: { referrerId: userId, status: "PENDING" },
+      }),
+      prisma.referral.findMany({
+        where: { referrerId: userId, status: "COMPLETED" },
+        select: { tokensGranted: true },
+      }),
+    ]),
+  );
+
+  if (error) {
+    console.error("Failed to get referral stats:", error);
+    return {
+      totalReferrals: 0,
+      completedReferrals: 0,
+      pendingReferrals: 0,
+      tokensEarned: 0,
+    };
+  }
+
+  const [totalReferrals, completedReferrals, pendingReferrals, referrals] = results;
 
   // Calculate tokens earned (referrer gets half of total tokens granted)
   const tokensEarned = referrals.reduce(
@@ -224,19 +238,26 @@ export async function getReferredUsers(
     tokensGranted: number;
   }>
 > {
-  const referrals = await prisma.referral.findMany({
-    where: { referrerId: userId },
-    include: {
-      referee: {
-        select: {
-          id: true,
-          email: true,
+  const { data: referrals, error } = await tryCatch(
+    prisma.referral.findMany({
+      where: { referrerId: userId },
+      include: {
+        referee: {
+          select: {
+            id: true,
+            email: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to get referred users:", error);
+    return [];
+  }
 
   return referrals.map((ref: {
     id: string;

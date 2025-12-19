@@ -112,6 +112,22 @@ describe("get-posts", () => {
 
       expect(slugs).toEqual(["post"]);
     });
+
+    it("returns empty array when readdirSync throws an error", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(fs.readdirSync).mockImplementation(() => {
+        throw new Error("Permission denied");
+      });
+
+      const slugs = getPostSlugs();
+
+      expect(slugs).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to read blog directory:",
+        "Permission denied",
+      );
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe("getPostBySlug", () => {

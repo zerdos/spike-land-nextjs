@@ -135,93 +135,112 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    // Rate limiting: Check user's pipeline count
-    const userPipelineCount = await prisma.enhancementPipeline.count({
+  // Rate limiting: Check user's pipeline count
+  const { data: userPipelineCount, error: countError } = await tryCatch(
+    prisma.enhancementPipeline.count({
       where: { userId: session.user.id },
-    });
+    }),
+  );
 
-    if (userPipelineCount >= MAX_PIPELINES_PER_USER) {
-      return NextResponse.json(
-        {
-          error:
-            `Pipeline limit exceeded. Maximum ${MAX_PIPELINES_PER_USER} pipelines allowed per user.`,
-        },
-        { status: 429 },
-      );
-    }
+  if (countError) {
+    console.error("Error creating pipeline:", countError);
+    return NextResponse.json(
+      { error: "Failed to create pipeline" },
+      { status: 500 },
+    );
+  }
 
-    const body = await request.json();
-    const {
-      name,
-      description,
-      tier = "TIER_1K",
-      visibility = "PRIVATE",
-      analysisConfig,
-      autoCropConfig,
-      promptConfig,
-      generationConfig,
-    } = body;
+  if (userPipelineCount >= MAX_PIPELINES_PER_USER) {
+    return NextResponse.json(
+      {
+        error:
+          `Pipeline limit exceeded. Maximum ${MAX_PIPELINES_PER_USER} pipelines allowed per user.`,
+      },
+      { status: 429 },
+    );
+  }
 
-    // Validate required fields
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Pipeline name is required" },
-        { status: 400 },
-      );
-    }
+  const { data: body, error: bodyError } = await tryCatch(request.json());
 
-    if (name.length > 100) {
-      return NextResponse.json(
-        { error: "Pipeline name must be 100 characters or less" },
-        { status: 400 },
-      );
-    }
+  if (bodyError) {
+    console.error("Error creating pipeline:", bodyError);
+    return NextResponse.json(
+      { error: "Failed to create pipeline" },
+      { status: 500 },
+    );
+  }
 
-    // Validate tier
-    const validTiers: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
-    if (!validTiers.includes(tier)) {
-      return NextResponse.json(
-        { error: `Invalid tier. Must be one of: ${validTiers.join(", ")}` },
-        { status: 400 },
-      );
-    }
+  const {
+    name,
+    description,
+    tier = "TIER_1K",
+    visibility = "PRIVATE",
+    analysisConfig,
+    autoCropConfig,
+    promptConfig,
+    generationConfig,
+  } = body;
 
-    // Validate visibility
-    const validVisibilities: PipelineVisibility[] = [
-      "PRIVATE",
-      "PUBLIC",
-      "LINK",
-    ];
-    if (!validVisibilities.includes(visibility)) {
-      return NextResponse.json(
-        {
-          error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}`,
-        },
-        { status: 400 },
-      );
-    }
+  // Validate required fields
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
+    return NextResponse.json(
+      { error: "Pipeline name is required" },
+      { status: 400 },
+    );
+  }
 
-    // Validate config objects if provided
-    const configValidation = validatePipelineConfigs({
-      analysisConfig,
-      autoCropConfig,
-      promptConfig,
-      generationConfig,
-    });
+  if (name.length > 100) {
+    return NextResponse.json(
+      { error: "Pipeline name must be 100 characters or less" },
+      { status: 400 },
+    );
+  }
 
-    if (!configValidation.valid) {
-      return NextResponse.json(
-        {
-          error: "Invalid configuration",
-          details: configValidation.errors,
-        },
-        { status: 400 },
-      );
-    }
+  // Validate tier
+  const validTiers: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
+  if (!validTiers.includes(tier)) {
+    return NextResponse.json(
+      { error: `Invalid tier. Must be one of: ${validTiers.join(", ")}` },
+      { status: 400 },
+    );
+  }
 
-    // Create pipeline with defaults merged
-    const pipeline = await prisma.enhancementPipeline.create({
+  // Validate visibility
+  const validVisibilities: PipelineVisibility[] = [
+    "PRIVATE",
+    "PUBLIC",
+    "LINK",
+  ];
+  if (!validVisibilities.includes(visibility)) {
+    return NextResponse.json(
+      {
+        error: `Invalid visibility. Must be one of: ${validVisibilities.join(", ")}`,
+      },
+      { status: 400 },
+    );
+  }
+
+  // Validate config objects if provided
+  const configValidation = validatePipelineConfigs({
+    analysisConfig,
+    autoCropConfig,
+    promptConfig,
+    generationConfig,
+  });
+
+  if (!configValidation.valid) {
+    return NextResponse.json(
+      {
+        error: "Invalid configuration",
+        details: configValidation.errors,
+      },
+      { status: 400 },
+    );
+  }
+
+  // Create pipeline with defaults merged
+  const { data: pipeline, error: createError } = await tryCatch(
+    prisma.enhancementPipeline.create({
       data: {
         name: name.trim(),
         description: description?.trim() || null,
@@ -252,14 +271,16 @@ export async function POST(request: Request) {
         createdAt: true,
         updatedAt: true,
       },
-    });
+    }),
+  );
 
-    return NextResponse.json({ pipeline }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating pipeline:", error);
+  if (createError) {
+    console.error("Error creating pipeline:", createError);
     return NextResponse.json(
       { error: "Failed to create pipeline" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ pipeline }, { status: 201 });
 }

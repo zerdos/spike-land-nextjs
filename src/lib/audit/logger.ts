@@ -7,6 +7,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { AuditAction, Prisma } from "@prisma/client";
 
 type JsonValue = Prisma.JsonValue;
@@ -83,8 +84,8 @@ export class AuditLogger {
    * Create a generic audit log entry
    */
   static async log(options: AuditLogOptions): Promise<void> {
-    try {
-      await prisma.auditLog.create({
+    const { error } = await tryCatch(
+      prisma.auditLog.create({
         data: {
           userId: options.userId,
           action: options.action,
@@ -92,9 +93,11 @@ export class AuditLogger {
           metadata: options.metadata as object,
           ipAddress: options.ipAddress,
         },
-      });
-    } catch (error) {
-      // Log but don't throw - audit logging shouldn't break main operations
+      }),
+    );
+
+    // Log but don't throw - audit logging shouldn't break main operations
+    if (error) {
       console.error("Failed to create audit log:", error);
     }
   }

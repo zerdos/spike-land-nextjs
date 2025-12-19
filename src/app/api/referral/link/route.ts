@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -7,29 +8,40 @@ import { NextRequest, NextResponse } from "next/server";
  * Get or generate referral link for authenticated user
  */
 export async function GET(request: NextRequest) {
-  try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Check authentication
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    // Get or generate referral code
-    const referralCode = await assignReferralCodeToUser(session.user.id);
-
-    // Build referral URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
-    const referralUrl = `${baseUrl}?ref=${referralCode}`;
-
-    return NextResponse.json({
-      code: referralCode,
-      url: referralUrl,
-    });
-  } catch (error) {
-    console.error("Failed to get referral link:", error);
+  if (authError) {
+    console.error("Failed to get referral link:", authError);
     return NextResponse.json(
       { error: "Failed to generate referral link" },
       { status: 500 },
     );
   }
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Get or generate referral code
+  const { data: referralCode, error: codeError } = await tryCatch(
+    assignReferralCodeToUser(session.user.id),
+  );
+
+  if (codeError) {
+    console.error("Failed to get referral link:", codeError);
+    return NextResponse.json(
+      { error: "Failed to generate referral link" },
+      { status: 500 },
+    );
+  }
+
+  // Build referral URL
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+  const referralUrl = `${baseUrl}?ref=${referralCode}`;
+
+  return NextResponse.json({
+    code: referralCode,
+    url: referralUrl,
+  });
 }

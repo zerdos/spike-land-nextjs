@@ -8,6 +8,7 @@
 
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -59,102 +60,117 @@ function getClientIP(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Check content length to prevent oversized payloads
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-      return NextResponse.json({ error: "Request too large" }, { status: 413 });
-    }
+  // Check content length to prevent oversized payloads
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  }
 
-    // Rate limiting by IP address
-    const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `tracking_session:${clientIP}`,
-      sessionTrackingRateLimit,
+  // Rate limiting by IP address
+  const clientIP = getClientIP(request);
+  const rateLimitResult = await checkRateLimit(
+    `tracking_session:${clientIP}`,
+    sessionTrackingRateLimit,
+  );
+
+  if (rateLimitResult.isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          ),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+        },
+      },
     );
+  }
 
-    if (rateLimitResult.isLimited) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
-            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          },
-        },
-      );
-    }
+  // Parse and validate request body
+  const { data: body, error: jsonError } = await tryCatch<unknown>(
+    request.json(),
+  );
 
-    // Parse and validate request body
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 },
-      );
-    }
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    const parseResult = sessionRequestSchema.safeParse(body);
-    if (!parseResult.success) {
-      const firstError = parseResult.error.issues[0];
-      return NextResponse.json(
-        {
-          error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}`,
-        },
-        { status: 400 },
-      );
-    }
+  const parseResult = sessionRequestSchema.safeParse(body);
+  if (!parseResult.success) {
+    const firstError = parseResult.error.issues[0];
+    return NextResponse.json(
+      {
+        error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}`,
+      },
+      { status: 400 },
+    );
+  }
 
-    const data = parseResult.data;
+  const data = parseResult.data;
 
-    // Check for existing active session for this visitorId (within last 30 minutes)
-    const cutoffTime = new Date(Date.now() - SESSION_TIMEOUT_MS);
+  // Check for existing active session for this visitorId (within last 30 minutes)
+  const cutoffTime = new Date(Date.now() - SESSION_TIMEOUT_MS);
 
-    const existingSession = await prisma.visitorSession.findFirst({
+  const { data: existingSession, error: findError } = await tryCatch(
+    prisma.visitorSession.findFirst({
       where: {
         visitorId: data.visitorId,
         sessionStart: {
           gte: cutoffTime,
         },
         // Session should not have ended yet, or ended recently
-        OR: [
-          { sessionEnd: null },
-          { sessionEnd: { gte: cutoffTime } },
-        ],
+        OR: [{ sessionEnd: null }, { sessionEnd: { gte: cutoffTime } }],
       },
       orderBy: {
         sessionStart: "desc",
       },
-    });
+    }),
+  );
 
-    if (existingSession) {
-      // Update existing session with new page view count and exit page
-      const updatedSession = await prisma.visitorSession.update({
+  if (findError) {
+    console.error("[Tracking] Session tracking error:", findError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (existingSession) {
+    // Update existing session with new page view count and exit page
+    const { data: updatedSession, error: updateError } = await tryCatch(
+      prisma.visitorSession.update({
         where: { id: existingSession.id },
         data: {
           pageViewCount: existingSession.pageViewCount + 1,
           exitPage: data.landingPage, // The "landing page" of this request becomes the current exit page
           sessionEnd: new Date(), // Update session activity timestamp
         },
-      });
+      }),
+    );
 
-      console.log(
-        `[Tracking] Updated session ${updatedSession.id} for visitor ${data.visitorId}`,
-      );
-
+    if (updateError) {
+      console.error("[Tracking] Session tracking error:", updateError);
       return NextResponse.json(
-        { sessionId: updatedSession.id },
-        { status: 200 },
+        { error: "Internal server error" },
+        { status: 500 },
       );
     }
 
-    // Create new session
-    const newSession = await prisma.visitorSession.create({
+    console.log(
+      `[Tracking] Updated session ${updatedSession.id} for visitor ${data.visitorId}`,
+    );
+
+    return NextResponse.json(
+      { sessionId: updatedSession.id },
+      { status: 200 },
+    );
+  }
+
+  // Create new session
+  const { data: newSession, error: createError } = await tryCatch(
+    prisma.visitorSession.create({
       data: {
         visitorId: data.visitorId,
         landingPage: data.landingPage,
@@ -172,23 +188,22 @@ export async function POST(request: NextRequest) {
         gclid: data.gclid || null,
         fbclid: data.fbclid || null,
       },
-    });
+    }),
+  );
 
-    console.log(
-      `[Tracking] Created new session ${newSession.id} for visitor ${data.visitorId}`,
-    );
-
-    return NextResponse.json(
-      { sessionId: newSession.id },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("[Tracking] Session tracking error:", error);
+  if (createError) {
+    console.error("[Tracking] Session tracking error:", createError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  console.log(
+    `[Tracking] Created new session ${newSession.id} for visitor ${data.visitorId}`,
+  );
+
+  return NextResponse.json({ sessionId: newSession.id }, { status: 201 });
 }
 
 // PATCH request validation schema
@@ -203,91 +218,91 @@ const patchRequestSchema = z.object({
  * PATCH /api/tracking/session - Update session (end time, link to user)
  */
 export async function PATCH(request: NextRequest) {
-  try {
-    // Check content length
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-      return NextResponse.json({ error: "Request too large" }, { status: 413 });
-    }
+  // Check content length
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  }
 
-    // Rate limiting by IP
-    const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `tracking_session_patch:${clientIP}`,
-      sessionTrackingRateLimit,
-    );
+  // Rate limiting by IP
+  const clientIP = getClientIP(request);
+  const rateLimitResult = await checkRateLimit(
+    `tracking_session_patch:${clientIP}`,
+    sessionTrackingRateLimit,
+  );
 
-    if (rateLimitResult.isLimited) {
-      return NextResponse.json(
-        { error: "Too many requests" },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
-          },
+  if (rateLimitResult.isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          ),
         },
-      );
-    }
+      },
+    );
+  }
 
-    // Parse body
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
+  // Parse body
+  const { data: body, error: jsonError } = await tryCatch<unknown>(
+    request.json(),
+  );
 
-    const parseResult = patchRequestSchema.safeParse(body);
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid input" },
-        { status: 400 },
-      );
-    }
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    const { sessionId, sessionEnd, userId, exitPage } = parseResult.data;
+  const parseResult = patchRequestSchema.safeParse(body);
+  if (!parseResult.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
 
-    // Build update data
-    const updateData: Record<string, unknown> = {};
-    if (sessionEnd) {
-      updateData.sessionEnd = new Date(sessionEnd);
-    }
-    if (userId) {
-      updateData.userId = userId;
-    }
-    if (exitPage) {
-      updateData.exitPage = exitPage;
-    }
+  const { sessionId, sessionEnd, userId, exitPage } = parseResult.data;
 
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: "No update fields provided" },
-        { status: 400 },
-      );
-    }
+  // Build update data
+  const updateData: Record<string, unknown> = {};
+  if (sessionEnd) {
+    updateData.sessionEnd = new Date(sessionEnd);
+  }
+  if (userId) {
+    updateData.userId = userId;
+  }
+  if (exitPage) {
+    updateData.exitPage = exitPage;
+  }
 
-    // Update session
-    const updatedSession = await prisma.visitorSession.update({
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json(
+      { error: "No update fields provided" },
+      { status: 400 },
+    );
+  }
+
+  // Update session
+  const { data: updatedSession, error: updateError } = await tryCatch(
+    prisma.visitorSession.update({
       where: { id: sessionId },
       data: updateData,
-    });
+    }),
+  );
 
-    return NextResponse.json({ sessionId: updatedSession.id });
-  } catch (error) {
+  if (updateError) {
     // Handle not found error
     if (
-      error instanceof Error &&
-      error.message.includes("Record to update not found")
+      updateError instanceof Error &&
+      updateError.message.includes("Record to update not found")
     ) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    console.error("[Tracking] Session patch error:", error);
+    console.error("[Tracking] Session patch error:", updateError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ sessionId: updatedSession.id });
 }

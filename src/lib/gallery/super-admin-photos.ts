@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { AlbumPrivacy, EnhancementTier, JobStatus } from "@prisma/client";
 
 export interface FeaturedPhoto {
@@ -19,38 +20,44 @@ export async function getSuperAdminPublicPhotos(
   limit?: number,
 ): Promise<FeaturedPhoto[]> {
   // Fetch the specific landing page album by ID
-  const publicAlbums = await prisma.album.findMany({
-    where: {
-      id: LANDING_PAGE_ALBUM_ID,
-      privacy: AlbumPrivacy.PUBLIC,
-    },
-    include: {
-      albumImages: {
-        include: {
-          image: {
-            include: {
-              enhancementJobs: {
-                where: {
-                  status: JobStatus.COMPLETED,
-                  enhancedUrl: { not: null },
+  const { data: publicAlbums, error } = await tryCatch(
+    prisma.album.findMany({
+      where: {
+        id: LANDING_PAGE_ALBUM_ID,
+        privacy: AlbumPrivacy.PUBLIC,
+      },
+      include: {
+        albumImages: {
+          include: {
+            image: {
+              include: {
+                enhancementJobs: {
+                  where: {
+                    status: JobStatus.COMPLETED,
+                    enhancedUrl: { not: null },
+                  },
+                  orderBy: {
+                    createdAt: "desc",
+                  },
+                  take: 1,
                 },
-                orderBy: {
-                  createdAt: "desc",
-                },
-                take: 1,
               },
             },
           },
-        },
-        orderBy: {
-          sortOrder: "asc",
+          orderBy: {
+            sortOrder: "asc",
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+  );
+
+  if (error) {
+    throw new Error(`Failed to fetch public albums: ${error.message}`);
+  }
 
   const photos: FeaturedPhoto[] = [];
 

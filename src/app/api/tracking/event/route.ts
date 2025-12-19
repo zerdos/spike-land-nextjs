@@ -15,6 +15,7 @@
 
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { tryCatch } from "@/lib/try-catch";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -105,86 +106,88 @@ function getClientIP(request: NextRequest): string {
  * POST /api/tracking/event - Record an analytics event
  */
 export async function POST(request: NextRequest) {
-  try {
-    // Check content length to prevent oversized payloads
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-      return NextResponse.json({ error: "Request too large" }, { status: 413 });
-    }
+  // Check content length to prevent oversized payloads
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  }
 
-    // Rate limiting by IP address
-    const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `tracking_event:${clientIP}`,
-      eventRateLimit,
+  // Rate limiting by IP address
+  const clientIP = getClientIP(request);
+  const rateLimitResult = await checkRateLimit(
+    `tracking_event:${clientIP}`,
+    eventRateLimit,
+  );
+
+  if (rateLimitResult.isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          ),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+        },
+      },
     );
+  }
 
-    if (rateLimitResult.isLimited) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(
-              Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
-            ),
-            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          },
-        },
-      );
-    }
+  // Parse and validate request body
+  const { data: body, error: jsonError } = await tryCatch(request.json());
+  if (jsonError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    // Parse and validate request body
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 },
-      );
-    }
+  const parseResult = eventRequestSchema.safeParse(body);
+  if (!parseResult.success) {
+    const firstError = parseResult.error.issues[0];
+    return NextResponse.json(
+      {
+        error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}`,
+      },
+      { status: 400 },
+    );
+  }
 
-    const parseResult = eventRequestSchema.safeParse(body);
-    if (!parseResult.success) {
-      const firstError = parseResult.error.issues[0];
-      return NextResponse.json(
-        {
-          error: `Invalid input: ${firstError?.path.join(".")} - ${firstError?.message}`,
-        },
-        { status: 400 },
-      );
-    }
+  const data = parseResult.data;
 
-    const data = parseResult.data;
+  // Validate event name is in allowed list
+  if (!isAllowedEventName(data.name)) {
+    return NextResponse.json(
+      {
+        error: `Invalid event name. Allowed: ${ALLOWED_EVENT_NAMES.join(", ")}`,
+      },
+      { status: 400 },
+    );
+  }
 
-    // Validate event name is in allowed list
-    if (!isAllowedEventName(data.name)) {
-      return NextResponse.json(
-        {
-          error: `Invalid event name. Allowed: ${ALLOWED_EVENT_NAMES.join(", ")}`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Verify session exists
-    const session = await prisma.visitorSession.findUnique({
+  // Verify session exists
+  const { data: session, error: sessionError } = await tryCatch(
+    prisma.visitorSession.findUnique({
       where: { id: data.sessionId },
-    });
+    }),
+  );
 
-    if (!session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
+  if (sessionError) {
+    console.error("[Tracking] Session lookup error:", sessionError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    // Determine category - use provided or default based on event name
-    const category = data.category || EVENT_CATEGORIES[data.name];
+  if (!session) {
+    return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
 
-    // Create the event
-    const event = await prisma.analyticsEvent.create({
+  // Determine category - use provided or default based on event name
+  const category = data.category || EVENT_CATEGORIES[data.name];
+
+  // Create the event
+  const { data: event, error: createError } = await tryCatch(
+    prisma.analyticsEvent.create({
       data: {
         sessionId: data.sessionId,
         name: data.name,
@@ -194,21 +197,23 @@ export async function POST(request: NextRequest) {
           metadata: data.metadata as Prisma.InputJsonValue,
         }),
       },
-    });
+    }),
+  );
 
-    console.log(
-      `[Tracking] Recorded event "${data.name}" (${category}) for session ${data.sessionId}`,
-    );
-
-    return NextResponse.json(
-      { success: true, eventId: event.id },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("[Tracking] Event tracking error:", error);
+  if (createError) {
+    console.error("[Tracking] Event tracking error:", createError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  console.log(
+    `[Tracking] Recorded event "${data.name}" (${category}) for session ${data.sessionId}`,
+  );
+
+  return NextResponse.json(
+    { success: true, eventId: event.id },
+    { status: 201 },
+  );
 }

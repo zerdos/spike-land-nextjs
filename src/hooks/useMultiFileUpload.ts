@@ -297,29 +297,24 @@ export function useMultiFileUpload(
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      try {
-        // Upload files (sequential or parallel)
-        if (parallel) {
-          await uploadParallel(fileStatuses, controller.signal, targetAlbumId);
-        } else {
-          await uploadSequential(
-            fileStatuses,
-            controller.signal,
-            targetAlbumId,
-          );
-        }
+      // Upload files (sequential or parallel)
+      const uploadPromise = parallel
+        ? uploadParallel(fileStatuses, controller.signal, targetAlbumId)
+        : uploadSequential(fileStatuses, controller.signal, targetAlbumId);
 
-        // Call onUploadComplete callback
-        setFiles((currentFiles) => {
-          if (onUploadComplete) {
-            onUploadComplete(currentFiles);
-          }
-          return currentFiles;
-        });
-      } finally {
-        setIsUploading(false);
-        abortControllerRef.current = null;
-      }
+      await tryCatch(uploadPromise);
+
+      // Call onUploadComplete callback (always called after upload attempts)
+      setFiles((currentFiles) => {
+        if (onUploadComplete) {
+          onUploadComplete(currentFiles);
+        }
+        return currentFiles;
+      });
+
+      // Cleanup (equivalent to finally block)
+      setIsUploading(false);
+      abortControllerRef.current = null;
     },
     [
       maxFiles,

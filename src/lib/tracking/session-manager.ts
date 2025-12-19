@@ -196,23 +196,34 @@ export function clearSession(): void {
  * ```
  */
 export async function createSession(data: CreateSessionData): Promise<string> {
-  const response = await fetch("/api/tracking/session", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action: "create",
-      ...data,
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch("/api/tracking/session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "create",
+        ...data,
+      }),
     }),
-  });
+  );
+
+  if (fetchError) {
+    throw new Error("Failed to create session");
+  }
 
   if (!response.ok) {
     const { data: errorData } = await tryCatch(response.json());
     throw new Error(errorData?.message || "Failed to create session");
   }
 
-  const result = await response.json();
+  const { data: result, error: parseError } = await tryCatch(response.json());
+
+  if (parseError || !result?.sessionId) {
+    throw new Error("Failed to create session");
+  }
+
   const sessionId = result.sessionId;
 
   // Store session ID locally
@@ -243,17 +254,23 @@ export async function updateSession(
   // Update local activity timestamp
   updateLastActivity();
 
-  const response = await fetch("/api/tracking/session", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action: "update",
-      sessionId,
-      ...data,
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch("/api/tracking/session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "update",
+        sessionId,
+        ...data,
+      }),
     }),
-  });
+  );
+
+  if (fetchError) {
+    throw new Error("Failed to update session");
+  }
 
   if (!response.ok) {
     const { data: errorData } = await tryCatch(response.json());
@@ -285,17 +302,23 @@ export async function recordPageView(
   // Update local activity timestamp
   updateLastActivity();
 
-  const response = await fetch("/api/tracking/pageview", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      sessionId,
-      path,
-      title,
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch("/api/tracking/pageview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessionId,
+        path,
+        title,
+      }),
     }),
-  });
+  );
+
+  if (fetchError) {
+    throw new Error("Failed to record page view");
+  }
 
   if (!response.ok) {
     const { data: errorData } = await tryCatch(response.json());
@@ -330,16 +353,22 @@ export async function recordEvent(
   // Update local activity timestamp
   updateLastActivity();
 
-  const response = await fetch("/api/tracking/event", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      sessionId,
-      ...event,
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch("/api/tracking/event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessionId,
+        ...event,
+      }),
     }),
-  });
+  );
+
+  if (fetchError) {
+    throw new Error("Failed to record event");
+  }
 
   if (!response.ok) {
     const { data: errorData } = await tryCatch(response.json());
@@ -370,17 +399,23 @@ export async function linkUserToSession(
   sessionId: string,
   userId: string,
 ): Promise<void> {
-  const response = await fetch("/api/tracking/session", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action: "link",
-      sessionId,
-      userId,
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch("/api/tracking/session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "link",
+        sessionId,
+        userId,
+      }),
     }),
-  });
+  );
+
+  if (fetchError) {
+    throw new Error("Failed to link user to session");
+  }
 
   if (!response.ok) {
     const { data: errorData } = await tryCatch(response.json());

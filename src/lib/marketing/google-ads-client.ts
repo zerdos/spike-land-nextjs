@@ -181,28 +181,42 @@ export class GoogleAdsClient implements IMarketingClient {
     code: string,
     redirectUri: string,
   ): Promise<OAuthTokenResponse> {
-    const response = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: redirectUri,
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch(GOOGLE_TOKEN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: redirectUri,
+        }),
       }),
-    });
+    );
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (fetchError || !response) {
       throw new Error(
-        `Failed to exchange code: ${error.error_description || response.statusText}`,
+        `Failed to exchange code: ${fetchError?.message || "Network error"}`,
       );
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      const { data: errorData } = await tryCatch(response.json());
+      throw new Error(
+        `Failed to exchange code: ${errorData?.error_description || response.statusText}`,
+      );
+    }
+
+    const { data, error: jsonError } = await tryCatch(response.json());
+
+    if (jsonError || !data) {
+      throw new Error(
+        `Failed to parse token response: ${jsonError?.message || "Invalid JSON"}`,
+      );
+    }
 
     return {
       accessToken: data.access_token,
@@ -219,27 +233,41 @@ export class GoogleAdsClient implements IMarketingClient {
    * Refresh access token using refresh token
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
-    const response = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        refresh_token: refreshToken,
-        grant_type: "refresh_token",
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch(GOOGLE_TOKEN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          refresh_token: refreshToken,
+          grant_type: "refresh_token",
+        }),
       }),
-    });
+    );
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (fetchError || !response) {
       throw new Error(
-        `Failed to refresh token: ${error.error_description || response.statusText}`,
+        `Failed to refresh token: ${fetchError?.message || "Network error"}`,
       );
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      const { data: errorData } = await tryCatch(response.json());
+      throw new Error(
+        `Failed to refresh token: ${errorData?.error_description || response.statusText}`,
+      );
+    }
+
+    const { data, error: jsonError } = await tryCatch(response.json());
+
+    if (jsonError || !data) {
+      throw new Error(
+        `Failed to parse token response: ${jsonError?.message || "Invalid JSON"}`,
+      );
+    }
 
     return {
       accessToken: data.access_token,
@@ -503,17 +531,19 @@ export class GoogleAdsClient implements IMarketingClient {
    * Parse Google Ads date format (YYYY-MM-DD or YYYYMMDD)
    */
   private parseGoogleDate(dateStr: string): Date | null {
-    try {
-      if (dateStr.length === 8) {
-        // YYYYMMDD format
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        return new Date(`${year}-${month}-${day}`);
-      }
-      return new Date(dateStr);
-    } catch {
-      return null;
+    let date: Date;
+
+    if (dateStr.length === 8) {
+      // YYYYMMDD format
+      const year = dateStr.substring(0, 4);
+      const month = dateStr.substring(4, 6);
+      const day = dateStr.substring(6, 8);
+      date = new Date(`${year}-${month}-${day}`);
+    } else {
+      date = new Date(dateStr);
     }
+
+    // Check for Invalid Date (Date constructor doesn't throw, returns Invalid Date)
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 }

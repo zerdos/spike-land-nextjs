@@ -47,6 +47,34 @@ export async function clearReferralCookie(): Promise<void> {
 }
 
 /**
+ * Perform database operations to link referral
+ */
+async function performReferralLinkage(
+  newUserId: string,
+  referrerId: string,
+  ipAddress?: string,
+): Promise<void> {
+  // Update new user with referrer
+  await prisma.user.update({
+    where: { id: newUserId },
+    data: { referredById: referrerId },
+  });
+
+  // Create referral record
+  await prisma.referral.create({
+    data: {
+      referrerId,
+      refereeId: newUserId,
+      ipAddress: ipAddress ?? null,
+      status: "PENDING", // Will be completed after fraud checks
+    },
+  });
+
+  // Clear cookie after successful linkage
+  await clearReferralCookie();
+}
+
+/**
  * Link new user to referrer based on cookie
  * Creates referral record in PENDING status
  */
@@ -73,26 +101,7 @@ export async function linkReferralOnSignup(
 
   // Perform database operations with tryCatch
   const { error } = await tryCatch(
-    (async () => {
-      // Update new user with referrer
-      await prisma.user.update({
-        where: { id: newUserId },
-        data: { referredById: referrerId },
-      });
-
-      // Create referral record
-      await prisma.referral.create({
-        data: {
-          referrerId,
-          refereeId: newUserId,
-          ipAddress: ipAddress ?? null,
-          status: "PENDING", // Will be completed after fraud checks
-        },
-      });
-
-      // Clear cookie after successful linkage
-      await clearReferralCookie();
-    })(),
+    performReferralLinkage(newUserId, referrerId, ipAddress),
   );
 
   if (error) {

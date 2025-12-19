@@ -1,5 +1,6 @@
 "use client";
 
+import { tryCatch } from "@/lib/try-catch";
 import { useCallback } from "react";
 
 // Storage keys
@@ -103,8 +104,8 @@ export function useTracking() {
         return;
       }
 
-      try {
-        const response = await fetch("/api/tracking/event", {
+      const { data: response, error } = await tryCatch(
+        fetch("/api/tracking/event", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -113,14 +114,17 @@ export function useTracking() {
             value,
             metadata,
           }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          console.warn(`[Tracking] Failed to track event: ${response.status}`);
-        }
-      } catch (error) {
+      if (error) {
         // Silently fail - tracking should not impact UX
         console.warn("[Tracking] Error tracking event:", error);
+        return;
+      }
+
+      if (!response.ok) {
+        console.warn(`[Tracking] Failed to track event: ${response.status}`);
       }
     },
     [],
@@ -145,8 +149,8 @@ export function useTracking() {
       // Map conversion type to whitelisted event name
       const eventName = `${type}_completed` as AllowedEventName;
 
-      try {
-        const response = await fetch("/api/tracking/event", {
+      const { data: response, error } = await tryCatch(
+        fetch("/api/tracking/event", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -158,16 +162,19 @@ export function useTracking() {
               timestamp: new Date().toISOString(),
             },
           }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          console.warn(
-            `[Tracking] Failed to track conversion: ${response.status}`,
-          );
-        }
-      } catch (error) {
+      if (error) {
         // Silently fail - tracking should not impact UX
         console.warn("[Tracking] Error tracking conversion:", error);
+        return;
+      }
+
+      if (!response.ok) {
+        console.warn(
+          `[Tracking] Failed to track conversion: ${response.status}`,
+        );
       }
     },
     [],
@@ -191,8 +198,8 @@ export function useTracking() {
       // Map conversion type to whitelisted event name
       const eventName = `${type}_started` as AllowedEventName;
 
-      try {
-        const response = await fetch("/api/tracking/event", {
+      const { data: response, error } = await tryCatch(
+        fetch("/api/tracking/event", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -203,16 +210,19 @@ export function useTracking() {
               timestamp: new Date().toISOString(),
             },
           }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          console.warn(
-            `[Tracking] Failed to track conversion started: ${response.status}`,
-          );
-        }
-      } catch (error) {
+      if (error) {
         // Silently fail - tracking should not impact UX
         console.warn("[Tracking] Error tracking conversion started:", error);
+        return;
+      }
+
+      if (!response.ok) {
+        console.warn(
+          `[Tracking] Failed to track conversion started: ${response.status}`,
+        );
       }
     },
     [],

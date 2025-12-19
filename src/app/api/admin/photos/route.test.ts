@@ -267,13 +267,62 @@ describe("Admin Photos API", () => {
       expect(data.error).toBe("Forbidden: Admin access required");
     });
 
-    it("should handle database errors gracefully", async () => {
+    it("should handle database count errors gracefully", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: VALID_ADMIN_ID },
       } as any);
 
       vi.mocked(prisma.enhancedImage.count).mockRejectedValue(
         new Error("Database connection failed"),
+      );
+
+      const request = new NextRequest("http://localhost/api/admin/photos");
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+    });
+
+    it("should handle database findMany errors gracefully", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(prisma.enhancedImage.count).mockResolvedValue(10);
+      vi.mocked(prisma.enhancedImage.findMany).mockRejectedValue(
+        new Error("Query failed"),
+      );
+
+      const request = new NextRequest("http://localhost/api/admin/photos");
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+    });
+
+    it("should handle auth() throwing an error", async () => {
+      vi.mocked(auth).mockRejectedValue(new Error("Auth service unavailable"));
+
+      const request = new NextRequest("http://localhost/api/admin/photos");
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+    });
+
+    it("should handle non-Forbidden admin check errors", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_ADMIN_ID },
+      } as any);
+
+      vi.mocked(requireAdminByUserId).mockRejectedValue(
+        new Error("Database error"),
       );
 
       const request = new NextRequest("http://localhost/api/admin/photos");

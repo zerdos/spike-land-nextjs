@@ -3,6 +3,8 @@ import matter from "gray-matter";
 import path from "path";
 import readingTime from "reading-time";
 
+import { tryCatchSync } from "@/lib/try-catch";
+
 import type { BlogPost, BlogPostMeta } from "./types";
 import { blogPostFrontmatterSchema } from "./types";
 
@@ -16,11 +18,17 @@ export function getPostSlugs(): string[] {
     return [];
   }
 
-  const files = fs.readdirSync(BLOG_DIR);
+  const { data: files, error } = tryCatchSync(() => fs.readdirSync(BLOG_DIR));
+
+  if (error) {
+    console.error("Failed to read blog directory:", error.message);
+    return [];
+  }
+
   const slugSafePattern = /^[a-zA-Z0-9_-]+$/;
   return files
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => file.replace(/\.mdx$/, ""))
+    .filter((file) => file.toString().endsWith(".mdx"))
+    .map((file) => file.toString().replace(/\.mdx$/, ""))
     .filter((slug) => slugSafePattern.test(slug));
 }
 
@@ -37,9 +45,30 @@ export function getPostBySlug(slug: string): BlogPost | null {
     return null;
   }
 
-  const fileContents = fs.readFileSync(filePath, "utf8");
-  const { data, content } = matter(fileContents);
-  const stats = readingTime(content);
+  const { data: fileContents, error: readError } = tryCatchSync(() =>
+    fs.readFileSync(filePath, "utf8")
+  );
+
+  if (readError) {
+    console.error(`Failed to read ${slug}.mdx:`, readError.message);
+    return null;
+  }
+
+  const { data: parsed, error: parseError } = tryCatchSync(() => matter(fileContents));
+
+  if (parseError) {
+    console.error(`Failed to parse frontmatter in ${slug}.mdx:`, parseError.message);
+    return null;
+  }
+
+  const { data, content } = parsed;
+
+  const { data: stats, error: readingTimeError } = tryCatchSync(() => readingTime(content));
+
+  if (readingTimeError) {
+    console.error(`Failed to calculate reading time for ${slug}.mdx:`, readingTimeError.message);
+    return null;
+  }
 
   // Validate frontmatter with Zod schema
   const parseResult = blogPostFrontmatterSchema.safeParse(data);

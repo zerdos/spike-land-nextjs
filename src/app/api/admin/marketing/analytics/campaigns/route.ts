@@ -16,6 +16,7 @@ import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { buildCacheKey, getOrComputeMetrics } from "@/lib/tracking/metrics-cache";
+import { tryCatch } from "@/lib/try-catch";
 import { AttributionType } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -54,48 +55,67 @@ interface CampaignResponse {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (authError) {
+    console.error("Failed to fetch campaign performance:", authError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error: adminError } = await tryCatch(requireAdminByUserId(session.user.id));
+
+  if (adminError) {
+    console.error("Failed to fetch campaign performance:", adminError);
+    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 
-    await requireAdminByUserId(session.user.id);
+  // Parse and validate query parameters
+  const searchParams = request.nextUrl.searchParams;
+  const parseResult = querySchema.safeParse({
+    startDate: searchParams.get("startDate"),
+    endDate: searchParams.get("endDate"),
+    attributionModel: searchParams.get("attributionModel") || "FIRST_TOUCH",
+    platform: searchParams.get("platform"),
+    limit: searchParams.get("limit") || 50,
+    offset: searchParams.get("offset") || 0,
+  });
 
-    // Parse and validate query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const parseResult = querySchema.safeParse({
-      startDate: searchParams.get("startDate"),
-      endDate: searchParams.get("endDate"),
-      attributionModel: searchParams.get("attributionModel") || "FIRST_TOUCH",
-      platform: searchParams.get("platform"),
-      limit: searchParams.get("limit") || 50,
-      offset: searchParams.get("offset") || 0,
-    });
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "Invalid parameters", details: parseResult.error.flatten() },
+      { status: 400 },
+    );
+  }
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid parameters", details: parseResult.error.flatten() },
-        { status: 400 },
-      );
-    }
+  const { startDate, endDate, attributionModel, platform, limit, offset } = parseResult.data;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
 
-    const { startDate, endDate, attributionModel, platform, limit, offset } = parseResult.data;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+  // Build cache key for this query (excluding pagination for base data)
+  const cacheKey = buildCacheKey("campaigns", {
+    startDate,
+    endDate,
+    attributionModel: attributionModel ?? "FIRST_TOUCH",
+    platform: platform ?? undefined,
+  });
 
-    // Build cache key for this query (excluding pagination for base data)
-    const cacheKey = buildCacheKey("campaigns", {
-      startDate,
-      endDate,
-      attributionModel: attributionModel ?? "FIRST_TOUCH",
-      platform: platform ?? undefined,
-    });
-
-    // Use cached metrics or compute fresh
-    const allCampaigns = await getOrComputeMetrics<CampaignMetrics[]>(
+  // Use cached metrics or compute fresh
+  const { data: allCampaigns, error: metricsError } = await tryCatch(
+    getOrComputeMetrics<CampaignMetrics[]>(
       cacheKey,
       async () => {
         // Group sessions by campaign (utm_campaign) and source
@@ -243,31 +263,30 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         );
       },
       300, // Cache for 5 minutes
-    );
+    ),
+  );
 
-    // Apply pagination (done after caching since pagination params vary)
-    const total = allCampaigns.length;
-    const paginatedCampaigns = allCampaigns.slice(
-      offset ?? 0,
-      (offset ?? 0) + (limit ?? 50),
-    );
-
-    const response: CampaignResponse = {
-      campaigns: paginatedCampaigns,
-      total,
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Failed to fetch campaign performance:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (metricsError) {
+    console.error("Failed to fetch campaign performance:", metricsError);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
+
+  // Apply pagination (done after caching since pagination params vary)
+  const total = allCampaigns.length;
+  const paginatedCampaigns = allCampaigns.slice(
+    offset ?? 0,
+    (offset ?? 0) + (limit ?? 50),
+  );
+
+  const response: CampaignResponse = {
+    campaigns: paginatedCampaigns,
+    total,
+  };
+
+  return NextResponse.json(response);
 }
 
 /**

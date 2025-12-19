@@ -1,17 +1,7 @@
 import type { JobStatus, PipelineStage } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Synchronous version of tryCatch for JSON.parse operations
-function tryCatchSync<T>(
-  fn: () => T,
-): { data: T; error: null; } | { data: null; error: Error; } {
-  try {
-    const data = fn();
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: error as Error };
-  }
-}
+import { tryCatchSync } from "@/lib/try-catch";
 
 interface JobStreamData {
   type: "status" | "error" | "connected";

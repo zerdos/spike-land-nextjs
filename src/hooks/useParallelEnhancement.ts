@@ -1,4 +1,4 @@
-import { tryCatch } from "@/lib/try-catch";
+import { tryCatch, tryCatchSync } from "@/lib/try-catch";
 import type { EnhancementTier, JobStatus as PrismaJobStatus } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -109,15 +109,9 @@ export function useParallelEnhancement({
 
   // Handle SSE message for a specific job
   const handleMessage = useCallback(
-    (jobId: string) => async (event: MessageEvent) => {
-      const { data, error: parseError } = await tryCatch(
-        new Promise<JobStreamData>((resolve, reject) => {
-          try {
-            resolve(JSON.parse(event.data) as JobStreamData);
-          } catch (e) {
-            reject(e);
-          }
-        }),
+    (jobId: string) => (event: MessageEvent) => {
+      const { data, error: parseError } = tryCatchSync<JobStreamData>(
+        () => JSON.parse(event.data) as JobStreamData,
       );
 
       if (parseError) {

@@ -11,7 +11,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { browseQuerySchema } from "@/lib/types/gallery";
 import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { ZodError } from "zod";
+import type { ZodError } from "zod";
 
 export async function GET(request: NextRequest) {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -49,19 +49,23 @@ export async function GET(request: NextRequest) {
 
   // Validate query parameters with Zod
   // Use || undefined so that .default() is applied when param is missing (null from get())
-  let validatedQuery;
-  try {
-    validatedQuery = browseQuerySchema.parse({
-      page: searchParams.get("page") || undefined,
-      limit: searchParams.get("limit") || undefined,
-      userId: searchParams.get("userId") || undefined,
-      shareToken: searchParams.get("shareToken") || undefined,
-    });
-  } catch (error) {
-    console.error("Failed to browse images:", error);
-    if (error instanceof ZodError) {
+  const { data: validatedQuery, error: validationError } = await tryCatch(
+    Promise.resolve().then(() =>
+      browseQuerySchema.parse({
+        page: searchParams.get("page") || undefined,
+        limit: searchParams.get("limit") || undefined,
+        userId: searchParams.get("userId") || undefined,
+        shareToken: searchParams.get("shareToken") || undefined,
+      })
+    ),
+  );
+
+  if (validationError) {
+    console.error("Failed to browse images:", validationError);
+    const zodError = validationError as unknown as ZodError;
+    if (zodError.issues) {
       return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
+        { error: "Validation failed", details: zodError.issues },
         { status: 400 },
       );
     }

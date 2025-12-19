@@ -161,6 +161,41 @@ describe("Admin Marketing Accounts API", () => {
 
       consoleSpy.mockRestore();
     });
+
+    it("should return 500 on auth error", async () => {
+      mockAuth.mockRejectedValueOnce(new Error("Auth service error"));
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      const response = await GET();
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to fetch accounts");
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should return 500 on admin check error", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: { id: "admin123" },
+      });
+      mockIsAdminByUserId.mockRejectedValueOnce(new Error("Admin check error"));
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      const response = await GET();
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to fetch accounts");
+
+      consoleSpy.mockRestore();
+    });
   });
 
   describe("DELETE /api/admin/marketing/accounts", () => {
@@ -284,6 +319,85 @@ describe("Admin Marketing Accounts API", () => {
         {
           method: "DELETE",
           body: JSON.stringify({ accountId: "acc1" }),
+        },
+      );
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to disconnect account");
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should return 500 on auth error", async () => {
+      mockAuth.mockRejectedValueOnce(new Error("Auth service error"));
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/marketing/accounts",
+        {
+          method: "DELETE",
+          body: JSON.stringify({ accountId: "acc1" }),
+        },
+      );
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to disconnect account");
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should return 500 on admin check error", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: { id: "admin123" },
+      });
+      mockIsAdminByUserId.mockRejectedValueOnce(new Error("Admin check error"));
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      const request = new NextRequest(
+        "http://localhost/api/admin/marketing/accounts",
+        {
+          method: "DELETE",
+          body: JSON.stringify({ accountId: "acc1" }),
+        },
+      );
+
+      const response = await DELETE(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to disconnect account");
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should return 500 on body parsing error", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: { id: "admin123" },
+      });
+      mockIsAdminByUserId.mockResolvedValueOnce(true);
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      // Create a request with invalid JSON body
+      const request = new NextRequest(
+        "http://localhost/api/admin/marketing/accounts",
+        {
+          method: "DELETE",
+          body: "invalid json",
         },
       );
 
