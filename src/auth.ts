@@ -394,13 +394,23 @@ export const auth = async (...args: any[]) => {
     if (cookieStore) {
       const sessionToken = cookieStore.get("authjs.session-token")?.value;
       if (sessionToken === "mock-session-token") {
+        const role = (cookieStore.get("e2e-user-role")?.value || "USER") as UserRole;
+        const email = cookieStore.get("e2e-user-email")?.value || "test@example.com";
+        const name = cookieStore.get("e2e-user-name")?.value || "Test User";
+
+        // Map known test emails to seeded IDs
+        let id = "test-user-id";
+        if (email === "admin@example.com") {
+          id = "admin-user-id";
+        }
+
         return {
           user: {
-            id: "test-user-id",
-            name: "Test User",
-            email: "test@example.com",
+            id,
+            name,
+            email,
             image: null,
-            role: "USER" as UserRole,
+            role,
           },
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };

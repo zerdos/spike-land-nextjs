@@ -4,26 +4,18 @@ import { CustomWorld } from "../support/world";
 
 // Helper to mock admin status
 async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
-  // Mock the admin check API or middleware
-  await world.page.route("**/api/admin/**", async (route) => {
-    if (isAdmin) {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ isAdmin: true }),
-      });
-    } else {
+  // If user is admin, we rely on real DB permissions (seeded) and real API responses.
+  // We only intercept if we want to simulate a non-admin user getting blocked.
+  if (!isAdmin) {
+    // Mock the admin check API or middleware to fail
+    await world.page.route("**/api/admin/**", async (route) => {
       await route.fulfill({
         status: 403,
         contentType: "application/json",
         body: JSON.stringify({ error: "Forbidden" }),
       });
-    }
-  });
+    });
 
-  // For the layout check, we need to mock database queries
-  // This is a simplified approach - actual implementation may vary
-  if (!isAdmin) {
     await world.page.addInitScript(() => {
       // Intercept any admin checks client-side
       (window as Record<string, unknown>).__mockIsAdmin = false;
@@ -53,7 +45,13 @@ Given("I am on the admin dashboard", async function(this: CustomWorld) {
 When(
   "I click the {string} quick link",
   async function(this: CustomWorld, linkText: string) {
-    const link = this.page.getByRole("link", { name: linkText });
+    // Scope to the Quick Links section container (parent of the heading)
+    // to avoid ambiguity with sidebar links or other parts of the page
+    const quickLinksSection = this.page
+      .getByRole("heading", { name: "Quick Links" })
+      .locator("..");
+
+    const link = quickLinksSection.getByRole("link", { name: linkText });
     await expect(link).toBeVisible();
     await link.click();
     await this.page.waitForLoadState("networkidle");
@@ -64,11 +62,12 @@ When(
   "I click {string} in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    // Use exact match to avoid matching text that contains the link name
-    const link = sidebar.getByRole("link", { name: linkText, exact: true });
+    // Remove exact match because links include icons/emojis
+    const link = sidebar.getByRole("link", { name: linkText });
     await expect(link).toBeVisible();
     await link.click();
-    await this.page.waitForLoadState("networkidle");
+    // Don't wait for load state here, let the next step handle it if needed
+    // or rely on auto-wait. Dashboard polling can cause networkidle to hang.
   },
 );
 
@@ -76,11 +75,12 @@ When(
   "I click the {string} link in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    // Use exact match to avoid matching text that contains the link name
-    const link = sidebar.getByRole("link", { name: linkText, exact: true });
+    // Remove exact match because links include icons/emojis
+    const link = sidebar.getByRole("link", { name: linkText });
     await expect(link).toBeVisible();
     await link.click();
-    await this.page.waitForLoadState("networkidle");
+    // Don't wait for load state here, let the next step handle it if needed
+    // or rely on auto-wait. Dashboard polling can cause networkidle to hang.
   },
 );
 
@@ -88,24 +88,26 @@ When(
 Then(
   "I should see {string} metric card",
   async function(this: CustomWorld, metricName: string) {
-    const card = this.page.locator('[class*="Card"]').filter({
-      hasText: metricName,
-    });
-    await expect(card).toBeVisible();
+    // Look for the label text which should be visible
+    const label = this.page.getByText(metricName, { exact: true });
+    await expect(label).toBeVisible();
   },
 );
 
 Then(
   "the {string} metric should display a number",
   async function(this: CustomWorld, metricName: string) {
-    const card = this.page.locator('[class*="Card"]').filter({
-      hasText: metricName,
-    });
-    await expect(card).toBeVisible();
+    const label = this.page.getByText(metricName, { exact: true });
+    await expect(label).toBeVisible();
+
+    // The value is in a sibling paragraph (p + p)
+    // Structure: <div><p>Label</p><p>Value</p></div>
+    const valueElement = label.locator("xpath=following-sibling::p");
+    await expect(valueElement).toBeVisible();
 
     // Look for numeric value in the card
-    const text = await card.textContent();
-    expect(text).toMatch(/\d+/);
+    const text = await valueElement.textContent();
+    expect(text).toMatch(/[\d,]+/);
   },
 );
 
@@ -120,14 +122,15 @@ Then(
 Then(
   "the {string} metric should display total count",
   async function(this: CustomWorld, metricName: string) {
-    const card = this.page.locator('[class*="Card"]').filter({
-      hasText: metricName,
-    });
-    await expect(card).toBeVisible();
+    const label = this.page.getByText(metricName, { exact: true });
+    await expect(label).toBeVisible();
+
+    const valueElement = label.locator("xpath=following-sibling::p");
+    await expect(valueElement).toBeVisible();
 
     // Verify numeric value exists
-    const text = await card.textContent();
-    expect(text).toMatch(/\d+/);
+    const text = await valueElement.textContent();
+    expect(text).toMatch(/[\d,]+/);
   },
 );
 
@@ -139,14 +142,15 @@ Then("I should see active jobs count", async function(this: CustomWorld) {
 Then(
   "the {string} metric should display total",
   async function(this: CustomWorld, metricName: string) {
-    const card = this.page.locator('[class*="Card"]').filter({
-      hasText: metricName,
-    });
-    await expect(card).toBeVisible();
+    const label = this.page.getByText(metricName, { exact: true });
+    await expect(label).toBeVisible();
+
+    const valueElement = label.locator("xpath=following-sibling::p");
+    await expect(valueElement).toBeVisible();
 
     // Verify numeric value exists
-    const text = await card.textContent();
-    expect(text).toMatch(/\d+/);
+    const text = await valueElement.textContent();
+    expect(text).toMatch(/[\d,]+/);
   },
 );
 

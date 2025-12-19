@@ -5,14 +5,18 @@ import { CustomWorld } from "../support/world";
 // Helper function to mock NextAuth session
 async function mockSession(
   world: CustomWorld,
-  user: { name: string; email: string; image?: string; } | null,
+  user: { name: string; email: string; image?: string; role?: string; } | null,
 ) {
+  // Infer role from email if not provided
+  const role = user?.role || (user?.email?.startsWith("admin@") ? "ADMIN" : "USER");
+
   const sessionData = user
     ? {
       user: {
         name: user.name,
         email: user.email,
         image: user.image || null,
+        role,
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     }
@@ -39,15 +43,46 @@ async function mockSession(
   // Set NextAuth session cookie to bypass middleware authentication
   if (user) {
     // Set a mock session token cookie that the middleware will recognize
-    await world.page.context().addCookies([{
-      name: "authjs.session-token",
-      value: "mock-session-token",
-      domain: "localhost",
-      path: "/",
-      httpOnly: true,
-      sameSite: "Lax",
-      expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
-    }]);
+    const cookies = [
+      {
+        name: "authjs.session-token",
+        value: "mock-session-token",
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
+      },
+      {
+        name: "e2e-user-role",
+        value: role,
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+      {
+        name: "e2e-user-email",
+        value: user.email,
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+      {
+        name: "e2e-user-name",
+        value: user.name,
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+    ];
+
+    await world.page.context().addCookies(cookies);
   } else {
     // Clear session cookies when logging out
     await world.page.context().clearCookies();

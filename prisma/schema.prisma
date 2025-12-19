@@ -465,6 +465,30 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Error logging for tryCatch blocks across frontend and backend
+model ErrorLog {
+  id           String           @id @default(cuid())
+  timestamp    DateTime         @default(now())
+  message      String
+  stack        String?
+  sourceFile   String?
+  sourceLine   Int?
+  sourceColumn Int?
+  callerName   String?
+  userId       String?
+  route        String?
+  environment  ErrorEnvironment
+  errorType    String?
+  errorCode    String?
+  metadata     Json?
+
+  @@index([timestamp])
+  @@index([sourceFile])
+  @@index([errorType])
+  @@index([environment])
+  @@map("error_logs")
+}
+
 model Feedback {
   id        String         @id @default(cuid())
   userId    String?
@@ -631,6 +655,11 @@ enum FeedbackStatus {
   REVIEWED
   RESOLVED
   DISMISSED
+}
+
+enum ErrorEnvironment {
+  FRONTEND
+  BACKEND
 }
 
 enum GalleryCategory {

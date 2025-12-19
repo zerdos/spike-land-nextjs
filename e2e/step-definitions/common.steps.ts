@@ -27,10 +27,12 @@ async function mockTokenBalance(
 When(
   "I click {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await button.click();
+    const button = this.page
+      .getByRole("button", { name: new RegExp(buttonText, "i") })
+      .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+
+    // If there are still multiple buttons (e.g. mobile vs desktop), take the first visible one
+    await button.first().click();
   },
 );
 
@@ -66,10 +68,11 @@ When("I cancel the deletion confirmation", async function(this: CustomWorld) {
 Then(
   "I should see {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await expect(button).toBeVisible();
+    const button = this.page
+      .getByRole("button", { name: new RegExp(buttonText, "i") })
+      .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+
+    await expect(button.first()).toBeVisible();
   },
 );
 
