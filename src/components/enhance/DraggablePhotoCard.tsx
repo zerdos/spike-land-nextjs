@@ -83,7 +83,7 @@ export function DraggablePhotoCard({
         isDragging ? "cursor-grabbing" : "cursor-grab"
       }`}
       style={{
-        touchAction: "none",
+        touchAction: "pan-y",
       }}
       data-draggable-photo-card
       data-image-id={imageId}
