@@ -15,7 +15,13 @@ export const ROUTES = {
   albumShare: (albumId: string, token: string) => `/albums/${albumId}?token=${token}`,
 
   // Image routes
-  imageDetail: (imageId: string) => `/apps/pixel/${imageId}`,
+  imageDetail: (imageId: string, from?: string) => {
+    const base = `/apps/pixel/${imageId}`;
+    if (from) {
+      return `${base}?from=${encodeURIComponent(from)}`;
+    }
+    return base;
+  },
 
   // Auth routes
   login: "/login",
