@@ -41,6 +41,8 @@ export interface EnhancementVersion {
   sizeBytes?: number | null;
   /** If present, this enhancement was created by blending with another image */
   sourceImageId?: string | null;
+  /** True when job uses blend enhancement (file upload or stored image) */
+  isBlend?: boolean;
 }
 
 interface EnhancementHistoryGridProps {
@@ -223,8 +225,8 @@ export function EnhancementHistoryGrid({
                 {tierLabels[version.tier]}
               </Badge>
 
-              {/* Blend Badge */}
-              {version.sourceImageId && (
+              {/* Blend Badge - shows for both file upload and stored image blends */}
+              {(version.isBlend || version.sourceImageId) && (
                 <Badge
                   variant="outline"
                   className="absolute top-2 left-12 text-xs font-semibold bg-pink-500/20 text-pink-400 border-pink-500/30 flex items-center gap-1"
