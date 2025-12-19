@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { tryCatch } from "@/lib/try-catch";
 import { TokenTransactionType } from "@prisma/client";
 
 const REFERRAL_REWARD_TOKENS = 50;
@@ -18,37 +19,48 @@ export interface ReferralRewardResult {
 export async function completeReferralAndGrantRewards(
   referralId: string,
 ): Promise<ReferralRewardResult> {
-  try {
-    // Get referral record
-    const referral = await prisma.referral.findUnique({
+  // Get referral record
+  const { data: referral, error: findError } = await tryCatch(
+    prisma.referral.findUnique({
       where: { id: referralId },
       include: {
         referrer: { select: { id: true, email: true } },
         referee: { select: { id: true, email: true } },
       },
-    });
+    }),
+  );
 
-    if (!referral) {
-      return { success: false, error: "Referral not found" };
-    }
+  if (findError) {
+    console.error("Failed to complete referral and grant rewards:", findError);
+    return {
+      success: false,
+      error: findError instanceof Error ? findError.message : "Unknown error",
+    };
+  }
 
-    if (referral.status === "COMPLETED") {
-      return {
-        success: false,
-        error: "Referral already completed",
-      };
-    }
+  if (!referral) {
+    return { success: false, error: "Referral not found" };
+  }
 
-    if (referral.status === "INVALID") {
-      return {
-        success: false,
-        error: "Referral marked as invalid",
-      };
-    }
+  if (referral.status === "COMPLETED") {
+    return {
+      success: false,
+      error: "Referral already completed",
+    };
+  }
 
-    // Grant tokens to both users in transaction
+  if (referral.status === "INVALID") {
+    return {
+      success: false,
+      error: "Referral marked as invalid",
+    };
+  }
+
+  // Grant tokens to both users in transaction
+
+  const { data: result, error: transactionError } = await tryCatch(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await prisma.$transaction(async (tx: any) => {
+    prisma.$transaction(async (tx: any) => {
       // Grant tokens to referrer
       const referrerResult = await TokenBalanceManager.addTokens({
         userId: referral.referrerId,
@@ -109,20 +121,27 @@ export async function completeReferralAndGrantRewards(
         referrerTokens: REFERRAL_REWARD_TOKENS,
         refereeTokens: REFERRAL_REWARD_TOKENS,
       };
-    });
+    }),
+  );
 
-    return {
-      success: true,
-      referrerTokensGranted: result.referrerTokens,
-      refereeTokensGranted: result.refereeTokens,
-    };
-  } catch (error) {
-    console.error("Failed to complete referral and grant rewards:", error);
+  if (transactionError) {
+    console.error(
+      "Failed to complete referral and grant rewards:",
+      transactionError,
+    );
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: transactionError instanceof Error
+        ? transactionError.message
+        : "Unknown error",
     };
   }
+
+  return {
+    success: true,
+    referrerTokensGranted: result.referrerTokens,
+    refereeTokensGranted: result.refereeTokens,
+  };
 }
 
 /**
@@ -132,22 +151,24 @@ export async function markReferralAsInvalid(
   referralId: string,
   _reason: string,
 ): Promise<{ success: boolean; error?: string; }> {
-  try {
-    await prisma.referral.update({
+  const { error } = await tryCatch(
+    prisma.referral.update({
       where: { id: referralId },
       data: {
         status: "INVALID",
       },
-    });
+    }),
+  );
 
-    return { success: true };
-  } catch (error) {
+  if (error) {
     console.error("Failed to mark referral as invalid:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+
+  return { success: true };
 }
 
 /**
@@ -159,21 +180,35 @@ export async function getReferralStats(userId: string): Promise<{
   pendingReferrals: number;
   tokensEarned: number;
 }> {
-  const [totalReferrals, completedReferrals, pendingReferrals, referrals] = await Promise.all([
-    prisma.referral.count({
-      where: { referrerId: userId },
-    }),
-    prisma.referral.count({
-      where: { referrerId: userId, status: "COMPLETED" },
-    }),
-    prisma.referral.count({
-      where: { referrerId: userId, status: "PENDING" },
-    }),
-    prisma.referral.findMany({
-      where: { referrerId: userId, status: "COMPLETED" },
-      select: { tokensGranted: true },
-    }),
-  ]);
+  const { data: results, error } = await tryCatch(
+    Promise.all([
+      prisma.referral.count({
+        where: { referrerId: userId },
+      }),
+      prisma.referral.count({
+        where: { referrerId: userId, status: "COMPLETED" },
+      }),
+      prisma.referral.count({
+        where: { referrerId: userId, status: "PENDING" },
+      }),
+      prisma.referral.findMany({
+        where: { referrerId: userId, status: "COMPLETED" },
+        select: { tokensGranted: true },
+      }),
+    ]),
+  );
+
+  if (error) {
+    console.error("Failed to get referral stats:", error);
+    return {
+      totalReferrals: 0,
+      completedReferrals: 0,
+      pendingReferrals: 0,
+      tokensEarned: 0,
+    };
+  }
+
+  const [totalReferrals, completedReferrals, pendingReferrals, referrals] = results;
 
   // Calculate tokens earned (referrer gets half of total tokens granted)
   const tokensEarned = referrals.reduce(
@@ -204,19 +239,26 @@ export async function getReferredUsers(
     tokensGranted: number;
   }>
 > {
-  const referrals = await prisma.referral.findMany({
-    where: { referrerId: userId },
-    include: {
-      referee: {
-        select: {
-          id: true,
-          email: true,
+  const { data: referrals, error } = await tryCatch(
+    prisma.referral.findMany({
+      where: { referrerId: userId },
+      include: {
+        referee: {
+          select: {
+            id: true,
+            email: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to get referred users:", error);
+    return [];
+  }
 
   return referrals.map((ref: {
     id: string;

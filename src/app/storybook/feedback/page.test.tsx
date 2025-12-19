@@ -23,7 +23,9 @@ describe("FeedbackPage", () => {
     it("should render the section description", () => {
       render(<FeedbackPage />);
       expect(
-        screen.getByText(/toast notifications and alert components for user feedback/i),
+        screen.getByText(
+          /toast notifications and alert components for user feedback/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -39,11 +41,16 @@ describe("FeedbackPage", () => {
 
     it("should render toast trigger buttons", () => {
       render(<FeedbackPage />);
-      expect(screen.getByRole("button", { name: /success toast/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /error toast/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /info toast/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /warning toast/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /default toast/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /success toast/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /error toast/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /info toast/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /warning toast/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /default toast/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -52,7 +59,9 @@ describe("FeedbackPage", () => {
       render(<FeedbackPage />);
       expect(screen.getByText("Semantic State Colors")).toBeInTheDocument();
       expect(
-        screen.getByText(/color utilities for success, warning, and error states/i),
+        screen.getByText(
+          /color utilities for success, warning, and error states/i,
+        ),
       ).toBeInTheDocument();
     });
 

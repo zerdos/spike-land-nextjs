@@ -1,4 +1,5 @@
 import { ENHANCEMENT_COSTS } from "@/lib/stripe/client";
+import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
 interface TokenBalanceResponse {
@@ -71,34 +72,61 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
   const fetchBalance = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/tokens/balance");
-      if (!response.ok) {
-        throw new Error("Failed to fetch token balance");
-      }
-      const data: TokenBalanceResponse = await response.json();
-      setBalance(data.balance);
-      setLastRegeneration(
-        data.lastRegeneration ? new Date(data.lastRegeneration) : null,
+    setIsLoading(true);
+
+    const { data: response, error: fetchError } = await tryCatch(
+      fetch("/api/tokens/balance"),
+    );
+
+    if (fetchError) {
+      setError(
+        fetchError instanceof Error ? fetchError : new Error("Unknown error"),
       );
-
-      // Calculate next regen time based on "timeUntilNextRegenMs" which is relative to "now" on server
-      // We'll use client "now" + delay
-      if (typeof data.timeUntilNextRegenMs === "number") {
-        setNextRegenTime(new Date(Date.now() + data.timeUntilNextRegenMs));
-      }
-
-      if (data.stats) {
-        setStats(data.stats);
-      }
-      setError(null);
-      setLastFetchTime(Date.now());
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Unknown error"));
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    if (!response) {
+      setError(new Error("No response from server"));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!response.ok) {
+      setError(new Error("Failed to fetch token balance"));
+      setIsLoading(false);
+      return;
+    }
+
+    const { data, error: jsonError } = await tryCatch(
+      response.json() as Promise<TokenBalanceResponse>,
+    );
+
+    if (jsonError) {
+      setError(
+        jsonError instanceof Error ? jsonError : new Error("Unknown error"),
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    setBalance(data.balance);
+    setLastRegeneration(
+      data.lastRegeneration ? new Date(data.lastRegeneration) : null,
+    );
+
+    // Calculate next regen time based on "timeUntilNextRegenMs" which is relative to "now" on server
+    // We'll use client "now" + delay
+    if (typeof data.timeUntilNextRegenMs === "number") {
+      setNextRegenTime(new Date(Date.now() + data.timeUntilNextRegenMs));
+    }
+
+    if (data.stats) {
+      setStats(data.stats);
+    }
+    setError(null);
+    setLastFetchTime(Date.now());
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {

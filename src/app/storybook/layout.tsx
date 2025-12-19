@@ -19,7 +19,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
       <div className="p-6">
         <Link href="/storybook" onClick={onLinkClick}>
           <h1 className="text-2xl font-bold font-heading">Design System</h1>
-          <p className="text-sm text-muted-foreground mt-1">Pixel Brand Guidelines</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pixel Brand Guidelines
+          </p>
         </Link>
       </div>
 
@@ -75,7 +77,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
   );
 }
 
-export default function StorybookLayout({ children }: { children: React.ReactNode; }) {
+export default function StorybookLayout(
+  { children }: { children: React.ReactNode; },
+) {
   const [open, setOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -101,7 +105,9 @@ export default function StorybookLayout({ children }: { children: React.ReactNod
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-0">
-                  <SheetTitle className="sr-only">Design System Navigation</SheetTitle>
+                  <SheetTitle className="sr-only">
+                    Design System Navigation
+                  </SheetTitle>
                   <SidebarContent onLinkClick={() => setOpen(false)} />
                 </SheetContent>
               </Sheet>
@@ -123,7 +129,9 @@ export default function StorybookLayout({ children }: { children: React.ReactNod
 
         {/* Main Content */}
         <main className="flex-1 lg:pl-72">
-          <div className="container mx-auto py-8 px-4 max-w-6xl">{children}</div>
+          <div className="container mx-auto py-8 px-4 max-w-6xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>

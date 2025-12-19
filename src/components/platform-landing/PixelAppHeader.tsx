@@ -33,7 +33,12 @@ export function PixelAppHeader() {
                 <span className="text-sm font-medium text-muted-foreground">
                   {balanceLoading ? "..." : balance} tokens
                 </span>
-                <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0">
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                >
                   <Link href="/pricing" title="Buy more tokens">
                     <Plus className="h-4 w-4" />
                   </Link>

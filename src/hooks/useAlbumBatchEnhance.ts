@@ -1,6 +1,8 @@
 import { EnhancementTier } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { tryCatch } from "@/lib/try-catch";
+
 export interface BatchJobStatus {
   imageId: string;
   jobId: string;
@@ -100,85 +102,111 @@ export function useAlbumBatchEnhance({
 
       pollAttemptsRef.current++;
 
-      try {
-        // Use batch status endpoint to reduce API calls
-        const response = await fetch("/api/jobs/batch-status", {
+      // Use batch status endpoint to reduce API calls
+      const { data: response, error: fetchError } = await tryCatch(
+        fetch("/api/jobs/batch-status", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ jobIds }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch batch status");
-        }
-
-        const data: BatchStatusResponse = await response.json();
-
-        // Build a map of status updates for efficient lookup
-        const statusMap = new Map(
-          data.jobs.map((
-            j,
-          ) => [j.id, { status: j.status, error: j.errorMessage }]),
-        );
-
-        // Compute updated jobs from ref to avoid race conditions with state batching
-        const updatedJobs: BatchJobStatus[] = jobsRef.current.map((job) => {
-          const statusUpdate = statusMap.get(job.jobId);
-          if (statusUpdate) {
-            return {
-              ...job,
-              status: statusUpdate.status,
-              error: statusUpdate.error || undefined,
-            };
-          }
-          return job;
-        });
-
-        // Update both ref and state atomically
-        jobsRef.current = updatedJobs;
-        setJobs(updatedJobs);
-
-        // Check if all jobs are complete
-        const allComplete = data.jobs.every(
-          (j) => j.status === "COMPLETED" || j.status === "FAILED",
-        );
-
-        if (allComplete || pollAttemptsRef.current >= MAX_POLL_ATTEMPTS) {
-          setIsProcessing(false);
-
-          // Use the captured updatedJobs which has the latest status
-          if (onComplete && !isCancelledRef.current) {
-            onComplete(updatedJobs);
-          }
-        } else if (!isCancelledRef.current) {
-          // Apply exponential backoff with cap
-          currentIntervalRef.current = Math.min(
-            currentIntervalRef.current * BACKOFF_MULTIPLIER,
-            MAX_POLL_INTERVAL,
-          );
-
-          // Clear any existing timeout before scheduling new one to prevent phantom timeouts
-          if (pollTimeoutRef.current) {
-            clearTimeout(pollTimeoutRef.current);
-          }
-          // Schedule next poll
-          pollTimeoutRef.current = setTimeout(() => {
-            pollJobStatuses(jobIds);
-          }, currentIntervalRef.current);
-        }
-      } catch (error) {
-        console.error("Error polling job statuses:", error);
+      if (fetchError) {
+        console.error("Error polling job statuses:", fetchError);
         setIsProcessing(false);
 
         if (onError && !isCancelledRef.current) {
           onError(
-            error instanceof Error
-              ? error.message
+            fetchError instanceof Error
+              ? fetchError.message
               : "Failed to poll job statuses",
           );
         }
+        return;
+      }
+
+      if (!response.ok) {
+        const error = new Error("Failed to fetch batch status");
+        console.error("Error polling job statuses:", error);
+        setIsProcessing(false);
+
+        if (onError && !isCancelledRef.current) {
+          onError(error.message);
+        }
+        return;
+      }
+
+      const { data, error: jsonError } = await tryCatch<BatchStatusResponse>(
+        response.json(),
+      );
+
+      if (jsonError) {
+        console.error("Error polling job statuses:", jsonError);
+        setIsProcessing(false);
+
+        if (onError && !isCancelledRef.current) {
+          onError(
+            jsonError instanceof Error
+              ? jsonError.message
+              : "Failed to poll job statuses",
+          );
+        }
+        return;
+      }
+
+      // Build a map of status updates for efficient lookup
+      const statusMap = new Map(
+        data.jobs.map((
+          j,
+        ) => [j.id, { status: j.status, error: j.errorMessage }]),
+      );
+
+      // Compute updated jobs from ref to avoid race conditions with state batching
+      const updatedJobs: BatchJobStatus[] = jobsRef.current.map((job) => {
+        const statusUpdate = statusMap.get(job.jobId);
+        if (statusUpdate) {
+          return {
+            ...job,
+            status: statusUpdate.status,
+            error: statusUpdate.error || undefined,
+          };
+        }
+        return job;
+      });
+
+      // Update both ref and state atomically
+      jobsRef.current = updatedJobs;
+      setJobs(updatedJobs);
+
+      // Check if all jobs are complete
+      const allComplete = data.jobs.every(
+        (j) => j.status === "COMPLETED" || j.status === "FAILED",
+      );
+
+      if (allComplete || pollAttemptsRef.current >= MAX_POLL_ATTEMPTS) {
+        setIsProcessing(false);
+
+        // Use the captured updatedJobs which has the latest status
+        if (onComplete && !isCancelledRef.current) {
+          onComplete(updatedJobs);
+        }
+      } else if (!isCancelledRef.current) {
+        // Apply exponential backoff with cap
+        currentIntervalRef.current = Math.min(
+          currentIntervalRef.current * BACKOFF_MULTIPLIER,
+          MAX_POLL_INTERVAL,
+        );
+
+        // Clear any existing timeout before scheduling new one to prevent phantom timeouts
+        if (pollTimeoutRef.current) {
+          clearTimeout(pollTimeoutRef.current);
+        }
+        // Schedule next poll
+        pollTimeoutRef.current = setTimeout(() => {
+          pollJobStatuses(jobIds);
+        }, currentIntervalRef.current);
       }
     },
     [onComplete, onError],
@@ -197,9 +225,9 @@ export function useAlbumBatchEnhance({
       setJobs([]);
       setIsProcessing(true);
 
-      try {
-        // Call album batch enhance API
-        const response = await fetch(`/api/albums/${albumId}/enhance`, {
+      // Call album batch enhance API
+      const { data: response, error: fetchError } = await tryCatch(
+        fetch(`/api/albums/${albumId}/enhance`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -208,53 +236,84 @@ export function useAlbumBatchEnhance({
             tier,
             skipAlreadyEnhanced,
           }),
-        });
+        }),
+      );
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Batch enhancement failed");
-        }
-
-        const data: BatchEnhanceResponse = await response.json();
-
-        // Initialize job statuses
-        const initialJobs: BatchJobStatus[] = data.jobs.map((job) => ({
-          imageId: job.imageId,
-          jobId: job.jobId,
-          status: job.success ? "PENDING" : "FAILED",
-          error: job.error,
-        }));
-
-        jobsRef.current = initialJobs;
-        setJobs(initialJobs);
-        setTotalCost(data.summary.totalCost);
-
-        // Get successful job IDs for polling
-        const successfulJobIds = data.jobs
-          .filter((job) => job.success)
-          .map((job) => job.jobId);
-
-        if (successfulJobIds.length > 0 && !isCancelledRef.current) {
-          // Start polling for completion
-          pollJobStatuses(successfulJobIds);
-        } else {
-          // All jobs failed or were skipped
-          setIsProcessing(false);
-
-          if (onComplete && !isCancelledRef.current) {
-            onComplete(initialJobs);
-          }
-        }
-      } catch (error) {
-        console.error("Error starting batch enhancement:", error);
+      if (fetchError) {
+        console.error("Error starting batch enhancement:", fetchError);
         setIsProcessing(false);
 
         if (onError && !isCancelledRef.current) {
           onError(
-            error instanceof Error
-              ? error.message
+            fetchError instanceof Error
+              ? fetchError.message
               : "Failed to start batch enhancement",
           );
+        }
+        return;
+      }
+
+      if (!response.ok) {
+        const { data: errorData } = await tryCatch<{ error?: string; }>(
+          response.json(),
+        );
+        const errorMessage = errorData?.error || "Batch enhancement failed";
+        console.error(
+          "Error starting batch enhancement:",
+          new Error(errorMessage),
+        );
+        setIsProcessing(false);
+
+        if (onError && !isCancelledRef.current) {
+          onError(errorMessage);
+        }
+        return;
+      }
+
+      const { data, error: jsonError } = await tryCatch<BatchEnhanceResponse>(
+        response.json(),
+      );
+
+      if (jsonError) {
+        console.error("Error starting batch enhancement:", jsonError);
+        setIsProcessing(false);
+
+        if (onError && !isCancelledRef.current) {
+          onError(
+            jsonError instanceof Error
+              ? jsonError.message
+              : "Failed to start batch enhancement",
+          );
+        }
+        return;
+      }
+
+      // Initialize job statuses
+      const initialJobs: BatchJobStatus[] = data.jobs.map((job) => ({
+        imageId: job.imageId,
+        jobId: job.jobId,
+        status: job.success ? "PENDING" : "FAILED",
+        error: job.error,
+      }));
+
+      jobsRef.current = initialJobs;
+      setJobs(initialJobs);
+      setTotalCost(data.summary.totalCost);
+
+      // Get successful job IDs for polling
+      const successfulJobIds = data.jobs
+        .filter((job) => job.success)
+        .map((job) => job.jobId);
+
+      if (successfulJobIds.length > 0 && !isCancelledRef.current) {
+        // Start polling for completion
+        pollJobStatuses(successfulJobIds);
+      } else {
+        // All jobs failed or were skipped
+        setIsProcessing(false);
+
+        if (onComplete && !isCancelledRef.current) {
+          onComplete(initialJobs);
         }
       }
     },

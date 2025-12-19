@@ -61,7 +61,9 @@ export async function GET(): Promise<NextResponse> {
     console.error("Facebook connect error:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to initiate OAuth",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initiate OAuth",
       },
       { status: 500 },
     );

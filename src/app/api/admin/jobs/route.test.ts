@@ -89,6 +89,17 @@ describe("Admin Jobs API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
+    it("should return 500 if auth throws an error", async () => {
+      vi.mocked(auth).mockRejectedValue(new Error("Auth service unavailable"));
+
+      const request = new NextRequest("http://localhost/api/admin/jobs");
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+    });
+
     it("should return 403 if not admin", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: VALID_USER_ID },
@@ -101,6 +112,22 @@ describe("Admin Jobs API", () => {
 
       expect(response.status).toBe(403);
       expect(data.error).toBe("Forbidden");
+    });
+
+    it("should return 500 if admin check throws an error", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: VALID_USER_ID },
+      } as any);
+      vi.mocked(isAdminByUserId).mockRejectedValue(
+        new Error("Database connection lost"),
+      );
+
+      const request = new NextRequest("http://localhost/api/admin/jobs");
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
     });
 
     it("should return paginated jobs with default parameters", async () => {

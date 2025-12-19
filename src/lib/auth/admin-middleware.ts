@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
 import { Session } from "next-auth";
 
@@ -34,17 +35,19 @@ export function isAdmin(session: Session | null): boolean {
  * @returns Promise<boolean> - true if user is admin, false otherwise
  */
 export async function isAdminByUserId(userId: string): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
+  const { data: user, error } = await tryCatch(
+    prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
-    });
+    }),
+  );
 
-    return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
-  } catch (error) {
+  if (error) {
     console.error("Failed to check admin status:", error);
     return false;
   }
+
+  return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
 }
 
 /**
@@ -86,15 +89,17 @@ export async function requireAdminByUserId(userId: string): Promise<void> {
  * @returns Promise<boolean> - true if user is super admin, false otherwise
  */
 export async function isSuperAdmin(userId: string): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
+  const { data: user, error } = await tryCatch(
+    prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
-    });
+    }),
+  );
 
-    return user?.role === UserRole.SUPER_ADMIN;
-  } catch (error) {
+  if (error) {
     console.error("Failed to check super admin status:", error);
     return false;
   }
+
+  return user?.role === UserRole.SUPER_ADMIN;
 }

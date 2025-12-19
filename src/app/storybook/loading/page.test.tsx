@@ -21,7 +21,8 @@ describe("LoadingPage", () => {
     it("should render skeleton loaders card", () => {
       render(<LoadingPage />);
       expect(screen.getByText("Skeleton Loaders")).toBeInTheDocument();
-      expect(screen.getByText(/placeholder components for loading states/i)).toBeInTheDocument();
+      expect(screen.getByText(/placeholder components for loading states/i))
+        .toBeInTheDocument();
     });
 
     it("should render default skeleton label", () => {
@@ -67,7 +68,8 @@ describe("LoadingPage", () => {
     it("should render spinners card", () => {
       render(<LoadingPage />);
       expect(screen.getByText("Spinners & Animations")).toBeInTheDocument();
-      expect(screen.getByText(/loading indicators and pulse animations/i)).toBeInTheDocument();
+      expect(screen.getByText(/loading indicators and pulse animations/i))
+        .toBeInTheDocument();
     });
 
     it("should render spinner labels", () => {

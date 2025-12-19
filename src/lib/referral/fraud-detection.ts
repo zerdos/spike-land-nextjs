@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 /**
  * Comprehensive list of disposable email providers
@@ -292,15 +293,22 @@ export async function checkSameIpReferral(
   const cutoffTime = new Date();
   cutoffTime.setHours(cutoffTime.getHours() - SAME_IP_WINDOW_HOURS);
 
-  const recentReferral = await prisma.referral.findFirst({
-    where: {
-      referrerId,
-      ipAddress,
-      createdAt: {
-        gte: cutoffTime,
+  const { data: recentReferral, error } = await tryCatch(
+    prisma.referral.findFirst({
+      where: {
+        referrerId,
+        ipAddress,
+        createdAt: {
+          gte: cutoffTime,
+        },
       },
-    },
-  });
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to check same IP referral:", error);
+    return false; // Fail open to not block legitimate referrals on DB errors
+  }
 
   return recentReferral !== null;
 }
@@ -314,14 +322,21 @@ export async function checkReferralRateLimit(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const todayReferralCount = await prisma.referral.count({
-    where: {
-      referrerId,
-      createdAt: {
-        gte: today,
+  const { data: todayReferralCount, error } = await tryCatch(
+    prisma.referral.count({
+      where: {
+        referrerId,
+        createdAt: {
+          gte: today,
+        },
       },
-    },
-  });
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to check referral rate limit:", error);
+    return false; // Fail open to not block legitimate referrals on DB errors
+  }
 
   return todayReferralCount >= MAX_REFERRALS_PER_DAY;
 }
@@ -330,10 +345,17 @@ export async function checkReferralRateLimit(
  * Check if user's email is verified
  */
 export async function checkEmailVerified(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { emailVerified: true },
-  });
+  const { data: user, error } = await tryCatch(
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailVerified: true },
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to check email verified:", error);
+    return false;
+  }
 
   if (!user) {
     return false;
@@ -353,10 +375,18 @@ export async function performFraudChecks(
   const reasons: string[] = [];
 
   // Get referee details
-  const referee = await prisma.user.findUnique({
-    where: { id: refereeId },
-    select: { email: true, emailVerified: true },
-  });
+  const { data: referee, error } = await tryCatch(
+    prisma.user.findUnique({
+      where: { id: refereeId },
+      select: { email: true, emailVerified: true },
+    }),
+  );
+
+  if (error) {
+    console.error("Failed to perform fraud checks:", error);
+    reasons.push("Unable to verify referee details");
+    return { passed: false, reasons };
+  }
 
   if (!referee) {
     reasons.push("Referee user not found");
@@ -410,9 +440,9 @@ export async function validateReferralAfterVerification(
   shouldGrantRewards: boolean;
   error?: string;
 }> {
-  try {
-    // Find pending referral for this user
-    const referral = await prisma.referral.findFirst({
+  // Find pending referral for this user
+  const { data: referral, error: findError } = await tryCatch(
+    prisma.referral.findFirst({
       where: {
         refereeId,
         status: "PENDING",
@@ -420,52 +450,80 @@ export async function validateReferralAfterVerification(
       include: {
         referrer: { select: { id: true } },
       },
-    });
+    }),
+  );
 
-    if (!referral) {
-      return {
-        success: false,
-        shouldGrantRewards: false,
-        error: "No pending referral found",
-      };
-    }
-
-    // Perform fraud checks
-    const fraudCheck = await performFraudChecks(
-      refereeId,
-      referral.referrerId,
-      referral.ipAddress ?? undefined,
-    );
-
-    if (!fraudCheck.passed) {
-      // Mark as invalid
-      await prisma.referral.update({
-        where: { id: referral.id },
-        data: { status: "INVALID" },
-      });
-
-      return {
-        success: true,
-        referralId: referral.id,
-        shouldGrantRewards: false,
-        error: `Fraud checks failed: ${fraudCheck.reasons.join(", ")}`,
-      };
-    }
-
-    // All checks passed - ready for reward
-    return {
-      success: true,
-      referralId: referral.id,
-      shouldGrantRewards: true,
-    };
-  } catch (error) {
-    console.error("Failed to validate referral:", error);
+  if (findError) {
+    console.error("Failed to validate referral:", findError);
     return {
       success: false,
       shouldGrantRewards: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: findError instanceof Error ? findError.message : "Unknown error",
     };
   }
+
+  if (!referral) {
+    return {
+      success: false,
+      shouldGrantRewards: false,
+      error: "No pending referral found",
+    };
+  }
+
+  // Perform fraud checks
+  const { data: fraudCheck, error: fraudCheckError } = await tryCatch(
+    performFraudChecks(
+      refereeId,
+      referral.referrerId,
+      referral.ipAddress ?? undefined,
+    ),
+  );
+
+  if (fraudCheckError) {
+    console.error("Failed to validate referral:", fraudCheckError);
+    return {
+      success: false,
+      shouldGrantRewards: false,
+      error: fraudCheckError instanceof Error
+        ? fraudCheckError.message
+        : "Unknown error",
+    };
+  }
+
+  if (!fraudCheck.passed) {
+    // Mark as invalid
+    const { error: updateError } = await tryCatch(
+      prisma.referral.update({
+        where: { id: referral.id },
+        data: { status: "INVALID" },
+      }),
+    );
+
+    if (updateError) {
+      console.error("Failed to validate referral:", updateError);
+      return {
+        success: false,
+        shouldGrantRewards: false,
+        error: updateError instanceof Error
+          ? updateError.message
+          : "Unknown error",
+      };
+    }
+
+    return {
+      success: true,
+      referralId: referral.id,
+      shouldGrantRewards: false,
+      error: `Fraud checks failed: ${fraudCheck.reasons.join(", ")}`,
+    };
+  }
+
+  // All checks passed - ready for reward
+  return {
+    success: true,
+    referralId: referral.id,
+    shouldGrantRewards: true,
+  };
 }
 
 /**
@@ -478,12 +536,27 @@ export async function getFraudStats(): Promise<{
   pendingReferrals: number;
   invalidReasons: Record<string, number>;
 }> {
-  const [total, valid, invalid, pending] = await Promise.all([
-    prisma.referral.count(),
-    prisma.referral.count({ where: { status: "COMPLETED" } }),
-    prisma.referral.count({ where: { status: "INVALID" } }),
-    prisma.referral.count({ where: { status: "PENDING" } }),
-  ]);
+  const { data: stats, error } = await tryCatch(
+    Promise.all([
+      prisma.referral.count(),
+      prisma.referral.count({ where: { status: "COMPLETED" } }),
+      prisma.referral.count({ where: { status: "INVALID" } }),
+      prisma.referral.count({ where: { status: "PENDING" } }),
+    ]),
+  );
+
+  if (error) {
+    console.error("Failed to get fraud stats:", error);
+    return {
+      totalReferrals: 0,
+      validReferrals: 0,
+      invalidReferrals: 0,
+      pendingReferrals: 0,
+      invalidReasons: {},
+    };
+  }
+
+  const [total, valid, invalid, pending] = stats;
 
   // In a real implementation, you would store invalid reasons in the database
   // For now, return a placeholder

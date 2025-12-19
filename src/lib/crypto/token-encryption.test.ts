@@ -197,9 +197,10 @@ describe("token-encryption", () => {
     it("throws when key is missing and throwOnMissingKey is true", () => {
       vi.stubEnv("TOKEN_ENCRYPTION_KEY", "");
 
-      expect(() => safeEncryptToken("test", { throwOnMissingKey: true })).toThrow(
-        "TOKEN_ENCRYPTION_KEY",
-      );
+      expect(() => safeEncryptToken("test", { throwOnMissingKey: true }))
+        .toThrow(
+          "TOKEN_ENCRYPTION_KEY",
+        );
     });
 
     it("returns empty string for empty input", () => {

@@ -28,6 +28,20 @@ describe("Admin Storage API", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
+  it("should return 500 if auth throws an error", async () => {
+    vi.mocked(auth).mockRejectedValue(new Error("Auth service unavailable"));
+
+    const response = await GET();
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch storage stats:",
+      expect.any(Error),
+    );
+  });
+
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
@@ -61,6 +75,25 @@ describe("Admin Storage API", () => {
 
     expect(response.status).toBe(403);
     expect(data.error).toBe("Forbidden: Admin access required");
+  });
+
+  it("should return 500 if admin check fails with non-Forbidden error", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "user_123" },
+    } as any);
+    vi.mocked(requireAdminByUserId).mockRejectedValue(
+      new Error("Database connection failed"),
+    );
+
+    const response = await GET();
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to fetch storage stats:",
+      expect.any(Error),
+    );
   });
 
   it("should return unconfigured state when R2 is not configured", async () => {

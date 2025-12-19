@@ -40,7 +40,10 @@ export const EVENT_MAPPING: Record<string, EventMappingConfig> = {
   purchase_started: { metaEvent: "InitiateCheckout", isStandard: true },
   purchase_completed: { metaEvent: "Purchase", isStandard: true },
   enhancement_started: { metaEvent: "EnhancementStarted", isStandard: false },
-  enhancement_completed: { metaEvent: "EnhancementCompleted", isStandard: false },
+  enhancement_completed: {
+    metaEvent: "EnhancementCompleted",
+    isStandard: false,
+  },
   album_created: { metaEvent: "AlbumCreated", isStandard: false },
   image_uploaded: { metaEvent: "ImageUploaded", isStandard: false },
 };

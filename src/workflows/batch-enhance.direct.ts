@@ -15,6 +15,7 @@
 
 import prisma from "@/lib/prisma";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { tryCatch } from "@/lib/try-catch";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { enhanceImageDirect } from "./enhance-image.direct";
 
@@ -101,9 +102,9 @@ export async function batchEnhanceImagesDirect(
 
   // Process each image sequentially to avoid rate limits
   for (const image of images) {
-    try {
-      // Create job for this image
-      const job = await prisma.imageEnhancementJob.create({
+    // Create job for this image
+    const jobResult = await tryCatch(
+      prisma.imageEnhancementJob.create({
         data: {
           imageId: image.imageId,
           userId,
@@ -112,37 +113,17 @@ export async function batchEnhanceImagesDirect(
           status: JobStatus.PROCESSING,
           processingStartedAt: new Date(),
         },
-      });
+      }),
+    );
 
-      console.log(
-        `[Dev Batch Enhancement] Processing image ${image.imageId} (job ${job.id})`,
-      );
-
-      // Run the single image enhancement directly
-      const result = await enhanceImageDirect({
-        jobId: job.id,
-        imageId: image.imageId,
-        userId,
-        originalR2Key: image.originalR2Key,
-        tier,
-        tokensCost: tokenCost,
-      });
-
-      results.push({
-        imageId: image.imageId,
-        jobId: job.id,
-        success: result.success,
-        refunded: !result.success, // Refund happens immediately in enhanceImageDirect on failure
-        error: result.error,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : String(error);
+    if (jobResult.error) {
+      const errorMessage = jobResult.error instanceof Error
+        ? jobResult.error.message
+        : String(jobResult.error);
       // Include full error stack trace for better debugging
       console.error(
         `[Dev Batch Enhancement] Failed to process image ${image.imageId}:`,
-        error,
+        jobResult.error,
       );
       results.push({
         imageId: image.imageId,
@@ -150,7 +131,54 @@ export async function batchEnhanceImagesDirect(
         refunded: false, // No job was created, no refund needed
         error: errorMessage,
       });
+      continue;
     }
+
+    const job = jobResult.data;
+
+    console.log(
+      `[Dev Batch Enhancement] Processing image ${image.imageId} (job ${job.id})`,
+    );
+
+    // Run the single image enhancement directly
+    const enhanceResult = await tryCatch(
+      enhanceImageDirect({
+        jobId: job.id,
+        imageId: image.imageId,
+        userId,
+        originalR2Key: image.originalR2Key,
+        tier,
+        tokensCost: tokenCost,
+      }),
+    );
+
+    if (enhanceResult.error) {
+      const errorMessage = enhanceResult.error instanceof Error
+        ? enhanceResult.error.message
+        : String(enhanceResult.error);
+      // Include full error stack trace for better debugging
+      console.error(
+        `[Dev Batch Enhancement] Failed to process image ${image.imageId}:`,
+        enhanceResult.error,
+      );
+      results.push({
+        imageId: image.imageId,
+        success: false,
+        refunded: false, // Enhancement threw an exception, no automatic refund from enhanceImageDirect
+        error: errorMessage,
+      });
+      continue;
+    }
+
+    const result = enhanceResult.data;
+
+    results.push({
+      imageId: image.imageId,
+      jobId: job.id,
+      success: result.success,
+      refunded: !result.success, // Refund happens immediately in enhanceImageDirect on failure
+      error: result.error,
+    });
   }
 
   // Calculate summary

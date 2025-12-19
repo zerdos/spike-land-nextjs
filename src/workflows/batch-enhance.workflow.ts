@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { tryCatch } from "@/lib/try-catch";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { FatalError } from "workflow";
 import { enhanceImage } from "./enhance-image.workflow";
@@ -109,41 +110,56 @@ export async function batchEnhanceImages(
 
   // Process each image sequentially to avoid rate limits
   for (const image of images) {
-    try {
-      // Create job for this image
-      const jobId = await createEnhancementJob(
-        image.imageId,
-        userId,
-        tier,
-        tokenCost,
-      );
+    // Create job for this image
+    const jobResult = await tryCatch(
+      createEnhancementJob(image.imageId, userId, tier, tokenCost),
+    );
 
-      // Run the single image enhancement workflow
-      const result = await enhanceImage({
+    if (jobResult.error) {
+      const errorMessage = jobResult.error instanceof Error
+        ? jobResult.error.message
+        : String(jobResult.error);
+      results.push({
+        imageId: image.imageId,
+        success: false,
+        error: errorMessage,
+      });
+      continue;
+    }
+
+    const jobId = jobResult.data;
+
+    // Run the single image enhancement workflow
+    const enhanceResult = await tryCatch(
+      enhanceImage({
         jobId,
         imageId: image.imageId,
         userId,
         originalR2Key: image.originalR2Key,
         tier,
         tokensCost: tokenCost,
-      });
+      }),
+    );
 
+    if (enhanceResult.error) {
+      const errorMessage = enhanceResult.error instanceof Error
+        ? enhanceResult.error.message
+        : String(enhanceResult.error);
       results.push({
         imageId: image.imageId,
         jobId,
-        success: result.success,
-        error: result.error,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : String(error);
-      results.push({
-        imageId: image.imageId,
         success: false,
         error: errorMessage,
       });
+      continue;
     }
+
+    results.push({
+      imageId: image.imageId,
+      jobId,
+      success: enhanceResult.data.success,
+      error: enhanceResult.data.error,
+    });
   }
 
   // Calculate summary

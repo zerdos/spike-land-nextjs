@@ -929,11 +929,13 @@ describe("useParallelEnhancement", () => {
       instance.onmessage?.(event);
     }
 
-    // Should log error but not crash
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse SSE message:",
-      expect.any(Error),
-    );
+    // Should log error but not crash (wait for async handler)
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to parse SSE message:",
+        expect.any(Error),
+      );
+    });
 
     // Job status should remain unchanged
     expect(result.current.jobs[0]?.status).toBe("PENDING");

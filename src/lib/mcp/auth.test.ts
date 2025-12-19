@@ -142,6 +142,32 @@ describe("auth", () => {
 
       expect(mockValidateApiKey).toHaveBeenCalledWith("sk_test_validkey");
     });
+
+    it("should return error when validateApiKey throws an exception", async () => {
+      mockValidateApiKey.mockRejectedValue(new Error("Database connection failed"));
+
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Database connection failed");
+    });
+
+    it("should return fallback error when validateApiKey throws without message", async () => {
+      mockValidateApiKey.mockRejectedValue(new Error());
+
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("API key validation failed");
+    });
   });
 
   describe("extractApiKey", () => {
@@ -323,6 +349,17 @@ describe("auth", () => {
       expect(result.error).toBe(
         "Authentication required. Provide an API key or sign in.",
       );
+    });
+
+    it("should return error when session auth throws an exception", async () => {
+      mockAuth.mockRejectedValue(new Error("Session service unavailable"));
+
+      const request = createMockRequest({});
+
+      const result = await authenticateMcpOrSession(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Session authentication failed");
     });
   });
 });

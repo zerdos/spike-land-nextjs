@@ -493,7 +493,7 @@ describe("POST /api/stripe/checkout", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("returns 500 when an unexpected error occurs", async () => {
+  it("returns 500 when database error occurs while fetching user", async () => {
     (auth as Mock).mockResolvedValue({
       user: { id: "123", email: "test@test.com" },
     });
@@ -518,9 +518,9 @@ describe("POST /api/stripe/checkout", () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe("Failed to create checkout session");
+    expect(data.error).toBe("Failed to fetch user");
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Error creating checkout session:",
+      "Error fetching user:",
       expect.any(Error),
     );
 

@@ -11,7 +11,8 @@ describe("TypographyPage", () => {
 
     it("should render the section description", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/font families and text styles/i)).toBeInTheDocument();
+      expect(screen.getByText(/font families and text styles/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -19,7 +20,8 @@ describe("TypographyPage", () => {
     it("should render font families card", () => {
       render(<TypographyPage />);
       expect(screen.getByText("Font Families")).toBeInTheDocument();
-      expect(screen.getByText(/montserrat for headers, geist for body/i)).toBeInTheDocument();
+      expect(screen.getByText(/montserrat for headers, geist for body/i))
+        .toBeInTheDocument();
     });
 
     it("should display Montserrat font example", () => {
@@ -42,17 +44,24 @@ describe("TypographyPage", () => {
     it("should render heading scale card", () => {
       render(<TypographyPage />);
       expect(screen.getByText("Heading Scale")).toBeInTheDocument();
-      expect(screen.getByText(/all headings use montserrat font/i)).toBeInTheDocument();
+      expect(screen.getByText(/all headings use montserrat font/i))
+        .toBeInTheDocument();
     });
 
     it("should render all heading levels", () => {
       render(<TypographyPage />);
-      expect(screen.getByRole("heading", { name: /heading level 1/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 2/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 3/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 4/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 5/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 6/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 1/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 2/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 3/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 4/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 5/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /heading level 6/i }))
+        .toBeInTheDocument();
     });
 
     it("should render heading level badges", () => {
@@ -70,15 +79,20 @@ describe("TypographyPage", () => {
     it("should render text colors card", () => {
       render(<TypographyPage />);
       expect(screen.getByText("Text Colors")).toBeInTheDocument();
-      expect(screen.getByText(/semantic text color classes/i)).toBeInTheDocument();
+      expect(screen.getByText(/semantic text color classes/i))
+        .toBeInTheDocument();
     });
 
     it("should display text color examples", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/text-foreground - primary text/i)).toBeInTheDocument();
-      expect(screen.getByText(/text-muted-foreground - secondary text/i)).toBeInTheDocument();
-      expect(screen.getByText(/text-primary - accent\/link text/i)).toBeInTheDocument();
-      expect(screen.getByText(/text-destructive - error text/i)).toBeInTheDocument();
+      expect(screen.getByText(/text-foreground - primary text/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/text-muted-foreground - secondary text/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/text-primary - accent\/link text/i))
+        .toBeInTheDocument();
+      expect(screen.getByText(/text-destructive - error text/i))
+        .toBeInTheDocument();
     });
   });
 });

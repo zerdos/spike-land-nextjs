@@ -84,7 +84,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Query daily visitors using raw SQL for date grouping
     let dailyVisitors: Array<{ date: Date; count: bigint; }> = [];
     try {
-      dailyVisitors = await prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
+      dailyVisitors = await prisma.$queryRaw<
+        Array<{ date: Date; count: bigint; }>
+      >`
         SELECT DATE(session_start) as date, COUNT(DISTINCT visitor_id)::bigint as count
         FROM visitor_sessions
         WHERE session_start >= ${start} AND session_start <= ${end}
@@ -98,7 +100,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Query daily signups
     let dailySignups: Array<{ date: Date; count: bigint; }> = [];
     try {
-      dailySignups = await prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
+      dailySignups = await prisma.$queryRaw<
+        Array<{ date: Date; count: bigint; }>
+      >`
         SELECT DATE(converted_at) as date, COUNT(*)::bigint as count
         FROM campaign_attributions
         WHERE converted_at >= ${start} AND converted_at <= ${end}
@@ -113,7 +117,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Query daily revenue
     let dailyRevenue: Array<{ date: Date; revenue: number; }> = [];
     try {
-      dailyRevenue = await prisma.$queryRaw<Array<{ date: Date; revenue: number; }>>`
+      dailyRevenue = await prisma.$queryRaw<
+        Array<{ date: Date; revenue: number; }>
+      >`
         SELECT DATE(converted_at) as date, COALESCE(SUM(conversion_value), 0)::numeric as revenue
         FROM campaign_attributions
         WHERE converted_at >= ${start} AND converted_at <= ${end}

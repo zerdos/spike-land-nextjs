@@ -54,7 +54,12 @@ describe("FeedbackButton", () => {
       expect(button).toBeInTheDocument();
       // Position classes are on the container, not the button
       const feedbackContainer = container.firstChild;
-      expect(feedbackContainer).toHaveClass("fixed", "bottom-4", "right-4", "z-50");
+      expect(feedbackContainer).toHaveClass(
+        "fixed",
+        "bottom-4",
+        "right-4",
+        "z-50",
+      );
     });
 
     it("opens panel on click", async () => {
@@ -78,7 +83,8 @@ describe("FeedbackButton", () => {
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)"))
+        .toBeInTheDocument();
     });
 
     it("renders feedback type buttons", async () => {
@@ -302,7 +308,8 @@ describe("FeedbackButton", () => {
 
       await waitFor(() => {
         // Panel closes and button returns to "Send feedback" state
-        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send feedback" }))
+          .toBeInTheDocument();
       });
     });
 
@@ -317,7 +324,8 @@ describe("FeedbackButton", () => {
 
       await waitFor(() => {
         // Panel closes and button returns to "Send feedback" state
-        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send feedback" }))
+          .toBeInTheDocument();
       });
     });
 
@@ -344,7 +352,8 @@ describe("FeedbackButton", () => {
       // Wait for panel to close and form to reset (reset happens after 300ms timeout)
       await waitFor(
         () => {
-          expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+          expect(screen.getByRole("button", { name: "Send feedback" }))
+            .toBeInTheDocument();
         },
         { timeout: 500 },
       );
@@ -360,7 +369,9 @@ describe("FeedbackButton", () => {
         () => {
           expect(screen.getByPlaceholderText("Describe your feedback..."))
             .toHaveValue("");
-          expect(screen.getByPlaceholderText("Email (optional)")).toHaveValue("");
+          expect(screen.getByPlaceholderText("Email (optional)")).toHaveValue(
+            "",
+          );
         },
         { timeout: 500 },
       );
@@ -397,7 +408,8 @@ describe("FeedbackButton", () => {
 
       await waitFor(() => {
         // Panel closes after successful submission
-        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send feedback" }))
+          .toBeInTheDocument();
       });
     });
 
@@ -427,7 +439,8 @@ describe("FeedbackButton", () => {
 
       await waitFor(() => {
         // Panel closes after successful submission
-        expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send feedback" }))
+          .toBeInTheDocument();
       });
     });
   });
@@ -497,7 +510,8 @@ describe("FeedbackButton", () => {
 
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)"))
+        .toBeInTheDocument();
     });
   });
 
@@ -535,7 +549,8 @@ describe("FeedbackButton", () => {
 
       expect(screen.getByPlaceholderText("Describe your feedback..."))
         .toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Email (optional)")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email (optional)"))
+        .toBeInTheDocument();
     });
 
     it("has message textarea", async () => {

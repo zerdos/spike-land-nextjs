@@ -9,16 +9,23 @@ import { Loader2 } from "lucide-react";
 export default function LoadingPage() {
   return (
     <div className="space-y-12">
-      <Section title="Loading States" description="Skeleton loaders, progress bars, and spinners">
+      <Section
+        title="Loading States"
+        description="Skeleton loaders, progress bars, and spinners"
+      >
         {/* Skeleton Loaders */}
         <Card>
           <CardHeader>
             <CardTitle>Skeleton Loaders</CardTitle>
-            <CardDescription>Placeholder components for loading states</CardDescription>
+            <CardDescription>
+              Placeholder components for loading states
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Default Skeleton</Label>
+              <Label className="text-xs text-muted-foreground">
+                Default Skeleton
+              </Label>
               <div className="flex items-center space-x-4">
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="space-y-2">
@@ -29,9 +36,14 @@ export default function LoadingPage() {
             </div>
             <Separator />
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Shimmer Variant</Label>
+              <Label className="text-xs text-muted-foreground">
+                Shimmer Variant
+              </Label>
               <div className="flex items-center space-x-4">
-                <Skeleton variant="shimmer" className="h-12 w-12 rounded-full" />
+                <Skeleton
+                  variant="shimmer"
+                  className="h-12 w-12 rounded-full"
+                />
                 <div className="space-y-2">
                   <Skeleton variant="shimmer" className="h-4 w-[250px]" />
                   <Skeleton variant="shimmer" className="h-4 w-[200px]" />
@@ -40,12 +52,17 @@ export default function LoadingPage() {
             </div>
             <Separator />
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Card Skeleton</Label>
+              <Label className="text-xs text-muted-foreground">
+                Card Skeleton
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
                   <Card key={i}>
                     <CardContent className="pt-6 space-y-3">
-                      <Skeleton variant="shimmer" className="h-32 w-full rounded-lg" />
+                      <Skeleton
+                        variant="shimmer"
+                        className="h-32 w-full rounded-lg"
+                      />
                       <Skeleton variant="shimmer" className="h-4 w-3/4" />
                       <Skeleton variant="shimmer" className="h-4 w-1/2" />
                     </CardContent>
@@ -60,7 +77,9 @@ export default function LoadingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Progress Bars</CardTitle>
-            <CardDescription>Progress indicators with optional glow effect</CardDescription>
+            <CardDescription>
+              Progress indicators with optional glow effect
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
@@ -91,7 +110,9 @@ export default function LoadingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Spinners & Animations</CardTitle>
-            <CardDescription>Loading indicators and pulse animations</CardDescription>
+            <CardDescription>
+              Loading indicators and pulse animations
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-8 items-center">
@@ -101,7 +122,9 @@ export default function LoadingPage() {
               </div>
               <div className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-full bg-primary animate-pulse-cyan" />
-                <span className="text-xs text-muted-foreground">Pulse Cyan</span>
+                <span className="text-xs text-muted-foreground">
+                  Pulse Cyan
+                </span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-full bg-primary animate-pulse" />

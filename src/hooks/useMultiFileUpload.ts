@@ -1,5 +1,6 @@
 "use client";
 
+import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useRef, useState } from "react";
 
 /**
@@ -148,57 +149,80 @@ export function useMultiFileUpload(
         return;
       }
 
-      try {
-        // Update status to uploading using ID-based update
-        updateFileById(fileId, { status: "uploading", progress: 0 });
+      // Update status to uploading using ID-based update
+      updateFileById(fileId, { status: "uploading", progress: 0 });
 
-        const formData = new FormData();
-        formData.append("file", fileStatus.file);
-        // Use targetAlbumId from upload call, or fall back to hook-level albumId
-        const effectiveAlbumId = targetAlbumId ?? albumId;
-        if (effectiveAlbumId) {
-          formData.append("albumId", effectiveAlbumId);
-        }
+      const formData = new FormData();
+      formData.append("file", fileStatus.file);
+      // Use targetAlbumId from upload call, or fall back to hook-level albumId
+      const effectiveAlbumId = targetAlbumId ?? albumId;
+      if (effectiveAlbumId) {
+        formData.append("albumId", effectiveAlbumId);
+      }
 
-        const response = await fetch("/api/images/upload", {
-          method: "POST",
-          body: formData,
-          signal,
-        });
+      // Wrap fetch in Promise.resolve to handle synchronous throws from mocks
+      const { data: response, error: fetchError } = await tryCatch(
+        Promise.resolve().then(() =>
+          fetch("/api/images/upload", {
+            method: "POST",
+            body: formData,
+            signal,
+          })
+        ),
+      );
 
-        if (!response.ok) {
-          const error = await response.text();
-          throw new Error(error || "Upload failed");
-        }
-
-        const data = await response.json();
-
-        // Update status to completed using ID-based update
-        updateFileById(fileId, {
-          status: "completed",
-          progress: 100,
-          imageId: data.imageId,
-        });
-
-        // Call onFileComplete callback
-        if (onFileComplete && data.imageId) {
-          onFileComplete(data.imageId);
-        }
-      } catch (error) {
+      // Handle fetch errors (network errors, abort errors, etc.)
+      if (fetchError) {
         // Don't mark as failed if it was an abort - mark as cancelled instead
-        if (error instanceof Error && error.name === "AbortError") {
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
           updateFileById(fileId, { status: "cancelled" });
           return;
         }
 
-        const errorMessage = error instanceof Error
-          ? error.message
+        const errorMessage = fetchError instanceof Error
+          ? fetchError.message
           : "Upload failed";
 
         updateFileById(fileId, {
           status: "failed",
           error: errorMessage,
         });
+        return;
+      }
+
+      // Handle non-ok responses
+      if (!response.ok) {
+        const { data: errorText } = await tryCatch(response.text());
+        updateFileById(fileId, {
+          status: "failed",
+          error: errorText || "Upload failed",
+        });
+        return;
+      }
+
+      // Parse JSON response
+      const { data, error: jsonError } = await tryCatch(
+        response.json() as Promise<{ imageId: string; }>,
+      );
+
+      if (jsonError) {
+        updateFileById(fileId, {
+          status: "failed",
+          error: "Failed to parse response",
+        });
+        return;
+      }
+
+      // Update status to completed using ID-based update
+      updateFileById(fileId, {
+        status: "completed",
+        progress: 100,
+        imageId: data.imageId,
+      });
+
+      // Call onFileComplete callback
+      if (onFileComplete && data.imageId) {
+        onFileComplete(data.imageId);
       }
     },
     [albumId, onFileComplete, updateFileById],
@@ -208,7 +232,11 @@ export function useMultiFileUpload(
    * Upload all files sequentially
    */
   const uploadSequential = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
+    async (
+      fileStatuses: FileUploadStatus[],
+      signal: AbortSignal,
+      targetAlbumId?: string,
+    ) => {
       for (const fileStatus of fileStatuses) {
         if (signal.aborted) break;
         await uploadSingleFile(fileStatus, signal, targetAlbumId);
@@ -221,7 +249,11 @@ export function useMultiFileUpload(
    * Upload all files in parallel
    */
   const uploadParallel = useCallback(
-    async (fileStatuses: FileUploadStatus[], signal: AbortSignal, targetAlbumId?: string) => {
+    async (
+      fileStatuses: FileUploadStatus[],
+      signal: AbortSignal,
+      targetAlbumId?: string,
+    ) => {
       await Promise.all(
         fileStatuses.map((fileStatus) => uploadSingleFile(fileStatus, signal, targetAlbumId)),
       );
@@ -265,25 +297,24 @@ export function useMultiFileUpload(
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      try {
-        // Upload files (sequential or parallel)
-        if (parallel) {
-          await uploadParallel(fileStatuses, controller.signal, targetAlbumId);
-        } else {
-          await uploadSequential(fileStatuses, controller.signal, targetAlbumId);
-        }
+      // Upload files (sequential or parallel)
+      const uploadPromise = parallel
+        ? uploadParallel(fileStatuses, controller.signal, targetAlbumId)
+        : uploadSequential(fileStatuses, controller.signal, targetAlbumId);
 
-        // Call onUploadComplete callback
-        setFiles((currentFiles) => {
-          if (onUploadComplete) {
-            onUploadComplete(currentFiles);
-          }
-          return currentFiles;
-        });
-      } finally {
-        setIsUploading(false);
-        abortControllerRef.current = null;
-      }
+      await tryCatch(uploadPromise);
+
+      // Call onUploadComplete callback (always called after upload attempts)
+      setFiles((currentFiles) => {
+        if (onUploadComplete) {
+          onUploadComplete(currentFiles);
+        }
+        return currentFiles;
+      });
+
+      // Cleanup (equivalent to finally block)
+      setIsUploading(false);
+      abortControllerRef.current = null;
     },
     [
       maxFiles,

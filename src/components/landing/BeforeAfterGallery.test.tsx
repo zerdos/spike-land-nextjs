@@ -138,8 +138,14 @@ describe("BeforeAfterGalleryClient Component", () => {
     // Gallery cards now only show the image comparison slider, no title/description
     const slider = screen.getByTestId("comparison-slider");
     expect(slider).toBeInTheDocument();
-    expect(slider).toHaveAttribute("data-original", "https://example.com/original.jpg");
-    expect(slider).toHaveAttribute("data-enhanced", "https://example.com/enhanced.jpg");
+    expect(slider).toHaveAttribute(
+      "data-original",
+      "https://example.com/original.jpg",
+    );
+    expect(slider).toHaveAttribute(
+      "data-enhanced",
+      "https://example.com/enhanced.jpg",
+    );
   });
 });
 

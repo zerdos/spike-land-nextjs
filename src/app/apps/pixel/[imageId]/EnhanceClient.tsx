@@ -43,7 +43,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   );
 
   // Blend mode state (file upload - not stored)
-  const [blendImageData, setBlendImageData] = useState<BlendImageData | null>(null);
+  const [blendImageData, setBlendImageData] = useState<BlendImageData | null>(
+    null,
+  );
   const [showBlendDialog, setShowBlendDialog] = useState(false);
 
   const router = useRouter();
@@ -141,7 +143,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           tier,
           // For blend enhancement: pass base64 image data (not stored)
           blendSource: blendImageData
-            ? { base64: blendImageData.base64, mimeType: blendImageData.mimeType }
+            ? {
+              base64: blendImageData.base64,
+              mimeType: blendImageData.mimeType,
+            }
             : undefined,
         }),
       });
@@ -288,7 +293,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             // Security: only allow internal paths starting with /
             if (from && from.startsWith("/")) {
               router.push(from);
-            } else if (typeof window !== "undefined" && window.history.state?.idx > 0) {
+            } else if (
+              typeof window !== "undefined" && window.history.state?.idx > 0
+            ) {
               // Priority 2: Use browser history if available
               router.back();
             } else {
@@ -316,7 +323,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         </p>
       </div>
 
-      <DroppableEnhanceZone onImageDrop={handleImageDrop} disabled={activeJobId !== null}>
+      <DroppableEnhanceZone
+        onImageDrop={handleImageDrop}
+        disabled={activeJobId !== null}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
           {/* Left Column - Main Content */}
           <div className="space-y-6">
@@ -454,7 +464,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           onEnhance={handleEnhance}
           currentBalance={balance}
           isProcessing={activeJobId !== null}
-          completedVersions={completedVersions.map((job: ImageEnhancementJob) => ({
+          completedVersions={completedVersions.map((
+            job: ImageEnhancementJob,
+          ) => ({
             tier: job.tier,
             url: job.enhancedUrl || "",
           }))}

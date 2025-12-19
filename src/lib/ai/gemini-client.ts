@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import { GoogleGenAI } from "@google/genai";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
@@ -514,34 +515,40 @@ export async function analyzeImageV2(
   const ai = getGeminiClient();
   let structuredAnalysis: AnalysisDetailedResult;
 
-  try {
-    // Create analysis promise with timeout protection
-    const analysisPromise = performVisionAnalysis(
-      ai,
-      imageData,
-      mimeType,
-      config?.model,
-      config?.temperature,
-    );
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(
-          new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`),
-        );
-      }, ANALYSIS_TIMEOUT_MS);
-    });
+  // Create analysis promise with timeout protection
+  const analysisPromise = performVisionAnalysis(
+    ai,
+    imageData,
+    mimeType,
+    config?.model,
+    config?.temperature,
+  );
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(
+        new Error(`Analysis timed out after ${ANALYSIS_TIMEOUT_MS / 1000}s`),
+      );
+    }, ANALYSIS_TIMEOUT_MS);
+  });
 
-    structuredAnalysis = await Promise.race([analysisPromise, timeoutPromise]);
+  const { data: analysisResult, error: analysisError } = await tryCatch(
+    Promise.race([analysisPromise, timeoutPromise]),
+  );
+
+  if (analysisError) {
+    console.warn(
+      "Vision analysis failed, using fallback:",
+      analysisError instanceof Error
+        ? analysisError.message
+        : String(analysisError),
+    );
+    structuredAnalysis = getDefaultAnalysis();
+  } else {
+    structuredAnalysis = analysisResult;
     console.log(
       "Vision analysis successful:",
       JSON.stringify(structuredAnalysis.defects),
     );
-  } catch (error) {
-    console.warn(
-      "Vision analysis failed, using fallback:",
-      error instanceof Error ? error.message : String(error),
-    );
-    structuredAnalysis = getDefaultAnalysis();
   }
 
   // Determine quality based on defect count
@@ -694,18 +701,21 @@ export async function enhanceImageWithGemini(
 
   // Process streaming response with timeout
   const processStream = async (): Promise<Buffer> => {
-    let response;
-    try {
-      response = await ai.models.generateContentStream({
+    const { data: response, error: streamInitError } = await tryCatch(
+      ai.models.generateContentStream({
         model: DEFAULT_MODEL,
         config,
         contents,
-      });
-    } catch (error) {
-      console.error("Failed to initiate Gemini API stream:", error);
+      }),
+    );
+
+    if (streamInitError) {
+      console.error("Failed to initiate Gemini API stream:", streamInitError);
       throw new Error(
         `Failed to start image enhancement: ${
-          error instanceof Error ? error.message : "Unknown error"
+          streamInitError instanceof Error
+            ? streamInitError.message
+            : "Unknown error"
         }`,
       );
     }
@@ -731,7 +741,7 @@ export async function enhanceImageWithGemini(
 
     // Process chunks with timeout protection
     const processChunks = async (): Promise<Buffer> => {
-      try {
+      const processAllChunks = async () => {
         for await (const chunk of response) {
           // Check if we've timed out (defensive check)
           if (timedOut) {
@@ -760,13 +770,22 @@ export async function enhanceImageWithGemini(
             );
           }
         }
-      } catch (error) {
+      };
+
+      const { error: chunkError } = await tryCatch(processAllChunks());
+
+      if (chunkError) {
         if (timedOut) {
-          throw error; // Re-throw timeout error
+          throw chunkError; // Re-throw timeout error
         }
-        console.error(`Error processing stream at chunk ${chunkCount}:`, error);
+        console.error(
+          `Error processing stream at chunk ${chunkCount}:`,
+          chunkError,
+        );
         throw new Error(
-          `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          `Stream processing failed: ${
+            chunkError instanceof Error ? chunkError.message : "Unknown error"
+          }`,
         );
       }
 
@@ -790,14 +809,17 @@ export async function enhanceImageWithGemini(
     };
 
     // Race between processing and timeout, then clear timeout on success
-    try {
-      const result = await Promise.race([processChunks(), timeoutPromise]);
-      if (timeoutId) clearTimeout(timeoutId);
-      return result;
-    } catch (error) {
-      if (timeoutId) clearTimeout(timeoutId);
-      throw error;
+    const { data: result, error: raceError } = await tryCatch(
+      Promise.race([processChunks(), timeoutPromise]),
+    );
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    if (raceError) {
+      throw raceError;
     }
+
+    return result;
   };
 
   return processStream();
@@ -953,18 +975,21 @@ async function processGeminiStream(
     >;
   }[],
 ): Promise<Buffer> {
-  let response;
-  try {
-    response = await ai.models.generateContentStream({
+  const { data: response, error: streamInitError } = await tryCatch(
+    ai.models.generateContentStream({
       model: DEFAULT_MODEL,
       config,
       contents,
-    });
-  } catch (error) {
-    console.error("Failed to initiate Gemini API stream:", error);
+    }),
+  );
+
+  if (streamInitError) {
+    console.error("Failed to initiate Gemini API stream:", streamInitError);
     throw new Error(
       `Failed to start image generation: ${
-        error instanceof Error ? error.message : "Unknown error"
+        streamInitError instanceof Error
+          ? streamInitError.message
+          : "Unknown error"
       }`,
     );
   }
@@ -988,7 +1013,7 @@ async function processGeminiStream(
   });
 
   const processChunks = async (): Promise<Buffer> => {
-    try {
+    const processAllChunks = async () => {
       for await (const chunk of response) {
         if (timedOut) {
           throw new Error("Stream processing aborted due to timeout");
@@ -1017,13 +1042,22 @@ async function processGeminiStream(
           );
         }
       }
-    } catch (error) {
+    };
+
+    const { error: chunkError } = await tryCatch(processAllChunks());
+
+    if (chunkError) {
       if (timedOut) {
-        throw error;
+        throw chunkError;
       }
-      console.error(`Error processing stream at chunk ${chunkCount}:`, error);
+      console.error(
+        `Error processing stream at chunk ${chunkCount}:`,
+        chunkError,
+      );
       throw new Error(
-        `Stream processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Stream processing failed: ${
+          chunkError instanceof Error ? chunkError.message : "Unknown error"
+        }`,
       );
     }
 
@@ -1046,12 +1080,15 @@ async function processGeminiStream(
     return Buffer.concat(imageChunks);
   };
 
-  try {
-    const result = await Promise.race([processChunks(), timeoutPromise]);
-    if (timeoutId) clearTimeout(timeoutId);
-    return result;
-  } catch (error) {
-    if (timeoutId) clearTimeout(timeoutId);
-    throw error;
+  const { data: result, error: raceError } = await tryCatch(
+    Promise.race([processChunks(), timeoutPromise]),
+  );
+
+  if (timeoutId) clearTimeout(timeoutId);
+
+  if (raceError) {
+    throw raceError;
   }
+
+  return result;
 }

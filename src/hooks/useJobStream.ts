@@ -1,6 +1,8 @@
 import type { JobStatus, PipelineStage } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { tryCatchSync } from "@/lib/try-catch";
+
 interface JobStreamData {
   type: "status" | "error" | "connected";
   status?: JobStatus;
@@ -60,43 +62,46 @@ export function useJobStream({
 
   const handleMessage = useCallback(
     (event: MessageEvent) => {
-      try {
-        const data: JobStreamData = JSON.parse(event.data);
+      const result = tryCatchSync<JobStreamData>(() => JSON.parse(event.data));
 
-        if (data.type === "connected") {
-          setIsConnected(true);
-          setConnectionError(null);
-          return;
+      if (result.error) {
+        console.error("Failed to parse SSE message:", result.error);
+        return;
+      }
+
+      const data = result.data;
+
+      if (data.type === "connected") {
+        setIsConnected(true);
+        setConnectionError(null);
+        return;
+      }
+
+      if (data.type === "error") {
+        setConnectionError(data.message || "Unknown error");
+        onErrorRef.current?.(data.message || "Unknown error");
+        return;
+      }
+
+      if (data.type === "status" && data.status && jobId) {
+        const jobData: Job = {
+          id: jobId,
+          status: data.status,
+          currentStage: data.currentStage || null,
+          enhancedUrl: data.enhancedUrl || null,
+          enhancedWidth: data.enhancedWidth || null,
+          enhancedHeight: data.enhancedHeight || null,
+          errorMessage: data.errorMessage || null,
+        };
+
+        setJob(jobData);
+        onStatusChangeRef.current?.(data.status);
+
+        if (data.status === "COMPLETED") {
+          onCompleteRef.current?.(jobData);
+        } else if (data.status === "FAILED") {
+          onErrorRef.current?.(data.errorMessage || "Enhancement failed");
         }
-
-        if (data.type === "error") {
-          setConnectionError(data.message || "Unknown error");
-          onErrorRef.current?.(data.message || "Unknown error");
-          return;
-        }
-
-        if (data.type === "status" && data.status && jobId) {
-          const jobData: Job = {
-            id: jobId,
-            status: data.status,
-            currentStage: data.currentStage || null,
-            enhancedUrl: data.enhancedUrl || null,
-            enhancedWidth: data.enhancedWidth || null,
-            enhancedHeight: data.enhancedHeight || null,
-            errorMessage: data.errorMessage || null,
-          };
-
-          setJob(jobData);
-          onStatusChangeRef.current?.(data.status);
-
-          if (data.status === "COMPLETED") {
-            onCompleteRef.current?.(jobData);
-          } else if (data.status === "FAILED") {
-            onErrorRef.current?.(data.errorMessage || "Enhancement failed");
-          }
-        }
-      } catch (error) {
-        console.error("Failed to parse SSE message:", error);
       }
     },
     [jobId], // Only depends on jobId now, refs are stable

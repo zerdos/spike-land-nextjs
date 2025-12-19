@@ -46,7 +46,13 @@ interface CampaignsResponse {
   pageSize: number;
 }
 
-type SortField = "name" | "platform" | "visitors" | "signups" | "conversionRate" | "revenue";
+type SortField =
+  | "name"
+  | "platform"
+  | "visitors"
+  | "signups"
+  | "conversionRate"
+  | "revenue";
 type SortDirection = "asc" | "desc";
 type PlatformFilter = "all" | "FACEBOOK" | "GOOGLE_ADS";
 
@@ -61,7 +67,9 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [datePreset, setDatePreset] = useState<DateRangePreset>("30d");
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromPreset("30d"));
+  const [dateRange, setDateRange] = useState<DateRange>(
+    getDateRangeFromPreset("30d"),
+  );
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
   const [sortField, setSortField] = useState<SortField>("revenue");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -85,7 +93,9 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
         params.set("platform", platformFilter);
       }
 
-      const response = await fetch(`/api/admin/marketing/analytics/campaigns?${params}`);
+      const response = await fetch(
+        `/api/admin/marketing/analytics/campaigns?${params}`,
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch campaigns data");
@@ -170,10 +180,14 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
   const getPlatformBadge = (platform: string) => {
-    if (platform === "FACEBOOK" || platform.toLowerCase().includes("facebook")) {
+    if (
+      platform === "FACEBOOK" || platform.toLowerCase().includes("facebook")
+    ) {
       return <Badge variant="default" className="bg-blue-600">FB</Badge>;
     }
-    if (platform === "GOOGLE_ADS" || platform.toLowerCase().includes("google")) {
+    if (
+      platform === "GOOGLE_ADS" || platform.toLowerCase().includes("google")
+    ) {
       return <Badge variant="default" className="bg-yellow-600">Google</Badge>;
     }
     return <Badge variant="outline">{platform}</Badge>;
@@ -296,8 +310,12 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
                       ? (
                         data.campaigns.map((campaign) => (
                           <TableRow key={campaign.id}>
-                            <TableCell className="font-medium">{campaign.name}</TableCell>
-                            <TableCell>{getPlatformBadge(campaign.platform)}</TableCell>
+                            <TableCell className="font-medium">
+                              {campaign.name}
+                            </TableCell>
+                            <TableCell>
+                              {getPlatformBadge(campaign.platform)}
+                            </TableCell>
                             <TableCell className="text-right">
                               {campaign.visitors.toLocaleString()}
                             </TableCell>
@@ -315,7 +333,10 @@ export function CampaignsTab({ className }: CampaignsTabProps) {
                       )
                       : (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                          <TableCell
+                            colSpan={6}
+                            className="text-center text-muted-foreground py-8"
+                          >
                             No campaigns found for the selected filters.
                           </TableCell>
                         </TableRow>

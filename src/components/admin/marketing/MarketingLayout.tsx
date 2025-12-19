@@ -52,7 +52,9 @@ const TABS = [
   { href: "/admin/marketing/accounts", label: "Accounts", exact: false },
 ];
 
-export function MarketingLayout({ initialData, children }: MarketingLayoutProps) {
+export function MarketingLayout(
+  { initialData, children }: MarketingLayoutProps,
+) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [data, setData] = useState<MarketingData>(initialData);
@@ -161,7 +163,9 @@ export function MarketingLayout({ initialData, children }: MarketingLayoutProps)
               variant="outline"
               size="sm"
               onClick={() => setIsPolling(!isPolling)}
-              aria-label={isPolling ? "Pause auto-refresh" : "Resume auto-refresh"}
+              aria-label={isPolling
+                ? "Pause auto-refresh"
+                : "Resume auto-refresh"}
             >
               {isPolling ? "Pause" : "Resume"}
             </Button>
@@ -171,7 +175,9 @@ export function MarketingLayout({ initialData, children }: MarketingLayoutProps)
               variant="outline"
               size="sm"
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -244,7 +250,9 @@ interface MarketingDataContextType {
   refreshAccounts: () => Promise<void>;
 }
 
-const MarketingDataContext = createContext<MarketingDataContextType | null>(null);
+const MarketingDataContext = createContext<MarketingDataContextType | null>(
+  null,
+);
 
 export function useMarketingData() {
   const context = useContext(MarketingDataContext);

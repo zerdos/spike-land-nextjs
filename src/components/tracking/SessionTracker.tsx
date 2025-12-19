@@ -301,7 +301,8 @@ export function SessionTracker() {
   const handleScroll = useCallback(() => {
     if (!hasConsent() || !sessionIdRef.current) return;
 
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollHeight = document.documentElement.scrollHeight -
+      window.innerHeight;
     if (scrollHeight <= 0) return;
 
     const scrollPercentage = Math.round((window.scrollY / scrollHeight) * 100);

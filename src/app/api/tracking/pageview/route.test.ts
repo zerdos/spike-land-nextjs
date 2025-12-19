@@ -49,11 +49,14 @@ describe("POST /api/tracking/pageview", () => {
 
   describe("Request validation", () => {
     it("should return 400 for invalid JSON body", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "not valid json {",
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "not valid json {",
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -63,12 +66,15 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for missing sessionId", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -79,12 +85,15 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for missing path", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -95,13 +104,16 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for empty sessionId", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "",
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -111,13 +123,16 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for empty path", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -127,13 +142,16 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for sessionId exceeding max length", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "x".repeat(129),
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "x".repeat(129),
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -143,13 +161,16 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for path exceeding max length", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/".concat("x".repeat(2049)),
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/".concat("x".repeat(2049)),
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -159,14 +180,17 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for invalid timeOnPage", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-          timeOnPage: -1,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+            timeOnPage: -1,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -176,14 +200,17 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for timeOnPage exceeding max (24 hours)", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-          timeOnPage: 86401, // 24 hours + 1 second
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+            timeOnPage: 86401, // 24 hours + 1 second
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -193,14 +220,17 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for invalid scrollDepth (below 0)", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-          scrollDepth: -1,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+            scrollDepth: -1,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -210,14 +240,17 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 400 for invalid scrollDepth (above 100)", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-          scrollDepth: 101,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+            scrollDepth: 101,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -227,16 +260,19 @@ describe("POST /api/tracking/pageview", () => {
     });
 
     it("should return 413 for oversized request", async () => {
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        headers: {
-          "content-length": "3000",
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          headers: {
+            "content-length": "3000",
+          },
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
         },
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -254,13 +290,16 @@ describe("POST /api/tracking/pageview", () => {
         resetAt: Date.now() + 30000,
       });
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -297,16 +336,19 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockResolvedValue(undefined);
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        headers: {
-          "x-forwarded-for": "10.0.0.1, 192.168.1.1",
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          headers: {
+            "x-forwarded-for": "10.0.0.1, 192.168.1.1",
+          },
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
         },
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      );
 
       await POST(request);
 
@@ -342,16 +384,19 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockResolvedValue(undefined);
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        headers: {
-          "x-real-ip": "10.0.0.50",
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          headers: {
+            "x-real-ip": "10.0.0.50",
+          },
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
         },
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      );
 
       await POST(request);
 
@@ -387,13 +432,16 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockResolvedValue(undefined);
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
+        },
+      );
 
       await POST(request);
 
@@ -408,13 +456,16 @@ describe("POST /api/tracking/pageview", () => {
     it("should return 404 for non-existent session", async () => {
       vi.mocked(prisma.visitorSession.findUnique).mockResolvedValue(null);
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "non-existent-session",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "non-existent-session",
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -458,16 +509,19 @@ describe("POST /api/tracking/pageview", () => {
         }
       });
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-          title: "About Us",
-          timeOnPage: 45,
-          scrollDepth: 75,
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+            title: "About Us",
+            timeOnPage: 45,
+            scrollDepth: 75,
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -509,13 +563,16 @@ describe("POST /api/tracking/pageview", () => {
         }
       });
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-456",
-          path: "/pricing",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-456",
+            path: "/pricing",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -659,13 +716,16 @@ describe("POST /api/tracking/pageview", () => {
         new Error("Database connection failed"),
       );
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -702,13 +762,16 @@ describe("POST /api/tracking/pageview", () => {
         new Error("Transaction failed"),
       );
 
-      const request = new NextRequest("http://localhost/api/tracking/pageview", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "session-123",
-          path: "/about",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/tracking/pageview",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: "session-123",
+            path: "/about",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();

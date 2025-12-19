@@ -175,13 +175,33 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       // Mock current period sessions (called twice: once for metrics, once for daily)
       vi.mocked(prisma.visitorSession.findMany)
         .mockResolvedValueOnce([
-          { id: "s1", visitorId: "v1", pageViewCount: 5, sessionStart: new Date("2024-01-15") },
-          { id: "s2", visitorId: "v2", pageViewCount: 3, sessionStart: new Date("2024-01-15") },
-          { id: "s3", visitorId: "v1", pageViewCount: 2, sessionStart: new Date("2024-01-16") },
+          {
+            id: "s1",
+            visitorId: "v1",
+            pageViewCount: 5,
+            sessionStart: new Date("2024-01-15"),
+          },
+          {
+            id: "s2",
+            visitorId: "v2",
+            pageViewCount: 3,
+            sessionStart: new Date("2024-01-15"),
+          },
+          {
+            id: "s3",
+            visitorId: "v1",
+            pageViewCount: 2,
+            sessionStart: new Date("2024-01-16"),
+          },
         ])
         // Previous period sessions
         .mockResolvedValueOnce([
-          { id: "s4", visitorId: "v3", pageViewCount: 4, sessionStart: new Date("2024-01-01") },
+          {
+            id: "s4",
+            visitorId: "v3",
+            pageViewCount: 4,
+            sessionStart: new Date("2024-01-01"),
+          },
         ])
         // Daily metrics query
         .mockResolvedValueOnce([
@@ -280,7 +300,12 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       // Mock all 4 visitorSession queries
       vi.mocked(prisma.visitorSession.findMany)
         .mockResolvedValueOnce([
-          { id: "s1", visitorId: "v1", pageViewCount: 5, sessionStart: new Date("2024-01-15") },
+          {
+            id: "s1",
+            visitorId: "v1",
+            pageViewCount: 5,
+            sessionStart: new Date("2024-01-15"),
+          },
         ])
         .mockResolvedValueOnce([]) // Previous period empty
         .mockResolvedValueOnce([

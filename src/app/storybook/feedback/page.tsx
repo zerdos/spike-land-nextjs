@@ -18,7 +18,9 @@ export default function FeedbackPage() {
         <Card>
           <CardHeader>
             <CardTitle>Toast Notifications</CardTitle>
-            <CardDescription>Click the buttons to see different toast variants</CardDescription>
+            <CardDescription>
+              Click the buttons to see different toast variants
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">
@@ -28,7 +30,10 @@ export default function FeedbackPage() {
               >
                 Success Toast
               </Button>
-              <Button variant="outline" onClick={() => toast.error("Failed to process image")}>
+              <Button
+                variant="outline"
+                onClick={() => toast.error("Failed to process image")}
+              >
                 Error Toast
               </Button>
               <Button
@@ -37,7 +42,10 @@ export default function FeedbackPage() {
               >
                 Info Toast
               </Button>
-              <Button variant="outline" onClick={() => toast.warning("Low token balance")}>
+              <Button
+                variant="outline"
+                onClick={() => toast.warning("Low token balance")}
+              >
                 Warning Toast
               </Button>
               <Button
@@ -65,15 +73,21 @@ export default function FeedbackPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg bg-success border border-success">
                 <p className="text-success font-medium">Success State</p>
-                <p className="text-sm text-muted-foreground">bg-success, border-success</p>
+                <p className="text-sm text-muted-foreground">
+                  bg-success, border-success
+                </p>
               </div>
               <div className="p-4 rounded-lg bg-warning border border-warning">
                 <p className="text-warning font-medium">Warning State</p>
-                <p className="text-sm text-muted-foreground">bg-warning, border-warning</p>
+                <p className="text-sm text-muted-foreground">
+                  bg-warning, border-warning
+                </p>
               </div>
               <div className="p-4 rounded-lg bg-destructive/10 border border-destructive">
                 <p className="text-destructive font-medium">Error State</p>
-                <p className="text-sm text-muted-foreground">bg-destructive/10</p>
+                <p className="text-sm text-muted-foreground">
+                  bg-destructive/10
+                </p>
               </div>
             </div>
           </CardContent>

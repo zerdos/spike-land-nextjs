@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
 /**
@@ -115,39 +116,57 @@ export function useUserAlbums(
   const [error, setError] = useState<Error | null>(null);
 
   const fetchAlbums = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      // Build query params if privacy filter is provided
-      const params = new URLSearchParams();
-      if (privacy) {
-        params.set("privacy", privacy);
-      }
+    // Build query params if privacy filter is provided
+    const params = new URLSearchParams();
+    if (privacy) {
+      params.set("privacy", privacy);
+    }
 
-      const url = `/api/albums${params.toString() ? `?${params.toString()}` : ""}`;
-      const response = await fetch(url);
+    const url = `/api/albums${params.toString() ? `?${params.toString()}` : ""}`;
 
-      if (!response.ok) {
-        // Handle authentication errors gracefully
-        if (response.status === 401) {
-          throw new Error("You must be logged in to view albums");
-        }
-        throw new Error(`Failed to fetch albums: ${response.statusText}`);
-      }
+    const { data: response, error: fetchError } = await tryCatch(fetch(url));
 
-      const data: AlbumsResponse = await response.json();
-      setAlbums(data.albums);
-    } catch (err) {
-      const errorMessage = err instanceof Error
-        ? err.message
+    if (fetchError) {
+      const errorMessage = fetchError instanceof Error
+        ? fetchError.message
         : "An unknown error occurred";
       setError(new Error(errorMessage));
-      // Reset albums on error
       setAlbums([]);
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    if (!response.ok) {
+      // Handle authentication errors gracefully
+      if (response.status === 401) {
+        setError(new Error("You must be logged in to view albums"));
+      } else {
+        setError(new Error(`Failed to fetch albums: ${response.statusText}`));
+      }
+      setAlbums([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const { data: jsonData, error: jsonError } = await tryCatch(
+      response.json() as Promise<AlbumsResponse>,
+    );
+
+    if (jsonError) {
+      const errorMessage = jsonError instanceof Error
+        ? jsonError.message
+        : "An unknown error occurred";
+      setError(new Error(errorMessage));
+      setAlbums([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setAlbums(jsonData.albums);
+    setIsLoading(false);
   }, [privacy]);
 
   // Fetch on mount and when dependencies change (if enabled)

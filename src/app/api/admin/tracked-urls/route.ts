@@ -8,19 +8,41 @@
 import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Helper function to handle errors consistently across all handlers
+ */
+function handleError(error: Error, logMessage: string): NextResponse {
+  console.error(logMessage, error);
+  if (error.message.includes("Forbidden")) {
+    return NextResponse.json({ error: error.message }, { status: 403 });
+  }
+  return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+}
+
 export async function GET() {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError) {
+    return handleError(authError, "Failed to fetch tracked paths:");
+  }
 
-    await requireAdminByUserId(session.user.id);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const trackedPaths = await prisma.trackedUrl.findMany({
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
+
+  if (adminError) {
+    return handleError(adminError, "Failed to fetch tracked paths:");
+  }
+
+  const { data: trackedPaths, error: fetchError } = await tryCatch(
+    prisma.trackedUrl.findMany({
       where: { isActive: true },
       include: {
         createdBy: {
@@ -33,91 +55,104 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    }),
+  );
 
-    type TrackedPathItem = {
-      id: string;
-      path: string;
-      label: string | null;
-      createdAt: Date;
-      createdBy: { name: string | null; email: string | null; };
-    };
-
-    return NextResponse.json({
-      trackedPaths: trackedPaths.map((p: TrackedPathItem) => ({
-        id: p.id,
-        path: p.path,
-        label: p.label,
-        createdAt: p.createdAt.toISOString(),
-        createdBy: {
-          name: p.createdBy.name,
-          email: p.createdBy.email,
-        },
-      })),
-    });
-  } catch (error) {
-    console.error("Failed to fetch tracked paths:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+  if (fetchError) {
+    return handleError(fetchError, "Failed to fetch tracked paths:");
   }
+
+  type TrackedPathItem = {
+    id: string;
+    path: string;
+    label: string | null;
+    createdAt: Date;
+    createdBy: { name: string | null; email: string | null; };
+  };
+
+  return NextResponse.json({
+    trackedPaths: trackedPaths.map((p: TrackedPathItem) => ({
+      id: p.id,
+      path: p.path,
+      label: p.label,
+      createdAt: p.createdAt.toISOString(),
+      createdBy: {
+        name: p.createdBy.name,
+        email: p.createdBy.email,
+      },
+    })),
+  });
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError) {
+    return handleError(authError, "Failed to create tracked path:");
+  }
 
-    await requireAdminByUserId(session.user.id);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const body = await request.json();
-    const { path, label } = body;
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
 
-    // Validate input
-    if (!path) {
-      return NextResponse.json(
-        { error: "Missing required field: path" },
-        { status: 400 },
-      );
-    }
+  if (adminError) {
+    return handleError(adminError, "Failed to create tracked path:");
+  }
 
-    // Validate path format - must start with /
-    if (!path.startsWith("/")) {
-      return NextResponse.json(
-        { error: "Path must start with /" },
-        { status: 400 },
-      );
-    }
+  const { data: body, error: parseError } = await tryCatch(request.json());
 
-    // Reject full URLs - only paths allowed
-    if (path.includes("://")) {
-      return NextResponse.json(
-        { error: "Provide a path (e.g., /custom-page), not a full URL" },
-        { status: 400 },
-      );
-    }
+  if (parseError) {
+    return handleError(parseError, "Failed to create tracked path:");
+  }
 
-    // Check if path already exists
-    const existing = await prisma.trackedUrl.findUnique({
+  const { path, label } = body;
+
+  // Validate input
+  if (!path) {
+    return NextResponse.json(
+      { error: "Missing required field: path" },
+      { status: 400 },
+    );
+  }
+
+  // Validate path format - must start with /
+  if (!path.startsWith("/")) {
+    return NextResponse.json(
+      { error: "Path must start with /" },
+      { status: 400 },
+    );
+  }
+
+  // Reject full URLs - only paths allowed
+  if (path.includes("://")) {
+    return NextResponse.json(
+      { error: "Provide a path (e.g., /custom-page), not a full URL" },
+      { status: 400 },
+    );
+  }
+
+  // Check if path already exists
+  const { data: existing, error: findError } = await tryCatch(
+    prisma.trackedUrl.findUnique({
       where: { path },
-    });
+    }),
+  );
 
-    if (existing) {
-      return NextResponse.json(
-        { error: "Path already tracked" },
-        { status: 409 },
-      );
-    }
+  if (findError) {
+    return handleError(findError, "Failed to create tracked path:");
+  }
 
-    // Create tracked path
-    const trackedPath = await prisma.trackedUrl.create({
+  if (existing) {
+    return NextResponse.json({ error: "Path already tracked" }, { status: 409 });
+  }
+
+  // Create tracked path
+  const { data: trackedPath, error: createError } = await tryCatch(
+    prisma.trackedUrl.create({
       data: {
         path,
         label: label || null,
@@ -131,128 +166,154 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    });
+    }),
+  );
 
-    return NextResponse.json({
-      trackedPath: {
-        id: trackedPath.id,
-        path: trackedPath.path,
-        label: trackedPath.label,
-        createdAt: trackedPath.createdAt.toISOString(),
-        createdBy: {
-          name: trackedPath.createdBy.name,
-          email: trackedPath.createdBy.email,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Failed to create tracked path:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+  if (createError) {
+    return handleError(createError, "Failed to create tracked path:");
   }
+
+  return NextResponse.json({
+    trackedPath: {
+      id: trackedPath.id,
+      path: trackedPath.path,
+      label: trackedPath.label,
+      createdAt: trackedPath.createdAt.toISOString(),
+      createdBy: {
+        name: trackedPath.createdBy.name,
+        email: trackedPath.createdBy.email,
+      },
+    },
+  });
 }
 
 export async function PATCH(request: NextRequest) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError) {
+    return handleError(authError, "Failed to toggle visibility:");
+  }
 
-    await requireAdminByUserId(session.user.id);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const body = await request.json();
-    const { path, isActive } = body;
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
 
-    if (!path || typeof isActive !== "boolean") {
-      return NextResponse.json(
-        { error: "Missing required fields: path, isActive" },
-        { status: 400 },
-      );
-    }
+  if (adminError) {
+    return handleError(adminError, "Failed to toggle visibility:");
+  }
 
-    // Check if tracked path already exists
-    const existing = await prisma.trackedUrl.findUnique({
+  const { data: body, error: parseError } = await tryCatch(request.json());
+
+  if (parseError) {
+    return handleError(parseError, "Failed to toggle visibility:");
+  }
+
+  const { path, isActive } = body;
+
+  if (!path || typeof isActive !== "boolean") {
+    return NextResponse.json(
+      { error: "Missing required fields: path, isActive" },
+      { status: 400 },
+    );
+  }
+
+  // Check if tracked path already exists
+  const { data: existing, error: findError } = await tryCatch(
+    prisma.trackedUrl.findUnique({
       where: { path },
-    });
+    }),
+  );
 
-    let trackedPath;
+  if (findError) {
+    return handleError(findError, "Failed to toggle visibility:");
+  }
 
-    if (existing) {
-      // Update existing entry
-      trackedPath = await prisma.trackedUrl.update({
+  let trackedPath;
+
+  if (existing) {
+    // Update existing entry
+    const { data: updated, error: updateError } = await tryCatch(
+      prisma.trackedUrl.update({
         where: { path },
         data: { isActive },
-      });
-    } else {
-      // Create new entry (for built-in sitemap paths being hidden for first time)
-      trackedPath = await prisma.trackedUrl.create({
+      }),
+    );
+
+    if (updateError) {
+      return handleError(updateError, "Failed to toggle visibility:");
+    }
+
+    trackedPath = updated;
+  } else {
+    // Create new entry (for built-in sitemap paths being hidden for first time)
+    const { data: created, error: createError } = await tryCatch(
+      prisma.trackedUrl.create({
         data: {
           path,
           isActive,
           createdById: session.user.id,
         },
-      });
+      }),
+    );
+
+    if (createError) {
+      return handleError(createError, "Failed to toggle visibility:");
     }
 
-    return NextResponse.json({
-      trackedPath: {
-        id: trackedPath.id,
-        path: trackedPath.path,
-        isActive: trackedPath.isActive,
-      },
-    });
-  } catch (error) {
-    console.error("Failed to toggle visibility:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    trackedPath = created;
   }
+
+  return NextResponse.json({
+    trackedPath: {
+      id: trackedPath.id,
+      path: trackedPath.path,
+      isActive: trackedPath.isActive,
+    },
+  });
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const session = await auth();
+  const { data: session, error: authError } = await tryCatch(auth());
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (authError) {
+    return handleError(authError, "Failed to delete tracked path:");
+  }
 
-    await requireAdminByUserId(session.user.id);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+  );
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "Tracked URL ID required" },
-        { status: 400 },
-      );
-    }
+  if (adminError) {
+    return handleError(adminError, "Failed to delete tracked path:");
+  }
 
-    await prisma.trackedUrl.delete({
-      where: { id },
-    });
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Failed to delete tracked path:", error);
-    if (error instanceof Error && error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
+  if (!id) {
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+      { error: "Tracked URL ID required" },
+      { status: 400 },
     );
   }
+
+  const { error: deleteError } = await tryCatch(
+    prisma.trackedUrl.delete({
+      where: { id },
+    }),
+  );
+
+  if (deleteError) {
+    return handleError(deleteError, "Failed to delete tracked path:");
+  }
+
+  return NextResponse.json({ success: true });
 }

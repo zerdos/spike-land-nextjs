@@ -13,12 +13,36 @@ import { useState } from "react";
 
 // Sample items with varying heights for masonry demo
 const masonryItems = [
-  { id: 1, height: "h-48", color: "bg-gradient-to-br from-cyan-500/20 to-blue-500/20" },
-  { id: 2, height: "h-32", color: "bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20" },
-  { id: 3, height: "h-56", color: "bg-gradient-to-br from-amber-500/20 to-orange-500/20" },
-  { id: 4, height: "h-40", color: "bg-gradient-to-br from-emerald-500/20 to-green-500/20" },
-  { id: 5, height: "h-48", color: "bg-gradient-to-br from-violet-500/20 to-purple-500/20" },
-  { id: 6, height: "h-36", color: "bg-gradient-to-br from-rose-500/20 to-red-500/20" },
+  {
+    id: 1,
+    height: "h-48",
+    color: "bg-gradient-to-br from-cyan-500/20 to-blue-500/20",
+  },
+  {
+    id: 2,
+    height: "h-32",
+    color: "bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20",
+  },
+  {
+    id: 3,
+    height: "h-56",
+    color: "bg-gradient-to-br from-amber-500/20 to-orange-500/20",
+  },
+  {
+    id: 4,
+    height: "h-40",
+    color: "bg-gradient-to-br from-emerald-500/20 to-green-500/20",
+  },
+  {
+    id: 5,
+    height: "h-48",
+    color: "bg-gradient-to-br from-violet-500/20 to-purple-500/20",
+  },
+  {
+    id: 6,
+    height: "h-36",
+    color: "bg-gradient-to-br from-rose-500/20 to-red-500/20",
+  },
 ];
 
 // Sample images for text overlay demo
@@ -62,7 +86,9 @@ export default function LayoutPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">Zoom Level: {zoomLevel}</Label>
+              <Label className="text-xs text-muted-foreground">
+                Zoom Level: {zoomLevel}
+              </Label>
               <ZoomSlider value={zoomLevel} onChange={setZoomLevel} />
             </div>
             <MasonryGrid zoomLevel={zoomLevel}>
@@ -71,7 +97,9 @@ export default function LayoutPage() {
                   key={item.id}
                   className={`${item.height} ${item.color} rounded-lg border border-border flex items-center justify-center`}
                 >
-                  <span className="text-sm text-muted-foreground">Item {item.id}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Item {item.id}
+                  </span>
                 </div>
               ))}
             </MasonryGrid>
@@ -93,7 +121,9 @@ export default function LayoutPage() {
                   key={item}
                   className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-border flex items-center justify-center"
                 >
-                  <span className="text-sm text-muted-foreground">Square {item}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Square {item}
+                  </span>
                 </div>
               ))}
             </MasonryGridUniform>
@@ -112,10 +142,15 @@ export default function LayoutPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Position Variants</Label>
+              <Label className="text-xs text-muted-foreground">
+                Position Variants
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {overlayImages.map((image) => (
-                  <div key={image.id} className="relative rounded-lg overflow-hidden">
+                  <div
+                    key={image.id}
+                    className="relative rounded-lg overflow-hidden"
+                  >
                     <Image
                       src={image.src}
                       alt={image.alt}
@@ -123,7 +158,9 @@ export default function LayoutPage() {
                       height={300}
                       className="w-full h-48 object-cover"
                     />
-                    <TextOverlay position="bottom-left">{image.label}</TextOverlay>
+                    <TextOverlay position="bottom-left">
+                      {image.label}
+                    </TextOverlay>
                   </div>
                 ))}
               </div>
@@ -132,7 +169,9 @@ export default function LayoutPage() {
             <Separator />
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">All Position Options</Label>
+              <Label className="text-xs text-muted-foreground">
+                All Position Options
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/30 to-fuchsia-500/30" />
@@ -152,7 +191,9 @@ export default function LayoutPage() {
                 </div>
                 <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
                   <div className="absolute inset-0 bg-gradient-to-br from-rose-500/30 to-red-500/30" />
-                  <TextOverlay position="bottom-right">Bottom Right</TextOverlay>
+                  <TextOverlay position="bottom-right">
+                    Bottom Right
+                  </TextOverlay>
                 </div>
                 <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-indigo-500/30" />
@@ -181,7 +222,9 @@ export default function LayoutPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">Default Zoom Slider</Label>
+              <Label className="text-xs text-muted-foreground">
+                Default Zoom Slider
+              </Label>
               <div className="flex items-center gap-4">
                 <ZoomSlider />
                 <Badge variant="outline">Persists to localStorage</Badge>
@@ -191,7 +234,9 @@ export default function LayoutPage() {
             <Separator />
 
             <div className="space-y-4">
-              <Label className="text-xs text-muted-foreground">Controlled Zoom Slider</Label>
+              <Label className="text-xs text-muted-foreground">
+                Controlled Zoom Slider
+              </Label>
               <div className="flex items-center gap-4">
                 <ZoomSlider value={zoomLevel} onChange={setZoomLevel} />
                 <Badge variant="secondary">Level: {zoomLevel}</Badge>
@@ -202,7 +247,9 @@ export default function LayoutPage() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Zoom State Synchronization</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Zoom State Synchronization
+                </Label>
                 <span className="text-[10px] text-muted-foreground/70">
                   Slider and buttons stay in sync
                 </span>
@@ -220,7 +267,11 @@ export default function LayoutPage() {
                   >
                     <span className="text-2xl font-bold">{level}</span>
                     <span className="block text-xs text-muted-foreground mt-1">
-                      {level === 1 ? "Smallest" : level === 5 ? "Largest" : `Level ${level}`}
+                      {level === 1
+                        ? "Smallest"
+                        : level === 5
+                        ? "Largest"
+                        : `Level ${level}`}
                     </span>
                   </button>
                 ))}

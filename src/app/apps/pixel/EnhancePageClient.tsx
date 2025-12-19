@@ -85,7 +85,10 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
               </span>
               <span>
                 Create an album using the{" "}
-                <strong className="text-foreground">&quot;New Album&quot;</strong> button above
+                <strong className="text-foreground">
+                  &quot;New Album&quot;
+                </strong>{" "}
+                button above
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -98,7 +101,9 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
                 3
               </span>
-              <span>Drag and drop images into the album, or use the upload button</span>
+              <span>
+                Drag and drop images into the album, or use the upload button
+              </span>
             </li>
           </ol>
         </div>

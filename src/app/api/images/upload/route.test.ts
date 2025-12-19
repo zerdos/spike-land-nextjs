@@ -41,7 +41,10 @@ vi.mock("@/lib/rate-limiter", () => ({
 const { mockTokenBalanceManager } = vi.hoisted(() => ({
   mockTokenBalanceManager: {
     hasEnoughTokens: vi.fn().mockResolvedValue(true),
-    getBalance: vi.fn().mockResolvedValue({ balance: 100, lifetimeEarned: 100 }),
+    getBalance: vi.fn().mockResolvedValue({
+      balance: 100,
+      lifetimeEarned: 100,
+    }),
     consumeTokens: vi.fn().mockResolvedValue({ success: true, balance: 98 }),
     refundTokens: vi.fn().mockResolvedValue({ success: true, balance: 100 }),
   },
@@ -174,9 +177,18 @@ describe("POST /api/images/upload", () => {
     vi.clearAllMocks();
     // Reset token manager mocks to defaults
     mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
-    mockTokenBalanceManager.getBalance.mockResolvedValue({ balance: 100, lifetimeEarned: 100 });
-    mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true, balance: 98 });
-    mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true, balance: 100 });
+    mockTokenBalanceManager.getBalance.mockResolvedValue({
+      balance: 100,
+      lifetimeEarned: 100,
+    });
+    mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      success: true,
+      balance: 98,
+    });
+    mockTokenBalanceManager.refundTokens.mockResolvedValue({
+      success: true,
+      balance: 100,
+    });
     // Reset album mock to default
     mockPrisma.album.findFirst.mockResolvedValue({
       id: "album-123",
@@ -529,7 +541,10 @@ describe("POST /api/images/upload", () => {
         success: false,
         error: "Insufficient tokens",
       });
-      mockTokenBalanceManager.getBalance.mockResolvedValueOnce({ balance: 0, lifetimeEarned: 0 });
+      mockTokenBalanceManager.getBalance.mockResolvedValueOnce({
+        balance: 0,
+        lifetimeEarned: 0,
+      });
 
       const req = createMockRequest(createMockFile(), "album-123");
       const res = await POST(req);

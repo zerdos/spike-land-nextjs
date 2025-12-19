@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 // API Key Format: PREFIX_<32 random bytes base64url encoded>
@@ -150,14 +151,13 @@ export async function validateApiKey(
   const now = Date.now();
   const lastUsed = apiKey.lastUsedAt?.getTime() ?? 0;
   if (now - lastUsed > LAST_USED_UPDATE_THRESHOLD_MS) {
-    prisma.apiKey
-      .update({
+    // Fire-and-forget: tryCatch handles errors silently (non-critical update)
+    void tryCatch(
+      prisma.apiKey.update({
         where: { id: apiKey.id },
         data: { lastUsedAt: new Date() },
-      })
-      .catch(() => {
-        // Ignore errors for non-critical update
-      });
+      }),
+    );
   }
 
   return {

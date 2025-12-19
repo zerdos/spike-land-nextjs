@@ -77,7 +77,10 @@ export function AccountsTab({ className }: AccountsTabProps) {
         });
       }
     } catch {
-      setNotification({ type: "error", message: "Failed to disconnect account" });
+      setNotification({
+        type: "error",
+        message: "Failed to disconnect account",
+      });
     }
   };
 
@@ -114,10 +117,14 @@ export function AccountsTab({ className }: AccountsTabProps) {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Accounts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Accounts
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.totalAccounts}</div>
+            <div className="text-2xl font-bold">
+              {data.summary.totalAccounts}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -144,7 +151,9 @@ export function AccountsTab({ className }: AccountsTabProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Campaigns
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -219,9 +228,13 @@ export function AccountsTab({ className }: AccountsTabProps) {
                     </div>
                     <div className="flex items-center gap-4">
                       <Badge
-                        variant={account.tokenStatus === "valid" ? "default" : "destructive"}
+                        variant={account.tokenStatus === "valid"
+                          ? "default"
+                          : "destructive"}
                       >
-                        {account.tokenStatus === "valid" ? "Connected" : "Expired"}
+                        {account.tokenStatus === "valid"
+                          ? "Connected"
+                          : "Expired"}
                       </Badge>
                       <Button
                         variant="ghost"
@@ -269,7 +282,11 @@ export function AccountsTab({ className }: AccountsTabProps) {
               </p>
             )
             : campaignsLoading
-            ? <p className="text-muted-foreground text-sm">Loading campaigns...</p>
+            ? (
+              <p className="text-muted-foreground text-sm">
+                Loading campaigns...
+              </p>
+            )
             : campaigns.length === 0
             ? (
               <p className="text-muted-foreground text-sm">
@@ -290,7 +307,10 @@ export function AccountsTab({ className }: AccountsTabProps) {
                   </thead>
                   <tbody>
                     {campaigns.slice(0, 20).map((campaign) => (
-                      <tr key={`${campaign.platform}-${campaign.id}`} className="border-b">
+                      <tr
+                        key={`${campaign.platform}-${campaign.id}`}
+                        className="border-b"
+                      >
                         <td className="py-3">
                           <span className="font-medium">{campaign.name}</span>
                         </td>

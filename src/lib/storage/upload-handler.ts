@@ -1,3 +1,4 @@
+import { tryCatch } from "@/lib/try-catch";
 import crypto from "crypto";
 import sharp from "sharp";
 import { uploadToR2 } from "./r2-client";
@@ -33,57 +34,79 @@ export async function processAndUploadImage(
 ): Promise<ProcessImageResult> {
   const { buffer, originalFilename, userId } = params;
 
-  try {
-    // Get image metadata
-    const metadata = await sharp(buffer).metadata();
+  const createErrorResult = (errorMessage: string): ProcessImageResult => ({
+    success: false,
+    imageId: "",
+    r2Key: "",
+    url: "",
+    width: 0,
+    height: 0,
+    sizeBytes: 0,
+    format: "",
+    error: errorMessage,
+  });
 
-    if (!metadata.width || !metadata.height || !metadata.format) {
-      return {
-        success: false,
-        imageId: "",
-        r2Key: "",
-        url: "",
-        width: 0,
-        height: 0,
-        sizeBytes: 0,
-        format: "",
-        error: "Invalid image format",
-      };
+  // Get image metadata
+  const { data: metadata, error: metadataError } = await tryCatch(
+    sharp(buffer).metadata(),
+  );
+
+  if (metadataError) {
+    console.error("Error processing image:", metadataError);
+    return createErrorResult(
+      metadataError instanceof Error ? metadataError.message : "Unknown error",
+    );
+  }
+
+  if (!metadata.width || !metadata.height || !metadata.format) {
+    return createErrorResult("Invalid image format");
+  }
+
+  // Check if resize is needed (either dimension > 4K)
+  let processedBuffer = buffer;
+  let finalWidth = metadata.width;
+  let finalHeight = metadata.height;
+
+  if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
+    // Calculate new dimensions maintaining aspect ratio
+    const aspectRatio = metadata.width / metadata.height;
+
+    if (metadata.width > metadata.height) {
+      finalWidth = MAX_DIMENSION;
+      finalHeight = Math.round(MAX_DIMENSION / aspectRatio);
+    } else {
+      finalHeight = MAX_DIMENSION;
+      finalWidth = Math.round(MAX_DIMENSION * aspectRatio);
     }
 
-    // Check if resize is needed (either dimension > 4K)
-    let processedBuffer = buffer;
-    let finalWidth = metadata.width;
-    let finalHeight = metadata.height;
-
-    if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
-      // Calculate new dimensions maintaining aspect ratio
-      const aspectRatio = metadata.width / metadata.height;
-
-      if (metadata.width > metadata.height) {
-        finalWidth = MAX_DIMENSION;
-        finalHeight = Math.round(MAX_DIMENSION / aspectRatio);
-      } else {
-        finalHeight = MAX_DIMENSION;
-        finalWidth = Math.round(MAX_DIMENSION * aspectRatio);
-      }
-
-      // Resize image
-      processedBuffer = await sharp(buffer)
+    // Resize image
+    const { data: resizedBuffer, error: resizeError } = await tryCatch(
+      sharp(buffer)
         .resize(finalWidth, finalHeight, {
           fit: "inside",
           withoutEnlargement: true,
         })
-        .toBuffer();
+        .toBuffer(),
+    );
+
+    if (resizeError) {
+      console.error("Error processing image:", resizeError);
+      return createErrorResult(
+        resizeError instanceof Error ? resizeError.message : "Unknown error",
+      );
     }
 
-    // Generate unique image ID and R2 key
-    const imageId = crypto.randomUUID();
-    const extension = metadata.format;
-    const r2Key = `users/${userId}/originals/${imageId}.${extension}`;
+    processedBuffer = resizedBuffer;
+  }
 
-    // Upload to R2
-    const uploadResult = await uploadToR2({
+  // Generate unique image ID and R2 key
+  const imageId = crypto.randomUUID();
+  const extension = metadata.format;
+  const r2Key = `users/${userId}/originals/${imageId}.${extension}`;
+
+  // Upload to R2
+  const { data: uploadResult, error: uploadError } = await tryCatch(
+    uploadToR2({
       key: r2Key,
       buffer: processedBuffer,
       contentType: `image/${extension}`,
@@ -95,46 +118,30 @@ export async function processAndUploadImage(
         processedWidth: finalWidth.toString(),
         processedHeight: finalHeight.toString(),
       },
-    });
+    }),
+  );
 
-    if (!uploadResult.success) {
-      return {
-        success: false,
-        imageId: "",
-        r2Key: "",
-        url: "",
-        width: 0,
-        height: 0,
-        sizeBytes: 0,
-        format: "",
-        error: uploadResult.error,
-      };
-    }
-
-    return {
-      success: true,
-      imageId,
-      r2Key,
-      url: uploadResult.url,
-      width: finalWidth,
-      height: finalHeight,
-      sizeBytes: processedBuffer.length,
-      format: extension,
-    };
-  } catch (error) {
-    console.error("Error processing image:", error);
-    return {
-      success: false,
-      imageId: "",
-      r2Key: "",
-      url: "",
-      width: 0,
-      height: 0,
-      sizeBytes: 0,
-      format: "",
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+  if (uploadError) {
+    console.error("Error processing image:", uploadError);
+    return createErrorResult(
+      uploadError instanceof Error ? uploadError.message : "Unknown error",
+    );
   }
+
+  if (!uploadResult.success) {
+    return createErrorResult(uploadResult.error ?? "Upload failed");
+  }
+
+  return {
+    success: true,
+    imageId,
+    r2Key,
+    url: uploadResult.url,
+    width: finalWidth,
+    height: finalHeight,
+    sizeBytes: processedBuffer.length,
+    format: extension,
+  };
 }
 
 /**

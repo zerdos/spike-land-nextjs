@@ -9,108 +9,124 @@ import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import { Campaign, createMarketingClient, MarketingPlatform } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const session = await auth();
+async function fetchCampaignsForAccount(
+  account: { platform: string; accountId: string; accessToken: string; },
+): Promise<Campaign[]> {
+  // Decrypt the access token before using it
+  const decryptedAccessToken = safeDecryptToken(account.accessToken);
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const client = createMarketingClient(
+    account.platform as MarketingPlatform,
+    {
+      accessToken: decryptedAccessToken,
+      customerId: account.accountId,
+    },
+  );
 
-    // Admin check
-    const isAdmin = await isAdminByUserId(session.user.id);
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if ("setCustomerId" in client && account.platform === "GOOGLE_ADS") {
+    (client as { setCustomerId: (id: string) => void; }).setCustomerId(
+      account.accountId,
+    );
+  }
 
-    // Get query params
-    const searchParams = request.nextUrl.searchParams;
-    const platform = searchParams.get("platform") as MarketingPlatform | null;
-    const accountId = searchParams.get("accountId");
+  return client.listCampaigns(account.accountId);
+}
 
-    // Get connected accounts
-    const whereClause: {
-      userId: string;
-      isActive: boolean;
-      platform?: MarketingPlatform;
-      accountId?: string;
-    } = {
-      userId: session.user.id,
-      isActive: true,
-    };
+async function handleGetCampaigns(request: NextRequest): Promise<NextResponse> {
+  const session = await auth();
 
-    if (platform) {
-      whereClause.platform = platform;
-    }
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    if (accountId) {
-      whereClause.accountId = accountId;
-    }
+  // Admin check
+  const isAdmin = await isAdminByUserId(session.user.id);
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-    const accounts = await prisma.marketingAccount.findMany({
-      where: whereClause,
-    });
+  // Get query params
+  const searchParams = request.nextUrl.searchParams;
+  const platform = searchParams.get("platform") as MarketingPlatform | null;
+  const accountId = searchParams.get("accountId");
 
-    if (accounts.length === 0) {
-      return NextResponse.json({
-        campaigns: [],
-        message: "No connected accounts found",
-      });
-    }
+  // Get connected accounts
+  const whereClause: {
+    userId: string;
+    isActive: boolean;
+    platform?: MarketingPlatform;
+    accountId?: string;
+  } = {
+    userId: session.user.id,
+    isActive: true,
+  };
 
-    // Fetch campaigns from each account
-    const allCampaigns: Campaign[] = [];
-    const errors: { platform: string; accountId: string; error: string; }[] = [];
+  if (platform) {
+    whereClause.platform = platform;
+  }
 
-    for (const account of accounts) {
-      try {
-        // Decrypt the access token before using it
-        const decryptedAccessToken = safeDecryptToken(account.accessToken);
+  if (accountId) {
+    whereClause.accountId = accountId;
+  }
 
-        const client = createMarketingClient(
-          account.platform as MarketingPlatform,
-          {
-            accessToken: decryptedAccessToken,
-            customerId: account.accountId,
-          },
-        );
+  const accounts = await prisma.marketingAccount.findMany({
+    where: whereClause,
+  });
 
-        if ("setCustomerId" in client && account.platform === "GOOGLE_ADS") {
-          (client as { setCustomerId: (id: string) => void; }).setCustomerId(
-            account.accountId,
-          );
-        }
-
-        const campaigns = await client.listCampaigns(account.accountId);
-        allCampaigns.push(...campaigns);
-      } catch (error) {
-        console.error(
-          `Failed to fetch campaigns for ${account.platform}/${account.accountId}:`,
-          error,
-        );
-        // Don't expose internal error details
-        errors.push({
-          platform: account.platform,
-          accountId: account.accountId,
-          error: "Failed to fetch campaigns for this account",
-        });
-      }
-    }
-
-    // Sort campaigns by name
-    allCampaigns.sort((a, b) => a.name.localeCompare(b.name));
-
+  if (accounts.length === 0) {
     return NextResponse.json({
-      campaigns: allCampaigns,
-      errors: errors.length > 0 ? errors : undefined,
+      campaigns: [],
+      message: "No connected accounts found",
     });
-  } catch (error) {
+  }
+
+  // Fetch campaigns from each account
+  const allCampaigns: Campaign[] = [];
+  const errors: { platform: string; accountId: string; error: string; }[] = [];
+
+  for (const account of accounts) {
+    const { data: campaigns, error } = await tryCatch(
+      fetchCampaignsForAccount(account),
+    );
+
+    if (error) {
+      console.error(
+        `Failed to fetch campaigns for ${account.platform}/${account.accountId}:`,
+        error,
+      );
+      // Don't expose internal error details
+      errors.push({
+        platform: account.platform,
+        accountId: account.accountId,
+        error: "Failed to fetch campaigns for this account",
+      });
+    } else {
+      allCampaigns.push(...campaigns);
+    }
+  }
+
+  // Sort campaigns by name
+  allCampaigns.sort((a, b) => a.name.localeCompare(b.name));
+
+  return NextResponse.json({
+    campaigns: allCampaigns,
+    errors: errors.length > 0 ? errors : undefined,
+  });
+}
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const { data: response, error } = await tryCatch(handleGetCampaigns(request));
+
+  if (error) {
     console.error("Failed to fetch campaigns:", error);
     return NextResponse.json(
       { error: "Failed to fetch campaigns" },
       { status: 500 },
     );
   }
+
+  return response;
 }

@@ -38,7 +38,10 @@ describe("BlogHeader", () => {
 
   it("renders the post title", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(
@@ -48,7 +51,10 @@ describe("BlogHeader", () => {
 
   it("renders the description", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(
@@ -58,7 +64,10 @@ describe("BlogHeader", () => {
 
   it("renders the category", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(screen.getByText("Technology")).toBeInTheDocument();
@@ -66,7 +75,10 @@ describe("BlogHeader", () => {
 
   it("renders the author", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
@@ -74,7 +86,10 @@ describe("BlogHeader", () => {
 
   it("renders formatted date", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     // Full date format: January 15, 2025
@@ -83,7 +98,10 @@ describe("BlogHeader", () => {
 
   it("renders reading time", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(screen.getByText("5 min read")).toBeInTheDocument();
@@ -91,7 +109,10 @@ describe("BlogHeader", () => {
 
   it("renders all tags with hashtag prefix", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     expect(screen.getByText("#tech")).toBeInTheDocument();
@@ -101,7 +122,10 @@ describe("BlogHeader", () => {
 
   it("renders featured image when provided", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     const image = screen.getByTestId("header-image");
@@ -144,7 +168,10 @@ describe("BlogHeader", () => {
 
   it("renders date with correct datetime attribute", () => {
     render(
-      <BlogHeader frontmatter={mockFrontmatter} readingTime={mockReadingTime} />,
+      <BlogHeader
+        frontmatter={mockFrontmatter}
+        readingTime={mockReadingTime}
+      />,
     );
 
     const timeElement = screen.getByText("January 15, 2025");

@@ -13,7 +13,8 @@ describe("ImagePlaceholder", () => {
         />,
       );
 
-      expect(screen.getByText("Original photo before enhancement")).toBeInTheDocument();
+      expect(screen.getByText("Original photo before enhancement"))
+        .toBeInTheDocument();
     });
 
     it("displays Original label", () => {

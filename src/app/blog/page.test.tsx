@@ -8,9 +8,9 @@ vi.mock("@/lib/blog/get-posts", () => ({
 
 // Mock the BlogCard component
 vi.mock("@/components/blog", () => ({
-  BlogCard: ({ post }: { post: { slug: string; frontmatter: { title: string; }; }; }) => (
-    <div data-testid={`blog-card-${post.slug}`}>{post.frontmatter.title}</div>
-  ),
+  BlogCard: (
+    { post }: { post: { slug: string; frontmatter: { title: string; }; }; },
+  ) => <div data-testid={`blog-card-${post.slug}`}>{post.frontmatter.title}</div>,
 }));
 
 import { getAllPosts } from "@/lib/blog/get-posts";

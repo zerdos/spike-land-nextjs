@@ -11,7 +11,8 @@ describe("DataDisplayPage", () => {
 
     it("should render the section description", () => {
       render(<DataDisplayPage />);
-      expect(screen.getByText(/components for displaying structured data/i)).toBeInTheDocument();
+      expect(screen.getByText(/components for displaying structured data/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -19,7 +20,8 @@ describe("DataDisplayPage", () => {
     it("should render table card", () => {
       render(<DataDisplayPage />);
       expect(screen.getByText("Table")).toBeInTheDocument();
-      expect(screen.getByText(/display tabular data with headers and rows/i)).toBeInTheDocument();
+      expect(screen.getByText(/display tabular data with headers and rows/i))
+        .toBeInTheDocument();
     });
 
     it("should render token packages table", () => {
@@ -43,7 +45,8 @@ describe("DataDisplayPage", () => {
     it("should render toggle group card", () => {
       render(<DataDisplayPage />);
       expect(screen.getByText("Toggle Group")).toBeInTheDocument();
-      expect(screen.getByText(/single or multiple selection toggle buttons/i)).toBeInTheDocument();
+      expect(screen.getByText(/single or multiple selection toggle buttons/i))
+        .toBeInTheDocument();
     });
 
     it("should render view mode toggle", () => {
@@ -65,7 +68,9 @@ describe("DataDisplayPage", () => {
     it("should render copy button card", () => {
       render(<DataDisplayPage />);
       expect(screen.getByText("Copy Button")).toBeInTheDocument();
-      expect(screen.getByText(/click-to-copy functionality with visual feedback/i))
+      expect(
+        screen.getByText(/click-to-copy functionality with visual feedback/i),
+      )
         .toBeInTheDocument();
     });
 

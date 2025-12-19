@@ -107,7 +107,9 @@ export default function ModalsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sheet</CardTitle>
-            <CardDescription>Slide-out panel for navigation or settings</CardDescription>
+            <CardDescription>
+              Slide-out panel for navigation or settings
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4">
@@ -118,7 +120,9 @@ export default function ModalsPage() {
                 <SheetContent>
                   <SheetHeader>
                     <SheetTitle>Settings</SheetTitle>
-                    <SheetDescription>Manage your account settings.</SheetDescription>
+                    <SheetDescription>
+                      Manage your account settings.
+                    </SheetDescription>
                   </SheetHeader>
                   <div className="py-6 space-y-4">
                     <div className="flex items-center justify-between">
@@ -140,7 +144,9 @@ export default function ModalsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Alert Dialog</CardTitle>
-            <CardDescription>Confirmation dialog for destructive actions</CardDescription>
+            <CardDescription>
+              Confirmation dialog for destructive actions
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <AlertDialog>
@@ -189,13 +195,21 @@ export default function ModalsPage() {
                     <Label htmlFor="name" className="text-right">
                       Name
                     </Label>
-                    <Input id="name" defaultValue="Zoltan Erdos" className="col-span-3" />
+                    <Input
+                      id="name"
+                      defaultValue="Zoltan Erdos"
+                      className="col-span-3"
+                    />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="username" className="text-right">
                       Username
                     </Label>
-                    <Input id="username" defaultValue="@zerdos" className="col-span-3" />
+                    <Input
+                      id="username"
+                      defaultValue="@zerdos"
+                      className="col-span-3"
+                    />
                   </div>
                 </div>
                 <DialogFooter>
@@ -238,7 +252,9 @@ export default function ModalsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Dropdown Menu</CardTitle>
-            <CardDescription>Context menus and action dropdowns</CardDescription>
+            <CardDescription>
+              Context menus and action dropdowns
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             <DropdownMenu>

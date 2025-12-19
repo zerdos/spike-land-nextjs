@@ -54,7 +54,9 @@ vi.mock("./index", () => ({
   }),
 }));
 
-const { getExternalSpendForCampaign, syncExternalCampaigns } = await import("./campaign-sync");
+const { getExternalSpendForCampaign, syncExternalCampaigns } = await import(
+  "./campaign-sync"
+);
 
 describe("Campaign Sync Service", () => {
   beforeEach(() => {
@@ -171,7 +173,9 @@ describe("Campaign Sync Service", () => {
 
       const result = await syncExternalCampaigns();
 
-      expect(mockGoogleAdsClient.refreshAccessToken).toHaveBeenCalledWith("refresh-token");
+      expect(mockGoogleAdsClient.refreshAccessToken).toHaveBeenCalledWith(
+        "refresh-token",
+      );
       expect(mockMarketingAccountUpdate).toHaveBeenCalled();
       expect(result.errors).toHaveLength(0);
     });

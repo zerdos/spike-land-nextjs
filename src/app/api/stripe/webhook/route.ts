@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
+import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -33,53 +34,58 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  let event: Stripe.Event;
+  // Wrap synchronous call in a promise for tryCatch
+  const { data: event, error: constructError } = await tryCatch(
+    Promise.resolve().then(() => stripe.webhooks.constructEvent(body, signature, webhookSecret)),
+  );
 
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+  if (constructError) {
+    console.error("Webhook signature verification failed:", constructError);
     return NextResponse.json(
       { error: "Webhook signature verification failed" },
       { status: 400 },
     );
   }
 
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutCompleted(stripe, session);
-        break;
+  const { error: processingError } = await tryCatch(
+    (async () => {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          await handleCheckoutCompleted(stripe, session);
+          break;
+        }
+        case "invoice.paid": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await handleInvoicePaid(stripe, invoice);
+          break;
+        }
+        case "customer.subscription.updated": {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionUpdated(subscription);
+          break;
+        }
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionDeleted(subscription);
+          break;
+        }
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
       }
-      case "invoice.paid": {
-        const invoice = event.data.object as Stripe.Invoice;
-        await handleInvoicePaid(stripe, invoice);
-        break;
-      }
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionUpdated(subscription);
-        break;
-      }
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionDeleted(subscription);
-        break;
-      }
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
+    })(),
+  );
 
-    return NextResponse.json({ received: true });
-  } catch (error) {
+  if (processingError) {
     // Log detailed error for debugging but don't expose internals to client
-    console.error("Error processing webhook:", error);
+    console.error("Error processing webhook:", processingError);
     return NextResponse.json(
       { error: "Webhook processing failed" },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ received: true });
 }
 
 async function handleCheckoutCompleted(
@@ -170,11 +176,16 @@ async function handleCheckoutCompleted(
     console.log(`[Stripe] Credited ${tokenAmount} tokens to user ${userId}`);
 
     // Track purchase conversion attribution for campaign analytics
-    await attributeConversion(userId, "PURCHASE", (session.amount_total || 0) / 100).catch(
-      (error) => {
-        console.error("Failed to track purchase attribution:", error);
-      },
+    const { error: attributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
     );
+    if (attributionError) {
+      console.error("Failed to track purchase attribution:", attributionError);
+    }
   }
 
   if (type === "subscription" && planId && tokensPerMonth) {
@@ -261,11 +272,19 @@ async function handleCheckoutCompleted(
     );
 
     // Track purchase conversion attribution for campaign analytics (subscription)
-    await attributeConversion(userId, "PURCHASE", (session.amount_total || 0) / 100).catch(
-      (error) => {
-        console.error("Failed to track subscription purchase attribution:", error);
-      },
+    const { error: subscriptionAttributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
     );
+    if (subscriptionAttributionError) {
+      console.error(
+        "Failed to track subscription purchase attribution:",
+        subscriptionAttributionError,
+      );
+    }
   }
 }
 

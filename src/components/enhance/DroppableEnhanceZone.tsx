@@ -155,7 +155,8 @@ export function DroppableEnhanceZone({
       onDrop={handleDrop}
       className={cn(
         "relative transition-all duration-200",
-        isDragOver && !disabled && "ring-2 ring-primary ring-offset-2 rounded-lg",
+        isDragOver && !disabled &&
+          "ring-2 ring-primary ring-offset-2 rounded-lg",
       )}
     >
       {children}

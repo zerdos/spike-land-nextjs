@@ -4,6 +4,7 @@
  * Falls back to in-memory storage if KV is unavailable (development/testing).
  */
 
+import { tryCatch } from "@/lib/try-catch";
 import { kv } from "@vercel/kv";
 
 interface RateLimitEntry {
@@ -36,12 +37,10 @@ async function isKVAvailable(): Promise<boolean> {
     return kvAvailable;
   }
 
-  try {
-    // Test KV connection with a simple ping
-    await kv.ping();
-    kvAvailable = true;
-    return true;
-  } catch (error) {
+  // Test KV connection with a simple ping
+  const { error } = await tryCatch(kv.ping());
+
+  if (error) {
     console.warn(
       "Vercel KV unavailable, falling back to in-memory storage:",
       error,
@@ -49,6 +48,9 @@ async function isKVAvailable(): Promise<boolean> {
     kvAvailable = false;
     return false;
   }
+
+  kvAvailable = true;
+  return true;
 }
 
 /**
@@ -204,9 +206,11 @@ export async function checkRateLimit(
   const useKV = await isKVAvailable();
 
   if (useKV) {
-    try {
-      return await checkRateLimitKV(identifier, config);
-    } catch (error) {
+    const { data, error } = await tryCatch(
+      checkRateLimitKV(identifier, config),
+    );
+
+    if (error) {
       console.error(
         "KV rate limit check failed, falling back to memory:",
         error,
@@ -214,6 +218,8 @@ export async function checkRateLimit(
       kvAvailable = false; // Mark as unavailable for subsequent requests
       return checkRateLimitMemory(identifier, config);
     }
+
+    return data;
   }
 
   return checkRateLimitMemory(identifier, config);
@@ -227,9 +233,9 @@ export async function resetRateLimit(identifier: string): Promise<void> {
   const useKV = await isKVAvailable();
 
   if (useKV) {
-    try {
-      await kv.del(`ratelimit:${identifier}`);
-    } catch (error) {
+    const { error } = await tryCatch(kv.del(`ratelimit:${identifier}`));
+
+    if (error) {
       console.error("KV rate limit reset failed:", error);
     }
   }
@@ -248,13 +254,13 @@ export async function clearAllRateLimits(
   const useKV = await isKVAvailable();
 
   if (useKV && identifiers) {
-    try {
-      const keys = identifiers.map((id) => `ratelimit:${id}`);
-      if (keys.length > 0) {
-        await kv.del(...keys);
+    const keys = identifiers.map((id) => `ratelimit:${id}`);
+    if (keys.length > 0) {
+      const { error } = await tryCatch(kv.del(...keys));
+
+      if (error) {
+        console.error("KV rate limit clear failed:", error);
       }
-    } catch (error) {
-      console.error("KV rate limit clear failed:", error);
     }
   }
 

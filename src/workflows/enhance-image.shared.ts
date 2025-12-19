@@ -108,11 +108,18 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
 
   // blendSource is optional, but if provided must have base64 and mimeType
   if (input.blendSource !== undefined && input.blendSource !== null) {
-    if (typeof input.blendSource.base64 !== "string" || !input.blendSource.base64) {
+    if (
+      typeof input.blendSource.base64 !== "string" || !input.blendSource.base64
+    ) {
       throw new Error("Invalid blendSource.base64: must be a non-empty string");
     }
-    if (typeof input.blendSource.mimeType !== "string" || !input.blendSource.mimeType) {
-      throw new Error("Invalid blendSource.mimeType: must be a non-empty string");
+    if (
+      typeof input.blendSource.mimeType !== "string" ||
+      !input.blendSource.mimeType
+    ) {
+      throw new Error(
+        "Invalid blendSource.mimeType: must be a non-empty string",
+      );
     }
   }
 }

@@ -50,7 +50,9 @@ describe("ComparisonPage", () => {
     it("should render the section description", () => {
       render(<ComparisonPage />);
       expect(
-        screen.getByText(/before\/after comparison components for showcasing image enhancements/i),
+        screen.getByText(
+          /before\/after comparison components for showcasing image enhancements/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -60,7 +62,9 @@ describe("ComparisonPage", () => {
       render(<ComparisonPage />);
       expect(screen.getByText("Image Comparison Slider")).toBeInTheDocument();
       expect(
-        screen.getByText(/drag the handle to compare original and enhanced images/i),
+        screen.getByText(
+          /drag the handle to compare original and enhanced images/i,
+        ),
       ).toBeInTheDocument();
     });
 

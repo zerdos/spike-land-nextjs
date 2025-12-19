@@ -1,6 +1,7 @@
 import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { Prisma, type TokenTransaction, TokenTransactionType } from "@prisma/client";
 
 export interface TokenBalanceResult {
@@ -113,21 +114,36 @@ export class TokenBalanceManager {
       sourceId,
     });
 
-    try {
-      consumeLogger.debug("Attempting to consume tokens");
-      this.validateUserId(userId);
+    consumeLogger.debug("Attempting to consume tokens");
 
-      if (amount <= 0) {
-        const error = new Error(
-          `Invalid token amount: ${amount}. Must be positive.`,
-        );
-        consumeLogger.error("Invalid token amount", error);
-        throw error;
-      }
+    // Validate userId synchronously
+    if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
+      const error = new Error("Invalid userId: must be a non-empty string");
+      const userFriendlyError = getUserFriendlyError(error);
+      consumeLogger.error("Invalid userId", error);
+      return {
+        success: false,
+        error: userFriendlyError.message,
+      };
+    }
 
-      // Use transaction to ensure atomic update
+    if (amount <= 0) {
+      const error = new Error(
+        `Invalid token amount: ${amount}. Must be positive.`,
+      );
+      consumeLogger.error("Invalid token amount", error);
+      const userFriendlyError = getUserFriendlyError(error);
+      return {
+        success: false,
+        error: userFriendlyError.message,
+      };
+    }
+
+    // Use transaction to ensure atomic update
+
+    const { data: result, error } = await tryCatch(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: any) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -196,14 +212,10 @@ export class TokenBalanceManager {
         });
 
         return { transaction, balance: updatedBalance.balance };
-      });
+      }),
+    );
 
-      return {
-        success: true,
-        transaction: result.transaction,
-        balance: result.balance,
-      };
-    } catch (error) {
+    if (error) {
       const errorMessage = error instanceof Error
         ? error.message
         : String(error);
@@ -221,6 +233,12 @@ export class TokenBalanceManager {
         error: userFriendlyError.message,
       };
     }
+
+    return {
+      success: true,
+      transaction: result.transaction,
+      balance: result.balance,
+    };
   }
 
   /**
@@ -237,20 +255,34 @@ export class TokenBalanceManager {
       source,
     });
 
-    try {
-      addLogger.debug("Attempting to add tokens");
-      this.validateUserId(userId);
+    addLogger.debug("Attempting to add tokens");
 
-      if (amount <= 0) {
-        const error = new Error(
-          `Invalid token amount: ${amount}. Must be positive.`,
-        );
-        addLogger.error("Invalid token amount", error);
-        throw error;
-      }
+    // Validate userId synchronously
+    if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
+      const error = new Error("Invalid userId: must be a non-empty string");
+      const userFriendlyError = getUserFriendlyError(error);
+      addLogger.error("Invalid userId", error);
+      return {
+        success: false,
+        error: userFriendlyError.message,
+      };
+    }
 
+    if (amount <= 0) {
+      const error = new Error(
+        `Invalid token amount: ${amount}. Must be positive.`,
+      );
+      addLogger.error("Invalid token amount", error);
+      const userFriendlyError = getUserFriendlyError(error);
+      return {
+        success: false,
+        error: userFriendlyError.message,
+      };
+    }
+
+    const { data: result, error } = await tryCatch(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: any) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -321,14 +353,10 @@ export class TokenBalanceManager {
         });
 
         return { transaction, balance: updatedBalance.balance };
-      });
+      }),
+    );
 
-      return {
-        success: true,
-        transaction: result.transaction,
-        balance: result.balance,
-      };
-    } catch (error) {
+    if (error) {
       const errorMessage = error instanceof Error
         ? error.message
         : String(error);
@@ -346,6 +374,12 @@ export class TokenBalanceManager {
         error: userFriendlyError.message,
       };
     }
+
+    return {
+      success: true,
+      transaction: result.transaction,
+      balance: result.balance,
+    };
   }
 
   /**

@@ -82,7 +82,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const allPosts = getAllPosts();
   const currentIndex = allPosts.findIndex((p) => p.slug === slug);
   const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
-  const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+  const prevPost = currentIndex < allPosts.length - 1
+    ? allPosts[currentIndex + 1]
+    : null;
 
   return (
     <div className="min-h-screen bg-grid-pattern">

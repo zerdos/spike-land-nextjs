@@ -80,7 +80,8 @@ describe("Prose", () => {
       </Prose>,
     );
 
-    expect(screen.getByRole("heading", { name: "Blog Title" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Blog Title" }))
+      .toBeInTheDocument();
     expect(screen.getByText("Content paragraph")).toBeInTheDocument();
     expect(screen.getByText("List item 1")).toBeInTheDocument();
     expect(screen.getByText("List item 2")).toBeInTheDocument();

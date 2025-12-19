@@ -184,6 +184,45 @@ describe("ensureUserAlbums", () => {
       "Failed to ensure albums for user user-1",
     );
   });
+
+  it("throws error if findMany fails", async () => {
+    vi.mocked(prisma.album.findMany).mockRejectedValue(
+      new Error("Database connection failed"),
+    );
+
+    await expect(ensureUserAlbums("user-1")).rejects.toThrow(
+      "Failed to fetch albums for user user-1: Database connection failed",
+    );
+  });
+
+  it("throws error if createMany fails", async () => {
+    vi.mocked(prisma.album.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.album.createMany).mockRejectedValue(
+      new Error("Insert failed"),
+    );
+
+    await expect(ensureUserAlbums("user-1")).rejects.toThrow(
+      "Failed to create albums for user user-1: Insert failed",
+    );
+  });
+
+  it("throws error if final fetch fails", async () => {
+    const privateAlbum = mockAlbum({
+      id: "private-1",
+      name: "Private Gallery",
+      privacy: "PRIVATE",
+    });
+
+    vi.mocked(prisma.album.findMany).mockResolvedValue([privateAlbum]);
+    vi.mocked(prisma.album.createMany).mockResolvedValue({ count: 1 });
+    vi.mocked(prisma.album.findFirst).mockRejectedValue(
+      new Error("Fetch failed"),
+    );
+
+    await expect(ensureUserAlbums("user-1")).rejects.toThrow(
+      "Failed to fetch albums for user user-1: Fetch failed",
+    );
+  });
 });
 
 describe("getOrCreatePrivateAlbum", () => {

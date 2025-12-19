@@ -11,7 +11,8 @@ describe("ComponentsPage", () => {
 
     it("should render the section description", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText(/ui component library showcase/i)).toBeInTheDocument();
+      expect(screen.getByText(/ui component library showcase/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -19,7 +20,8 @@ describe("ComponentsPage", () => {
     it("should render cards card", () => {
       render(<ComponentsPage />);
       expect(screen.getByText("Cards")).toBeInTheDocument();
-      expect(screen.getByText(/container components with glass-morphism/i)).toBeInTheDocument();
+      expect(screen.getByText(/container components with glass-morphism/i))
+        .toBeInTheDocument();
     });
 
     it("should render different card variants", () => {
@@ -50,7 +52,8 @@ describe("ComponentsPage", () => {
     it("should render form elements card", () => {
       render(<ComponentsPage />);
       expect(screen.getByText("Form Elements")).toBeInTheDocument();
-      expect(screen.getByText(/input fields and form controls/i)).toBeInTheDocument();
+      expect(screen.getByText(/input fields and form controls/i))
+        .toBeInTheDocument();
     });
 
     it("should render input fields", () => {
@@ -89,7 +92,8 @@ describe("ComponentsPage", () => {
     it("should render separators card", () => {
       render(<ComponentsPage />);
       expect(screen.getByText("Separators")).toBeInTheDocument();
-      expect(screen.getByText(/visual dividers for content sections/i)).toBeInTheDocument();
+      expect(screen.getByText(/visual dividers for content sections/i))
+        .toBeInTheDocument();
     });
   });
 });

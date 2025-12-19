@@ -74,6 +74,7 @@ COPY tailwind.config.ts eslint.config.mjs ./
 COPY src ./src
 COPY apps ./apps
 COPY public ./public
+COPY content ./content
 
 # ============================================================================
 # STAGE: Development server (for docker-compose)
@@ -119,7 +120,7 @@ COPY e2e ./e2e
 # STAGE 8: Run unit tests
 # ============================================================================
 FROM test-source AS unit-tests
-RUN yarn test:coverage --shard 42/120
+RUN yarn test:run
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
@@ -198,9 +199,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -u 1001 -g nodejs nextjs
 
 # Copy ONLY production artifacts (standalone mode)
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# Note: --link is incompatible with --chown when user is created in same stage
+COPY --from=build --chown=1001:1001 /app/.next/standalone ./
+COPY --from=build --chown=1001:1001 /app/.next/static ./.next/static
+COPY --from=build --chown=1001:1001 /app/public ./public
 
 USER nextjs
 ENV NODE_ENV=production PORT=3000

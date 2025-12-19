@@ -16,7 +16,10 @@ describe("GoogleAdsClient", () => {
   beforeEach(() => {
     vi.stubEnv("GOOGLE_ID", mockEnv.GOOGLE_ID);
     vi.stubEnv("GOOGLE_SECRET", mockEnv.GOOGLE_SECRET);
-    vi.stubEnv("GOOGLE_ADS_DEVELOPER_TOKEN", mockEnv.GOOGLE_ADS_DEVELOPER_TOKEN);
+    vi.stubEnv(
+      "GOOGLE_ADS_DEVELOPER_TOKEN",
+      mockEnv.GOOGLE_ADS_DEVELOPER_TOKEN,
+    );
   });
 
   afterEach(() => {
@@ -90,9 +93,13 @@ describe("GoogleAdsClient", () => {
 
       expect(url).toContain("https://accounts.google.com/o/oauth2/v2/auth");
       expect(url).toContain(`client_id=${mockEnv.GOOGLE_ID}`);
-      expect(url).toContain("redirect_uri=https%3A%2F%2Fexample.com%2Fcallback");
+      expect(url).toContain(
+        "redirect_uri=https%3A%2F%2Fexample.com%2Fcallback",
+      );
       expect(url).toContain("state=test_state");
-      expect(url).toContain("scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fadwords");
+      expect(url).toContain(
+        "scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fadwords",
+      );
       expect(url).toContain("access_type=offline");
       expect(url).toContain("prompt=consent");
     });
@@ -137,12 +144,18 @@ describe("GoogleAdsClient", () => {
         vi.fn().mockResolvedValue({
           ok: false,
           statusText: "Bad Request",
-          json: () => Promise.resolve({ error_description: "Invalid authorization code" }),
+          json: () =>
+            Promise.resolve({
+              error_description: "Invalid authorization code",
+            }),
         }),
       );
 
       await expect(
-        client.exchangeCodeForTokens("invalid_code", "https://example.com/callback"),
+        client.exchangeCodeForTokens(
+          "invalid_code",
+          "https://example.com/callback",
+        ),
       ).rejects.toThrow("Failed to exchange code");
     });
   });
@@ -245,7 +258,10 @@ describe("GoogleAdsClient", () => {
     it("should return false on fetch error", async () => {
       const client = new GoogleAdsClient();
 
-      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockRejectedValue(new Error("Network error")),
+      );
 
       const isValid = await client.validateToken("any_token");
       expect(isValid).toBe(false);

@@ -7,7 +7,12 @@
 export type MarketingPlatform = "FACEBOOK" | "GOOGLE_ADS";
 
 // Campaign Status (normalized across platforms)
-export type CampaignStatus = "ACTIVE" | "PAUSED" | "DELETED" | "ARCHIVED" | "UNKNOWN";
+export type CampaignStatus =
+  | "ACTIVE"
+  | "PAUSED"
+  | "DELETED"
+  | "ARCHIVED"
+  | "UNKNOWN";
 
 // Campaign Objective (normalized across platforms)
 export type CampaignObjective =

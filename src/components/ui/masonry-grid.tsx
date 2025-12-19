@@ -14,12 +14,16 @@ export type ZoomLevel = 1 | 2 | 3 | 4 | 5;
 
 // Type guard to validate zoom level
 export function isValidZoomLevel(value: number): value is ZoomLevel {
-  return value >= ZOOM_LEVEL.MIN && value <= ZOOM_LEVEL.MAX && Number.isInteger(value);
+  return value >= ZOOM_LEVEL.MIN && value <= ZOOM_LEVEL.MAX &&
+    Number.isInteger(value);
 }
 
 // Clamp zoom level to valid range
 export function clampZoomLevel(value: number): ZoomLevel {
-  const clamped = Math.max(ZOOM_LEVEL.MIN, Math.min(ZOOM_LEVEL.MAX, Math.round(value)));
+  const clamped = Math.max(
+    ZOOM_LEVEL.MIN,
+    Math.min(ZOOM_LEVEL.MAX, Math.round(value)),
+  );
   return clamped as ZoomLevel;
 }
 
@@ -94,7 +98,10 @@ const XL_COLUMNS: Record<number, string> = {
 
 // Column counts based on zoom level and breakpoint
 // Higher zoom = fewer columns (bigger items)
-const COLUMN_CONFIG: Record<ZoomLevel, { sm: number; md: number; lg: number; xl: number; }> = {
+const COLUMN_CONFIG: Record<
+  ZoomLevel,
+  { sm: number; md: number; lg: number; xl: number; }
+> = {
   1: { sm: 4, md: 5, lg: 6, xl: 8 }, // Smallest items, most columns
   2: { sm: 3, md: 4, lg: 5, xl: 6 },
   3: { sm: 2, md: 3, lg: 4, xl: 5 }, // Default
@@ -109,7 +116,9 @@ export function MasonryGrid({
 }: MasonryGridProps) {
   const childArray = Children.toArray(children);
   // Ensure zoom level is valid
-  const safeZoomLevel = isValidZoomLevel(zoomLevel) ? zoomLevel : ZOOM_LEVEL.DEFAULT;
+  const safeZoomLevel = isValidZoomLevel(zoomLevel)
+    ? zoomLevel
+    : ZOOM_LEVEL.DEFAULT;
   const config = COLUMN_CONFIG[safeZoomLevel];
 
   // Memoize column classes based on zoom level
@@ -154,7 +163,9 @@ export function MasonryGridUniform({
   className,
 }: MasonryGridProps) {
   // Ensure zoom level is valid
-  const safeZoomLevel = isValidZoomLevel(zoomLevel) ? zoomLevel : ZOOM_LEVEL.DEFAULT;
+  const safeZoomLevel = isValidZoomLevel(zoomLevel)
+    ? zoomLevel
+    : ZOOM_LEVEL.DEFAULT;
   const config = COLUMN_CONFIG[safeZoomLevel];
 
   // Build responsive grid classes using explicit mappings

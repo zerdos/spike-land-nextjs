@@ -8,12 +8,17 @@ import { Separator } from "@/components/ui/separator";
 export default function ButtonsPage() {
   return (
     <div className="space-y-12">
-      <Section title="Buttons" description="Interactive button components with various styles">
+      <Section
+        title="Buttons"
+        description="Interactive button components with various styles"
+      >
         {/* All Variants */}
         <Card>
           <CardHeader>
             <CardTitle>Variants</CardTitle>
-            <CardDescription>Different button styles for various contexts</CardDescription>
+            <CardDescription>
+              Different button styles for various contexts
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">
@@ -83,7 +88,9 @@ export default function ButtonsPage() {
             </div>
             <Separator />
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Loading with different sizes</Label>
+              <Label className="text-xs text-muted-foreground">
+                Loading with different sizes
+              </Label>
               <div className="flex flex-wrap items-center gap-4">
                 <Button loading size="sm">
                   Small
@@ -135,7 +142,10 @@ export default function ButtonsPage() {
                           s !== "icon"
                         )
                         .map((size) => (
-                          <td key={`${variant}-${size}`} className="p-3 text-center">
+                          <td
+                            key={`${variant}-${size}`}
+                            className="p-3 text-center"
+                          >
                             <Button variant={variant} size={size}>
                               Button
                             </Button>

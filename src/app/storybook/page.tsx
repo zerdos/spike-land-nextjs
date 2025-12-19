@@ -35,7 +35,9 @@ export default function StorybookPage() {
                     )}
                     <CardTitle className="text-lg">{section.label}</CardTitle>
                   </div>
-                  <CardDescription className="mt-2">{section.description}</CardDescription>
+                  <CardDescription className="mt-2">
+                    {section.description}
+                  </CardDescription>
                 </CardHeader>
               </Card>
             </Link>

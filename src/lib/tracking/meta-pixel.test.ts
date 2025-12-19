@@ -145,7 +145,9 @@ describe("meta-pixel", () => {
       const result = fireMetaPixelEvent("purchase_completed", { value: 9.99 });
 
       expect(result).toBe(true);
-      expect(mockFbq).toHaveBeenCalledWith("track", "Purchase", { value: 9.99 });
+      expect(mockFbq).toHaveBeenCalledWith("track", "Purchase", {
+        value: 9.99,
+      });
     });
 
     it("should fire custom event for enhancement_started", async () => {
@@ -153,9 +155,13 @@ describe("meta-pixel", () => {
       const result = fireMetaPixelEvent("enhancement_started", { tier: "4K" });
 
       expect(result).toBe(true);
-      expect(mockFbq).toHaveBeenCalledWith("trackCustom", "EnhancementStarted", {
-        tier: "4K",
-      });
+      expect(mockFbq).toHaveBeenCalledWith(
+        "trackCustom",
+        "EnhancementStarted",
+        {
+          tier: "4K",
+        },
+      );
     });
 
     it("should fire custom event for enhancement_completed", async () => {
