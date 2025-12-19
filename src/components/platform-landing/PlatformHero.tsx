@@ -3,8 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { BookOpen, Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function PlatformHero() {
+  const { data: session } = useSession();
+  const pixelHref = session ? "/apps/pixel" : "/pixel";
+
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
       <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -30,7 +34,7 @@ export function PlatformHero() {
               size="lg"
               className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
             >
-              <Link href="/pixel">
+              <Link href={pixelHref}>
                 <Sparkles className="mr-2 h-5 w-5" />
                 Restore Your Photos
               </Link>
