@@ -255,11 +255,21 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/apps/pixel")}
+          onClick={() => {
+            // Try to go back if there's navigation history
+            // window.history.state.idx > 0 indicates there are previous entries in the history stack
+            if (typeof window !== "undefined" && window.history.state?.idx > 0) {
+              router.back();
+            } else {
+              // Fallback: navigate to the main pixel page if no history exists
+              // This handles cases where user accessed the image directly via URL, bookmark, or new tab
+              router.push("/apps/pixel");
+            }
+          }}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Images
+          Back
         </Button>
 
         <h1 className="text-3xl font-bold">Pixel Image Enhancement</h1>
