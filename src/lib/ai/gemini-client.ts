@@ -5,7 +5,7 @@ import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
 // Configuration constants - exported for job metadata tracking
 const PRODUCTION_MODEL = "gemini-3-pro-image-preview";
-const DEVELOPMENT_MODEL = "gemini-2.5-flash";
+const DEVELOPMENT_MODEL = "gemini-2.5-flash-image";
 
 /**
  * Known valid Gemini models for image generation.
@@ -13,8 +13,7 @@ const DEVELOPMENT_MODEL = "gemini-2.5-flash";
  */
 export const VALID_GEMINI_MODELS = [
   "gemini-3-pro-image-preview",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash-exp",
+  "gemini-2.5-flash-image",
 ] as const;
 
 /**

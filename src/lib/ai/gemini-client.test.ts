@@ -572,7 +572,7 @@ describe("gemini-client", () => {
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-2.5-flash", // Development environment uses flash model
+          model: "gemini-2.5-flash-image", // Development environment uses flash model
           config: {
             responseModalities: ["IMAGE"],
             imageConfig: {
@@ -1706,7 +1706,7 @@ describe("gemini-client", () => {
     it("should export the default model name for test environment", () => {
       // In test/development environment, defaults to gemini-2.5-flash
       // In production, it would be gemini-3-pro-image-preview
-      expect(DEFAULT_MODEL).toBe("gemini-2.5-flash");
+      expect(DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
     });
   });
 
@@ -1843,8 +1843,7 @@ describe("gemini-client", () => {
   describe("model validation", () => {
     it("should export VALID_GEMINI_MODELS with expected models", () => {
       expect(VALID_GEMINI_MODELS).toContain("gemini-3-pro-image-preview");
-      expect(VALID_GEMINI_MODELS).toContain("gemini-2.5-flash");
-      expect(VALID_GEMINI_MODELS).toContain("gemini-2.0-flash-exp");
+      expect(VALID_GEMINI_MODELS).toContain("gemini-2.5-flash-image");
     });
 
     it("should NOT include the broken production model in allowlist", () => {
@@ -1877,7 +1876,7 @@ describe("gemini-client", () => {
       );
 
       // Verify fallback to development model (in test env, NODE_ENV !== "production")
-      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash");
+      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
 
       // Restore
       process.env.GEMINI_MODEL = originalGeminiModel;
@@ -1924,7 +1923,7 @@ describe("gemini-client", () => {
       const freshModule = await import("./gemini-client");
 
       // In test environment (NODE_ENV !== "production"), should use development model
-      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash");
+      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
 
       // Restore
       if (originalGeminiModel !== undefined) {
