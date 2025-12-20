@@ -119,8 +119,25 @@ COPY e2e ./e2e
 # ============================================================================
 # STAGE 8: Run unit tests
 # ============================================================================
+FROM test-source AS unit-tests-1
+RUN yarn test:run --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
+
+FROM test-source AS unit-tests-2
+RUN yarn test:run --shard 2/4 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
+
+FROM test-source AS unit-tests-3
+RUN yarn test:run --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
+
+FROM test-source AS unit-tests-4
+RUN yarn test:run --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
+
 FROM test-source AS unit-tests
-RUN yarn test:run
+COPY --from=unit-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
+COPY --from=unit-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
+COPY --from=unit-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
+COPY --from=unit-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
+
+RUN cat /tmp/test-shard-1.log
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
