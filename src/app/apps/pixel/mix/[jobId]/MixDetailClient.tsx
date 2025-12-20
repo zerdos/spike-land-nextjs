@@ -1,0 +1,351 @@
+"use client";
+
+import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
+import { MixShareQRCode } from "@/components/mix/MixShareQRCode";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
+import { ArrowLeft, Download, ExternalLink, Loader2 } from "lucide-react";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useState } from "react";
+
+interface ParentImage {
+  id: string;
+  name: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface MixJob {
+  id: string;
+  status: JobStatus;
+  tier: EnhancementTier;
+  resultUrl: string | null;
+  resultWidth: number | null;
+  resultHeight: number | null;
+  createdAt: string;
+  targetImage: ParentImage;
+  sourceImage: ParentImage | null;
+}
+
+interface MixDetailClientProps {
+  job: MixJob;
+}
+
+type ComparisonParent = "parent1" | "parent2";
+
+const tierLabels: Record<string, string> = {
+  TIER_1K: "1K",
+  TIER_2K: "2K",
+  TIER_4K: "4K",
+};
+
+export function MixDetailClient({ job }: MixDetailClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeParent, setActiveParent] = useState<ComparisonParent>("parent1");
+
+  const handleBack = useCallback(() => {
+    const from = searchParams.get("from");
+    if (from && from.startsWith("/")) {
+      router.push(from);
+    } else if (typeof window !== "undefined" && window.history.state?.idx > 0) {
+      router.back();
+    } else {
+      router.push("/apps/pixel/mix");
+    }
+  }, [router, searchParams]);
+
+  const handleDownload = useCallback(async () => {
+    if (!job.resultUrl) return;
+
+    try {
+      const response = await fetch(job.resultUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mix-${job.id}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  }, [job.resultUrl, job.id]);
+
+  const handleViewParent = useCallback(
+    (imageId: string) => {
+      router.push(`/apps/pixel/${imageId}?from=/apps/pixel/mix/${job.id}`);
+    },
+    [router, job.id],
+  );
+
+  // Get the current comparison images based on active parent
+  const getCurrentComparison = () => {
+    if (activeParent === "parent1") {
+      return {
+        originalUrl: job.targetImage.url,
+        originalLabel: "Photo 1",
+        width: job.targetImage.width,
+        height: job.targetImage.height,
+      };
+    } else if (job.sourceImage) {
+      return {
+        originalUrl: job.sourceImage.url,
+        originalLabel: "Photo 2",
+        width: job.sourceImage.width,
+        height: job.sourceImage.height,
+      };
+    }
+    // Fallback to parent1 if no sourceImage
+    return {
+      originalUrl: job.targetImage.url,
+      originalLabel: "Photo 1",
+      width: job.targetImage.width,
+      height: job.targetImage.height,
+    };
+  };
+
+  const comparison = getCurrentComparison();
+  const shareUrl = typeof window !== "undefined"
+    ? window.location.href
+    : `https://spike.land/apps/pixel/mix/${job.id}`;
+
+  const isCompleted = job.status === "COMPLETED" && job.resultUrl;
+  const isProcessing = job.status === "PROCESSING" || job.status === "PENDING";
+
+  return (
+    <div className="container mx-auto pt-24 pb-8 px-4">
+      {/* Header */}
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleBack}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">PhotoMix Result</h1>
+            <p className="text-muted-foreground mt-1">
+              {tierLabels[job.tier]} Quality &bull;{" "}
+              {new Date(job.createdAt).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        {/* Left Column - Main Content */}
+        <div className="space-y-6">
+          {/* Comparison View */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle>Comparison</CardTitle>
+                {/* Parent Toggle */}
+                {job.sourceImage && (
+                  <Tabs
+                    value={activeParent}
+                    onValueChange={(v) => setActiveParent(v as ComparisonParent)}
+                  >
+                    <TabsList>
+                      <TabsTrigger value="parent1" className="text-xs">
+                        Photo 1 → Result
+                      </TabsTrigger>
+                      <TabsTrigger value="parent2" className="text-xs">
+                        Photo 2 → Result
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isCompleted && job.resultUrl
+                ? (
+                  <ComparisonViewToggle
+                    originalUrl={comparison.originalUrl}
+                    enhancedUrl={job.resultUrl}
+                    width={comparison.width || 1024}
+                    height={comparison.height || 1024}
+                  />
+                )
+                : isProcessing
+                ? (
+                  <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Processing your mix...
+                    </p>
+                  </div>
+                )
+                : (
+                  <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">
+                      Mix processing failed
+                    </p>
+                  </div>
+                )}
+            </CardContent>
+          </Card>
+
+          {/* Parent Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Source Photos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Parent 1 (Target Image) */}
+                <button
+                  type="button"
+                  onClick={() => handleViewParent(job.targetImage.id)}
+                  className="group relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+                >
+                  <div className="aspect-square relative bg-muted">
+                    <Image
+                      src={job.targetImage.url}
+                      alt={job.targetImage.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, 300px"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                        Photo 1
+                      </span>
+                    </div>
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
+                        <ExternalLink className="h-3 w-3" />
+                        View
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-card">
+                    <p className="text-xs text-muted-foreground truncate">
+                      {job.targetImage.name}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Parent 2 (Source Image) */}
+                {job.sourceImage
+                  ? (
+                    <button
+                      type="button"
+                      onClick={() => handleViewParent(job.sourceImage!.id)}
+                      className="group relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+                    >
+                      <div className="aspect-square relative bg-muted">
+                        <Image
+                          src={job.sourceImage.url}
+                          alt={job.sourceImage.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 300px"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                        <div className="absolute top-2 left-2">
+                          <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                            Photo 2
+                          </span>
+                        </div>
+                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" />
+                            View
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-2 bg-card">
+                        <p className="text-xs text-muted-foreground truncate">
+                          {job.sourceImage.name}
+                        </p>
+                      </div>
+                    </button>
+                  )
+                  : (
+                    <div className="rounded-lg overflow-hidden border border-dashed border-border">
+                      <div className="aspect-square relative bg-muted flex items-center justify-center">
+                        <p className="text-xs text-muted-foreground text-center px-4">
+                          Photo 2 was uploaded directly and not saved to gallery
+                        </p>
+                      </div>
+                      <div className="p-2 bg-card">
+                        <p className="text-xs text-muted-foreground truncate">
+                          Uploaded file
+                        </p>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Sidebar */}
+        <div>
+          <Card>
+            <CardContent className="pt-6 space-y-6">
+              {/* Actions */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Actions</h3>
+                {isCompleted && (
+                  <Button
+                    onClick={handleDownload}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Mix
+                  </Button>
+                )}
+                <Button
+                  onClick={() => router.push("/apps/pixel/mix")}
+                  className="w-full"
+                >
+                  Create New Mix
+                </Button>
+              </div>
+
+              {/* Mix Result Info */}
+              {isCompleted && job.resultWidth && job.resultHeight && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">Result Details</h3>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>
+                      Dimensions: {job.resultWidth} x {job.resultHeight}
+                    </p>
+                    <p>Quality: {tierLabels[job.tier]}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* QR Code Overlay - Desktop Only */}
+      <MixShareQRCode shareUrl={shareUrl} />
+    </div>
+  );
+}

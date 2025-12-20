@@ -208,10 +208,8 @@ export function PhotoMixClient() {
 
   const handleHistoryClick = useCallback(
     (mix: MixHistoryItem) => {
-      // Navigate to the result image detail page
-      if (mix.targetImage) {
-        router.push(`/apps/pixel/${mix.targetImage.id}`);
-      }
+      // Navigate to the mix detail page using job ID
+      router.push(`/apps/pixel/mix/${mix.id}`);
     },
     [router],
   );
