@@ -25,7 +25,7 @@ async function handleGetEmailLogs(request: NextRequest) {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -149,7 +149,7 @@ async function handlePostEmailAction(request: NextRequest) {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {

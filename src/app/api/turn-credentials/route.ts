@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { tryCatch } from "@/lib/try-catch";
+import { NextResponse } from "next/server";
 
 /**
  * API endpoint to fetch TURN server credentials from Twilio
@@ -27,7 +27,7 @@ export async function GET() {
           "Authorization": `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString("base64")}`,
         },
       },
-    )
+    ),
   );
 
   if (fetchError || !response.ok) {

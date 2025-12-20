@@ -44,7 +44,7 @@ export async function POST(
   }
 
   const { data: formData, error: formDataError } = await tryCatch(
-    request.formData()
+    request.formData(),
   );
 
   if (formDataError) {
@@ -104,7 +104,7 @@ export async function POST(
         userId: true,
         promptConfig: true,
       },
-    })
+    }),
   );
 
   if (dbError) {
@@ -150,7 +150,7 @@ export async function POST(
 
   // Process image
   const { data: arrayBuffer, error: bufferError } = await tryCatch(
-    file.arrayBuffer()
+    file.arrayBuffer(),
   );
   if (bufferError) {
     return NextResponse.json(
@@ -162,7 +162,7 @@ export async function POST(
 
   // Get image metadata and validate
   const { data: metadata, error: sharpError } = await tryCatch(
-    sharp(buffer).metadata()
+    sharp(buffer).metadata(),
   );
 
   if (sharpError || !metadata?.width || !metadata?.height || !metadata?.format) {
@@ -185,7 +185,7 @@ export async function POST(
           fit: "inside",
           withoutEnlargement: true,
         })
-        .toBuffer()
+        .toBuffer(),
     );
     if (resizeError) {
       return NextResponse.json(
@@ -212,7 +212,7 @@ export async function POST(
         userId: session.user.id,
         description: description || "",
       },
-    })
+    }),
   );
 
   if (uploadError || !uploadResult?.success) {
@@ -246,7 +246,7 @@ export async function POST(
           referenceImages: updatedReferenceImages,
         } as unknown as Prisma.InputJsonValue,
       },
-    })
+    }),
   );
 
   if (updateError) {
@@ -306,7 +306,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
         userId: true,
         promptConfig: true,
       },
-    })
+    }),
   );
 
   if (dbError) {
@@ -336,7 +336,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
   // Remove from R2
   const { data: deleteResult, error: deleteError } = await tryCatch(
-    deleteFromR2(r2Key)
+    deleteFromR2(r2Key),
   );
 
   if (deleteError) {
@@ -362,7 +362,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
           referenceImages: updatedRefs,
         } as unknown as Prisma.InputJsonValue,
       },
-    })
+    }),
   );
 
   if (updateError) {

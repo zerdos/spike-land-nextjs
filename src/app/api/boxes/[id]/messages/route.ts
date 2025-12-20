@@ -45,7 +45,7 @@ export async function POST(
         id: id,
         userId: session.user.id,
       },
-    })
+    }),
   );
 
   if (boxError) {
@@ -65,7 +65,7 @@ export async function POST(
         role: BoxMessageRole.USER,
         content: body.content,
       },
-    })
+    }),
   );
 
   if (userMessageError) {
@@ -82,7 +82,7 @@ export async function POST(
         role: BoxMessageRole.AGENT,
         content: "Message received. This is a placeholder response.",
       },
-    })
+    }),
   );
 
   if (agentMessageError) {

@@ -3,6 +3,7 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
+import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { attributeConversion } from "@/lib/tracking/attribution";
@@ -314,14 +315,79 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Upload blend source to R2 and create EnhancedImage record so we can display it later
+      const buffer = Buffer.from(blendSource.base64, "base64");
+      const extension = blendSource.mimeType.split("/")[1] || "jpg";
+
+      const { data: uploadResult, error: uploadError } = await tryCatch(
+        processAndUploadImage({
+          buffer,
+          originalFilename: `blend-source-${Date.now()}.${extension}`,
+          userId: session.user.id,
+        }),
+      );
+
+      if (uploadError || !uploadResult?.success) {
+        requestLogger.error(
+          "Failed to upload blend source image",
+          uploadError instanceof Error
+            ? uploadError
+            : new Error(uploadResult?.error || "Upload failed"),
+          { targetImageId: imageId },
+        );
+        return NextResponse.json(
+          {
+            error: "Failed to save blend source image",
+            title: "Upload failed",
+            suggestion: "Please try again with the same image.",
+          },
+          { status: 500, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
+      // Create EnhancedImage record for the blend source
+      const { data: blendSourceImage, error: createError } = await tryCatch(
+        prisma.enhancedImage.create({
+          data: {
+            userId: session.user.id,
+            name: `Blend Source`,
+            originalUrl: uploadResult.url,
+            originalR2Key: uploadResult.r2Key,
+            originalWidth: uploadResult.width,
+            originalHeight: uploadResult.height,
+            originalSizeBytes: uploadResult.sizeBytes,
+            originalFormat: uploadResult.format,
+            isPublic: false,
+          },
+        }),
+      );
+
+      if (createError || !blendSourceImage) {
+        requestLogger.error(
+          "Failed to create blend source image record",
+          createError instanceof Error ? createError : new Error("Failed to create record"),
+          { targetImageId: imageId, uploadResult },
+        );
+        return NextResponse.json(
+          {
+            error: "Failed to save blend source image",
+            title: "Database error",
+            suggestion: "Please try again.",
+          },
+          { status: 500, headers: { "X-Request-ID": requestId } },
+        );
+      }
+
       resolvedBlendSource = {
         base64: blendSource.base64,
         mimeType: blendSource.mimeType,
       };
+      sourceImageId = blendSourceImage.id;
 
-      requestLogger.info("Blend mode: uploaded file validated", {
+      requestLogger.info("Blend mode: uploaded file stored", {
         mimeType: blendSource.mimeType,
         targetImageId: imageId,
+        sourceImageId: blendSourceImage.id,
       });
     } else {
       requestLogger.warn("Invalid blend source - no imageId or base64 provided");

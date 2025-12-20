@@ -23,7 +23,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   const { id } = paramsData;
 
   const { data: apiKey, error: fetchError } = await tryCatch(
-    getApiKey(session.user.id, id)
+    getApiKey(session.user.id, id),
   );
 
   if (fetchError) {
@@ -65,7 +65,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   const { id } = paramsData;
 
   const { data: result, error: revokeError } = await tryCatch(
-    revokeApiKey(session.user.id, id)
+    revokeApiKey(session.user.id, id),
   );
 
   if (revokeError) {

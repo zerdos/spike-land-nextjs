@@ -1,8 +1,8 @@
 import { authenticateMcpRequest } from "@/lib/mcp/auth";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { tryCatch } from "@/lib/try-catch";
 
 // Schema for task result update
 const taskResultSchema = z.object({
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     prisma.box.findUnique({
       where: { id: boxId },
       select: { userId: true },
-    })
+    }),
   );
 
   if (boxError) {
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
       orderBy: {
         createdAt: "asc",
       },
-    })
+    }),
   );
 
   if (tasksError) {
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     prisma.agentTask.findUnique({
       where: { id: taskId },
       include: { box: true },
-    })
+    }),
   );
 
   if (taskError) {
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         result: result ?? undefined,
         error: error ?? undefined,
       },
-    })
+    }),
   );
 
   if (updateError) {

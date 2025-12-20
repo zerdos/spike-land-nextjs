@@ -26,7 +26,13 @@ import { useCallback, useEffect, useState } from "react";
 
 interface EnhanceClientProps {
   image: EnhancedImage & {
-    enhancementJobs: ImageEnhancementJob[];
+    enhancementJobs: (ImageEnhancementJob & {
+      sourceImage?: {
+        id: string;
+        originalUrl: string;
+        name: string;
+      } | null;
+    })[];
   };
 }
 
@@ -451,9 +457,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               </CardHeader>
               <CardContent>
                 <EnhancementHistoryGrid
-                  versions={image.enhancementJobs.map((
-                    job: ImageEnhancementJob,
-                  ) => ({
+                  versions={image.enhancementJobs.map((job) => ({
                     id: job.id,
                     tier: job.tier,
                     enhancedUrl: job.enhancedUrl || "",
@@ -465,6 +469,13 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                     sizeBytes: job.enhancedSizeBytes,
                     sourceImageId: job.sourceImageId,
                     isBlend: job.isBlend,
+                    sourceImage: job.sourceImage
+                      ? {
+                        id: job.sourceImage.id,
+                        url: job.sourceImage.originalUrl,
+                        name: job.sourceImage.name,
+                      }
+                      : null,
                   }))}
                   selectedVersionId={selectedVersionId || undefined}
                   onVersionSelect={setSelectedVersionId}

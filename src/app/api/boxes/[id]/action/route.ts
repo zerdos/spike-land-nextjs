@@ -48,7 +48,7 @@ export async function POST(
         id: id,
         userId: session.user.id,
       },
-    })
+    }),
   );
 
   if (boxError) {
@@ -68,7 +68,7 @@ export async function POST(
         action: body.action,
         status: "PENDING",
       },
-    })
+    }),
   );
 
   if (actionError) {
@@ -89,7 +89,7 @@ export async function POST(
       data: {
         status: newStatus,
       },
-    })
+    }),
   );
 
   if (updateError) {

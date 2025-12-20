@@ -7,9 +7,9 @@
 
 import { auth } from "@/auth";
 import { FacebookMarketingClient } from "@/lib/marketing";
+import { tryCatch } from "@/lib/try-catch";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { tryCatch } from "@/lib/try-catch";
 
 export async function GET(): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());

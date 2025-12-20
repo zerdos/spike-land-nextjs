@@ -43,6 +43,12 @@ export interface EnhancementVersion {
   sourceImageId?: string | null;
   /** True when job uses blend enhancement (file upload or stored image) */
   isBlend?: boolean;
+  /** Source image data for display in blend enhancements */
+  sourceImage?: {
+    id: string;
+    url: string;
+    name: string;
+  } | null;
 }
 
 interface EnhancementHistoryGridProps {
@@ -225,15 +231,31 @@ export function EnhancementHistoryGrid({
                 {tierLabels[version.tier]}
               </Badge>
 
-              {/* Blend Badge - shows for both file upload and stored image blends */}
+              {/* Blend Badge with Source Image Thumbnail */}
               {(version.isBlend || version.sourceImageId) && (
-                <Badge
-                  variant="outline"
-                  className="absolute top-2 left-12 text-xs font-semibold bg-pink-500/20 text-pink-400 border-pink-500/30 flex items-center gap-1"
-                >
-                  <Layers className="h-3 w-3" />
-                  Blend
-                </Badge>
+                <div className="absolute top-2 left-12 flex items-center gap-1">
+                  <Badge
+                    variant="outline"
+                    className="text-xs font-semibold bg-pink-500/20 text-pink-400 border-pink-500/30 flex items-center gap-1"
+                  >
+                    <Layers className="h-3 w-3" />
+                    Blend
+                  </Badge>
+                  {version.sourceImage && (
+                    <div
+                      className="relative w-6 h-6 rounded-sm overflow-hidden border border-pink-500/30"
+                      title={`Blended with: ${version.sourceImage.name}`}
+                    >
+                      <Image
+                        src={version.sourceImage.url}
+                        alt={`Blend source: ${version.sourceImage.name}`}
+                        fill
+                        sizes="24px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Delete/Cancel Button */}

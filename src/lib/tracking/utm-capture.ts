@@ -93,9 +93,7 @@ export async function getUTMFromCookies(): Promise<UTMParams | null> {
     return null;
   }
 
-  const { data: params } = tryCatchSync<UTMParams>(() =>
-    JSON.parse(utmCookie.value)
-  );
+  const { data: params } = tryCatchSync<UTMParams>(() => JSON.parse(utmCookie.value));
 
   if (!params) {
     return null;

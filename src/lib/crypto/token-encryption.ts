@@ -164,9 +164,7 @@ export function safeEncryptToken(
 ): string {
   if (!plaintext) return plaintext;
 
-  const { data: encrypted, error } = tryCatchSync<string>(() =>
-    encryptToken(plaintext)
-  );
+  const { data: encrypted, error } = tryCatchSync<string>(() => encryptToken(plaintext));
 
   if (error) {
     // Only catch the "not configured" error, not "wrong length" errors
@@ -206,9 +204,7 @@ export function safeDecryptToken(data: string): string {
     return data;
   }
 
-  const { data: decrypted, error } = tryCatchSync<string>(() =>
-    decryptToken(data)
-  );
+  const { data: decrypted, error } = tryCatchSync<string>(() => decryptToken(data));
 
   if (error) {
     // If decryption fails, it might be an old unencrypted token that

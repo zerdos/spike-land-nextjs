@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { analyzeImage } from "@/lib/ai/gemini-client";
-import { NextRequest, NextResponse } from "next/server";
 import { tryCatch } from "@/lib/try-catch";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   // Analyze the image with Gemini
   const { data: analysis, error: analyzeError } = await tryCatch(
-    analyzeImage(imageData, mimeType)
+    analyzeImage(imageData, mimeType),
   );
 
   if (analyzeError) {

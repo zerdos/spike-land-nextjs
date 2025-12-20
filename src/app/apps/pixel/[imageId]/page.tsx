@@ -31,6 +31,15 @@ export default async function PixelImagePage({ params }: PixelImagePageProps) {
         orderBy: {
           createdAt: "desc",
         },
+        include: {
+          sourceImage: {
+            select: {
+              id: true,
+              originalUrl: true,
+              name: true,
+            },
+          },
+        },
       },
     },
   });
