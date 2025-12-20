@@ -274,9 +274,10 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to delete campaign link:", deleteError);
 
     // Handle Prisma not found error (P2025)
-    // @ts-expect-error - Prisma error typing
     if (
-      deleteError.code === "P2025" ||
+      (typeof deleteError === "object" &&
+        "code" in deleteError &&
+        deleteError.code === "P2025") ||
       deleteError.message?.includes("Record to delete does not exist")
     ) {
       return NextResponse.json(
