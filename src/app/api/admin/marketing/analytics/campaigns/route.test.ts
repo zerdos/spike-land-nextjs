@@ -29,6 +29,11 @@ vi.mock("@/lib/prisma", () => ({
     campaignAttribution: {
       findMany: vi.fn(),
     },
+    campaignMetricsCache: {
+      findUnique: vi.fn(),
+      delete: vi.fn(),
+      upsert: vi.fn(),
+    },
   },
 }));
 
@@ -44,6 +49,15 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+    // Mock cache to always return null (bypass cache, compute fresh)
+    vi.mocked(prisma.campaignMetricsCache.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.campaignMetricsCache.upsert).mockResolvedValue({
+      id: "cache-1",
+      cacheKey: "test",
+      metrics: {},
+      computedAt: new Date(),
+      expiresAt: new Date(),
+    });
   });
 
   describe("Authentication and authorization", () => {

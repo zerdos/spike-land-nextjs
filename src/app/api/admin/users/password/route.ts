@@ -124,6 +124,9 @@ export async function POST(request: NextRequest) {
 
   if (fetchError) {
     console.error("User lookup error:", fetchError);
+    if (fetchError instanceof Error && fetchError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: fetchError.message }, { status: 403 });
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
