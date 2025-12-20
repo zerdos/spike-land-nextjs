@@ -41,6 +41,15 @@ interface PendingError {
 // Detect environment
 const isServer = typeof window === "undefined";
 
+/**
+ * Detect if running in Vercel Workflow environment
+ * Workflows have limited Node.js APIs and no HTTP server context
+ */
+function isWorkflowEnvironment(): boolean {
+  if (typeof window !== "undefined") return false;
+  return !!process.env.WORKFLOW_RUNTIME;
+}
+
 // Pending errors for batching (frontend only)
 let pendingErrors: PendingError[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -150,6 +159,11 @@ function reportErrorBackend(
   // But we can't import Prisma here (breaks client bundling)
   // So we send to our own API endpoint
   if (environment === "BACKEND") {
+    // Skip HTTP calls in workflow environments (no server context, relative URLs fail)
+    if (isWorkflowEnvironment()) {
+      return;
+    }
+
     // Fire-and-forget POST to our error API
     void fetch("/api/errors/report", {
       method: "POST",
