@@ -34,12 +34,14 @@ interface PipelineCardProps {
 }
 
 const TIER_LABELS: Record<EnhancementTier, string> = {
+  FREE: "Free",
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",
 };
 
 const TIER_COLORS: Record<EnhancementTier, string> = {
+  FREE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   TIER_1K: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   TIER_2K: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   TIER_4K: "bg-amber-500/10 text-amber-600 border-amber-500/20",

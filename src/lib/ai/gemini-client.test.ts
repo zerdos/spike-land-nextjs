@@ -9,6 +9,7 @@ import {
   GEMINI_TIMEOUT_MS,
   type GenerateImageParams,
   generateImageWithGemini,
+  getModelForTier,
   isGeminiConfigured,
   type ModifyImageParams,
   modifyImageWithGemini,
@@ -572,7 +573,7 @@ describe("gemini-client", () => {
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-2.5-flash-image", // Development environment uses flash model
+          model: "gemini-3-pro-image-preview", // DEFAULT_MODEL (always premium)
           config: {
             responseModalities: ["IMAGE"],
             imageConfig: {
@@ -1703,10 +1704,10 @@ describe("gemini-client", () => {
   });
 
   describe("DEFAULT_MODEL export", () => {
-    it("should export the default model name for test environment", () => {
-      // In test/development environment, defaults to gemini-2.5-flash
-      // In production, it would be gemini-3-pro-image-preview
-      expect(DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
+    it("should export the premium model as default", () => {
+      // DEFAULT_MODEL is always the premium model
+      // Tier-based selection is done via getModelForTier()
+      expect(DEFAULT_MODEL).toBe("gemini-3-pro-image-preview");
     });
   });
 
@@ -1853,83 +1854,23 @@ describe("gemini-client", () => {
         "gemini-2.0-flash-preview-image-generation",
       );
     });
+  });
 
-    it("should log warning when invalid GEMINI_MODEL is set", async () => {
-      const warnSpy = vi.spyOn(console, "warn");
-
-      // Save original env
-      const originalGeminiModel = process.env.GEMINI_MODEL;
-
-      // Set invalid model and reset modules to re-evaluate DEFAULT_MODEL
-      process.env.GEMINI_MODEL = "gemini-2.0-flash-preview-image-generation";
-      vi.resetModules();
-
-      // Dynamic import to get fresh module with new env
-      const freshModule = await import("./gemini-client");
-
-      // Verify warning was logged
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid GEMINI_MODEL "gemini-2.0-flash-preview-image-generation"'),
-      );
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Falling back to"),
-      );
-
-      // Verify fallback to development model (in test env, NODE_ENV !== "production")
-      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
-
-      // Restore
-      process.env.GEMINI_MODEL = originalGeminiModel;
-      warnSpy.mockRestore();
-      vi.resetModules();
+  describe("getModelForTier", () => {
+    it("should return nano model for FREE tier", () => {
+      expect(getModelForTier("FREE")).toBe("gemini-2.5-flash-image");
     });
 
-    it("should accept valid GEMINI_MODEL from env", async () => {
-      const warnSpy = vi.spyOn(console, "warn");
-
-      // Save original env
-      const originalGeminiModel = process.env.GEMINI_MODEL;
-
-      // Set valid model and reset modules
-      process.env.GEMINI_MODEL = "gemini-3-pro-image-preview";
-      vi.resetModules();
-
-      // Dynamic import to get fresh module
-      const freshModule = await import("./gemini-client");
-
-      // No warning should be logged for valid model
-      expect(warnSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("Invalid GEMINI_MODEL"),
-      );
-
-      // Should use the env value
-      expect(freshModule.DEFAULT_MODEL).toBe("gemini-3-pro-image-preview");
-
-      // Restore
-      process.env.GEMINI_MODEL = originalGeminiModel;
-      warnSpy.mockRestore();
-      vi.resetModules();
+    it("should return premium model for TIER_1K", () => {
+      expect(getModelForTier("TIER_1K")).toBe("gemini-3-pro-image-preview");
     });
 
-    it("should use environment-appropriate default when GEMINI_MODEL is not set", async () => {
-      // Save original env
-      const originalGeminiModel = process.env.GEMINI_MODEL;
+    it("should return premium model for TIER_2K", () => {
+      expect(getModelForTier("TIER_2K")).toBe("gemini-3-pro-image-preview");
+    });
 
-      // Unset GEMINI_MODEL and reset modules
-      delete process.env.GEMINI_MODEL;
-      vi.resetModules();
-
-      // Dynamic import to get fresh module
-      const freshModule = await import("./gemini-client");
-
-      // In test environment (NODE_ENV !== "production"), should use development model
-      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash-image");
-
-      // Restore
-      if (originalGeminiModel !== undefined) {
-        process.env.GEMINI_MODEL = originalGeminiModel;
-      }
-      vi.resetModules();
+    it("should return premium model for TIER_4K", () => {
+      expect(getModelForTier("TIER_4K")).toBe("gemini-3-pro-image-preview");
     });
   });
 });

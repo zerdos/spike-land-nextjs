@@ -38,6 +38,11 @@ interface EnhancementSettingsProps {
 
 // User-friendly display info for tiers
 const TIER_DISPLAY_INFO = {
+  FREE: {
+    name: "Free",
+    tagline: "Nano model preview",
+    cost: 0,
+  },
   TIER_1K: {
     name: "Standard",
     tagline: "Balanced quality & speed",
@@ -55,7 +60,7 @@ const TIER_DISPLAY_INFO = {
   },
 } as const;
 
-// Ordered array of tiers for consistent rendering
+// Ordered array of tiers for consistent rendering (FREE only available in mix mode)
 const TIER_ORDER: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 
 export function EnhancementSettings({

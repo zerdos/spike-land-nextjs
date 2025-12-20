@@ -17,8 +17,9 @@ import { Separator } from "@/components/ui/separator";
 import { type MixHistoryItem, useMixHistory } from "@/hooks/useMixHistory";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Coins, Sparkles, Upload } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Coins, Crown, Sparkles, Upload } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useCallback, useState } from "react";
 
@@ -46,12 +47,13 @@ export function PhotoMixClient() {
   const [isCreatingMix, setIsCreatingMix] = useState(false);
   const [needsUpload, setNeedsUpload] = useState(false);
 
-  // Select tier (default to 1K for quick mixes)
-  const [selectedTier] = useState<EnhancementTier>("TIER_1K");
+  // Tier selection (default to FREE for easy onboarding)
+  const [selectedTier, setSelectedTier] = useState<EnhancementTier>("FREE");
   const tokenCost = ENHANCEMENT_COSTS[selectedTier];
 
   const canCreateMix = image1 !== null && image2 !== null && !activeJobId && !isCreatingMix;
-  const hasEnoughTokens = balance >= tokenCost;
+  // FREE tier always has enough tokens (costs 0)
+  const hasEnoughTokens = tokenCost === 0 || balance >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
   const hasUploadedImages = image1?.type === "upload" || image2?.type === "upload";
@@ -293,10 +295,49 @@ export function PhotoMixClient() {
             />
           </div>
 
+          {/* Tier selector */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setSelectedTier("FREE")}
+              disabled={activeJobId !== null}
+              className={cn(
+                "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
+                selectedTier === "FREE"
+                  ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500 text-emerald-400"
+                  : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
+                activeJobId !== null && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              {selectedTier === "FREE" && <Check className="h-4 w-4" />}
+              Free (Nano)
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTier("TIER_1K")}
+              disabled={activeJobId !== null}
+              className={cn(
+                "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
+                selectedTier === "TIER_1K"
+                  ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-2 border-amber-500 text-amber-400"
+                  : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
+                activeJobId !== null && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <Crown className="h-4 w-4" />
+              Premium (2 tokens)
+            </button>
+          </div>
+
           {/* Create Mix button */}
           <Button
             size="lg"
-            className="w-full"
+            className={cn(
+              "w-full",
+              selectedTier === "FREE"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
+                : "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500",
+            )}
             onClick={handleCreateMix}
             disabled={!canCreateMix || !hasEnoughTokens}
           >
@@ -311,7 +352,7 @@ export function PhotoMixClient() {
                 <>
                   {hasUploadedImages && <Upload className="mr-2 h-4 w-4" />}
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Create Mix ({tokenCost} tokens)
+                  Create Mix {tokenCost > 0 ? `(${tokenCost} tokens)` : "(Free)"}
                 </>
               )}
           </Button>
@@ -343,15 +384,75 @@ export function PhotoMixClient() {
 
               <Separator />
 
-              {/* Cost info */}
+              {/* Quality options */}
               <div className="space-y-3">
-                <h3 className="text-sm font-medium">Mix Cost</h3>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">1K Quality</span>
-                  <span className="font-medium">2 tokens</span>
+                <h3 className="text-sm font-medium">Mix Quality Options</h3>
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                    selectedTier === "FREE"
+                      ? "border-emerald-500/50 bg-emerald-500/10"
+                      : "border-border bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    {selectedTier === "FREE" && <Check className="h-4 w-4 text-emerald-500" />}
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        selectedTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                      )}
+                    >
+                      Free Tier
+                    </span>
+                    <span className="text-xs text-muted-foreground">Nano Quality</span>
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      selectedTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                    )}
+                  >
+                    0 tokens
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                    selectedTier === "TIER_1K"
+                      ? "border-amber-500/50 bg-amber-500/10"
+                      : "border-border bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <Crown
+                      className={cn(
+                        "h-4 w-4",
+                        selectedTier === "TIER_1K" ? "text-amber-500" : "text-muted-foreground",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        selectedTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                      )}
+                    >
+                      Premium Tier
+                    </span>
+                    <span className="text-xs text-muted-foreground">1K Quality</span>
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      selectedTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                    )}
+                  >
+                    2 tokens
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Each mix uses the 1K tier for fast results. Higher quality options coming soon.
+                  Free tier uses Nano model for quick previews. Premium tier uses 1K quality for
+                  better results. Upgrade for more tokens and features.
                 </p>
               </div>
 
@@ -368,12 +469,14 @@ export function PhotoMixClient() {
                 </ol>
               </div>
 
-              {!hasEnoughTokens && !isBalanceLoading && (
+              {/* Only show "not enough tokens" for paid tiers */}
+              {tokenCost > 0 && !hasEnoughTokens && !isBalanceLoading && (
                 <>
                   <Separator />
                   <div className="space-y-3">
                     <p className="text-sm text-destructive">
-                      You need {tokenCost} tokens to create a mix.
+                      You need {tokenCost}{" "}
+                      tokens for Premium tier. Try Free tier or get more tokens.
                     </p>
                     <PurchaseModal
                       trigger={

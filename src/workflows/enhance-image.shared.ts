@@ -15,12 +15,14 @@ import { EnhancementTier } from "@prisma/client";
 
 // Resolution constants for each enhancement tier
 export const TIER_RESOLUTIONS = {
+  FREE: 1024, // Free tier uses same resolution as 1K
   TIER_1K: 1024,
   TIER_2K: 2048,
   TIER_4K: 4096,
 } as const;
 
 export const TIER_TO_SIZE = {
+  FREE: "1K" as const, // Free tier uses same size as 1K
   TIER_1K: "1K" as const,
   TIER_2K: "2K" as const,
   TIER_4K: "4K" as const,
@@ -88,7 +90,7 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
     throw new Error("Invalid originalR2Key: must be a non-empty string");
   }
 
-  const validTiers: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
+  const validTiers: EnhancementTier[] = ["FREE", "TIER_1K", "TIER_2K", "TIER_4K"];
   if (!validTiers.includes(input.tier)) {
     throw new Error(`Invalid tier: must be one of ${validTiers.join(", ")}`);
   }

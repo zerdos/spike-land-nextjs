@@ -11,6 +11,11 @@ import { AlertTriangle, CheckCircle, Coins, Loader2, Sparkles, XCircle } from "l
 import { useCallback, useState } from "react";
 
 const TIER_INFO = {
+  FREE: {
+    label: "Free (Nano)",
+    cost: 0,
+    description: "Free preview with nano model",
+  },
   TIER_1K: {
     label: "1K (1024px)",
     cost: 2,

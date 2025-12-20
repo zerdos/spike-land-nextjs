@@ -3,10 +3,6 @@ import { GoogleGenAI } from "@google/genai";
 import type { AspectRatio } from "./aspect-ratio";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
-// Configuration constants - exported for job metadata tracking
-const PRODUCTION_MODEL = "gemini-3-pro-image-preview";
-const DEVELOPMENT_MODEL = "gemini-2.5-flash-image";
-
 /**
  * Known valid Gemini models for image generation.
  * This allowlist prevents runtime errors from invalid model names.
@@ -17,38 +13,33 @@ export const VALID_GEMINI_MODELS = [
 ] as const;
 
 /**
- * Validates the GEMINI_MODEL environment variable against the allowlist.
- * Falls back to environment-appropriate default if invalid or not set.
+ * Model mapping by enhancement tier.
+ * - FREE: Uses nano model (gemini-2.5-flash-image) for free tier
+ * - TIER_1K/2K/4K: Uses premium model (gemini-3-pro-image-preview)
  */
-function getValidatedModel(): string {
-  const envModel = process.env.GEMINI_MODEL;
-  const fallbackModel = process.env.NODE_ENV === "production"
-    ? PRODUCTION_MODEL
-    : DEVELOPMENT_MODEL;
+export const TIER_MODELS = {
+  FREE: "gemini-2.5-flash-image", // Nano model (free tier)
+  TIER_1K: "gemini-3-pro-image-preview", // Premium model
+  TIER_2K: "gemini-3-pro-image-preview", // Premium model
+  TIER_4K: "gemini-3-pro-image-preview", // Premium model
+} as const;
 
-  if (!envModel) {
-    return fallbackModel;
-  }
+export type TierModelKey = keyof typeof TIER_MODELS;
 
-  if (!VALID_GEMINI_MODELS.includes(envModel as typeof VALID_GEMINI_MODELS[number])) {
-    console.warn(
-      `[Gemini] Invalid GEMINI_MODEL "${envModel}". ` +
-        `Valid models: ${VALID_GEMINI_MODELS.join(", ")}. ` +
-        `Falling back to "${fallbackModel}"`,
-    );
-    return fallbackModel;
-  }
-
-  return envModel;
+/**
+ * Get the appropriate model for a given enhancement tier.
+ * @param tier - The enhancement tier
+ * @returns The Gemini model name to use
+ */
+export function getModelForTier(tier: TierModelKey): string {
+  return TIER_MODELS[tier];
 }
 
 /**
- * Default model selection based on environment.
- * - Production: gemini-3-pro-image-preview (higher quality, supports 2K/4K)
- * - Development: gemini-2.5-flash (cheaper, faster, supports aspect ratios)
- * Can be overridden via GEMINI_MODEL environment variable (validated against allowlist).
+ * Default model for backward compatibility.
+ * Uses premium model (gemini-3-pro-image-preview) as default.
  */
-export const DEFAULT_MODEL = getValidatedModel();
+export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 // Timeout for Gemini API requests (configurable via env, default 5 minutes)
@@ -217,6 +208,8 @@ export interface EnhanceImageParams {
   promptOverride?: string;
   /** Optional reference images for style guidance - base64 encoded with mime types */
   referenceImages?: ReferenceImageData[];
+  /** Optional model override - when provided, uses this model instead of DEFAULT_MODEL */
+  model?: string;
 }
 
 /**
@@ -736,8 +729,11 @@ export async function enhanceImageWithGemini(
     },
   ];
 
+  // Use model from params if provided, otherwise use default
+  const modelToUse = params.model || DEFAULT_MODEL;
+
   console.log(
-    `Generating enhanced image with Gemini API using model: ${DEFAULT_MODEL}`,
+    `Generating enhanced image with Gemini API using model: ${modelToUse}`,
   );
   console.log(
     `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
@@ -748,7 +744,7 @@ export async function enhanceImageWithGemini(
   const processStream = async (): Promise<Buffer> => {
     const { data: response, error: streamInitError } = await tryCatch(
       ai.models.generateContentStream({
-        model: DEFAULT_MODEL,
+        model: modelToUse,
         config,
         contents,
       }),

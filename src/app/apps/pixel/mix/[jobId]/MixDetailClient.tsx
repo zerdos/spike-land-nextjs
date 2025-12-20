@@ -40,6 +40,7 @@ interface MixDetailClientProps {
 type ComparisonParent = "parent1" | "parent2";
 
 const tierLabels: Record<EnhancementTier, string> = {
+  FREE: "Free",
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",

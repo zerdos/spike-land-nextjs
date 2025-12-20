@@ -62,12 +62,14 @@ interface EnhancementHistoryGridProps {
 }
 
 const tierLabels: Record<EnhancementTier, string> = {
+  FREE: "Free",
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",
 };
 
 const tierStyles: Record<EnhancementTier, string> = {
+  FREE: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   TIER_1K: "bg-green-500/20 text-green-400 border-green-500/30",
   TIER_2K: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   TIER_4K: "bg-purple-500/20 text-purple-400 border-purple-500/30",
