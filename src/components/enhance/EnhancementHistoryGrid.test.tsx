@@ -708,4 +708,166 @@ describe("EnhancementHistoryGrid", () => {
 
     expect(screen.queryByLabelText("Cancel 4K job")).not.toBeInTheDocument();
   });
+
+  describe("sourceImage and blend badge", () => {
+    it("renders blend badge with source image thumbnail", () => {
+      const blendVersion: EnhancementVersion = {
+        id: "blend-1",
+        tier: "TIER_2K",
+        enhancedUrl: "https://example.com/enhanced-blend.jpg",
+        width: 2048,
+        height: 1536,
+        createdAt: new Date("2024-12-09T12:00:00Z"),
+        status: "COMPLETED",
+        sizeBytes: 500000,
+        isBlend: true,
+        sourceImageId: "source-123",
+        sourceImage: {
+          id: "source-123",
+          url: "https://example.com/source-image.jpg",
+          name: "Mountain Landscape",
+        },
+      };
+
+      render(
+        <EnhancementHistoryGrid
+          versions={[blendVersion]}
+          onVersionSelect={mockOnVersionSelect}
+          onJobDelete={mockOnJobDelete}
+        />,
+      );
+
+      // Check blend badge is rendered
+      expect(screen.getByText("Blend")).toBeInTheDocument();
+
+      // Check source image thumbnail is rendered with correct alt text
+      const sourceImageThumbnail = screen.getByAltText(
+        "Blend source: Mountain Landscape",
+      );
+      expect(sourceImageThumbnail).toBeInTheDocument();
+      expect(sourceImageThumbnail).toHaveAttribute(
+        "src",
+        "https://example.com/source-image.jpg",
+      );
+    });
+
+    it("renders blend badge with correct title attribute for source image", () => {
+      const blendVersion: EnhancementVersion = {
+        id: "blend-2",
+        tier: "TIER_1K",
+        enhancedUrl: "https://example.com/enhanced-blend-2.jpg",
+        width: 1024,
+        height: 768,
+        createdAt: new Date("2024-12-09T11:00:00Z"),
+        status: "COMPLETED",
+        sizeBytes: 250000,
+        isBlend: true,
+        sourceImageId: "source-456",
+        sourceImage: {
+          id: "source-456",
+          url: "https://example.com/sunset.jpg",
+          name: "Sunset Beach",
+        },
+      };
+
+      render(
+        <EnhancementHistoryGrid
+          versions={[blendVersion]}
+          onVersionSelect={mockOnVersionSelect}
+          onJobDelete={mockOnJobDelete}
+        />,
+      );
+
+      // Find the container div that has the title attribute
+      const sourceImageContainer = screen
+        .getByAltText("Blend source: Sunset Beach")
+        .closest("div");
+      expect(sourceImageContainer).toHaveAttribute(
+        "title",
+        "Blended with: Sunset Beach",
+      );
+    });
+
+    it("renders blend badge without thumbnail when sourceImage is null", () => {
+      const blendVersionNoSourceImage: EnhancementVersion = {
+        id: "blend-3",
+        tier: "TIER_4K",
+        enhancedUrl: "https://example.com/enhanced-blend-3.jpg",
+        width: 4096,
+        height: 3072,
+        createdAt: new Date("2024-12-09T10:00:00Z"),
+        status: "COMPLETED",
+        sizeBytes: 1200000,
+        isBlend: true,
+        sourceImageId: "source-789",
+        sourceImage: null,
+      };
+
+      render(
+        <EnhancementHistoryGrid
+          versions={[blendVersionNoSourceImage]}
+          onVersionSelect={mockOnVersionSelect}
+          onJobDelete={mockOnJobDelete}
+        />,
+      );
+
+      // Blend badge should still be rendered
+      expect(screen.getByText("Blend")).toBeInTheDocument();
+
+      // But no source image thumbnail
+      expect(
+        screen.queryByAltText(/Blend source:/),
+      ).not.toBeInTheDocument();
+    });
+
+    it("renders blend badge when only sourceImageId is present", () => {
+      const versionWithSourceImageId: EnhancementVersion = {
+        id: "blend-4",
+        tier: "TIER_2K",
+        enhancedUrl: "https://example.com/enhanced-blend-4.jpg",
+        width: 2048,
+        height: 1536,
+        createdAt: new Date("2024-12-09T09:00:00Z"),
+        status: "COMPLETED",
+        sizeBytes: 600000,
+        isBlend: false,
+        sourceImageId: "source-abc",
+      };
+
+      render(
+        <EnhancementHistoryGrid
+          versions={[versionWithSourceImageId]}
+          onVersionSelect={mockOnVersionSelect}
+          onJobDelete={mockOnJobDelete}
+        />,
+      );
+
+      // Blend badge should be rendered because sourceImageId is present
+      expect(screen.getByText("Blend")).toBeInTheDocument();
+    });
+
+    it("does not render blend badge for non-blend versions", () => {
+      const regularVersion: EnhancementVersion = {
+        id: "regular-1",
+        tier: "TIER_1K",
+        enhancedUrl: "https://example.com/regular.jpg",
+        width: 1024,
+        height: 768,
+        createdAt: new Date("2024-12-09T08:00:00Z"),
+        status: "COMPLETED",
+        sizeBytes: 200000,
+      };
+
+      render(
+        <EnhancementHistoryGrid
+          versions={[regularVersion]}
+          onVersionSelect={mockOnVersionSelect}
+          onJobDelete={mockOnJobDelete}
+        />,
+      );
+
+      // No blend badge should be rendered
+      expect(screen.queryByText("Blend")).not.toBeInTheDocument();
+    });
+  });
 });

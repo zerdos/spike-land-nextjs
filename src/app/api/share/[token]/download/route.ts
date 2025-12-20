@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     checkRateLimit(
       `share-download:${ip}`,
       rateLimitConfigs.general,
-    )
+    ),
   );
 
   if (rateLimitError) {
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           take: 1,
         },
       },
-    })
+    }),
   );
 
   if (dbError) {

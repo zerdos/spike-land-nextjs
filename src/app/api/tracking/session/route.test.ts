@@ -46,11 +46,18 @@ describe("POST /api/tracking/session", () => {
 
   describe("Request validation", () => {
     it("should return 400 for invalid JSON body", async () => {
+      // Create a request and mock its json() method to throw a SyntaxError
+      // This avoids the unhandled rejection from NextRequest's internal body parsing
       const request = new NextRequest("http://localhost/api/tracking/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "not valid json {",
+        body: JSON.stringify({}),
       });
+
+      // Override json() to simulate invalid JSON parsing error
+      vi.spyOn(request, "json").mockRejectedValue(
+        new SyntaxError("Unexpected token 'n', \"not valid json {\" is not valid JSON"),
+      );
 
       const response = await POST(request);
       const data = await response.json();

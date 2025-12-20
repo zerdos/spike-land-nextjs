@@ -66,13 +66,22 @@ describe("/api/jobs/batch-status - POST", () => {
       user: { id: mockUserId },
     } as any);
 
+    // Create a request and mock its json() method to throw a SyntaxError
+    // This avoids the unhandled rejection from NextRequest's internal body parsing
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/batch-status",
       {
         method: "POST",
-        body: "invalid json",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       },
     );
+
+    // Override json() to simulate invalid JSON parsing error
+    vi.spyOn(request, "json").mockRejectedValue(
+      new SyntaxError("Unexpected token 'i', \"invalid json\" is not valid JSON"),
+    );
+
     const response = await POST(request);
 
     expect(response.status).toBe(400);

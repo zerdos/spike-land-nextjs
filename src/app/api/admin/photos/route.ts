@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   // Check admin access
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {

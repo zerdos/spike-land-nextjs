@@ -60,7 +60,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Run the sync
   const { data: syncResult, error: syncError } = await tryCatch(
-    syncExternalCampaigns()
+    syncExternalCampaigns(),
   );
 
   if (syncError) {
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Also cleanup expired cache entries
   const { data: expiredCacheCleanedUp, error: cleanupError } = await tryCatch(
-    cleanupExpiredCache()
+    cleanupExpiredCache(),
   );
 
   if (cleanupError) {

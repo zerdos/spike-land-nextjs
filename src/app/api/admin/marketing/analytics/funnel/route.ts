@@ -52,7 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         visitorId: true,
       },
       distinct: ["visitorId"],
-    })
+    }),
   );
 
   if (visitorsError) {
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where: { ...attributionFilter, conversionType: "SIGNUP" },
       select: { userId: true },
       distinct: ["userId"],
-    })
+    }),
   );
 
   const { data: enhancementUsers, error: enhancementError } = await tryCatch(
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where: { ...attributionFilter, conversionType: "ENHANCEMENT" },
       select: { userId: true },
       distinct: ["userId"],
-    })
+    }),
   );
 
   const { data: purchaseUsers, error: purchaseError } = await tryCatch(
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where: { ...attributionFilter, conversionType: "PURCHASE" },
       select: { userId: true },
       distinct: ["userId"],
-    })
+    }),
   );
 
   if (signupError || enhancementError || purchaseError) {
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         utmCampaign: true,
       },
       distinct: ["utmCampaign"],
-    })
+    }),
   );
 
   if (campaignsError) {

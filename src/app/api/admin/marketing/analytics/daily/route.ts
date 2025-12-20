@@ -46,7 +46,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         WHERE session_start >= ${start} AND session_start <= ${end}
         GROUP BY DATE(session_start)
         ORDER BY date ASC
-      `
+      `,
   );
 
   if (visitorsError) {
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         AND conversion_type = 'SIGNUP'
         GROUP BY DATE(converted_at)
         ORDER BY date ASC
-      `
+      `,
   );
 
   if (signupsError) {
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         AND conversion_type = 'PURCHASE'
         GROUP BY DATE(converted_at)
         ORDER BY date ASC
-      `
+      `,
   );
 
   if (revenueError) {

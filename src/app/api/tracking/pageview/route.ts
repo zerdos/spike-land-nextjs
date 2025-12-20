@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   // Rate limiting by IP address
   const clientIP = getClientIP(request);
   const { data: rateLimitResult, error: rateLimitError } = await tryCatch(
-    checkRateLimit(`tracking_pageview:${clientIP}`, pageViewRateLimit)
+    checkRateLimit(`tracking_pageview:${clientIP}`, pageViewRateLimit),
   );
 
   if (rateLimitError) {
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
   const { data: session, error: sessionError } = await tryCatch(
     prisma.visitorSession.findUnique({
       where: { id: data.sessionId },
-    })
+    }),
   );
 
   if (sessionError) {
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
           sessionEnd: new Date(), // Update activity timestamp
         },
       });
-    })
+    }),
   );
 
   if (txError) {

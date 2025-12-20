@@ -44,7 +44,7 @@ export async function POST(
     prisma.box.findUnique({
       where: { id: boxId },
       include: { tier: true },
-    })
+    }),
   );
 
   if (boxError) {
@@ -73,7 +73,7 @@ export async function POST(
   const cost = sourceBox.tier.pricePerHour;
 
   const { data: hasBalance, error: balanceError } = await tryCatch(
-    TokenBalanceManager.hasEnoughTokens(session.user.id, cost)
+    TokenBalanceManager.hasEnoughTokens(session.user.id, cost),
   );
 
   if (balanceError) {
@@ -96,7 +96,7 @@ export async function POST(
         sourceBoxId: sourceBox.id,
         tierId: sourceBox.tierId,
       },
-    })
+    }),
   );
 
   if (tokenError || !tokenResult?.success) {
@@ -116,7 +116,7 @@ export async function POST(
         connectionUrl: null, // New instance
         // storageVolumeId: sourceBox.storageVolumeId // In real implementation, we'd snapshot the volume first
       },
-    })
+    }),
   );
 
   if (createError) {
@@ -127,7 +127,7 @@ export async function POST(
         cost,
         sourceBox.id,
         "Box clone failed",
-      )
+      ),
     );
     console.error("Box creation error:", createError);
     return new NextResponse("Failed to create cloned box", { status: 500 });
@@ -146,7 +146,7 @@ export async function POST(
           cost,
         },
       },
-    })
+    }),
   );
 
   if (logNewError) {
@@ -165,7 +165,7 @@ export async function POST(
           newBoxId: clonedBox.id,
         },
       },
-    })
+    }),
   );
 
   if (logOldError) {

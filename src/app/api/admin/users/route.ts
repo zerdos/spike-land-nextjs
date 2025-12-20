@@ -27,7 +27,7 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -183,7 +183,7 @@ async function handlePatchUser(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -392,7 +392,7 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {

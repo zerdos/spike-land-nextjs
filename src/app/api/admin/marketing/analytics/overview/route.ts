@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
         // Query current period metrics
         const { data: currentMetrics, error: currentError } = await tryCatch(
-          getRawMetrics(start, end, attributionModel as AttributionType)
+          getRawMetrics(start, end, attributionModel as AttributionType),
         );
 
         if (currentError || !currentMetrics) throw currentError;
@@ -126,21 +126,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             previousStart,
             previousEnd,
             attributionModel as AttributionType,
-          )
+          ),
         );
 
         if (previousError || !previousMetrics) throw previousError;
 
         // Get daily breakdown
         const { data: daily, error: dailyError } = await tryCatch(
-          getDailyMetrics(start, end)
+          getDailyMetrics(start, end),
         );
 
         if (dailyError || !daily) throw dailyError;
 
         // Get traffic sources breakdown
         const { data: trafficSources, error: trafficError } = await tryCatch(
-          getTrafficSources(start, end)
+          getTrafficSources(start, end),
         );
 
         if (trafficError || !trafficSources) throw trafficError;
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         };
       },
       300, // Cache for 5 minutes
-    )
+    ),
   );
 
   if (cacheError) {

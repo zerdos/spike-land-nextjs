@@ -49,7 +49,7 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -122,7 +122,7 @@ async function patchHandler(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {

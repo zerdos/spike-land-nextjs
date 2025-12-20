@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         requirements: true,
         monetizationModels: true,
       },
-    })
+    }),
   );
 
   if (createError) {
@@ -107,7 +107,7 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    })
+    }),
   );
 
   if (fetchError) {

@@ -32,7 +32,7 @@ export async function GET(
           orderBy: { createdAt: "asc" },
         },
       },
-    })
+    }),
   );
 
   if (boxError) {
@@ -68,7 +68,7 @@ export async function DELETE(
         id: id,
         userId: session.user.id,
       },
-    })
+    }),
   );
 
   if (boxError) {
@@ -88,7 +88,7 @@ export async function DELETE(
         deletedAt: new Date(),
         status: BoxStatus.TERMINATED,
       },
-    })
+    }),
   );
 
   if (updateError) {

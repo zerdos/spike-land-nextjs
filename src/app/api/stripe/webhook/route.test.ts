@@ -32,6 +32,11 @@ vi.mock("@/lib/stripe/client", () => ({
   }),
 }));
 
+// Mock attribution tracking to prevent prisma calls during tests
+vi.mock("@/lib/tracking/attribution", () => ({
+  attributeConversion: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock Prisma with dynamic mock implementation
 vi.mock("@/lib/prisma", () => ({
   default: {
