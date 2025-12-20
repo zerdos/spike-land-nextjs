@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { processImageForUpload } from "@/lib/images/browser-image-processor";
 import { cn } from "@/lib/utils";
 import { Camera, FolderOpen, Plus, Upload, X } from "lucide-react";
 import Image from "next/image";
@@ -55,79 +56,6 @@ const ACCEPTED_IMAGE_TYPES = [
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
-// Maximum dimension for uploads to stay under Vercel's 4.5MB body limit
-const MAX_UPLOAD_DIMENSION = 2048;
-const UPLOAD_QUALITY = 0.85;
-
-/**
- * Resize image to fit within max dimension while maintaining aspect ratio.
- * Returns base64 JPEG data for efficient upload.
- */
-async function resizeImageForUpload(
-  file: File,
-  maxDimension = MAX_UPLOAD_DIMENSION,
-  quality = UPLOAD_QUALITY,
-): Promise<{
-  base64: string;
-  mimeType: string;
-  width: number;
-  height: number;
-}> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-
-      let { naturalWidth: width, naturalHeight: height } = img;
-
-      // Calculate new dimensions maintaining aspect ratio
-      if (width > maxDimension || height > maxDimension) {
-        const ratio = Math.min(maxDimension / width, maxDimension / height);
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
-      }
-
-      // Create canvas and draw resized image
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Failed to get canvas context"));
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Export as JPEG for consistent compression
-      const dataUrl = canvas.toDataURL("image/jpeg", quality);
-      const base64Data = dataUrl.split(",")[1];
-
-      if (!base64Data) {
-        reject(new Error("Failed to encode image"));
-        return;
-      }
-
-      resolve({
-        base64: base64Data,
-        mimeType: "image/jpeg",
-        width,
-        height,
-      });
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("Failed to load image for resizing"));
-    };
-
-    img.src = objectUrl;
-  });
-}
-
 export function ImageSlot({
   label,
   image,
@@ -157,22 +85,21 @@ export function ImageSlot({
       setIsProcessing(true);
 
       try {
-        // Resize image for upload to stay under Vercel's body size limit
-        // This converts to JPEG and scales down to max 2048px dimension
-        const { base64, mimeType, width, height } = await resizeImageForUpload(file);
+        // Process image: resize to max 1024px, crop to supported aspect ratio, convert to WebP
+        const processed = await processImageForUpload(file);
 
-        // Create object URL for preview (from original file for best quality)
-        const previewUrl = URL.createObjectURL(file);
+        // Create object URL for preview from processed blob
+        const previewUrl = URL.createObjectURL(processed.blob);
 
         const uploadedImage: UploadedImage = {
           type: "upload",
           id: `upload-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           url: previewUrl,
           name: file.name,
-          width,
-          height,
-          base64,
-          mimeType,
+          width: processed.width,
+          height: processed.height,
+          base64: processed.base64,
+          mimeType: processed.mimeType,
         };
 
         onImageSelect(uploadedImage);

@@ -26,6 +26,17 @@ describe("ROUTES", () => {
   it("generates correct imageDetail routes", () => {
     expect(ROUTES.imageDetail("img-123")).toBe("/apps/pixel/img-123");
   });
+
+  it("generates correct mixDetail routes", () => {
+    expect(ROUTES.mixDetail("job-123")).toBe("/apps/pixel/mix/job-123");
+    expect(ROUTES.mixDetail("job-123", "/apps/pixel")).toBe(
+      "/apps/pixel/mix/job-123?from=%2Fapps%2Fpixel",
+    );
+  });
+
+  it("has correct mixCreate route", () => {
+    expect(ROUTES.mixCreate).toBe("/apps/pixel/mix");
+  });
 });
 
 describe("API_ROUTES", () => {

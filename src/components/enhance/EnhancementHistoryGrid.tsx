@@ -57,15 +57,19 @@ interface EnhancementHistoryGridProps {
   onVersionSelect: (versionId: string) => void;
   onJobDelete: (jobId: string) => Promise<void>;
   onJobCancel?: (jobId: string) => Promise<void>;
+  /** Optional callback for clicking on mix items - if provided, blend items will trigger this instead of onVersionSelect */
+  onMixClick?: (jobId: string) => void;
 }
 
 const tierLabels: Record<EnhancementTier, string> = {
+  FREE: "Free",
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",
 };
 
 const tierStyles: Record<EnhancementTier, string> = {
+  FREE: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   TIER_1K: "bg-green-500/20 text-green-400 border-green-500/30",
   TIER_2K: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   TIER_4K: "bg-purple-500/20 text-purple-400 border-purple-500/30",
@@ -77,6 +81,7 @@ export function EnhancementHistoryGrid({
   onVersionSelect,
   onJobDelete,
   onJobCancel,
+  onMixClick,
 }: EnhancementHistoryGridProps) {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [processingJobId, setProcessingJobId] = useState<string | null>(null);
@@ -153,12 +158,25 @@ export function EnhancementHistoryGrid({
             className={`relative rounded-lg overflow-hidden border bg-card cursor-pointer transition-all hover:shadow-lg ${MASONRY_ITEM_MARGIN} ${
               isSelected ? "ring-2 ring-primary" : "border-white/10"
             }`}
-            onClick={() => onVersionSelect(version.id)}
+            onClick={() => {
+              // If this is a blend item and onMixClick is provided, use it
+              const isBlendItem = version.isBlend || version.sourceImageId;
+              if (isBlendItem && onMixClick) {
+                onMixClick(version.id);
+              } else {
+                onVersionSelect(version.id);
+              }
+            }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                onVersionSelect(version.id);
+                const isBlendItem = version.isBlend || version.sourceImageId;
+                if (isBlendItem && onMixClick) {
+                  onMixClick(version.id);
+                } else {
+                  onVersionSelect(version.id);
+                }
               }
             }}
             aria-label={`Select ${tierLabels[version.tier]} version`}

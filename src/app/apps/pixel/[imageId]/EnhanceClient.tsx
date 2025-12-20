@@ -18,7 +18,7 @@ import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Coins, Layers } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Coins, ExternalLink, Layers } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -540,6 +540,18 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                       className="w-full"
                     />
                   )}
+                  {/* Show View Mix Details button for blend jobs */}
+                  {selectedVersion && (selectedVersion.isBlend || selectedVersion.sourceImageId) &&
+                    (
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
+                        className="w-full"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        View Mix Details
+                      </Button>
+                    )}
                 </div>
               </CardContent>
             </Card>

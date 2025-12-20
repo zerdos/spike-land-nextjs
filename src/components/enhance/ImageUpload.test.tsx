@@ -2,6 +2,21 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageUpload } from "./ImageUpload";
 
+// Mock browser-image-processor
+vi.mock("@/lib/images/browser-image-processor", () => ({
+  processImageForUpload: vi.fn().mockImplementation(async (file: File) => {
+    // Return a mock processed result that creates a file-like blob
+    const blob = new Blob(["mock-processed-image"], { type: "image/webp" });
+    return {
+      blob,
+      mimeType: "image/webp",
+      width: 1024,
+      height: 768,
+      originalName: file.name,
+    };
+  }),
+}));
+
 describe("ImageUpload Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -51,7 +66,12 @@ describe("ImageUpload Component", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(mockOnFilesSelected).toHaveBeenCalledWith([file]);
+      expect(mockOnFilesSelected).toHaveBeenCalledTimes(1);
+      // Files are processed before being passed to onFilesSelected
+      const calledFiles = mockOnFilesSelected.mock.calls[0][0] as File[];
+      expect(calledFiles).toHaveLength(1);
+      expect(calledFiles[0].name).toBe("test.webp");
+      expect(calledFiles[0].type).toBe("image/webp");
     });
   });
 
@@ -73,7 +93,12 @@ describe("ImageUpload Component", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(mockOnFilesSelected).toHaveBeenCalledWith([file1, file2]);
+      expect(mockOnFilesSelected).toHaveBeenCalledTimes(1);
+      // Files are processed before being passed to onFilesSelected
+      const calledFiles = mockOnFilesSelected.mock.calls[0][0] as File[];
+      expect(calledFiles).toHaveLength(2);
+      expect(calledFiles[0].name).toBe("test1.webp");
+      expect(calledFiles[1].name).toBe("test2.webp");
     });
   });
 

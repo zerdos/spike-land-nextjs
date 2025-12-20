@@ -4,6 +4,19 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ReferenceImageUpload } from "./ReferenceImageUpload";
 
+// Mock browser-image-processor
+vi.mock("@/lib/images/browser-image-processor", () => ({
+  processImageForUpload: vi.fn().mockImplementation(async () => {
+    const blob = new Blob(["mock-processed-image"], { type: "image/webp" });
+    return {
+      blob,
+      mimeType: "image/webp",
+      width: 1024,
+      height: 768,
+    };
+  }),
+}));
+
 // Mock next/image
 vi.mock("next/image", () => ({
   default: (

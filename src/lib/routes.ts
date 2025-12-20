@@ -23,6 +23,16 @@ export const ROUTES = {
     return base;
   },
 
+  // Mix routes
+  mixDetail: (jobId: string, from?: string) => {
+    const base = `/apps/pixel/mix/${jobId}`;
+    if (from) {
+      return `${base}?from=${encodeURIComponent(from)}`;
+    }
+    return base;
+  },
+  mixCreate: "/apps/pixel/mix",
+
   // Auth routes
   login: "/login",
   signup: "/signup",

@@ -5,6 +5,20 @@ import { BatchUpload } from "./batch-upload";
 // Mock fetch
 global.fetch = vi.fn();
 
+// Mock browser-image-processor
+vi.mock("@/lib/images/browser-image-processor", () => ({
+  processImageForUpload: vi.fn().mockImplementation(async () => {
+    // Create a mock blob
+    const blob = new Blob(["mock-processed-image"], { type: "image/webp" });
+    return {
+      blob,
+      mimeType: "image/webp",
+      width: 1024,
+      height: 768,
+    };
+  }),
+}));
+
 // Mock FileReader
 class MockFileReader {
   onload: ((e: { target: { result: string; }; }) => void) | null = null;
@@ -146,7 +160,8 @@ describe("BatchUpload Component", () => {
     await waitFor(() => {
       const img = screen.getByAltText("test.png");
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute("src", "data:image/png;base64,mock-test.png");
+      // After processing, thumbnail is updated to blob URL from processed image
+      expect(img.getAttribute("src")).toMatch(/^blob:/);
     });
   });
 
@@ -361,7 +376,7 @@ describe("BatchUpload Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("2 files")).toBeInTheDocument();
-      expect(screen.getByText("2 pending")).toBeInTheDocument();
+      expect(screen.getByText("2 ready")).toBeInTheDocument();
     });
   });
 
@@ -895,7 +910,7 @@ describe("BatchUpload Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("1 file")).toBeInTheDocument();
-      expect(screen.getByText("1 pending")).toBeInTheDocument();
+      expect(screen.getByText("1 ready")).toBeInTheDocument();
     });
   });
 
@@ -1023,7 +1038,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show ImageIcon fallback when no thumbnail", async () => {
-    // Override FileReader to not provide thumbnail
+    // Override FileReader to not provide thumbnail AND make processing fail
     const OriginalFileReader = global.FileReader;
     class NoThumbnailFileReader {
       onload: ((e: { target: { result: string | null; }; }) => void) | null = null;
@@ -1034,6 +1049,10 @@ describe("BatchUpload Component", () => {
       }
     }
     global.FileReader = NoThumbnailFileReader as unknown as typeof FileReader;
+
+    // Mock processImageForUpload to fail for this test
+    const { processImageForUpload } = await import("@/lib/images/browser-image-processor");
+    vi.mocked(processImageForUpload).mockRejectedValueOnce(new Error("Processing failed"));
 
     render(<BatchUpload />);
 
@@ -1051,9 +1070,11 @@ describe("BatchUpload Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("test.png")).toBeInTheDocument();
+      // Should show processing error
+      expect(screen.getByText("Processing failed")).toBeInTheDocument();
     });
 
-    // Should not find an img tag with alt text
+    // Should not find an img tag with alt text (no thumbnail since FileReader returned null and processing failed)
     expect(screen.queryByAltText("test.png")).not.toBeInTheDocument();
 
     // Restore original FileReader

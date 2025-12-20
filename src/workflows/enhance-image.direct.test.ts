@@ -29,6 +29,11 @@ vi.mock("@/lib/ai/gemini-client", () => ({
   enhanceImageWithGemini: mockEnhanceImageWithGemini,
   analyzeImageV2: mockAnalyzeImageV2,
   buildDynamicEnhancementPrompt: vi.fn(() => "Mock enhancement prompt for testing"),
+  buildBlendEnhancementPrompt: vi.fn(() => "Mock blend prompt for testing"),
+  getModelForTier: vi.fn((tier: string) => {
+    if (tier === "FREE") return "gemini-2.5-flash-image";
+    return "gemini-3-pro-image-preview";
+  }),
   DEFAULT_MODEL: "gemini-3-pro-image-preview",
   DEFAULT_TEMPERATURE: null,
 }));

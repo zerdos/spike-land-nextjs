@@ -403,59 +403,76 @@ export async function POST(request: NextRequest) {
   }
 
   const tokenCost = ENHANCEMENT_COSTS[tier];
-  const hasEnough = await TokenBalanceManager.hasEnoughTokens(
-    session.user.id,
-    tokenCost,
-  );
 
-  if (!hasEnough) {
-    requestLogger.warn("Insufficient tokens", {
-      userId: session.user.id,
-      required: tokenCost,
-    });
-    const errorMessage = getUserFriendlyError(
-      new Error("Insufficient tokens"),
-      402,
+  // Track the resulting balance for the response
+  let resultingBalance = 0;
+
+  // Only check and consume tokens if there's a cost (FREE tier costs 0)
+  if (tokenCost > 0) {
+    const hasEnough = await TokenBalanceManager.hasEnoughTokens(
+      session.user.id,
+      tokenCost,
     );
-    return NextResponse.json(
-      {
-        error: errorMessage.message,
-        title: errorMessage.title,
-        suggestion: errorMessage.suggestion,
-        required: tokenCost,
-      },
-      { status: 402, headers: { "X-Request-ID": requestId } },
-    );
-  }
 
-  const consumeResult = await TokenBalanceManager.consumeTokens({
-    userId: session.user.id,
-    amount: tokenCost,
-    source: "image_enhancement",
-    sourceId: imageId,
-    metadata: { tier, requestId },
-  });
-
-  if (!consumeResult.success) {
-    requestLogger.error(
-      "Failed to consume tokens",
-      new Error(consumeResult.error),
-      {
+    if (!hasEnough) {
+      requestLogger.warn("Insufficient tokens", {
         userId: session.user.id,
-      },
-    );
-    const errorMessage = getUserFriendlyError(
-      new Error(consumeResult.error || "Failed to consume tokens"),
-      500,
-    );
-    return NextResponse.json(
-      {
-        error: errorMessage.message,
-        title: errorMessage.title,
-        suggestion: errorMessage.suggestion,
-      },
-      { status: 500, headers: { "X-Request-ID": requestId } },
-    );
+        required: tokenCost,
+      });
+      const errorMessage = getUserFriendlyError(
+        new Error("Insufficient tokens"),
+        402,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+          required: tokenCost,
+        },
+        { status: 402, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    const consumeResult = await TokenBalanceManager.consumeTokens({
+      userId: session.user.id,
+      amount: tokenCost,
+      source: "image_enhancement",
+      sourceId: imageId,
+      metadata: { tier, requestId },
+    });
+
+    if (!consumeResult.success) {
+      requestLogger.error(
+        "Failed to consume tokens",
+        new Error(consumeResult.error),
+        {
+          userId: session.user.id,
+        },
+      );
+      const errorMessage = getUserFriendlyError(
+        new Error(consumeResult.error || "Failed to consume tokens"),
+        500,
+      );
+      return NextResponse.json(
+        {
+          error: errorMessage.message,
+          title: errorMessage.title,
+          suggestion: errorMessage.suggestion,
+        },
+        { status: 500, headers: { "X-Request-ID": requestId } },
+      );
+    }
+
+    resultingBalance = consumeResult.balance ?? 0;
+  } else {
+    // FREE tier - get current balance for response (no tokens consumed)
+    const balanceResult = await TokenBalanceManager.getBalance(session.user.id);
+    resultingBalance = balanceResult.balance ?? 0;
+    requestLogger.info("FREE tier - no tokens consumed", {
+      userId: session.user.id,
+      tier,
+    });
   }
 
   const { data: job, error: jobError } = await tryCatch(
@@ -481,13 +498,15 @@ export async function POST(request: NextRequest) {
       jobError instanceof Error ? jobError : new Error(String(jobError)),
       { userId: session.user.id, imageId },
     );
-    // Refund tokens since job creation failed
-    await TokenBalanceManager.refundTokens(
-      session.user.id,
-      tokenCost,
-      "job-creation-failed",
-      "Failed to create enhancement job",
-    );
+    // Refund tokens since job creation failed (only if tokens were consumed)
+    if (tokenCost > 0) {
+      await TokenBalanceManager.refundTokens(
+        session.user.id,
+        tokenCost,
+        "job-creation-failed",
+        "Failed to create enhancement job",
+      );
+    }
     const errorMessage = getUserFriendlyError(
       jobError instanceof Error ? jobError : new Error("Failed to create job"),
       500,
@@ -547,22 +566,24 @@ export async function POST(request: NextRequest) {
           : new Error(String(workflowError)),
         { jobId: job.id },
       );
-      // Mark job as failed and refund tokens
+      // Mark job as failed and refund tokens (only if tokens were consumed)
       await tryCatch(
         prisma.imageEnhancementJob.update({
           where: { id: job.id },
           data: {
-            status: JobStatus.REFUNDED,
+            status: tokenCost > 0 ? JobStatus.REFUNDED : JobStatus.FAILED,
             errorMessage: "Failed to start workflow",
           },
         }),
       );
-      await TokenBalanceManager.refundTokens(
-        session.user.id,
-        tokenCost,
-        job.id,
-        "Workflow startup failed",
-      );
+      if (tokenCost > 0) {
+        await TokenBalanceManager.refundTokens(
+          session.user.id,
+          tokenCost,
+          job.id,
+          "Workflow startup failed",
+        );
+      }
       const errorMessage = getUserFriendlyError(
         workflowError instanceof Error
           ? workflowError
@@ -630,7 +651,7 @@ export async function POST(request: NextRequest) {
       success: true,
       jobId: job.id,
       tokenCost,
-      newBalance: consumeResult.balance,
+      newBalance: resultingBalance,
     },
     { headers: { "X-Request-ID": requestId } },
   );

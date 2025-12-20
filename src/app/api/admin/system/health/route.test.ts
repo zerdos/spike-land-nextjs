@@ -180,7 +180,7 @@ describe("System Health API", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.tierStats).toHaveLength(3); // TIER_1K, TIER_2K, TIER_4K
+    expect(data.tierStats).toHaveLength(4); // FREE, TIER_1K, TIER_2K, TIER_4K
     data.tierStats.forEach((stat: any) => {
       expect(stat.total).toBe(0);
       expect(stat.failed).toBe(0);
