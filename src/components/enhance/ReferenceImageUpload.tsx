@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ReferenceImage } from "@/lib/ai/pipeline-types";
+import { processImageForUpload } from "@/lib/images/browser-image-processor";
 import { AlertCircle, Image as ImageIcon, Loader2, Trash2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
@@ -182,8 +183,20 @@ export function ReferenceImageUpload({
       );
 
       try {
+        // Process image: resize to 1024px, crop to aspect ratio, convert to WebP
+        const processed = await processImageForUpload(pending.file);
+
+        // Create a new File from the processed blob
+        const extension = processed.mimeType === "image/webp" ? ".webp" : ".jpg";
+        const baseName = pending.file.name.replace(/\.[^/.]+$/, "");
+        const processedFile = new File(
+          [processed.blob],
+          `${baseName}${extension}`,
+          { type: processed.mimeType },
+        );
+
         const formData = new FormData();
-        formData.append("file", pending.file);
+        formData.append("file", processedFile);
         formData.append("pipelineId", pipelineId);
         if (pending.description) {
           formData.append("description", pending.description);

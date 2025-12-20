@@ -21,12 +21,14 @@ export interface ProcessImageResult {
   error?: string;
 }
 
-const MAX_DIMENSION = 4096; // 4K max resolution
+const MAX_DIMENSION = 1024; // Max 1024px resolution
+const WEBP_QUALITY = 80; // WebP quality setting
 
 /**
  * Process and upload an image
  * - Validates image
- * - Resizes to max 4K if needed
+ * - Resizes to max 1024px if needed
+ * - Converts to WebP format
  * - Uploads to R2
  */
 export async function processAndUploadImage(
@@ -62,8 +64,7 @@ export async function processAndUploadImage(
     return createErrorResult("Invalid image format");
   }
 
-  // Check if resize is needed (either dimension > 4K)
-  let processedBuffer = buffer;
+  // Calculate final dimensions (resize if needed)
   let finalWidth = metadata.width;
   let finalHeight = metadata.height;
 
@@ -78,30 +79,29 @@ export async function processAndUploadImage(
       finalHeight = MAX_DIMENSION;
       finalWidth = Math.round(MAX_DIMENSION * aspectRatio);
     }
-
-    // Resize image
-    const { data: resizedBuffer, error: resizeError } = await tryCatch(
-      sharp(buffer)
-        .resize(finalWidth, finalHeight, {
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .toBuffer(),
-    );
-
-    if (resizeError) {
-      console.error("Error processing image:", resizeError);
-      return createErrorResult(
-        resizeError instanceof Error ? resizeError.message : "Unknown error",
-      );
-    }
-
-    processedBuffer = resizedBuffer;
   }
 
-  // Generate unique image ID and R2 key
+  // Process image: resize if needed and convert to WebP
+  const { data: processedBuffer, error: processError } = await tryCatch(
+    sharp(buffer)
+      .resize(finalWidth, finalHeight, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer(),
+  );
+
+  if (processError) {
+    console.error("Error processing image:", processError);
+    return createErrorResult(
+      processError instanceof Error ? processError.message : "Unknown error",
+    );
+  }
+
+  // Generate unique image ID and R2 key (always .webp)
   const imageId = crypto.randomUUID();
-  const extension = metadata.format;
+  const extension = "webp";
   const r2Key = `users/${userId}/originals/${imageId}.${extension}`;
 
   // Upload to R2
@@ -109,7 +109,7 @@ export async function processAndUploadImage(
     uploadToR2({
       key: r2Key,
       buffer: processedBuffer,
-      contentType: `image/${extension}`,
+      contentType: "image/webp",
       metadata: {
         userId,
         originalFilename,
