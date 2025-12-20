@@ -25,7 +25,6 @@
   ],
   "ignoreDependencies": [
     "@types/*",
-    "@auth/core",
     "pg",
     "@next/eslint-plugin-next",
     "eslint-plugin-jsx-a11y",

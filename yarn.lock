@@ -83,30 +83,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@auth/core@npm:^0.41.1":
-  version: 0.41.1
-  resolution: "@auth/core@npm:0.41.1"
-  dependencies:
-    "@panva/hkdf": "npm:^1.2.1"
-    jose: "npm:^6.0.6"
-    oauth4webapi: "npm:^3.3.0"
-    preact: "npm:10.24.3"
-    preact-render-to-string: "npm:6.5.11"
-  peerDependencies:
-    "@simplewebauthn/browser": ^9.0.1
-    "@simplewebauthn/server": ^9.0.2
-    nodemailer: ^7.0.7
-  peerDependenciesMeta:
-    "@simplewebauthn/browser":
-      optional: true
-    "@simplewebauthn/server":
-      optional: true
-    nodemailer:
-      optional: true
-  checksum: 10c0/0800610fb3842f6cfa4e8bffa79412e4ed34856f91994596b57d312546b0aa8ee906d4df96ce14710becaf9774a3bc83693ebcb9b7b80e20dddf3613d26e3a38
-  languageName: node
-  linkType: hard
-
 "@aws-crypto/crc32@npm:5.2.0":
   version: 5.2.0
   resolution: "@aws-crypto/crc32@npm:5.2.0"
@@ -2838,22 +2814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mdx-js/loader@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@mdx-js/loader@npm:3.1.1"
-  dependencies:
-    "@mdx-js/mdx": "npm:^3.0.0"
-    source-map: "npm:^0.7.0"
-  peerDependencies:
-    webpack: ">=5"
-  peerDependenciesMeta:
-    webpack:
-      optional: true
-  checksum: 10c0/b277b0be53646e2cb047c5ee013631d6624c7924416c0ced203000eaf82401211c453250b716aca229401b34cb7a314b0f5c8b277a3230fbda4ddb568989e41e
-  languageName: node
-  linkType: hard
-
-"@mdx-js/mdx@npm:^3.0.0, @mdx-js/mdx@npm:^3.0.1":
+"@mdx-js/mdx@npm:^3.0.1":
   version: 3.1.1
   resolution: "@mdx-js/mdx@npm:3.1.1"
   dependencies:
@@ -2886,7 +2847,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mdx-js/react@npm:^3.0.1, @mdx-js/react@npm:^3.1.1":
+"@mdx-js/react@npm:^3.0.1":
   version: 3.1.1
   resolution: "@mdx-js/react@npm:3.1.1"
   dependencies:
@@ -2982,23 +2943,6 @@ __metadata:
   dependencies:
     fast-glob: "npm:3.3.1"
   checksum: 10c0/fc9836536deacb095c442c67c22d963871c24e47d07721c2d08511cc8fa422b5aa19bf84dbd0d90b1b37783727e710d2cb6e16e0fd0d1ad4eee35f34cdf78785
-  languageName: node
-  linkType: hard
-
-"@next/mdx@npm:^16.0.10":
-  version: 16.0.10
-  resolution: "@next/mdx@npm:16.0.10"
-  dependencies:
-    source-map: "npm:^0.7.0"
-  peerDependencies:
-    "@mdx-js/loader": ">=0.15.0"
-    "@mdx-js/react": ">=0.15.0"
-  peerDependenciesMeta:
-    "@mdx-js/loader":
-      optional: true
-    "@mdx-js/react":
-      optional: true
-  checksum: 10c0/dd3bd2dbcde973e15258de0a8e0b3102c53d867b5994e7504912bab7c40fbeaee8678ec349278d6b64f4ff85b1654678b077ca62b887aea6037f169ce855bad8
   languageName: node
   linkType: hard
 
@@ -18793,7 +18737,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "vercel-app@workspace:."
   dependencies:
-    "@auth/core": "npm:^0.41.1"
     "@aws-sdk/client-s3": "npm:^3.954.0"
     "@aws-sdk/lib-storage": "npm:^3.954.0"
     "@cucumber/cucumber": "npm:^12.4.0"
@@ -18802,9 +18745,6 @@ __metadata:
     "@dnd-kit/utilities": "npm:^3.2.2"
     "@google/genai": "npm:^1.34.0"
     "@hookform/resolvers": "npm:^5.2.2"
-    "@mdx-js/loader": "npm:^3.1.1"
-    "@mdx-js/react": "npm:^3.1.1"
-    "@next/mdx": "npm:^16.0.10"
     "@playwright/test": "npm:^1.57.0"
     "@prisma/adapter-pg": "npm:^7.2.0"
     "@prisma/client": "npm:^7.2.0"
@@ -18866,7 +18806,6 @@ __metadata:
     next-themes: "npm:^0.4.6"
     next-view-transitions: "npm:^0.3.5"
     peerjs: "npm:^1.5.5"
-    pg: "npm:^8.16.3"
     postcss: "npm:^8.5.6"
     prisma: "npm:^7.2.0"
     qrcode: "npm:^1.5.4"
