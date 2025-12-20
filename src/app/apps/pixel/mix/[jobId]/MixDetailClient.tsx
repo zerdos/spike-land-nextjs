@@ -10,7 +10,8 @@ import { ArrowLeft, Download, ExternalLink, Loader2 } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ParentImage {
   id: string;
@@ -38,7 +39,7 @@ interface MixDetailClientProps {
 
 type ComparisonParent = "parent1" | "parent2";
 
-const tierLabels: Record<string, string> = {
+const tierLabels: Record<EnhancementTier, string> = {
   TIER_1K: "1K",
   TIER_2K: "2K",
   TIER_4K: "4K",
@@ -48,10 +49,19 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeParent, setActiveParent] = useState<ComparisonParent>("parent1");
+  const [shareUrl, setShareUrl] = useState(
+    `https://spike.land/apps/pixel/mix/${job.id}`,
+  );
+
+  // Update shareUrl after hydration to use actual URL
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
 
   const handleBack = useCallback(() => {
     const from = searchParams.get("from");
-    if (from && from.startsWith("/")) {
+    // Validate: must start with "/" but NOT "//" (protocol-relative URL)
+    if (from && from.startsWith("/") && !from.startsWith("//")) {
       router.push(from);
     } else if (typeof window !== "undefined" && window.history.state?.idx > 0) {
       router.back();
@@ -76,6 +86,7 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
+      toast.error("Failed to download image. Please try again.");
     }
   }, [job.resultUrl, job.id]);
 
@@ -113,9 +124,6 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
   };
 
   const comparison = getCurrentComparison();
-  const shareUrl = typeof window !== "undefined"
-    ? window.location.href
-    : `https://spike.land/apps/pixel/mix/${job.id}`;
 
   const isCompleted = job.status === "COMPLETED" && job.resultUrl;
   const isProcessing = job.status === "PROCESSING" || job.status === "PENDING";
