@@ -240,7 +240,7 @@ describe("/api/v1/agent/heartbeat - POST", () => {
     const json = await response.json();
     expect(json.error).toBe("Internal Server Error");
     expect(consoleSpy).toHaveBeenCalledWith(
-      "Heartbeat error:",
+      "Database error:",
       expect.any(Error),
     );
 
@@ -290,27 +290,30 @@ describe("/api/v1/agent/heartbeat - POST", () => {
     expect(json.details).toBeDefined();
   });
 
-  it("returns 500 for invalid JSON body", async () => {
+  it("returns 400 for invalid JSON body", async () => {
+    // Create a request and mock its json() method to throw a SyntaxError
+    // This avoids the unhandled rejection from NextRequest's internal body parsing
     const request = new NextRequest(
       "http://localhost:3000/api/v1/agent/heartbeat",
       {
         method: "POST",
-        body: "not valid json",
+        body: JSON.stringify({}),
         headers: {
           "Content-Type": "application/json",
         },
       },
     );
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Override json() to simulate invalid JSON parsing error
+    vi.spyOn(request, "json").mockRejectedValue(
+      new SyntaxError("Unexpected token 'n', \"not valid json\" is not valid JSON"),
+    );
 
     const response = await POST(request);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     const json = await response.json();
-    expect(json.error).toBe("Internal Server Error");
-
-    consoleSpy.mockRestore();
+    expect(json.error).toBe("Invalid JSON body");
   });
 
   it("returns timestamp in ISO format", async () => {

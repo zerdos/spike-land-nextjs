@@ -47,7 +47,6 @@ coverage
 **/*.test.ts
 **/*.test.tsx
 **/*.spec.ts
-vitest.setup.ts
 vitest.mock-*.ts
 vitest.mock-*.tsx
 
