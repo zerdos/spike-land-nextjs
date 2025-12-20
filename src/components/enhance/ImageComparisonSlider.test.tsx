@@ -37,7 +37,7 @@ describe("ImageComparisonSlider", () => {
     height: 100,
   };
 
-  it("renders both images with object-cover class", () => {
+  it("renders both images with object-contain class", () => {
     render(<ImageComparisonSlider {...defaultProps} />);
 
     const originalImage = screen.getByAltText("Original");
@@ -45,8 +45,8 @@ describe("ImageComparisonSlider", () => {
 
     expect(originalImage).toBeDefined();
     expect(enhancedImage).toBeDefined();
-    expect(originalImage.className).toContain("object-cover");
-    expect(enhancedImage.className).toContain("object-cover");
+    expect(originalImage.className).toContain("object-contain");
+    expect(enhancedImage.className).toContain("object-contain");
   });
 
   it("applies correct aspect ratio from width/height props", () => {
