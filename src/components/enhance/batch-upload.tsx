@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { type ProcessedImage, processImageForUpload } from "@/lib/images/browser-image-processor";
 import { AlertCircle, CheckCircle, Image as ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
@@ -13,8 +14,9 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface FileUploadStatus {
   file: File;
+  processed?: ProcessedImage;
   id: string;
-  status: "pending" | "uploading" | "completed" | "error";
+  status: "pending" | "processing" | "uploading" | "completed" | "error";
   progress: number;
   error?: string;
   imageId?: string;
@@ -71,18 +73,67 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
     for (const file of fileArray) {
       const validation = validateFile(file);
       const thumbnail = await createThumbnail(file);
+      const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+      if (!validation.valid) {
+        validatedFiles.push({
+          file,
+          id: fileId,
+          status: "error",
+          progress: 0,
+          error: validation.error,
+          thumbnail,
+        });
+        continue;
+      }
+
+      // Add file with processing status
       validatedFiles.push({
         file,
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        status: validation.valid ? "pending" : "error",
+        id: fileId,
+        status: "processing",
         progress: 0,
-        error: validation.error,
         thumbnail,
       });
     }
 
+    // Add files to state first (shows processing status)
     setFiles((prev) => [...prev, ...validatedFiles]);
+
+    // Process valid files in the background
+    const filesToProcess = validatedFiles.filter((f) => f.status === "processing");
+    for (const fileStatus of filesToProcess) {
+      try {
+        const processed = await processImageForUpload(fileStatus.file);
+        // Update thumbnail with processed image
+        const processedThumbnail = URL.createObjectURL(processed.blob);
+
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileStatus.id
+              ? {
+                ...f,
+                status: "pending" as const,
+                processed,
+                thumbnail: processedThumbnail,
+              }
+              : f
+          )
+        );
+      } catch (error) {
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileStatus.id
+              ? {
+                ...f,
+                status: "error" as const,
+                error: error instanceof Error ? error.message : "Processing failed",
+              }
+              : f
+          )
+        );
+      }
+    }
   }, [files.length]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -127,7 +178,7 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
   }, []);
 
   const uploadBatch = useCallback(async () => {
-    const filesToUpload = files.filter((f) => f.status === "pending");
+    const filesToUpload = files.filter((f) => f.status === "pending" && f.processed);
 
     if (filesToUpload.length === 0) {
       return;
@@ -136,11 +187,21 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
     setIsUploading(true);
 
     try {
-      // Create FormData with all files
+      // Create FormData with processed files (WebP blobs)
       const formData = new FormData();
       formData.append("albumId", albumId);
       filesToUpload.forEach((fileStatus) => {
-        formData.append("files", fileStatus.file);
+        if (fileStatus.processed) {
+          // Create a new File from the processed blob with .webp extension
+          const extension = fileStatus.processed.mimeType === "image/webp" ? ".webp" : ".jpg";
+          const baseName = fileStatus.file.name.replace(/\.[^/.]+$/, "");
+          const newFile = new File(
+            [fileStatus.processed.blob],
+            `${baseName}${extension}`,
+            { type: fileStatus.processed.mimeType },
+          );
+          formData.append("files", newFile);
+        }
       });
 
       // Mark all as uploading
@@ -227,6 +288,7 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
     setFiles([]);
   }, []);
 
+  const processingCount = files.filter((f) => f.status === "processing").length;
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const completedCount = files.filter((f) => f.status === "completed").length;
   const errorCount = files.filter((f) => f.status === "error").length;
@@ -285,13 +347,18 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
 
         {/* Summary */}
         {files.length > 0 && (
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-4 text-sm flex-wrap">
             <Badge variant="secondary">
               {files.length} file{files.length !== 1 ? "s" : ""}
             </Badge>
+            {processingCount > 0 && (
+              <Badge variant="outline" className="text-muted-foreground">
+                {processingCount} processing
+              </Badge>
+            )}
             {pendingCount > 0 && (
               <Badge variant="outline">
-                {pendingCount} pending
+                {pendingCount} ready
               </Badge>
             )}
             {completedCount > 0 && (
@@ -366,6 +433,9 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
                       <X className="h-4 w-4" />
                     </Button>
                   )}
+                  {fileStatus.status === "processing" && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                   {fileStatus.status === "uploading" && (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   )}
@@ -386,7 +456,7 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
           <div className="flex gap-2">
             <Button
               onClick={uploadBatch}
-              disabled={isUploading || pendingCount === 0}
+              disabled={isUploading || processingCount > 0 || pendingCount === 0}
               className="flex-1"
             >
               {isUploading
@@ -394,6 +464,13 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Uploading...
+                  </>
+                )
+                : processingCount > 0
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing {processingCount} file{processingCount !== 1 ? "s" : ""}...
                   </>
                 )
                 : (

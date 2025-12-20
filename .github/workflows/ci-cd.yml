@@ -110,7 +110,7 @@ jobs:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: always()
         with:
           files: ./coverage/lcov.info

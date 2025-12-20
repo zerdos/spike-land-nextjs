@@ -11,9 +11,10 @@ export type ImageWithJobs = EnhancedImage & {
  * Tier priority order (higher number = better quality)
  */
 const TIER_ORDER: Record<EnhancementTier, number> = {
-  TIER_4K: 3,
-  TIER_2K: 2,
-  TIER_1K: 1,
+  TIER_4K: 4,
+  TIER_2K: 3,
+  TIER_1K: 2,
+  FREE: 1, // Free tier has lowest quality priority
 };
 
 /**

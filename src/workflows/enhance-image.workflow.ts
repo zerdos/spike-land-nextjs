@@ -6,6 +6,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_TEMPERATURE,
   enhanceImageWithGemini,
+  getModelForTier,
   type ImageAnalysisResultV2,
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
@@ -341,6 +342,7 @@ async function enhanceWithGemini(
   originalHeight: number,
   promptOverride: string,
   referenceImages?: ReferenceImageData[],
+  model?: string,
 ): Promise<Buffer> {
   "use step";
 
@@ -353,6 +355,7 @@ async function enhanceWithGemini(
       originalHeight,
       promptOverride,
       referenceImages,
+      model,
     }),
   );
 
@@ -465,6 +468,7 @@ async function updateJobStatus(
     height?: number;
     sizeBytes?: number;
     errorMessage?: string;
+    geminiModel?: string;
   },
 ): Promise<void> {
   "use step";
@@ -481,7 +485,7 @@ async function updateJobStatus(
           enhancedHeight: data.height,
           enhancedSizeBytes: data.sizeBytes,
           processingCompletedAt: new Date(),
-          geminiModel: DEFAULT_MODEL,
+          geminiModel: data.geminiModel,
           geminiTemp: DEFAULT_TEMPERATURE,
         }
         : {}),
@@ -614,6 +618,9 @@ async function executeEnhancementWorkflow(
     ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
     : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
+  // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
+  const modelToUse = getModelForTier(tier);
+
   // Step 7: Enhance with Gemini using dynamic prompt
   const enhancedBuffer = await enhanceWithGemini(
     paddedBase64,
@@ -623,6 +630,7 @@ async function executeEnhancementWorkflow(
     currentHeight,
     dynamicPrompt,
     sourceImageData ? [sourceImageData] : undefined,
+    modelToUse,
   );
 
   // === STAGE 4: POST-PROCESSING ===
@@ -644,6 +652,7 @@ async function executeEnhancementWorkflow(
     width: result.width,
     height: result.height,
     sizeBytes: result.sizeBytes,
+    geminiModel: modelToUse,
   });
 
   return result.enhancedUrl;

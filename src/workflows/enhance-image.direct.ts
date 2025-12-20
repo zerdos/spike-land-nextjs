@@ -20,6 +20,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_TEMPERATURE,
   enhanceImageWithGemini,
+  getModelForTier,
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
@@ -277,10 +278,12 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   const paddedBase64 = paddedBuffer.toString("base64");
 
   // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt
+  // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
+  const modelToUse = getModelForTier(tier);
   console.log(
     `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
       sourceImageData ? " [BLEND]" : ""
-    }`,
+    } using model: ${modelToUse}`,
   );
   await updateJobStage(jobId, PipelineStage.GENERATING);
   const enhancedBuffer = await enhanceImageWithGemini({
@@ -291,6 +294,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     originalHeight: height,
     promptOverride: dynamicPrompt,
     referenceImages: sourceImageData ? [sourceImageData] : undefined,
+    model: modelToUse,
   });
 
   // Step 8: Post-process and upload
@@ -364,7 +368,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       enhancedHeight: finalMetadata.height || targetHeight,
       enhancedSizeBytes: finalBuffer.length,
       processingCompletedAt: new Date(),
-      geminiModel: DEFAULT_MODEL,
+      geminiModel: modelToUse,
       geminiTemp: DEFAULT_TEMPERATURE,
     },
   });
