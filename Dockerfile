@@ -137,7 +137,10 @@ COPY --from=unit-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
 COPY --from=unit-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
 COPY --from=unit-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
 
-RUN cat /tmp/test-shard-1.log
+RUN cat /tmp/test-shard-1.log && \
+    cat /tmp/test-shard-2.log && \
+    cat /tmp/test-shard-3.log && \
+    cat /tmp/test-shard-4.log
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
