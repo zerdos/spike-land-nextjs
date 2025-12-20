@@ -59,7 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { platform: "asc" },
         { utmCampaign: "asc" },
       ],
-    })
+    }),
   );
 
   if (fetchError) {
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           platform,
         },
       },
-    })
+    }),
   );
 
   if (checkError) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           externalCampaignName,
           updatedAt: new Date(),
         },
-      })
+      }),
     );
 
     if (updateError) {
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         externalCampaignId,
         externalCampaignName,
       },
-    })
+    }),
   );
 
   if (createError) {
@@ -216,7 +216,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -246,7 +246,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     deletedLinkResult = await tryCatch(
       prisma.campaignLink.delete({
         where: { id },
-      })
+      }),
     );
   } else if (utmCampaign && platform) {
     // Delete by composite key
@@ -258,7 +258,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
             platform,
           },
         },
-      })
+      }),
     );
   } else {
     // Should be caught by Zod validation, but just in case
@@ -274,8 +274,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to delete campaign link:", deleteError);
 
     // Handle Prisma not found error (P2025)
-    // @ts-expect-error - Prisma error typing
-    if (deleteError.code === "P2025" || deleteError.message?.includes("Record to delete does not exist")) {
+    if (
+      (typeof deleteError === "object" &&
+        "code" in deleteError &&
+        deleteError.code === "P2025") ||
+      deleteError.message?.includes("Record to delete does not exist")
+    ) {
       return NextResponse.json(
         { error: "Campaign link not found" },
         { status: 404 },

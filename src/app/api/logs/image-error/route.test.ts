@@ -40,8 +40,8 @@ describe("POST /api/logs/image-error", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     expect(data.success).toBe(false);
-    expect(data.error).toBe("Failed to log error");
+    expect(data.error).toBe("Invalid JSON body");
   });
 });

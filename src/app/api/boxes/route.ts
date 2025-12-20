@@ -29,7 +29,7 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-    })
+    }),
   );
 
   if (boxesError) {
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   const { data: tier, error: tierError } = await tryCatch(
     prisma.boxTier.findUnique({
       where: { id: body.tierId },
-    })
+    }),
   );
 
   if (tierError) {
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   );
 
   const { data: hasBalance, error: balanceError } = await tryCatch(
-    TokenBalanceManager.hasEnoughTokens(session.user.id, cost)
+    TokenBalanceManager.hasEnoughTokens(session.user.id, cost),
   );
 
   if (balanceError) {
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
         tierId: tier.id,
         tierName: tier.name,
       },
-    })
+    }),
   );
 
   if (tokenError || !tokenResult?.success) {
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
         status: BoxStatus.CREATING,
         connectionUrl: null,
       },
-    })
+    }),
   );
 
   if (createError) {
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
         cost,
         "pending",
         "Box creation failed",
-      )
+      ),
     );
     console.error("Box creation failed:", createError);
     return new NextResponse("Internal Error", { status: 500 });
@@ -156,7 +156,7 @@ export async function POST(req: Request) {
         status: "COMPLETED",
         metadata: { cost },
       },
-    })
+    }),
   );
 
   if (actionError) {

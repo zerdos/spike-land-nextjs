@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id)
+    requireAdminByUserId(session.user.id),
   );
 
   if (adminError) {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         maxRequests: 5,
         windowMs: 60 * 60 * 1000, // 1 hour
       },
-    )
+    ),
   );
 
   if (rateLimitError) {
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
   // Hash the password
   const { data: passwordHash, error: hashError } = await tryCatch(
-    bcrypt.hash(password, 10)
+    bcrypt.hash(password, 10),
   );
 
   if (hashError) {
@@ -119,11 +119,14 @@ export async function POST(request: NextRequest) {
     prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true, name: true },
-    })
+    }),
   );
 
   if (fetchError) {
     console.error("User lookup error:", fetchError);
+    if (fetchError instanceof Error && fetchError.message.includes("Forbidden")) {
+      return NextResponse.json({ error: fetchError.message }, { status: 403 });
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest) {
       prisma.user.update({
         where: { email },
         data: { passwordHash },
-      })
+      }),
     );
 
     if (updateError) {
@@ -170,7 +173,7 @@ export async function POST(request: NextRequest) {
           passwordHash,
         },
         select: { id: true, email: true, name: true },
-      })
+      }),
     );
 
     if (createError) {

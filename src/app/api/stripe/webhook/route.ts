@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
-import { tryCatch } from "@/lib/try-catch";
+import { tryCatch, tryCatchSync } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Wrap synchronous call in a promise for tryCatch
-  const { data: event, error: constructError } = await tryCatch(
-    Promise.resolve().then(() => stripe.webhooks.constructEvent(body, signature, webhookSecret)),
+  // Use tryCatchSync for synchronous Stripe webhook verification
+  const { data: event, error: constructError } = tryCatchSync(
+    () => stripe.webhooks.constructEvent(body, signature, webhookSecret),
   );
 
   if (constructError) {

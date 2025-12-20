@@ -95,7 +95,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   })();
 
   const { data: tokens, error: tokenError } = await tryCatch(
-    client.exchangeCodeForTokens(code, redirectUri)
+    client.exchangeCodeForTokens(code, redirectUri),
   );
 
   if (tokenError || !tokens) {
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   client.setAccessToken(tokens.accessToken);
 
   const { data: accounts, error: accountError } = await tryCatch(
-    client.getAccounts()
+    client.getAccounts(),
   );
 
   if (accountError || !accounts) {
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           expiresAt: tokens.expiresAt,
           isActive: true,
         },
-      })
+      }),
     );
 
     if (dbError) {
@@ -226,8 +226,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             isActive: true,
           },
         })
-      )
-    )
+      ),
+    ),
   );
 
   if (dbError) {

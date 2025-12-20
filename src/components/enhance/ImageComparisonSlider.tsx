@@ -36,7 +36,7 @@ interface ImageComparisonSliderProps {
 
 /**
  * A slider component to compare original and enhanced images.
- * Uses object-cover to ensure images fill the container, and dynamic aspect ratio
+ * Uses object-contain to ensure images fit within the container, and dynamic aspect ratio
  * to match the original image dimensions. When width/height are omitted, the component
  * auto-detects the image dimensions for natural aspect ratio display.
  */

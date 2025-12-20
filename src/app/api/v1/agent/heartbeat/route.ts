@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { tryCatch } from "@/lib/try-catch";
 
 const heartbeatSchema = z.object({
   boxId: z.string(),
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   const { data: box, error: dbError } = await tryCatch(
     prisma.box.findUnique({
       where: { id: boxId },
-    })
+    }),
   );
 
   if (dbError) {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       prisma.box.update({
         where: { id: boxId },
         data: { status: "RUNNING" },
-      })
+      }),
     );
 
     if (updateError) {

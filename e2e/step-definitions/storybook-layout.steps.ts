@@ -40,8 +40,9 @@ Then(
   "I should see {string} in the sidebar navigation",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    const link = sidebar.getByRole("link", { name: new RegExp(linkText, "i") });
-    await expect(link.first()).toBeVisible({ timeout: 10000 });
+    // Use exact match to avoid matching partial text (e.g., "Brand" in "Pixel Brand Guidelines")
+    const link = sidebar.getByRole("link", { name: linkText, exact: true });
+    await expect(link).toBeVisible({ timeout: 10000 });
   },
 );
 

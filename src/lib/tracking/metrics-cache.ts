@@ -20,7 +20,7 @@ export async function getCachedMetrics<T>(cacheKey: string): Promise<T | null> {
   const { data: cached, error } = await tryCatch(
     prisma.campaignMetricsCache.findUnique({
       where: { cacheKey },
-    })
+    }),
   );
 
   if (error) {
@@ -39,7 +39,7 @@ export async function getCachedMetrics<T>(cacheKey: string): Promise<T | null> {
     void tryCatch(
       prisma.campaignMetricsCache.delete({
         where: { cacheKey },
-      })
+      }),
     );
     return null;
   }
@@ -76,7 +76,7 @@ export async function setCachedMetrics(
         computedAt: now,
         expiresAt,
       },
-    })
+    }),
   );
 
   if (error) {
@@ -104,7 +104,7 @@ export async function invalidateCache(pattern?: string): Promise<number> {
             contains: pattern,
           },
         },
-      })
+      }),
     );
   } else {
     // Delete all cache entries
@@ -136,7 +136,7 @@ export async function cleanupExpiredCache(): Promise<number> {
           lt: new Date(),
         },
       },
-    })
+    }),
   );
 
   if (error) {

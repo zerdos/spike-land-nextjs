@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { appCreationSchema } from "@/lib/validations/app";
 import type { MonetizationType, RequirementPriority, RequirementStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { tryCatch } from "@/lib/try-catch";
 
 export async function GET(
   _request: NextRequest,
@@ -45,7 +45,7 @@ export async function GET(
           },
         },
       },
-    })
+    }),
   );
 
   if (fetchError) {
@@ -94,7 +94,7 @@ export async function PATCH(
           not: "DELETED",
         },
       },
-    })
+    }),
   );
 
   if (fetchError) {
@@ -166,7 +166,7 @@ export async function PATCH(
           },
         },
       },
-    })
+    }),
   );
 
   if (updateError) {
@@ -208,7 +208,7 @@ export async function DELETE(
           not: "DELETED",
         },
       },
-    })
+    }),
   );
 
   if (fetchError) {
@@ -230,7 +230,7 @@ export async function DELETE(
     prisma.app.update({
       where: { id },
       data: { status: "DELETED" },
-    })
+    }),
   );
 
   if (deleteError) {

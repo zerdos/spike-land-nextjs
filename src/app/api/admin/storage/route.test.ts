@@ -91,7 +91,7 @@ describe("Admin Storage API", () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe("Internal server error");
     expect(console.error).toHaveBeenCalledWith(
-      "Failed to fetch storage stats:",
+      "Admin check failed:",
       expect.any(Error),
     );
   });
