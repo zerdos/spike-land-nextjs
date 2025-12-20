@@ -8,13 +8,48 @@ const PRODUCTION_MODEL = "gemini-3-pro-image-preview";
 const DEVELOPMENT_MODEL = "gemini-2.5-flash";
 
 /**
+ * Known valid Gemini models for image generation.
+ * This allowlist prevents runtime errors from invalid model names.
+ */
+export const VALID_GEMINI_MODELS = [
+  "gemini-3-pro-image-preview",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash-exp",
+] as const;
+
+/**
+ * Validates the GEMINI_MODEL environment variable against the allowlist.
+ * Falls back to environment-appropriate default if invalid or not set.
+ */
+function getValidatedModel(): string {
+  const envModel = process.env.GEMINI_MODEL;
+  const fallbackModel = process.env.NODE_ENV === "production"
+    ? PRODUCTION_MODEL
+    : DEVELOPMENT_MODEL;
+
+  if (!envModel) {
+    return fallbackModel;
+  }
+
+  if (!VALID_GEMINI_MODELS.includes(envModel as typeof VALID_GEMINI_MODELS[number])) {
+    console.warn(
+      `[Gemini] Invalid GEMINI_MODEL "${envModel}". ` +
+        `Valid models: ${VALID_GEMINI_MODELS.join(", ")}. ` +
+        `Falling back to "${fallbackModel}"`,
+    );
+    return fallbackModel;
+  }
+
+  return envModel;
+}
+
+/**
  * Default model selection based on environment.
  * - Production: gemini-3-pro-image-preview (higher quality, supports 2K/4K)
  * - Development: gemini-2.5-flash (cheaper, faster, supports aspect ratios)
- * Can be overridden via GEMINI_MODEL environment variable.
+ * Can be overridden via GEMINI_MODEL environment variable (validated against allowlist).
  */
-export const DEFAULT_MODEL = process.env.GEMINI_MODEL ||
-  (process.env.NODE_ENV === "production" ? PRODUCTION_MODEL : DEVELOPMENT_MODEL);
+export const DEFAULT_MODEL = getValidatedModel();
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 // Timeout for Gemini API requests (configurable via env, default 5 minutes)

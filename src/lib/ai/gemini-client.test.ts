@@ -13,6 +13,7 @@ import {
   type ModifyImageParams,
   modifyImageWithGemini,
   resetGeminiClient,
+  VALID_GEMINI_MODELS,
 } from "./gemini-client";
 
 // Mock the @google/genai module - Vitest 4: Use vi.hoisted for configurable mock
@@ -1836,6 +1837,100 @@ describe("gemini-client", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe("model validation", () => {
+    it("should export VALID_GEMINI_MODELS with expected models", () => {
+      expect(VALID_GEMINI_MODELS).toContain("gemini-3-pro-image-preview");
+      expect(VALID_GEMINI_MODELS).toContain("gemini-2.5-flash");
+      expect(VALID_GEMINI_MODELS).toContain("gemini-2.0-flash-exp");
+    });
+
+    it("should NOT include the broken production model in allowlist", () => {
+      // This test ensures the invalid model that caused the production error
+      // is NOT in the allowlist. If this test fails, someone added a broken model.
+      expect(VALID_GEMINI_MODELS).not.toContain(
+        "gemini-2.0-flash-preview-image-generation",
+      );
+    });
+
+    it("should log warning when invalid GEMINI_MODEL is set", async () => {
+      const warnSpy = vi.spyOn(console, "warn");
+
+      // Save original env
+      const originalGeminiModel = process.env.GEMINI_MODEL;
+
+      // Set invalid model and reset modules to re-evaluate DEFAULT_MODEL
+      process.env.GEMINI_MODEL = "gemini-2.0-flash-preview-image-generation";
+      vi.resetModules();
+
+      // Dynamic import to get fresh module with new env
+      const freshModule = await import("./gemini-client");
+
+      // Verify warning was logged
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Invalid GEMINI_MODEL "gemini-2.0-flash-preview-image-generation"'),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Falling back to"),
+      );
+
+      // Verify fallback to development model (in test env, NODE_ENV !== "production")
+      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash");
+
+      // Restore
+      process.env.GEMINI_MODEL = originalGeminiModel;
+      warnSpy.mockRestore();
+      vi.resetModules();
+    });
+
+    it("should accept valid GEMINI_MODEL from env", async () => {
+      const warnSpy = vi.spyOn(console, "warn");
+
+      // Save original env
+      const originalGeminiModel = process.env.GEMINI_MODEL;
+
+      // Set valid model and reset modules
+      process.env.GEMINI_MODEL = "gemini-3-pro-image-preview";
+      vi.resetModules();
+
+      // Dynamic import to get fresh module
+      const freshModule = await import("./gemini-client");
+
+      // No warning should be logged for valid model
+      expect(warnSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("Invalid GEMINI_MODEL"),
+      );
+
+      // Should use the env value
+      expect(freshModule.DEFAULT_MODEL).toBe("gemini-3-pro-image-preview");
+
+      // Restore
+      process.env.GEMINI_MODEL = originalGeminiModel;
+      warnSpy.mockRestore();
+      vi.resetModules();
+    });
+
+    it("should use environment-appropriate default when GEMINI_MODEL is not set", async () => {
+      // Save original env
+      const originalGeminiModel = process.env.GEMINI_MODEL;
+
+      // Unset GEMINI_MODEL and reset modules
+      delete process.env.GEMINI_MODEL;
+      vi.resetModules();
+
+      // Dynamic import to get fresh module
+      const freshModule = await import("./gemini-client");
+
+      // In test environment (NODE_ENV !== "production"), should use development model
+      expect(freshModule.DEFAULT_MODEL).toBe("gemini-2.5-flash");
+
+      // Restore
+      if (originalGeminiModel !== undefined) {
+        process.env.GEMINI_MODEL = originalGeminiModel;
+      }
+      vi.resetModules();
     });
   });
 });
