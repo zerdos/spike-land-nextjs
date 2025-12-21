@@ -98,8 +98,9 @@ RUN yarn lint
 # ============================================================================
 FROM source AS build
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN --mount=type=cache,target=/app/.next/cache \
-    DATABASE_URL="postgresql://x:x@x:5432/x" yarn build
+# Dummy DATABASE_URL required for Prisma client (driver adapter mode requires adapter or accelerateUrl)
+ENV DATABASE_URL="postgresql://x:x@x:5432/x"
+RUN --mount=type=cache,target=/app/.next/cache yarn build
 
 # ============================================================================
 # STAGE 6: Merge lint + build (ensures both pass)
@@ -109,6 +110,7 @@ COPY --from=lint /app/package.json /tmp/lint-passed
 
 # ============================================================================
 # STAGE 7: Copy test files AFTER build (KEY: test changes don't rebuild!)
+# We base on verified-build so unit tests can use compiled output for faster execution
 # ============================================================================
 FROM verified-build AS test-source
 COPY vitest.config.ts vitest.setup.ts ./
@@ -117,19 +119,19 @@ COPY cucumber.js ./
 COPY e2e ./e2e
 
 # ============================================================================
-# STAGE 8: Run unit tests
+# STAGE 8: Run unit tests (4 parallel shards via BuildKit)
 # ============================================================================
 FROM test-source AS unit-tests-1
-RUN yarn test:run --shard 1/40 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
+RUN yarn test:run --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
 
 FROM test-source AS unit-tests-2
-RUN yarn test:run --shard 2/40 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
+RUN yarn test:run --shard 2/4 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
 
 FROM test-source AS unit-tests-3
-RUN yarn test:run --shard 3/40 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
+RUN yarn test:run --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
 
 FROM test-source AS unit-tests-4
-RUN yarn test:run --shard 4/40 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
+RUN yarn test:run --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
 
 FROM test-source AS unit-tests
 COPY --from=unit-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
@@ -153,7 +155,7 @@ RUN npx playwright install chromium --with-deps
 # STAGE 10: Run E2E tests AT BUILD TIME
 # This is the magic - E2E runs during docker build with full browser!
 # ============================================================================
-FROM e2e-browser AS e2e-tests
+FROM e2e-browser AS e2e-test-base
 
 # Build args for E2E (passed at build time)
 ARG DATABASE_URL
@@ -172,33 +174,32 @@ ENV CI=true \
 # Create reports directory
 RUN mkdir -p e2e/reports
 
+FROM e2e-test-base AS e2e-tests-1
+
 # Run E2E tests with proper server lifecycle management
 # This script: starts server -> waits for ready -> runs tests -> captures result
-RUN --mount=type=cache,target=/app/.next/cache \
-    set -e && \
-    echo "Starting Next.js dev server..." && \
-    yarn dev > /tmp/server.log 2>&1 & \
-    SERVER_PID=$! && \
-    echo "Waiting for server (PID: $SERVER_PID)..." && \
-    for i in $(seq 1 120); do \
-        if curl -s http://localhost:3000 > /dev/null 2>&1; then \
-            echo "Server ready in ${i}s"; \
-            break; \
-        fi; \
-        if [ $i -eq 120 ]; then \
-            echo "Server failed to start"; \
-            cat /tmp/server.log; \
-            exit 1; \
-        fi; \
-        sleep 1; \
-    done && \
-    echo "Running E2E tests..." && \
-    npx cucumber-js --profile ci e2e/features/**/*.feature; \
-    TEST_EXIT=$?; \
-    echo "Tests finished with code: $TEST_EXIT"; \
-    kill $SERVER_PID 2>/dev/null || true; \
-    exit $TEST_EXIT
+RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
 
+FROM e2e-test-base AS e2e-tests-2
+RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 2/4 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-3
+RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-4
+RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests
+COPY --from=e2e-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
+COPY --from=e2e-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
+COPY --from=e2e-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
+COPY --from=e2e-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
+
+RUN cat /tmp/test-shard-1.log && \
+    cat /tmp/test-shard-2.log && \
+    cat /tmp/test-shard-3.log && \
+    cat /tmp/test-shard-4.log
+    
 # ============================================================================
 # STAGE 11: CI validation target (runs all checks)
 # Use: docker build --target ci -t app:ci .
