@@ -34,15 +34,11 @@ interface SelectedImage {
 }
 
 interface ImageSelectorProps {
-  minWidth: number;
-  minHeight: number;
   onSelect: (image: SelectedImage | null) => void;
   selectedImage?: SelectedImage | null;
 }
 
 export function ImageSelector({
-  minWidth,
-  minHeight,
   onSelect,
   selectedImage,
 }: ImageSelectorProps) {
@@ -57,22 +53,17 @@ export function ImageSelector({
   const fetchImages = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch images that meet the minimum size requirements
       const response = await fetch("/api/images?limit=50");
       if (response.ok) {
         const data = await response.json();
-        // Filter images that meet size requirements
-        const filteredImages = (data.images || []).filter(
-          (img: EnhancedImage) => img.originalWidth >= minWidth && img.originalHeight >= minHeight,
-        );
-        setImages(filteredImages);
+        setImages(data.images || []);
       }
     } catch (error) {
       console.error("Failed to fetch images:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [minWidth, minHeight]);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -109,19 +100,12 @@ export function ImageSelector({
       return;
     }
 
-    // Check image dimensions
+    // Load image to get dimensions
     const img = document.createElement("img");
     const objectUrl = URL.createObjectURL(file);
 
     img.onload = async () => {
       URL.revokeObjectURL(objectUrl);
-
-      if (img.width < minWidth || img.height < minHeight) {
-        setUploadError(
-          `Image must be at least ${minWidth}x${minHeight}px. Your image is ${img.width}x${img.height}px.`,
-        );
-        return;
-      }
 
       // Upload the image
       setIsUploading(true);
@@ -197,7 +181,7 @@ export function ImageSelector({
                 <div className="text-left">
                   <p className="font-medium">Select an image</p>
                   <p className="text-sm text-muted-foreground">
-                    Min. {minWidth}x{minHeight}px
+                    Click to choose
                   </p>
                 </div>
               </div>
@@ -228,10 +212,7 @@ export function ImageSelector({
                 <div className="text-center py-8">
                   <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                   <p className="mt-2 text-muted-foreground">
-                    No images found that meet the size requirements
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Minimum: {minWidth}x{minHeight}px
+                    No images found
                   </p>
                   <Button
                     variant="outline"
@@ -270,13 +251,6 @@ export function ImageSelector({
 
           <TabsContent value="upload" className="mt-4">
             <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your image must be at least {minWidth}x{minHeight}px for high-quality printing.
-                </AlertDescription>
-              </Alert>
-
               {uploadError && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
