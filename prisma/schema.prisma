@@ -1429,3 +1429,66 @@ model MerchWebhookEvent {
   @@index([processed, createdAt])
   @@map("merch_webhook_events")
 }
+
+// =============================================================================
+// External Agent Session Models (Jules, Codex, etc.)
+// =============================================================================
+
+// External Agent Session tracking (Jules, etc.)
+model ExternalAgentSession {
+  id              String              @id @default(cuid())
+  externalId      String              @unique // e.g., "sessions/abc123" from Jules
+  provider        AgentProvider       @default(JULES)
+  name            String // Task name/title
+  description     String? // Task description
+  status          ExternalAgentStatus
+  sourceRepo      String? // e.g., "sources/github/zerdos/spike-land-nextjs"
+  startingBranch  String? // e.g., "main"
+  outputBranch    String? // Branch created by agent
+  pullRequestUrl  String? // PR URL if created
+  planSummary     String? // Summary of agent's plan
+  planApprovedAt  DateTime?
+  lastActivityAt  DateTime?
+  errorMessage    String?
+  metadata        Json? // Additional provider-specific data
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  activities AgentSessionActivity[]
+
+  @@index([provider, status])
+  @@index([status, lastActivityAt])
+  @@map("external_agent_sessions")
+}
+
+model AgentSessionActivity {
+  id         String               @id @default(cuid())
+  sessionId  String
+  externalId String? // Activity ID from provider
+  type       String // e.g., "user_message", "plan_generated", "code_committed"
+  content    String? // Activity content/description
+  metadata   Json?
+  createdAt  DateTime             @default(now())
+
+  session ExternalAgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("agent_session_activities")
+}
+
+enum AgentProvider {
+  JULES
+  CODEX
+  OTHER
+}
+
+enum ExternalAgentStatus {
+  QUEUED
+  PLANNING
+  AWAITING_PLAN_APPROVAL
+  AWAITING_USER_FEEDBACK
+  IN_PROGRESS
+  PAUSED
+  FAILED
+  COMPLETED
+}
