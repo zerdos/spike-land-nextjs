@@ -129,7 +129,7 @@ describe("PATCH /api/merch/cart/[itemId]", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Quantity must be at least 1");
+    expect(data.error).toBe("Quantity must be between 1 and 100");
   });
 
   it("should update quantity successfully", async () => {
@@ -203,7 +203,7 @@ describe("PATCH /api/merch/cart/[itemId]", () => {
     const response = await PATCH(request, {
       params: Promise.resolve({ itemId: "item_1" }),
     });
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(200);
     expect(prisma.merchCartItem.update).toHaveBeenCalledWith(

@@ -61,9 +61,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   // Validate quantity
-  if (body?.quantity !== undefined && body.quantity < 1) {
+  if (body?.quantity !== undefined && (body.quantity < 1 || body.quantity > 100)) {
     return NextResponse.json(
-      { error: "Quantity must be at least 1" },
+      { error: "Quantity must be between 1 and 100" },
       { status: 400 },
     );
   }

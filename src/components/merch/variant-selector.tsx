@@ -87,10 +87,13 @@ export function VariantSelector({
       const keys = Object.keys(attrs);
 
       keys.forEach((key) => {
-        if (!acc[key]) {
-          acc[key] = new Set();
+        const value = attrs[key];
+        if (value !== undefined) {
+          if (!acc[key]) {
+            acc[key] = new Set();
+          }
+          acc[key].add(value);
         }
-        acc[key].add(attrs[key]);
       });
 
       return acc;

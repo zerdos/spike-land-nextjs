@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Shop | Spike Land",
   description: "Premium photo merchandise - transform your images into beautiful products",

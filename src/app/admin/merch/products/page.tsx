@@ -12,6 +12,8 @@ import { Edit, Package, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getProducts() {
   const products = await prisma.merchProduct.findMany({
     include: {

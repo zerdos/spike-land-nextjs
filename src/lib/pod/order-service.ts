@@ -7,6 +7,7 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { Prisma } from "@prisma/client";
 import { prodigiProvider } from "./prodigi/client";
 import type { PodOrderRequest, PodOrderResult, PodProvider, ShippingAddress } from "./types";
 
@@ -209,12 +210,13 @@ export async function updateOrderFromWebhook(
     include: { order: true },
   });
 
-  if (items.length === 0) {
+  const firstItem = items[0];
+  if (!firstItem) {
     console.warn(`No order items found for provider order ID: ${providerOrderId}`);
     return;
   }
 
-  const orderId = items[0].order.id;
+  const orderId = firstItem.order.id;
 
   // Map provider status to our status
   const orderStatus = mapProviderStatusToOrderStatus(status);
@@ -360,13 +362,13 @@ export async function getShippingQuote(
 async function recordOrderEvent(
   orderId: string,
   type: string,
-  data?: Record<string, unknown>,
+  data?: Prisma.InputJsonValue,
 ): Promise<void> {
   await prisma.merchOrderEvent.create({
     data: {
       orderId,
       type,
-      data: data ? data : undefined,
+      data: data ?? undefined,
     },
   });
 }

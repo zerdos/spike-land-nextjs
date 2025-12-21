@@ -193,7 +193,7 @@ When("I click the remove item button", async function(this: CustomWorld) {
 
 Given("I have added a product to my cart with value under {int} GBP", async function(
   this: CustomWorld,
-  threshold: number,
+  _threshold: number,
 ) {
   // Similar to "I have added a product to my cart" but we assume test products are under threshold
   await this.page.goto(`${this.baseUrl}/merch`);
@@ -220,7 +220,7 @@ Given("I have added a product to my cart with value under {int} GBP", async func
 
 Given("I have added products to my cart with value over {int} GBP", async function(
   this: CustomWorld,
-  threshold: number,
+  _threshold: number,
 ) {
   // Add multiple products to exceed threshold
   // This is a simplified version - in reality you'd check actual prices

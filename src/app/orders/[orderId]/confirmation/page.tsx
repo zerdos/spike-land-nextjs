@@ -6,6 +6,8 @@ import { ArrowRight, CheckCircle, Mail, Package } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ orderId: string; }>;
 }

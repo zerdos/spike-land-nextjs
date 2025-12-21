@@ -92,6 +92,14 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
+  } else {
+    console.warn("PRODIGI_WEBHOOK_SECRET not configured - skipping signature verification");
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 },
+      );
+    }
   }
 
   // Parse the webhook event

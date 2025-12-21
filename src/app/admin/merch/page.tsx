@@ -10,6 +10,8 @@ import prisma from "@/lib/prisma";
 import { DollarSign, Package, ShoppingCart, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getMerchMetrics() {
   const [
     totalOrders,

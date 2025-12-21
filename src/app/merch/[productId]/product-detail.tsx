@@ -58,7 +58,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
-    product.variants.length > 0 ? product.variants[0] : null,
+    product.variants[0] ?? null,
   );
   const [customText, setCustomText] = useState("");
   const [isAddingToCart, setIsAddingToCart] = useState(false);

@@ -51,6 +51,7 @@ export function ImageSelector({
   const [isLoading, setIsLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState("my-images");
 
   // Fetch user's enhanced images
   const fetchImages = useCallback(async () => {
@@ -208,7 +209,7 @@ export function ImageSelector({
           <DialogTitle>Choose Your Image</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="my-images" className="mt-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="my-images">My Images</TabsTrigger>
             <TabsTrigger value="upload">Upload New</TabsTrigger>
@@ -235,12 +236,7 @@ export function ImageSelector({
                   <Button
                     variant="outline"
                     className="mt-4"
-                    onClick={() => {
-                      const tab = document.querySelector(
-                        '[data-state="inactive"][value="upload"]',
-                      ) as HTMLButtonElement;
-                      tab?.click();
-                    }}
+                    onClick={() => setActiveTab("upload")}
                   >
                     Upload a new image
                   </Button>

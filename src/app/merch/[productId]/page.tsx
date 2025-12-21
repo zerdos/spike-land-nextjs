@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetail } from "./product-detail";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ productId: string; }>;
 }

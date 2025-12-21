@@ -12,19 +12,18 @@
  */
 
 import { auth } from "@/auth";
+import {
+  EU_COUNTRY_CODES,
+  FREE_SHIPPING_THRESHOLD_EU,
+  FREE_SHIPPING_THRESHOLD_UK,
+  SHIPPING_COST_EU,
+  SHIPPING_COST_UK,
+} from "@/lib/merch/constants";
 import { generateOrderNumber } from "@/lib/pod";
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
-
-// Free shipping threshold in pence
-const FREE_SHIPPING_THRESHOLD_UK = 5500; // £55
-const FREE_SHIPPING_THRESHOLD_EU = 6500; // €65
-
-// Shipping costs in pence
-const SHIPPING_COST_UK = 499; // £4.99
-const SHIPPING_COST_EU = 999; // €9.99
 
 interface ShippingAddress {
   name: string;
@@ -34,6 +33,7 @@ interface ShippingAddress {
   postalCode: string;
   countryCode: string;
   phone?: string;
+  [key: string]: string | undefined;
 }
 
 interface CheckoutRequest {
@@ -44,40 +44,9 @@ interface CheckoutRequest {
   notes?: string;
 }
 
-// EU country codes for shipping zone determination
-const EU_COUNTRIES = [
-  "AT",
-  "BE",
-  "BG",
-  "HR",
-  "CY",
-  "CZ",
-  "DK",
-  "EE",
-  "FI",
-  "FR",
-  "DE",
-  "GR",
-  "HU",
-  "IE",
-  "IT",
-  "LV",
-  "LT",
-  "LU",
-  "MT",
-  "NL",
-  "PL",
-  "PT",
-  "RO",
-  "SK",
-  "SI",
-  "ES",
-  "SE",
-];
-
 function getShippingZone(countryCode: string): "UK" | "EU" | "ROW" {
   if (countryCode === "GB") return "UK";
-  if (EU_COUNTRIES.includes(countryCode)) return "EU";
+  if ((EU_COUNTRY_CODES as readonly string[]).includes(countryCode)) return "EU";
   return "ROW";
 }
 
