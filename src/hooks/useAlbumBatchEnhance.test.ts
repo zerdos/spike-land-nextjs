@@ -832,13 +832,16 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock ALL polling responses showing PROCESSING (using mockResolvedValue for unlimited polls)
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
-      }),
-    });
+    // Mock 100+ polling responses all showing PROCESSING
+    // Use mockResolvedValueOnce to avoid polluting other tests
+    for (let i = 0; i < 100; i++) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          jobs: [{ id: "job-1", status: "PROCESSING", errorMessage: null }],
+        }),
+      });
+    }
 
     const { result } = renderHook(() =>
       useAlbumBatchEnhance({
