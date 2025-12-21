@@ -13,7 +13,7 @@ import {
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { tryCatch } from "@/lib/try-catch";
+import { tryCatch } from "@/lib/try-catch--no-track";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import sharp from "sharp";
 import { FatalError } from "workflow";

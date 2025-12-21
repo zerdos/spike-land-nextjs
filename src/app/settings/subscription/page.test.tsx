@@ -12,6 +12,7 @@ vi.mock("next-auth/react", () => ({
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock useTier hook

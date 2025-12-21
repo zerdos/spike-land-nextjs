@@ -20,6 +20,7 @@ vi.mock("next-view-transitions", () => ({
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock useTokenBalance hook

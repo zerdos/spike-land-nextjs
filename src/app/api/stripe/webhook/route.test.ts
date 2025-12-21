@@ -1455,6 +1455,281 @@ describe("POST /api/stripe/webhook", () => {
     });
   });
 
+  describe("checkout.session.completed - tier_upgrade", () => {
+    it("handles tier upgrade with valid metadata", async () => {
+      // Add upsert method to mock for tier upgrade handler
+      mockPrismaTransaction.mockImplementation((fn) =>
+        fn({
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({ balance: 10 }),
+            create: vi.fn().mockResolvedValue({ balance: 0 }),
+            update: vi.fn().mockResolvedValue({}),
+            upsert: vi.fn().mockResolvedValue({ balance: 20, tier: "BASIC" }),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockResolvedValue({}),
+          },
+          subscription: {
+            upsert: vi.fn().mockResolvedValue({}),
+          },
+        })
+      );
+
+      mockSubscriptionsRetrieve.mockResolvedValue({
+        id: "sub_123",
+        items: {
+          data: [
+            {
+              price: { id: "price_123" },
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            },
+          ],
+        },
+      });
+
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "tier_upgrade",
+              tier: "BASIC",
+              previousTier: "FREE",
+              wellCapacity: "20",
+            },
+            amount_total: 500,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[Stripe] Tier upgrade completed for user user_123: FREE → BASIC",
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("handles tier upgrade without wellCapacity (logs error)", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "tier_upgrade",
+              tier: "BASIC",
+              previousTier: "FREE",
+              // wellCapacity missing
+            },
+            amount_total: 500,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Missing tier or wellCapacity in tier_upgrade metadata",
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("handles tier upgrade without subscription ID (logs error)", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: null, // No subscription
+            metadata: {
+              userId: "user_123",
+              type: "tier_upgrade",
+              tier: "BASIC",
+              previousTier: "FREE",
+              wellCapacity: "20",
+            },
+            amount_total: 500,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "No subscription ID in tier_upgrade session",
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("handles tier upgrade with invalid tier value (logs error)", async () => {
+      mockSubscriptionsRetrieve.mockResolvedValue({
+        id: "sub_123",
+        items: {
+          data: [
+            {
+              price: { id: "price_123" },
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            },
+          ],
+        },
+      });
+
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "tier_upgrade",
+              tier: "INVALID_TIER",
+              previousTier: "FREE",
+              wellCapacity: "20",
+            },
+            amount_total: 500,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith("Invalid tier value: INVALID_TIER");
+      consoleSpy.mockRestore();
+    });
+
+    it("handles PREMIUM tier upgrade", async () => {
+      // Add upsert method to mock for tier upgrade handler
+      mockPrismaTransaction.mockImplementation((fn) =>
+        fn({
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({ balance: 50 }),
+            create: vi.fn().mockResolvedValue({ balance: 0 }),
+            update: vi.fn().mockResolvedValue({}),
+            upsert: vi.fn().mockResolvedValue({ balance: 100, tier: "PREMIUM" }),
+          },
+          tokenTransaction: {
+            create: vi.fn().mockResolvedValue({}),
+          },
+          subscription: {
+            upsert: vi.fn().mockResolvedValue({}),
+          },
+        })
+      );
+
+      mockSubscriptionsRetrieve.mockResolvedValue({
+        id: "sub_456",
+        items: {
+          data: [
+            {
+              price: { id: "price_premium" },
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            },
+          ],
+        },
+      });
+
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_456",
+            subscription: "sub_456",
+            metadata: {
+              userId: "user_456",
+              type: "tier_upgrade",
+              tier: "PREMIUM",
+              previousTier: "STANDARD",
+              wellCapacity: "100",
+            },
+            amount_total: 2000,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[Stripe] Tier upgrade completed for user user_456: STANDARD → PREMIUM",
+      );
+      consoleSpy.mockRestore();
+    });
+  });
+
   describe("error handling", () => {
     it("returns 500 when webhook processing throws an error", async () => {
       mockConstructEvent.mockReturnValue({
