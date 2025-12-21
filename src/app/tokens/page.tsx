@@ -20,7 +20,7 @@ import { Check, Clock, Coins, RefreshCw, Sparkles, TrendingUp, Zap } from "lucid
 import { useSession } from "next-auth/react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // Calculate value comparison for packages
@@ -48,7 +48,7 @@ function getPackageValueInfo(id: TokenPackageId) {
   return { savings, badges };
 }
 
-export default function TokensPage() {
+function TokensPageContent() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -436,5 +436,19 @@ export default function TokensPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function TokensPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto pt-24 pb-8 px-4 flex justify-center">
+          <RefreshCw className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <TokensPageContent />
+    </Suspense>
   );
 }
