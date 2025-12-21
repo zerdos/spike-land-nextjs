@@ -280,6 +280,13 @@ describe("TierManager", () => {
         "Invalid userId: must be a non-empty string",
       );
     });
+
+    it("should return FREE tier when database lookup fails", async () => {
+      mockUserTokenBalance.findUnique.mockRejectedValue(new Error("Database error"));
+
+      const tier = await TierManager.getUserTier(testUserId);
+      expect(tier).toBe(SubscriptionTier.FREE);
+    });
   });
 
   describe("upgradeTier", () => {
@@ -350,6 +357,53 @@ describe("TierManager", () => {
         TierManager.upgradeTier("", SubscriptionTier.BASIC),
       ).rejects.toThrow("Invalid userId: must be a non-empty string");
     });
+
+    it("should create user and balance if they do not exist", async () => {
+      const mockUserUpsert = vi.fn().mockResolvedValue({});
+      const mockBalanceCreate = vi.fn().mockResolvedValue({
+        userId: testUserId,
+        balance: 0,
+        tier: SubscriptionTier.FREE,
+      });
+      const mockBalanceUpdate = vi.fn().mockResolvedValue({
+        userId: testUserId,
+        balance: 20,
+        tier: SubscriptionTier.BASIC,
+      });
+      const mockTransactionCreate = vi.fn().mockResolvedValue({});
+
+      mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue(null), // User doesn't exist
+            create: mockBalanceCreate,
+            update: mockBalanceUpdate,
+          },
+          user: {
+            upsert: mockUserUpsert,
+          },
+          tokenTransaction: {
+            create: mockTransactionCreate,
+          },
+        };
+        return callback(tx);
+      });
+
+      const result = await TierManager.upgradeTier(testUserId, SubscriptionTier.BASIC);
+
+      expect(result.success).toBe(true);
+      expect(mockUserUpsert).toHaveBeenCalled();
+      expect(mockBalanceCreate).toHaveBeenCalled();
+    });
+
+    it("should handle database error during upgrade", async () => {
+      mockTransaction.mockRejectedValue(new Error("Database connection failed"));
+
+      const result = await TierManager.upgradeTier(testUserId, SubscriptionTier.BASIC);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Database connection failed");
+    });
   });
 
   describe("shouldPromptUpgrade", () => {
@@ -397,13 +451,23 @@ describe("TierManager", () => {
 
   describe("scheduleDowngrade", () => {
     it("should schedule downgrade successfully", async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        tier: SubscriptionTier.PREMIUM,
-      });
-
       const periodEnd = new Date("2024-02-15T00:00:00Z");
-      mockSubscription.update.mockResolvedValue({
-        currentPeriodEnd: periodEnd,
+
+      // Mock the transaction callback - it receives a tx object with the same interface
+      mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+        const txMock = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              tier: SubscriptionTier.PREMIUM,
+            }),
+          },
+          subscription: {
+            update: vi.fn().mockResolvedValue({
+              currentPeriodEnd: periodEnd,
+            }),
+          },
+        };
+        return callback(txMock);
       });
 
       const result = await TierManager.scheduleDowngrade(
@@ -416,8 +480,19 @@ describe("TierManager", () => {
     });
 
     it("should fail for invalid downgrade", async () => {
-      mockUserTokenBalance.findUnique.mockResolvedValue({
-        tier: SubscriptionTier.FREE,
+      // Mock the transaction callback
+      mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+        const txMock = {
+          userTokenBalance: {
+            findUnique: vi.fn().mockResolvedValue({
+              tier: SubscriptionTier.FREE,
+            }),
+          },
+          subscription: {
+            update: vi.fn(),
+          },
+        };
+        return callback(txMock);
       });
 
       const result = await TierManager.scheduleDowngrade(
@@ -427,6 +502,19 @@ describe("TierManager", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("Cannot downgrade");
+    });
+
+    it("should handle database error during schedule downgrade", async () => {
+      // Simulate a database error (not a validation error)
+      mockTransaction.mockRejectedValue(new Error("Database connection failed"));
+
+      const result = await TierManager.scheduleDowngrade(
+        testUserId,
+        SubscriptionTier.BASIC,
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Failed to schedule downgrade. Please try again.");
     });
   });
 
@@ -456,6 +544,94 @@ describe("TierManager", () => {
         where: { userId: testUserId },
         data: { downgradeTo: null },
       });
+    });
+
+    it("should handle database error when canceling downgrade", async () => {
+      mockSubscription.update.mockRejectedValue(new Error("Database error"));
+
+      const result = await TierManager.cancelDowngrade(testUserId);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Failed to cancel downgrade");
+    });
+  });
+
+  describe("processScheduledDowngrade", () => {
+    it("should process scheduled downgrade successfully", async () => {
+      mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+        const txMock = {
+          subscription: {
+            findUnique: vi.fn().mockResolvedValue({
+              downgradeTo: SubscriptionTier.BASIC,
+            }),
+            update: vi.fn().mockResolvedValue({}),
+          },
+          userTokenBalance: {
+            update: vi.fn().mockResolvedValue({}),
+          },
+        };
+        return callback(txMock);
+      });
+
+      const result = await TierManager.processScheduledDowngrade(testUserId);
+
+      expect(result.success).toBe(true);
+      expect(result.newTier).toBe(SubscriptionTier.BASIC);
+    });
+
+    it("should return success when no downgrade is scheduled", async () => {
+      mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+        const txMock = {
+          subscription: {
+            findUnique: vi.fn().mockResolvedValue({
+              downgradeTo: null,
+            }),
+            update: vi.fn(),
+          },
+          userTokenBalance: {
+            update: vi.fn(),
+          },
+        };
+        return callback(txMock);
+      });
+
+      const result = await TierManager.processScheduledDowngrade(testUserId);
+
+      expect(result.success).toBe(true);
+      expect(result.newTier).toBeUndefined();
+    });
+
+    it("should handle database error during scheduled downgrade", async () => {
+      mockTransaction.mockRejectedValue(new Error("Database error"));
+
+      const result = await TierManager.processScheduledDowngrade(testUserId);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Failed to process downgrade");
+    });
+  });
+
+  describe("shouldPromptUpgrade error handling", () => {
+    it("should return default values when database lookup fails", async () => {
+      mockUserTokenBalance.findUnique.mockRejectedValue(new Error("Database error"));
+
+      const result = await TierManager.shouldPromptUpgrade(testUserId);
+
+      expect(result.shouldPrompt).toBe(false);
+      expect(result.currentTier).toBe(SubscriptionTier.FREE);
+      expect(result.nextTier).toBe(null);
+      expect(result.isPremiumAtZero).toBe(false);
+    });
+
+    it("should return default values when user has no token balance record", async () => {
+      mockUserTokenBalance.findUnique.mockResolvedValue(null);
+
+      const result = await TierManager.shouldPromptUpgrade(testUserId);
+
+      expect(result.shouldPrompt).toBe(false);
+      expect(result.currentTier).toBe(SubscriptionTier.FREE);
+      expect(result.nextTier).toBe(null);
+      expect(result.isPremiumAtZero).toBe(false);
     });
   });
 });

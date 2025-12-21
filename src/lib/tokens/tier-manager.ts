@@ -2,6 +2,7 @@ import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { SubscriptionTier, TokenTransactionType } from "@prisma/client";
+import { TOKEN_REGENERATION_INTERVAL_MS } from "./constants";
 
 /**
  * Tier configuration constants
@@ -297,6 +298,7 @@ export class TierManager {
   /**
    * Schedule a downgrade for next billing cycle
    * Stores the target tier in the Subscription model
+   * Uses a transaction to prevent race conditions between tier check and update
    */
   static async scheduleDowngrade(
     userId: string,
@@ -304,28 +306,44 @@ export class TierManager {
   ): Promise<{ success: boolean; effectiveDate?: Date; error?: string; }> {
     this.validateUserId(userId);
 
-    const currentTier = await this.getUserTier(userId);
+    const { data: result, error } = await tryCatch(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prisma.$transaction(async (tx: any) => {
+        // Get current tier within transaction to prevent race conditions
+        const tokenBalance = await tx.userTokenBalance.findUnique({
+          where: { userId },
+          select: { tier: true },
+        });
 
-    if (!this.canDowngradeTo(currentTier, targetTier)) {
-      return {
-        success: false,
-        error: `Cannot downgrade from ${currentTier} to ${targetTier}`,
-      };
-    }
+        const currentTier = (tokenBalance?.tier as SubscriptionTier) ?? SubscriptionTier.FREE;
 
-    const { data: subscription, error } = await tryCatch(
-      prisma.subscription.update({
-        where: { userId },
-        data: {
-          downgradeTo: targetTier,
-        },
-        select: {
-          currentPeriodEnd: true,
-        },
+        if (!this.canDowngradeTo(currentTier, targetTier)) {
+          throw new Error(`Cannot downgrade from ${currentTier} to ${targetTier}`);
+        }
+
+        const subscription = await tx.subscription.update({
+          where: { userId },
+          data: {
+            downgradeTo: targetTier,
+          },
+          select: {
+            currentPeriodEnd: true,
+          },
+        });
+
+        return { currentTier, subscription };
       }),
     );
 
     if (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Check if this is a validation error (not a database error)
+      if (errorMessage.startsWith("Cannot downgrade")) {
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      }
       logger.error("Failed to schedule downgrade", error, { userId, targetTier });
       return {
         success: false,
@@ -335,14 +353,14 @@ export class TierManager {
 
     logger.info("Downgrade scheduled", {
       userId,
-      currentTier,
+      currentTier: result.currentTier,
       targetTier,
-      effectiveDate: subscription.currentPeriodEnd,
+      effectiveDate: result.subscription.currentPeriodEnd,
     });
 
     return {
       success: true,
-      effectiveDate: subscription.currentPeriodEnd,
+      effectiveDate: result.subscription.currentPeriodEnd,
     };
   }
 
@@ -473,7 +491,6 @@ export class TierManager {
       }),
     );
 
-    const TOKEN_REGENERATION_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
     const now = new Date();
     const lastRegen = tokenBalance?.lastRegeneration ?? now;
     const timeSinceLastRegen = now.getTime() - lastRegen.getTime();

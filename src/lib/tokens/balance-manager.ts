@@ -8,6 +8,7 @@ import {
   type TokenTransaction,
   TokenTransactionType,
 } from "@prisma/client";
+import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
 import { TierManager } from "./tier-manager";
 
 export interface TokenBalanceResult {
@@ -41,8 +42,7 @@ export interface TokenTransactionResult {
   error?: string;
 }
 
-const TOKEN_REGENERATION_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const TOKENS_PER_REGENERATION = 1;
+// Note: TOKEN_REGENERATION_INTERVAL_MS and TOKENS_PER_REGENERATION imported from ./constants
 // Note: MAX_TOKEN_BALANCE is now dynamic per tier - use TierManager.getTierCapacity()
 
 export class TokenBalanceManager {
@@ -340,11 +340,12 @@ export class TokenBalanceManager {
 
         // Cap balance at tier maximum for regeneration
         let newBalance = tokenBalance.balance + amount;
-        const wasCapped = false;
+        let wasCapped = false;
         if (type === TokenTransactionType.EARN_REGENERATION) {
           const beforeCap = newBalance;
           newBalance = Math.min(newBalance, maxBalance);
           if (beforeCap > newBalance) {
+            wasCapped = true;
             addLogger.debug("Balance capped at tier maximum", {
               requested: beforeCap,
               capped: newBalance,

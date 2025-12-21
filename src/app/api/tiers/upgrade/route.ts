@@ -110,12 +110,18 @@ export async function POST(request: NextRequest) {
 
     stripeCustomerId = customer.id;
 
-    await tryCatch(
+    const { error: updateError } = await tryCatch(
       prisma.user.update({
         where: { id: session.user.id },
         data: { stripeCustomerId },
       }),
     );
+
+    if (updateError) {
+      // Log but don't fail - the Stripe customer was created successfully
+      // and we can still proceed with the checkout
+      console.error("Failed to save Stripe customer ID to database:", updateError);
+    }
   }
 
   // Check for existing active subscription
