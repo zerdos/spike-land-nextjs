@@ -167,7 +167,9 @@ RUN cat /tmp/test-shard-*.log
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
 # ============================================================================
-FROM source AS e2e-browser
+FROM prisma AS e2e-browser
+# Install procps (provides ps command required by start-server-and-test)
+RUN apt-get update && apt-get install -y --no-install-recommends procps && rm -rf /var/lib/apt/lists/*
 # Install Playwright with all Chromium dependencies
 RUN npx playwright install chromium --with-deps
 
@@ -176,6 +178,9 @@ RUN npx playwright install chromium --with-deps
 # This is the magic - E2E runs during docker build with full browser!
 # ============================================================================
 FROM e2e-browser AS e2e-test-base
+
+# Copy built application from build stage
+COPY --from=build /app/.next ./.next
 
 # Build args for E2E (passed at build time)
 ARG DATABASE_URL
@@ -200,30 +205,17 @@ ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
 # Run E2E tests with proper server lifecycle management
 
-RUN --mount=type=cache,target=/app/.next/cache \
+RUN --mount=type=bind,from=build,source=/app/.next/standalone,target=/app/.next/standalone \
     yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
 
-# --- Explicit shard targets (for backwards compatibility with direct docker build) ---
-FROM e2e-test-base AS e2e-tests-1
-RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-2
-RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 2/4 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-3
-RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-4
-RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
-
 # --- Collector stage (merges all shard results) ---
-FROM e2e-test-base AS e2e-tests
-COPY --from=e2e-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
-COPY --from=e2e-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
-COPY --from=e2e-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
-COPY --from=e2e-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
+FROM e2e-test-shard AS e2e-tests
+COPY --from=e2e-test-shard /tmp/test-shard-1.log /tmp/test-shard-1.log
+COPY --from=e2e-test-shard /tmp/test-shard-2.log /tmp/test-shard-2.log
+COPY --from=e2e-test-shard /tmp/test-shard-3.log /tmp/test-shard-3.log
+COPY --from=e2e-test-shard /tmp/test-shard-4.log /tmp/test-shard-4.log
 RUN cat /tmp/test-shard-*.log
 
 # ============================================================================
