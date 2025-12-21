@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -92,7 +93,9 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <MetaPixel />
-        <SessionTracker />
+        <Suspense fallback={null}>
+          <SessionTracker />
+        </Suspense>
       </body>
     </html>
   );
