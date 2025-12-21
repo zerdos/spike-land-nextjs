@@ -110,9 +110,9 @@ async function getGitInfo(): Promise<GitInfo> {
       if (hash) {
         lastCommit = {
           hash: hash.substring(0, 7),
-          message,
-          author,
-          date,
+          message: message ?? "",
+          author: author ?? "",
+          date: date ?? "",
         };
       }
     }
