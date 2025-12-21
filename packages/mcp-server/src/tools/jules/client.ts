@@ -6,6 +6,22 @@
 
 const JULES_BASE_URL = "https://jules.googleapis.com/v1alpha";
 
+/**
+ * Pattern for validating session IDs (alphanumeric with hyphens and underscores)
+ */
+const SESSION_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Validate session ID format to prevent path traversal attacks
+ * @throws Error if session ID format is invalid
+ */
+function validateSessionId(sessionId: string): void {
+  const id = sessionId.replace(/^sessions\//, "");
+  if (!SESSION_ID_PATTERN.test(id)) {
+    throw new Error(`Invalid session ID format: ${sessionId}`);
+  }
+}
+
 export interface JulesSession {
   name: string;
   id?: string;
@@ -94,6 +110,7 @@ export class JulesClient {
     data: JulesSession | null;
     error: string | null;
   }> {
+    validateSessionId(sessionName);
     const name = sessionName.startsWith("sessions/")
       ? sessionName
       : `sessions/${sessionName}`;
@@ -114,6 +131,7 @@ export class JulesClient {
     data: JulesSession | null;
     error: string | null;
   }> {
+    validateSessionId(sessionName);
     const name = sessionName.startsWith("sessions/")
       ? sessionName
       : `sessions/${sessionName}`;
@@ -126,6 +144,7 @@ export class JulesClient {
     data: JulesSession | null;
     error: string | null;
   }> {
+    validateSessionId(sessionName);
     const name = sessionName.startsWith("sessions/")
       ? sessionName
       : `sessions/${sessionName}`;
@@ -143,6 +162,7 @@ export class JulesClient {
     data: { activities: JulesActivity[]; nextPageToken?: string; } | null;
     error: string | null;
   }> {
+    validateSessionId(sessionName);
     const name = sessionName.startsWith("sessions/")
       ? sessionName
       : `sessions/${sessionName}`;

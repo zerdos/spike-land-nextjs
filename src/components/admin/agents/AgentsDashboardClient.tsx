@@ -74,6 +74,17 @@ const STATUS_LABELS: Record<ExternalAgentStatus, string> = {
   COMPLETED: "Completed",
 };
 
+/**
+ * Type guard for session metadata with Jules URL
+ */
+interface SessionMetadata {
+  julesUrl?: string;
+}
+
+function isSessionMetadata(meta: unknown): meta is SessionMetadata {
+  return meta !== null && typeof meta === "object";
+}
+
 export function AgentsDashboardClient({ initialData }: Props) {
   const [data, setData] = useState<DashboardData>(initialData);
   const [isPolling, setIsPolling] = useState(true);
@@ -255,7 +266,11 @@ export function AgentsDashboardClient({ initialData }: Props) {
           : (
             <div className="space-y-4">
               {data.sessions.map((session) => (
-                <AgentSessionCard key={session.id} session={session} />
+                <AgentSessionCard
+                  key={session.id}
+                  session={session}
+                  onStatusChange={handleRefresh}
+                />
               ))}
             </div>
           )}
@@ -275,29 +290,42 @@ export function AgentsDashboardClient({ initialData }: Props) {
   );
 }
 
-function AgentSessionCard({ session }: { session: AgentSession; }) {
+interface AgentSessionCardProps {
+  session: AgentSession;
+  onStatusChange?: () => void;
+}
+
+function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [approveError, setApproveError] = useState<string | null>(null);
 
   const handleApprovePlan = async () => {
     setIsApproving(true);
+    setApproveError(null);
     try {
       const response = await fetch(`/api/admin/agents/${session.id}/approve-plan`, {
         method: "POST",
       });
       if (!response.ok) {
-        throw new Error("Failed to approve plan");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to approve plan");
       }
-      // Trigger parent refresh
-      window.location.reload();
+      // Trigger parent refresh via callback
+      onStatusChange?.();
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setApproveError(message);
       console.error(err);
     } finally {
       setIsApproving(false);
     }
   };
 
-  const julesUrl = (session.metadata as Record<string, string>)?.julesUrl;
+  // Safely extract julesUrl from metadata using type guard
+  const julesUrl = isSessionMetadata(session.metadata)
+    ? session.metadata.julesUrl
+    : undefined;
 
   return (
     <Card className="p-4">
@@ -316,6 +344,11 @@ function AgentSessionCard({ session }: { session: AgentSession; }) {
           {session.description && (
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
               {session.description}
+            </p>
+          )}
+          {approveError && (
+            <p className="mt-1 text-sm text-red-600">
+              Error: {approveError}
             </p>
           )}
           <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">

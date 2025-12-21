@@ -63,9 +63,25 @@ export default async function AdminAgentsPage() {
 
   const initialData = {
     sessions: sessions.map((s) => ({
-      ...s,
+      id: s.id,
+      externalId: s.externalId,
+      provider: s.provider,
+      name: s.name,
+      description: s.description,
+      status: s.status,
+      sourceRepo: s.sourceRepo,
+      startingBranch: s.startingBranch,
+      outputBranch: s.outputBranch,
+      pullRequestUrl: s.pullRequestUrl,
+      planSummary: s.planSummary,
+      errorMessage: s.errorMessage,
+      metadata: s.metadata as Record<string, unknown> | null,
+      // Serialize Date fields to ISO strings
+      createdAt: s.createdAt.toISOString(),
+      updatedAt: s.updatedAt.toISOString(),
+      planApprovedAt: s.planApprovedAt?.toISOString() ?? null,
+      lastActivityAt: s.lastActivityAt?.toISOString() ?? null,
       activityCount: s._count.activities,
-      _count: undefined,
     })),
     pagination: {
       total,

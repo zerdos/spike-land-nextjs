@@ -22,6 +22,22 @@ import type {
 const JULES_BASE_URL = "https://jules.googleapis.com/v1alpha";
 
 /**
+ * Pattern for validating session IDs (alphanumeric with hyphens and underscores)
+ */
+const SESSION_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Validate session ID format to prevent path traversal attacks
+ * @throws Error if session ID format is invalid
+ */
+function validateSessionId(sessionId: string): void {
+  const id = sessionId.replace(/^sessions\//, "");
+  if (!SESSION_ID_PATTERN.test(id)) {
+    throw new Error(`Invalid session ID format: ${sessionId}`);
+  }
+}
+
+/**
  * Check if Jules API is available (API key is configured)
  */
 export function isJulesAvailable(): boolean {
@@ -139,7 +155,7 @@ export async function listSessions(pageSize = 20, pageToken?: string): Promise<{
 export async function getSession(
   sessionName: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
-  // Ensure proper format
+  validateSessionId(sessionName);
   const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}`);
 }
@@ -162,6 +178,7 @@ export async function createSession(
 export async function approvePlan(
   sessionName: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
+  validateSessionId(sessionName);
   const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}:approvePlan`, {
     method: "POST",
@@ -175,6 +192,7 @@ export async function sendMessage(
   sessionName: string,
   message: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
+  validateSessionId(sessionName);
   const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}:sendMessage`, {
     method: "POST",
@@ -197,6 +215,7 @@ export async function listActivities(
   data: { activities: JulesActivity[]; nextPageToken?: string; } | null;
   error: string | null;
 }> {
+  validateSessionId(sessionName);
   const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
   const params = new URLSearchParams();
   if (pageSize) params.set("pageSize", String(pageSize));
@@ -231,22 +250,4 @@ export function buildSourceName(owner: string, repo: string): string {
  */
 export function extractSessionId(sessionName: string): string {
   return sessionName.replace("sessions/", "");
-}
-
-/**
- * Map Jules state to internal status
- */
-export function mapJulesStateToStatus(
-  state: JulesSession["state"],
-):
-  | "QUEUED"
-  | "PLANNING"
-  | "AWAITING_PLAN_APPROVAL"
-  | "AWAITING_USER_FEEDBACK"
-  | "IN_PROGRESS"
-  | "PAUSED"
-  | "FAILED"
-  | "COMPLETED"
-{
-  return state;
 }
