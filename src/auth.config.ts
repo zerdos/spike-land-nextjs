@@ -101,8 +101,8 @@ export const authConfig: NextAuthConfig = {
   },
   providers: [
     Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID,
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET,
+      clientId: process.env.AUTH_FACEBOOK_ID?.trim(),
+      clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim(),
     }),
     GitHub({
       clientId: process.env.GITHUB_ID,
