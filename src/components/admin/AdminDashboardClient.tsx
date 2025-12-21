@@ -41,10 +41,15 @@ export function AdminDashboardClient(
 ) {
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics);
   const [isPolling, setIsPolling] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(true);
+
+  // Set initial time on mount to avoid SSR hydration mismatch
+  useEffect(() => {
+    setLastUpdated(new Date());
+  }, []);
 
   const fetchMetrics = useCallback(async () => {
     try {
@@ -163,7 +168,9 @@ export function AdminDashboardClient(
             </Button>
           </div>
           <div className="text-right text-sm text-neutral-500">
-            <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+            <p>
+              Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "—"}
+            </p>
             {isPolling && (
               <span className="text-xs block">
                 <Badge variant="secondary" className="text-xs">Live</Badge>
