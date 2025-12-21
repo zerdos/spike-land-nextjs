@@ -9,7 +9,7 @@ import { TOKEN_REGENERATION_INTERVAL_MS } from "./constants";
  * Capacity is both the regeneration cap AND the grant on upgrade
  */
 export const TIER_CAPACITIES: Record<SubscriptionTier, number> = {
-  FREE: 100,
+  FREE: 10,
   BASIC: 20,
   STANDARD: 50,
   PREMIUM: 100,
