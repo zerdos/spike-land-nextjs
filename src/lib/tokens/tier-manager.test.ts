@@ -61,7 +61,7 @@ describe("TierManager", () => {
 
   describe("Constants", () => {
     it("should have correct tier capacities", () => {
-      expect(TIER_CAPACITIES.FREE).toBe(100);
+      expect(TIER_CAPACITIES.FREE).toBe(10);
       expect(TIER_CAPACITIES.BASIC).toBe(20);
       expect(TIER_CAPACITIES.STANDARD).toBe(50);
       expect(TIER_CAPACITIES.PREMIUM).toBe(100);
@@ -97,7 +97,7 @@ describe("TierManager", () => {
       expect(info).toEqual({
         tier: SubscriptionTier.FREE,
         displayName: "Free",
-        wellCapacity: 100,
+        wellCapacity: 10,
         priceGBP: 0,
       });
     });
@@ -124,7 +124,7 @@ describe("TierManager", () => {
 
   describe("getTierCapacity", () => {
     it("should return correct capacity for each tier", () => {
-      expect(TierManager.getTierCapacity(SubscriptionTier.FREE)).toBe(100);
+      expect(TierManager.getTierCapacity(SubscriptionTier.FREE)).toBe(10);
       expect(TierManager.getTierCapacity(SubscriptionTier.BASIC)).toBe(20);
       expect(TierManager.getTierCapacity(SubscriptionTier.STANDARD)).toBe(50);
       expect(TierManager.getTierCapacity(SubscriptionTier.PREMIUM)).toBe(100);
