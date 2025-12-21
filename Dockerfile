@@ -94,11 +94,7 @@ ENV NODE_ENV=development
 EXPOSE 3000
 CMD ["yarn", "dev"]
 
-# ============================================================================
-# STAGE 4: Lint (PARALLEL with build - uses BuildKit)
-# ============================================================================
-FROM build AS lint
-RUN yarn lint
+
 
 # ============================================================================
 # STAGE 5: Build application (PARALLEL with lint)
@@ -108,6 +104,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Dummy DATABASE_URL required for Prisma client (driver adapter mode requires adapter or accelerateUrl)
 ENV DATABASE_URL="postgresql://x:x@x:5432/x"
 RUN --mount=type=cache,target=/app/.next/cache yarn build
+
+
+# ============================================================================
+# STAGE 4: Lint (PARALLEL with build - uses BuildKit)
+# ============================================================================
+FROM build AS lint
+RUN yarn lint
 
 # ============================================================================
 # STAGE 6: Merge lint + build (ensures both pass)
@@ -164,7 +167,7 @@ RUN cat /tmp/test-shard-*.log
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
 # ============================================================================
-FROM unit-tests AS e2e-browser
+FROM source AS e2e-browser
 # Install Playwright with all Chromium dependencies
 RUN npx playwright install chromium --with-deps
 
@@ -196,7 +199,7 @@ FROM e2e-test-base AS e2e-test-shard
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
 # Run E2E tests with proper server lifecycle management
-# This script: starts server -> waits for ready -> runs tests -> captures result
+
 RUN --mount=type=cache,target=/app/.next/cache \
     yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
@@ -222,7 +225,7 @@ COPY --from=e2e-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
 COPY --from=e2e-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
 COPY --from=e2e-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
 RUN cat /tmp/test-shard-*.log
-    
+
 # ============================================================================
 # STAGE 11: CI validation target (runs all checks)
 # Use: docker build --target ci -t app:ci .
