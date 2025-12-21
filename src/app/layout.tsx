@@ -85,6 +85,9 @@ export default function RootLayout({
               <ConditionalHeader />
               {children}
               <FeedbackButton />
+              <Suspense fallback={null}>
+                <SessionTracker />
+              </Suspense>
             </SessionProvider>
             <Toaster />
             <CookieConsent />
@@ -93,9 +96,6 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <MetaPixel />
-        <Suspense fallback={null}>
-          <SessionTracker />
-        </Suspense>
       </body>
     </html>
   );
