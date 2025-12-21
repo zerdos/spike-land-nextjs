@@ -254,28 +254,29 @@ describe("Prodigi Client", () => {
       );
     });
 
-    it("should throw error if API key is missing", async () => {
+    it("should handle error if API key is missing", async () => {
       mockEnv({ PRODIGI_API_KEY: undefined });
 
-      await expect(
-        prodigiProvider.createOrder({
-          orderId: "test-order-1",
-          items: [
-            {
-              sku: "GLOBAL-POSTC-4X6",
-              quantity: 1,
-              imageUrl: "https://example.com/image.jpg",
-            },
-          ],
-          shippingAddress: {
-            name: "John Doe",
-            line1: "123 Main St",
-            city: "London",
-            postalCode: "SW1A 1AA",
-            countryCode: "GB",
+      const result = await prodigiProvider.createOrder({
+        orderId: "test-order-1",
+        items: [
+          {
+            sku: "GLOBAL-POSTC-4X6",
+            quantity: 1,
+            imageUrl: "https://example.com/image.jpg",
           },
-        }),
-      ).rejects.toThrow("PRODIGI_API_KEY environment variable is not set");
+        ],
+        shippingAddress: {
+          name: "John Doe",
+          line1: "123 Main St",
+          city: "London",
+          postalCode: "SW1A 1AA",
+          countryCode: "GB",
+        },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("PRODIGI_API_KEY");
     });
 
     it("should map order request with all optional fields", async () => {

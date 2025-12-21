@@ -526,7 +526,7 @@ describe("Order Service", () => {
 
       expect(result.itemsCost).toBe(15.0);
       expect(result.shippingCost).toBe(4.99);
-      expect(result.totalCost).toBe(19.99);
+      expect(result.totalCost).toBeCloseTo(19.99, 2);
       expect(result.currency).toBe("GBP");
     });
 
