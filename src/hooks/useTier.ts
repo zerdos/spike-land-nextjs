@@ -1,11 +1,12 @@
 "use client";
 
+import type { TierType } from "@/components/tiers/TierBadge";
 import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
 // Types matching the API responses
 export interface TierInfo {
-  tier: string;
+  tier: TierType;
   displayName: string;
   wellCapacity: number;
   priceGBP: number;

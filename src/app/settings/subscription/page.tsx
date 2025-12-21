@@ -4,14 +4,15 @@ import {
   PremiumZeroOptions,
   TierBadge,
   TierCard,
-  type TierInfo,
   type TierType,
   UpgradePromptModal,
 } from "@/components/tiers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDowngrade } from "@/hooks/useDowngrade";
+import type { TierInfo } from "@/hooks/useTier";
 import { useTier } from "@/hooks/useTier";
+import type { UpgradeTierId } from "@/hooks/useTierUpgrade";
 import { useTierUpgrade } from "@/hooks/useTierUpgrade";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ArrowLeft, Calendar, RefreshCw, X } from "lucide-react";
@@ -70,11 +71,11 @@ export default function SubscriptionPage() {
   const currentTierIndex = tierOrder.indexOf(currentTier || "FREE");
 
   const handleUpgrade = async (tier: TierInfo) => {
+    // Can't upgrade to FREE
+    if (tier.tier === "FREE") return;
+
     setSelectedTier(tier);
-    const result = await upgradeAndRedirect(tier.tier);
-    if (!result.success) {
-      // Show error - the error is already in the hook state
-    }
+    await upgradeAndRedirect(tier.tier as UpgradeTierId);
   };
 
   const handleDowngrade = async (tier: TierInfo) => {
@@ -92,9 +93,9 @@ export default function SubscriptionPage() {
     }
   };
 
-  const handlePromptUpgrade = () => {
-    if (nextTier) {
-      handleUpgrade(nextTier);
+  const handlePromptUpgrade = async () => {
+    if (nextTier && nextTier.tier !== "FREE") {
+      await upgradeAndRedirect(nextTier.tier as UpgradeTierId);
     }
     setUpgradeModalOpen(false);
   };
