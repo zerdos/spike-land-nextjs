@@ -5,6 +5,7 @@
  */
 
 import { reportErrorToDatabase } from "@/lib/errors/error-reporter.server";
+import { recordTryCatchEvent } from "@/lib/observability/try-catch-stats";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -27,6 +28,9 @@ export async function POST() {
     },
     "BACKEND",
   );
+
+  // Also record in try-catch stats so it shows up in /admin/try-catch
+  recordTryCatchEvent(null, "BACKEND", false);
 
   return NextResponse.json({ success: true, message: "Backend error simulated" });
 }
