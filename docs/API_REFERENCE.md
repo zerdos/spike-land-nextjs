@@ -1879,6 +1879,181 @@ Required environment variables for marketing integrations:
 
 ---
 
+## System Reports
+
+The System Reports API provides a unified endpoint for fetching analytics and
+metrics from multiple sources including internal database, Vercel Analytics, and
+Meta Marketing API.
+
+### Get System Report
+
+Generate a comprehensive system report with data from all configured sources.
+
+**Endpoint**: `GET /api/reports/system`
+
+**Authentication**: Required (Admin role, via session or API key)
+
+**Query Parameters**:
+
+| Parameter | Type   | Required | Options                                                                    |
+| --------- | ------ | -------- | -------------------------------------------------------------------------- |
+| period    | string | No       | 7d, 30d, 90d (default: 30d)                                                |
+| include   | string | No       | Comma-separated: platform,users,tokens,health,marketing,errors,vercel,meta |
+| format    | string | No       | json, summary (default: json)                                              |
+
+**Request**:
+
+```http
+GET /api/reports/system?period=7d&include=platform,users,errors HTTP/1.1
+Authorization: Bearer {admin_api_key}
+```
+
+**cURL Example**:
+
+```bash
+curl "https://spike.land/api/reports/system?period=30d" \
+  -H "Authorization: Bearer sk_live_xxxxx"
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "generatedAt": "2025-12-21T10:30:00.000Z",
+  "period": {
+    "start": "2025-11-21T10:30:00.000Z",
+    "end": "2025-12-21T10:30:00.000Z"
+  },
+  "platform": {
+    "totalUsers": 1000,
+    "adminCount": 5,
+    "totalEnhancements": 5000,
+    "jobStatus": {
+      "pending": 10,
+      "processing": 5,
+      "completed": 4900,
+      "failed": 85,
+      "active": 15
+    },
+    "tokensInCirculation": 50000,
+    "tokensSpent": 25000,
+    "activeVouchers": 3
+  },
+  "users": {
+    "totalUsers": 1000,
+    "newUsersLast7Days": 50,
+    "newUsersLast30Days": 200,
+    "activeUsersLast7Days": 300,
+    "activeUsersLast30Days": 600,
+    "authProviderBreakdown": [
+      { "provider": "google", "count": 600 },
+      { "provider": "github", "count": 300 }
+    ]
+  },
+  "errors": {
+    "last24Hours": 25,
+    "topErrorTypes": { "TypeError": 10, "NetworkError": 8 },
+    "topErrorFiles": { "api/enhance.ts": 15 }
+  },
+  "external": {
+    "vercelAnalytics": {
+      "pageViews": 10000,
+      "uniqueVisitors": 5000,
+      "topPages": [
+        { "path": "/", "views": 5000 },
+        { "path": "/enhance", "views": 3000 }
+      ],
+      "countries": [
+        { "country": "US", "visitors": 2000 }
+      ],
+      "devices": { "desktop": 3000, "mobile": 1800, "tablet": 200 }
+    },
+    "metaAds": {
+      "campaigns": [
+        {
+          "id": "camp_123",
+          "name": "Launch Campaign",
+          "status": "ACTIVE",
+          "spend": 1000,
+          "impressions": 50000,
+          "clicks": 1000,
+          "conversions": 50
+        }
+      ],
+      "totalSpend": 1000,
+      "totalImpressions": 50000,
+      "totalClicks": 1000,
+      "totalConversions": 50,
+      "ctr": 2.0,
+      "cpc": 1.0
+    }
+  }
+}
+```
+
+**Summary Format Response**:
+
+```json
+{
+  "generatedAt": "2025-12-21T10:30:00.000Z",
+  "period": { "start": "2025-11-21", "end": "2025-12-21" },
+  "highlights": {
+    "totalUsers": 1000,
+    "activeUsersLast7Days": 300,
+    "totalEnhancements": 5000,
+    "pendingJobs": 10,
+    "failedJobs": 5,
+    "tokensInCirculation": 50000,
+    "errorsLast24Hours": 25,
+    "conversionRate": 2.0
+  },
+  "external": {
+    "vercelPageViews": 10000,
+    "metaTotalSpend": 1000
+  }
+}
+```
+
+**Report Sections**:
+
+| Section   | Description                                       |
+| --------- | ------------------------------------------------- |
+| platform  | Core metrics: users, jobs, tokens, vouchers       |
+| users     | User analytics: registrations, active users       |
+| tokens    | Token economics: revenue, circulation, sales      |
+| health    | System health: queue, failures, processing times  |
+| marketing | Marketing funnel: visitors, signups, conversions  |
+| errors    | Error summary: counts, top types, top files       |
+| vercel    | Vercel Analytics: page views, visitors, countries |
+| meta      | Meta/Facebook Ads: campaigns, spend, CTR          |
+
+**Environment Variables**:
+
+| Variable             | Required | Description                          |
+| -------------------- | -------- | ------------------------------------ |
+| VERCEL_ACCESS_TOKEN  | Optional | For Vercel Analytics data            |
+| VERCEL_TEAM_ID       | Optional | Team ID for team projects            |
+| FACEBOOK_MARKETING_* | Optional | For Meta Ads data (already existing) |
+
+**Error Responses**:
+
+| Status | Error                   | Description             |
+| ------ | ----------------------- | ----------------------- |
+| 401    | Authentication required | Missing or invalid auth |
+| 403    | Admin access required   | User is not an admin    |
+| 400    | Invalid query params    | Bad period/format value |
+| 500    | Failed to generate      | Internal server error   |
+
+**Cache Headers**:
+
+Reports are cached for 5 minutes:
+
+```http
+Cache-Control: private, max-age=300
+```
+
+---
+
 ## Implementation Examples
 
 ### Complete Enhancement Workflow
