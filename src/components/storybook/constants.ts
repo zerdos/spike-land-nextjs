@@ -2,11 +2,13 @@ import {
   Accessibility,
   Bell,
   Component,
+  Layers,
   LayoutGrid,
   Loader,
   MousePointerClick,
   Palette,
   PanelTop,
+  ShoppingBag,
   Sparkles,
   SplitSquareHorizontal,
   Table2,
@@ -26,6 +28,8 @@ export const storybookIconMap = {
   Accessibility,
   Table2,
   LayoutGrid,
+  ShoppingBag,
+  Layers,
 };
 
 export const colorPalette = {
@@ -191,6 +195,18 @@ export const storybookSections = [
     label: "Accessibility",
     description: "Contrast checker, keyboard navigation, ARIA attributes",
     icon: "Accessibility",
+  },
+  {
+    id: "merch",
+    label: "Merch",
+    description: "Print-on-demand merchandise components",
+    icon: "ShoppingBag",
+  },
+  {
+    id: "photo-mix",
+    label: "PhotoMix",
+    description: "Photo mixing and blending components",
+    icon: "Layers",
   },
 ] as const;
 
