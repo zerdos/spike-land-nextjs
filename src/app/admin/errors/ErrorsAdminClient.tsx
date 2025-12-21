@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMounted } from "@/hooks/useMounted";
 import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
@@ -101,6 +102,7 @@ function truncateMessage(message: string, maxLength: number = 80): string {
 }
 
 export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
+  const mounted = useMounted();
   const [errors, setErrors] = useState<ErrorLog[]>(initialData.errors);
   const [pagination, setPagination] = useState<Pagination>(
     initialData.pagination,
@@ -263,19 +265,24 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Select
-              value={environment}
-              onValueChange={(v) => setEnvironment(v as ErrorEnvironment | "ALL")}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Environment" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All</SelectItem>
-                <SelectItem value="FRONTEND">Frontend</SelectItem>
-                <SelectItem value="BACKEND">Backend</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Conditional render to prevent hydration mismatch from Radix UI aria-controls */}
+            {mounted
+              ? (
+                <Select
+                  value={environment}
+                  onValueChange={(v) => setEnvironment(v as ErrorEnvironment | "ALL")}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Environment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">All</SelectItem>
+                    <SelectItem value="FRONTEND">Frontend</SelectItem>
+                    <SelectItem value="BACKEND">Backend</SelectItem>
+                  </SelectContent>
+                </Select>
+              )
+              : <div className="h-10 w-[150px] rounded-xl bg-muted/50 animate-pulse" />}
             <Button type="submit" disabled={loading}>
               {loading ? "Loading..." : "Search"}
             </Button>
