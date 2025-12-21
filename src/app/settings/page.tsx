@@ -1,6 +1,7 @@
 "use client";
 
 import { ApiKeysTab } from "@/components/settings/api-keys-tab";
+import { TierBadge, type TierType } from "@/components/tiers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,12 +18,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTier } from "@/hooks/useTier";
+import { CreditCard } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const { currentTier, isLoading: isTierLoading } = useTier();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
   const [publicProfile, setPublicProfile] = useState(false);
@@ -90,63 +95,97 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="profile" data-testid="profile-tab">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
-                Your profile information is managed by your OAuth provider
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-                  <AvatarFallback>{userInitials}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{user?.name}</h3>
-                  <p className="text-sm text-muted-foreground">{user?.email}</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="display-name">Display Name</Label>
-                  <Input
-                    id="display-name"
-                    placeholder="Enter display name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    This is how your name will be displayed across the platform
-                  </p>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Your profile information is managed by your OAuth provider
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
+                    <AvatarFallback>{userInitials}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">{user?.name}</h3>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user?.email || ""}
-                    disabled
-                    className="bg-muted"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Email is managed by your OAuth provider and cannot be changed here
-                  </p>
-                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="display-name">Display Name</Label>
+                    <Input
+                      id="display-name"
+                      placeholder="Enter display name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This is how your name will be displayed across the platform
+                    </p>
+                  </div>
 
-                <Button
-                  onClick={handleSaveProfile}
-                  disabled={isSaving}
-                  data-testid="save-profile-button"
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Email is managed by your OAuth provider and cannot be changed here
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    data-testid="save-profile-button"
+                  >
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Subscription Card */}
+            <Card data-testid="subscription-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Subscription
+                </CardTitle>
+                <CardDescription>
+                  Manage your subscription plan and billing
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">Current plan:</span>
+                    {isTierLoading
+                      ? <span className="text-sm text-muted-foreground">Loading...</span>
+                      : (
+                        <TierBadge
+                          tier={(currentTier as TierType) || "FREE"}
+                          size="md"
+                          showIcon
+                        />
+                      )}
+                  </div>
+                  <Button asChild variant="outline" data-testid="manage-subscription-button">
+                    <Link href="/settings/subscription">Manage Subscription</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="api-keys" data-testid="api-keys-tab">

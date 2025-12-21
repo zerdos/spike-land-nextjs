@@ -73,12 +73,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4]
       fail-fast: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          # Fetch full history so we can compare against main branch for --changed
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -101,10 +104,21 @@ jobs:
         run: yarn install --immutable
 
       - name: Generate Prisma Client
-        run: yarn prisma generate
+        run: yarn prisma generate --no-hints
 
-      - name: Run tests (shard ${{ matrix.shard }}/8)
-        run: yarn test:run --changed --shard=${{ matrix.shard }}/8 --reporter=github-actions
+      - name: Fetch main branch for comparison
+        if: github.ref != 'refs/heads/main'
+        run: git fetch origin main:main
+
+      - name: Run tests (shard ${{ matrix.shard }}/4)
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            # On main branch: run all tests
+            yarn test:run --shard=${{ matrix.shard }}/4 --reporter=github-actions
+          else
+            # On PR/feature branch: run only changed tests
+            yarn test:run --changed main --shard=${{ matrix.shard }}/4 --reporter=github-actions
+          fi
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
@@ -214,7 +228,7 @@ jobs:
         run: yarn playwright install-deps chromium
 
       - name: Generate Prisma Client
-        run: yarn prisma generate
+        run: yarn prisma generate --no-hints
 
       - name: Select feature files for shard
         id: shard-files

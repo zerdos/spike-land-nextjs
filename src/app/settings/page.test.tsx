@@ -10,6 +10,24 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+// Mock useTier hook
+vi.mock("@/hooks/useTier", () => ({
+  useTier: () => ({
+    tiers: [],
+    currentTier: "FREE",
+    canUpgrade: true,
+    nextTier: null,
+    showUpgradePrompt: false,
+    isPremiumAtZero: false,
+    premiumOptions: null,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    dismissPrompt: vi.fn(),
+    checkPromptStatus: vi.fn(),
+  }),
+}));
+
 const mockUseSession = vi.mocked(useSession);
 const mockRedirect = vi.mocked(redirect);
 
@@ -461,6 +479,56 @@ describe("SettingsPage", () => {
 
       const tabsList = screen.getByRole("tablist");
       expect(tabsList).toHaveClass("grid", "w-full", "grid-cols-4");
+    });
+  });
+
+  describe("Subscription Card", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: "123",
+            name: "John Doe",
+            email: "john@example.com",
+            image: "https://example.com/avatar.jpg",
+          },
+          expires: "2024-12-31",
+        },
+        status: "authenticated",
+        update: vi.fn(),
+      });
+    });
+
+    it("renders subscription card in profile tab", () => {
+      render(<SettingsPage />);
+
+      expect(screen.getByTestId("subscription-card")).toBeInTheDocument();
+      expect(screen.getByText("Subscription")).toBeInTheDocument();
+      expect(screen.getByText("Manage your subscription plan and billing")).toBeInTheDocument();
+    });
+
+    it("shows current tier badge", () => {
+      render(<SettingsPage />);
+
+      // TierBadge component uses data-testid="tier-badge"
+      const tierBadge = screen.getByTestId("tier-badge");
+      expect(tierBadge).toBeInTheDocument();
+      expect(tierBadge).toHaveAttribute("data-tier", "FREE");
+    });
+
+    it("shows manage subscription button", () => {
+      render(<SettingsPage />);
+
+      const manageButton = screen.getByTestId("manage-subscription-button");
+      expect(manageButton).toBeInTheDocument();
+      expect(manageButton).toHaveTextContent("Manage Subscription");
+    });
+
+    it("manage subscription button links to subscription page", () => {
+      render(<SettingsPage />);
+
+      const manageButton = screen.getByTestId("manage-subscription-button");
+      expect(manageButton).toHaveAttribute("href", "/settings/subscription");
     });
   });
 

@@ -6,6 +6,32 @@ vi.mock("@/hooks/useTokenBalance", () => ({
   useTokenBalance: vi.fn(),
 }));
 
+vi.mock("@/hooks/useTier", () => ({
+  useTier: () => ({
+    tiers: [],
+    currentTier: "FREE",
+    nextTier: null,
+    showUpgradePrompt: false,
+    isPremiumAtZero: false,
+    dismissPrompt: vi.fn(),
+    canUpgrade: true,
+    premiumOptions: null,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    checkPromptStatus: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/useTierUpgrade", () => ({
+  useTierUpgrade: () => ({
+    upgradeAndRedirect: vi.fn(),
+    upgrade: vi.fn(),
+    isUpgrading: false,
+    error: null,
+  }),
+}));
+
 vi.mock("./PurchaseModal", () => ({
   PurchaseModal: ({ trigger }: { trigger: React.ReactNode; }) => (
     <div data-testid="purchase-modal">{trigger}</div>
