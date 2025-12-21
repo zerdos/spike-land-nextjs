@@ -9,7 +9,6 @@
 
 interface TryCatchEvent {
   success: boolean;
-  timestamp: string;
 }
 
 // In-memory buffer for pending events
@@ -29,10 +28,7 @@ const MAX_BATCH_SIZE = 100;
  * @param success - Whether the operation succeeded or failed
  */
 export function recordFrontendTryCatchEvent(success: boolean): void {
-  pendingEvents.push({
-    success,
-    timestamp: new Date().toISOString(),
-  });
+  pendingEvents.push({ success });
 
   // Flush immediately if batch is full
   if (pendingEvents.length >= MAX_BATCH_SIZE) {
@@ -55,7 +51,9 @@ export function recordFrontendTryCatchEvent(success: boolean): void {
 async function syncEventsToBackend(): Promise<void> {
   if (pendingEvents.length === 0) return;
 
-  const events = [...pendingEvents];
+  // Atomic swap - capture and clear in one operation
+  // This prevents race conditions since JS is single-threaded
+  const events = pendingEvents;
   pendingEvents = [];
 
   if (syncTimeout) {
@@ -97,10 +95,11 @@ if (
 ) {
   window.addEventListener("beforeunload", () => {
     if (pendingEvents.length > 0) {
-      // Use sendBeacon for reliable delivery on page unload
+      // Use sendBeacon with Blob for reliable delivery on page unload
+      // Blob sets Content-Type to application/json for proper server parsing
       navigator.sendBeacon(
         "/api/observability/try-catch-stats",
-        JSON.stringify({ events: pendingEvents }),
+        new Blob([JSON.stringify({ events: pendingEvents })], { type: "application/json" }),
       );
     }
   });

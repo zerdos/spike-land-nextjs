@@ -36,11 +36,15 @@ interface SelectedImage {
 interface ImageSelectorProps {
   onSelect: (image: SelectedImage | null) => void;
   selectedImage?: SelectedImage | null;
+  minWidth: number;
+  minHeight: number;
 }
 
 export function ImageSelector({
   onSelect,
   selectedImage,
+  minWidth,
+  minHeight,
 }: ImageSelectorProps) {
   const [open, setOpen] = useState(false);
   const [images, setImages] = useState<EnhancedImage[]>([]);
@@ -181,7 +185,7 @@ export function ImageSelector({
                 <div className="text-left">
                   <p className="font-medium">Select an image</p>
                   <p className="text-sm text-muted-foreground">
-                    Click to choose
+                    Min. {minWidth}x{minHeight}px
                   </p>
                 </div>
               </div>
@@ -200,32 +204,43 @@ export function ImageSelector({
           </TabsList>
 
           <TabsContent value="my-images" className="mt-4">
-            {isLoading
-              ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
+            {(() => {
+              const filteredImages = images.filter(
+                (img) =>
+                  img.originalWidth >= minWidth &&
+                  img.originalHeight >= minHeight,
+              );
+
+              if (isLoading) {
+                return (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
+                    </div>
                   </div>
-                </div>
-              )
-              : images.length === 0
-              ? (
-                <div className="text-center py-8">
-                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <p className="mt-2 text-muted-foreground">
-                    No images found
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setActiveTab("upload")}
-                  >
-                    Upload a new image
-                  </Button>
-                </div>
-              )
-              : (
+                );
+              }
+
+              if (filteredImages.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-2 text-muted-foreground">
+                      No images found that meet the size requirements
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => setActiveTab("upload")}
+                    >
+                      Upload a new image
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
                 <div className="grid grid-cols-3 gap-3">
-                  {images.map((image) => (
+                  {filteredImages.map((image) => (
                     <button
                       key={image.id}
                       onClick={() => handleImageSelect(image)}
@@ -246,7 +261,8 @@ export function ImageSelector({
                     </button>
                   ))}
                 </div>
-              )}
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="upload" className="mt-4">

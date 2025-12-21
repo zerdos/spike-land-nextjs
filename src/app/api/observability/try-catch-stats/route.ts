@@ -12,7 +12,6 @@ import { NextResponse } from "next/server";
 
 interface TryCatchEvent {
   success: boolean;
-  timestamp?: string;
 }
 
 interface RequestBody {

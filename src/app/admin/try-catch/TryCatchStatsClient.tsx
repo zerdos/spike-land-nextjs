@@ -9,26 +9,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useCallback, useEffect, useState } from "react";
-
-interface UserTryCatchStats {
-  email: string;
-  allCalls: number;
-  frontendSuccess: number;
-  frontendFail: number;
-  backendSuccess: number;
-  backendFail: number;
-  lastSeen: string;
-}
-
-interface TryCatchStats {
-  version: number;
-  lastUpdated: string;
-  users: Record<string, UserTryCatchStats>;
-}
+import type { TryCatchStats } from "@/lib/observability/try-catch-stats";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Polling interval (30 seconds)
 const POLLING_INTERVAL = 30000;
+
+/**
+ * Calculates success rate as a percentage.
+ */
+function calculateSuccessRate(success: number, fail: number): number {
+  const total = success + fail;
+  return total > 0 ? (success / total) * 100 : 0;
+}
 
 export function TryCatchStatsClient() {
   const [stats, setStats] = useState<TryCatchStats | null>(null);
@@ -114,9 +107,10 @@ export function TryCatchStatsClient() {
     return () => clearInterval(intervalId);
   }, [isPolling, isVisible, fetchStats]);
 
-  // Calculate totals
-  const totals = stats
-    ? Object.values(stats.users).reduce(
+  // Calculate totals (memoized)
+  const totals = useMemo(() => {
+    if (!stats) return null;
+    return Object.values(stats.users).reduce(
       (acc, user) => ({
         allCalls: acc.allCalls + user.allCalls,
         frontendSuccess: acc.frontendSuccess + user.frontendSuccess,
@@ -131,10 +125,21 @@ export function TryCatchStatsClient() {
         backendSuccess: 0,
         backendFail: 0,
       },
-    )
-    : null;
+    );
+  }, [stats]);
 
-  const userList = stats ? Object.values(stats.users) : [];
+  // Memoized success rates
+  const frontendSuccessRate = useMemo(
+    () => (totals ? calculateSuccessRate(totals.frontendSuccess, totals.frontendFail) : 0),
+    [totals],
+  );
+
+  const backendSuccessRate = useMemo(
+    () => (totals ? calculateSuccessRate(totals.backendSuccess, totals.backendFail) : 0),
+    [totals],
+  );
+
+  const userList = useMemo(() => (stats ? Object.values(stats.users) : []), [stats]);
 
   return (
     <div className="space-y-6">
@@ -243,29 +248,12 @@ export function TryCatchStatsClient() {
               <span className="text-neutral-600 dark:text-neutral-400">
                 Success Rate
               </span>
-              <span className="font-medium">
-                {totals && totals.frontendSuccess + totals.frontendFail > 0
-                  ? (
-                    (totals.frontendSuccess /
-                      (totals.frontendSuccess + totals.frontendFail)) *
-                    100
-                  ).toFixed(1)
-                  : 0}
-                %
-              </span>
+              <span className="font-medium">{frontendSuccessRate.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
               <div
                 className="bg-green-500 h-2 rounded-full transition-all"
-                style={{
-                  width: `${
-                    totals && totals.frontendSuccess + totals.frontendFail > 0
-                      ? (totals.frontendSuccess /
-                        (totals.frontendSuccess + totals.frontendFail)) *
-                        100
-                      : 0
-                  }%`,
-                }}
+                style={{ width: `${frontendSuccessRate}%` }}
               />
             </div>
             <div className="flex justify-between text-sm text-neutral-500">
@@ -282,29 +270,12 @@ export function TryCatchStatsClient() {
               <span className="text-neutral-600 dark:text-neutral-400">
                 Success Rate
               </span>
-              <span className="font-medium">
-                {totals && totals.backendSuccess + totals.backendFail > 0
-                  ? (
-                    (totals.backendSuccess /
-                      (totals.backendSuccess + totals.backendFail)) *
-                    100
-                  ).toFixed(1)
-                  : 0}
-                %
-              </span>
+              <span className="font-medium">{backendSuccessRate.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
               <div
                 className="bg-green-500 h-2 rounded-full transition-all"
-                style={{
-                  width: `${
-                    totals && totals.backendSuccess + totals.backendFail > 0
-                      ? (totals.backendSuccess /
-                        (totals.backendSuccess + totals.backendFail)) *
-                        100
-                      : 0
-                  }%`,
-                }}
+                style={{ width: `${backendSuccessRate}%` }}
               />
             </div>
             <div className="flex justify-between text-sm text-neutral-500">
