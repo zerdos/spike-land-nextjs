@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
-import { tryCatch } from "@/lib/try-catch";
+import { tryCatch } from "@/lib/try-catch--no-track";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { FatalError } from "workflow";
 import { enhanceImage } from "./enhance-image.workflow";
