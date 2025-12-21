@@ -20,7 +20,14 @@
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { generateSystemReport, generateSystemReportSummary } from "@/lib/reports/system-report";
-import type { ReportFormat, ReportPeriodOption, ReportSection } from "@/lib/reports/types";
+import type {
+  PartialSystemReport,
+  ReportFormat,
+  ReportPeriodOption,
+  ReportSection,
+  SystemReport,
+  SystemReportSummary,
+} from "@/lib/reports/types";
 import { tryCatch } from "@/lib/try-catch";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -108,7 +115,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const sections = parseSections(params.include);
 
   // Generate report
-  const { data: report, error: reportError } = await tryCatch(
+  const { data: report, error: reportError } = await tryCatch<
+    SystemReport | PartialSystemReport | SystemReportSummary
+  >(
     format === "summary"
       ? generateSystemReportSummary(period)
       : generateSystemReport(period, sections),
