@@ -62,6 +62,7 @@ export default async function AdminLayout({
     { href: "/admin/marketing", label: "Marketing", icon: "📣" },
     { href: "/admin/emails", label: "Email Logs", icon: "📧" },
     { href: "/admin/sitemap", label: "Sitemap Preview", icon: "🗺️" },
+    { href: "/admin/merch", label: "Merch", icon: "🛍️" },
   ];
 
   return (
