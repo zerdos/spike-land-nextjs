@@ -67,5 +67,36 @@ export const ENHANCEMENT_COSTS = {
   TIER_4K: 5,
 } as const;
 
+/**
+ * Token Well Tier Subscriptions
+ * Progressive tier system where users upgrade when balance depletes to 0
+ * - wellCapacity: Regeneration cap AND tokens granted on upgrade
+ * - Monthly billing maintains tier status but does NOT auto-refill tokens
+ */
+export const TIER_SUBSCRIPTIONS = {
+  BASIC: {
+    priceGBP: 5,
+    wellCapacity: 20,
+    stripePriceId: process.env.STRIPE_PRICE_TIER_BASIC || "",
+    name: "Basic",
+    description: "20 token well capacity",
+  },
+  STANDARD: {
+    priceGBP: 10,
+    wellCapacity: 50,
+    stripePriceId: process.env.STRIPE_PRICE_TIER_STANDARD || "",
+    name: "Standard",
+    description: "50 token well capacity",
+  },
+  PREMIUM: {
+    priceGBP: 20,
+    wellCapacity: 100,
+    stripePriceId: process.env.STRIPE_PRICE_TIER_PREMIUM || "",
+    name: "Premium",
+    description: "100 token well capacity",
+  },
+} as const;
+
 export type TokenPackageId = keyof typeof TOKEN_PACKAGES;
 export type SubscriptionPlanId = keyof typeof SUBSCRIPTION_PLANS;
+export type TierSubscriptionId = keyof typeof TIER_SUBSCRIPTIONS;

@@ -45,7 +45,7 @@ export async function GET() {
     );
   }
 
-  const { balance, lastRegeneration } = balanceData;
+  const { balance, lastRegeneration, tier, maxBalance } = balanceData;
 
   // Get time until next regeneration
   const { data: timeUntilNextRegen, error: timeError } = await tryCatch(
@@ -78,6 +78,8 @@ export async function GET() {
     lastRegeneration: lastRegeneration.toISOString(),
     timeUntilNextRegenMs: timeUntilNextRegen,
     tokensAddedThisRequest: tokensAdded,
+    tier,
+    maxBalance,
     stats: {
       totalSpent: stats.totalSpent,
       totalEarned: stats.totalEarned,
