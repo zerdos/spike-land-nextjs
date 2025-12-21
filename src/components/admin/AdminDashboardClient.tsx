@@ -99,7 +99,7 @@ export function AdminDashboardClient(
 
   const quickLinks = [
     {
-      title: "User Analytics",
+      title: "User Analytics1",
       description: "View user growth, retention, and engagement metrics",
       href: "/admin/analytics",
       icon: "chart-line",

@@ -104,7 +104,7 @@ jobs:
         run: yarn prisma generate
 
       - name: Run tests (shard ${{ matrix.shard }}/8)
-        run: yarn test:run --shard=${{ matrix.shard }}/8 --reporter=github-actions
+        run: yarn test:run --changed --shard=${{ matrix.shard }}/8 --reporter=github-actions
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
