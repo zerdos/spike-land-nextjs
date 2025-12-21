@@ -2,11 +2,20 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { Prisma, type TokenTransaction, TokenTransactionType } from "@prisma/client";
+import {
+  Prisma,
+  SubscriptionTier,
+  type TokenTransaction,
+  TokenTransactionType,
+} from "@prisma/client";
+import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
+import { TierManager } from "./tier-manager";
 
 export interface TokenBalanceResult {
   balance: number;
   lastRegeneration: Date;
+  tier: SubscriptionTier;
+  maxBalance: number;
 }
 
 export interface ConsumeTokensParams {
@@ -33,9 +42,8 @@ export interface TokenTransactionResult {
   error?: string;
 }
 
-const TOKEN_REGENERATION_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_TOKEN_BALANCE = 10;
-const TOKENS_PER_REGENERATION = 1;
+// Note: TOKEN_REGENERATION_INTERVAL_MS and TOKENS_PER_REGENERATION imported from ./constants
+// Note: MAX_TOKEN_BALANCE is now dynamic per tier - use TierManager.getTierCapacity()
 
 export class TokenBalanceManager {
   /**
@@ -69,11 +77,15 @@ export class TokenBalanceManager {
           create: { id: userId },
         });
 
+        // Get initial capacity for FREE tier (default)
+        const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+
         // Create initial token balance for new user
         balance = await tx.userTokenBalance.create({
           data: {
             userId,
-            balance: MAX_TOKEN_BALANCE,
+            balance: initialCapacity,
+            tier: SubscriptionTier.FREE,
             lastRegeneration: new Date(),
           },
         });
@@ -82,9 +94,14 @@ export class TokenBalanceManager {
       return balance;
     });
 
+    const tier = tokenBalance.tier as SubscriptionTier;
+    const maxBalance = TierManager.getTierCapacity(tier);
+
     return {
       balance: tokenBalance.balance,
       lastRegeneration: tokenBalance.lastRegeneration,
+      tier,
+      maxBalance,
     };
   }
 
@@ -160,11 +177,15 @@ export class TokenBalanceManager {
             },
           });
 
-          // Create initial balance with 0 tokens
+          // Get initial capacity for FREE tier (default)
+          const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+
+          // Create initial balance with tier capacity
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
-              balance: MAX_TOKEN_BALANCE,
+              balance: initialCapacity,
+              tier: SubscriptionTier.FREE,
               lastRegeneration: new Date(),
             },
           });
@@ -298,10 +319,14 @@ export class TokenBalanceManager {
             },
           });
 
+          // Get initial capacity for FREE tier (default)
+          const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+
           tokenBalance = await tx.userTokenBalance.create({
             data: {
               userId,
-              balance: MAX_TOKEN_BALANCE,
+              balance: initialCapacity,
+              tier: SubscriptionTier.FREE,
               lastRegeneration: new Date(),
             },
           });
@@ -309,16 +334,23 @@ export class TokenBalanceManager {
           addLogger.info("Created initial token balance for new user");
         }
 
-        // Cap balance at maximum for regeneration
+        // Get tier-specific max balance
+        const currentTier = tokenBalance.tier as SubscriptionTier;
+        const maxBalance = TierManager.getTierCapacity(currentTier);
+
+        // Cap balance at tier maximum for regeneration
         let newBalance = tokenBalance.balance + amount;
-        const wasCapped = false;
+        let wasCapped = false;
         if (type === TokenTransactionType.EARN_REGENERATION) {
           const beforeCap = newBalance;
-          newBalance = Math.min(newBalance, MAX_TOKEN_BALANCE);
+          newBalance = Math.min(newBalance, maxBalance);
           if (beforeCap > newBalance) {
-            addLogger.debug("Balance capped at maximum", {
+            wasCapped = true;
+            addLogger.debug("Balance capped at tier maximum", {
               requested: beforeCap,
               capped: newBalance,
+              tier: currentTier,
+              maxBalance,
             });
           }
         }
@@ -406,7 +438,7 @@ export class TokenBalanceManager {
    * Returns number of tokens regenerated (0 if not due yet)
    */
   static async processRegeneration(userId: string): Promise<number> {
-    const { balance, lastRegeneration } = await this.getBalance(userId);
+    const { balance, lastRegeneration, tier, maxBalance } = await this.getBalance(userId);
 
     // Check if regeneration is due
     const now = new Date();
@@ -416,8 +448,8 @@ export class TokenBalanceManager {
       return 0; // Not due yet
     }
 
-    // Don't regenerate if already at max
-    if (balance >= MAX_TOKEN_BALANCE) {
+    // Don't regenerate if already at tier max
+    if (balance >= maxBalance) {
       return 0;
     }
 
@@ -427,7 +459,7 @@ export class TokenBalanceManager {
     );
     const tokensToAdd = Math.min(
       intervalsElapsed * TOKENS_PER_REGENERATION,
-      MAX_TOKEN_BALANCE - balance,
+      maxBalance - balance,
     );
 
     // Add tokens
@@ -439,6 +471,7 @@ export class TokenBalanceManager {
       metadata: {
         intervalsElapsed,
         timeSinceLastRegenMs: timeSinceLastRegen,
+        tier,
       },
     });
 

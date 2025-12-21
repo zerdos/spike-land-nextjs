@@ -171,15 +171,17 @@ model MonetizationModel {
 }
 
 model UserTokenBalance {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  balance          Int      @default(0)
-  lastRegeneration DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  balance          Int              @default(0)
+  lastRegeneration DateTime         @default(now())
+  tier             SubscriptionTier @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([tier])
   @@map("user_token_balances")
 }
 
@@ -323,9 +325,11 @@ model Subscription {
   stripeSubscriptionId String             @unique
   stripePriceId        String
   status               SubscriptionStatus
+  tier                 SubscriptionTier   @default(BASIC)
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
   cancelAtPeriodEnd    Boolean            @default(false)
+  downgradeTo          SubscriptionTier?
   tokensPerMonth       Int
   rolloverTokens       Int                @default(0)
   maxRollover          Int                @default(0)
@@ -335,6 +339,7 @@ model Subscription {
 
   @@index([stripeSubscriptionId])
   @@index([status])
+  @@index([tier])
   @@map("subscriptions")
 }
 
@@ -626,6 +631,13 @@ enum SubscriptionStatus {
   PAST_DUE
   UNPAID
   TRIALING
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  STANDARD
+  PREMIUM
 }
 
 enum AlbumPrivacy {
