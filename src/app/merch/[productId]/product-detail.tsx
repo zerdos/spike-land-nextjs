@@ -187,6 +187,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="space-y-2">
             <Label>Your Image</Label>
             <ImageSelector
+              minWidth={product.minWidth}
+              minHeight={product.minHeight}
               onSelect={setSelectedImage}
               selectedImage={selectedImage}
             />
