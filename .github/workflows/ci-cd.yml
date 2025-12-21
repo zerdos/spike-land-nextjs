@@ -195,7 +195,23 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable && yarn playwright install chromium --with-deps
+        run: yarn install --immutable
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers (if cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: yarn playwright install chromium --with-deps
+
+      - name: Install Playwright dependencies (always needed for system libs)
+        run: yarn playwright install-deps chromium
 
       - name: Generate Prisma Client
         run: yarn prisma generate
