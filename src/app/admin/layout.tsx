@@ -53,6 +53,7 @@ export default async function AdminLayout({
     { href: "/admin/tokens", label: "Token Economics", icon: "💰" },
     { href: "/admin/system", label: "System Health", icon: "🏥" },
     { href: "/admin/jobs", label: "Jobs", icon: "⚙️" },
+    { href: "/admin/agents", label: "Agents", icon: "🤖" },
     { href: "/admin/vouchers", label: "Vouchers", icon: "🎟️" },
     { href: "/admin/users", label: "User Management", icon: "👥" },
     { href: "/admin/photos", label: "Photos", icon: "📸" },

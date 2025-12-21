@@ -1,17 +1,23 @@
 "use client";
 
-import { TierBadge, type TierType } from "@/components/tiers";
+import { TierBadge, type TierType, UpgradePromptModal } from "@/components/tiers";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { TierInfo } from "@/hooks/useTier";
+import { useTier } from "@/hooks/useTier";
+import { useTierUpgrade } from "@/hooks/useTierUpgrade";
+import type { UpgradeTierId } from "@/hooks/useTierUpgrade";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Coins, RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { PurchaseModal } from "./PurchaseModal";
 
 interface TokenDisplayProps {
   showPurchase?: boolean;
   showEstimates?: boolean;
   showTierBadge?: boolean;
+  showUpgradePrompt?: boolean;
   className?: string;
 }
 
@@ -19,6 +25,7 @@ export function TokenDisplay({
   showPurchase = true,
   showEstimates = false,
   showTierBadge = true,
+  showUpgradePrompt = true,
   className,
 }: TokenDisplayProps) {
   const {
@@ -30,6 +37,30 @@ export function TokenDisplay({
     estimatedEnhancements,
     refetch,
   } = useTokenBalance();
+
+  // Tier upgrade prompt state
+  const {
+    tiers,
+    currentTier,
+    nextTier,
+    showUpgradePrompt: shouldShowPrompt,
+    isPremiumAtZero,
+    dismissPrompt,
+  } = useTier();
+
+  const { upgradeAndRedirect, isUpgrading } = useTierUpgrade();
+
+  // Find current tier info for modal
+  const currentTierInfo: TierInfo | null = currentTier
+    ? tiers.find((t) => t.tier === currentTier) || null
+    : null;
+
+  // Handle upgrade action
+  const handleUpgrade = async () => {
+    if (nextTier && nextTier.tier !== "FREE") {
+      await upgradeAndRedirect(nextTier.tier as UpgradeTierId);
+    }
+  };
 
   const tooltipContent = showEstimates && estimatedEnhancements
     ? (
@@ -118,6 +149,34 @@ export function TokenDisplay({
             </Button>
           }
           onPurchaseComplete={refetch}
+        />
+      )}
+
+      {/* Premium at zero - link to subscription page */}
+      {isPremiumAtZero && (
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className="border-amber-500/30 text-amber-400"
+          data-testid="premium-options-link"
+        >
+          <Link href="/settings/subscription">Options</Link>
+        </Button>
+      )}
+
+      {/* Upgrade prompt modal */}
+      {showUpgradePrompt && (
+        <UpgradePromptModal
+          open={shouldShowPrompt && balance === 0}
+          onOpenChange={(open) => {
+            if (!open) dismissPrompt();
+          }}
+          currentTier={currentTierInfo}
+          nextTier={nextTier}
+          onUpgrade={handleUpgrade}
+          onDismiss={dismissPrompt}
+          isUpgrading={isUpgrading}
         />
       )}
     </div>

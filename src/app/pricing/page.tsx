@@ -1,5 +1,6 @@
 "use client";
 
+import { TierCard } from "@/components/tiers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,11 +13,12 @@ import {
 } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
+import { useTier } from "@/hooks/useTier";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ENHANCEMENT_COSTS, TOKEN_PACKAGES } from "@/lib/stripe/client";
 import type { TokenPackageId } from "@/lib/stripe/client";
 import { cn } from "@/lib/utils";
-import { Check, Clock, Coins, Gift, Sparkles, Zap } from "lucide-react";
+import { Check, Clock, Coins, Crown, Gift, Sparkles, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -64,6 +66,9 @@ export default function PricingPage() {
 
   // Fetch token balance for logged-in users to get regeneration time
   const { balance, isLoading: balanceLoading } = useTokenBalance();
+
+  // Fetch tier information for subscription section
+  const { tiers, currentTier, isLoading: tiersLoading } = useTier();
 
   // Fetch time until next regeneration for logged-in users
   useEffect(() => {
@@ -233,6 +238,59 @@ export default function PricingPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Subscription Plans */}
+      <div className="max-w-6xl mx-auto mb-16" data-testid="subscription-tiers-section">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Crown className="h-6 w-6 text-amber-500" />
+            <h2 className="text-2xl font-bold">Subscription Plans</h2>
+          </div>
+          <p className="text-muted-foreground">
+            Upgrade your token well for faster regeneration and higher capacity
+          </p>
+        </div>
+
+        {tiersLoading
+          ? (
+            <div className="flex justify-center py-8">
+              <p className="text-muted-foreground">Loading plans...</p>
+            </div>
+          )
+          : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {tiers.map((tier) => {
+                  const isCurrent = tier.tier === currentTier;
+                  return (
+                    <TierCard
+                      key={tier.tier}
+                      tier={tier}
+                      isCurrent={isCurrent}
+                      data-testid={`pricing-tier-${tier.tier}`}
+                    />
+                  );
+                })}
+              </div>
+
+              <div className="text-center mt-8">
+                {isAuthenticated
+                  ? (
+                    <Button asChild variant="outline">
+                      <Link href="/settings/subscription">Manage Your Subscription</Link>
+                    </Button>
+                  )
+                  : (
+                    <Button asChild>
+                      <Link href="/auth/signin?callbackUrl=/settings/subscription">
+                        Sign in to Subscribe
+                      </Link>
+                    </Button>
+                  )}
+              </div>
+            </>
+          )}
       </div>
 
       {/* Token Packs */}

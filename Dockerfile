@@ -63,7 +63,7 @@ RUN --mount=type=cache,target=./.yarn/cache \
 FROM deps AS prisma
 # Prisma client was generated during yarn install, verify it exists
 RUN test -d node_modules/.prisma/client || \
-    (DATABASE_URL="postgresql://x:x@x:5432/x" yarn prisma generate)
+    (DATABASE_URL="postgresql://x:x@x:5432/x" yarn prisma generate --no-hints)
 
 # ============================================================================
 # STAGE 3: Copy source code (moderate cache - source changes frequently)
