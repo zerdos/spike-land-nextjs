@@ -50,6 +50,19 @@ function isWorkflowEnvironment(): boolean {
   return !!process.env.WORKFLOW_RUNTIME;
 }
 
+/**
+ * Get base URL for server-side HTTP requests
+ * Browser can use relative URLs, but server needs absolute URLs
+ */
+function getBaseUrl(): string {
+  if (typeof window !== "undefined") return ""; // Browser can use relative URLs
+  return (
+    process.env.NEXTAUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "http://localhost:3000"
+  );
+}
+
 // Pending errors for batching (frontend only)
 let pendingErrors: PendingError[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -165,7 +178,7 @@ function reportErrorBackend(
     }
 
     // Fire-and-forget POST to our error API
-    void fetch("/api/errors/report", {
+    void fetch(`${getBaseUrl()}/api/errors/report`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
