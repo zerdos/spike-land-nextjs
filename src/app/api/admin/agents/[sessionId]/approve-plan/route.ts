@@ -20,7 +20,7 @@ interface RouteParams {
  * POST /api/admin/agents/[sessionId]/approve-plan
  * Approve the agent's implementation plan
  */
-export async function POST(request: NextRequest, props: RouteParams) {
+export async function POST(_request: NextRequest, props: RouteParams) {
   const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError || !session?.user?.id) {

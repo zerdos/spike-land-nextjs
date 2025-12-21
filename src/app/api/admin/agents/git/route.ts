@@ -105,13 +105,16 @@ async function getGitInfo(): Promise<GitInfo> {
       'git log -1 --format="%H|%s|%an|%ci"',
     );
     if (commitInfo) {
-      const [hash, message, author, date] = commitInfo.split("|");
-      lastCommit = {
-        hash: hash.substring(0, 7),
-        message,
-        author,
-        date,
-      };
+      const parts = commitInfo.split("|");
+      const [hash, message, author, date] = parts;
+      if (hash) {
+        lastCommit = {
+          hash: hash.substring(0, 7),
+          message,
+          author,
+          date,
+        };
+      }
     }
   } catch {
     // Ignore

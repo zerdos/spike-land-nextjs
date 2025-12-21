@@ -19,7 +19,7 @@ interface RouteParams {
  * GET /api/admin/agents/[sessionId]
  * Get session details with activities
  */
-export async function GET(request: NextRequest, props: RouteParams) {
+export async function GET(_request: NextRequest, props: RouteParams) {
   const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError || !session?.user?.id) {
