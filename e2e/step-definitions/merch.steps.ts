@@ -308,7 +308,7 @@ Then("I should see the order summary with calculated shipping", async function(t
   await expect(total).toBeVisible();
 });
 
-Then("I should see a validation error message", async function(this: CustomWorld) {
+Then("I should see a checkout validation error", async function(this: CustomWorld) {
   const errorAlert = this.page.locator('[role="alert"]');
   await expect(errorAlert).toBeVisible();
 });

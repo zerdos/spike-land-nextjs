@@ -43,7 +43,7 @@ Feature: Merch Checkout
   Scenario: Shipping address validation
     When I navigate to "/checkout"
     And I click the "Continue to Payment" button
-    Then I should see a validation error message
+    Then I should see a checkout validation error
 
   Scenario: User sees Stripe payment form
     When I navigate to "/checkout"
