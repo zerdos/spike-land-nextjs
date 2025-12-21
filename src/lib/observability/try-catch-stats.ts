@@ -6,7 +6,20 @@
  * and throttled writes for performance.
  */
 
-import { kv } from "@vercel/kv";
+// Lazy-loaded KV client to prevent bundler from including in workflow bundles
+// where @vercel/kv is not available (uses EventTarget which workflows don't have)
+type KVClient = typeof import("@vercel/kv")["kv"];
+let kvClient: KVClient | null = null;
+
+async function getKV(): Promise<KVClient> {
+  if (!kvClient) {
+    // Use variable to prevent bundler static analysis from including @vercel/kv
+    const kvModulePath = "@vercel/kv";
+    const kvModule = await import(kvModulePath);
+    kvClient = kvModule.kv;
+  }
+  return kvClient!;
+}
 
 // Types
 export interface UserTryCatchStats {
@@ -76,6 +89,7 @@ async function isKVAvailable(): Promise<boolean> {
   }
 
   try {
+    const kv = await getKV();
     await kv.ping();
     kvAvailable = true;
     return true;
@@ -232,6 +246,7 @@ async function flushUpdatesToKV(): Promise<void> {
   // Retry loop with optimistic locking for KV
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
+      const kv = await getKV();
       const current = await kv.get<TryCatchStats>(STATS_KEY);
       const stats = current || createEmptyStats();
       const updated = mergeAggregatedUpdates(stats, aggregated);
@@ -331,6 +346,7 @@ export async function getStats(): Promise<TryCatchStats> {
   }
 
   try {
+    const kv = await getKV();
     const stats = await kv.get<TryCatchStats>(STATS_KEY);
     return stats || createEmptyStats();
   } catch (error) {
@@ -365,6 +381,7 @@ export async function resetStats(): Promise<void> {
   }
 
   try {
+    const kv = await getKV();
     await kv.del(STATS_KEY);
   } catch (error) {
     console.error("[TryCatchStats] Failed to reset stats:", error);
