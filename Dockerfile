@@ -6,12 +6,19 @@
 # This Dockerfile runs the full CI pipeline at build time:
 # - Lint (parallel with build)
 # - Build (parallel with lint)
-# - Unit tests with coverage
-# - E2E tests with real Chromium browser
+# - Unit tests with coverage (4 parallel shards)
+# - E2E tests with real Chromium browser (4 parallel shards)
 #
 # Key insight: Docker layer caching means test file changes don't rebuild the app!
 #
-# Usage:
+# RECOMMENDED: Use docker-bake.hcl for cleaner syntax and better control:
+#   docker buildx bake                    # Full CI pipeline (default)
+#   docker buildx bake unit-tests         # Just unit tests
+#   docker buildx bake e2e-tests          # Just E2E tests
+#   docker buildx bake production         # Production image
+#   docker buildx bake --print            # Preview build plan
+#
+# Legacy usage (still supported):
 #   docker build --target ci -t app:ci .           # Full CI pipeline
 #   docker build --target unit-tests -t app:test . # Skip E2E
 #   docker build --target build -t app:build .     # Skip tests
@@ -90,7 +97,7 @@ CMD ["yarn", "dev"]
 # ============================================================================
 # STAGE 4: Lint (PARALLEL with build - uses BuildKit)
 # ============================================================================
-FROM source AS lint
+FROM build AS lint
 RUN yarn lint
 
 # ============================================================================
@@ -119,8 +126,21 @@ COPY cucumber.js ./
 COPY e2e ./e2e
 
 # ============================================================================
-# STAGE 8: Run unit tests (4 parallel shards via BuildKit)
+# STAGE 8: Run unit tests (parallel shards via BuildKit)
+#
+# For docker-bake.hcl: Uses ARG-based sharding (DRY pattern)
+# For direct docker build: Uses explicit stages below (backwards compatible)
 # ============================================================================
+
+# --- ARG-based shard target (used by docker-bake.hcl) ---
+FROM test-source AS unit-test-shard
+ARG SHARD_INDEX=1
+ARG SHARD_TOTAL=4
+RUN yarn test:run --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
+    > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
+    || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
+
+# --- Explicit shard targets (for backwards compatibility with direct docker build) ---
 FROM test-source AS unit-tests-1
 RUN yarn test:run --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
 
@@ -133,16 +153,13 @@ RUN yarn test:run --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-sha
 FROM test-source AS unit-tests-4
 RUN yarn test:run --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
 
+# --- Collector stage (merges all shard results) ---
 FROM test-source AS unit-tests
 COPY --from=unit-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
 COPY --from=unit-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
 COPY --from=unit-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
 COPY --from=unit-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
-
-RUN cat /tmp/test-shard-1.log && \
-    cat /tmp/test-shard-2.log && \
-    cat /tmp/test-shard-3.log && \
-    cat /tmp/test-shard-4.log
+RUN cat /tmp/test-shard-*.log
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
@@ -174,10 +191,19 @@ ENV CI=true \
 # Create reports directory
 RUN mkdir -p e2e/reports
 
-FROM e2e-test-base AS e2e-tests-1
-
+# --- ARG-based shard target (used by docker-bake.hcl) ---
+FROM e2e-test-base AS e2e-test-shard
+ARG SHARD_INDEX=1
+ARG SHARD_TOTAL=4
 # Run E2E tests with proper server lifecycle management
 # This script: starts server -> waits for ready -> runs tests -> captures result
+RUN --mount=type=cache,target=/app/.next/cache \
+    yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
+    > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
+    || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
+
+# --- Explicit shard targets (for backwards compatibility with direct docker build) ---
+FROM e2e-test-base AS e2e-tests-1
 RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-2
@@ -189,16 +215,13 @@ RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shar
 FROM e2e-test-base AS e2e-tests-4
 RUN --mount=type=cache,target=/app/.next/cache yarn start:server:and:test --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
 
+# --- Collector stage (merges all shard results) ---
 FROM e2e-test-base AS e2e-tests
 COPY --from=e2e-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
 COPY --from=e2e-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
 COPY --from=e2e-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
 COPY --from=e2e-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
-
-RUN cat /tmp/test-shard-1.log && \
-    cat /tmp/test-shard-2.log && \
-    cat /tmp/test-shard-3.log && \
-    cat /tmp/test-shard-4.log
+RUN cat /tmp/test-shard-*.log
     
 # ============================================================================
 # STAGE 11: CI validation target (runs all checks)
