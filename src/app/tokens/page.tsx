@@ -19,7 +19,9 @@ import { cn } from "@/lib/utils";
 import { Check, Clock, Coins, RefreshCw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Calculate value comparison for packages
 function getPackageValueInfo(id: TokenPackageId) {
@@ -49,6 +51,7 @@ function getPackageValueInfo(id: TokenPackageId) {
 export default function TokensPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
 
   const {
@@ -59,6 +62,28 @@ export default function TokensPage() {
     timeUntilNextRegeneration,
     refetch,
   } = useTokenBalance({ autoRefreshOnFocus: true });
+
+  // Show success toast when returning from successful payment
+  useEffect(() => {
+    const purchaseSuccess = searchParams.get("purchase");
+    const subscriptionSuccess = searchParams.get("subscription");
+
+    if (purchaseSuccess === "success") {
+      toast.success("Payment successful!", {
+        description: "Your tokens have been added to your account.",
+      });
+      // Clean up URL without causing a page reload
+      window.history.replaceState({}, "", "/tokens");
+    }
+
+    if (subscriptionSuccess === "success") {
+      toast.success("Subscription activated!", {
+        description: "Your subscription is now active. Tokens have been credited.",
+      });
+      // Clean up URL without causing a page reload
+      window.history.replaceState({}, "", "/tokens");
+    }
+  }, [searchParams]);
 
   // Redirect unauthenticated users
   if (sessionStatus === "unauthenticated") {

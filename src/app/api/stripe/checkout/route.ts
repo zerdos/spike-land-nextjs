@@ -151,7 +151,7 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
           tokens: pkg.tokens.toString(),
           type: "token_purchase",
         },
-        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${origin}/tokens?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,
       }),
     );
@@ -242,7 +242,7 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
           maxRollover: plan.maxRollover.toString(),
           type: "subscription",
         },
-        success_url: `${origin}/enhance?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${origin}/tokens?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,
       }),
     );

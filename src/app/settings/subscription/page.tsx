@@ -18,11 +18,14 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { ArrowLeft, Calendar, RefreshCw, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { redirect } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function SubscriptionPage() {
   const { status } = useSession();
+  const searchParams = useSearchParams();
   const {
     tiers,
     currentTier,
@@ -36,7 +39,7 @@ export default function SubscriptionPage() {
     refetch: refetchTiers,
   } = useTier();
 
-  const { balance, isLoading: isBalanceLoading } = useTokenBalance();
+  const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useTokenBalance();
   const { upgradeAndRedirect, isUpgrading, error: upgradeError } = useTierUpgrade();
   const {
     scheduleDowngrade,
@@ -50,6 +53,23 @@ export default function SubscriptionPage() {
 
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<TierInfo | null>(null);
+
+  // Show success toast when returning from successful tier upgrade
+  useEffect(() => {
+    const upgradeSuccess = searchParams.get("upgrade");
+    const tierParam = searchParams.get("tier");
+
+    if (upgradeSuccess === "success" && tierParam) {
+      toast.success("Tier upgraded successfully!", {
+        description: `Your subscription is now ${tierParam}. Enjoy your new benefits!`,
+      });
+      // Refetch data to show updated tier
+      refetchTiers();
+      refetchBalance();
+      // Clean up URL without causing a page reload
+      window.history.replaceState({}, "", "/settings/subscription");
+    }
+  }, [searchParams, refetchTiers, refetchBalance]);
 
   // Handle auth states
   if (status === "loading" || isTierLoading || isBalanceLoading) {

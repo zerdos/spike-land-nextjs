@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch, tryCatchSync } from "@/lib/try-catch";
+import { SubscriptionTier } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -283,6 +284,130 @@ async function handleCheckoutCompleted(
       console.error(
         "Failed to track subscription purchase attribution:",
         subscriptionAttributionError,
+      );
+    }
+  }
+
+  // Handle tier upgrade subscriptions (Token Well tiers)
+  if (type === "tier_upgrade") {
+    const { tier, previousTier, wellCapacity } = session.metadata || {};
+
+    if (!tier || !wellCapacity) {
+      console.error("Missing tier or wellCapacity in tier_upgrade metadata");
+      return;
+    }
+
+    const stripeSubscriptionId = session.subscription as string;
+
+    if (!stripeSubscriptionId) {
+      console.error("No subscription ID in tier_upgrade session");
+      return;
+    }
+
+    const subscriptionData = await stripe.subscriptions.retrieve(
+      stripeSubscriptionId,
+    );
+
+    // Stripe v20+: billing period is on subscription item, not subscription level
+    const firstItem = subscriptionData.items.data[0];
+    const currentPeriodStart = firstItem?.current_period_start
+      ? new Date(firstItem.current_period_start * 1000)
+      : new Date();
+    const currentPeriodEnd = firstItem?.current_period_end
+      ? new Date(firstItem.current_period_end * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // Validate tier is a valid SubscriptionTier
+    const validTiers = ["FREE", "BASIC", "STANDARD", "PREMIUM"];
+    if (!validTiers.includes(tier)) {
+      console.error(`Invalid tier value: ${tier}`);
+      return;
+    }
+
+    const tierEnum = tier as SubscriptionTier;
+    const capacity = parseInt(wellCapacity, 10);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.$transaction(async (tx: any) => {
+      // Create or update subscription record with tier
+      await tx.subscription.upsert({
+        where: { userId },
+        create: {
+          userId,
+          stripeSubscriptionId,
+          stripePriceId: firstItem?.price.id || "",
+          status: "ACTIVE",
+          tier: tierEnum,
+          currentPeriodStart,
+          currentPeriodEnd,
+          tokensPerMonth: 0, // Tier subscriptions don't grant tokens per month
+          maxRollover: 0,
+          rolloverTokens: 0,
+        },
+        update: {
+          stripeSubscriptionId,
+          stripePriceId: firstItem?.price.id || "",
+          status: "ACTIVE",
+          tier: tierEnum,
+          currentPeriodStart,
+          currentPeriodEnd,
+        },
+      });
+
+      // Update user's token balance tier
+      await tx.userTokenBalance.upsert({
+        where: { userId },
+        create: {
+          userId,
+          balance: capacity, // Start with full well capacity
+          tier: tierEnum,
+          lastRegeneration: new Date(),
+        },
+        update: {
+          tier: tierEnum,
+        },
+      });
+
+      // Record transaction for tier upgrade
+      const currentBalance = await tx.userTokenBalance.findUnique({
+        where: { userId },
+        select: { balance: true },
+      });
+
+      await tx.tokenTransaction.create({
+        data: {
+          userId,
+          amount: 0, // No tokens granted, just tier change
+          type: "EARN_PURCHASE",
+          source: "tier_upgrade",
+          sourceId: stripeSubscriptionId,
+          balanceAfter: currentBalance?.balance || 0,
+          metadata: {
+            tier,
+            previousTier,
+            wellCapacity: capacity,
+            sessionId: session.id,
+          },
+        },
+      });
+    });
+
+    console.log(
+      `[Stripe] Tier upgrade completed for user ${userId}: ${previousTier} → ${tier}`,
+    );
+
+    // Track tier upgrade conversion attribution
+    const { error: tierAttributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
+    );
+    if (tierAttributionError) {
+      console.error(
+        "Failed to track tier upgrade attribution:",
+        tierAttributionError,
       );
     }
   }
