@@ -50,6 +50,9 @@ model User {
   // Campaign Analytics relations
   visitorSessions      VisitorSession[]
   campaignAttributions CampaignAttribution[]
+  // Merch relations
+  merchCart            MerchCart?
+  merchOrders          MerchOrder[]
 
   @@map("users")
 }
@@ -253,6 +256,7 @@ model EnhancedImage {
   enhancementJobs      ImageEnhancementJob[]
   blendTargetJobs      ImageEnhancementJob[] @relation("BlendSource")
   featuredGalleryItems FeaturedGalleryItem[]
+  merchCartItems       MerchCartItem[]
 
   @@index([userId, createdAt])
   @@index([isPublic, createdAt])
@@ -298,7 +302,7 @@ model ImageEnhancementJob {
   // Blend enhancement - optional source image for image-to-image blending
   sourceImageId String?
   sourceImage   EnhancedImage? @relation("BlendSource", fields: [sourceImageId], references: [id], onDelete: SetNull)
-  isBlend       Boolean         @default(false) // True when job uses blend enhancement (file upload or stored image)
+  isBlend       Boolean        @default(false) // True when job uses blend enhancement (file upload or stored image)
 
   image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1161,4 +1165,255 @@ enum ConversionType {
   SIGNUP
   ENHANCEMENT
   PURCHASE
+}
+
+// =============================================================================
+// Merch / Print-on-Demand Models
+// =============================================================================
+
+enum PodProvider {
+  PRODIGI
+  PRINTFUL
+}
+
+enum MerchOrderStatus {
+  PENDING // Created, awaiting payment
+  PAYMENT_PENDING // Payment authorized, awaiting capture
+  PAID // Payment captured
+  SUBMITTED // Sent to POD provider
+  IN_PRODUCTION // Being manufactured
+  SHIPPED // In transit
+  DELIVERED // Delivered
+  CANCELLED // Cancelled
+  REFUNDED // Fully refunded
+}
+
+enum ShipmentStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+// Product Catalog
+model MerchCategory {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  slug        String         @unique
+  description String?
+  icon        String?
+  sortOrder   Int            @default(0)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  products    MerchProduct[]
+
+  @@index([isActive, sortOrder])
+  @@map("merch_categories")
+}
+
+model MerchProduct {
+  id              String      @id @default(cuid())
+  name            String
+  description     String?
+  categoryId      String
+  provider        PodProvider
+  providerSku     String // External SKU from POD provider
+  basePrice       Decimal     @db.Decimal(10, 2) // Cost from provider
+  retailPrice     Decimal     @db.Decimal(10, 2) // Selling price
+  currency        String      @default("GBP")
+  isActive        Boolean     @default(true)
+  minDpi          Int         @default(150)
+  minWidth        Int         @default(1800)
+  minHeight       Int         @default(1800)
+  printAreaWidth  Int? // Print area in pixels
+  printAreaHeight Int?
+  mockupTemplate  String? // URL to mockup overlay image
+  sortOrder       Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  category   MerchCategory    @relation(fields: [categoryId], references: [id])
+  variants   MerchVariant[]
+  cartItems  MerchCartItem[]
+  orderItems MerchOrderItem[]
+
+  @@index([categoryId, isActive])
+  @@index([provider, providerSku])
+  @@index([isActive, sortOrder])
+  @@map("merch_products")
+}
+
+model MerchVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  name        String // "30x40cm", "Large", "Black", etc.
+  providerSku String // Provider-specific SKU for this variant
+  priceDelta  Decimal  @default(0) @db.Decimal(10, 2) // Price adjustment from base
+  isActive    Boolean  @default(true)
+  attributes  Json? // { size: "30x40", color: "black" }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product    MerchProduct     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  MerchCartItem[]
+  orderItems MerchOrderItem[]
+
+  @@index([productId, isActive])
+  @@map("merch_variants")
+}
+
+// Shopping Cart
+model MerchCart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items MerchCartItem[]
+
+  @@map("merch_carts")
+}
+
+model MerchCartItem {
+  id                 String   @id @default(cuid())
+  cartId             String
+  productId          String
+  variantId          String?
+  // Image source: ONE of these must be set
+  imageId            String? // EnhancedImage reference (if using existing)
+  uploadedImageR2Key String? // R2 key (if direct upload)
+  uploadedImageUrl   String? // Public URL for direct uploads
+  quantity           Int      @default(1)
+  customText         String? // Optional personalization text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  cart    MerchCart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product MerchProduct   @relation(fields: [productId], references: [id])
+  variant MerchVariant?  @relation(fields: [variantId], references: [id])
+  image   EnhancedImage? @relation(fields: [imageId], references: [id])
+
+  @@unique([cartId, productId, variantId, imageId, uploadedImageR2Key])
+  @@index([cartId])
+  @@index([productId])
+  @@map("merch_cart_items")
+}
+
+// Orders
+model MerchOrder {
+  id                    String           @id @default(cuid())
+  userId                String
+  orderNumber           String           @unique // Human-readable order number
+  status                MerchOrderStatus @default(PENDING)
+  subtotal              Decimal          @db.Decimal(10, 2)
+  shippingCost          Decimal          @db.Decimal(10, 2)
+  taxAmount             Decimal          @default(0) @db.Decimal(10, 2)
+  totalAmount           Decimal          @db.Decimal(10, 2)
+  currency              String           @default("GBP")
+  stripePaymentIntentId String?          @unique
+  stripePaymentStatus   String? // authorized, captured, cancelled
+  shippingAddress       Json // { name, line1, line2, city, postalCode, country }
+  billingAddress        Json?
+  customerEmail         String
+  customerPhone         String?
+  notes                 String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  paidAt                DateTime?
+
+  user      User              @relation(fields: [userId], references: [id])
+  items     MerchOrderItem[]
+  shipments MerchShipment[]
+  events    MerchOrderEvent[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([stripePaymentIntentId])
+  @@map("merch_orders")
+}
+
+model MerchOrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  variantId   String?
+  productName String // Snapshot at order time
+  variantName String?
+  imageUrl    String // Snapshot of image URL for display
+  imageR2Key  String // R2 key for reprints and POD submission
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  customText  String?
+  podOrderId  String? // Provider order ID
+  podStatus   String? // Provider-specific status
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order      MerchOrder     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    MerchProduct   @relation(fields: [productId], references: [id])
+  variant    MerchVariant?  @relation(fields: [variantId], references: [id])
+  shipment   MerchShipment? @relation(fields: [shipmentId], references: [id])
+  shipmentId String?
+
+  @@index([orderId])
+  @@index([podOrderId])
+  @@map("merch_order_items")
+}
+
+model MerchShipment {
+  id             String         @id @default(cuid())
+  orderId        String
+  provider       PodProvider
+  providerShipId String? // Shipment ID from provider
+  carrier        String? // FedEx, UPS, Royal Mail, etc.
+  trackingNumber String?
+  trackingUrl    String?
+  status         ShipmentStatus @default(PENDING)
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order MerchOrder       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  items MerchOrderItem[]
+
+  @@index([orderId])
+  @@index([trackingNumber])
+  @@map("merch_shipments")
+}
+
+model MerchOrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String // ORDER_CREATED, PAYMENT_AUTHORIZED, PAYMENT_CAPTURED, SUBMITTED_TO_POD, etc.
+  data      Json? // Event-specific data
+  createdAt DateTime @default(now())
+
+  order MerchOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("merch_order_events")
+}
+
+// Webhook event deduplication
+model MerchWebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String // STRIPE, PRODIGI, PRINTFUL
+  eventId     String    @unique // External event ID for deduplication
+  eventType   String
+  processed   Boolean   @default(false)
+  payload     Json
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([provider, eventType])
+  @@index([processed, createdAt])
+  @@map("merch_webhook_events")
 }
