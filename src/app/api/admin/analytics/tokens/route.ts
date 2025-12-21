@@ -70,12 +70,12 @@ export async function GET() {
   const dailyTokensResult = await tryCatch(
     prisma.$queryRaw<Array<{ date: Date; purchased: bigint; spent: bigint; }>>`
       SELECT
-        DATE(created_at) as date,
+        DATE("createdAt") as date,
         SUM(CASE WHEN type IN ('EARN_PURCHASE', 'EARN_BONUS', 'EARN_REGENERATION') THEN amount ELSE 0 END)::bigint as purchased,
         SUM(CASE WHEN type = 'SPEND_ENHANCEMENT' THEN ABS(amount) ELSE 0 END)::bigint as spent
       FROM token_transactions
-      WHERE created_at >= ${last30Days}
-      GROUP BY DATE(created_at)
+      WHERE "createdAt" >= ${last30Days}
+      GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `,
   );
