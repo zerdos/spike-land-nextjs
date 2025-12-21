@@ -156,14 +156,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </div>
               )}
           </div>
-
-          {/* Image requirements info */}
-          <div className="text-sm text-muted-foreground">
-            <p>
-              Minimum image size: {product.minWidth}x{product.minHeight}px
-            </p>
-            <p>Recommended resolution: {product.minDpi} DPI or higher</p>
-          </div>
         </div>
 
         {/* Product details */}

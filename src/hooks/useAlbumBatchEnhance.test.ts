@@ -832,9 +832,9 @@ describe("useAlbumBatchEnhance", () => {
       }),
     });
 
-    // Mock 65+ polling responses all showing PROCESSING
-    // First poll happens immediately after startBatchEnhance, rest are scheduled via setTimeout
-    for (let i = 0; i < 70; i++) {
+    // Mock 100+ polling responses all showing PROCESSING
+    // Use mockResolvedValueOnce to avoid polluting other tests
+    for (let i = 0; i < 100; i++) {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({

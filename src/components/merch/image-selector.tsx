@@ -34,17 +34,17 @@ interface SelectedImage {
 }
 
 interface ImageSelectorProps {
-  minWidth: number;
-  minHeight: number;
   onSelect: (image: SelectedImage | null) => void;
   selectedImage?: SelectedImage | null;
+  minWidth: number;
+  minHeight: number;
 }
 
 export function ImageSelector({
-  minWidth,
-  minHeight,
   onSelect,
   selectedImage,
+  minWidth,
+  minHeight,
 }: ImageSelectorProps) {
   const [open, setOpen] = useState(false);
   const [images, setImages] = useState<EnhancedImage[]>([]);
@@ -57,22 +57,17 @@ export function ImageSelector({
   const fetchImages = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch images that meet the minimum size requirements
       const response = await fetch("/api/images?limit=50");
       if (response.ok) {
         const data = await response.json();
-        // Filter images that meet size requirements
-        const filteredImages = (data.images || []).filter(
-          (img: EnhancedImage) => img.originalWidth >= minWidth && img.originalHeight >= minHeight,
-        );
-        setImages(filteredImages);
+        setImages(data.images || []);
       }
     } catch (error) {
       console.error("Failed to fetch images:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [minWidth, minHeight]);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -109,19 +104,12 @@ export function ImageSelector({
       return;
     }
 
-    // Check image dimensions
+    // Load image to get dimensions
     const img = document.createElement("img");
     const objectUrl = URL.createObjectURL(file);
 
     img.onload = async () => {
       URL.revokeObjectURL(objectUrl);
-
-      if (img.width < minWidth || img.height < minHeight) {
-        setUploadError(
-          `Image must be at least ${minWidth}x${minHeight}px. Your image is ${img.width}x${img.height}px.`,
-        );
-        return;
-      }
 
       // Upload the image
       setIsUploading(true);
@@ -216,35 +204,43 @@ export function ImageSelector({
           </TabsList>
 
           <TabsContent value="my-images" className="mt-4">
-            {isLoading
-              ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
+            {(() => {
+              const filteredImages = images.filter(
+                (img) =>
+                  img.originalWidth >= minWidth &&
+                  img.originalHeight >= minHeight,
+              );
+
+              if (isLoading) {
+                return (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
+                    </div>
                   </div>
-                </div>
-              )
-              : images.length === 0
-              ? (
-                <div className="text-center py-8">
-                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <p className="mt-2 text-muted-foreground">
-                    No images found that meet the size requirements
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Minimum: {minWidth}x{minHeight}px
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setActiveTab("upload")}
-                  >
-                    Upload a new image
-                  </Button>
-                </div>
-              )
-              : (
+                );
+              }
+
+              if (filteredImages.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-2 text-muted-foreground">
+                      No images found that meet the size requirements
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => setActiveTab("upload")}
+                    >
+                      Upload a new image
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
                 <div className="grid grid-cols-3 gap-3">
-                  {images.map((image) => (
+                  {filteredImages.map((image) => (
                     <button
                       key={image.id}
                       onClick={() => handleImageSelect(image)}
@@ -265,18 +261,12 @@ export function ImageSelector({
                     </button>
                   ))}
                 </div>
-              )}
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="upload" className="mt-4">
             <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your image must be at least {minWidth}x{minHeight}px for high-quality printing.
-                </AlertDescription>
-              </Alert>
-
               {uploadError && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />

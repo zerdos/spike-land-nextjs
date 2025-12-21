@@ -28,7 +28,7 @@ vi.mock("@/lib/prisma", () => ({
       aggregate: vi.fn(),
       groupBy: vi.fn(),
     },
-    tokenBalance: {
+    userTokenBalance: {
       aggregate: vi.fn(),
     },
     voucher: {
@@ -119,7 +119,7 @@ describe("System Report Aggregator", () => {
         _min: { amount: null },
       });
       vi.mocked(prisma.tokenTransaction.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.tokenBalance.aggregate).mockResolvedValue({
+      vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
         _sum: { balance: 10000 },
         _avg: { balance: null },
         _count: 0,
@@ -310,7 +310,7 @@ describe("System Report Aggregator", () => {
         _max: { amount: null },
         _min: { amount: null },
       });
-      vi.mocked(prisma.tokenBalance.aggregate).mockResolvedValue({
+      vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
         _sum: { balance: 10000 },
         _avg: { balance: null },
         _count: 0,

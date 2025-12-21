@@ -260,8 +260,8 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
       },
     }),
   ],
-  // Enable debug mode in development for detailed auth logs
-  debug: process.env.NODE_ENV === "development",
+  // Debug mode disabled - enable manually with AUTH_DEBUG=true if needed
+  debug: process.env.AUTH_DEBUG === "true",
   // Custom logger to capture auth errors in production
   // NextAuth v5 logger signature: (code, ...message) for all methods
   logger: {
