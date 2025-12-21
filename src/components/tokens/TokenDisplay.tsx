@@ -1,5 +1,6 @@
 "use client";
 
+import { TierBadge, type TierType } from "@/components/tiers";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
@@ -10,16 +11,19 @@ import { PurchaseModal } from "./PurchaseModal";
 interface TokenDisplayProps {
   showPurchase?: boolean;
   showEstimates?: boolean;
+  showTierBadge?: boolean;
   className?: string;
 }
 
 export function TokenDisplay({
   showPurchase = true,
   showEstimates = false,
+  showTierBadge = true,
   className,
 }: TokenDisplayProps) {
   const {
     balance,
+    tier,
     isLoading,
     isLowBalance,
     isCriticalBalance,
@@ -74,6 +78,15 @@ export function TokenDisplay({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
+      {/* Tier badge */}
+      {showTierBadge && tier && (
+        <TierBadge
+          tier={tier as TierType}
+          size="sm"
+          data-testid="token-tier-badge"
+        />
+      )}
+
       {showEstimates && tooltipContent
         ? (
           <TooltipProvider>

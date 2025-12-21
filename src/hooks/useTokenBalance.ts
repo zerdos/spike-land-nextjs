@@ -6,6 +6,8 @@ interface TokenBalanceResponse {
   balance: number;
   lastRegeneration: string | null;
   timeUntilNextRegenMs?: number;
+  tier?: string;
+  maxBalance?: number;
   stats?: {
     totalSpent: number;
     totalEarned: number;
@@ -63,6 +65,8 @@ export function calculateEstimatedEnhancements(
 
 export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [balance, setBalance] = useState<number>(0);
+  const [tier, setTier] = useState<string | null>(null);
+  const [maxBalance, setMaxBalance] = useState<number | null>(null);
   const [lastRegeneration, setLastRegeneration] = useState<Date | null>(null);
   const [_nextRegenTime, setNextRegenTime] = useState<Date | null>(null);
   const [stats, setStats] = useState<TokenStats | null>(null);
@@ -111,6 +115,8 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
     }
 
     setBalance(data.balance);
+    setTier(data.tier ?? null);
+    setMaxBalance(data.maxBalance ?? null);
     setLastRegeneration(
       data.lastRegeneration ? new Date(data.lastRegeneration) : null,
     );
@@ -182,6 +188,8 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
 
   return {
     balance,
+    tier,
+    maxBalance,
     isLoading,
     error,
     isLowBalance,
