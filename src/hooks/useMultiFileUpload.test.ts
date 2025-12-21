@@ -2,6 +2,19 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMultiFileUpload } from "./useMultiFileUpload";
 
+// Mock try-catch-stats to prevent it from making fetch calls during tests
+vi.mock("@/lib/observability/try-catch-stats.client", () => ({
+  recordFrontendTryCatchEvent: vi.fn(),
+  getPendingCount: vi.fn(() => 0),
+  forceSync: vi.fn(),
+}));
+
+// Mock error-reporter to prevent it from making fetch calls during tests
+vi.mock("@/lib/errors/error-reporter", () => ({
+  captureCallSite: vi.fn(() => ({})),
+  reportError: vi.fn(),
+}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -14,7 +27,7 @@ vi.stubGlobal("crypto", {
 
 describe("useMultiFileUpload", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    mockFetch.mockReset();
     uuidCounter = 0;
   });
 
@@ -827,7 +840,7 @@ describe("useMultiFileUpload", () => {
 
   describe("reset", () => {
     it("should reset all state", async () => {
-      mockFetch.mockResolvedValue({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ imageId: "img-123" }),
       });
@@ -916,10 +929,13 @@ describe("useMultiFileUpload", () => {
     });
 
     it("should not include albumId in form data when not provided", async () => {
+      mockFetch.mockReset();
       let capturedFormData: FormData | null = null;
 
       mockFetch.mockImplementation(async (url, options) => {
-        capturedFormData = options.body as FormData;
+        if (options?.body instanceof FormData) {
+          capturedFormData = options.body;
+        }
         return {
           ok: true,
           json: async () => ({ imageId: "img-123" }),

@@ -5,6 +5,7 @@
  */
 
 import { reportErrorToDatabase } from "@/lib/errors/error-reporter.server";
+import { flushStats, recordTryCatchEvent } from "@/lib/observability/try-catch-stats";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -27,6 +28,12 @@ export async function POST() {
     },
     "BACKEND",
   );
+
+  // Also record in try-catch stats so it shows up in /admin/try-catch
+  recordTryCatchEvent(null, "BACKEND", false);
+
+  // Force immediate flush to KV so stats are visible immediately
+  await flushStats();
 
   return NextResponse.json({ success: true, message: "Backend error simulated" });
 }
