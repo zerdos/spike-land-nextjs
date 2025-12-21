@@ -42,10 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable yarn
 
-# ============================================================================
-# STAGE 1: Install dependencies (excellent cache - only yarn.lock changes)
-# ============================================================================
-FROM base AS deps
+
 
 # Copy Yarn configuration and binary
 COPY package.json yarn.lock .yarnrc.yml ./
@@ -57,6 +54,12 @@ COPY packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
 
 # Copy prisma schema (required for Prisma's postinstall hook)
 COPY prisma ./prisma
+
+# ============================================================================
+# STAGE 1: Install dependencies (excellent cache - only yarn.lock changes)
+# ============================================================================
+FROM base AS deps
+
 
 # Install dependencies with cache mount for Yarn
 # Prisma generate runs automatically during postinstall
@@ -167,7 +170,7 @@ RUN cat /tmp/test-shard-*.log
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
 # ============================================================================
-FROM prisma AS e2e-browser
+FROM base AS e2e-browser
 # Install procps (provides ps command required by start-server-and-test)
 RUN apt-get update && apt-get install -y --no-install-recommends procps && rm -rf /var/lib/apt/lists/*
 # Install Playwright with all Chromium dependencies
@@ -205,8 +208,11 @@ ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
 # Run E2E tests with proper server lifecycle management
 
-RUN --mount=type=bind,from=build,source=/app/.next/standalone,target=/app/.next/standalone \
-    yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
+
+# RUN --mount=type=bind,from=build,source=/app/.next/standalone,target=/app/.next/standalone \
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
 
