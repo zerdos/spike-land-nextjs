@@ -241,7 +241,11 @@ export async function handleJulesToolCall(
           };
         }
 
-        const sessions = result.data?.sessions || [];
+        // Apply client-side status filter if provided (API doesn't support filtering)
+        let sessions = result.data?.sessions || [];
+        if (params.status) {
+          sessions = sessions.filter((s) => s.state === params.status);
+        }
         let text = `**Jules Sessions (${sessions.length}):**\n\n`;
 
         if (sessions.length === 0) {

@@ -21,6 +21,20 @@ import { type AgentProvider, ExternalAgentStatus, type Prisma } from "@prisma/cl
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// Valid ExternalAgentStatus values for runtime validation
+const VALID_AGENT_STATUSES = Object.values(ExternalAgentStatus);
+
+/**
+ * Safely convert a Jules API state to ExternalAgentStatus
+ * Falls back to QUEUED if the state is unknown
+ */
+function toExternalAgentStatus(state: string | undefined): ExternalAgentStatus {
+  if (state && VALID_AGENT_STATUSES.includes(state as ExternalAgentStatus)) {
+    return state as ExternalAgentStatus;
+  }
+  return ExternalAgentStatus.QUEUED;
+}
+
 // Schema for creating a new session
 const createSessionSchema = z.object({
   title: z.string().min(1).max(200),
@@ -216,7 +230,7 @@ export async function POST(request: NextRequest) {
         provider: "JULES",
         name: title,
         description: task,
-        status: julesSession.state as ExternalAgentStatus,
+        status: toExternalAgentStatus(julesSession.state),
         sourceRepo: source,
         startingBranch,
         metadata: {

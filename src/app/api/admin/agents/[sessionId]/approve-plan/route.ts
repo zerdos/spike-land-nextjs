@@ -12,6 +12,20 @@ import { tryCatch } from "@/lib/try-catch";
 import { ExternalAgentStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Valid ExternalAgentStatus values for runtime validation
+const VALID_AGENT_STATUSES = Object.values(ExternalAgentStatus);
+
+/**
+ * Safely convert a Jules API state to ExternalAgentStatus
+ * Falls back to IN_PROGRESS if the state is unknown (since we just approved)
+ */
+function toExternalAgentStatus(state: string | undefined): ExternalAgentStatus {
+  if (state && VALID_AGENT_STATUSES.includes(state as ExternalAgentStatus)) {
+    return state as ExternalAgentStatus;
+  }
+  return ExternalAgentStatus.IN_PROGRESS;
+}
+
 interface RouteParams {
   params: Promise<{ sessionId: string; }>;
 }
@@ -86,7 +100,7 @@ export async function POST(_request: NextRequest, props: RouteParams) {
     prisma.externalAgentSession.update({
       where: { id: sessionId },
       data: {
-        status: (julesSession?.state as ExternalAgentStatus) || ExternalAgentStatus.IN_PROGRESS,
+        status: toExternalAgentStatus(julesSession?.state),
         planApprovedAt: new Date(),
       },
     }),
