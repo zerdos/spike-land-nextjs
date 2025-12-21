@@ -46,6 +46,18 @@ vi.mock("@/components/feedback/FeedbackButton", () => ({
   FeedbackButton: () => <div data-testid="feedback-button">FeedbackButton</div>,
 }));
 
+vi.mock("@/components/tracking/MetaPixel", () => ({
+  MetaPixel: () => <div data-testid="meta-pixel">MetaPixel</div>,
+}));
+
+vi.mock("@/components/tracking/SessionTracker", () => ({
+  SessionTracker: () => <div data-testid="session-tracker">SessionTracker</div>,
+}));
+
+vi.mock("@/components/CookieConsent", () => ({
+  CookieConsent: () => <div data-testid="cookie-consent">CookieConsent</div>,
+}));
+
 describe("RootLayout", () => {
   it("should be a function component", () => {
     expect(typeof RootLayout).toBe("function");

@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/auth/session-provider";
+import { CookieConsent } from "@/components/CookieConsent";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { ConditionalHeader } from "@/components/platform-landing";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MetaPixel } from "@/components/tracking/MetaPixel";
+import { SessionTracker } from "@/components/tracking/SessionTracker";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -84,11 +86,13 @@ export default function RootLayout({
               <FeedbackButton />
             </SessionProvider>
             <Toaster />
+            <CookieConsent />
           </ThemeProvider>
         </ViewTransitions>
         <Analytics />
         <SpeedInsights />
         <MetaPixel />
+        <SessionTracker />
       </body>
     </html>
   );
