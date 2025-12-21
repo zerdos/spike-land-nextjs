@@ -101,7 +101,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Generate Prisma Client
-        run: yarn prisma generate
+        run: yarn prisma generate --no-hints
 
       - name: Run tests (shard ${{ matrix.shard }}/8)
         run: yarn test:run --changed --shard=${{ matrix.shard }}/8 --reporter=github-actions
@@ -214,7 +214,7 @@ jobs:
         run: yarn playwright install-deps chromium
 
       - name: Generate Prisma Client
-        run: yarn prisma generate
+        run: yarn prisma generate --no-hints
 
       - name: Select feature files for shard
         id: shard-files
