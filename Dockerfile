@@ -6,12 +6,19 @@
 # This Dockerfile runs the full CI pipeline at build time:
 # - Lint (parallel with build)
 # - Build (parallel with lint)
-# - Unit tests with coverage
-# - E2E tests with real Chromium browser
+# - Unit tests with coverage (4 parallel shards)
+# - E2E tests with real Chromium browser (4 parallel shards)
 #
 # Key insight: Docker layer caching means test file changes don't rebuild the app!
 #
-# Usage:
+# RECOMMENDED: Use docker-bake.hcl for cleaner syntax and better control:
+#   docker buildx bake                    # Full CI pipeline (default)
+#   docker buildx bake unit-tests         # Just unit tests
+#   docker buildx bake e2e-tests          # Just E2E tests
+#   docker buildx bake production         # Production image
+#   docker buildx bake --print            # Preview build plan
+#
+# Legacy usage (still supported):
 #   docker build --target ci -t app:ci .           # Full CI pipeline
 #   docker build --target unit-tests -t app:test . # Skip E2E
 #   docker build --target build -t app:build .     # Skip tests
@@ -35,10 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable yarn
 
-# ============================================================================
-# STAGE 1: Install dependencies (excellent cache - only yarn.lock changes)
-# ============================================================================
-FROM base AS deps
+
 
 # Copy Yarn configuration and binary
 COPY package.json yarn.lock .yarnrc.yml ./
@@ -50,6 +54,12 @@ COPY packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
 
 # Copy prisma schema (required for Prisma's postinstall hook)
 COPY prisma ./prisma
+
+# ============================================================================
+# STAGE 1: Install dependencies (excellent cache - only yarn.lock changes)
+# ============================================================================
+FROM base AS deps
+
 
 # Install dependencies with cache mount for Yarn
 # Prisma generate runs automatically during postinstall
@@ -87,19 +97,23 @@ ENV NODE_ENV=development
 EXPOSE 3000
 CMD ["yarn", "dev"]
 
-# ============================================================================
-# STAGE 4: Lint (PARALLEL with build - uses BuildKit)
-# ============================================================================
-FROM source AS lint
-RUN yarn lint
+
 
 # ============================================================================
 # STAGE 5: Build application (PARALLEL with lint)
 # ============================================================================
 FROM source AS build
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN --mount=type=cache,target=/app/.next/cache \
-    DATABASE_URL="postgresql://x:x@x:5432/x" yarn build
+# Dummy DATABASE_URL required for Prisma client (driver adapter mode requires adapter or accelerateUrl)
+ENV DATABASE_URL="postgresql://x:x@x:5432/x"
+RUN --mount=type=cache,target=/app/.next/cache yarn build
+
+
+# ============================================================================
+# STAGE 4: Lint (PARALLEL with build - uses BuildKit)
+# ============================================================================
+FROM build AS lint
+RUN yarn lint
 
 # ============================================================================
 # STAGE 6: Merge lint + build (ensures both pass)
@@ -109,6 +123,7 @@ COPY --from=lint /app/package.json /tmp/lint-passed
 
 # ============================================================================
 # STAGE 7: Copy test files AFTER build (KEY: test changes don't rebuild!)
+# We base on verified-build so unit tests can use compiled output for faster execution
 # ============================================================================
 FROM verified-build AS test-source
 COPY vitest.config.ts vitest.setup.ts ./
@@ -117,35 +132,47 @@ COPY cucumber.js ./
 COPY e2e ./e2e
 
 # ============================================================================
-# STAGE 8: Run unit tests
+# STAGE 8: Run unit tests (parallel shards via BuildKit)
+#
+# For docker-bake.hcl: Uses ARG-based sharding (DRY pattern)
+# For direct docker build: Uses explicit stages below (backwards compatible)
 # ============================================================================
+
+# --- ARG-based shard target (used by docker-bake.hcl) ---
+FROM test-source AS unit-test-shard
+ARG SHARD_INDEX=1
+ARG SHARD_TOTAL=4
+RUN yarn test:run --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
+    > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
+    || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
+
+# --- Explicit shard targets (for backwards compatibility with direct docker build) ---
 FROM test-source AS unit-tests-1
-RUN yarn test:run --shard 1/40 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
+RUN yarn test:run --shard 1/4 > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
 
 FROM test-source AS unit-tests-2
-RUN yarn test:run --shard 2/40 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
+RUN yarn test:run --shard 2/4 > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
 
 FROM test-source AS unit-tests-3
-RUN yarn test:run --shard 3/40 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
+RUN yarn test:run --shard 3/4 > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
 
 FROM test-source AS unit-tests-4
-RUN yarn test:run --shard 4/40 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
+RUN yarn test:run --shard 4/4 > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
 
+# --- Collector stage (merges all shard results) ---
 FROM test-source AS unit-tests
 COPY --from=unit-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
 COPY --from=unit-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
 COPY --from=unit-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
 COPY --from=unit-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
-
-RUN cat /tmp/test-shard-1.log && \
-    cat /tmp/test-shard-2.log && \
-    cat /tmp/test-shard-3.log && \
-    cat /tmp/test-shard-4.log
+RUN cat /tmp/test-shard-*.log
 
 # ============================================================================
 # STAGE 9: Install Playwright browsers for E2E
 # ============================================================================
-FROM unit-tests AS e2e-browser
+FROM base AS e2e-browser
+# Install procps (provides ps command required by start-server-and-test)
+RUN apt-get update && apt-get install -y --no-install-recommends procps && rm -rf /var/lib/apt/lists/*
 # Install Playwright with all Chromium dependencies
 RUN npx playwright install chromium --with-deps
 
@@ -153,7 +180,10 @@ RUN npx playwright install chromium --with-deps
 # STAGE 10: Run E2E tests AT BUILD TIME
 # This is the magic - E2E runs during docker build with full browser!
 # ============================================================================
-FROM e2e-browser AS e2e-tests
+FROM e2e-browser AS e2e-test-base
+
+# Copy built application from build stage
+COPY --from=build /app/.next ./.next
 
 # Build args for E2E (passed at build time)
 ARG DATABASE_URL
@@ -172,32 +202,27 @@ ENV CI=true \
 # Create reports directory
 RUN mkdir -p e2e/reports
 
+# --- ARG-based shard target (used by docker-bake.hcl) ---
+FROM e2e-test-base AS e2e-test-shard
+ARG SHARD_INDEX=1
+ARG SHARD_TOTAL=4
 # Run E2E tests with proper server lifecycle management
-# This script: starts server -> waits for ready -> runs tests -> captures result
-RUN --mount=type=cache,target=/app/.next/cache \
-    set -e && \
-    echo "Starting Next.js dev server..." && \
-    yarn dev > /tmp/server.log 2>&1 & \
-    SERVER_PID=$! && \
-    echo "Waiting for server (PID: $SERVER_PID)..." && \
-    for i in $(seq 1 120); do \
-        if curl -s http://localhost:3000 > /dev/null 2>&1; then \
-            echo "Server ready in ${i}s"; \
-            break; \
-        fi; \
-        if [ $i -eq 120 ]; then \
-            echo "Server failed to start"; \
-            cat /tmp/server.log; \
-            exit 1; \
-        fi; \
-        sleep 1; \
-    done && \
-    echo "Running E2E tests..." && \
-    npx cucumber-js --profile ci e2e/features/**/*.feature; \
-    TEST_EXIT=$?; \
-    echo "Tests finished with code: $TEST_EXIT"; \
-    kill $SERVER_PID 2>/dev/null || true; \
-    exit $TEST_EXIT
+
+
+# RUN --mount=type=bind,from=build,source=/app/.next/standalone,target=/app/.next/standalone \
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
+    > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
+    || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
+
+# --- Collector stage (merges all shard results) ---
+FROM e2e-test-shard AS e2e-tests
+COPY --from=e2e-test-shard /tmp/test-shard-1.log /tmp/test-shard-1.log
+COPY --from=e2e-test-shard /tmp/test-shard-2.log /tmp/test-shard-2.log
+COPY --from=e2e-test-shard /tmp/test-shard-3.log /tmp/test-shard-3.log
+COPY --from=e2e-test-shard /tmp/test-shard-4.log /tmp/test-shard-4.log
+RUN cat /tmp/test-shard-*.log
 
 # ============================================================================
 # STAGE 11: CI validation target (runs all checks)

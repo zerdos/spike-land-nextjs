@@ -53,3 +53,13 @@ services:
     restart: unless-stopped
     profiles:
       - production
+  ci:
+    build:
+      context: .
+      target: ci
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=development
+      - NEXTAUTH_URL=http://localhost:3000
+      - SKIP_ENV_VALIDATION=true
