@@ -204,11 +204,11 @@ async function fetchTokenMetrics(): Promise<TokenMetrics> {
   const [purchaseTransactions, tokenBalances, userCount] = await Promise.all([
     prisma.tokenTransaction.groupBy({
       by: ["type"],
-      where: { type: { startsWith: "EARN_" } },
+      where: { type: { in: ["EARN_REGENERATION", "EARN_PURCHASE", "EARN_BONUS"] } },
       _sum: { amount: true },
       _count: { _all: true },
     }),
-    prisma.tokenBalance.aggregate({
+    prisma.userTokenBalance.aggregate({
       _sum: { balance: true },
     }),
     prisma.user.count(),
