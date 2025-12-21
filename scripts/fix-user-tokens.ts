@@ -49,7 +49,7 @@ async function main() {
   console.log(`\nCrediting ${tokenAmount} tokens...`);
 
   // Get or create token balance
-  let currentBalance = user.tokenBalance?.balance || 0;
+  const currentBalance = user.tokenBalance?.balance || 0;
   const newBalance = currentBalance + tokenAmount;
 
   // Update token balance (purchased tokens have no cap)
