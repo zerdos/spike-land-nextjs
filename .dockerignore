@@ -55,3 +55,13 @@ test-results
 packages/*/node_modules
 packages/*/.next
 packages/*/dist
+.git
+.next
+node_modules
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+coverage
+dist
+tmp
