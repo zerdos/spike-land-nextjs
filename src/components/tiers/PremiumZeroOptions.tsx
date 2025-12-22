@@ -14,7 +14,7 @@ export interface TokenPack {
   price: number;
 }
 
-export interface PremiumZeroOptionsProps {
+interface PremiumZeroOptionsProps {
   /** Time until next regeneration in milliseconds */
   timeUntilNextRegen: number;
   /** Available token packs for purchase */

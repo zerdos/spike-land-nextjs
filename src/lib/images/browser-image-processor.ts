@@ -28,7 +28,7 @@ export interface ProcessedImage {
   originalHeight: number;
 }
 
-export interface ProcessingOptions {
+interface ProcessingOptions {
   maxDimension?: number;
   quality?: number;
   forceAspectRatio?: AspectRatio;
@@ -243,7 +243,7 @@ export async function processImageForUpload(
  * @param options - Processing options
  * @returns Array of processed images
  */
-export async function processImagesForUpload(
+async function processImagesForUpload(
   files: File[],
   options: ProcessingOptions = {},
 ): Promise<ProcessedImage[]> {

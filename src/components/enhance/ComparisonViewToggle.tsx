@@ -6,7 +6,7 @@ import { ImageComparisonSlider } from "./ImageComparisonSlider";
 import { SideBySideComparison } from "./SideBySideComparison";
 import { SplitPreview } from "./SplitPreview";
 
-export type ComparisonViewMode = "slider" | "side-by-side" | "split";
+type ComparisonViewMode = "slider" | "side-by-side" | "split";
 
 interface ComparisonViewToggleProps {
   originalUrl: string;

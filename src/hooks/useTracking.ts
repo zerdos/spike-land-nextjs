@@ -11,17 +11,17 @@ const CONSENT_KEY = "cookie-consent";
 /**
  * Conversion types for tracking
  */
-export type ConversionType = "signup" | "enhancement" | "purchase";
+type ConversionType = "signup" | "enhancement" | "purchase";
 
 /**
  * Event stage: started or completed
  */
-export type EventStage = "started" | "completed";
+type EventStage = "started" | "completed";
 
 /**
  * Allowed event names from the backend whitelist
  */
-export type AllowedEventName =
+type AllowedEventName =
   | "signup_started"
   | "signup_completed"
   | "enhancement_started"
@@ -258,5 +258,3 @@ export function useTracking() {
     isTrackingEnabled,
   };
 }
-
-export default useTracking;

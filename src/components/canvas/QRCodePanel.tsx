@@ -8,7 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useState } from "react";
 import { type CanvasSettings, CanvasSettingsForm } from "./CanvasSettingsForm";
 
-export interface QRCodePanelProps {
+interface QRCodePanelProps {
   albumId: string;
   shareToken: string;
   albumName: string;

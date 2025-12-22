@@ -88,7 +88,7 @@ export function classifyError(
   return { message: "An unexpected error occurred", code: "UNKNOWN" };
 }
 
-export interface CreateGenerationJobParams {
+interface CreateGenerationJobParams {
   userId: string;
   apiKeyId?: string;
   prompt: string;
@@ -98,7 +98,7 @@ export interface CreateGenerationJobParams {
   aspectRatio?: AspectRatio;
 }
 
-export interface CreateModificationJobParams {
+interface CreateModificationJobParams {
   userId: string;
   apiKeyId?: string;
   prompt: string;
@@ -107,7 +107,7 @@ export interface CreateModificationJobParams {
   mimeType: string;
 }
 
-export interface JobResult {
+interface JobResult {
   success: boolean;
   jobId?: string;
   tokensCost?: number;

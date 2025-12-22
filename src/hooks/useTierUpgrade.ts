@@ -13,7 +13,7 @@ interface UpgradeResponse {
   error?: string;
 }
 
-export interface UpgradeResult {
+interface UpgradeResult {
   success: boolean;
   url?: string;
   error?: string;

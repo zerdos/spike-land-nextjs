@@ -40,14 +40,14 @@ export const TIER_ORDER: SubscriptionTier[] = [
   SubscriptionTier.PREMIUM,
 ];
 
-export interface TierInfo {
+interface TierInfo {
   tier: SubscriptionTier;
   displayName: string;
   wellCapacity: number;
   priceGBP: number;
 }
 
-export interface TierUpgradeResult {
+interface TierUpgradeResult {
   success: boolean;
   previousTier?: SubscriptionTier;
   newTier?: SubscriptionTier;
@@ -56,14 +56,14 @@ export interface TierUpgradeResult {
   error?: string;
 }
 
-export interface UpgradePromptResult {
+interface UpgradePromptResult {
   shouldPrompt: boolean;
   currentTier: SubscriptionTier;
   nextTier: TierInfo | null;
   isPremiumAtZero: boolean;
 }
 
-export interface PremiumZeroOptions {
+interface PremiumZeroOptions {
   timeUntilNextRegen: number;
   canPurchaseTokenPack: boolean;
 }

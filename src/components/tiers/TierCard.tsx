@@ -20,7 +20,7 @@ export interface TierInfo {
   priceGBP: number;
 }
 
-export interface TierCardProps {
+interface TierCardProps {
   /** The tier information to display */
   tier: TierInfo;
   /** Whether this is the user's current tier */

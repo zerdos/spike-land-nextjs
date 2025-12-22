@@ -226,4 +226,4 @@ export const storybookSections = [
   },
 ] as const;
 
-export type StorybookSectionId = (typeof storybookSections)[number]["id"];
+type StorybookSectionId = (typeof storybookSections)[number]["id"];

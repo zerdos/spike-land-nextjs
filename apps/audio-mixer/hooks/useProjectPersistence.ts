@@ -69,7 +69,7 @@ function serializeTrack(track: AudioTrack): SerializedTrack {
   };
 }
 
-export interface ProjectPersistenceState {
+interface ProjectPersistenceState {
   projectId: string;
   isLoading: boolean;
   isSaving: boolean;
@@ -77,7 +77,7 @@ export interface ProjectPersistenceState {
   hasUnsavedChanges: boolean;
 }
 
-export interface ProjectPersistenceActions {
+interface ProjectPersistenceActions {
   saveNow: () => void;
   loadProject: () => SerializedProjectState | null;
   clearProject: () => void;
@@ -232,5 +232,3 @@ export function useProjectPersistence(
     },
   ];
 }
-
-export type { SerializedProjectState, SerializedTrack };

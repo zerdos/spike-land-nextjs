@@ -27,7 +27,7 @@ interface CallSite {
   caller?: string;
 }
 
-export interface ErrorReportContext {
+interface ErrorReportContext {
   route?: string;
   userId?: string;
   metadata?: Record<string, unknown>;
@@ -155,7 +155,7 @@ type Result<T, E = Error> = Success<T> | Failure<E>;
 /**
  * Options for tryCatch error reporting
  */
-export interface TryCatchOptions {
+interface TryCatchOptions {
   /**
    * Enable/disable error reporting. Default: true (ON BY DEFAULT)
    * Set to false to disable reporting for this specific call.
@@ -267,7 +267,4 @@ export function tryCatchSync<T, E = Error>(
     }
     return { data: null, error: error as E };
   }
-}
-
-// Re-export types for consumers
-export type { Failure, Result, Success };
+} // Re-export types for consumers

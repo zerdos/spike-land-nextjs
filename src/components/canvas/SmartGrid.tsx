@@ -7,7 +7,7 @@ import { forwardRef, useCallback, useRef } from "react";
 import Masonry from "react-masonry-css";
 import { GridThumbnail } from "./GridThumbnail";
 
-export interface SmartGridProps {
+interface SmartGridProps {
   images: GalleryImage[];
   selectedImageId: string | null;
   onImageSelect: (id: string, element: HTMLElement) => void;

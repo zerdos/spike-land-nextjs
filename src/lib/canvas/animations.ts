@@ -31,7 +31,7 @@ export const ANIMATION_EASINGS = {
 /**
  * Result of FLIP animation transform calculation.
  */
-export interface HeroTransform {
+interface HeroTransform {
   x: number;
   y: number;
   scaleX: number;

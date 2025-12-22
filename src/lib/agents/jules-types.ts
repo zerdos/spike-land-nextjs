@@ -6,7 +6,7 @@
  */
 
 // Session state values from Jules API
-export type JulesSessionState =
+type JulesSessionState =
   | "QUEUED"
   | "PLANNING"
   | "AWAITING_PLAN_APPROVAL"
@@ -17,20 +17,20 @@ export type JulesSessionState =
   | "COMPLETED";
 
 // Automation modes for session creation
-export type JulesAutomationMode = "AUTO_CREATE_PR";
+type JulesAutomationMode = "AUTO_CREATE_PR";
 
 // Source context for GitHub repositories
-export interface JulesGithubRepoContext {
+interface JulesGithubRepoContext {
   startingBranch?: string;
 }
 
-export interface JulesSourceContext {
+interface JulesSourceContext {
   source: string; // e.g., "sources/github/owner/repo"
   githubRepoContext?: JulesGithubRepoContext;
 }
 
 // Session output (e.g., pull requests)
-export interface JulesSessionOutput {
+interface JulesSessionOutput {
   url?: string;
   title?: string;
   description?: string;
@@ -73,7 +73,7 @@ export interface CreateSessionRequest {
   automationMode?: JulesAutomationMode;
 }
 
-export interface ListSessionsRequest {
+interface ListSessionsRequest {
   pageSize?: number;
   pageToken?: string;
 }
@@ -83,20 +83,20 @@ export interface ListSessionsResponse {
   nextPageToken?: string;
 }
 
-export interface GetSessionRequest {
+interface GetSessionRequest {
   name: string; // Session resource name
 }
 
-export interface ApprovePlanRequest {
+interface ApprovePlanRequest {
   session: string; // Session resource name
 }
 
-export interface SendMessageRequest {
+interface SendMessageRequest {
   session: string; // Session resource name
   prompt: string;
 }
 
-export interface ListActivitiesRequest {
+interface ListActivitiesRequest {
   parent: string; // Session resource name
   pageSize?: number;
   pageToken?: string;
@@ -107,7 +107,7 @@ export interface ListActivitiesResponse {
   nextPageToken?: string;
 }
 
-export interface ListSourcesRequest {
+interface ListSourcesRequest {
   pageSize?: number;
   pageToken?: string;
 }
@@ -127,13 +127,13 @@ export interface JulesApiError {
 }
 
 // Client configuration
-export interface JulesClientConfig {
+interface JulesClientConfig {
   apiKey: string;
   baseUrl?: string;
 }
 
 // Mapped types for internal use
-export type JulesStateToInternalStatus = {
+type JulesStateToInternalStatus = {
   QUEUED: "QUEUED";
   PLANNING: "PLANNING";
   AWAITING_PLAN_APPROVAL: "AWAITING_PLAN_APPROVAL";

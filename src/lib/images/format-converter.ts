@@ -8,7 +8,7 @@ export { type ExportFormat, getFileExtension, isValidFormat } from "./format-uti
 /**
  * Export options for image conversion
  */
-export interface ExportOptions {
+interface ExportOptions {
   format: ExportFormat;
   quality?: number;
 }
@@ -16,7 +16,7 @@ export interface ExportOptions {
 /**
  * Result of image format conversion
  */
-export interface ConversionResult {
+interface ConversionResult {
   buffer: Buffer;
   mimeType: string;
   sizeBytes: number;

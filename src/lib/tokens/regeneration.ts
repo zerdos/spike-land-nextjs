@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { TokenBalanceManager } from "./balance-manager";
 
-export interface RegenerationStats {
+interface RegenerationStats {
   totalUsersProcessed: number;
   totalTokensRegenerated: number;
   errors: Array<{ userId: string; error: string; }>;

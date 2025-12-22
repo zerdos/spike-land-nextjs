@@ -14,7 +14,7 @@ interface DragState {
 /**
  * Context value provided to consumers
  */
-export interface DragDropContextValue {
+interface DragDropContextValue {
   /** Whether a drag operation is currently in progress */
   isDragging: boolean;
   /** IDs of images being dragged */
@@ -37,7 +37,7 @@ export interface DragDropContextValue {
 /**
  * Props for the DragDropProvider component
  */
-export interface DragDropProviderProps {
+interface DragDropProviderProps {
   /** Child components that will have access to the drag-drop context */
   children: React.ReactNode;
   /** Callback fired when a move operation completes successfully */

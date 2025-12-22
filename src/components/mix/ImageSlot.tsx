@@ -25,7 +25,7 @@ export interface GalleryImage {
 }
 
 /** Image uploaded from device (file) */
-export interface UploadedImage {
+interface UploadedImage {
   type: "upload";
   id: string; // Generated unique ID
   url: string; // Object URL for preview

@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * Stream type that can be acquired
  */
-export type StreamType = "camera" | "screen";
+type StreamType = "camera" | "screen";
 
 /**
  * State for media stream management

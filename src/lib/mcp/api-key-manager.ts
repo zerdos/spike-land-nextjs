@@ -14,7 +14,7 @@ const VISIBLE_KEY_CHARS = 7;
 // Performance: Only update lastUsedAt if more than 5 minutes have passed
 const LAST_USED_UPDATE_THRESHOLD_MS = 5 * 60 * 1000;
 
-export interface ApiKeyCreateResult {
+interface ApiKeyCreateResult {
   id: string;
   name: string;
   key: string; // Full key - only shown once at creation
@@ -22,7 +22,7 @@ export interface ApiKeyCreateResult {
   createdAt: Date;
 }
 
-export interface ApiKeyListItem {
+interface ApiKeyListItem {
   id: string;
   name: string;
   keyPrefix: string;

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { AlbumPrivacy, EnhancementTier, JobStatus } from "@prisma/client";
 
-export interface FeaturedPhoto {
+interface FeaturedPhoto {
   id: string;
   title: string;
   originalUrl: string;

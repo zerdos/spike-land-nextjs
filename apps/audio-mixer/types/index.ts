@@ -39,7 +39,7 @@ export interface RecordingState {
   chunks: Blob[];
 }
 
-export interface MixerState {
+interface MixerState {
   tracks: AudioTrack[];
   masterVolume: number;
   isPlaying: boolean;
@@ -98,7 +98,7 @@ export interface TimelineState {
   snapGrid: SnapGrid;
 }
 
-export interface MixerControls {
+interface MixerControls {
   play: () => void;
   pause: () => void;
   stop: () => void;

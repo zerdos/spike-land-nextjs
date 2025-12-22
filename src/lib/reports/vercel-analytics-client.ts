@@ -38,7 +38,7 @@ interface VercelTimeseriesResponse {
 /**
  * Configuration for Vercel Analytics client
  */
-export interface VercelAnalyticsConfig {
+interface VercelAnalyticsConfig {
   accessToken: string;
   projectId?: string;
   teamId?: string;

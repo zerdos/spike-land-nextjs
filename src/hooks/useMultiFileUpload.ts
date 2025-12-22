@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from "react";
 /**
  * Status of an individual file upload
  */
-export interface FileUploadStatus {
+interface FileUploadStatus {
   id: string; // Unique identifier for the file
   file: File;
   status: "pending" | "uploading" | "completed" | "failed" | "cancelled";
@@ -18,7 +18,7 @@ export interface FileUploadStatus {
 /**
  * Configuration options for the multi-file upload hook
  */
-export interface UseMultiFileUploadOptions {
+interface UseMultiFileUploadOptions {
   maxFiles?: number; // Default: 20
   maxFileSize?: number; // Default: 50MB
   parallel?: boolean; // Default: false (sequential)
@@ -30,14 +30,14 @@ export interface UseMultiFileUploadOptions {
 /**
  * Options for individual upload calls
  */
-export interface UploadOptions {
+interface UploadOptions {
   albumId?: string; // Upload directly to a specific album
 }
 
 /**
  * Return type for the multi-file upload hook
  */
-export interface UseMultiFileUploadReturn {
+interface UseMultiFileUploadReturn {
   upload: (files: File[], options?: UploadOptions) => Promise<void>;
   files: FileUploadStatus[];
   isUploading: boolean;

@@ -3,13 +3,13 @@ import crypto from "crypto";
 import sharp from "sharp";
 import { uploadToR2 } from "./r2-client";
 
-export interface ProcessImageParams {
+interface ProcessImageParams {
   buffer: Buffer;
   originalFilename: string;
   userId: string;
 }
 
-export interface ProcessImageResult {
+interface ProcessImageResult {
   success: boolean;
   imageId: string;
   r2Key: string;

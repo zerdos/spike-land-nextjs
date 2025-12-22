@@ -281,7 +281,7 @@ export const prodigiProvider: PodProvider = {
  * Get a list of available products/SKUs from Prodigi.
  * Useful for populating the product catalog.
  */
-export async function getProdigiProducts(): Promise<unknown> {
+async function getProdigiProducts(): Promise<unknown> {
   // Note: Prodigi doesn't have a products endpoint in their API.
   // Products are managed through their dashboard.
   // For MVP, we'll hardcode the products in the database.

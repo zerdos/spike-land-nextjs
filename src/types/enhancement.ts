@@ -8,7 +8,7 @@ export type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K";
  * Token cost mapping for each enhancement tier.
  * Higher resolution tiers consume more platform tokens.
  */
-export const TIER_COSTS: Record<EnhancementTier, number> = {
+const TIER_COSTS: Record<EnhancementTier, number> = {
   TIER_1K: 2,
   TIER_2K: 5,
   TIER_4K: 10,
@@ -74,7 +74,7 @@ export interface JobStatus {
  * State container for parallel enhancement operations.
  * Manages multiple concurrent enhancement jobs for a single image.
  */
-export interface ParallelEnhancementState {
+interface ParallelEnhancementState {
   /** ID of the source image being enhanced */
   imageId: string;
   /** Array of job statuses for all parallel enhancements */
@@ -89,7 +89,7 @@ export interface ParallelEnhancementState {
  * Request payload for initiating parallel enhancement operations.
  * Sent to the API to start multiple enhancement jobs.
  */
-export interface ParallelEnhanceRequest {
+interface ParallelEnhanceRequest {
   /** ID of the image to enhance */
   imageId: string;
   /** Array of tiers to process in parallel */
@@ -100,7 +100,7 @@ export interface ParallelEnhanceRequest {
  * Response from the parallel enhancement API endpoint.
  * Contains job IDs and token information for tracking.
  */
-export interface ParallelEnhanceResponse {
+interface ParallelEnhanceResponse {
   /** Whether the request was successfully initiated */
   success: boolean;
   /** Array of created job information */

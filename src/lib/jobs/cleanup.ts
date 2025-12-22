@@ -31,7 +31,7 @@ export interface CleanupOptions {
   batchSize?: number;
 }
 
-export interface CleanupResult {
+interface CleanupResult {
   /**
    * Total number of stuck jobs found
    */

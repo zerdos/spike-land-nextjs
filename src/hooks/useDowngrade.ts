@@ -4,7 +4,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useState } from "react";
 
 // Valid tier IDs for downgrade
-export type DowngradeTierId = "FREE" | "BASIC" | "STANDARD";
+type DowngradeTierId = "FREE" | "BASIC" | "STANDARD";
 
 interface DowngradeResponse {
   success: boolean;
@@ -13,12 +13,12 @@ interface DowngradeResponse {
   error?: string;
 }
 
-export interface ScheduledDowngrade {
+interface ScheduledDowngrade {
   targetTier: DowngradeTierId;
   effectiveDate: Date;
 }
 
-export interface DowngradeResult {
+interface DowngradeResult {
   success: boolean;
   effectiveDate?: Date;
   message?: string;

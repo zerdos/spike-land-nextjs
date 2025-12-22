@@ -2,7 +2,7 @@ import { tryCatch, tryCatchSync } from "@/lib/try-catch";
 import type { EnhancementTier, JobStatus as PrismaJobStatus } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export interface JobStatus {
+interface JobStatus {
   jobId: string;
   tier: EnhancementTier;
   status: PrismaJobStatus;
@@ -12,14 +12,14 @@ export interface JobStatus {
   error?: string;
 }
 
-export interface UseParallelEnhancementOptions {
+interface UseParallelEnhancementOptions {
   imageId: string;
   onAllComplete?: (jobs: JobStatus[]) => void;
   onError?: (jobId: string, error: string) => void;
   onJobUpdate?: (job: JobStatus) => void;
 }
 
-export interface UseParallelEnhancementReturn {
+interface UseParallelEnhancementReturn {
   startEnhancement: (tiers: EnhancementTier[]) => Promise<void>;
   jobs: JobStatus[];
   isProcessing: boolean;

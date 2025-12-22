@@ -1,13 +1,13 @@
 import type { GalleryImage, GalleryViewMode } from "@/lib/canvas/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export interface UseSmartGalleryOptions {
+interface UseSmartGalleryOptions {
   images: GalleryImage[];
   initialSelectedId?: string | null;
   autoSelectInterval?: number; // For grid auto-cycle (in milliseconds)
 }
 
-export interface UseSmartGalleryReturn {
+interface UseSmartGalleryReturn {
   // View state
   viewMode: GalleryViewMode;
 

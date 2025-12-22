@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
-export interface DraggablePhotoCardProps {
+interface DraggablePhotoCardProps {
   imageId: string;
   isSelected?: boolean;
   selectedImageIds?: string[];

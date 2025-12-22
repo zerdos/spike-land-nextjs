@@ -3,7 +3,7 @@
  * Abstraction layer to support multiple providers (Prodigi, Printful, etc.)
  */
 
-export type PodProviderName = "PRODIGI" | "PRINTFUL";
+type PodProviderName = "PRODIGI" | "PRINTFUL";
 
 export interface ShippingAddress {
   name: string;
@@ -16,7 +16,7 @@ export interface ShippingAddress {
   email?: string;
 }
 
-export interface PodOrderItem {
+interface PodOrderItem {
   sku: string;
   quantity: number;
   imageUrl: string;
@@ -52,14 +52,14 @@ export interface PodQuote {
   currency: string;
 }
 
-export interface PodQuoteLineItem {
+interface PodQuoteLineItem {
   sku: string;
   quantity: number;
   unitCost: number;
   totalCost: number;
 }
 
-export interface PodShippingOption {
+interface PodShippingOption {
   method: string;
   cost: number;
   currency: string;
@@ -81,7 +81,7 @@ export interface PodOrderStatus {
   items?: PodOrderItemStatus[];
 }
 
-export interface PodOrderItemStatus {
+interface PodOrderItemStatus {
   sku: string;
   status: string;
   trackingNumber?: string;

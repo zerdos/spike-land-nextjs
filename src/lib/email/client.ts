@@ -38,14 +38,14 @@ const INITIAL_RETRY_DELAY_MS = 1000; // 1 second
 const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-export interface SendEmailParams {
+interface SendEmailParams {
   to: string | string[];
   subject: string;
   react: React.ReactElement;
   from?: string;
 }
 
-export interface SendEmailResult {
+interface SendEmailResult {
   success: boolean;
   id?: string;
   error?: string;

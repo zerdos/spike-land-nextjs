@@ -12,14 +12,14 @@ export interface ProdigiOrderRequest {
   metadata?: Record<string, string>;
 }
 
-export interface ProdigiRecipient {
+interface ProdigiRecipient {
   name: string;
   address: ProdigiAddress;
   email?: string;
   phoneNumber?: string;
 }
 
-export interface ProdigiAddress {
+interface ProdigiAddress {
   line1: string;
   line2?: string;
   postalOrZipCode: string;
@@ -28,7 +28,7 @@ export interface ProdigiAddress {
   stateOrCounty?: string;
 }
 
-export interface ProdigiOrderItem {
+interface ProdigiOrderItem {
   sku: string;
   copies: number;
   sizing: "fillPrintArea" | "fitPrintArea" | "stretchToPrintArea";
@@ -36,7 +36,7 @@ export interface ProdigiOrderItem {
   attributes?: Record<string, string>;
 }
 
-export interface ProdigiAsset {
+interface ProdigiAsset {
   printArea: "default" | string;
   url: string;
 }
@@ -47,7 +47,7 @@ export interface ProdigiOrderResponse {
   order: ProdigiOrder;
 }
 
-export interface ProdigiOrder {
+interface ProdigiOrder {
   id: string;
   created: string;
   lastUpdated: string;
@@ -64,7 +64,7 @@ export interface ProdigiOrder {
   metadata?: Record<string, string>;
 }
 
-export interface ProdigiOrderStatus {
+interface ProdigiOrderStatus {
   stage:
     | "InProgress"
     | "Complete"
@@ -73,7 +73,7 @@ export interface ProdigiOrderStatus {
   details: ProdigiStatusDetails;
 }
 
-export interface ProdigiStatusDetails {
+interface ProdigiStatusDetails {
   downloadAssets:
     | "NotStarted"
     | "InProgress"
@@ -101,7 +101,7 @@ export interface ProdigiStatusDetails {
     | "Error";
 }
 
-export interface ProdigiIssue {
+interface ProdigiIssue {
   objectId: string;
   errorCode: string;
   description: string;
@@ -110,7 +110,7 @@ export interface ProdigiIssue {
   };
 }
 
-export interface ProdigiCharge {
+interface ProdigiCharge {
   id: string;
   prodigiInvoiceNumber?: string;
   totalCost: ProdigiMoney;
@@ -118,7 +118,7 @@ export interface ProdigiCharge {
   items: ProdigiChargeItem[];
 }
 
-export interface ProdigiChargeItem {
+interface ProdigiChargeItem {
   id: string;
   itemId?: string;
   cost: ProdigiMoney;
@@ -126,12 +126,12 @@ export interface ProdigiChargeItem {
   shipmentId?: string;
 }
 
-export interface ProdigiMoney {
+interface ProdigiMoney {
   amount: string; // Decimal string
   currency: string;
 }
 
-export interface ProdigiShipment {
+interface ProdigiShipment {
   id: string;
   status: "NotYetShipped" | "Shipped" | "InTransit" | "Delivered";
   carrier?: ProdigiCarrier;
@@ -140,17 +140,17 @@ export interface ProdigiShipment {
   items: { itemId: string; }[];
 }
 
-export interface ProdigiCarrier {
+interface ProdigiCarrier {
   name: string;
   service?: string;
 }
 
-export interface ProdigiTracking {
+interface ProdigiTracking {
   number?: string;
   url?: string;
 }
 
-export interface ProdigiOrderItemResponse {
+interface ProdigiOrderItemResponse {
   id: string;
   status: "NotYetDownloaded" | "Ok" | "Error";
   sku: string;
@@ -161,7 +161,7 @@ export interface ProdigiOrderItemResponse {
   attributes?: Record<string, string>;
 }
 
-export interface ProdigiAssetResponse {
+interface ProdigiAssetResponse {
   id: string;
   printArea: string;
   status: "InProgress" | "Complete" | "Error";
@@ -170,7 +170,7 @@ export interface ProdigiAssetResponse {
   thumbnailUrl?: string;
 }
 
-export interface ProdigiPackingSlip {
+interface ProdigiPackingSlip {
   url?: string;
   status?: string;
 }
@@ -183,7 +183,7 @@ export interface ProdigiQuoteRequest {
   items: ProdigiQuoteItem[];
 }
 
-export interface ProdigiQuoteItem {
+interface ProdigiQuoteItem {
   sku: string;
   copies: number;
   attributes?: Record<string, string>;
@@ -193,7 +193,7 @@ export interface ProdigiQuoteResponse {
   quotes: ProdigiQuote[];
 }
 
-export interface ProdigiQuote {
+interface ProdigiQuote {
   shipmentMethod: string;
   costSummary: {
     items: ProdigiMoney;
@@ -204,7 +204,7 @@ export interface ProdigiQuote {
   items: ProdigiQuoteItemResponse[];
 }
 
-export interface ProdigiQuoteShipment {
+interface ProdigiQuoteShipment {
   carrier: ProdigiCarrier;
   fulfillmentLocation: {
     countryCode: string;
@@ -214,12 +214,12 @@ export interface ProdigiQuoteShipment {
   items: ProdigiQuoteShipmentItem[];
 }
 
-export interface ProdigiQuoteShipmentItem {
+interface ProdigiQuoteShipmentItem {
   sku: string;
   itemIndices: number[];
 }
 
-export interface ProdigiQuoteItemResponse {
+interface ProdigiQuoteItemResponse {
   sku: string;
   copies: number;
   unitCost: ProdigiMoney;

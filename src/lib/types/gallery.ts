@@ -9,17 +9,17 @@ export const GALLERY_CONSTANTS = {
 } as const;
 
 // Gallery category enum matching Prisma
-export const GalleryCategoryEnum = z.enum([
+const GalleryCategoryEnum = z.enum([
   "PORTRAIT",
   "LANDSCAPE",
   "PRODUCT",
   "ARCHITECTURE",
 ]);
-export type GalleryCategory = z.infer<typeof GalleryCategoryEnum>;
+type GalleryCategory = z.infer<typeof GalleryCategoryEnum>;
 
 // Helper to sanitize text (strip HTML tags)
 // Uses iterative replacement to handle nested/incomplete tags (fixes CodeQL alert)
-export function sanitizeText(text: string): string {
+function sanitizeText(text: string): string {
   let prev;
   do {
     prev = text;
@@ -95,7 +95,7 @@ export const deleteItemSchema = z.object({
 });
 
 // Gallery item interface for frontend (matches Prisma/Zod enum)
-export interface GalleryItem {
+interface GalleryItem {
   id: string;
   title: string;
   description: string;

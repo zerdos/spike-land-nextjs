@@ -1,7 +1,7 @@
 import type { CSSProperties, RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export interface UseHeroAnimationOptions {
+interface UseHeroAnimationOptions {
   isActive: boolean;
   direction: "expand" | "collapse";
   originRect: DOMRect | null;
@@ -9,7 +9,7 @@ export interface UseHeroAnimationOptions {
   animationDuration?: number; // in milliseconds, defaults to 300
 }
 
-export interface UseHeroAnimationReturn {
+interface UseHeroAnimationReturn {
   animationRef: RefObject<HTMLDivElement | null>;
   isAnimating: boolean;
   animationStyles: CSSProperties;

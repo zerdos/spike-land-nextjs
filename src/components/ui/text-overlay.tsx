@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import * as React from "react";
 
-export interface TextOverlayProps {
+interface TextOverlayProps {
   children: React.ReactNode;
   position?:
     | "bottom-left"

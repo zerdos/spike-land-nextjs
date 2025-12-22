@@ -22,7 +22,7 @@ const VoucherType = {
   SUBSCRIPTION_TRIAL: "SUBSCRIPTION_TRIAL" as VoucherTypeEnum,
 } as const;
 
-export interface VoucherValidationResult {
+interface VoucherValidationResult {
   valid: boolean;
   error?: string;
   voucher?: {
@@ -34,7 +34,7 @@ export interface VoucherValidationResult {
   };
 }
 
-export interface VoucherRedemptionResult {
+interface VoucherRedemptionResult {
   success: boolean;
   error?: string;
   tokensGranted?: number;

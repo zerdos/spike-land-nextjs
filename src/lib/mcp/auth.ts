@@ -3,7 +3,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { NextRequest } from "next/server";
 import { ApiKeyValidationResult, validateApiKey } from "./api-key-manager";
 
-export interface McpAuthResult {
+interface McpAuthResult {
   success: boolean;
   userId?: string;
   apiKeyId?: string;

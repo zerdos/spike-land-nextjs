@@ -7,7 +7,7 @@ import type { DataConnection, MediaConnection, Peer } from "peerjs";
 /**
  * Connection status for a peer connection
  */
-export type ConnectionStatus =
+type ConnectionStatus =
   | "disconnected"
   | "connecting"
   | "connected"
@@ -17,7 +17,7 @@ export type ConnectionStatus =
 /**
  * Role of a peer in the video wall system
  */
-export type PeerRole = "host" | "client";
+type PeerRole = "host" | "client";
 
 /**
  * Metadata for a client connection
@@ -101,7 +101,7 @@ export interface ClientConnectionState {
 /**
  * Message types for data channel communication
  */
-export type MessageType =
+type MessageType =
   | "ping"
   | "pong"
   | "stream-start"
@@ -158,7 +158,7 @@ export interface MediaConstraints {
 /**
  * Options for initiating a call
  */
-export interface CallOptions {
+interface CallOptions {
   /** Metadata to send with the call */
   metadata?: Record<string, unknown>;
   /** Media constraints */

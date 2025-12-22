@@ -8,7 +8,7 @@ import { tryCatch } from "@/lib/try-catch";
 
 const GITHUB_API_BASE = "https://api.github.com";
 
-export interface GitHubIssue {
+interface GitHubIssue {
   number: number;
   title: string;
   state: string;
@@ -21,7 +21,7 @@ export interface GitHubIssue {
   body: string | null;
 }
 
-export interface GitHubProjectItem {
+interface GitHubProjectItem {
   id: string;
   content: {
     type: string;
@@ -215,7 +215,7 @@ export async function getWorkflowRuns(options?: { limit?: number; }): Promise<{
 // Pull Request Status Functions
 // =============================================================================
 
-export interface GitHubPullRequest {
+interface GitHubPullRequest {
   number: number;
   title: string;
   state: string;
@@ -227,7 +227,7 @@ export interface GitHubPullRequest {
   draft: boolean;
 }
 
-export interface GitHubCommitStatus {
+interface GitHubCommitStatus {
   state: "success" | "failure" | "pending" | "error";
   totalCount: number;
   statuses: Array<{
@@ -238,7 +238,7 @@ export interface GitHubCommitStatus {
   }>;
 }
 
-export interface GitHubCheckRun {
+interface GitHubCheckRun {
   id: number;
   name: string;
   status: string;
@@ -246,7 +246,7 @@ export interface GitHubCheckRun {
   url: string;
 }
 
-export interface GitHubBranchComparison {
+interface GitHubBranchComparison {
   aheadBy: number;
   behindBy: number;
   status: "ahead" | "behind" | "identical" | "diverged";
@@ -255,7 +255,7 @@ export interface GitHubBranchComparison {
 /**
  * Get pull request details by PR number
  */
-export async function getPullRequest(
+async function getPullRequest(
   prNumber: number,
 ): Promise<{ data: GitHubPullRequest | null; error: string | null; }> {
   const { owner, repo } = getGitHubConfig();
@@ -294,7 +294,7 @@ export async function getPullRequest(
 /**
  * Get combined commit status for a ref (branch or SHA)
  */
-export async function getCommitStatus(
+async function getCommitStatus(
   ref: string,
 ): Promise<{ data: GitHubCommitStatus | null; error: string | null; }> {
   const { owner, repo } = getGitHubConfig();
@@ -332,7 +332,7 @@ export async function getCommitStatus(
 /**
  * Get check runs for a ref (branch or SHA)
  */
-export async function getCheckRuns(
+async function getCheckRuns(
   ref: string,
 ): Promise<{ data: GitHubCheckRun[] | null; error: string | null; }> {
   const { owner, repo } = getGitHubConfig();
@@ -366,7 +366,7 @@ export async function getCheckRuns(
 /**
  * Compare two branches to see if one is ahead/behind the other
  */
-export async function compareBranches(
+async function compareBranches(
   base: string,
   head: string,
 ): Promise<{ data: GitHubBranchComparison | null; error: string | null; }> {
@@ -395,7 +395,7 @@ export async function compareBranches(
 /**
  * Extract PR number from a GitHub PR URL
  */
-export function extractPrNumberFromUrl(url: string): number | null {
+function extractPrNumberFromUrl(url: string): number | null {
   const match = url.match(/\/pull\/(\d+)/);
   return match?.[1] ? parseInt(match[1], 10) : null;
 }

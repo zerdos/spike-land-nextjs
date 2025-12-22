@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import * as React from "react";
 
-export interface AIDisclaimerProps {
+interface AIDisclaimerProps {
   variant?: "compact" | "full";
   showLearnMore?: boolean;
   className?: string;

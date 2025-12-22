@@ -5,7 +5,7 @@
  * on a display, maximizing the total video area while maintaining aspect ratios.
  */
 
-export interface GridLayout {
+interface GridLayout {
   rows: number;
   cols: number;
   cellWidth: number;
@@ -15,7 +15,7 @@ export interface GridLayout {
   totalArea: number;
 }
 
-export interface LayoutOptions {
+interface LayoutOptions {
   displayWidth: number;
   displayHeight: number;
   numClients: number;

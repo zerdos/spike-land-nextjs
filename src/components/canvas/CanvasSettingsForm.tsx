@@ -16,7 +16,7 @@ export interface CanvasSettings {
   interval: number;
 }
 
-export interface CanvasSettingsFormProps {
+interface CanvasSettingsFormProps {
   settings: CanvasSettings;
   onChange: (settings: CanvasSettings) => void;
 }

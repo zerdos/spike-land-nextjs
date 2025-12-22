@@ -21,7 +21,7 @@ const LAST_ACTIVITY_KEY = "spike_last_activity";
 /**
  * Data required to create a new session
  */
-export interface CreateSessionData {
+interface CreateSessionData {
   /** Anonymous visitor identifier */
   visitorId: string;
   /** First page URL of the session */
@@ -41,7 +41,7 @@ export interface CreateSessionData {
 /**
  * Data for updating an existing session
  */
-export interface UpdateSessionData {
+interface UpdateSessionData {
   /** Last page URL of the session */
   exitPage?: string;
   /** Total page views in session */
@@ -55,7 +55,7 @@ export interface UpdateSessionData {
 /**
  * Custom tracking event data
  */
-export interface TrackingEvent {
+interface TrackingEvent {
   /** Event name (e.g., "signup_started", "enhancement_completed") */
   name: string;
   /** Event category (e.g., "conversion", "engagement") */
@@ -69,7 +69,7 @@ export interface TrackingEvent {
 /**
  * Page view data
  */
-export interface PageViewData {
+interface PageViewData {
   /** Page path */
   path: string;
   /** Page title */

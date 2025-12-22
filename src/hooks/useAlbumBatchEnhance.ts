@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { tryCatch } from "@/lib/try-catch";
 
-export interface BatchJobStatus {
+interface BatchJobStatus {
   imageId: string;
   jobId: string;
   status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
@@ -11,13 +11,13 @@ export interface BatchJobStatus {
   error?: string;
 }
 
-export interface UseAlbumBatchEnhanceOptions {
+interface UseAlbumBatchEnhanceOptions {
   albumId: string;
   onComplete?: (results: BatchJobStatus[]) => void;
   onError?: (error: string) => void;
 }
 
-export interface UseAlbumBatchEnhanceReturn {
+interface UseAlbumBatchEnhanceReturn {
   startBatchEnhance: (
     tier: EnhancementTier,
     skipAlreadyEnhanced?: boolean,

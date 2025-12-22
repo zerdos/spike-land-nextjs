@@ -22,7 +22,7 @@ async function getKV(): Promise<KVClient> {
 }
 
 // Types
-export interface UserTryCatchStats {
+interface UserTryCatchStats {
   email: string;
   allCalls: number;
   frontendSuccess: number;

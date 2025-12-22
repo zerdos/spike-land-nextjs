@@ -6,28 +6,28 @@
 
 const DEFAULT_BASE_URL = "https://spike.land";
 
-export interface GenerateRequest {
+interface GenerateRequest {
   prompt: string;
   tier?: "TIER_1K" | "TIER_2K" | "TIER_4K";
   negativePrompt?: string;
   aspectRatio?: string;
 }
 
-export interface ModifyRequest {
+interface ModifyRequest {
   prompt: string;
   image: string; // Base64 encoded
   mimeType: string;
   tier?: "TIER_1K" | "TIER_2K" | "TIER_4K";
 }
 
-export interface JobResponse {
+interface JobResponse {
   success: boolean;
   jobId?: string;
   tokensCost?: number;
   error?: string;
 }
 
-export interface Job {
+interface Job {
   id: string;
   type: "GENERATE" | "MODIFY";
   tier: string;
@@ -44,11 +44,11 @@ export interface Job {
   processingCompletedAt?: string | null;
 }
 
-export interface JobStatus {
+interface JobStatus {
   job: Job;
 }
 
-export interface BalanceResponse {
+interface BalanceResponse {
   balance: number;
   lastRegeneration: string;
 }

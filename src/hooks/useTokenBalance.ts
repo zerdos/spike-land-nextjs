@@ -16,7 +16,7 @@ interface TokenBalanceResponse {
   };
 }
 
-export interface TokenStats {
+interface TokenStats {
   totalSpent: number;
   totalEarned: number;
   totalRefunded: number;
