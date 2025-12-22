@@ -12,6 +12,11 @@ import Script from "next/script";
 
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
+interface MetaPixelProps {
+  /** CSP nonce for inline script execution */
+  nonce?: string;
+}
+
 /**
  * Meta Pixel tracking component
  *
@@ -22,20 +27,22 @@ const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
  * ```tsx
  * // In src/app/layout.tsx
  * import { MetaPixel } from "@/components/tracking/MetaPixel";
+ * import { getNonce } from "@/lib/security/csp-nonce-server";
  *
- * export default function RootLayout({ children }) {
+ * export default async function RootLayout({ children }) {
+ *   const nonce = await getNonce();
  *   return (
  *     <html>
  *       <body>
  *         {children}
- *         <MetaPixel />
+ *         <MetaPixel nonce={nonce ?? undefined} />
  *       </body>
  *     </html>
  *   );
  * }
  * ```
  */
-export function MetaPixel() {
+export function MetaPixel({ nonce }: MetaPixelProps) {
   if (!META_PIXEL_ID) {
     return null;
   }
@@ -45,6 +52,7 @@ export function MetaPixel() {
       <Script
         id="meta-pixel"
         strategy="afterInteractive"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
             !function(f,b,e,v,n,t,s)

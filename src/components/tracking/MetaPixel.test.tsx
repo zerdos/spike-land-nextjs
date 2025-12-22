@@ -9,16 +9,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock next/script
 vi.mock("next/script", () => ({
-  default: ({ id, children, dangerouslySetInnerHTML, ...props }: {
+  default: ({ id, children, dangerouslySetInnerHTML, nonce, ...props }: {
     id?: string;
     children?: React.ReactNode;
     dangerouslySetInnerHTML?: { __html: string; };
     strategy?: string;
+    nonce?: string;
   }) => (
     <script
       id={id}
       data-testid={id}
       data-strategy={props.strategy}
+      nonce={nonce}
       dangerouslySetInnerHTML={dangerouslySetInnerHTML}
     >
       {children}
@@ -133,6 +135,30 @@ describe("MetaPixel", () => {
 
       const script = container.querySelector('script[id="meta-pixel"]');
       expect(script?.innerHTML).toContain("9876543210987654");
+    });
+  });
+
+  describe("with nonce prop", () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_META_PIXEL_ID = "1234567890123456";
+    });
+
+    it("should apply nonce attribute to script tag", async () => {
+      const { MetaPixel } = await import("./MetaPixel");
+      const testNonce = "test-nonce-value";
+      const { container } = render(<MetaPixel nonce={testNonce} />);
+
+      const script = container.querySelector('script[id="meta-pixel"]');
+      expect(script).toHaveAttribute("nonce", testNonce);
+    });
+
+    it("should work without nonce prop", async () => {
+      const { MetaPixel } = await import("./MetaPixel");
+      const { container } = render(<MetaPixel />);
+
+      const script = container.querySelector('script[id="meta-pixel"]');
+      expect(script).toBeInTheDocument();
+      expect(script).not.toHaveAttribute("nonce");
     });
   });
 });
