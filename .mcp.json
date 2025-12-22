@@ -28,17 +28,6 @@
         "run"
       ],
       "type": "stdio"
-    },
-    "github": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GH_PAT_TOKEN}"
-      }
     }
   }
 }
