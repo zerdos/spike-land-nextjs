@@ -136,3 +136,4 @@ jobs:
             --mcp-config .mcp.json
             --allowed-tools "Bash(gh:*),Bash(yarn:*),Bash(git:*),Bash(npm:*),Edit,Write,Read,Glob,Grep,mcp__playwright__*,mcp__github__*"
             --model opus
+            --dangerously-skip-permissions
