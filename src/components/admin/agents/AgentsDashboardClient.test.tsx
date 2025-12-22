@@ -124,4 +124,44 @@ describe("AgentsDashboardClient", () => {
 
         expect(screen.queryByText("Create New Jules Task")).not.toBeInTheDocument();
     });
+
+    it("renders PR status when PR URL is present", async () => {
+        const dataWithPR = {
+            ...mockAgentsData,
+            sessions: [
+                {
+                    ...mockAgentsData.sessions[0],
+                    pullRequestUrl: "https://github.com/owner/repo/pull/1"
+                }
+            ]
+        };
+
+        global.fetch = createFetchMock({
+            "/api/admin/agents": dataWithPR,
+            "/api/admin/agents/sess_1/pr-status": {
+                success: true,
+                data: {
+                    prNumber: 1,
+                    prUrl: "https://github.com/owner/repo/pull/1",
+                    targetBranch: "main",
+                    isUpToDate: true,
+                    ciStatus: "success",
+                    ciStatusMessage: "All checks passed",
+                    previewUrl: "https://preview.com",
+                    draft: false,
+                    checksTotal: 5,
+                    checksFailed: 0,
+                    checksPending: 0,
+                    behindBy: 0
+                }
+            }
+        });
+
+        render(<AgentsDashboardClient initialData={dataWithPR} />);
+
+        await waitFor(() => {
+            expect(screen.getByText("PR #1")).toBeInTheDocument();
+            expect(screen.getByText("CI passing")).toBeInTheDocument();
+        });
+    });
 });
