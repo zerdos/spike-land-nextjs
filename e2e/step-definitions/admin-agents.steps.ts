@@ -190,7 +190,7 @@ Given("GitHub API is not configured", async function(this: CustomWorld) {
       status: 503,
       contentType: "application/json",
       body: JSON.stringify({
-        error: "GitHub API is not configured. Set GITHUB_TOKEN environment variable.",
+        error: "GitHub API is not configured. Set GH_PAT_TOKEN environment variable.",
       }),
     });
   });
