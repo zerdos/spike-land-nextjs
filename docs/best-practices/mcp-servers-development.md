@@ -786,7 +786,7 @@ features
       "command": "npx",
       "args": ["mcp-server-github"],
       "env": {
-        "GH_PAT_TOKEN": "ghp_xxxxxxxxxxxx"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_xxxxxxxxxxxx"
       }
     }
   }
