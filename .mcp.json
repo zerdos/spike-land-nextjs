@@ -1,21 +1,42 @@
 {
   "mcpServers": {
-    "playwright": { "type": "stdio", "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
     "spike.land": {
       "type": "stdio",
       "command": "npx",
       "env": {
         "SPIKE_LAND_API_KEY": "${SPIKE_LAND_API_KEY}"
       },
-      "args": ["-y", "@spike-npm-land/mcp-server"]
+      "args": [
+        "-y",
+        "@spike-npm-land/mcp-server"
+      ]
     },
-    "MCP_DOCKER": { "command": "docker", "args": ["mcp", "gateway", "run"], "type": "stdio" },
+    "MCP_DOCKER": {
+      "command": "docker",
+      "args": [
+        "mcp",
+        "gateway",
+        "run"
+      ],
+      "type": "stdio"
+    },
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GH_PAT_TOKEN}"
+        "GH_PAT_TOKEN": "${GH_PAT_TOKEN}"
       }
     }
   }
