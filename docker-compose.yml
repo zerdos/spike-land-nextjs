@@ -57,6 +57,10 @@ services:
     build:
       context: .
       target: ci
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        AUTH_SECRET: ${AUTH_SECRET}
+        E2E_BYPASS_SECRET: ${E2E_BYPASS_SECRET}
     env_file:
       - .env.local
     environment:

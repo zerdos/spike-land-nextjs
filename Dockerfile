@@ -113,21 +113,27 @@ COPY e2e ./e2e
 
 # ============================================================================
 # STAGE 8: Unit Tests (sharded)
+# Override NODE_ENV for tests - React testing requires development mode for act()
 # ============================================================================
 FROM test-source AS unit-test-shard
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
+ENV NODE_ENV=test
 RUN yarn test:run --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/unit-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/unit-${SHARD_INDEX}.log && exit 1)
 
 FROM test-source AS unit-tests-1
+ENV NODE_ENV=test
 RUN yarn test:run --shard 1/4 > /tmp/unit-1.log 2>&1 || (cat /tmp/unit-1.log && exit 1)
 FROM test-source AS unit-tests-2
+ENV NODE_ENV=test
 RUN yarn test:run --shard 2/4 > /tmp/unit-2.log 2>&1 || (cat /tmp/unit-2.log && exit 1)
 FROM test-source AS unit-tests-3
+ENV NODE_ENV=test
 RUN yarn test:run --shard 3/4 > /tmp/unit-3.log 2>&1 || (cat /tmp/unit-3.log && exit 1)
 FROM test-source AS unit-tests-4
+ENV NODE_ENV=test
 RUN yarn test:run --shard 4/4 > /tmp/unit-4.log 2>&1 || (cat /tmp/unit-4.log && exit 1)
 
 FROM test-source AS unit-tests
@@ -191,27 +197,42 @@ RUN mkdir -p e2e/reports
 
 # ============================================================================
 # STAGE 11: E2E Tests (sharded)
-# Mount node_modules from deps to avoid copying huge layers.
+# Mount node_modules from deps and Playwright cache for browser access.
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
+ARG CACHE_NS
+ARG TARGETARCH
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     yarn start:server:and:test:ci --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-1
+ARG CACHE_NS
+ARG TARGETARCH
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     yarn start:server:and:test:ci --shard 1/4 > /tmp/e2e-1.log 2>&1 || (cat /tmp/e2e-1.log && exit 1)
 FROM e2e-test-base AS e2e-tests-2
+ARG CACHE_NS
+ARG TARGETARCH
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     yarn start:server:and:test:ci --shard 2/4 > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
 FROM e2e-test-base AS e2e-tests-3
+ARG CACHE_NS
+ARG TARGETARCH
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     yarn start:server:and:test:ci --shard 3/4 > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
 FROM e2e-test-base AS e2e-tests-4
+ARG CACHE_NS
+ARG TARGETARCH
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     yarn start:server:and:test:ci --shard 4/4 > /tmp/e2e-4.log 2>&1 || (cat /tmp/e2e-4.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests
