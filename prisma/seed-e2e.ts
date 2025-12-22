@@ -332,7 +332,7 @@ async function main() {
         productName: "Stretched Canvas",
         variantName: '16" x 20"',
         imageUrl: "https://placehold.co/400x400/333/white?text=Canvas+16x20",
-        imageR2Key: "e2e/canvas-stretched-16x20.png",
+        imageR2Key: "e2e/canvas-16x20.png",
         quantity: 1,
         unitPrice: 64.99,
         totalPrice: 64.99,

@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  AlertTriangle,
   Bell,
   Component,
   Layers,
@@ -8,6 +9,7 @@ import {
   MousePointerClick,
   Palette,
   PanelTop,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   SplitSquareHorizontal,
@@ -30,6 +32,8 @@ export const storybookIconMap = {
   LayoutGrid,
   ShoppingBag,
   Layers,
+  ShieldCheck,
+  AlertTriangle,
 };
 
 export const colorPalette = {
@@ -207,6 +211,18 @@ export const storybookSections = [
     label: "PhotoMix",
     description: "Photo mixing and blending components",
     icon: "Layers",
+  },
+  {
+    id: "auth",
+    label: "Auth",
+    description: "Authentication components, buttons, and user avatars",
+    icon: "ShieldCheck",
+  },
+  {
+    id: "errors",
+    label: "Errors",
+    description: "Error handling components and error boundaries",
+    icon: "AlertTriangle",
   },
 ] as const;
 

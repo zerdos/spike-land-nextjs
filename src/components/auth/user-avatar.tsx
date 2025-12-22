@@ -16,16 +16,22 @@ import { signOut, useSession } from "next-auth/react";
 
 interface UserAvatarProps {
   className?: string;
+  user?: {
+    name?: string | null;
+    image?: string | null;
+    email?: string | null;
+  };
 }
 
-export function UserAvatar({ className }: UserAvatarProps) {
+export function UserAvatar({ className, user: propUser }: UserAvatarProps) {
   const { data: session } = useSession();
+  const user = propUser || session?.user;
 
-  if (!session?.user) {
+  if (!user) {
     return null;
   }
 
-  const userInitials = session.user.name
+  const userInitials = user.name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
@@ -40,8 +46,8 @@ export function UserAvatar({ className }: UserAvatarProps) {
           data-testid="user-avatar"
         >
           <AvatarImage
-            src={session.user.image || undefined}
-            alt={session.user.name || "User"}
+            src={user.image || undefined}
+            alt={user.name || "User"}
           />
           <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
@@ -50,10 +56,10 @@ export function UserAvatar({ className }: UserAvatarProps) {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {session.user.name || "User"}
+              {user.name || "User"}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {session.user.email || "No email"}
+              {user.email || "No email"}
             </p>
           </div>
         </DropdownMenuLabel>
