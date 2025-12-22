@@ -43,9 +43,6 @@ documented requirements.
 #### Step 1: Investigate Project Board
 
 ```bash
-# Log in 
-echo ${GH_PAT_TOKEN} | gh auth login --with-token
-
 # List all items in the project board
 gh project item-list 2 --owner zerdos --format json
 
