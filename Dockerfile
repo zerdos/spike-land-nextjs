@@ -216,12 +216,37 @@ RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_module
     > /tmp/test-shard-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/test-shard-${SHARD_INDEX}.log && exit 1)
 
+# --- Explicit shard targets (for backwards compatibility with direct docker build) ---
+FROM e2e-test-base AS e2e-tests-1
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard 1/4 \
+    > /tmp/test-shard-1.log 2>&1 || (cat /tmp/test-shard-1.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-2
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard 2/4 \
+    > /tmp/test-shard-2.log 2>&1 || (cat /tmp/test-shard-2.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-3
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard 3/4 \
+    > /tmp/test-shard-3.log 2>&1 || (cat /tmp/test-shard-3.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-4
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules \
+    DATABASE_URL="postgresql://x:x@x:5432/x" yarn install --immutable \
+    && yarn start:server:and:test --shard 4/4 \
+    > /tmp/test-shard-4.log 2>&1 || (cat /tmp/test-shard-4.log && exit 1)
+
 # --- Collector stage (merges all shard results) ---
-FROM e2e-test-shard AS e2e-tests
-COPY --from=e2e-test-shard /tmp/test-shard-1.log /tmp/test-shard-1.log
-COPY --from=e2e-test-shard /tmp/test-shard-2.log /tmp/test-shard-2.log
-COPY --from=e2e-test-shard /tmp/test-shard-3.log /tmp/test-shard-3.log
-COPY --from=e2e-test-shard /tmp/test-shard-4.log /tmp/test-shard-4.log
+FROM e2e-test-base AS e2e-tests
+COPY --from=e2e-tests-1 /tmp/test-shard-1.log /tmp/test-shard-1.log
+COPY --from=e2e-tests-2 /tmp/test-shard-2.log /tmp/test-shard-2.log
+COPY --from=e2e-tests-3 /tmp/test-shard-3.log /tmp/test-shard-3.log
+COPY --from=e2e-tests-4 /tmp/test-shard-4.log /tmp/test-shard-4.log
 RUN cat /tmp/test-shard-*.log
 
 # ============================================================================
