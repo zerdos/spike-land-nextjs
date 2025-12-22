@@ -4,7 +4,10 @@ import { AlbumCard } from "@/components/enhance/AlbumCard";
 import { BatchEnhanceProgress } from "@/components/enhance/BatchEnhanceProgress";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
-import { TierSelectionCheckboxes } from "@/components/enhance/TierSelectionCheckboxes";
+import {
+  type EnhancementTierType,
+  TierSelectionCheckboxes,
+} from "@/components/enhance/TierSelectionCheckboxes";
 import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
 import { Section } from "@/components/storybook";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +15,7 @@ import { useState } from "react";
 
 export default function EnhancePage() {
   // State for interactive examples
-  const [selectedTiers, setSelectedTiers] = useState<string[]>(["TIER_1K"]);
+  const [selectedTiers, setSelectedTiers] = useState<EnhancementTierType[]>(["TIER_1K"]);
 
   // Mock data
   const mockAlbum = {
