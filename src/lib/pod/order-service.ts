@@ -25,7 +25,7 @@ function getProvider(providerName: "PRODIGI" | "PRINTFUL"): PodProvider {
   }
 }
 
-export interface SubmitOrderResult {
+interface SubmitOrderResult {
   success: boolean;
   providerOrderId?: string;
   error?: string;

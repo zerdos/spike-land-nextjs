@@ -13,12 +13,12 @@ import { getPlatformFromUTM, type UTMParams } from "./utm-capture";
 /**
  * Attribution types matching Prisma schema
  */
-export type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH";
+type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH";
 
 /**
  * Conversion types matching Prisma schema
  */
-export type ConversionType = "SIGNUP" | "ENHANCEMENT" | "PURCHASE";
+type ConversionType = "SIGNUP" | "ENHANCEMENT" | "PURCHASE";
 
 /**
  * Parameters for creating an attribution record
@@ -45,7 +45,7 @@ export interface AttributionParams {
 /**
  * Full attribution record with session data
  */
-export interface AttributionWithSession extends CampaignAttribution {
+interface AttributionWithSession extends CampaignAttribution {
   session?: VisitorSession;
 }
 

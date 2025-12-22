@@ -24,7 +24,7 @@ const IMAGE_TYPES = [
 /**
  * Validation options for file upload
  */
-export interface ValidationOptions {
+interface ValidationOptions {
   /** Maximum file size in bytes (default: 50MB) */
   maxFileSize?: number;
   /** Maximum number of files (default: 20) */
@@ -36,7 +36,7 @@ export interface ValidationOptions {
 /**
  * Result of file validation
  */
-export interface ValidationResult {
+interface ValidationResult {
   /** Whether all files are valid */
   valid: boolean;
   /** List of validation errors */
@@ -50,7 +50,7 @@ export interface ValidationResult {
 /**
  * Result of single file validation
  */
-export interface SingleValidationResult {
+interface SingleValidationResult {
   /** Whether the file is valid */
   valid: boolean;
   /** Error message if invalid */

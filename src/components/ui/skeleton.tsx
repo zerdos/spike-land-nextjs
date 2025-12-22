@@ -21,4 +21,4 @@ function Skeleton({ className, variant, ...props }: SkeletonProps) {
   return <div className={cn(skeletonVariants({ variant }), className)} {...props} />;
 }
 
-export { Skeleton, skeletonVariants };
+export { Skeleton };

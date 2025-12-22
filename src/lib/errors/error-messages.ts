@@ -3,7 +3,7 @@
  * Converts technical errors to human-readable messages with helpful suggestions
  */
 
-export interface ErrorMessage {
+interface ErrorMessage {
   title: string;
   message: string;
   suggestion?: string;

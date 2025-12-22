@@ -7,7 +7,7 @@
 /**
  * Job status counts from the image enhancement queue
  */
-export interface JobStatusMetrics {
+interface JobStatusMetrics {
   pending: number;
   processing: number;
   completed: number;

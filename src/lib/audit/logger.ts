@@ -15,7 +15,7 @@ type JsonValue = Prisma.JsonValue;
 /**
  * Metadata for role change actions
  */
-export interface RoleChangeMetadata {
+interface RoleChangeMetadata {
   oldRole: string;
   newRole: string;
   reason?: string;
@@ -24,7 +24,7 @@ export interface RoleChangeMetadata {
 /**
  * Metadata for token adjustment actions
  */
-export interface TokenAdjustmentMetadata {
+interface TokenAdjustmentMetadata {
   amount: number;
   balanceAfter: number;
   reason?: string;
@@ -33,7 +33,7 @@ export interface TokenAdjustmentMetadata {
 /**
  * Metadata for voucher operations
  */
-export interface VoucherMetadata {
+interface VoucherMetadata {
   voucherCode: string;
   voucherType?: string;
   value?: number;
@@ -43,7 +43,7 @@ export interface VoucherMetadata {
 /**
  * Metadata for user deletion actions
  */
-export interface UserDeleteMetadata {
+interface UserDeleteMetadata {
   userEmail: string | null;
   userName: string | null;
   reason?: string;
@@ -58,7 +58,7 @@ export interface UserDeleteMetadata {
 /**
  * Union type for all metadata types
  */
-export type AuditMetadata =
+type AuditMetadata =
   | RoleChangeMetadata
   | TokenAdjustmentMetadata
   | VoucherMetadata
@@ -68,7 +68,7 @@ export type AuditMetadata =
 /**
  * Options for creating an audit log entry
  */
-export interface AuditLogOptions {
+interface AuditLogOptions {
   userId: string; // Who performed the action
   action: AuditAction;
   targetId?: string; // Target user/resource ID

@@ -35,7 +35,7 @@ export const EU_COUNTRY_CODES = [
   "SE",
 ] as const;
 
-export type EuCountryCode = (typeof EU_COUNTRY_CODES)[number];
+type EuCountryCode = (typeof EU_COUNTRY_CODES)[number];
 
 /**
  * UK and EU countries with display names for UI dropdowns
@@ -86,4 +86,4 @@ export const SHIPPING_COST_EU = 999; // €9.99
 /**
  * Maximum allowed quantity per cart item
  */
-export const MAX_CART_ITEM_QUANTITY = 100;
+const MAX_CART_ITEM_QUANTITY = 100;

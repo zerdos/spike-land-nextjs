@@ -7,7 +7,7 @@ export interface Feature {
   description: string;
 }
 
-export interface AppFeatureListProps {
+interface AppFeatureListProps {
   features: Feature[];
   layout?: "grid" | "list";
   columns?: 1 | 2 | 3;

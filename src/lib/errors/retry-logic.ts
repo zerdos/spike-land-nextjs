@@ -2,7 +2,7 @@
  * Retry logic with exponential backoff for transient failures
  */
 
-export interface RetryOptions {
+interface RetryOptions {
   maxAttempts?: number;
   initialDelayMs?: number;
   maxDelayMs?: number;
@@ -11,7 +11,7 @@ export interface RetryOptions {
   onRetry?: (error: Error, attempt: number, delayMs: number) => void;
 }
 
-export interface RetryResult<T> {
+interface RetryResult<T> {
   success: boolean;
   data?: T;
   error?: Error;

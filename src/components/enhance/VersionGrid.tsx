@@ -29,7 +29,7 @@ async function logBrokenImage(versionId: string, tier: string, url: string) {
   }
 }
 
-export interface EnhancementVersion {
+interface EnhancementVersion {
   id: string;
   tier: EnhancementTier;
   enhancedUrl: string;

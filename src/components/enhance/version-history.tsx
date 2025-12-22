@@ -20,7 +20,7 @@ export interface Version {
   sizeBytes: number | null;
 }
 
-export interface VersionHistoryProps {
+interface VersionHistoryProps {
   imageId: string;
   imageName: string;
   originalUrl: string;

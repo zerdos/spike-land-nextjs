@@ -16,7 +16,7 @@ declare global {
 /**
  * Event mapping configuration
  */
-export interface EventMappingConfig {
+interface EventMappingConfig {
   /** The Meta Pixel event name to fire */
   metaEvent: string;
   /** Whether this is a standard Meta event or custom event */

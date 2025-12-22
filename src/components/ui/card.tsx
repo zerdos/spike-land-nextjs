@@ -23,7 +23,7 @@ const cardVariants = cva(
   },
 );
 
-export interface CardProps
+interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants>
 {}
 

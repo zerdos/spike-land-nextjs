@@ -27,7 +27,7 @@ const MAX_BATCH_SIZE = 100;
  *
  * @param success - Whether the operation succeeded or failed
  */
-export function recordFrontendTryCatchEvent(success: boolean): void {
+function recordFrontendTryCatchEvent(success: boolean): void {
   pendingEvents.push({ success });
 
   // Flush immediately if batch is full
@@ -77,14 +77,14 @@ async function syncEventsToBackend(): Promise<void> {
  * Forces an immediate sync of pending events.
  * Useful before page navigation.
  */
-export async function flushFrontendStats(): Promise<void> {
+async function flushFrontendStats(): Promise<void> {
   await syncEventsToBackend();
 }
 
 /**
  * Gets the number of pending events (for testing/monitoring).
  */
-export function getPendingEventsCount(): number {
+function getPendingEventsCount(): number {
   return pendingEvents.length;
 }
 

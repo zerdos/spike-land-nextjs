@@ -15,7 +15,7 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { AlertCircle } from "lucide-react";
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
 
-export interface ErrorBoundaryProps {
+interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;

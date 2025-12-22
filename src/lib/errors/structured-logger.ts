@@ -4,7 +4,7 @@
 
 import { randomBytes } from "crypto";
 
-export type LogLevel = "debug" | "info" | "warn" | "error";
+type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface LogContext {
   requestId?: string;
@@ -17,7 +17,7 @@ export interface LogContext {
   [key: string]: unknown;
 }
 
-export interface LogEntry {
+interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;

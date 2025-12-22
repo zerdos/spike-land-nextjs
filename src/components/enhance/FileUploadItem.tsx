@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn, formatFileSize } from "@/lib/utils";
 import { AlertCircle, CheckCircle, RefreshCw, Upload, X } from "lucide-react";
 
-export interface FileUploadItemProps {
+interface FileUploadItemProps {
   file: File;
   status: "pending" | "uploading" | "completed" | "failed" | "cancelled";
   progress: number;

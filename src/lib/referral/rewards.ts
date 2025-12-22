@@ -5,7 +5,7 @@ import { TokenTransactionType } from "@prisma/client";
 
 const REFERRAL_REWARD_TOKENS = 50;
 
-export interface ReferralRewardResult {
+interface ReferralRewardResult {
   success: boolean;
   referrerTokensGranted?: number;
   refereeTokensGranted?: number;

@@ -20,7 +20,7 @@ import { tryCatch } from "@/lib/try-catch";
 /**
  * Result of pipeline resolution
  */
-export interface PipelineResolutionResult {
+interface PipelineResolutionResult {
   config: PipelineConfig;
   pipelineId: string | null;
 }

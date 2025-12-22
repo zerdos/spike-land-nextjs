@@ -6,7 +6,6 @@ export {
   logoSizes,
   logoVariants,
   storybookIconMap,
-  type StorybookSectionId,
   storybookSections,
 } from "./constants";
 export { ContrastCheckerDemo } from "./ContrastCheckerDemo";

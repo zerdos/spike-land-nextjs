@@ -119,14 +119,14 @@ export function generateProjectMetadataKey(
   return `users/${userId}/audio-projects/${projectId}/metadata.json`;
 }
 
-export interface UploadAudioParams {
+interface UploadAudioParams {
   key: string;
   buffer: Buffer;
   contentType: string;
   metadata?: Record<string, string>;
 }
 
-export interface UploadAudioResult {
+interface UploadAudioResult {
   success: boolean;
   key: string;
   url: string;
@@ -134,13 +134,13 @@ export interface UploadAudioResult {
   error?: string;
 }
 
-export interface DeleteAudioResult {
+interface DeleteAudioResult {
   success: boolean;
   key: string;
   error?: string;
 }
 
-export interface AudioMetadata {
+interface AudioMetadata {
   key: string;
   size: number;
   lastModified?: Date;
@@ -342,7 +342,7 @@ export async function getAudioMetadata(
 /**
  * List audio files for a user's project
  */
-export async function listProjectAudioFiles(
+async function listProjectAudioFiles(
   userId: string,
   projectId: string,
 ): Promise<AudioMetadata[]> {
@@ -388,7 +388,7 @@ export async function listProjectAudioFiles(
 /**
  * Delete all audio files for a project
  */
-export async function deleteProjectAudioFiles(
+async function deleteProjectAudioFiles(
   userId: string,
   projectId: string,
 ): Promise<{ success: boolean; deletedCount: number; error?: string; }> {

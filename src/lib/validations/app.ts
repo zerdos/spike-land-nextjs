@@ -45,6 +45,6 @@ export const step3Schema = appCreationSchema.pick({
   monetizationModel: true,
 });
 
-export type Step1Data = z.infer<typeof step1Schema>;
-export type Step2Data = z.infer<typeof step2Schema>;
-export type Step3Data = z.infer<typeof step3Schema>;
+type Step1Data = z.infer<typeof step1Schema>;
+type Step2Data = z.infer<typeof step2Schema>;
+type Step3Data = z.infer<typeof step3Schema>;

@@ -12,13 +12,13 @@ const DEFAULT_ZOOM = 50; // pixels per second
 const MIN_ZOOM = 10;
 const MAX_ZOOM = 200;
 
-export interface UseTimelineOptions {
+interface UseTimelineOptions {
   defaultZoom?: number;
   defaultSnapEnabled?: boolean;
   defaultSnapGrid?: SnapGrid;
 }
 
-export interface UseTimelineReturn {
+interface UseTimelineReturn {
   // State
   state: TimelineState;
 

@@ -15,7 +15,7 @@ export function isJulesAvailable(): boolean {
 }
 
 // Tool parameter schemas
-export const ListSessionsSchema = z.object({
+const ListSessionsSchema = z.object({
   status: z
     .enum([
       "QUEUED",
@@ -36,7 +36,7 @@ export const ListSessionsSchema = z.object({
     .describe("Number of sessions to return"),
 });
 
-export const CreateSessionSchema = z.object({
+const CreateSessionSchema = z.object({
   title: z.string().min(1).max(200).describe("Short title for the task"),
   task: z.string().min(1).max(4000).describe("Detailed task description"),
   source_repo: z
@@ -50,7 +50,7 @@ export const CreateSessionSchema = z.object({
     .describe("Branch to start from"),
 });
 
-export const GetSessionSchema = z.object({
+const GetSessionSchema = z.object({
   session_id: z.string().describe("Jules session ID"),
   include_activities: z
     .boolean()
@@ -59,11 +59,11 @@ export const GetSessionSchema = z.object({
     .describe("Include recent activities"),
 });
 
-export const ApprovePlanSchema = z.object({
+const ApprovePlanSchema = z.object({
   session_id: z.string().describe("Jules session ID to approve"),
 });
 
-export const SendMessageSchema = z.object({
+const SendMessageSchema = z.object({
   session_id: z.string().describe("Jules session ID"),
   message: z.string().min(1).max(4000).describe("Message to send"),
 });

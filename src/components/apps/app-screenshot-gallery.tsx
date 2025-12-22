@@ -14,7 +14,7 @@ export interface Screenshot {
   title?: string;
 }
 
-export interface AppScreenshotGalleryProps {
+interface AppScreenshotGalleryProps {
   screenshots: Screenshot[];
   columns?: 2 | 3 | 4;
   className?: string;

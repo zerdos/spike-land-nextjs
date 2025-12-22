@@ -43,7 +43,7 @@ const TIER_STYLES: Record<
   },
 };
 
-export interface TierBadgeProps {
+interface TierBadgeProps {
   /** The tier to display */
   tier: TierType | string;
   /** Size variant */

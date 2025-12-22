@@ -19,7 +19,7 @@ interface Album {
   previewImages: PreviewImage[];
 }
 
-export interface AlbumCardProps {
+interface AlbumCardProps {
   album: Album;
   onClick?: () => void;
   isDropTarget?: boolean;

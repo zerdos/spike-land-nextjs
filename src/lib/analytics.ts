@@ -1,6 +1,6 @@
 import { track } from "@vercel/analytics";
 
-export type AnalyticsEvent =
+type AnalyticsEvent =
   // Wizard events
   | "wizard_started"
   | "wizard_step_completed"
@@ -20,7 +20,7 @@ export type AnalyticsEvent =
   | "error_occurred"
   | "validation_failed";
 
-export interface AnalyticsEventProperties {
+interface AnalyticsEventProperties {
   [key: string]: string | number | boolean | null | undefined;
 }
 

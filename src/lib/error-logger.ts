@@ -12,7 +12,7 @@ export interface ErrorContext {
   [key: string]: unknown;
 }
 
-export interface ErrorLoggerConfig {
+interface ErrorLoggerConfig {
   enabled: boolean;
   environment: "development" | "production" | "test";
 }

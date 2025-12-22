@@ -260,7 +260,7 @@ export function getBlockedEmailDomains(): string[] {
 const SAME_IP_WINDOW_HOURS = 24;
 const MAX_REFERRALS_PER_DAY = 10;
 
-export interface FraudCheckResult {
+interface FraudCheckResult {
   passed: boolean;
   reasons: string[];
 }

@@ -65,7 +65,7 @@ export interface GroupedPipelines {
 /**
  * Options for usePipelines hook
  */
-export interface UsePipelinesOptions {
+interface UsePipelinesOptions {
   /**
    * Whether to fetch pipelines automatically (default: true)
    */

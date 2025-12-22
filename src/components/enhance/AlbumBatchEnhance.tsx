@@ -19,7 +19,7 @@ import { AlertTriangle, CheckCircle, Coins, Loader2, Sparkles, XCircle } from "l
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K";
+type EnhancementTier = "TIER_1K" | "TIER_2K" | "TIER_4K";
 
 interface EnhancementJob {
   tier: EnhancementTier;

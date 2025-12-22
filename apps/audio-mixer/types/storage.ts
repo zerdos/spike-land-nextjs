@@ -6,7 +6,7 @@
 /**
  * Storage location for audio files
  */
-export type StorageLocation = "opfs" | "r2";
+type StorageLocation = "opfs" | "r2";
 
 /**
  * A saved audio track reference
@@ -73,7 +73,7 @@ export interface SaveTrackOptions {
 /**
  * Metadata stored with audio files in OPFS
  */
-export interface OPFSAudioMetadata {
+interface OPFSAudioMetadata {
   trackId: string;
   projectId: string;
   name: string;

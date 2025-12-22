@@ -16,7 +16,7 @@ const DEFAULT_PUBLIC_ALBUM = {
   description: "My public enhancements",
 };
 
-export interface UserAlbums {
+interface UserAlbums {
   privateAlbum: Album;
   publicAlbum: Album;
 }

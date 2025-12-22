@@ -19,7 +19,7 @@ export interface TierInfo {
   priceGBP: number;
 }
 
-export interface UpgradePromptModalProps {
+interface UpgradePromptModalProps {
   /** Whether the modal is open */
   open: boolean;
   /** Called when the modal should close */

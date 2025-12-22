@@ -8,7 +8,7 @@ import { tryCatch } from "@/lib/try-catch";
 import fs from "fs/promises";
 import path from "path";
 
-export interface ResourceStatus {
+interface ResourceStatus {
   devServer: {
     running: boolean;
     port: number | null;

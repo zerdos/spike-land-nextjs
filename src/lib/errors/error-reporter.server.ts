@@ -55,6 +55,6 @@ export async function reportErrorToDatabase(
  * Report error from API endpoint (for frontend errors received via POST)
  * This is called from the API route
  */
-export async function reportErrorFromApi(error: PendingError): Promise<void> {
+async function reportErrorFromApi(error: PendingError): Promise<void> {
   await reportErrorToDatabase(error, "FRONTEND");
 }

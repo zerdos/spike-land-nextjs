@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { ImageComparisonSlider } from "./ImageComparisonSlider";
 import type { Version } from "./version-history";
 
-export interface VersionCompareModalProps {
+interface VersionCompareModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   imageId: string;

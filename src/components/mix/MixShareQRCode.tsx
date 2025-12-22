@@ -6,7 +6,7 @@ import { Check, Copy, QrCode, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useState } from "react";
 
-export interface MixShareQRCodeProps {
+interface MixShareQRCodeProps {
   shareUrl: string;
   className?: string;
 }

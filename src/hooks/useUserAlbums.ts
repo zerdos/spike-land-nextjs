@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * Album preview image from API response
  */
-export interface AlbumPreviewImage {
+interface AlbumPreviewImage {
   id: string;
   url: string;
   name: string;
@@ -35,7 +35,7 @@ interface AlbumsResponse {
 /**
  * Options for useUserAlbums hook
  */
-export interface UseUserAlbumsOptions {
+interface UseUserAlbumsOptions {
   /**
    * Filter albums by privacy level
    */
@@ -49,7 +49,7 @@ export interface UseUserAlbumsOptions {
 /**
  * Return type for useUserAlbums hook
  */
-export interface UseUserAlbumsReturn {
+interface UseUserAlbumsReturn {
   /**
    * List of user's albums
    */

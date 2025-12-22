@@ -31,7 +31,7 @@ export const AutoCropConfigSchema = z
 /**
  * Reference image schema
  */
-export const ReferenceImageSchema = z
+const ReferenceImageSchema = z
   .object({
     url: z.string().url().max(2000),
     r2Key: z.string().max(500),
@@ -89,7 +89,7 @@ export const GenerationConfigSchema = z
 /**
  * Validation result type
  */
-export interface ValidationResult<T> {
+interface ValidationResult<T> {
   success: boolean;
   data?: T;
   errors?: string[];
@@ -98,7 +98,7 @@ export interface ValidationResult<T> {
 /**
  * Validate analysis config
  */
-export function validateAnalysisConfig(
+function validateAnalysisConfig(
   data: unknown,
 ): ValidationResult<z.infer<typeof AnalysisConfigSchema>> {
   const result = AnalysisConfigSchema.safeParse(data);
@@ -116,7 +116,7 @@ export function validateAnalysisConfig(
 /**
  * Validate auto-crop config
  */
-export function validateAutoCropConfig(
+function validateAutoCropConfig(
   data: unknown,
 ): ValidationResult<z.infer<typeof AutoCropConfigSchema>> {
   const result = AutoCropConfigSchema.safeParse(data);
@@ -134,7 +134,7 @@ export function validateAutoCropConfig(
 /**
  * Validate prompt config
  */
-export function validatePromptConfig(
+function validatePromptConfig(
   data: unknown,
 ): ValidationResult<z.infer<typeof PromptConfigSchema>> {
   const result = PromptConfigSchema.safeParse(data);
@@ -152,7 +152,7 @@ export function validatePromptConfig(
 /**
  * Validate generation config
  */
-export function validateGenerationConfig(
+function validateGenerationConfig(
   data: unknown,
 ): ValidationResult<z.infer<typeof GenerationConfigSchema>> {
   const result = GenerationConfigSchema.safeParse(data);

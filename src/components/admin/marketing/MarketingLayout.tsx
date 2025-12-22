@@ -262,4 +262,4 @@ export function useMarketingData() {
   return context;
 }
 
-export type { ConnectedAccount, MarketingData };
+export type { ConnectedAccount };

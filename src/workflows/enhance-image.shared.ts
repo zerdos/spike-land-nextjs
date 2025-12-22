@@ -34,7 +34,7 @@ export const DEFAULT_IMAGE_DIMENSION = 1024;
 export const PADDING_BACKGROUND = { r: 0, g: 0, b: 0, alpha: 1 };
 
 /** Data for a blend source image (uploaded by user, not stored) */
-export interface BlendSourceData {
+interface BlendSourceData {
   /** Base64-encoded image data */
   base64: string;
   /** MIME type of the image (e.g., "image/jpeg") */
@@ -55,14 +55,14 @@ export interface EnhanceImageInput {
   blendSource?: BlendSourceData | null;
 }
 
-export interface ImageMetadata {
+interface ImageMetadata {
   width: number;
   height: number;
   mimeType: string;
   paddedBase64: string;
 }
 
-export interface EnhancedResult {
+interface EnhancedResult {
   enhancedUrl: string;
   r2Key: string;
   width: number;
@@ -201,13 +201,10 @@ export function generateEnhancedR2Key(
   }
   // No extension - just append the jobId
   return `${withEnhancedPath}/${jobId}.jpg`;
-}
-
-// Re-export types for convenience
-export type { CropDimensions, CropRegionPixels };
+} // Re-export types for convenience
 
 // Types for auto-crop feature
-export interface ApplyCropResult {
+interface ApplyCropResult {
   newImageDataBase64: string;
   newMimeType: string;
   cropRegionPixels: CropRegionPixels;
@@ -251,8 +248,5 @@ export function cropDimensionsToPixels(
     width: Math.min(imageWidth, Math.round(crop.width * imageWidth)),
     height: Math.min(imageHeight, Math.round(crop.height * imageHeight)),
   };
-}
-
-// Re-export pipeline types for convenience
+} // Re-export pipeline types for convenience
 // NOTE: For resolvePipelineConfig, use ./pipeline-resolver.ts instead
-export { type PipelineConfig, SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";

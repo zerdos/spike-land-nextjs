@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { forwardRef, useCallback, useState } from "react";
 
-export interface GridThumbnailProps {
+interface GridThumbnailProps {
   image: GalleryImage;
   isSelected: boolean;
   onSelect: (id: string, element: HTMLElement) => void;

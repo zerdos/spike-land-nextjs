@@ -8,12 +8,12 @@ import { Link } from "@/components/ui/link";
 import { ArrowRight } from "lucide-react";
 import { type ReactNode } from "react";
 
-export interface ComparisonImages {
+interface ComparisonImages {
   originalUrl: string;
   enhancedUrl: string;
 }
 
-export interface FeaturedAppCardProps {
+interface FeaturedAppCardProps {
   name: string;
   description: string;
   icon: ReactNode;

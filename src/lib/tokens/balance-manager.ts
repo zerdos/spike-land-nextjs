@@ -11,14 +11,14 @@ import {
 import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
 import { TierManager } from "./tier-manager";
 
-export interface TokenBalanceResult {
+interface TokenBalanceResult {
   balance: number;
   lastRegeneration: Date;
   tier: SubscriptionTier;
   maxBalance: number;
 }
 
-export interface ConsumeTokensParams {
+interface ConsumeTokensParams {
   userId: string;
   amount: number;
   source: string;
@@ -26,7 +26,7 @@ export interface ConsumeTokensParams {
   metadata?: Record<string, unknown>;
 }
 
-export interface AddTokensParams {
+interface AddTokensParams {
   userId: string;
   amount: number;
   type: TokenTransactionType;
@@ -35,7 +35,7 @@ export interface AddTokensParams {
   metadata?: Record<string, unknown>;
 }
 
-export interface TokenTransactionResult {
+interface TokenTransactionResult {
   success: boolean;
   transaction?: TokenTransaction;
   balance?: number;

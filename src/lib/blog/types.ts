@@ -40,7 +40,7 @@ export type BlogPostFrontmatter = z.infer<typeof blogPostFrontmatterSchema>;
  * Blog post frontmatter metadata interface.
  * @deprecated Use BlogPostFrontmatter type instead for Zod validation compatibility.
  */
-export interface BlogPostFrontmatterInterface {
+interface BlogPostFrontmatterInterface {
   title: string;
   slug: string;
   description: string;

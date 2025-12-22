@@ -9,14 +9,14 @@
  * For server-side DB writes, use error-reporter.server.ts
  */
 
-export interface CallSite {
+interface CallSite {
   file?: string;
   line?: number;
   column?: number;
   caller?: string;
 }
 
-export interface ErrorReportContext {
+interface ErrorReportContext {
   route?: string;
   userId?: string;
   metadata?: Record<string, unknown>;

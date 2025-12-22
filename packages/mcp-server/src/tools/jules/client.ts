@@ -22,7 +22,7 @@ function validateSessionId(sessionId: string): void {
   }
 }
 
-export interface JulesSession {
+interface JulesSession {
   name: string;
   id?: string;
   state: string;
@@ -34,21 +34,21 @@ export interface JulesSession {
   planSummary?: string;
 }
 
-export interface JulesActivity {
+interface JulesActivity {
   name: string;
   type?: string;
   content?: string;
   createTime?: string;
 }
 
-export interface JulesSourceContext {
+interface JulesSourceContext {
   source: string;
   githubRepoContext?: {
     startingBranch?: string;
   };
 }
 
-export interface CreateSessionRequest {
+interface CreateSessionRequest {
   prompt: string;
   sourceContext: JulesSourceContext;
   title?: string;
