@@ -18,9 +18,7 @@ ARG TARGETARCH
 
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
+    apt-get update && apt-get install -y --no-install-recommends ca-certificates \
     && corepack enable
 
 # ============================================================================
@@ -47,8 +45,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
       python3 make g++ \
-      libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev \
-    && rm -rf /var/lib/apt/lists/*
+      libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
 
 COPY --from=dep-context /app /app
 
@@ -151,8 +148,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends procps \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y --no-install-recommends procps
 
 # Install browsers using your repo's installed Playwright CLI (mounted from deps)
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
@@ -170,11 +166,9 @@ WORKDIR /app
 COPY --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=dep-context /app/.yarn/ ./.yarn/
 COPY --from=dep-context /app/packages/ ./packages/
-# prisma is not required for CI start/test, but harmless if you want it:
-# COPY --from=dep-context /app/prisma/ ./prisma/
 
 # Built app (standalone mode)
-COPY --from=build /app/.next/standalone ./.next/standalone
+COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
@@ -197,7 +191,6 @@ RUN mkdir -p e2e/reports
 
 # ============================================================================
 # STAGE 11: E2E Tests (sharded)
-# Uses start:server:and:test:ci (skips silent:install).
 # Mount node_modules from deps to avoid copying huge layers.
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
@@ -258,6 +251,6 @@ ENV NODE_ENV=production PORT=3000
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+    CMD node -e "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 ENTRYPOINT ["node", "server.js"]
