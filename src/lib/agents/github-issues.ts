@@ -397,5 +397,5 @@ export async function compareBranches(
  */
 export function extractPrNumberFromUrl(url: string): number | null {
   const match = url.match(/\/pull\/(\d+)/);
-  return match ? parseInt(match[1], 10) : null;
+  return match?.[1] ? parseInt(match[1], 10) : null;
 }
