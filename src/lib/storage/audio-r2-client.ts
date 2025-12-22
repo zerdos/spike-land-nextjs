@@ -8,7 +8,6 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
-  ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -336,90 +335,6 @@ export async function getAudioMetadata(
     lastModified: response.LastModified,
     contentType: response.ContentType,
     metadata: response.Metadata,
-  };
-}
-
-/**
- * List audio files for a user's project
- */
-async function listProjectAudioFiles(
-  userId: string,
-  projectId: string,
-): Promise<AudioMetadata[]> {
-  const client = getAudioR2Client();
-  const bucket = getAudioBucketName();
-  const prefix = `users/${userId}/audio-projects/${projectId}/tracks/`;
-
-  const files: AudioMetadata[] = [];
-  let continuationToken: string | undefined;
-  let hasMore = true;
-
-  while (hasMore) {
-    const command = new ListObjectsV2Command({
-      Bucket: bucket,
-      Prefix: prefix,
-      ContinuationToken: continuationToken,
-      MaxKeys: 1000,
-    });
-
-    const { data: response, error } = await tryCatch(client.send(command));
-    if (error) {
-      console.error("Error listing project audio files from R2:", error);
-      return [];
-    }
-
-    if (response.Contents) {
-      for (const object of response.Contents) {
-        files.push({
-          key: object.Key || "",
-          size: object.Size || 0,
-          lastModified: object.LastModified,
-        });
-      }
-    }
-
-    continuationToken = response.NextContinuationToken;
-    hasMore = response.IsTruncated === true;
-  }
-
-  return files;
-}
-
-/**
- * Delete all audio files for a project
- */
-async function deleteProjectAudioFiles(
-  userId: string,
-  projectId: string,
-): Promise<{ success: boolean; deletedCount: number; error?: string; }> {
-  const { data: files, error: listError } = await tryCatch(
-    Promise.resolve(listProjectAudioFiles(userId, projectId)),
-  );
-  if (listError) {
-    console.error("Error deleting project audio files from R2:", listError);
-    return {
-      success: false,
-      deletedCount: 0,
-      error: listError instanceof Error ? listError.message : "Unknown error",
-    };
-  }
-
-  let deletedCount = 0;
-
-  for (const file of files) {
-    const result = await deleteAudioFromR2(file.key);
-    if (result.success) {
-      deletedCount++;
-    }
-  }
-
-  // Also delete the project metadata file
-  const metadataKey = generateProjectMetadataKey(userId, projectId);
-  await deleteAudioFromR2(metadataKey);
-
-  return {
-    success: true,
-    deletedCount,
   };
 }
 

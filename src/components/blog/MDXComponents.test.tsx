@@ -11,7 +11,10 @@ vi.mock("next/dynamic", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="next-image" />,
+  default: ({ src, alt }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} data-testid="next-image" />
+  ),
 }));
 
 describe("MDXComponents", () => {

@@ -39,15 +39,6 @@ export interface RecordingState {
   chunks: Blob[];
 }
 
-interface MixerState {
-  tracks: AudioTrack[];
-  masterVolume: number;
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  bpm: number;
-}
-
 export interface AudioContextState {
   context: AudioContext | null;
   masterGain: GainNode | null;
@@ -96,13 +87,4 @@ export interface TimelineState {
   snapEnabled: boolean;
   /** Snap grid interval in seconds */
   snapGrid: SnapGrid;
-}
-
-interface MixerControls {
-  play: () => void;
-  pause: () => void;
-  stop: () => void;
-  seek: (time: number) => void;
-  setMasterVolume: (volume: number) => void;
-  exportMix: () => Promise<Blob>;
 }

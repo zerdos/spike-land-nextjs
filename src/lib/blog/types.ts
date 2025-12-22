@@ -37,23 +37,6 @@ export const blogPostFrontmatterSchema = z.object({
 export type BlogPostFrontmatter = z.infer<typeof blogPostFrontmatterSchema>;
 
 /**
- * Blog post frontmatter metadata interface.
- * @deprecated Use BlogPostFrontmatter type instead for Zod validation compatibility.
- */
-interface BlogPostFrontmatterInterface {
-  title: string;
-  slug: string;
-  description: string;
-  date: string;
-  author: string;
-  category: string;
-  tags: string[];
-  image?: string;
-  featured?: boolean;
-  listed?: boolean;
-}
-
-/**
  * Blog post with content
  */
 export interface BlogPost {

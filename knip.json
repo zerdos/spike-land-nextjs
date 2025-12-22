@@ -1,43 +1,46 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": [
-    "src/app/**/page.tsx",
-    "src/app/**/layout.tsx",
-    "src/app/**/route.ts",
-    "src/app/**/loading.tsx",
-    "src/app/**/error.tsx",
-    "src/app/**/opengraph-image.tsx",
-    "src/auth.ts",
-    "src/auth.config.ts",
-    "src/workflows/*.workflow.ts",
-    "apps/**/*.tsx"
-  ],
-  "project": ["src/**/*.{ts,tsx}", "apps/**/*.{ts,tsx}"],
-  "ignore": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.d.ts",
-    "**/*.example.tsx",
-    "src/test-utils/**",
-    "e2e/**",
-    "prisma/**",
-    "scripts/**",
-    "packages/mcp-server/dist/**"
-  ],
-  "ignoreBinaries": ["outdated"],
-  "ignoreDependencies": [
-    "@types/*",
-    "pg",
-    "@next/eslint-plugin-next",
-    "eslint-plugin-jsx-a11y",
-    "eslint-plugin-react",
-    "eslint-plugin-react-hooks",
-    "typescript-eslint",
-    "@workflow/core",
-    "eslint-config-next"
-  ],
-  "paths": {
-    "@/*": ["./src/*"],
-    "@apps/*": ["./apps/*"]
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/app/**/page.tsx",
+        "src/app/**/layout.tsx",
+        "src/app/**/route.ts",
+        "src/app/**/loading.tsx",
+        "src/app/**/error.tsx",
+        "src/app/**/opengraph-image.tsx",
+        "src/auth.ts",
+        "src/auth.config.ts",
+        "src/workflows/*.workflow.ts",
+        "apps/**/*.tsx"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "apps/**/*.{ts,tsx}"],
+      "ignore": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.d.ts",
+        "**/*.example.tsx",
+        "src/test-utils/**",
+        "e2e/**",
+        "prisma/**",
+        "scripts/**",
+        "packages/mcp-server/dist/**"
+      ],
+      "ignoreBinaries": ["outdated"],
+      "ignoreDependencies": [
+        "@types/*",
+        "@next/eslint-plugin-next",
+        "eslint-plugin-jsx-a11y",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "typescript-eslint",
+        "@workflow/core",
+        "eslint-config-next"
+      ],
+      "paths": {
+        "@/*": ["./src/*"],
+        "@apps/*": ["./apps/*"]
+      }
+    }
   }
 }

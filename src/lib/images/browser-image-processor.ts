@@ -235,17 +235,3 @@ export async function processImageForUpload(
     img.src = objectUrl;
   });
 }
-
-/**
- * Process multiple image files for upload
- *
- * @param files - Array of image files to process
- * @param options - Processing options
- * @returns Array of processed images
- */
-async function processImagesForUpload(
-  files: File[],
-  options: ProcessingOptions = {},
-): Promise<ProcessedImage[]> {
-  return Promise.all(files.map((file) => processImageForUpload(file, options)));
-}

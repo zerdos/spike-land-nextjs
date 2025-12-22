@@ -69,16 +69,3 @@ export interface SaveTrackOptions {
   muted?: boolean;
   solo?: boolean;
 }
-
-/**
- * Metadata stored with audio files in OPFS
- */
-interface OPFSAudioMetadata {
-  trackId: string;
-  projectId: string;
-  name: string;
-  format: string;
-  duration: number;
-  sizeBytes: number;
-  createdAt: string;
-}

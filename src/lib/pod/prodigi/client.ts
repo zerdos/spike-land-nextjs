@@ -278,17 +278,6 @@ export const prodigiProvider: PodProvider = {
 };
 
 /**
- * Get a list of available products/SKUs from Prodigi.
- * Useful for populating the product catalog.
- */
-async function getProdigiProducts(): Promise<unknown> {
-  // Note: Prodigi doesn't have a products endpoint in their API.
-  // Products are managed through their dashboard.
-  // For MVP, we'll hardcode the products in the database.
-  throw new Error("Prodigi does not provide a products API. Use dashboard to manage products.");
-}
-
-/**
  * Validate that an image meets Prodigi's requirements.
  */
 export function validateImageForProduct(

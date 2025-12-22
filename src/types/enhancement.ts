@@ -71,56 +71,6 @@ export interface JobStatus {
 }
 
 /**
- * State container for parallel enhancement operations.
- * Manages multiple concurrent enhancement jobs for a single image.
- */
-interface ParallelEnhancementState {
-  /** ID of the source image being enhanced */
-  imageId: string;
-  /** Array of job statuses for all parallel enhancements */
-  jobs: JobStatus[];
-  /** Total token cost across all jobs */
-  totalCost: number;
-  /** Whether any jobs are currently processing */
-  isProcessing: boolean;
-}
-
-/**
- * Request payload for initiating parallel enhancement operations.
- * Sent to the API to start multiple enhancement jobs.
- */
-interface ParallelEnhanceRequest {
-  /** ID of the image to enhance */
-  imageId: string;
-  /** Array of tiers to process in parallel */
-  tiers: EnhancementTier[];
-}
-
-/**
- * Response from the parallel enhancement API endpoint.
- * Contains job IDs and token information for tracking.
- */
-interface ParallelEnhanceResponse {
-  /** Whether the request was successfully initiated */
-  success: boolean;
-  /** Array of created job information */
-  jobs: Array<{
-    /** Unique job identifier for status tracking */
-    jobId: string;
-    /** Tier being processed for this job */
-    tier: EnhancementTier;
-    /** Token cost for this specific job */
-    tokenCost: number;
-    /** Initial status (always PROCESSING) */
-    status: "PROCESSING";
-  }>;
-  /** Total tokens consumed across all jobs */
-  totalCost: number;
-  /** User's remaining token balance after deduction */
-  newBalance: number;
-}
-
-/**
  * Calculate the total platform token cost for selected enhancement tiers.
  *
  * @param tiers - Array of enhancement tiers to calculate cost for
