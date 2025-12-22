@@ -1,6 +1,14 @@
 {
   "mcpServers": {
     "playwright": { "type": "stdio", "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
-    "MCP_DOCKER": { "command": "docker", "args": ["mcp", "gateway", "run"], "type": "stdio" }
+    "MCP_DOCKER": { "command": "docker", "args": ["mcp", "gateway", "run"], "type": "stdio" },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
   }
 }

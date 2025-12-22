@@ -105,9 +105,27 @@ jobs:
             Be constructive and helpful.
             If you find anything that's not clear - or needs to be changed, you can ask @Jules to do it, simply mentioning in the PR review - to do the following changes in this PR.  You must either accept the PR, or ask modifications. If you are happy with it, wait until the CI finishes. If it is passed, you can merge the PR. If the PR failed, please ask @Jules to fix the CI.
 
+            ## Jules Integration (Google AI Agent)
+
+            When you need @Jules to make changes:
+            1. Post a PR comment with `@Jules` followed by specific, actionable requests
+            2. Format requests clearly: "Please fix the TypeScript error in src/foo.ts line 42"
+            3. If Jules doesn't respond after your comment, use Playwright MCP to:
+               - Navigate to https://jules.google.com/session
+               - Find the session for this PR's branch
+               - Submit the change request directly
+            4. After Jules pushes changes, re-review the updated code
+
+            **Jules Request Template:**
+            ```
+            @Jules Please make the following changes to this PR:
+            - [ ] Fix: <specific issue with file path and line number>
+            - [ ] Add: <specific addition needed>
+            ```
+
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: |
             --mcp-config .mcp.json
-            --allowed-tools "Bash(gh:*),Bash(yarn:*),Bash(git:*),Bash(npm:*),Edit,Write,Read,Glob,Grep,mcp__playwright__*"
+            --allowed-tools "Bash(gh:*),Bash(yarn:*),Bash(git:*),Bash(npm:*),Edit,Write,Read,Glob,Grep,mcp__playwright__*,mcp__github__*"
             --model opus
