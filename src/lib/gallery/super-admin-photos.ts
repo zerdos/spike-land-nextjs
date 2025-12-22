@@ -56,7 +56,8 @@ export async function getSuperAdminPublicPhotos(
   );
 
   if (error) {
-    throw new Error(`Failed to fetch public albums: ${error.message}`);
+    console.error(`Failed to fetch public albums: ${error.message}`);
+    return []; // Return empty array for graceful degradation
   }
 
   const photos: FeaturedPhoto[] = [];
