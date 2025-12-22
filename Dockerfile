@@ -167,8 +167,8 @@ COPY --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=dep-context /app/.yarn/ ./.yarn/
 COPY --from=dep-context /app/packages/ ./packages/
 
-# Built app (standalone mode)
-COPY --from=build /app/.next/standalone ./
+# Built app (standalone mode) - preserve directory structure for start:ci script
+COPY --from=build /app/.next/standalone ./.next/standalone
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
@@ -223,8 +223,11 @@ RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 4 E2E test shards passed"
 
 # ============================================================================
 # STAGE 12: CI Gateway
+# Must depend on BOTH unit-tests and e2e-tests
 # ============================================================================
 FROM e2e-tests AS ci
+# Force unit-tests to complete by copying proof file
+COPY --from=unit-tests /tmp/unit-1.log /tmp/unit-passed
 RUN echo "::notice::✅ CI Pipeline Complete: Lint, Build, Unit Tests, E2E Tests"
 
 # ============================================================================
