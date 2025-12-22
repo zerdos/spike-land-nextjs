@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Link } from "./link";
 
 // Mock next-view-transitions since it might depend on Next.js context
-vi.mock("next-view-transitions", async (importOriginal) => {
+vi.mock("next-view-transitions", async () => {
   const React = await import("react");
   return {
     Link: React.forwardRef(({ children, href, className, ...props }: any, ref: any) => (

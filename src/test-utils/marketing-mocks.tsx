@@ -104,7 +104,7 @@ export const mockFunnelData = {
 };
 
 // Helper for Fetch Mocks
-export const createFetchMock = (responseMap: Record<string, any>) => {
+export const createFetchMock = (responseMap: Record<string, unknown>) => {
   return vi.fn().mockImplementation((url) => {
     // Sort keys by length descending to match most specific path first
     const keys = Object.keys(responseMap).sort((a, b) => b.length - a.length);

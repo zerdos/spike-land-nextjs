@@ -225,6 +225,7 @@ async function main() {
         productName: "Classic T-Shirt",
         variantName: "Medium",
         imageUrl: "https://placehold.co/400x400/333/white?text=TShirt",
+        imageR2Key: "e2e/tshirt-classic.png",
         quantity: 1,
         unitPrice: 29.99,
         totalPrice: 29.99,

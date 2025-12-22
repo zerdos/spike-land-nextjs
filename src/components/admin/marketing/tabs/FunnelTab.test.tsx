@@ -1,5 +1,5 @@
 import { createFetchMock, mockFunnelData } from "@/test-utils/marketing-mocks";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FunnelTab } from "./FunnelTab";
 
