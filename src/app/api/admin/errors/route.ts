@@ -176,3 +176,57 @@ export async function GET(request: Request) {
     timestamp: new Date().toISOString(),
   });
 }
+
+export async function DELETE() {
+  const { data: session, error: authError } = await tryCatch(auth(), {
+    report: false,
+  });
+
+  if (authError) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error: adminError } = await tryCatch(
+    requireAdminByUserId(session.user.id),
+    { report: false },
+  );
+
+  if (adminError) {
+    if (
+      adminError instanceof Error &&
+      adminError.message.includes("Forbidden")
+    ) {
+      return NextResponse.json({ error: adminError.message }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  const { data: result, error } = await tryCatch(
+    prisma.errorLog.deleteMany({}),
+    { report: false },
+  );
+
+  if (error) {
+    console.error("[Admin Errors API] Failed to delete errors:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    deletedCount: result.count,
+    message: `Deleted ${result.count} error logs`,
+  });
+}
