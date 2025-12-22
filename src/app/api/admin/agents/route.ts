@@ -67,20 +67,17 @@ async function syncJulesSessionsToDb(): Promise<{ synced: number; errors: string
 
   // Sync each session to database
   for (const julesSession of allJulesSessions) {
+    // Extract PR URL from outputs if available
+    const prOutput = julesSession.outputs?.find((o) => o.url?.includes("pull"));
+    const pullRequestUrl = prOutput?.url;
+
     const { error: upsertError } = await tryCatch(
       prisma.externalAgentSession.upsert({
         where: { externalId: julesSession.name },
         update: {
           status: toExternalAgentStatus(julesSession.state),
-          outputBranch: julesSession.outputBranch,
-          pullRequestUrl: julesSession.pullRequestUrl,
-          planSummary: julesSession.plan?.text,
-          planApprovedAt: julesSession.plan?.approvedAt
-            ? new Date(julesSession.plan.approvedAt)
-            : undefined,
-          lastActivityAt: julesSession.lastActivityAt
-            ? new Date(julesSession.lastActivityAt)
-            : undefined,
+          pullRequestUrl,
+          planSummary: julesSession.planSummary,
           metadata: {
             julesUrl: julesSession.url,
             title: julesSession.title,
@@ -90,19 +87,10 @@ async function syncJulesSessionsToDb(): Promise<{ synced: number; errors: string
           externalId: julesSession.name,
           provider: "JULES",
           name: julesSession.title || extractSessionId(julesSession.name),
-          description: julesSession.prompt || "",
+          description: "",
           status: toExternalAgentStatus(julesSession.state),
-          sourceRepo: julesSession.sourceContext?.source,
-          startingBranch: julesSession.sourceContext?.githubRepoContext?.startingBranch,
-          outputBranch: julesSession.outputBranch,
-          pullRequestUrl: julesSession.pullRequestUrl,
-          planSummary: julesSession.plan?.text,
-          planApprovedAt: julesSession.plan?.approvedAt
-            ? new Date(julesSession.plan.approvedAt)
-            : undefined,
-          lastActivityAt: julesSession.lastActivityAt
-            ? new Date(julesSession.lastActivityAt)
-            : undefined,
+          pullRequestUrl,
+          planSummary: julesSession.planSummary,
           metadata: {
             julesUrl: julesSession.url,
             title: julesSession.title,
