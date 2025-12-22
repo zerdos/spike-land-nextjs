@@ -6,7 +6,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-describe("meta-pixel", () => {
+describe("MetaPixel", () => {
   let mockFbq: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe("meta-pixel", () => {
 
   describe("trackMetaEvent", () => {
     it("should call window.fbq with track method", async () => {
-      const { trackMetaEvent } = await import("./meta-pixel");
+      const { trackMetaEvent } = await import("./MetaPixel");
       trackMetaEvent("Lead", { content_name: "Premium Plan" });
 
       expect(mockFbq).toHaveBeenCalledWith("track", "Lead", {
@@ -32,7 +32,7 @@ describe("meta-pixel", () => {
     });
 
     it("should handle events without params", async () => {
-      const { trackMetaEvent } = await import("./meta-pixel");
+      const { trackMetaEvent } = await import("./MetaPixel");
       trackMetaEvent("PageView");
 
       expect(mockFbq).toHaveBeenCalledWith("track", "PageView", undefined);
@@ -41,7 +41,7 @@ describe("meta-pixel", () => {
     it("should not throw when window.fbq is undefined", async () => {
       vi.stubGlobal("window", {});
 
-      const { trackMetaEvent } = await import("./meta-pixel");
+      const { trackMetaEvent } = await import("./MetaPixel");
 
       expect(() => trackMetaEvent("Lead")).not.toThrow();
     });
@@ -49,13 +49,13 @@ describe("meta-pixel", () => {
     it("should not throw on server side", async () => {
       vi.unstubAllGlobals();
 
-      const { trackMetaEvent } = await import("./meta-pixel");
+      const { trackMetaEvent } = await import("./MetaPixel");
 
       expect(() => trackMetaEvent("Lead")).not.toThrow();
     });
 
     it("should track Purchase event with value", async () => {
-      const { trackMetaEvent } = await import("./meta-pixel");
+      const { trackMetaEvent } = await import("./MetaPixel");
       trackMetaEvent("Purchase", { value: 9.99, currency: "USD" });
 
       expect(mockFbq).toHaveBeenCalledWith("track", "Purchase", {
@@ -67,7 +67,7 @@ describe("meta-pixel", () => {
 
   describe("trackMetaCustomEvent", () => {
     it("should call window.fbq with trackCustom method", async () => {
-      const { trackMetaCustomEvent } = await import("./meta-pixel");
+      const { trackMetaCustomEvent } = await import("./MetaPixel");
       trackMetaCustomEvent("EnhancementCompleted", { tier: "TIER_4K" });
 
       expect(mockFbq).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe("meta-pixel", () => {
     });
 
     it("should handle events without params", async () => {
-      const { trackMetaCustomEvent } = await import("./meta-pixel");
+      const { trackMetaCustomEvent } = await import("./MetaPixel");
       trackMetaCustomEvent("CustomEvent");
 
       expect(mockFbq).toHaveBeenCalledWith(
@@ -93,7 +93,7 @@ describe("meta-pixel", () => {
     it("should not throw when window.fbq is undefined", async () => {
       vi.stubGlobal("window", {});
 
-      const { trackMetaCustomEvent } = await import("./meta-pixel");
+      const { trackMetaCustomEvent } = await import("./MetaPixel");
 
       expect(() => trackMetaCustomEvent("CustomEvent")).not.toThrow();
     });
@@ -101,7 +101,7 @@ describe("meta-pixel", () => {
     it("should not throw on server side", async () => {
       vi.unstubAllGlobals();
 
-      const { trackMetaCustomEvent } = await import("./meta-pixel");
+      const { trackMetaCustomEvent } = await import("./MetaPixel");
 
       expect(() => trackMetaCustomEvent("CustomEvent")).not.toThrow();
     });
@@ -109,7 +109,7 @@ describe("meta-pixel", () => {
 
   describe("fireMetaPixelEvent", () => {
     it("should fire standard event for mapped internal event", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("signup_started", { plan: "free" });
 
       expect(result).toBe(true);
@@ -117,7 +117,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire CompleteRegistration for signup_completed", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("signup_completed");
 
       expect(result).toBe(true);
@@ -129,7 +129,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire InitiateCheckout for purchase_started", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("purchase_started", {
         product: "tokens",
       });
@@ -141,7 +141,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire Purchase for purchase_completed", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("purchase_completed", { value: 9.99 });
 
       expect(result).toBe(true);
@@ -151,7 +151,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire custom event for enhancement_started", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("enhancement_started", { tier: "4K" });
 
       expect(result).toBe(true);
@@ -165,7 +165,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire custom event for enhancement_completed", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("enhancement_completed", {
         tier: "TIER_4K",
       });
@@ -181,7 +181,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire custom event for album_created", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("album_created", { imageCount: 5 });
 
       expect(result).toBe(true);
@@ -191,7 +191,7 @@ describe("meta-pixel", () => {
     });
 
     it("should fire custom event for image_uploaded", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("image_uploaded");
 
       expect(result).toBe(true);
@@ -203,7 +203,7 @@ describe("meta-pixel", () => {
     });
 
     it("should return false for unmapped events", async () => {
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
       const result = fireMetaPixelEvent("unknown_event");
 
       expect(result).toBe(false);
@@ -213,7 +213,7 @@ describe("meta-pixel", () => {
     it("should not throw on server side", async () => {
       vi.unstubAllGlobals();
 
-      const { fireMetaPixelEvent } = await import("./meta-pixel");
+      const { fireMetaPixelEvent } = await import("./MetaPixel");
 
       expect(() => fireMetaPixelEvent("signup_started")).not.toThrow();
     });
@@ -221,7 +221,7 @@ describe("meta-pixel", () => {
 
   describe("EVENT_MAPPING", () => {
     it("should have correct mappings for all events", async () => {
-      const { EVENT_MAPPING } = await import("./meta-pixel");
+      const { EVENT_MAPPING } = await import("./MetaPixel");
 
       expect(EVENT_MAPPING.signup_started).toEqual({
         metaEvent: "Lead",

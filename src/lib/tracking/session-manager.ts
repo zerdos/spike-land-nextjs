@@ -6,7 +6,7 @@
  */
 
 import { tryCatch } from "@/lib/try-catch";
-import { fireMetaPixelEvent } from "./meta-pixel";
+import { fireMetaPixelEvent } from "./MetaPixel";
 import type { UTMParams } from "./utm-capture";
 
 /** Session storage key for current session ID */
@@ -64,20 +64,6 @@ interface TrackingEvent {
   value?: number;
   /** Additional event metadata */
   metadata?: Record<string, unknown>;
-}
-
-/**
- * Page view data
- */
-interface PageViewData {
-  /** Page path */
-  path: string;
-  /** Page title */
-  title?: string;
-  /** Time spent on page in seconds */
-  timeOnPage?: number;
-  /** Scroll depth percentage (0-100) */
-  scrollDepth?: number;
 }
 
 /**

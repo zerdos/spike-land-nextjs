@@ -12,81 +12,7 @@ interface TryCatchEvent {
 }
 
 // In-memory buffer for pending events
-let pendingEvents: TryCatchEvent[] = [];
-let syncTimeout: ReturnType<typeof setTimeout> | null = null;
-
-// Batch interval (5 seconds as per requirements)
-const FRONTEND_BATCH_INTERVAL = 5000;
-
-// Max events per batch to prevent large payloads
-const MAX_BATCH_SIZE = 100;
-
-/**
- * Records a frontend try-catch event.
- * This function is non-blocking and returns immediately.
- *
- * @param success - Whether the operation succeeded or failed
- */
-function recordFrontendTryCatchEvent(success: boolean): void {
-  pendingEvents.push({ success });
-
-  // Flush immediately if batch is full
-  if (pendingEvents.length >= MAX_BATCH_SIZE) {
-    void syncEventsToBackend();
-    return;
-  }
-
-  // Otherwise, schedule sync
-  if (!syncTimeout) {
-    syncTimeout = setTimeout(() => {
-      void syncEventsToBackend();
-      syncTimeout = null;
-    }, FRONTEND_BATCH_INTERVAL);
-  }
-}
-
-/**
- * Syncs batched events to backend.
- */
-async function syncEventsToBackend(): Promise<void> {
-  if (pendingEvents.length === 0) return;
-
-  // Atomic swap - capture and clear in one operation
-  // This prevents race conditions since JS is single-threaded
-  const events = pendingEvents;
-  pendingEvents = [];
-
-  if (syncTimeout) {
-    clearTimeout(syncTimeout);
-    syncTimeout = null;
-  }
-
-  try {
-    await fetch("/api/observability/try-catch-stats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ events }),
-    });
-  } catch (error) {
-    // Silently fail - don't cause more errors
-    console.error("[TryCatchStats] Failed to sync events:", error);
-  }
-}
-
-/**
- * Forces an immediate sync of pending events.
- * Useful before page navigation.
- */
-async function flushFrontendStats(): Promise<void> {
-  await syncEventsToBackend();
-}
-
-/**
- * Gets the number of pending events (for testing/monitoring).
- */
-function getPendingEventsCount(): number {
-  return pendingEvents.length;
-}
+const pendingEvents: TryCatchEvent[] = [];
 
 // Flush on page unload using sendBeacon for reliability
 if (
@@ -104,3 +30,6 @@ if (
     }
   });
 }
+
+// Export empty object to make this a valid module
+export {};

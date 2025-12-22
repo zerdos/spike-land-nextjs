@@ -15,7 +15,6 @@ const GalleryCategoryEnum = z.enum([
   "PRODUCT",
   "ARCHITECTURE",
 ]);
-type GalleryCategory = z.infer<typeof GalleryCategoryEnum>;
 
 // Helper to sanitize text (strip HTML tags)
 // Uses iterative replacement to handle nested/incomplete tags (fixes CodeQL alert)
@@ -93,15 +92,3 @@ export const singleReorderSchema = z.object({
 export const deleteItemSchema = z.object({
   id: idSchema,
 });
-
-// Gallery item interface for frontend (matches Prisma/Zod enum)
-interface GalleryItem {
-  id: string;
-  title: string;
-  description: string;
-  category: GalleryCategory;
-  originalUrl: string;
-  enhancedUrl: string;
-  width?: number;
-  height?: number;
-}

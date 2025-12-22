@@ -43,13 +43,6 @@ export interface AttributionParams {
 }
 
 /**
- * Full attribution record with session data
- */
-interface AttributionWithSession extends CampaignAttribution {
-  session?: VisitorSession;
-}
-
-/**
  * Create an attribution record in the database
  *
  * @param params - Attribution parameters

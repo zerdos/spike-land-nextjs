@@ -55,21 +55,6 @@ export interface EnhanceImageInput {
   blendSource?: BlendSourceData | null;
 }
 
-interface ImageMetadata {
-  width: number;
-  height: number;
-  mimeType: string;
-  paddedBase64: string;
-}
-
-interface EnhancedResult {
-  enhancedUrl: string;
-  r2Key: string;
-  width: number;
-  height: number;
-  sizeBytes: number;
-}
-
 /**
  * Validates enhancement input parameters
  */
@@ -202,15 +187,6 @@ export function generateEnhancedR2Key(
   // No extension - just append the jobId
   return `${withEnhancedPath}/${jobId}.jpg`;
 } // Re-export types for convenience
-
-// Types for auto-crop feature
-interface ApplyCropResult {
-  newImageDataBase64: string;
-  newMimeType: string;
-  cropRegionPixels: CropRegionPixels;
-  newWidth: number;
-  newHeight: number;
-}
 
 /**
  * Validates crop dimensions to ensure they are valid percentages (0.0-1.0)

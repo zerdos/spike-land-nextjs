@@ -11,10 +11,7 @@ import { useSmartGallery } from "@/hooks/useSmartGallery";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
 import { Play } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react"; // Re-export types for backward compatibility
-
-// Legacy type alias for backward compatibility
-type CanvasImage = GalleryImage;
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface CanvasClientProps {
   images: GalleryImage[];

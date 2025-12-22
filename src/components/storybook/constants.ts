@@ -225,5 +225,3 @@ export const storybookSections = [
     icon: "AlertTriangle",
   },
 ] as const;
-
-type StorybookSectionId = (typeof storybookSections)[number]["id"];

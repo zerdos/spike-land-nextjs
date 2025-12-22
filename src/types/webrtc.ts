@@ -154,13 +154,3 @@ export interface MediaConstraints {
   /** Audio constraints */
   audio: MediaTrackConstraints | boolean;
 }
-
-/**
- * Options for initiating a call
- */
-interface CallOptions {
-  /** Metadata to send with the call */
-  metadata?: Record<string, unknown>;
-  /** Media constraints */
-  constraints?: MediaConstraints;
-}

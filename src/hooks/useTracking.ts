@@ -14,11 +14,6 @@ const CONSENT_KEY = "cookie-consent";
 type ConversionType = "signup" | "enhancement" | "purchase";
 
 /**
- * Event stage: started or completed
- */
-type EventStage = "started" | "completed";
-
-/**
  * Allowed event names from the backend whitelist
  */
 type AllowedEventName =

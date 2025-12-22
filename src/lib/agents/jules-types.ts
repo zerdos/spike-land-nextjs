@@ -73,43 +73,14 @@ export interface CreateSessionRequest {
   automationMode?: JulesAutomationMode;
 }
 
-interface ListSessionsRequest {
-  pageSize?: number;
-  pageToken?: string;
-}
-
 export interface ListSessionsResponse {
   sessions: JulesSession[];
   nextPageToken?: string;
 }
 
-interface GetSessionRequest {
-  name: string; // Session resource name
-}
-
-interface ApprovePlanRequest {
-  session: string; // Session resource name
-}
-
-interface SendMessageRequest {
-  session: string; // Session resource name
-  prompt: string;
-}
-
-interface ListActivitiesRequest {
-  parent: string; // Session resource name
-  pageSize?: number;
-  pageToken?: string;
-}
-
 export interface ListActivitiesResponse {
   activities: JulesActivity[];
   nextPageToken?: string;
-}
-
-interface ListSourcesRequest {
-  pageSize?: number;
-  pageToken?: string;
 }
 
 export interface ListSourcesResponse {
@@ -125,21 +96,3 @@ export interface JulesApiError {
     status: string;
   };
 }
-
-// Client configuration
-interface JulesClientConfig {
-  apiKey: string;
-  baseUrl?: string;
-}
-
-// Mapped types for internal use
-type JulesStateToInternalStatus = {
-  QUEUED: "QUEUED";
-  PLANNING: "PLANNING";
-  AWAITING_PLAN_APPROVAL: "AWAITING_PLAN_APPROVAL";
-  AWAITING_USER_FEEDBACK: "AWAITING_USER_FEEDBACK";
-  IN_PROGRESS: "IN_PROGRESS";
-  PAUSED: "PAUSED";
-  FAILED: "FAILED";
-  COMPLETED: "COMPLETED";
-};
