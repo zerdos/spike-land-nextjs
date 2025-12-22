@@ -9,10 +9,10 @@ import {
   getModelForTier,
   type ImageAnalysisResultV2,
   type ReferenceImageData,
-} from "@/lib/ai/gemini-client";
+} from "@/lib/ai/gemini-client--workflow";
 import prisma from "@/lib/prisma";
-import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client--workflow";
+import { TokenBalanceManager } from "@/lib/tokens/balance-manager--workflow";
 import { tryCatch } from "@/lib/try-catch--no-track";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import sharp from "sharp";
