@@ -7,6 +7,8 @@
     "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
     "build": "yarn silent:install && next build",
     "start": "yarn silent:install && node .next/standalone/server.js",
+    "start:ci": "node .next/standalone/server.js",
+    "start:server:and:test:ci": "start-server-and-test start:ci http://localhost:3000 test:e2e:local:parallel",
     "lint": "eslint",
     "test": "vitest",
     "test:ui": "vitest --ui",
