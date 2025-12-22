@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
     "build": "yarn silent:install && next build",
-    "start": "yarn silent:install && node .next/standalone/server.js",
+    "start": "yarn silent:install && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -r dotenv/config .next/standalone/server.js dotenv_config_path=.env.local",
     "start:ci": "node .next/standalone/server.js",
     "start:server:and:test:ci": "start-server-and-test start:ci http://localhost:3000 test:e2e:local:parallel",
     "lint": "eslint",
