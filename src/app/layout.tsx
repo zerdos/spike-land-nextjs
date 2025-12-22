@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { SessionTracker } from "@/components/tracking/SessionTracker";
 import { Toaster } from "@/components/ui/sonner";
+import { getNonce } from "@/lib/security/csp-nonce-server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ViewTransitions } from "next-view-transitions";
@@ -64,11 +65,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = await getNonce();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -95,7 +98,7 @@ export default function RootLayout({
         </ViewTransitions>
         <Analytics />
         <SpeedInsights />
-        <MetaPixel />
+        <MetaPixel nonce={nonce ?? undefined} />
       </body>
     </html>
   );

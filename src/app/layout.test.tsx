@@ -2,6 +2,11 @@ import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import RootLayout, { metadata } from "./layout";
 
+// Mock csp-nonce-server to provide a test nonce
+vi.mock("@/lib/security/csp-nonce-server", () => ({
+  getNonce: vi.fn(() => Promise.resolve("test-nonce")),
+}));
+
 // Mock next/font/google to avoid actual font loading in tests
 vi.mock("next/font/google", () => ({
   Geist: vi.fn(() => ({
@@ -63,32 +68,32 @@ describe("RootLayout", () => {
     expect(typeof RootLayout).toBe("function");
   });
 
-  it("should accept children prop", () => {
+  it("should accept children prop", async () => {
     const layoutProps = {
       children: <div>Test</div>,
     };
-    const result = RootLayout(layoutProps);
+    const result = await RootLayout(layoutProps);
     expect(result).toBeDefined();
     expect(result.type).toBe("html");
   });
 
-  it('should render html element with lang="en"', () => {
-    const result = RootLayout({ children: <div>Test</div> });
+  it('should render html element with lang="en"', async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
     expect(result.props.lang).toBe("en");
   });
 
-  it("should have suppressHydrationWarning on html element", () => {
-    const result = RootLayout({ children: <div>Test</div> });
+  it("should have suppressHydrationWarning on html element", async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
     expect(result.props.suppressHydrationWarning).toBe(true);
   });
 
-  it("should render body element inside html", () => {
-    const result = RootLayout({ children: <div>Test</div> });
+  it("should render body element inside html", async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
     expect(result.props.children.type).toBe("body");
   });
 
-  it("should apply font class variables to body", () => {
-    const result = RootLayout({ children: <div>Test</div> });
+  it("should apply font class variables to body", async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
     const bodyClassName = result.props.children.props.className;
     expect(bodyClassName).toContain("--font-geist-sans");
     expect(bodyClassName).toContain("--font-geist-mono");
@@ -96,42 +101,42 @@ describe("RootLayout", () => {
     expect(bodyClassName).toContain("antialiased");
   });
 
-  it("should wrap children in ThemeProvider and SessionProvider", () => {
+  it("should wrap children in ThemeProvider and SessionProvider", async () => {
     const testChild = <div>Test Child</div>;
-    const result = RootLayout({ children: testChild });
+    const result = await RootLayout({ children: testChild });
     const bodyChildren = result.props.children.props.children;
     expect(bodyChildren).toBeDefined();
   });
 
-  it("should render ThemeProvider wrapping content", () => {
+  it("should render ThemeProvider wrapping content", async () => {
     const testChild = <div>Test Child</div>;
-    const { getByText } = render(RootLayout({ children: testChild }));
+    const { getByText } = render(await RootLayout({ children: testChild }));
     // Verify the child content is rendered (it will be wrapped by providers)
     expect(getByText("Test Child")).toBeInTheDocument();
   });
 
-  it("should render Analytics component", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+  it("should render Analytics component", async () => {
+    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("analytics")).toBeInTheDocument();
   });
 
-  it("should render SpeedInsights component", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+  it("should render SpeedInsights component", async () => {
+    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("speed-insights")).toBeInTheDocument();
   });
 
-  it("should render Toaster component", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+  it("should render Toaster component", async () => {
+    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("toaster")).toBeInTheDocument();
   });
 
-  it("should render ConditionalHeader component for navigation", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+  it("should render ConditionalHeader component for navigation", async () => {
+    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("conditional-header")).toBeInTheDocument();
   });
 
-  it("should render FeedbackButton component", () => {
-    const { getByTestId } = render(RootLayout({ children: <div>Test</div> }));
+  it("should render FeedbackButton component", async () => {
+    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
     expect(getByTestId("feedback-button")).toBeInTheDocument();
   });
 });
