@@ -156,7 +156,7 @@ export function ImageSelector({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full h-auto p-4">
+        <Button data-testid="image-selector" variant="outline" className="w-full h-auto p-4">
           {selectedImage
             ? (
               <div className="flex items-center gap-3">
@@ -243,6 +243,7 @@ export function ImageSelector({
                   {filteredImages.map((image) => (
                     <button
                       key={image.id}
+                      data-testid="test-image"
                       onClick={() => handleImageSelect(image)}
                       className="relative aspect-square rounded-lg overflow-hidden bg-muted hover:ring-2 hover:ring-primary transition-all"
                     >

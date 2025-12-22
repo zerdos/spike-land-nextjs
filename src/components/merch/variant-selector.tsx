@@ -50,7 +50,7 @@ export function VariantSelector({
   if (!hasAttributes) {
     // Simple variant list (e.g., sizes)
     return (
-      <div className="space-y-2">
+      <div data-testid="variant-selector" className="space-y-2">
         <label className="text-sm font-medium">Select Size</label>
         <div className="flex flex-wrap gap-2">
           {variants.map((variant) => {
@@ -60,6 +60,7 @@ export function VariantSelector({
             return (
               <Button
                 key={variant.id}
+                data-testid="variant-option"
                 variant={isSelected ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleSelect(variant)}
@@ -102,7 +103,7 @@ export function VariantSelector({
   );
 
   return (
-    <div className="space-y-4">
+    <div data-testid="variant-selector" className="space-y-4">
       {Object.entries(attributeGroups).map(([attributeKey, values]) => (
         <div key={attributeKey} className="space-y-2">
           <label className="text-sm font-medium capitalize">{attributeKey}</label>
@@ -121,6 +122,7 @@ export function VariantSelector({
               return (
                 <Button
                   key={value}
+                  data-testid="variant-option"
                   variant={isSelected ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleSelect(matchingVariant)}

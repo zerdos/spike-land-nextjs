@@ -85,7 +85,10 @@ async function ProductGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      data-testid="product-grid"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
       {products.map((product) => <ProductCard key={product.id} product={product} />)}
     </div>
   );
@@ -104,7 +107,7 @@ export default async function MerchPage() {
       </div>
 
       {categories.length > 0 && (
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <div data-testid="category-filters" className="flex gap-2 mb-8 overflow-x-auto pb-2">
           <Link
             href="/merch"
             className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap"

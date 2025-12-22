@@ -46,7 +46,10 @@ export function ProductCard({ product }: ProductCardProps) {
     : `From ${formattedPrice}`;
 
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg">
+    <Card
+      data-testid="product-card"
+      className="group overflow-hidden transition-all hover:shadow-lg"
+    >
       <Link href={`/merch/${product.id}`}>
         <div className="relative aspect-square overflow-hidden bg-muted">
           {product.mockupTemplate

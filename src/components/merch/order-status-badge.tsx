@@ -103,7 +103,7 @@ export function OrderStatusBadge({
   const Icon = config.icon;
 
   return (
-    <Badge variant={config.variant} className={className}>
+    <Badge data-testid="order-status-badge" variant={config.variant} className={className}>
       {showIcon && <Icon className={`mr-1 h-3 w-3 ${config.color}`} />}
       {config.label}
     </Badge>

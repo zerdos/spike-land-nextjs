@@ -179,6 +179,182 @@ async function main() {
   }
   console.log("Added 2 images to private album");
 
+  // 7. Create test merch orders for order history tests
+  // First check if merch products exist
+  const tshirtProduct = await prisma.merchProduct.findUnique({
+    where: { id: "tshirt-classic" },
+  });
+
+  if (tshirtProduct) {
+    console.log("Creating test orders...");
+
+    // Create order with PENDING status
+    const pendingOrder = await prisma.merchOrder.upsert({
+      where: { id: "e2e-order-pending" },
+      update: {},
+      create: {
+        id: "e2e-order-pending",
+        userId: TEST_USER_ID,
+        orderNumber: "SL-E2E-001",
+        status: "PENDING",
+        subtotal: 29.99,
+        shippingCost: 4.99,
+        taxAmount: 0,
+        totalAmount: 34.98,
+        currency: "GBP",
+        customerEmail: TEST_USER_EMAIL,
+        shippingAddress: {
+          name: "Test User",
+          line1: "123 Test Street",
+          city: "London",
+          postalCode: "SW1A 1AA",
+          countryCode: "GB",
+        },
+      },
+    });
+
+    // Create order item for pending order
+    await prisma.merchOrderItem.upsert({
+      where: { id: "e2e-order-pending-item-1" },
+      update: {},
+      create: {
+        id: "e2e-order-pending-item-1",
+        orderId: pendingOrder.id,
+        productId: "tshirt-classic",
+        variantId: "tshirt-classic-m",
+        productName: "Classic T-Shirt",
+        variantName: "Medium",
+        imageUrl: "https://placehold.co/400x400/333/white?text=TShirt",
+        quantity: 1,
+        unitPrice: 29.99,
+        totalPrice: 29.99,
+      },
+    });
+
+    // Create order with PAID status
+    const paidOrder = await prisma.merchOrder.upsert({
+      where: { id: "e2e-order-paid" },
+      update: {},
+      create: {
+        id: "e2e-order-paid",
+        userId: TEST_USER_ID,
+        orderNumber: "SL-E2E-002",
+        status: "PAID",
+        subtotal: 79.99,
+        shippingCost: 0,
+        taxAmount: 0,
+        totalAmount: 79.99,
+        currency: "GBP",
+        customerEmail: TEST_USER_EMAIL,
+        shippingAddress: {
+          name: "Test User",
+          line1: "456 Another Street",
+          city: "Manchester",
+          postalCode: "M1 1AA",
+          countryCode: "GB",
+        },
+        paidAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      },
+    });
+
+    // Create order items for paid order (2 items)
+    await prisma.merchOrderItem.upsert({
+      where: { id: "e2e-order-paid-item-1" },
+      update: {},
+      create: {
+        id: "e2e-order-paid-item-1",
+        orderId: paidOrder.id,
+        productId: "canvas-stretched",
+        variantId: "canvas-stretched-12x16",
+        productName: "Stretched Canvas",
+        variantName: '12" x 16"',
+        imageUrl: "https://placehold.co/400x400/333/white?text=Canvas",
+        quantity: 1,
+        unitPrice: 49.99,
+        totalPrice: 49.99,
+      },
+    });
+    await prisma.merchOrderItem.upsert({
+      where: { id: "e2e-order-paid-item-2" },
+      update: {},
+      create: {
+        id: "e2e-order-paid-item-2",
+        orderId: paidOrder.id,
+        productId: "tshirt-classic",
+        variantId: "tshirt-classic-l",
+        productName: "Classic T-Shirt",
+        variantName: "Large",
+        imageUrl: "https://placehold.co/400x400/333/white?text=TShirt+L",
+        quantity: 1,
+        unitPrice: 29.99,
+        totalPrice: 29.99,
+      },
+    });
+
+    // Create order with SHIPPED status
+    const shippedOrder = await prisma.merchOrder.upsert({
+      where: { id: "e2e-order-shipped" },
+      update: {},
+      create: {
+        id: "e2e-order-shipped",
+        userId: TEST_USER_ID,
+        orderNumber: "SL-E2E-003",
+        status: "SHIPPED",
+        subtotal: 49.99,
+        shippingCost: 4.99,
+        taxAmount: 0,
+        totalAmount: 54.98,
+        currency: "GBP",
+        customerEmail: TEST_USER_EMAIL,
+        shippingAddress: {
+          name: "Test User",
+          line1: "789 Third Avenue",
+          city: "Birmingham",
+          postalCode: "B1 1AA",
+          countryCode: "GB",
+        },
+        paidAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      },
+    });
+
+    // Create order item for shipped order
+    await prisma.merchOrderItem.upsert({
+      where: { id: "e2e-order-shipped-item-1" },
+      update: {},
+      create: {
+        id: "e2e-order-shipped-item-1",
+        orderId: shippedOrder.id,
+        productId: "canvas-stretched",
+        variantId: "canvas-stretched-16x20",
+        productName: "Stretched Canvas",
+        variantName: '16" x 20"',
+        imageUrl: "https://placehold.co/400x400/333/white?text=Canvas+16x20",
+        quantity: 1,
+        unitPrice: 64.99,
+        totalPrice: 64.99,
+      },
+    });
+
+    // Create shipment for shipped order
+    await prisma.merchShipment.upsert({
+      where: { id: "e2e-shipment-1" },
+      update: {},
+      create: {
+        id: "e2e-shipment-1",
+        orderId: shippedOrder.id,
+        carrier: "Royal Mail",
+        trackingNumber: "RM123456789GB",
+        trackingUrl: "https://www.royalmail.com/track-your-item",
+        status: "IN_TRANSIT",
+        shippedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      },
+    });
+
+    console.log("Created 3 test orders (PENDING, PAID, SHIPPED)");
+  } else {
+    console.log("Skipping order creation - run seed-merch.ts first to create products");
+  }
+
   console.log("\nE2E seed completed successfully!");
   console.log("\nTest data created:");
   console.log(`  User ID: ${TEST_USER_ID}`);
