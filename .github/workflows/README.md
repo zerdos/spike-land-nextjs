@@ -42,6 +42,16 @@ repository:
    - Copy the token
    - Add it to GitHub secrets with name: `CODECOV_TOKEN`
 
+### GitHub CLI Authentication (Required for Claude workflows)
+
+5. **GH_PAT_TOKEN**
+   - Go to https://github.com/settings/tokens?type=beta
+   - Create a fine-grained Personal Access Token
+   - Repository access: Select `zerdos/spike-land-nextjs`
+   - Permissions: `Contents` (read/write), `Issues` (read/write), `Pull requests` (read/write)
+   - Add it to GitHub secrets with name: `GH_PAT_TOKEN`
+   - Used by: `claude.yml`, `claude-code-review.yml` for `gh` CLI authentication
+
 ## How to Add Secrets
 
 1. Go to your GitHub repository

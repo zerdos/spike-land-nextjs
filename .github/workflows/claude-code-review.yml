@@ -58,6 +58,7 @@ jobs:
         id: claude-review
         uses: anthropics/claude-code-action@v1
         env:
+          GH_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
           NEXTAUTH_URL: http://localhost:3000
