@@ -47,14 +47,14 @@ interface GitHubApiIssue {
  * Check if GitHub API is available (token is configured)
  */
 export function isGitHubAvailable(): boolean {
-  return !!process.env.GITHUB_TOKEN;
+  return !!process.env.GH_PAT_TOKEN;
 }
 
 /**
  * Get GitHub configuration from environment
  */
 function getGitHubConfig() {
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GH_PAT_TOKEN;
   const owner = process.env.GITHUB_OWNER || "zerdos";
   const repo = process.env.GITHUB_REPO || "spike-land-nextjs";
   const projectNumber = parseInt(process.env.GITHUB_PROJECT_NUMBER || "2");
@@ -72,7 +72,7 @@ async function githubRequest<T>(
   const { token } = getGitHubConfig();
 
   if (!token) {
-    return { data: null, error: "GITHUB_TOKEN is not configured" };
+    return { data: null, error: "GH_PAT_TOKEN is not configured" };
   }
 
   const url = endpoint.startsWith("http")
