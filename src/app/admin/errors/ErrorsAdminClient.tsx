@@ -122,6 +122,9 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
   const [isPolling, setIsPolling] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
+  // Clear all
+  const [isClearing, setIsClearing] = useState(false);
+
   const fetchErrors = useCallback(async () => {
     setLoading(true);
     try {
@@ -188,6 +191,27 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
     await fetch("/api/admin/errors/test", { method: "POST" });
     // Refresh after a short delay to see the error
     setTimeout(fetchErrors, 1000);
+  };
+
+  const handleClearAll = async () => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ALL ${pagination.total} error logs?\n\nThis action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      const response = await fetch("/api/admin/errors", { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to clear errors");
+      await fetchErrors();
+    } catch (error) {
+      console.error("Error clearing logs:", error);
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   return (
@@ -322,6 +346,17 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20"
               >
                 Test Backend
+              </Button>
+            </div>
+            <div className="border-l border-neutral-200 dark:border-neutral-700 pl-4 ml-2">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleClearAll}
+                disabled={isClearing || pagination.total === 0}
+              >
+                {isClearing ? "Clearing..." : "Clear All"}
               </Button>
             </div>
           </form>
