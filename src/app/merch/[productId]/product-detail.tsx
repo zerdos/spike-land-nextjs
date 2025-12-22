@@ -138,7 +138,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Product image/mockup */}
         <div className="space-y-4">
-          <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+          <div
+            data-testid="product-mockup"
+            className="relative aspect-square rounded-lg overflow-hidden bg-muted"
+          >
             {product.mockupTemplate
               ? (
                 <Image
@@ -164,13 +167,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <Badge variant="secondary" className="mb-2">
               {product.category.name}
             </Badge>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
+            <h1 data-testid="product-name" className="text-3xl font-bold">{product.name}</h1>
             {product.description && (
               <p className="mt-2 text-muted-foreground">{product.description}</p>
             )}
           </div>
 
-          <div className="text-2xl font-bold">{formatPrice(totalPrice)}</div>
+          <div data-testid="product-price" className="text-2xl font-bold">
+            {formatPrice(totalPrice)}
+          </div>
 
           {/* Variant selector */}
           {product.variants.length > 0 && (

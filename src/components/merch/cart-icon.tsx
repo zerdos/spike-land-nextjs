@@ -51,6 +51,7 @@ export function CartIcon({ className }: CartIconProps) {
         <ShoppingCart className="h-5 w-5" />
         {!isLoading && itemCount > 0 && (
           <Badge
+            data-testid="cart-badge"
             variant="destructive"
             className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
           >

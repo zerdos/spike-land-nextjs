@@ -108,7 +108,7 @@ function CheckoutForm({
           )
           : (
             <span className="flex items-center">
-              <Lock className="mr-2 h-4 w-4" />
+              <Lock data-testid="lock-icon" className="mr-2 h-4 w-4" />
               Complete Order
             </span>
           )}
@@ -461,13 +461,13 @@ export default function CheckoutPage() {
                       <span className="text-muted-foreground">
                         Subtotal ({summary.itemCount} items)
                       </span>
-                      <span>{formatPrice(summary.subtotal)}</span>
+                      <span data-testid="order-subtotal">{formatPrice(summary.subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         Shipping ({summary.shippingZone})
                       </span>
-                      <span>
+                      <span data-testid="shipping-cost">
                         {summary.shipping === 0 ? <span className="text-green-600">FREE</span> : (
                           formatPrice(summary.shipping)
                         )}
@@ -476,7 +476,7 @@ export default function CheckoutPage() {
                     <Separator />
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span>{formatPrice(summary.total)}</span>
+                      <span data-testid="order-total">{formatPrice(summary.total)}</span>
                     </div>
                   </>
                 )

@@ -196,7 +196,11 @@ export default function CartPage() {
             const isUpdating = updatingItemId === item.id;
 
             return (
-              <Card key={item.id} className={isUpdating ? "opacity-50" : ""}>
+              <Card
+                key={item.id}
+                data-testid="cart-item"
+                className={isUpdating ? "opacity-50" : ""}
+              >
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     {/* Image */}
@@ -238,6 +242,7 @@ export default function CartPage() {
                     {/* Quantity controls */}
                     <div className="flex flex-col items-end gap-2">
                       <Button
+                        data-testid="remove-cart-item"
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
@@ -249,6 +254,7 @@ export default function CartPage() {
 
                       <div className="flex items-center gap-1">
                         <Button
+                          data-testid="decrease-quantity"
                           variant="outline"
                           size="icon"
                           className="h-8 w-8"
@@ -257,8 +263,11 @@ export default function CartPage() {
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span data-testid="cart-item-quantity" className="w-8 text-center">
+                          {item.quantity}
+                        </span>
                         <Button
+                          data-testid="increase-quantity"
                           variant="outline"
                           size="icon"
                           className="h-8 w-8"
@@ -282,7 +291,7 @@ export default function CartPage() {
 
         {/* Order summary */}
         <div className="lg:col-span-1">
-          <Card className="sticky top-4">
+          <Card data-testid="order-summary" className="sticky top-4">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
@@ -294,7 +303,7 @@ export default function CartPage() {
 
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>
+                <span data-testid="shipping-cost">
                   {shippingCost === 0 ? <span className="text-green-600">FREE</span> : (
                     formatPrice(shippingCost)
                   )}
@@ -313,7 +322,7 @@ export default function CartPage() {
 
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span data-testid="cart-total">{formatPrice(total)}</span>
               </div>
 
               <p className="text-xs text-muted-foreground">
