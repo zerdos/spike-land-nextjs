@@ -22,10 +22,10 @@
  */
 
 import { authConfig } from "@/auth.config";
+import { CSP_NONCE_HEADER, generateNonce } from "@/lib/security/csp-nonce";
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { generateNonce, CSP_NONCE_HEADER } from "@/lib/security/csp-nonce";
 
 // Create Edge-compatible auth (no database operations)
 const { auth } = NextAuth(authConfig);
@@ -125,7 +125,7 @@ export async function proxy(request: NextRequest) {
     frame-ancestors 'self';
     base-uri 'self';
     form-action 'self';
-  `.replace(/\s{2,}/g, ' ').trim();
+  `.replace(/\s{2,}/g, " ").trim();
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(CSP_NONCE_HEADER, nonce);
@@ -190,9 +190,9 @@ export async function proxy(request: NextRequest) {
 
   // User is authenticated, allow access
   return applyHeaders(NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
+    request: {
+      headers: requestHeaders,
+    },
   }));
 }
 

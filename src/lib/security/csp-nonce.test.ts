@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { generateNonce, CSP_NONCE_HEADER } from "./csp-nonce";
+import { CSP_NONCE_HEADER, generateNonce } from "./csp-nonce";
 import { getNonce } from "./csp-nonce-server";
 
 // Mock next/headers
