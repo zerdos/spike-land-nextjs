@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
 
   if (!isGitHubAvailable()) {
     return NextResponse.json(
-      { error: "GitHub API is not configured. Set GITHUB_TOKEN environment variable." },
+      {
+        error: "GitHub API is not configured. Set GH_PAT_TOKEN environment variable.",
+      },
       { status: 503 },
     );
   }
