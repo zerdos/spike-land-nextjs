@@ -43,7 +43,7 @@ documented requirements.
 #### Step 1: Investigate Project Board
 
 ```bash
-# Log in 
+# Log in
 echo ${GH_PAT_TOKEN} | gh auth login --with-token
 
 # List all items in the project board

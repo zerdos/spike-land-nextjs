@@ -22,6 +22,7 @@
  */
 
 import { authConfig } from "@/auth.config";
+import { CSP_NONCE_HEADER, generateNonce } from "@/lib/security/csp-nonce";
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -111,9 +112,38 @@ export function isProtectedPath(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Generate CSP Nonce and Header
+  const nonce = generateNonce();
+  const cspHeader = `
+    default-src 'self';
+    img-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://images.unsplash.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com https://www.facebook.com https://platform-lookaside.fbsbx.com data: blob:;
+    script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://va.vercel-scripts.com https://connect.facebook.net https://vercel.live;
+    style-src 'self' 'unsafe-inline';
+    font-src 'self' data:;
+    frame-src 'self' https://vercel.live;
+    connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net;
+    frame-ancestors 'self';
+    base-uri 'self';
+    form-action 'self';
+  `.replace(/\s{2,}/g, " ").trim();
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_HEADER, nonce);
+  requestHeaders.set("Content-Security-Policy", cspHeader);
+
+  // Helper to apply headers to response
+  const applyHeaders = (response: NextResponse) => {
+    response.headers.set("Content-Security-Policy", cspHeader);
+    return response;
+  };
+
   // Skip proxy for non-protected paths
   if (!isProtectedPath(pathname)) {
-    return NextResponse.next();
+    return applyHeaders(NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    }));
   }
 
   // Check for E2E test bypass header with secret validation
@@ -141,7 +171,11 @@ export async function proxy(request: NextRequest) {
         VERCEL_ENV: process.env.VERCEL_ENV,
       },
     });
-    return NextResponse.next();
+    return applyHeaders(NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    }));
   }
 
   // Check authentication status
@@ -151,11 +185,15 @@ export async function proxy(request: NextRequest) {
   if (!session?.user) {
     const url = new URL("/auth/signin", request.url);
     url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
+    return applyHeaders(NextResponse.redirect(url));
   }
 
   // User is authenticated, allow access
-  return NextResponse.next();
+  return applyHeaders(NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  }));
 }
 
 /**
