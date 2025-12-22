@@ -9,6 +9,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { PRStatus } from "@/lib/agents/pr-status-types";
 import type { ExternalAgentStatus } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
@@ -299,6 +300,32 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [approveError, setApproveError] = useState<string | null>(null);
+  const [prStatus, setPrStatus] = useState<PRStatus | null>(null);
+  const [prStatusLoading, setPrStatusLoading] = useState(false);
+
+  // Fetch PR status when session has a PR URL
+  useEffect(() => {
+    if (!session.pullRequestUrl) return;
+
+    const fetchPrStatus = async () => {
+      setPrStatusLoading(true);
+      try {
+        const response = await fetch(`/api/admin/agents/${session.id}/pr-status`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setPrStatus(data.data);
+          }
+        }
+      } catch {
+        // Silently fail - PR status is optional
+      } finally {
+        setPrStatusLoading(false);
+      }
+    };
+
+    fetchPrStatus();
+  }, [session.id, session.pullRequestUrl]);
 
   const handleApprovePlan = async () => {
     setIsApproving(true);
@@ -333,7 +360,9 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <span className="text-lg">🤖</span>
-            <h3 className="font-semibold">{session.name}</h3>
+            <h3 className="max-w-[300px] truncate font-semibold" title={session.name}>
+              {session.name}
+            </h3>
             <Badge className={STATUS_COLORS[session.status]}>
               {STATUS_LABELS[session.status]}
             </Badge>
@@ -361,6 +390,15 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
               Updated: {new Date(session.updatedAt).toLocaleString()}
             </span>
           </div>
+
+          {/* PR Status Display */}
+          {session.pullRequestUrl && (
+            <PRStatusDisplay
+              prStatus={prStatus}
+              loading={prStatusLoading}
+              pullRequestUrl={session.pullRequestUrl}
+            />
+          )}
         </div>
         <div className="flex items-center gap-2">
           {session.status === "AWAITING_PLAN_APPROVAL" && (
@@ -528,6 +566,132 @@ function CreateSessionModal({
           </div>
         </form>
       </Card>
+    </div>
+  );
+}
+
+/**
+ * PR Status Display Component
+ * Shows PR info, CI status, branch sync, and preview URL
+ */
+interface PRStatusDisplayProps {
+  prStatus: PRStatus | null;
+  loading: boolean;
+  pullRequestUrl: string;
+}
+
+function PRStatusDisplay({ prStatus, loading, pullRequestUrl }: PRStatusDisplayProps) {
+  if (loading) {
+    return (
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-800">
+        <span className="animate-pulse text-neutral-500">Loading PR status...</span>
+      </div>
+    );
+  }
+
+  if (!prStatus) {
+    // Fallback: just show basic PR link
+    return (
+      <div className="mt-3 flex items-center gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-800">
+        <a
+          href={pullRequestUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline dark:text-blue-400"
+        >
+          View Pull Request
+        </a>
+      </div>
+    );
+  }
+
+  const CIIcon = prStatus.ciStatus === "success"
+    ? "✓"
+    : prStatus.ciStatus === "failure"
+    ? "✗"
+    : prStatus.ciStatus === "pending"
+    ? "◐"
+    : "?";
+
+  const ciColorClass = prStatus.ciStatus === "success"
+    ? "text-green-600 dark:text-green-400"
+    : prStatus.ciStatus === "failure"
+    ? "text-red-600 dark:text-red-400"
+    : prStatus.ciStatus === "pending"
+    ? "text-amber-600 dark:text-amber-400"
+    : "text-neutral-500";
+
+  const syncIcon = prStatus.isUpToDate ? "✓" : "⚠";
+  const syncColorClass = prStatus.isUpToDate
+    ? "text-green-600 dark:text-green-400"
+    : "text-amber-600 dark:text-amber-400";
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-800">
+      {/* PR Link with target branch */}
+      <a
+        href={prStatus.prUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400"
+      >
+        <span>PR #{prStatus.prNumber}</span>
+        <span className="text-neutral-400">→</span>
+        <span>{prStatus.targetBranch}</span>
+      </a>
+
+      {/* Divider */}
+      <span className="text-neutral-300 dark:text-neutral-600">|</span>
+
+      {/* Branch sync status */}
+      <span className={`flex items-center gap-1 ${syncColorClass}`}>
+        <span>{syncIcon}</span>
+        <span>
+          {prStatus.isUpToDate
+            ? "Up to date"
+            : `${prStatus.behindBy} behind`}
+        </span>
+      </span>
+
+      {/* Divider */}
+      <span className="text-neutral-300 dark:text-neutral-600">|</span>
+
+      {/* CI Status */}
+      <span className={`flex items-center gap-1 ${ciColorClass}`} title={prStatus.ciStatusMessage}>
+        <span>{CIIcon}</span>
+        <span>
+          {prStatus.ciStatus === "success"
+            ? "CI passing"
+            : prStatus.ciStatus === "failure"
+            ? `CI failed (${prStatus.checksFailed}/${prStatus.checksTotal})`
+            : prStatus.ciStatus === "pending"
+            ? `CI pending (${prStatus.checksPending})`
+            : "CI unknown"}
+        </span>
+      </span>
+
+      {/* Preview URL */}
+      {prStatus.previewUrl && (
+        <>
+          <span className="text-neutral-300 dark:text-neutral-600">|</span>
+          <a
+            href={prStatus.previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-purple-600 hover:underline dark:text-purple-400"
+          >
+            <span>🔗</span>
+            <span>Preview</span>
+          </a>
+        </>
+      )}
+
+      {/* Draft badge */}
+      {prStatus.draft && (
+        <Badge variant="outline" className="text-[10px]">
+          Draft
+        </Badge>
+      )}
     </div>
   );
 }
