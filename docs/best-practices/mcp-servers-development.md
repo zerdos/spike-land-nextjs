@@ -786,7 +786,7 @@ features
       "command": "npx",
       "args": ["mcp-server-github"],
       "env": {
-        "GITHUB_TOKEN": "ghp_xxxxxxxxxxxx"
+        "GH_PAT_TOKEN": "ghp_xxxxxxxxxxxx"
       }
     }
   }
@@ -939,7 +939,7 @@ This opens your `claude_desktop_config.json` file in your default text editor.
       "command": "npx",
       "args": ["@modelcontextprotocol/server-github@latest"],
       "env": {
-        "GITHUB_TOKEN": "ghp_your_token_here"
+        "GH_PAT_TOKEN": "ghp_your_token_here"
       }
     },
     "playwright": {
@@ -1000,7 +1000,7 @@ For API keys and credentials, use environment variables:
       "command": "npx",
       "args": ["mcp-server-github"],
       "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+        "GH_PAT_TOKEN": "${GH_PAT_TOKEN}"
       }
     }
   }
@@ -1012,14 +1012,14 @@ Set environment variables before running Claude Desktop:
 **macOS/Linux**:
 
 ```bash
-export GITHUB_TOKEN="your_token"
+export GH_PAT_TOKEN="your_token"
 open /Applications/Claude.app
 ```
 
 **Windows (PowerShell)**:
 
 ```powershell
-$env:GITHUB_TOKEN="your_token"
+$env:GH_PAT_TOKEN="your_token"
 ```
 
 ---
@@ -1202,7 +1202,7 @@ Claude analyzes test requirements
       "command": "npx",
       "args": ["@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_TOKEN": "your_token"
+        "GH_PAT_TOKEN": "your_token"
       }
     }
   }
@@ -1254,7 +1254,7 @@ Claude analyzes test requirements
       "command": "npx",
       "args": ["@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_TOKEN": "your_token"
+        "GH_PAT_TOKEN": "your_token"
       }
     }
   }
@@ -1660,19 +1660,19 @@ docker"
 1. **Use Full Path**
    ```json
    "env": {
-     "GITHUB_TOKEN": "ghp_xxxxxxxxxxxx"  // Use actual value instead of ${GITHUB_TOKEN}
+     "GH_PAT_TOKEN": "ghp_xxxxxxxxxxxx"  // Use actual value instead of ${GH_PAT_TOKEN}
    }
    ```
 
 2. **Set System Environment Variables** (macOS/Linux)
    ```bash
-   export GITHUB_TOKEN="your_token"
+   export GH_PAT_TOKEN="your_token"
    source ~/.bashrc  # or ~/.zshrc
    ```
 
 3. **Set System Environment Variables** (Windows)
    ```powershell
-   [Environment]::SetEnvironmentVariable("GITHUB_TOKEN", "your_token", "User")
+   [Environment]::SetEnvironmentVariable("GH_PAT_TOKEN", "your_token", "User")
    ```
 
 4. **Restart Claude Desktop**
