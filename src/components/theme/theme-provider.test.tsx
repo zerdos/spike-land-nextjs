@@ -32,4 +32,14 @@ describe("ThemeProvider", () => {
 
     expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
+
+  it("accepts nonce prop for CSP compliance", () => {
+    render(
+      <ThemeProvider nonce="test-nonce-value">
+        <div>Test Content</div>
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
+  });
 });
