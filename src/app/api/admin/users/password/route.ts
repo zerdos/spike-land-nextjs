@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
   // Hash the password
   const { data: passwordHash, error: hashError } = await tryCatch(
-    bcrypt.hash(password, 10),
+    bcrypt.hash(password, 12),
   );
 
   if (hashError) {

@@ -134,7 +134,7 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
   }
 
   // Hash the password
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
 
   // Create the user with stable ID
   const stableId = createStableUserId(trimmedEmail);
