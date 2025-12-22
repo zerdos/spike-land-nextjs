@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   applyHeroTransformStyles,
   calculateHeroTransform,
@@ -108,9 +109,8 @@ export function SlideshowView({
     ? `rotate(${rotation}deg)`
     : undefined;
 
-  // Check if we should reduce motion
-  const prefersReducedMotion = typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  // Check if we should reduce motion (hydration-safe)
+  const prefersReducedMotion = useReducedMotion();
 
   if (!currentImage) {
     return null;

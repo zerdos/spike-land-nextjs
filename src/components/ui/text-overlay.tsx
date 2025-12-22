@@ -1,3 +1,6 @@
+"use client";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import * as React from "react";
 
@@ -28,8 +31,8 @@ const positionClasses = {
  */
 const TextOverlay = React.forwardRef<HTMLDivElement, TextOverlayProps>(
   ({ children, position = "bottom-left", gradient = true, className }, ref) => {
-    const prefersReducedMotion = typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    // Check if user prefers reduced motion (hydration-safe)
+    const prefersReducedMotion = useReducedMotion();
 
     return (
       <div

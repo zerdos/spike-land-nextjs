@@ -61,13 +61,18 @@ export function MarketingLayout(
   const [loading, setLoading] = useState(false);
   const [isPolling, setIsPolling] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notification, setNotification] = useState<
     {
       type: "success" | "error";
       message: string;
     } | null
   >(null);
+
+  // Initialize lastUpdated after mount to avoid hydration mismatch
+  useEffect(() => {
+    setLastUpdated(new Date());
+  }, []);
 
   // Handle URL params for success/error messages
   useEffect(() => {
@@ -182,7 +187,7 @@ export function MarketingLayout(
             </Button>
           </div>
           <div className="text-right text-sm text-muted-foreground">
-            <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+            <p>Last updated: {lastUpdated?.toLocaleTimeString() ?? "—"}</p>
             {isPolling && (
               <span className="text-xs block">
                 <Badge variant="secondary" className="text-xs">Live</Badge>
