@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -21,9 +22,8 @@ export function FloatingHint({
   isVisible,
   isTouchDevice = false,
 }: FloatingHintProps) {
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  // Check if user prefers reduced motion (hydration-safe)
+  const prefersReducedMotion = useReducedMotion();
 
   // Default icons based on device type
   const defaultIcon = isTouchDevice

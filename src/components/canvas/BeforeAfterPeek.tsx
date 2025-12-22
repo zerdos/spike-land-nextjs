@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ANIMATION_DURATIONS } from "@/lib/canvas/animations";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -20,9 +21,8 @@ export function BeforeAfterPeek({
   isActive,
   label = "Original",
 }: BeforeAfterPeekProps) {
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  // Check if user prefers reduced motion (hydration-safe)
+  const prefersReducedMotion = useReducedMotion();
 
   // Transition duration matches the animation constants
   const transitionDuration = prefersReducedMotion
