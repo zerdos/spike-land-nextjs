@@ -42,7 +42,7 @@ RUN --mount=type=cache,id=apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=
 COPY --from=dep-context /app ./
 
 ARG DUMMY_DATABASE_URL
-RUN --mount=type=cache,id=yarn-cache,target=/app/.yarn/cache,sharing=locked \
+RUN --mount=type=cache,id=yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     DATABASE_URL="${DUMMY_DATABASE_URL}" \
     yarn install --immutable
 
@@ -84,7 +84,7 @@ ENV NODE_ENV=production
 ARG DUMMY_DATABASE_URL
 ENV DATABASE_URL="${DUMMY_DATABASE_URL}"
 
-RUN --mount=type=cache,id=next-build-cache,target=/app/.next/cache,sharing=locked \
+RUN --mount=type=cache,id=next-build-cache-${TARGETARCH},target=/app/.next/cache,sharing=locked \
     yarn build
 
 # ============================================================================
@@ -147,6 +147,7 @@ RUN --mount=type=cache,id=apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=
 # Copy package.json to ensure playwright version matches lockfile
 COPY --from=dep-context /app/package.json ./
 
+# IMPORTANT: Added sharing=locked to prevent concurrent install corruption
 RUN --mount=type=cache,id=playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
     npx playwright install chromium --with-deps
 
@@ -157,10 +158,14 @@ RUN --mount=type=cache,id=playwright-${TARGETARCH},target=/ms-playwright,sharing
 FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 
-# Copy entire app context from test-source (includes node_modules via ancestry)
+# 1. FIX: Explicitly copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# 2. Copy test source files (configs, e2e folder)
 COPY --from=test-source /app ./
 
-# Overlay built output from verified-build
+# 3. Overlay built output from verified-build
+# Note: This overwrites any overlapping source files with build artifacts
 COPY --from=verified-build /app/.next ./.next
 COPY --from=verified-build /app/public ./public
 
@@ -232,6 +237,7 @@ LABEL org.opencontainers.image.revision="${BUILD_SHA}" \
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nextjs
 
 # Copy standalone output with --link for faster builds
+# OPTIMIZATION: Ensure we chown to the correct user in one step
 COPY --link --from=build --chown=1001:1001 /app/.next/standalone ./
 COPY --link --from=build --chown=1001:1001 /app/.next/static ./.next/static
 COPY --link --from=build --chown=1001:1001 /app/public ./public
