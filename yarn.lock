@@ -13363,9 +13363,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:^5.76.1":
-  version: 5.76.1
-  resolution: "knip@npm:5.76.1"
+"knip@npm:^5.76.3":
+  version: 5.76.3
+  resolution: "knip@npm:5.76.3"
   dependencies:
     "@nodelib/fs.walk": "npm:^1.2.3"
     fast-glob: "npm:^3.3.3"
@@ -13385,7 +13385,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c0/7d83f0f7780ed5531719f51347abe9ef97a88b1ef0048cd4cffab92cff71f672375f110f950ecaae5e3ba128a7aec58e248c5254de8b9da523711d3e286d5a3e
+  checksum: 10c0/8d33974867af2e37aff25b230064c411f55577654c2993015527478344a6add1981f359fc3c15d65c3c482bc097dd3979d01baab770c869a7e69fba51a5980d9
   languageName: node
   linkType: hard
 
@@ -19172,7 +19172,7 @@ __metadata:
     happy-dom: "npm:^20.0.11"
     husky: "npm:^9.1.7"
     jsdom: "npm:^27.3.0"
-    knip: "npm:^5.76.1"
+    knip: "npm:^5.76.3"
     lucide-react: "npm:^0.562.0"
     nanoid: "npm:^5.1.6"
     next: "npm:16.1.0"
