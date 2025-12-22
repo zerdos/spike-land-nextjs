@@ -308,7 +308,7 @@ describe("Password API Route", () => {
         name: "Test User",
       });
 
-      expect(mockBcryptHash).toHaveBeenCalledWith("newpassword", 10);
+      expect(mockBcryptHash).toHaveBeenCalledWith("newpassword", 12);
       expect(mockPrismaUserUpdate).toHaveBeenCalledWith({
         where: { email: "test@example.com" },
         data: { passwordHash: "hashed-password" },
@@ -405,7 +405,7 @@ describe("Password API Route", () => {
   });
 
   describe("Password Hashing", () => {
-    it("hashes password with bcrypt cost factor 10", async () => {
+    it("hashes password with bcrypt cost factor 12", async () => {
       mockPrismaUserFindUnique.mockResolvedValue({
         id: "user-id",
         email: "test@example.com",
@@ -420,7 +420,7 @@ describe("Password API Route", () => {
 
       await POST(request);
 
-      expect(mockBcryptHash).toHaveBeenCalledWith("my-secure-password", 10);
+      expect(mockBcryptHash).toHaveBeenCalledWith("my-secure-password", 12);
     });
   });
 
