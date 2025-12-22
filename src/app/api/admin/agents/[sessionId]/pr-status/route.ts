@@ -27,7 +27,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ sessionId: string; }>; },
 ): Promise<NextResponse<PRStatusResponse>> {
   const { data: session, error: authError } = await tryCatch(auth());
