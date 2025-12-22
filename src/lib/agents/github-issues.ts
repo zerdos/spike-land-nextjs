@@ -210,3 +210,192 @@ export async function getWorkflowRuns(options?: { limit?: number; }): Promise<{
 
   return { data: runs, error: null };
 }
+
+// =============================================================================
+// Pull Request Status Functions
+// =============================================================================
+
+export interface GitHubPullRequest {
+  number: number;
+  title: string;
+  state: string;
+  headBranch: string;
+  headSha: string;
+  baseBranch: string;
+  url: string;
+  mergeableState: string | null;
+  draft: boolean;
+}
+
+export interface GitHubCommitStatus {
+  state: "success" | "failure" | "pending" | "error";
+  totalCount: number;
+  statuses: Array<{
+    context: string;
+    state: string;
+    description: string | null;
+    targetUrl: string | null;
+  }>;
+}
+
+export interface GitHubCheckRun {
+  id: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  url: string;
+}
+
+export interface GitHubBranchComparison {
+  aheadBy: number;
+  behindBy: number;
+  status: "ahead" | "behind" | "identical" | "diverged";
+}
+
+/**
+ * Get pull request details by PR number
+ */
+export async function getPullRequest(
+  prNumber: number,
+): Promise<{ data: GitHubPullRequest | null; error: string | null; }> {
+  const { owner, repo } = getGitHubConfig();
+
+  const { data, error } = await githubRequest<{
+    number: number;
+    title: string;
+    state: string;
+    head: { ref: string; sha: string; };
+    base: { ref: string; };
+    html_url: string;
+    mergeable_state: string | null;
+    draft: boolean;
+  }>(`/repos/${owner}/${repo}/pulls/${prNumber}`);
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  return {
+    data: {
+      number: data.number,
+      title: data.title,
+      state: data.state,
+      headBranch: data.head.ref,
+      headSha: data.head.sha,
+      baseBranch: data.base.ref,
+      url: data.html_url,
+      mergeableState: data.mergeable_state,
+      draft: data.draft,
+    },
+    error: null,
+  };
+}
+
+/**
+ * Get combined commit status for a ref (branch or SHA)
+ */
+export async function getCommitStatus(
+  ref: string,
+): Promise<{ data: GitHubCommitStatus | null; error: string | null; }> {
+  const { owner, repo } = getGitHubConfig();
+
+  const { data, error } = await githubRequest<{
+    state: "success" | "failure" | "pending" | "error";
+    total_count: number;
+    statuses: Array<{
+      context: string;
+      state: string;
+      description: string | null;
+      target_url: string | null;
+    }>;
+  }>(`/repos/${owner}/${repo}/commits/${ref}/status`);
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  return {
+    data: {
+      state: data.state,
+      totalCount: data.total_count,
+      statuses: data.statuses.map((s) => ({
+        context: s.context,
+        state: s.state,
+        description: s.description,
+        targetUrl: s.target_url,
+      })),
+    },
+    error: null,
+  };
+}
+
+/**
+ * Get check runs for a ref (branch or SHA)
+ */
+export async function getCheckRuns(
+  ref: string,
+): Promise<{ data: GitHubCheckRun[] | null; error: string | null; }> {
+  const { owner, repo } = getGitHubConfig();
+
+  const { data, error } = await githubRequest<{
+    check_runs: Array<{
+      id: number;
+      name: string;
+      status: string;
+      conclusion: string | null;
+      html_url: string;
+    }>;
+  }>(`/repos/${owner}/${repo}/commits/${ref}/check-runs`);
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  return {
+    data: data.check_runs.map((run) => ({
+      id: run.id,
+      name: run.name,
+      status: run.status,
+      conclusion: run.conclusion,
+      url: run.html_url,
+    })),
+    error: null,
+  };
+}
+
+/**
+ * Compare two branches to see if one is ahead/behind the other
+ */
+export async function compareBranches(
+  base: string,
+  head: string,
+): Promise<{ data: GitHubBranchComparison | null; error: string | null; }> {
+  const { owner, repo } = getGitHubConfig();
+
+  const { data, error } = await githubRequest<{
+    ahead_by: number;
+    behind_by: number;
+    status: "ahead" | "behind" | "identical" | "diverged";
+  }>(`/repos/${owner}/${repo}/compare/${base}...${head}`);
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  return {
+    data: {
+      aheadBy: data.ahead_by,
+      behindBy: data.behind_by,
+      status: data.status,
+    },
+    error: null,
+  };
+}
+
+/**
+ * Extract PR number from a GitHub PR URL
+ */
+export function extractPrNumberFromUrl(url: string): number | null {
+  const match = url.match(/\/pull\/(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+}
