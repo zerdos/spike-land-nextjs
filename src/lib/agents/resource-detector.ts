@@ -98,7 +98,7 @@ function checkEnvironment(): ResourceStatus["environment"] {
   return {
     nodeEnv: process.env.NODE_ENV || "development",
     julesConfigured: !!process.env.JULES_API_KEY,
-    githubConfigured: !!process.env.GITHUB_TOKEN,
+    githubConfigured: !!process.env.GH_PAT_TOKEN,
   };
 }
 

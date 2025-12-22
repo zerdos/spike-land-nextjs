@@ -23,20 +23,20 @@ describe("github-issues", () => {
   });
 
   describe("isGitHubAvailable", () => {
-    it("should return true when GITHUB_TOKEN is set", async () => {
-      process.env.GITHUB_TOKEN = "ghp_test_token";
+    it("should return true when GH_PAT_TOKEN is set", async () => {
+      process.env.GH_PAT_TOKEN = "ghp_test_token";
       const { isGitHubAvailable } = await import("./github-issues");
       expect(isGitHubAvailable()).toBe(true);
     });
 
-    it("should return false when GITHUB_TOKEN is not set", async () => {
-      delete process.env.GITHUB_TOKEN;
+    it("should return false when GH_PAT_TOKEN is not set", async () => {
+      delete process.env.GH_PAT_TOKEN;
       const { isGitHubAvailable } = await import("./github-issues");
       expect(isGitHubAvailable()).toBe(false);
     });
 
-    it("should return false when GITHUB_TOKEN is empty string", async () => {
-      process.env.GITHUB_TOKEN = "";
+    it("should return false when GH_PAT_TOKEN is empty string", async () => {
+      process.env.GH_PAT_TOKEN = "";
       const { isGitHubAvailable } = await import("./github-issues");
       expect(isGitHubAvailable()).toBe(false);
     });
@@ -44,7 +44,7 @@ describe("github-issues", () => {
 
   describe("listIssues", () => {
     beforeEach(() => {
-      process.env.GITHUB_TOKEN = "ghp_test_token";
+      process.env.GH_PAT_TOKEN = "ghp_test_token";
       process.env.GITHUB_OWNER = "test-owner";
       process.env.GITHUB_REPO = "test-repo";
     });
@@ -175,14 +175,14 @@ describe("github-issues", () => {
     });
 
     it("should return error when token is not configured", async () => {
-      delete process.env.GITHUB_TOKEN;
+      delete process.env.GH_PAT_TOKEN;
       vi.resetModules();
 
       const { listIssues } = await import("./github-issues");
       const result = await listIssues();
 
       expect(result.data).toBeNull();
-      expect(result.error).toBe("GITHUB_TOKEN is not configured");
+      expect(result.error).toBe("GH_PAT_TOKEN is not configured");
     });
 
     it("should handle API errors", async () => {
@@ -231,7 +231,7 @@ describe("github-issues", () => {
 
   describe("getWorkflowRuns", () => {
     beforeEach(() => {
-      process.env.GITHUB_TOKEN = "ghp_test_token";
+      process.env.GH_PAT_TOKEN = "ghp_test_token";
       process.env.GITHUB_OWNER = "test-owner";
       process.env.GITHUB_REPO = "test-repo";
     });
@@ -315,14 +315,14 @@ describe("github-issues", () => {
     });
 
     it("should return error when token is not configured", async () => {
-      delete process.env.GITHUB_TOKEN;
+      delete process.env.GH_PAT_TOKEN;
       vi.resetModules();
 
       const { getWorkflowRuns } = await import("./github-issues");
       const result = await getWorkflowRuns();
 
       expect(result.data).toBeNull();
-      expect(result.error).toBe("GITHUB_TOKEN is not configured");
+      expect(result.error).toBe("GH_PAT_TOKEN is not configured");
     });
 
     it("should handle API errors", async () => {
