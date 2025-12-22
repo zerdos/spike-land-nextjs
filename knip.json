@@ -21,8 +21,10 @@
     "src/test-utils/**",
     "e2e/**",
     "prisma/**",
-    "scripts/**"
+    "scripts/**",
+    "packages/mcp-server/dist/**"
   ],
+  "ignoreBinaries": ["outdated"],
   "ignoreDependencies": [
     "@types/*",
     "pg",

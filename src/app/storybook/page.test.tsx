@@ -38,14 +38,14 @@ describe("StorybookPage (Overview)", () => {
   });
 
   describe("section cards", () => {
-    it("should render all 14 section links", () => {
+    it("should render all 16 section links", () => {
       render(<StorybookPage />);
       const links = screen.getAllByRole("link");
       // Filter links that point to storybook sections
       const sectionLinks = links.filter((link) =>
         link.getAttribute("href")?.startsWith("/storybook/")
       );
-      expect(sectionLinks).toHaveLength(14);
+      expect(sectionLinks).toHaveLength(16);
     });
 
     it("should have correct links to section pages", () => {
