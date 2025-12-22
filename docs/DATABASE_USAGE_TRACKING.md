@@ -87,7 +87,7 @@ This document tracks where each database table is used in the codebase.
 
 ## VerificationToken
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## App
 
@@ -101,11 +101,11 @@ This document tracks where each database table is used in the codebase.
 
 ## Requirement
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## MonetizationModel
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## UserTokenBalance
 
@@ -236,7 +236,7 @@ This document tracks where each database table is used in the codebase.
 
 ## SubscriptionPlan
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## Album
 
@@ -293,7 +293,7 @@ This document tracks where each database table is used in the codebase.
 
 ## VoucherRedemption
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## Referral
 
@@ -513,7 +513,7 @@ This document tracks where each database table is used in the codebase.
 
 ## AudioTrack
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## MerchCategory
 
@@ -539,7 +539,7 @@ This document tracks where each database table is used in the codebase.
 
 ## MerchVariant
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## MerchCart
 
@@ -589,7 +589,7 @@ This document tracks where each database table is used in the codebase.
 
 ## MerchShipment
 
-*No explicit usages found in `src/` via `prisma.modelName`.*
+_No explicit usages found in `src/` via `prisma.modelName`._
 
 ## MerchOrderEvent
 
