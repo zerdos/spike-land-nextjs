@@ -62,6 +62,9 @@ jobs:
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
           NEXTAUTH_URL: http://localhost:3000
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+          SPIKE_LAND_API_KEY: ${{ secrets.SPIKE_LAND_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
@@ -104,6 +107,27 @@ jobs:
 
             Be constructive and helpful.
             If you find anything that's not clear - or needs to be changed, you can ask @Jules to do it, simply mentioning in the PR review - to do the following changes in this PR.  You must either accept the PR, or ask modifications. If you are happy with it, wait until the CI finishes. If it is passed, you can merge the PR. If the PR failed, please ask @Jules to fix the CI.
+
+            ## Jules Integration (only if Jules created the PR)
+
+            If not Jules created the PR, just ignore this section.
+            When you need Jules to make changes:
+
+
+            To communicate with Jules, use PR reviews instead of PR comments:
+            # This works (PR review):
+            echo $GH_PAT_TOKEN | gh auth login --with-token
+            gh api repos/zerdos/spike-land-nextjs/pulls/XXX/reviews -X POST -f body="@Jules message" -f event="COMMENT"
+
+            # This does NOT work (regular comment):
+            gh pr comment XXX --body "@Jules message"
+
+            **Jules Request Template:**
+            ```
+            @Jules Please make the following changes to this PR:
+            - [ ] Fix: <specific issue with file path and line number>
+            - [ ] Add: <specific addition needed>
+            ```
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
