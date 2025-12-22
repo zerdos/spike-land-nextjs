@@ -35,7 +35,7 @@ describe("resource-detector", () => {
       process.env.PORT = "3000";
       process.env.DATABASE_URL = "postgresql://localhost:5432/test";
       process.env.JULES_API_KEY = "test-jules-key";
-      process.env.GH_PAT_TOKEN = "ghp_test_token";
+      process.env.GITHUB_TOKEN = "ghp_test_token";
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(
         JSON.stringify({
@@ -73,7 +73,7 @@ describe("resource-detector", () => {
       delete process.env.PORT;
       delete process.env.DATABASE_URL;
       delete process.env.JULES_API_KEY;
-      delete process.env.GH_PAT_TOKEN;
+      delete process.env.GITHUB_TOKEN;
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -248,7 +248,7 @@ describe("resource-detector", () => {
     it("should detect partial configuration", async () => {
       process.env.NODE_ENV = "development";
       process.env.JULES_API_KEY = "test-key";
-      delete process.env.GH_PAT_TOKEN;
+      delete process.env.GITHUB_TOKEN;
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
