@@ -320,7 +320,7 @@ describe("POST /api/auth/signup", () => {
       });
       await POST(req);
 
-      expect(mockBcrypt.hash).toHaveBeenCalledWith("password123", 10);
+      expect(mockBcrypt.hash).toHaveBeenCalledWith("password123", 12);
       expect(mockPrisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
