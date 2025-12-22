@@ -1,8 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
 import { GalleryItem } from "./gallery-fallback-data";
-import { vi } from "vitest";
 
 // Mock dependencies
 vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
@@ -65,14 +65,14 @@ describe("BeforeAfterGalleryClient", () => {
 
     // Wait for the state to update and the DOM to reflect the change
     await waitFor(() => {
-        // Check if the "All" tab is inactive
-        expect(screen.getByText("All")).toHaveAttribute("data-state", "inactive");
-        expect(screen.getByText("Portrait")).toHaveAttribute("data-state", "active");
+      // Check if the "All" tab is inactive
+      expect(screen.getByText("All")).toHaveAttribute("data-state", "inactive");
+      expect(screen.getByText("Portrait")).toHaveAttribute("data-state", "active");
 
-        // Check sliders
-        const sliders = screen.getAllByTestId("comparison-slider");
-        expect(sliders).toHaveLength(1);
-        expect(screen.getByText("Original: /orig1.jpg, Enhanced: /enh1.jpg")).toBeInTheDocument();
+      // Check sliders
+      const sliders = screen.getAllByTestId("comparison-slider");
+      expect(sliders).toHaveLength(1);
+      expect(screen.getByText("Original: /orig1.jpg, Enhanced: /enh1.jpg")).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Original: /orig2.jpg, Enhanced: /enh2.jpg")).not.toBeInTheDocument();

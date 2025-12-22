@@ -1,8 +1,8 @@
+import * as imageProcessor from "@/lib/images/browser-image-processor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageSlot, SelectedImage } from "./ImageSlot";
-import * as imageProcessor from "@/lib/images/browser-image-processor";
 
 // Mock the image processor
 vi.mock("@/lib/images/browser-image-processor", () => ({
@@ -181,11 +181,11 @@ describe("ImageSlot", () => {
     });
 
     fireEvent.dragOver(dropZone!, {
-       dataTransfer: {
+      dataTransfer: {
         files: [file],
         items: [{ kind: "file", type: "image/png" }],
         types: ["Files"],
-        dropEffect: "copy"
+        dropEffect: "copy",
       },
     });
 
@@ -214,7 +214,9 @@ describe("ImageSlot", () => {
     fireEvent.change(fileInput, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith(expect.stringContaining("Please use an image file"));
+      expect(global.alert).toHaveBeenCalledWith(
+        expect.stringContaining("Please use an image file"),
+      );
     });
     expect(imageProcessor.processImageForUpload).not.toHaveBeenCalled();
   });
@@ -222,7 +224,7 @@ describe("ImageSlot", () => {
   it("validates file size", async () => {
     const user = userEvent.setup();
     const largeFile = new File(["a".repeat(1024)], "large.jpg", { type: "image/jpeg" });
-    Object.defineProperty(largeFile, 'size', { value: 21 * 1024 * 1024 });
+    Object.defineProperty(largeFile, "size", { value: 21 * 1024 * 1024 });
 
     render(<ImageSlot {...defaultProps} />);
 
@@ -241,10 +243,14 @@ describe("ImageSlot", () => {
 
     // Delay processing to allow checking loading state
     (imageProcessor.processImageForUpload as any).mockImplementation(() =>
-      new Promise(resolve => setTimeout(() => resolve({
-        blob: new Blob(["processed"]),
-        width: 100, height: 100
-      }), 100))
+      new Promise(resolve =>
+        setTimeout(() =>
+          resolve({
+            blob: new Blob(["processed"]),
+            width: 100,
+            height: 100,
+          }), 100)
+      )
     );
 
     render(<ImageSlot {...defaultProps} />);
@@ -269,8 +275,8 @@ describe("ImageSlot", () => {
 
     fireEvent.drop(dropZone!, {
       dataTransfer: {
-        files: [new File([], "test.png", { type: "image/png" })]
-      }
+        files: [new File([], "test.png", { type: "image/png" })],
+      },
     });
 
     expect(imageProcessor.processImageForUpload).not.toHaveBeenCalled();

@@ -72,10 +72,13 @@ describe("ImageSelectorDialog", () => {
   it("handles loading state", async () => {
     // Delay the response to check loading state
     fetchSpy.mockImplementationOnce(() =>
-      new Promise(resolve => setTimeout(() => resolve({
-        ok: true,
-        json: async () => mockImages,
-      } as Response), 100))
+      new Promise(resolve =>
+        setTimeout(() =>
+          resolve({
+            ok: true,
+            json: async () => mockImages,
+          } as Response), 100)
+      )
     );
 
     render(<ImageSelectorDialog {...defaultProps} />);

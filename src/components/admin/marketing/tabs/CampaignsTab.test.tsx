@@ -1,12 +1,12 @@
+import { createFetchMock, mockCampaignsData } from "@/test-utils/marketing-mocks";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignsTab } from "./CampaignsTab";
-import { createFetchMock, mockCampaignsData } from "@/test-utils/marketing-mocks";
 
 describe("CampaignsTab", () => {
   beforeEach(() => {
     global.fetch = createFetchMock({
-      "/api/admin/marketing/analytics/campaigns": mockCampaignsData
+      "/api/admin/marketing/analytics/campaigns": mockCampaignsData,
     });
 
     // Mock URL methods for CSV export
@@ -42,45 +42,45 @@ describe("CampaignsTab", () => {
     fireEvent.click(visitorsHeader);
 
     await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("sortField=visitors"));
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("sortField=visitors"));
     });
   });
 
   it("exports CSV", async () => {
-     render(<CampaignsTab />);
+    render(<CampaignsTab />);
 
-     await waitFor(() => {
-         expect(screen.getByText("Export CSV")).toBeInTheDocument();
-     });
+    await waitFor(() => {
+      expect(screen.getByText("Export CSV")).toBeInTheDocument();
+    });
 
-     const exportBtn = screen.getByText("Export CSV");
-     fireEvent.click(exportBtn);
+    const exportBtn = screen.getByText("Export CSV");
+    fireEvent.click(exportBtn);
 
-     expect(global.URL.createObjectURL).toHaveBeenCalled();
+    expect(global.URL.createObjectURL).toHaveBeenCalled();
   });
 
   it("pagination controls render when needed", async () => {
-     // Update mock to have more pages
-     const manyPagesData = {
-         ...mockCampaignsData,
-         total: 50,
-         pageSize: 10
-     };
-     global.fetch = createFetchMock({
-      "/api/admin/marketing/analytics/campaigns": manyPagesData
+    // Update mock to have more pages
+    const manyPagesData = {
+      ...mockCampaignsData,
+      total: 50,
+      pageSize: 10,
+    };
+    global.fetch = createFetchMock({
+      "/api/admin/marketing/analytics/campaigns": manyPagesData,
     });
 
     render(<CampaignsTab />);
 
     await waitFor(() => {
-        expect(screen.getByText("Next")).toBeInTheDocument();
-        expect(screen.getByText("Previous")).toBeInTheDocument();
+      expect(screen.getByText("Next")).toBeInTheDocument();
+      expect(screen.getByText("Previous")).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText("Next"));
 
     await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("page=2"));
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("page=2"));
     });
   });
 });

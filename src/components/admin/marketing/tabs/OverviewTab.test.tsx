@@ -1,14 +1,16 @@
+import { createFetchMock, mockOverviewData } from "@/test-utils/marketing-mocks";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OverviewTab } from "./OverviewTab";
-import { createFetchMock, mockOverviewData } from "@/test-utils/marketing-mocks";
 
 // Mock Recharts
 vi.mock("recharts", async (importOriginal) => {
   const original: any = await importOriginal();
   return {
     ...original,
-    ResponsiveContainer: ({ children }: any) => <div className="recharts-responsive-container">{children}</div>,
+    ResponsiveContainer: ({ children }: any) => (
+      <div className="recharts-responsive-container">{children}</div>
+    ),
     LineChart: ({ children }: any) => <div className="recharts-line-chart">{children}</div>,
     PieChart: ({ children }: any) => <div className="recharts-pie-chart">{children}</div>,
     Line: () => <div className="recharts-line" />,
@@ -24,7 +26,7 @@ vi.mock("recharts", async (importOriginal) => {
 describe("OverviewTab", () => {
   beforeEach(() => {
     global.fetch = createFetchMock({
-      "/api/admin/marketing/analytics/overview": mockOverviewData
+      "/api/admin/marketing/analytics/overview": mockOverviewData,
     });
   });
 
@@ -36,8 +38,8 @@ describe("OverviewTab", () => {
     render(<OverviewTab />);
 
     await waitFor(() => {
-        expect(screen.getByText("Visitors")).toBeInTheDocument();
-        expect(screen.getByText("1,000")).toBeInTheDocument();
+      expect(screen.getByText("Visitors")).toBeInTheDocument();
+      expect(screen.getByText("1,000")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Signups")).toBeInTheDocument();
@@ -54,31 +56,33 @@ describe("OverviewTab", () => {
   });
 
   it("handles error state", async () => {
-     global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: "Internal Server Error"
-     });
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    });
 
-     render(<OverviewTab />);
+    render(<OverviewTab />);
 
-     await waitFor(() => {
-        expect(screen.getByText(/Error:/)).toBeInTheDocument();
-     });
+    await waitFor(() => {
+      expect(screen.getByText(/Error:/)).toBeInTheDocument();
+    });
   });
 
   it("toggles attribution model", async () => {
     render(<OverviewTab />);
 
     await waitFor(() => {
-        expect(screen.getByText("First-touch")).toBeInTheDocument();
+      expect(screen.getByText("First-touch")).toBeInTheDocument();
     });
 
     const lastTouchButton = screen.getByText("Last-touch");
     fireEvent.click(lastTouchButton);
 
     await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("attributionModel=LAST_TOUCH"));
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("attributionModel=LAST_TOUCH"),
+      );
     });
   });
 });

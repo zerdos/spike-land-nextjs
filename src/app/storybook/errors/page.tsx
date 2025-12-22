@@ -1,7 +1,7 @@
 "use client";
 
-import { Section } from "@/components/storybook";
 import { ErrorBoundary } from "@/components/errors/error-boundary";
+import { Section } from "@/components/storybook";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
@@ -44,7 +44,8 @@ export default function ErrorsPage() {
               <ErrorBoundary>
                 <div className="flex flex-col gap-4 items-start">
                   <p className="text-sm text-muted-foreground">
-                    Click the button below to crash this part of the UI and see the Error Boundary in action.
+                    Click the button below to crash this part of the UI and see the Error Boundary
+                    in action.
                   </p>
                   <ErrorTrigger />
                 </div>

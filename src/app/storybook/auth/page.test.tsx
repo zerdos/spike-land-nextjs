@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import AuthPage from "./page";
 
 // Mock the components since we only want to test the page layout/structure
@@ -16,7 +16,7 @@ vi.mock("@/components/auth/sign-out-button", () => ({
 }));
 
 vi.mock("@/components/auth/user-avatar", () => ({
-  UserAvatar: ({ user }: { user: any }) => (
+  UserAvatar: ({ user }: { user: any; }) => (
     <div data-testid="user-avatar">{user?.name || "No Name"}</div>
   ),
 }));
@@ -28,7 +28,7 @@ describe("AuthPage", () => {
     // Check for section title and description
     expect(screen.getByText("Authentication")).toBeDefined();
     expect(
-      screen.getByText("Components for handling user authentication and identity")
+      screen.getByText("Components for handling user authentication and identity"),
     ).toBeDefined();
 
     // Check for component cards

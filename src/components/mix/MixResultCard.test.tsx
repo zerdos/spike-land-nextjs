@@ -1,7 +1,7 @@
+import * as jobStreamHook from "@/hooks/useJobStream";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MixResultCard } from "./MixResultCard";
-import * as jobStreamHook from "@/hooks/useJobStream";
 
 // Mock useJobStream
 vi.mock("@/hooks/useJobStream", () => ({
@@ -115,17 +115,17 @@ describe("MixResultCard", () => {
     capturedCallbacks.onComplete(jobData);
 
     await waitFor(() => {
-        expect(defaultProps.onComplete).toHaveBeenCalledWith({
+      expect(defaultProps.onComplete).toHaveBeenCalledWith({
         jobId: "job1",
         resultUrl: "https://example.com/result.jpg",
         width: 1024,
         height: 1024,
-        });
+      });
     });
   });
 
   it("renders failed state and triggers onError via callback", async () => {
-     let capturedCallbacks: any = {};
+    let capturedCallbacks: any = {};
     (jobStreamHook.useJobStream as any).mockImplementation((args: any) => {
       capturedCallbacks = args;
       return { job: null };
@@ -136,9 +136,9 @@ describe("MixResultCard", () => {
     capturedCallbacks.onError("Something went wrong");
 
     await waitFor(() => {
-        expect(screen.getByText("Mix failed")).toBeInTheDocument();
-        expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-        expect(defaultProps.onError).toHaveBeenCalledWith("Something went wrong");
+      expect(screen.getByText("Mix failed")).toBeInTheDocument();
+      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+      expect(defaultProps.onError).toHaveBeenCalledWith("Something went wrong");
     });
   });
 

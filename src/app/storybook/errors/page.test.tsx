@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import ErrorsPage from "./page";
 
 // Mock the ErrorBoundary to simplify testing (avoiding real error throwing in tests)
@@ -14,7 +14,7 @@ describe("ErrorsPage", () => {
     // Check for section title and description
     expect(screen.getByText("Error Handling")).toBeDefined();
     expect(
-      screen.getByText("Components for handling and displaying errors")
+      screen.getByText("Components for handling and displaying errors"),
     ).toBeDefined();
 
     // Check for component card

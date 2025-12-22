@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { PixelAppHeader } from "./PixelAppHeader";
-import { useSession } from "next-auth/react";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { useSession } from "next-auth/react";
 import { vi } from "vitest";
+import { PixelAppHeader } from "./PixelAppHeader";
 
 // Mocks
 vi.mock("next-auth/react");
@@ -51,8 +51,8 @@ describe("PixelAppHeader", () => {
 
   it("shows loading state for balance", () => {
     (useSession as any).mockReturnValue({
-        data: { user: { name: "Test User" } },
-        status: "authenticated",
+      data: { user: { name: "Test User" } },
+      status: "authenticated",
     });
     (useTokenBalance as any).mockReturnValue({ balance: null, isLoading: true });
 

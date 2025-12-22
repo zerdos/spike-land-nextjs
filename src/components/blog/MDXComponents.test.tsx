@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { mdxComponents, getMDXComponents } from "./MDXComponents";
 import { vi } from "vitest";
+import { getMDXComponents, mdxComponents } from "./MDXComponents";
 
 // Mocks for dynamic components
 vi.mock("next/dynamic", () => ({
@@ -32,11 +32,11 @@ describe("MDXComponents", () => {
   });
 
   it("renders internal link correctly", () => {
-     const LinkComponent = mdxComponents.a as any;
-     render(<LinkComponent href="/internal">Internal Link</LinkComponent>);
-     const link = screen.getByRole("link", { name: "Internal Link" });
-     expect(link).toHaveAttribute("href", "/internal");
-     expect(link).not.toHaveAttribute("target");
+    const LinkComponent = mdxComponents.a as any;
+    render(<LinkComponent href="/internal">Internal Link</LinkComponent>);
+    const link = screen.getByRole("link", { name: "Internal Link" });
+    expect(link).toHaveAttribute("href", "/internal");
+    expect(link).not.toHaveAttribute("target");
   });
 
   it("renders Callout component", () => {
@@ -51,7 +51,7 @@ describe("MDXComponents", () => {
       <Gallery>
         <div>Image 1</div>
         <div>Image 2</div>
-      </Gallery>
+      </Gallery>,
     );
     expect(screen.getByText("Image 1")).toBeInTheDocument();
     expect(screen.getByText("Image 2")).toBeInTheDocument();

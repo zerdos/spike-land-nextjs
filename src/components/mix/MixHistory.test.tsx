@@ -1,7 +1,7 @@
+import * as mixHistoryHook from "@/hooks/useMixHistory";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MixHistory } from "./MixHistory";
-import * as mixHistoryHook from "@/hooks/useMixHistory";
 
 // Mock useMixHistory
 vi.mock("@/hooks/useMixHistory", () => ({

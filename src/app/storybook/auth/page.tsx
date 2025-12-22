@@ -1,8 +1,8 @@
-import { Section } from "@/components/storybook";
 import { AuthButtons } from "@/components/auth/auth-buttons";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { UserAvatar } from "@/components/auth/user-avatar";
+import { Section } from "@/components/storybook";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AuthPage() {
@@ -64,7 +64,7 @@ export default function AuthPage() {
                 <UserAvatar
                   user={{
                     name: "Alice Smith",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice",
                   }}
                 />
               </div>
@@ -74,17 +74,17 @@ export default function AuthPage() {
                 <UserAvatar
                   user={{
                     name: "Bob Jones",
-                    image: null
+                    image: null,
                   }}
                 />
               </div>
 
-               <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium">No Name (Fallback Icon)</span>
                 <UserAvatar
                   user={{
                     name: null,
-                    image: null
+                    image: null,
                   }}
                 />
               </div>

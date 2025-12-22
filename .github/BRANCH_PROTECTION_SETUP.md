@@ -155,7 +155,7 @@ You can also set this up via GitHub CLI:
 # Or: https://cli.github.com/
 
 # Authenticate
-echo ${GH_PAT_TOKEN} | gh auth login --with-token
+gh auth login
 
 # Create branch protection rule
 gh api repos/zerdos/spike-land-nextjs/branches/main/protection \

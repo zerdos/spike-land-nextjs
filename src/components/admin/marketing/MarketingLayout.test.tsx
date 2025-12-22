@@ -1,8 +1,8 @@
+import { createFetchMock, mockMarketingData } from "@/test-utils/marketing-mocks";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarketingLayout, useMarketingData } from "./MarketingLayout";
-import { createFetchMock, mockMarketingData } from "@/test-utils/marketing-mocks";
-import { usePathname, useSearchParams } from "next/navigation";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -18,7 +18,7 @@ describe("MarketingLayout", () => {
     mockPathname.mockReturnValue("/admin/marketing");
     mockSearchParams.mockReturnValue(new URLSearchParams());
     global.fetch = createFetchMock({
-        "/api/admin/marketing/accounts": mockMarketingData
+      "/api/admin/marketing/accounts": mockMarketingData,
     });
   });
 
@@ -30,7 +30,7 @@ describe("MarketingLayout", () => {
     render(
       <MarketingLayout initialData={mockMarketingData}>
         <div>Content</div>
-      </MarketingLayout>
+      </MarketingLayout>,
     );
 
     expect(screen.getByText("Marketing")).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("MarketingLayout", () => {
     render(
       <MarketingLayout initialData={mockMarketingData}>
         <div>Content</div>
-      </MarketingLayout>
+      </MarketingLayout>,
     );
 
     const campaignsTab = screen.getByText("Campaigns");
@@ -59,7 +59,7 @@ describe("MarketingLayout", () => {
     render(
       <MarketingLayout initialData={mockMarketingData}>
         <div>Content</div>
-      </MarketingLayout>
+      </MarketingLayout>,
     );
 
     const pauseButton = screen.getByText("Pause");
@@ -74,7 +74,7 @@ describe("MarketingLayout", () => {
     render(
       <MarketingLayout initialData={mockMarketingData}>
         <div>Content</div>
-      </MarketingLayout>
+      </MarketingLayout>,
     );
 
     const refreshButton = screen.getByText("Refresh");
@@ -87,36 +87,36 @@ describe("MarketingLayout", () => {
     mockSearchParams.mockReturnValue(new URLSearchParams("success=Operation+successful"));
 
     render(
-        <MarketingLayout initialData={mockMarketingData}>
-          <div>Content</div>
-        </MarketingLayout>
-      );
+      <MarketingLayout initialData={mockMarketingData}>
+        <div>Content</div>
+      </MarketingLayout>,
+    );
 
-      expect(screen.getByText("Operation successful")).toBeInTheDocument();
+    expect(screen.getByText("Operation successful")).toBeInTheDocument();
   });
 
   it("displays error notification from URL", () => {
     mockSearchParams.mockReturnValue(new URLSearchParams("error=Operation+failed"));
 
     render(
-        <MarketingLayout initialData={mockMarketingData}>
-          <div>Content</div>
-        </MarketingLayout>
-      );
+      <MarketingLayout initialData={mockMarketingData}>
+        <div>Content</div>
+      </MarketingLayout>,
+    );
 
-      expect(screen.getByText("Operation failed")).toBeInTheDocument();
+    expect(screen.getByText("Operation failed")).toBeInTheDocument();
   });
 
   it("provides marketing data to children", () => {
     const TestChild = () => {
-        const { data } = useMarketingData();
-        return <div>Total Accounts: {data.summary.totalAccounts}</div>;
+      const { data } = useMarketingData();
+      return <div>Total Accounts: {data.summary.totalAccounts}</div>;
     };
 
     render(
-        <MarketingLayout initialData={mockMarketingData}>
-            <TestChild />
-        </MarketingLayout>
+      <MarketingLayout initialData={mockMarketingData}>
+        <TestChild />
+      </MarketingLayout>,
     );
 
     expect(screen.getByText("Total Accounts: 2")).toBeInTheDocument();
