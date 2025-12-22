@@ -13,7 +13,9 @@ import {
   createSession,
   extractSessionId,
   isJulesAvailable,
+  listSessions as listJulesSessions,
 } from "@/lib/agents/jules-client";
+import type { JulesSession } from "@/lib/agents/jules-types";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
@@ -33,6 +35,78 @@ function toExternalAgentStatus(state: string | undefined): ExternalAgentStatus {
     return state as ExternalAgentStatus;
   }
   return ExternalAgentStatus.QUEUED;
+}
+
+/**
+ * Sync sessions from Jules API to local database
+ * This ensures we see all Jules sessions, including those created externally
+ */
+async function syncJulesSessionsToDb(): Promise<{ synced: number; errors: string[]; }> {
+  if (!isJulesAvailable()) {
+    return { synced: 0, errors: [] };
+  }
+
+  const errors: string[] = [];
+  let synced = 0;
+
+  // Fetch all sessions from Jules API (paginated)
+  let pageToken: string | undefined;
+  const allJulesSessions: JulesSession[] = [];
+
+  do {
+    const { data, error } = await listJulesSessions(50, pageToken);
+    if (error) {
+      errors.push(`Failed to fetch Jules sessions: ${error}`);
+      break;
+    }
+    if (data?.sessions) {
+      allJulesSessions.push(...data.sessions);
+    }
+    pageToken = data?.nextPageToken;
+  } while (pageToken);
+
+  // Sync each session to database
+  for (const julesSession of allJulesSessions) {
+    // Extract PR URL from outputs if available
+    const prOutput = julesSession.outputs?.find((o) => o.url?.includes("pull"));
+    const pullRequestUrl = prOutput?.url;
+
+    const { error: upsertError } = await tryCatch(
+      prisma.externalAgentSession.upsert({
+        where: { externalId: julesSession.name },
+        update: {
+          status: toExternalAgentStatus(julesSession.state),
+          pullRequestUrl,
+          planSummary: julesSession.planSummary,
+          metadata: {
+            julesUrl: julesSession.url,
+            title: julesSession.title,
+          },
+        },
+        create: {
+          externalId: julesSession.name,
+          provider: "JULES",
+          name: julesSession.title || extractSessionId(julesSession.name),
+          description: "",
+          status: toExternalAgentStatus(julesSession.state),
+          pullRequestUrl,
+          planSummary: julesSession.planSummary,
+          metadata: {
+            julesUrl: julesSession.url,
+            title: julesSession.title,
+          },
+        },
+      }),
+    );
+
+    if (upsertError) {
+      errors.push(`Failed to sync session ${julesSession.name}: ${upsertError.message}`);
+    } else {
+      synced++;
+    }
+  }
+
+  return { synced, errors };
 }
 
 // Schema for creating a new session
@@ -87,6 +161,12 @@ export async function GET(request: NextRequest) {
   }
 
   const { status, provider, limit, offset } = queryResult.data;
+
+  // Sync sessions from Jules API first (only if Jules is available)
+  const syncResult = await syncJulesSessionsToDb();
+  if (syncResult.errors.length > 0) {
+    console.warn("Jules sync warnings:", syncResult.errors);
+  }
 
   // Build where clause
   const where: Prisma.ExternalAgentSessionWhereInput = {};
