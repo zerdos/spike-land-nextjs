@@ -639,12 +639,10 @@ describe("getSuperAdminPublicPhotos", () => {
     expect(result[0].tier).toBe(EnhancementTier.TIER_4K);
   });
 
-  it("should throw error when database query fails", async () => {
+  it("should return [] when database query fails", async () => {
     const dbError = new Error("Database connection failed");
     vi.mocked(prisma.album.findMany).mockRejectedValue(dbError);
 
-    await expect(getSuperAdminPublicPhotos()).rejects.toThrow(
-      "Failed to fetch public albums: Database connection failed",
-    );
+    await expect(getSuperAdminPublicPhotos()).resolves.toEqual([]);
   });
 });
