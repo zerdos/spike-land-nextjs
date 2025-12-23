@@ -89,8 +89,8 @@ async function testViewport(
       // Test touch interaction (simulate by checking if touchstart handler exists)
       const sliderElement = await comparisonSlider.elementHandle();
       if (sliderElement) {
-        const hasTouch = await page.evaluate((el: any) => {
-          return el && typeof el["ontouchstart"] !== "undefined";
+        const hasTouch = await page.evaluate((el: Element) => {
+          return el && typeof (el as HTMLElement)["ontouchstart"] !== "undefined";
         }, sliderElement);
 
         if (!hasTouch) {

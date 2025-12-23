@@ -5,7 +5,7 @@
  * funnel stage calculation, filtering, and authorization.
  */
 
-// @ts-nocheck - Test file with extensive Prisma mocking where strict types add no value
+import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
@@ -40,7 +40,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({
-      user: { id: "admin-123", name: "Admin", email: "admin@example.com" },
+      user: {
+        id: "admin-123",
+        name: "Admin",
+        email: "admin@example.com",
+        role: UserRole.ADMIN,
+      },
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
@@ -154,22 +159,22 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v3" },
         { visitorId: "v4" },
         { visitorId: "v5" },
-      ]);
+      ] as unknown as never);
 
       // Mock unique users per conversion type (3 signups, 2 enhancements, 1 purchase)
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
         async (args: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
-            return [{ userId: "u1" }, { userId: "u2" }, { userId: "u3" }];
+            return [{ userId: "u1" }, { userId: "u2" }, { userId: "u3" }] as unknown as never;
           }
           if (conversionType === "ENHANCEMENT") {
-            return [{ userId: "u1" }, { userId: "u2" }];
+            return [{ userId: "u1" }, { userId: "u2" }] as unknown as never;
           }
           if (conversionType === "PURCHASE") {
-            return [{ userId: "u1" }];
+            return [{ userId: "u1" }] as unknown as never;
           }
-          return [];
+          return [] as unknown as never;
         },
       );
 
@@ -216,8 +221,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should handle zero visitors", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31",
@@ -258,8 +263,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v1" },
         { visitorId: "v2" },
         { visitorId: "v3" },
-      ]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31",

@@ -18,6 +18,7 @@ const eslintConfig = tseslint.config(
       "fix-r2-versioning-cache/**",
       "coverage/**",
       ".yarn/**",
+      "src/app/.well-known/**",
     ],
   },
   // TypeScript files configuration
