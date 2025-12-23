@@ -5,6 +5,8 @@
  * campaign metrics, filtering, pagination, and authorization.
  */
 
+import { UserRole } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
@@ -45,7 +47,12 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({
-      user: { id: "admin-123", name: "Admin", email: "admin@example.com" },
+      user: {
+        id: "admin-123",
+        name: "Admin",
+        email: "admin@example.com",
+        role: UserRole.ADMIN,
+      },
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
@@ -77,7 +84,11 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
 
     it("should return 401 when session has no user id", async () => {
       vi.mocked(auth).mockResolvedValue({
-        user: { name: "Test", email: "test@example.com" },
+        user: {
+          name: "Test",
+          email: "test@example.com",
+          role: UserRole.USER,
+        } as any,
         expires: new Date(Date.now() + 86400000).toISOString(),
       });
 
@@ -210,14 +221,14 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 50, visitorId: 40 },
           _sum: { pageViewCount: 200 },
         },
-      ]);
+      ] as unknown as Prisma.GetVisitorSessionGroupByPayload<any>[]);
 
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { utmCampaign: "brand", utmSource: "google", pageViewCount: 1 },
         { utmCampaign: "brand", utmSource: "google", pageViewCount: 5 },
         { utmCampaign: "retargeting", utmSource: "facebook", pageViewCount: 1 },
         { utmCampaign: "retargeting", utmSource: "facebook", pageViewCount: 3 },
-      ]);
+      ] as any);
 
       vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([
         {
@@ -238,7 +249,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           conversionType: "ENHANCEMENT",
           conversionValue: 50,
         },
-      ]);
+      ] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -262,9 +273,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
     });
 
     it("should handle empty campaign data", async () => {
-      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",

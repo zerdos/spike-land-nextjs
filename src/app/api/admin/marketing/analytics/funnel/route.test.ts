@@ -283,14 +283,14 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { visitorId: "v1" },
         { visitorId: "v2" },
-      ]);
+      ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
         async (args: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
-            return [{ userId: "u1" }, { userId: "u2" }];
+            return [{ userId: "u1" }, { userId: "u2" }] as unknown as never;
           }
-          return [];
+          return [] as unknown as never;
         },
       );
 
@@ -310,17 +310,17 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     it("should handle enhancements with no purchases", async () => {
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { visitorId: "v1" },
-      ]);
+      ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
         async (args: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
-            return [{ userId: "u1" }];
+            return [{ userId: "u1" }] as unknown as never;
           }
           if (conversionType === "ENHANCEMENT") {
-            return [{ userId: "u1" }];
+            return [{ userId: "u1" }] as unknown as never;
           }
-          return [];
+          return [] as unknown as never;
         },
       );
 
@@ -340,8 +340,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
   describe("Filtering", () => {
     it("should filter by utmCampaign", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&utmCampaign=brand",
@@ -370,8 +370,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should filter by platform", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&platform=google",
@@ -404,8 +404,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should filter by both utmCampaign and platform", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&utmCampaign=brand&platform=google",

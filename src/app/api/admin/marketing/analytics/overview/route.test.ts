@@ -233,22 +233,26 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
       // Mock current period attributions
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([
-          { conversionType: "SIGNUP", conversionValue: null },
-          { conversionType: "SIGNUP", conversionValue: null },
-          { conversionType: "ENHANCEMENT", conversionValue: 50 },
-          { conversionType: "PURCHASE", conversionValue: 9.99 },
-          { conversionType: "PURCHASE", conversionValue: 19.99 },
-        ])
+        .mockResolvedValueOnce(
+          [
+            { conversionType: "SIGNUP", conversionValue: null },
+            { conversionType: "SIGNUP", conversionValue: null },
+            { conversionType: "ENHANCEMENT", conversionValue: 50 },
+            { conversionType: "PURCHASE", conversionValue: 9.99 },
+            { conversionType: "PURCHASE", conversionValue: 19.99 },
+          ] as any,
+        )
         // Previous period attributions
-        .mockResolvedValueOnce([
-          { conversionType: "SIGNUP", conversionValue: null },
-          { conversionType: "PURCHASE", conversionValue: 9.99 },
-        ])
+        .mockResolvedValueOnce(
+          [
+            { conversionType: "SIGNUP", conversionValue: null },
+            { conversionType: "PURCHASE", conversionValue: 9.99 },
+          ] as any,
+        )
         // Daily conversions query
-        .mockResolvedValueOnce([
-          { convertedAt: new Date("2024-01-15") },
-        ]);
+        .mockResolvedValueOnce(
+          [{ convertedAt: new Date("2024-01-15") }] as any,
+        );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/overview?startDate=2024-01-01&endDate=2024-01-31",
@@ -317,27 +321,33 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
     it("should calculate positive trend when growing from zero", async () => {
       // Mock all 4 visitorSession queries
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([
-          {
-            id: "s1",
-            visitorId: "v1",
-            pageViewCount: 5,
-            sessionStart: new Date("2024-01-15"),
-          },
-        ])
+        .mockResolvedValueOnce(
+          [
+            {
+              id: "s1",
+              visitorId: "v1",
+              pageViewCount: 5,
+              sessionStart: new Date("2024-01-15"),
+            },
+          ] as any,
+        )
         .mockResolvedValueOnce([]) // Previous period empty
-        .mockResolvedValueOnce([
-          { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
-        ]) // Daily metrics
-        .mockResolvedValueOnce([
-          { utmSource: null, referrer: null, gclid: null, fbclid: null },
-        ]); // Traffic sources
+        .mockResolvedValueOnce(
+          [
+            { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
+          ] as any,
+        ) // Daily metrics
+        .mockResolvedValueOnce(
+          [
+            { utmSource: null, referrer: null, gclid: null, fbclid: null },
+          ] as any,
+        ); // Traffic sources
 
       // Mock all 3 campaignAttribution queries
       vi.mocked(prisma.campaignAttribution.findMany)
-        .mockResolvedValueOnce([
-          { conversionType: "SIGNUP", conversionValue: null },
-        ])
+        .mockResolvedValueOnce(
+          [{ conversionType: "SIGNUP", conversionValue: null }] as any,
+        )
         .mockResolvedValueOnce([]) // Previous period empty
         .mockResolvedValueOnce([]); // Daily conversions
 
