@@ -37,13 +37,13 @@ describe("SignInContent", () => {
   describe("Page Structure", () => {
     it("should render the sign in page with Pixel branding", () => {
       render(<SignInContent />);
-      expect(screen.getByText("Welcome to Pixel")).toBeInTheDocument();
+      expect(screen.getByText("Restore photos in minutes")).toBeInTheDocument();
     });
 
     it("should display the page description", () => {
       render(<SignInContent />);
       expect(
-        screen.getByText("Sign in or create an account to continue."),
+        screen.getByText("Enter your email to sign in or create an account."),
       ).toBeInTheDocument();
     });
 
@@ -62,14 +62,14 @@ describe("SignInContent", () => {
 
     it("should have Terms of Service link", () => {
       render(<SignInContent />);
-      const termsLink = screen.getByRole("link", { name: /terms of service/i });
+      const termsLink = screen.getByRole("link", { name: /terms/i });
       expect(termsLink).toBeInTheDocument();
       expect(termsLink).toHaveAttribute("href", "/terms");
     });
 
     it("should have Privacy Policy link", () => {
       render(<SignInContent />);
-      const privacyLink = screen.getByRole("link", { name: /privacy policy/i });
+      const privacyLink = screen.getByRole("link", { name: /privacy/i });
       expect(privacyLink).toBeInTheDocument();
       expect(privacyLink).toHaveAttribute("href", "/privacy");
     });
@@ -199,29 +199,29 @@ describe("SignInContent", () => {
 
       render(<SignInContent />);
       // Component renders without errors when callbackUrl is present
-      expect(screen.getByText("Welcome to Pixel")).toBeInTheDocument();
+      expect(screen.getByText("Restore photos in minutes")).toBeInTheDocument();
     });
   });
 
   describe("Accessibility", () => {
     it("should have proper heading hierarchy", () => {
       render(<SignInContent />);
-      const title = screen.getByText("Welcome to Pixel", {
-        selector: ".text-2xl",
+      const title = screen.getByText("Restore photos in minutes", {
+        selector: ".text-3xl",
       });
       expect(title).toBeInTheDocument();
-      expect(title).toHaveClass("text-2xl");
+      expect(title).toHaveClass("text-3xl");
     });
 
     it("should have descriptive link text for Terms", () => {
       render(<SignInContent />);
-      const termsLink = screen.getByRole("link", { name: /terms of service/i });
+      const termsLink = screen.getByRole("link", { name: /terms/i });
       expect(termsLink).toHaveAccessibleName();
     });
 
     it("should have descriptive link text for Privacy", () => {
       render(<SignInContent />);
-      const privacyLink = screen.getByRole("link", { name: /privacy policy/i });
+      const privacyLink = screen.getByRole("link", { name: /privacy/i });
       expect(privacyLink).toHaveAccessibleName();
     });
   });
