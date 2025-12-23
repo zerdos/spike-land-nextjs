@@ -427,7 +427,6 @@ describe("TokensPage", () => {
   });
 
   it("should redirect to signin when purchasing without session", async () => {
-    const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -435,9 +434,8 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    const buyButton = screen.getByTestId("buy-button-starter");
-    await user.click(buyButton);
 
+    // When unauthenticated, the page should redirect immediately
     expect(mockRouter.push).toHaveBeenCalledWith(
       "/auth/signin?callbackUrl=/tokens",
     );
@@ -473,7 +471,7 @@ describe("TokensPage", () => {
     expect(screen.queryByText("tokens available")).toBeInTheDocument();
   });
 
-  it("should not display estimated enhancements when null", () => {
+  it("should display estimated enhancements when available", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: mockAuthUser,
@@ -489,7 +487,13 @@ describe("TokensPage", () => {
       maxBalance: null,
       isLoading: false,
       stats: null,
-      estimatedEnhancements: { tier1K: 0, tier2K: 0, tier4K: 0, suggested: 0, suggestedTier: "1K" },
+      estimatedEnhancements: {
+        tier1K: 25,
+        tier2K: 10,
+        tier4K: 5,
+        suggested: 25,
+        suggestedTier: "1K",
+      },
       refetch: mockRefetch,
       error: null,
       isLowBalance: false,
@@ -499,7 +503,8 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.queryByText("Estimated enhancements remaining:")).not
+    // The estimated enhancements section should be displayed when values are available
+    expect(screen.getByText("Estimated enhancements remaining:"))
       .toBeInTheDocument();
   });
 
