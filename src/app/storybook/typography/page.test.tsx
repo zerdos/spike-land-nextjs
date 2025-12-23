@@ -4,95 +4,75 @@ import TypographyPage from "./page";
 
 describe("TypographyPage", () => {
   describe("rendering", () => {
-    it("should render the section title", () => {
+    it("should render the main title", () => {
       render(<TypographyPage />);
       expect(screen.getByText("Typography")).toBeInTheDocument();
     });
 
-    it("should render the section description", () => {
+    it("should render the page description", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/font families and text styles/i))
+      expect(screen.getByText(/Our typography system is designed for maximum legibility/i))
         .toBeInTheDocument();
     });
   });
 
-  describe("font families section", () => {
-    it("should render font families card", () => {
+  describe("font stack", () => {
+    it("should render the font stack section", () => {
       render(<TypographyPage />);
-      expect(screen.getByText("Font Families")).toBeInTheDocument();
-      expect(screen.getByText(/montserrat for headers, geist for body/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("The Font Stack")).toBeInTheDocument();
     });
 
-    it("should display Montserrat font example", () => {
+    it("should display Montserrat as heading typeface", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/montserrat \(headers\)/i)).toBeInTheDocument();
+      expect(screen.getByText("Heading Typeface")).toBeInTheDocument();
+      expect(screen.getByText("Montserrat")).toBeInTheDocument();
     });
 
-    it("should display Geist Sans font example", () => {
+    it("should display Geist Sans as interface typeface", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/geist sans \(body\)/i)).toBeInTheDocument();
-    });
-
-    it("should display Geist Mono font example", () => {
-      render(<TypographyPage />);
-      expect(screen.getByText(/geist mono \(code\)/i)).toBeInTheDocument();
+      expect(screen.getByText("Interface Typeface")).toBeInTheDocument();
+      expect(screen.getByText("Geist Sans")).toBeInTheDocument();
     });
   });
 
-  describe("heading scale section", () => {
-    it("should render heading scale card", () => {
+  describe("scale", () => {
+    it("should render the scale section", () => {
       render(<TypographyPage />);
-      expect(screen.getByText("Heading Scale")).toBeInTheDocument();
-      expect(screen.getByText(/all headings use montserrat font/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("The Scale")).toBeInTheDocument();
     });
 
-    it("should render all heading levels", () => {
+    it("should render top level headings", () => {
       render(<TypographyPage />);
-      expect(screen.getByRole("heading", { name: /heading level 1/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 2/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 3/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 4/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 5/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /heading level 6/i }))
-        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Ultimate Enhancement/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /System Performance/i })).toBeInTheDocument();
     });
 
-    it("should render heading level badges", () => {
+    it("should render section level headings", () => {
       render(<TypographyPage />);
-      expect(screen.getByText("h1")).toBeInTheDocument();
-      expect(screen.getByText("h2")).toBeInTheDocument();
-      expect(screen.getByText("h3")).toBeInTheDocument();
-      expect(screen.getByText("h4")).toBeInTheDocument();
-      expect(screen.getByText("h5")).toBeInTheDocument();
-      expect(screen.getByText("h6")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Core Components/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Interactive Elements/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Status Indicators/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Inline Meta Data/i })).toBeInTheDocument();
     });
   });
 
-  describe("text colors section", () => {
-    it("should render text colors card", () => {
+  describe("semantic hierarchy", () => {
+    it("should render semantic hierarchy section", () => {
       render(<TypographyPage />);
-      expect(screen.getByText("Text Colors")).toBeInTheDocument();
-      expect(screen.getByText(/semantic text color classes/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Semantic Hierarchy")).toBeInTheDocument();
     });
 
-    it("should display text color examples", () => {
+    it("should display color examples", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/text-foreground - primary text/i))
-        .toBeInTheDocument();
-      expect(screen.getByText(/text-muted-foreground - secondary text/i))
-        .toBeInTheDocument();
-      expect(screen.getByText(/text-primary - accent\/link text/i))
-        .toBeInTheDocument();
-      expect(screen.getByText(/text-destructive - error text/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Primary Foreground")).toBeInTheDocument();
+      expect(screen.getByText(/Secondary Foreground \(Muted\)/i)).toBeInTheDocument();
+    });
+
+    it("should display state color examples", () => {
+      render(<TypographyPage />);
+      expect(screen.getByText(/System ready for deployment/i)).toBeInTheDocument();
+      expect(screen.getByText(/Token balance low/i)).toBeInTheDocument();
+      expect(screen.getByText(/Critical engine failure/i)).toBeInTheDocument();
     });
   });
 });

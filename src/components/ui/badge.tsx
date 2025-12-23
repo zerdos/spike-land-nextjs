@@ -4,22 +4,16 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default:
-          "glass-1 border-transparent bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/80 shadow-glow-cyan-sm transition-all",
-        secondary:
-          "glass-1 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "glass-1 border-transparent bg-destructive text-destructive-foreground shadow-md shadow-destructive/20 hover:bg-destructive/80",
-        success:
-          "glass-1 border-transparent bg-success text-success-foreground shadow-md shadow-success/20 hover:bg-success/80",
-        warning:
-          "glass-1 border-transparent bg-warning text-warning-foreground shadow-md shadow-warning/20 hover:bg-warning/80",
-        outline:
-          "glass-0 text-foreground border border-white/10 backdrop-blur-sm hover:glass-1 transition-all",
+        default: "glass-1 glass-edge border-white/10 text-foreground shadow-sm",
+        secondary: "bg-white/5 text-muted-foreground border border-white/5",
+        destructive: "bg-destructive text-destructive-foreground shadow-glow-destructive",
+        success: "bg-success text-success-foreground shadow-glow-success",
+        warning: "bg-warning text-warning-foreground shadow-glow-warning",
+        outline: "text-foreground border border-white/20",
         overlay: "bg-black/60 text-white hover:bg-black/70 border-none backdrop-blur-[2px]",
       },
     },

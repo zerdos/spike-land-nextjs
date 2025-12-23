@@ -16,7 +16,7 @@ describe("Progress", () => {
     expect(element).toHaveClass("w-full");
     expect(element).toHaveClass("overflow-hidden");
     expect(element).toHaveClass("rounded-full");
-    expect(element).toHaveClass("bg-primary/20");
+    expect(element).toHaveClass("bg-white/10");
   });
 
   it("renders with value", () => {
@@ -35,9 +35,7 @@ describe("Progress", () => {
     const { container } = render(<Progress value={50} glow />);
     const root = container.firstChild as HTMLElement;
     const indicator = root.firstChild as HTMLElement;
-    expect(indicator.className).toContain(
-      "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
-    );
+    expect(indicator).toHaveClass("shadow-glow-cyan");
   });
 
   it("does not apply glow effect by default", () => {

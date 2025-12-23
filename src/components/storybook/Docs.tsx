@@ -36,7 +36,7 @@ export function UsageGuide({
   donts,
 }: {
   dos: string[];
-  donts: string[];
+  donts?: string[];
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
@@ -54,20 +54,22 @@ export function UsageGuide({
           ))}
         </ul>
       </div>
-      <div className="space-y-3 p-5 rounded-2xl bg-destructive/5 border border-destructive/20">
-        <div className="flex items-center gap-2 text-destructive">
-          <XCircle className="h-4 w-4" />
-          <h3 className="font-bold uppercase tracking-wider text-[10px]">Don't</h3>
+      {donts && donts.length > 0 && (
+        <div className="space-y-3 p-5 rounded-2xl bg-destructive/5 border border-destructive/20">
+          <div className="flex items-center gap-2 text-destructive">
+            <XCircle className="h-4 w-4" />
+            <h3 className="font-bold uppercase tracking-wider text-[10px]">Don't</h3>
+          </div>
+          <ul className="space-y-1.5">
+            {donts.map((item, i) => (
+              <li key={i} className="text-sm text-foreground/80 flex gap-2">
+                <span className="text-destructive font-bold text-xs">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul className="space-y-1.5">
-          {donts.map((item, i) => (
-            <li key={i} className="text-sm text-foreground/80 flex gap-2">
-              <span className="text-destructive font-bold text-xs">•</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+      )}
     </div>
   );
 }

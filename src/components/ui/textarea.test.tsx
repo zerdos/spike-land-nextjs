@@ -43,12 +43,10 @@ describe("Textarea", () => {
     const textarea = screen.getByRole("textbox");
     expect(textarea).toHaveClass(
       "flex",
-      "min-h-[60px]",
+      "min-h-[100px]",
       "w-full",
-      "rounded-md",
-      "border",
-      "border-input",
-      "bg-transparent",
+      "rounded-xl",
+      "glass-input",
     );
   });
 });
