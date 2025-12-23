@@ -51,7 +51,7 @@ COPY --from=dep-context /app /app
 
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     DATABASE_URL="${DUMMY_DATABASE_URL}" \
-    yarn install --immutable
+    yarn install --immutable-cache
 
 # Prisma client (postinstall usually does it, keep guard)
 RUN test -d node_modules/.prisma/client || \
@@ -169,15 +169,20 @@ RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_module
 FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 
+
 # Yarn runtime metadata (so `yarn <script>` works)
 COPY --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=dep-context /app/.yarn/ ./.yarn/
 COPY --from=dep-context /app/packages/ ./packages/
 
+COPY --link --from=deps /app/node_modules ./node_modules
+COPY --link --from=build /app/.next ./.next
+
 # Built app (standalone mode) - preserve directory structure for start:ci script
 COPY --from=build /app/.next/standalone ./.next/standalone
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+
 
 # E2E tests + config only
 COPY --from=test-source /app/e2e ./e2e
@@ -207,20 +212,12 @@ ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=8
 ENV SHARD_INDEX=${SHARD_INDEX}
 ENV SHARD_TOTAL=${SHARD_TOTAL}
-RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci \
-    > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
-    || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-1
 ARG CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=1
-ENV SHARD_TOTAL=8
-RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-1.log 2>&1 || (cat /tmp/e2e-1.log && exit 1)
+RUN yarn start:server:and:test:ci
 
 FROM e2e-test-base AS e2e-tests-2
 ARG CACHE_NS

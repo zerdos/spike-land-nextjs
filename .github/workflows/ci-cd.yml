@@ -60,7 +60,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Run linter
         run: yarn lint
@@ -101,7 +101,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -161,7 +161,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Build application
         run: yarn build
@@ -209,7 +209,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5

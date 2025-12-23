@@ -1,16 +1,12 @@
 #!/bin/bash
-# Run a specific E2E test shard locally
-# Usage: ./scripts/e2e-shard.sh [shard_number]
-# Example: ./scripts/e2e-shard.sh 3  # Runs shard 3/8
+# Run cucumber with shard parameters
+# Called by start-server-and-test after server is started
+# Uses SHARD_INDEX and SHARD_TOTAL env vars set by parent process
 
-SHARD_INDEX=${1:-1}
-SHARD_TOTAL=${2:-8}
+SHARD_INDEX=${SHARD_INDEX:-1}
+SHARD_TOTAL=${SHARD_TOTAL:-8}
 
 echo "Running E2E shard $SHARD_INDEX/$SHARD_TOTAL"
 
-export SHARD_INDEX
-export SHARD_TOTAL
-export BASE_URL=http://localhost:3000
-export CI=true
-
-yarn start:server:and:test
+# Run cucumber directly (server is already started by start-server-and-test)
+BASE_URL=${BASE_URL:-http://localhost:3000} CI=true cucumber-js --profile ci --shard "$SHARD_INDEX/$SHARD_TOTAL"
