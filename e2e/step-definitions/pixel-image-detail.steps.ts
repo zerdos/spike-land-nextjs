@@ -27,10 +27,10 @@ interface Job {
   updatedAt: string;
   processingStartedAt: string | null;
   processingCompletedAt: string | null;
-  analysisResult: any;
-  analysisSource: any;
+  analysisResult: Record<string, unknown> | null;
+  analysisSource: string | null;
   wasCropped: boolean;
-  cropDimensions: any;
+  cropDimensions: Record<string, unknown> | null;
   pipelineId: string | null;
 }
 

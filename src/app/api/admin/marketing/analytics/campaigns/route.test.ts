@@ -5,7 +5,6 @@
  * campaign metrics, filtering, pagination, and authorization.
  */
 
-// @ts-nocheck - Test file with extensive Prisma mocking where strict types add no value
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";

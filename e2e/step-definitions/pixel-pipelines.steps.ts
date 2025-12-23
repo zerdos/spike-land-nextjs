@@ -15,10 +15,10 @@ interface Pipeline {
   updatedAt: string;
   isOwner: boolean;
   isSystemDefault: boolean;
-  analysisConfig: any;
-  autoCropConfig: any;
-  promptConfig: any;
-  generationConfig: any;
+  analysisConfig: Record<string, unknown> | null;
+  autoCropConfig: Record<string, unknown> | null;
+  promptConfig: Record<string, unknown> | null;
+  generationConfig: Record<string, unknown> | null;
 }
 
 const mockSystemPipeline: Pipeline = {

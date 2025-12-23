@@ -5,7 +5,7 @@
  * metrics calculation, trend comparison, and authorization.
  */
 
-// @ts-nocheck - Test file with extensive Prisma mocking where strict types add no value
+import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
@@ -45,7 +45,12 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({
-      user: { id: "admin-123", name: "Admin", email: "admin@example.com" },
+      user: {
+        id: "admin-123",
+        name: "Admin",
+        email: "admin@example.com",
+        role: UserRole.ADMIN,
+      },
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
@@ -77,7 +82,11 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
     it("should return 401 when session has no user id", async () => {
       vi.mocked(auth).mockResolvedValue({
-        user: { name: "Test", email: "test@example.com" },
+        user: {
+          name: "Test",
+          email: "test@example.com",
+          role: UserRole.USER,
+        } as any,
         expires: new Date(Date.now() + 86400000).toISOString(),
       });
 
@@ -175,44 +184,52 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
     it("should return overview metrics with correct calculations", async () => {
       // Mock current period sessions (called twice: once for metrics, once for daily)
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([
-          {
-            id: "s1",
-            visitorId: "v1",
-            pageViewCount: 5,
-            sessionStart: new Date("2024-01-15"),
-          },
-          {
-            id: "s2",
-            visitorId: "v2",
-            pageViewCount: 3,
-            sessionStart: new Date("2024-01-15"),
-          },
-          {
-            id: "s3",
-            visitorId: "v1",
-            pageViewCount: 2,
-            sessionStart: new Date("2024-01-16"),
-          },
-        ])
+        .mockResolvedValueOnce(
+          [
+            {
+              id: "s1",
+              visitorId: "v1",
+              pageViewCount: 5,
+              sessionStart: new Date("2024-01-15"),
+            },
+            {
+              id: "s2",
+              visitorId: "v2",
+              pageViewCount: 3,
+              sessionStart: new Date("2024-01-15"),
+            },
+            {
+              id: "s3",
+              visitorId: "v1",
+              pageViewCount: 2,
+              sessionStart: new Date("2024-01-16"),
+            },
+          ] as any,
+        )
         // Previous period sessions
-        .mockResolvedValueOnce([
-          {
-            id: "s4",
-            visitorId: "v3",
-            pageViewCount: 4,
-            sessionStart: new Date("2024-01-01"),
-          },
-        ])
+        .mockResolvedValueOnce(
+          [
+            {
+              id: "s4",
+              visitorId: "v3",
+              pageViewCount: 4,
+              sessionStart: new Date("2024-01-01"),
+            },
+          ] as any,
+        )
         // Daily metrics query
-        .mockResolvedValueOnce([
-          { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
-          { sessionStart: new Date("2024-01-15"), visitorId: "v2" },
-        ])
+        .mockResolvedValueOnce(
+          [
+            { sessionStart: new Date("2024-01-15"), visitorId: "v1" },
+            { sessionStart: new Date("2024-01-15"), visitorId: "v2" },
+          ] as any,
+        )
         // Traffic sources query
-        .mockResolvedValueOnce([
-          { utmSource: "google", referrer: null, gclid: null, fbclid: null },
-        ]);
+        .mockResolvedValueOnce(
+          [
+            { utmSource: "google", referrer: null, gclid: null, fbclid: null },
+          ] as any,
+        );
 
       // Mock current period attributions
       vi.mocked(prisma.campaignAttribution.findMany)

@@ -47,7 +47,7 @@ async function mockMcpHistoryApi(
 
     let filteredJobs = jobs;
     if (typeFilter !== "all") {
-      filteredJobs = jobs.filter((job) => job.type === typeFilter as any);
+      filteredJobs = jobs.filter((job) => job.type === (typeFilter as MockMcpJob["type"]));
     }
 
     const paginatedJobs = filteredJobs.slice(offset, offset + limit);
