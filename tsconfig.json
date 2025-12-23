@@ -35,7 +35,11 @@
       "@apps/*": [
         "./apps/*"
       ]
-    }
+    },
+    "types": [
+      "@testing-library/jest-dom/vitest",
+      "vitest/globals"
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -46,16 +50,6 @@
   ],
   "exclude": [
     "node_modules",
-    "vitest.config.ts",
-    "vitest.setup.ts",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.example.tsx",
-    "e2e/**/*",
-    "cucumber.js",
-    "prisma.config.ts",
-    "fix-r2-versioning-cache/**/*",
-    "scripts/**/*",
-    "packages/**/*"
+    ".next"
   ]
 }
