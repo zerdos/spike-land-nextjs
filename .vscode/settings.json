@@ -6,5 +6,6 @@
     "peerjs",
     "turbopack",
     "vitest"
-  ]
+  ],
+  "css.lint.unknownAtRules": "ignore"
 }
