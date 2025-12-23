@@ -41,6 +41,8 @@ describe("GET /api/tokens/balance", () => {
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
       balance: 50,
       lastRegeneration: mockDate,
+      tier: "FREE" as const,
+      maxBalance: 100,
     });
 
     vi.mocked(getTimeUntilNextRegeneration).mockResolvedValue(600000); // 10 minutes in ms
@@ -176,6 +178,8 @@ describe("GET /api/tokens/balance", () => {
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
       balance: 50,
       lastRegeneration: mockDate,
+      tier: "FREE" as const,
+      maxBalance: 100,
     });
     vi.mocked(getTimeUntilNextRegeneration).mockRejectedValue(
       new Error("Regeneration time error"),
@@ -202,6 +206,8 @@ describe("GET /api/tokens/balance", () => {
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
       balance: 50,
       lastRegeneration: mockDate,
+      tier: "FREE" as const,
+      maxBalance: 100,
     });
     vi.mocked(getTimeUntilNextRegeneration).mockResolvedValue(600000);
     vi.mocked(TokenBalanceManager.getConsumptionStats).mockRejectedValue(
@@ -229,6 +235,8 @@ describe("GET /api/tokens/balance", () => {
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
       balance: 100,
       lastRegeneration: mockDate,
+      tier: "FREE" as const,
+      maxBalance: 100,
     });
 
     vi.mocked(getTimeUntilNextRegeneration).mockResolvedValue(0);
@@ -259,6 +267,8 @@ describe("GET /api/tokens/balance", () => {
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
       balance: 50,
       lastRegeneration: mockDate,
+      tier: "FREE" as const,
+      maxBalance: 100,
     });
     vi.mocked(getTimeUntilNextRegeneration).mockResolvedValue(600000);
     vi.mocked(TokenBalanceManager.getConsumptionStats).mockResolvedValue({

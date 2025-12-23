@@ -246,7 +246,9 @@ describe("JobsAdminClient", () => {
 
     // Click on the completed job (first one)
     const jobItems = document.querySelectorAll("[class*='cursor-pointer']");
-    fireEvent.click(jobItems[0]);
+    if (jobItems[0]) {
+      fireEvent.click(jobItems[0]);
+    }
 
     await waitFor(() => {
       expect(screen.getByTestId("image-comparison-slider")).toBeInTheDocument();
@@ -379,7 +381,9 @@ describe("JobsAdminClient", () => {
 
     // Click on the completed job
     const jobItems = document.querySelectorAll("[class*='cursor-pointer']");
-    fireEvent.click(jobItems[0]);
+    if (jobItems[0]) {
+      fireEvent.click(jobItems[0]);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("AI Model")).toBeInTheDocument();
@@ -402,7 +406,9 @@ describe("JobsAdminClient", () => {
 
     // Click on the completed job
     const jobItems = document.querySelectorAll("[class*='cursor-pointer']");
-    fireEvent.click(jobItems[0]);
+    if (jobItems[0]) {
+      fireEvent.click(jobItems[0]);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("Prompt")).toBeInTheDocument();
@@ -467,7 +473,9 @@ describe("JobsAdminClient", () => {
     // Click on the completed job (look for the job ID - first 12 chars)
     const jobListItems = document.querySelectorAll("[class*='cursor-pointer']");
     expect(jobListItems.length).toBeGreaterThan(0);
-    fireEvent.click(jobListItems[0]);
+    if (jobListItems[0]) {
+      fireEvent.click(jobListItems[0]);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("Processing Time")).toBeInTheDocument();
@@ -491,7 +499,9 @@ describe("JobsAdminClient", () => {
 
     // Click on the completed job
     const jobItems = document.querySelectorAll("[class*='cursor-pointer']");
-    fireEvent.click(jobItems[0]);
+    if (jobItems[0]) {
+      fireEvent.click(jobItems[0]);
+    }
 
     await waitFor(() => {
       // Check for formatted sizes (2MB original, 5MB enhanced)

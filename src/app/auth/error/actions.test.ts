@@ -60,7 +60,7 @@ describe("logAuthError", () => {
     const { headers } = await import("next/headers");
     vi.mocked(headers).mockResolvedValueOnce({
       get: vi.fn().mockReturnValue(null),
-    } as unknown as ReturnType<typeof headers>);
+    } as unknown as Awaited<ReturnType<typeof headers>>);
 
     const { logger } = await import("@/lib/errors/structured-logger");
 

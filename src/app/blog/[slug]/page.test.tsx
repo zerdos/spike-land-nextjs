@@ -130,7 +130,9 @@ describe("BlogPostPage", () => {
       expect(metadata.keywords).toEqual(["test", "blog"]);
       expect(metadata.openGraph?.title).toBe("Test Blog Post");
       expect(metadata.openGraph?.images).toEqual([{ url: "/images/test.jpg" }]);
-      expect(metadata.twitter?.card).toBe("summary_large_image");
+      expect(
+        (metadata.twitter as { card?: string; } | undefined)?.card,
+      ).toBe("summary_large_image");
     });
 
     it("returns 404 metadata for non-existent post", async () => {

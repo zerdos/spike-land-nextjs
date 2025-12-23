@@ -71,7 +71,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -327,7 +327,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "invalid json",
@@ -344,7 +344,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -379,7 +379,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       ],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 

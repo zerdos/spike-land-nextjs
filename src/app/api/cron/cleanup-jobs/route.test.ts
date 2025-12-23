@@ -3,6 +3,7 @@
  */
 
 import { cleanupStuckJobs } from "@/lib/jobs/cleanup";
+import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
@@ -50,7 +51,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer test-secret-123",
@@ -73,7 +74,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
   it("should return 401 when cron secret is missing", async () => {
     process.env.CRON_SECRET = "test-secret-123";
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
     });
 
@@ -88,7 +89,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
   it("should return 401 when cron secret is incorrect", async () => {
     process.env.CRON_SECRET = "correct-secret";
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer wrong-secret",
@@ -115,7 +116,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
     });
 
@@ -139,7 +140,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer test-secret",
@@ -162,7 +163,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       new Error("Database connection failed"),
     );
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer test-secret",
@@ -212,7 +213,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       ],
     });
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer test-secret",
@@ -240,7 +241,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/cron/cleanup-jobs", {
+    const request = new NextRequest("http://localhost/api/cron/cleanup-jobs", {
       method: "GET",
       headers: {
         authorization: "Bearer test-secret",

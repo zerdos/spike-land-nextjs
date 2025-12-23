@@ -4,6 +4,12 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DELETE, GET, PATCH } from "./route";
 
+// Type helper for mocking - avoids strict type checking on mock data
+type MockApp = App & {
+  requirements: Requirement[];
+  monetizationModels: MonetizationModel[];
+};
+
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
@@ -71,10 +77,7 @@ describe("GET /api/apps/[id]", () => {
     };
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(
-      mockApp as App & {
-        requirements: Requirement[];
-        monetizationModels: MonetizationModel[];
-      },
+      mockApp as unknown as MockApp,
     );
 
     const request = new NextRequest("http://localhost/api/apps/app-1");
@@ -168,12 +171,9 @@ describe("PATCH /api/apps/[id]", () => {
       monetizationModels: [],
     };
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as App);
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as unknown as App);
     vi.mocked(prisma.app.update).mockResolvedValue(
-      mockUpdatedApp as App & {
-        requirements: Requirement[];
-        monetizationModels: MonetizationModel[];
-      },
+      mockUpdatedApp as unknown as MockApp,
     );
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
@@ -290,11 +290,11 @@ describe("DELETE /api/apps/[id]", () => {
       status: "DRAFT",
     };
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as App);
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as unknown as App);
     vi.mocked(prisma.app.update).mockResolvedValue({
       ...mockExistingApp,
       status: "DELETED",
-    } as Session);
+    } as unknown as App);
 
     const request = new NextRequest("http://localhost/api/apps/app-1", {
       method: "DELETE",

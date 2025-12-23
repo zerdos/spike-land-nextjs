@@ -46,7 +46,7 @@ describe("/api/cron/cleanup-errors", () => {
       const originalEnv = process.env.NODE_ENV;
       const originalSecret = process.env.CRON_SECRET;
 
-      process.env.NODE_ENV = "production";
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
       process.env.CRON_SECRET = "test-secret";
 
       try {
@@ -57,7 +57,7 @@ describe("/api/cron/cleanup-errors", () => {
         const data = await response.json();
         expect(data.error).toBe("Unauthorized");
       } finally {
-        process.env.NODE_ENV = originalEnv;
+        (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
         process.env.CRON_SECRET = originalSecret;
       }
     });
@@ -137,15 +137,23 @@ describe("/api/cron/cleanup-errors", () => {
         await GET(request);
 
         expect(prisma.errorLog.deleteMany).toHaveBeenCalledOnce();
-        const call = vi.mocked(prisma.errorLog.deleteMany).mock.calls[0][0];
+        const call = vi.mocked(prisma.errorLog.deleteMany).mock.calls[0]?.[0];
 
         // Check that the cutoff date is approximately 30 days ago
-        const cutoffDate = call?.where?.timestamp?.lt as Date;
+        const whereTimestamp = call?.where?.timestamp;
+        const cutoffDate = whereTimestamp &&
+            typeof whereTimestamp === "object" &&
+            "lt" in whereTimestamp
+          ? (whereTimestamp.lt as Date)
+          : undefined;
+        expect(cutoffDate).toBeDefined();
         const expectedCutoff = new Date();
         expectedCutoff.setDate(expectedCutoff.getDate() - 30);
 
         // Allow 1 day tolerance for test execution time
-        const diff = Math.abs(cutoffDate.getTime() - expectedCutoff.getTime());
+        const diff = Math.abs(
+          cutoffDate!.getTime() - expectedCutoff.getTime(),
+        );
         expect(diff).toBeLessThan(24 * 60 * 60 * 1000);
       } finally {
         process.env.CRON_SECRET = originalSecret;

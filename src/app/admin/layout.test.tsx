@@ -137,9 +137,8 @@ describe("AdminLayout", () => {
       },
     } as any);
 
-    const originalNodeEnv = process.env.NODE_ENV;
     const originalBypassSecret = process.env.E2E_BYPASS_SECRET;
-    process.env.NODE_ENV = "test";
+    // NODE_ENV is already "test" when running vitest
     process.env.E2E_BYPASS_SECRET = "test-secret";
 
     const result = await AdminLayout({ children: <div>Test Content</div> });
@@ -154,7 +153,6 @@ describe("AdminLayout", () => {
     expect(isAdminByUserId).not.toHaveBeenCalled();
 
     // Restore env
-    process.env.NODE_ENV = originalNodeEnv;
     process.env.E2E_BYPASS_SECRET = originalBypassSecret;
   });
 });

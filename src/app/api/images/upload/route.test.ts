@@ -1,3 +1,4 @@
+import type { Session } from "next-auth";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
@@ -216,7 +217,7 @@ describe("POST /api/images/upload", () => {
   it("should return 401 if user id is missing in session", async () => {
     vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce({
       user: { name: "Test", email: "test@example.com" },
-    });
+    } as unknown as Session);
 
     const req = createMockRequest(createMockFile());
     const res = await POST(req);
@@ -323,6 +324,7 @@ describe("POST /api/images/upload", () => {
     vi.mocked(processAndUploadImage).mockResolvedValueOnce({
       success: false,
       error: "Upload failed",
+      imageId: "",
       url: "",
       r2Key: "",
       width: 0,
@@ -383,7 +385,7 @@ describe("POST /api/images/upload", () => {
         email: "newemail@example.com",
         image: "https://example.com/new-profile.jpg",
       },
-    };
+    } as Session;
     vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce(
       updatedSession,
     );
@@ -562,6 +564,7 @@ describe("POST /api/images/upload", () => {
       vi.mocked(processAndUploadImage).mockResolvedValueOnce({
         success: false,
         error: "Upload failed",
+        imageId: "",
         url: "",
         r2Key: "",
         width: 0,

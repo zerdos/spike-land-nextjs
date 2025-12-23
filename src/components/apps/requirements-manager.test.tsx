@@ -147,7 +147,7 @@ describe("RequirementsManager", () => {
       fireEvent.click(addButton);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const newRequirements = mockOnChange.mock.calls[0][0];
+      const newRequirements = mockOnChange.mock.calls[0]![0];
       expect(newRequirements).toHaveLength(1);
       expect(newRequirements[0].text).toBe("New requirement");
       expect(newRequirements[0].priority).toBe("medium");
@@ -216,7 +216,7 @@ describe("RequirementsManager", () => {
       fireEvent.change(input, { target: { value: "  New requirement  " } });
       fireEvent.click(addButton);
 
-      const newRequirements = mockOnChange.mock.calls[0][0];
+      const newRequirements = mockOnChange.mock.calls[0]![0];
       expect(newRequirements[0].text).toBe("New requirement");
     });
 
@@ -284,10 +284,10 @@ describe("RequirementsManager", () => {
       );
 
       const deleteButtons = screen.getAllByLabelText("Delete requirement");
-      fireEvent.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]!);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements).toHaveLength(2);
       expect(updatedRequirements.find((r: Requirement) => r.id === "req-1"))
         .toBeUndefined();
@@ -302,9 +302,9 @@ describe("RequirementsManager", () => {
       );
 
       const deleteButtons = screen.getAllByLabelText("Delete requirement");
-      fireEvent.click(deleteButtons[1]);
+      fireEvent.click(deleteButtons[1]!);
 
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].order).toBe(0);
       expect(updatedRequirements[1].order).toBe(1);
     });
@@ -320,7 +320,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       expect(screen.getByLabelText("Edit requirement text"))
         .toBeInTheDocument();
@@ -337,7 +337,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText(
         "Edit requirement text",
@@ -354,7 +354,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "Updated requirement" } });
@@ -363,7 +363,7 @@ describe("RequirementsManager", () => {
       fireEvent.click(saveButton);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].text).toBe("Updated requirement");
     });
 
@@ -376,7 +376,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "Updated requirement" } });
@@ -394,7 +394,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "Updated requirement" } });
@@ -416,7 +416,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "Updated requirement" } });
@@ -436,7 +436,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "" } });
@@ -456,7 +456,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "   " } });
@@ -476,7 +476,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "  Updated requirement  " } });
@@ -484,7 +484,7 @@ describe("RequirementsManager", () => {
       const saveButton = screen.getByLabelText("Save edit");
       fireEvent.click(saveButton);
 
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].text).toBe("Updated requirement");
     });
 
@@ -499,7 +499,7 @@ describe("RequirementsManager", () => {
       );
 
       const editButtons = screen.getAllByLabelText("Edit requirement");
-      fireEvent.click(editButtons[0]);
+      fireEvent.click(editButtons[0]!);
 
       const input = screen.getByLabelText("Edit requirement text");
       fireEvent.change(input, { target: { value: "Updated requirement" } });
@@ -507,7 +507,7 @@ describe("RequirementsManager", () => {
       const saveButton = screen.getByLabelText("Save edit");
       fireEvent.click(saveButton);
 
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       const dateAfter = new Date();
 
       expect(updatedRequirements[0].updatedAt.getTime()).toBeGreaterThanOrEqual(
@@ -541,16 +541,16 @@ describe("RequirementsManager", () => {
       );
 
       const items = screen.getAllByTestId("requirement-item");
-      const firstItem = items[0];
+      const firstItem = items[0]!;
       const priorityTriggers = within(firstItem).getAllByRole("combobox");
 
-      fireEvent.click(priorityTriggers[0]);
+      fireEvent.click(priorityTriggers[0]!);
 
       const lowOptions = screen.getAllByText("Low");
-      fireEvent.click(lowOptions[lowOptions.length - 1]);
+      fireEvent.click(lowOptions[lowOptions.length - 1]!);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].priority).toBe("low");
     });
 
@@ -564,7 +564,7 @@ describe("RequirementsManager", () => {
       );
 
       const items = screen.getAllByTestId("requirement-item");
-      const firstItem = items[0];
+      const firstItem = items[0]!;
       const selects = within(firstItem).getAllByRole("combobox");
 
       selects.forEach((select) => {
@@ -596,16 +596,16 @@ describe("RequirementsManager", () => {
       );
 
       const items = screen.getAllByTestId("requirement-item");
-      const firstItem = items[0];
+      const firstItem = items[0]!;
       const statusTriggers = within(firstItem).getAllByRole("combobox");
 
-      fireEvent.click(statusTriggers[1]);
+      fireEvent.click(statusTriggers[1]!);
 
       const completedOptions = screen.getAllByText("Completed");
-      fireEvent.click(completedOptions[completedOptions.length - 1]);
+      fireEvent.click(completedOptions[completedOptions.length - 1]!);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].status).toBe("completed");
     });
   });
@@ -659,12 +659,12 @@ describe("RequirementsManager", () => {
 
       const items = screen.getAllByTestId("requirement-item");
 
-      fireEvent.dragStart(items[0]);
-      fireEvent.dragOver(items[2]);
-      fireEvent.drop(items[2]);
+      fireEvent.dragStart(items[0]!);
+      fireEvent.dragOver(items[2]!);
+      fireEvent.drop(items[2]!);
 
       expect(mockOnChange).toHaveBeenCalledTimes(1);
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].id).toBe("req-2");
       expect(updatedRequirements[1].id).toBe("req-3");
       expect(updatedRequirements[2].id).toBe("req-1");
@@ -681,9 +681,9 @@ describe("RequirementsManager", () => {
 
       const items = screen.getAllByTestId("requirement-item");
 
-      fireEvent.dragStart(items[0]);
-      fireEvent.dragOver(items[0]);
-      fireEvent.drop(items[0]);
+      fireEvent.dragStart(items[0]!);
+      fireEvent.dragOver(items[0]!);
+      fireEvent.drop(items[0]!);
 
       expect(mockOnChange).not.toHaveBeenCalled();
     });
@@ -699,8 +699,8 @@ describe("RequirementsManager", () => {
 
       const items = screen.getAllByTestId("requirement-item");
 
-      fireEvent.dragStart(items[0]);
-      fireEvent.dragEnd(items[0]);
+      fireEvent.dragStart(items[0]!);
+      fireEvent.dragEnd(items[0]!);
 
       expect(mockOnChange).not.toHaveBeenCalled();
     });
@@ -716,11 +716,11 @@ describe("RequirementsManager", () => {
 
       const items = screen.getAllByTestId("requirement-item");
 
-      fireEvent.dragStart(items[0]);
-      fireEvent.dragOver(items[2]);
-      fireEvent.drop(items[2]);
+      fireEvent.dragStart(items[0]!);
+      fireEvent.dragOver(items[2]!);
+      fireEvent.drop(items[2]!);
 
-      const updatedRequirements = mockOnChange.mock.calls[0][0];
+      const updatedRequirements = mockOnChange.mock.calls[0]![0];
       expect(updatedRequirements[0].order).toBe(0);
       expect(updatedRequirements[1].order).toBe(1);
       expect(updatedRequirements[2].order).toBe(2);
@@ -740,7 +740,7 @@ describe("RequirementsManager", () => {
       fireEvent.change(input, { target: { value: "New requirement" } });
       fireEvent.keyDown(input, { key: "Enter" });
 
-      let requirements = mockOnChange.mock.calls[0][0];
+      let requirements = mockOnChange.mock.calls[0]![0];
       expect(requirements).toHaveLength(1);
 
       rerender(
@@ -757,7 +757,7 @@ describe("RequirementsManager", () => {
       fireEvent.change(editInput, { target: { value: "Updated requirement" } });
       fireEvent.keyDown(editInput, { key: "Enter" });
 
-      requirements = mockOnChange.mock.calls[1][0];
+      requirements = mockOnChange.mock.calls[1]![0];
       expect(requirements[0].text).toBe("Updated requirement");
 
       rerender(
@@ -770,11 +770,11 @@ describe("RequirementsManager", () => {
       const item = screen.getByTestId("requirement-item");
       const selects = within(item).getAllByRole("combobox");
 
-      fireEvent.click(selects[0]);
+      fireEvent.click(selects[0]!);
       const highOptions = screen.getAllByText("High");
-      fireEvent.click(highOptions[highOptions.length - 1]);
+      fireEvent.click(highOptions[highOptions.length - 1]!);
 
-      requirements = mockOnChange.mock.calls[2][0];
+      requirements = mockOnChange.mock.calls[2]![0];
       expect(requirements[0].priority).toBe("high");
 
       rerender(
@@ -788,11 +788,11 @@ describe("RequirementsManager", () => {
         .getAllByRole(
           "combobox",
         );
-      fireEvent.click(selectsAgain[1]);
+      fireEvent.click(selectsAgain[1]!);
       const completedOptions = screen.getAllByText("Completed");
-      fireEvent.click(completedOptions[completedOptions.length - 1]);
+      fireEvent.click(completedOptions[completedOptions.length - 1]!);
 
-      requirements = mockOnChange.mock.calls[3][0];
+      requirements = mockOnChange.mock.calls[3]![0];
       expect(requirements[0].status).toBe("completed");
 
       rerender(
@@ -805,7 +805,7 @@ describe("RequirementsManager", () => {
       const deleteButton = screen.getByLabelText("Delete requirement");
       fireEvent.click(deleteButton);
 
-      requirements = mockOnChange.mock.calls[4][0];
+      requirements = mockOnChange.mock.calls[4]![0];
       expect(requirements).toHaveLength(0);
     });
 
@@ -818,9 +818,9 @@ describe("RequirementsManager", () => {
       );
 
       const items = screen.getAllByTestId("requirement-item");
-      const firstText = within(items[0]).getByText("User authentication");
-      const secondText = within(items[1]).getByText("Dashboard layout");
-      const thirdText = within(items[2]).getByText("API integration");
+      const firstText = within(items[0]!).getByText("User authentication");
+      const secondText = within(items[1]!).getByText("Dashboard layout");
+      const thirdText = within(items[2]!).getByText("API integration");
 
       expect(firstText).toBeInTheDocument();
       expect(secondText).toBeInTheDocument();
@@ -858,7 +858,7 @@ describe("RequirementsManager", () => {
       fireEvent.change(input, { target: { value: "First requirement" } });
       fireEvent.click(addButton);
 
-      const firstRequirements = mockOnChange.mock.calls[0][0];
+      const firstRequirements = mockOnChange.mock.calls[0]![0];
       const firstId = firstRequirements[0].id;
 
       rerender(
@@ -871,7 +871,7 @@ describe("RequirementsManager", () => {
       fireEvent.change(input, { target: { value: "Second requirement" } });
       fireEvent.click(addButton);
 
-      const secondRequirements = mockOnChange.mock.calls[1][0];
+      const secondRequirements = mockOnChange.mock.calls[1]![0];
       const secondId = secondRequirements[1].id;
 
       expect(firstId).not.toBe(secondId);
@@ -919,7 +919,7 @@ describe("RequirementsManager", () => {
         />,
       );
 
-      const editButton = screen.getAllByLabelText("Edit requirement")[0];
+      const editButton = screen.getAllByLabelText("Edit requirement")[0]!;
       fireEvent.click(editButton);
 
       expect(screen.queryByLabelText("Drag handle")).not.toBeInTheDocument();

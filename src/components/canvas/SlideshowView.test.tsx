@@ -129,8 +129,8 @@ describe("SlideshowView", () => {
 
       const image = screen.getByTestId("slideshow-image");
       expect(image).toBeInTheDocument();
-      expect(image).toHaveAttribute("src", mockImages[0].enhancedUrl);
-      expect(image).toHaveAttribute("alt", mockImages[0].name);
+      expect(image).toHaveAttribute("src", mockImages[0]!.enhancedUrl);
+      expect(image).toHaveAttribute("alt", mockImages[0]!.name);
     });
 
     it("renders navigation buttons", () => {
@@ -174,29 +174,29 @@ describe("SlideshowView", () => {
       render(<SlideshowView {...defaultProps} />);
 
       const image = screen.getByTestId("slideshow-image");
-      expect(image).toHaveAttribute("src", mockImages[0].enhancedUrl);
+      expect(image).toHaveAttribute("src", mockImages[0]!.enhancedUrl);
     });
 
     it("displays original URL when peeking", () => {
       render(<SlideshowView {...defaultProps} isPeeking={true} />);
 
       const image = screen.getByTestId("slideshow-image");
-      expect(image).toHaveAttribute("src", mockImages[0].originalUrl);
+      expect(image).toHaveAttribute("src", mockImages[0]!.originalUrl);
     });
 
     it("displays original URL when no enhanced version exists", () => {
       render(<SlideshowView {...defaultProps} currentIndex={2} />);
 
       const image = screen.getByTestId("slideshow-image");
-      expect(image).toHaveAttribute("src", mockImages[2].originalUrl);
+      expect(image).toHaveAttribute("src", mockImages[2]!.originalUrl);
     });
 
     it("displays different image based on currentIndex", () => {
       render(<SlideshowView {...defaultProps} currentIndex={1} />);
 
       const image = screen.getByTestId("slideshow-image");
-      expect(image).toHaveAttribute("src", mockImages[1].enhancedUrl);
-      expect(image).toHaveAttribute("alt", mockImages[1].name);
+      expect(image).toHaveAttribute("src", mockImages[1]!.enhancedUrl);
+      expect(image).toHaveAttribute("alt", mockImages[1]!.name);
     });
   });
 
@@ -254,7 +254,7 @@ describe("SlideshowView", () => {
     });
 
     it("disables navigation buttons when there is only one image", () => {
-      const singleImage = [mockImages[0]];
+      const singleImage = [mockImages[0]!];
       render(<SlideshowView {...defaultProps} images={singleImage} />);
 
       const prevButton = screen.getByTestId("slideshow-prev-button");

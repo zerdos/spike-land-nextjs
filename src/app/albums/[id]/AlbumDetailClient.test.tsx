@@ -512,8 +512,10 @@ describe("AlbumDetailClient", () => {
         json: () => Promise.resolve({ success: true }),
       });
 
-      const removeButton = screen.getAllByText(/Remove/)[0];
-      fireEvent.click(removeButton);
+      const removeButtons = screen.getAllByText(/Remove/);
+      if (removeButtons[0]) {
+        fireEvent.click(removeButtons[0]);
+      }
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
@@ -569,8 +571,10 @@ describe("AlbumDetailClient", () => {
           }),
       });
 
-      const moveButton = screen.getAllByText(/Move/)[0];
-      fireEvent.click(moveButton);
+      const moveButtons = screen.getAllByText(/Move/);
+      if (moveButtons[0]) {
+        fireEvent.click(moveButtons[0]);
+      }
 
       await waitFor(() => {
         expect(screen.getByText("Move Images to Album")).toBeDefined();
@@ -615,8 +619,10 @@ describe("AlbumDetailClient", () => {
           }),
       });
 
-      const moveButton = screen.getAllByText(/Move/)[0];
-      fireEvent.click(moveButton);
+      const moveButtons = screen.getAllByText(/Move/);
+      if (moveButtons[0]) {
+        fireEvent.click(moveButtons[0]);
+      }
 
       await waitFor(() => {
         expect(screen.getByText(/No other albums available/)).toBeDefined();
@@ -659,15 +665,20 @@ describe("AlbumDetailClient", () => {
           }),
       });
 
-      const moveButton = screen.getAllByText(/Move/)[0];
-      fireEvent.click(moveButton);
+      const moveButtons = screen.getAllByText(/Move/);
+      if (moveButtons[0]) {
+        fireEvent.click(moveButtons[0]);
+      }
 
       await waitFor(() => {
         expect(screen.getByText("Move Images to Album")).toBeDefined();
       });
 
       const cancelButtons = screen.getAllByText("Cancel");
-      fireEvent.click(cancelButtons[cancelButtons.length - 1]);
+      const lastCancelButton = cancelButtons[cancelButtons.length - 1];
+      if (lastCancelButton) {
+        fireEvent.click(lastCancelButton);
+      }
 
       await waitFor(() => {
         expect(screen.queryByText("Move Images to Album")).toBeNull();

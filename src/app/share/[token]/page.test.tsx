@@ -200,9 +200,13 @@ describe("SharePage", () => {
       expect(metadata.openGraph?.title).toBe(
         "Beautiful Sunset - Enhanced with Pixel",
       );
-      expect(metadata.openGraph?.type).toBe("website");
-      expect(metadata.openGraph?.siteName).toBe("Pixel - AI Image Enhancement");
-      expect(metadata.twitter?.card).toBe("summary_large_image");
+      // Type assertion to access OpenGraph-specific properties
+      const openGraph = metadata.openGraph as { type?: string; siteName?: string; } | undefined;
+      expect(openGraph?.type).toBe("website");
+      expect(openGraph?.siteName).toBe("Pixel - AI Image Enhancement");
+      // Type assertion to access Twitter-specific properties
+      const twitter = metadata.twitter as { card?: string; } | undefined;
+      expect(twitter?.card).toBe("summary_large_image");
     });
 
     it("returns not found metadata when image does not exist", async () => {

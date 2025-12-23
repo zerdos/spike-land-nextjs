@@ -89,8 +89,8 @@ function createMockDirectoryHandle(path: string) {
       for (const key of mockDirectories.keys()) {
         if (key.startsWith(prefix) && key !== path) {
           const relativePath = key.slice(prefix.length);
-          const topLevel = relativePath.split("/")[0];
-          if (!seen.has(topLevel)) {
+          const topLevel = relativePath.split("/")[0] ?? "";
+          if (topLevel && !seen.has(topLevel)) {
             seen.add(topLevel);
             yield [topLevel, { kind: "directory" }];
           }
@@ -189,6 +189,10 @@ describe("useAudioStorage", () => {
         volume: 1.0,
         muted: false,
         solo: false,
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
+        order: 0,
         createdAt: new Date().toISOString(),
       };
 
@@ -216,6 +220,10 @@ describe("useAudioStorage", () => {
         volume: 1.0,
         muted: false,
         solo: false,
+        delay: 0,
+        trimStart: 0,
+        trimEnd: 0,
+        order: 0,
         createdAt: new Date().toISOString(),
       };
 

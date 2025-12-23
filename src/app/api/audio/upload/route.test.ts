@@ -3,6 +3,7 @@
  * Resolves #332
  */
 
+import type { Session } from "next-auth";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,6 +11,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
+
+// Helper to create a mock session
+function createMockSession(userId: string): Session {
+  return {
+    user: { id: userId, role: "USER" },
+    expires: "2099-01-01",
+  } as Session;
+}
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -97,10 +106,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("returns 503 when R2 is not configured", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(false);
 
     const req = createMockRequest({});
@@ -109,10 +115,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("returns 400 when no file provided", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
 
     const req = createMockRequest({});
@@ -123,10 +126,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("returns 400 when missing required fields", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
 
     const req = createMockRequest({
@@ -139,10 +139,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("uploads audio file successfully", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(uploadAudioToR2).mockResolvedValue({
@@ -173,10 +170,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("returns 500 when upload fails", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(uploadAudioToR2).mockResolvedValue({
@@ -205,10 +199,7 @@ describe("POST /api/audio/upload", () => {
   });
 
   it("returns 400 when file size exceeds limit", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     mockPrisma.audioMixerProject.findFirst.mockResolvedValue({
       id: "project-123",

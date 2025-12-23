@@ -65,6 +65,10 @@ vi.mock("@apps/display/lib/layout-optimizer", () => ({
   })),
 }));
 
+// Type helper for event handlers in mock calls
+type EventHandler = (arg?: unknown) => void;
+type MockCallArray = Array<[string, EventHandler]>;
+
 describe("DisplayPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -163,10 +167,9 @@ describe("DisplayPage", () => {
     });
 
     // Get and trigger the open handler
-    const onCalls = mockPeerInstance.on.mock.calls;
-    const openHandler = onCalls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+    const onCalls = mockPeerInstance.on.mock.calls as MockCallArray;
+    const openCall = onCalls.find((call) => call[0] === "open");
+    const openHandler = openCall?.[1];
 
     await act(async () => {
       openHandler?.("display-123");
@@ -236,8 +239,8 @@ describe("DisplayPage", () => {
 
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -274,8 +277,8 @@ describe("DisplayPage", () => {
 
     // Trigger the open event
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -300,8 +303,8 @@ describe("DisplayPage", () => {
 
     // Get the connection handler
     const connectionHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "connection",
-    )?.[1];
+      (call) => call[0] === "connection",
+    )?.[1] as EventHandler | undefined;
 
     // Mock data connection
     const mockDataConnection = {
@@ -316,8 +319,8 @@ describe("DisplayPage", () => {
 
     // Trigger the open event on data connection
     const dataOpenHandler = mockDataConnection.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       dataOpenHandler?.();
@@ -342,8 +345,8 @@ describe("DisplayPage", () => {
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     // Mock media call
     const mockCall = {
@@ -360,8 +363,8 @@ describe("DisplayPage", () => {
 
     // Get the stream handler
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     // Mock MediaStream
     const mockStream = new MediaStream();
@@ -389,8 +392,8 @@ describe("DisplayPage", () => {
 
     // Get the call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     // First call from client
     const mockCall1 = {
@@ -404,8 +407,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler1 = mockCall1.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     const mockStream1 = new MediaStream();
 
@@ -425,8 +428,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler2 = mockCall2.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     const mockStream2 = new MediaStream();
 
@@ -455,8 +458,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "client-close-test",
@@ -470,8 +473,8 @@ describe("DisplayPage", () => {
 
     // Add stream
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       streamHandler?.(new MediaStream());
@@ -484,8 +487,8 @@ describe("DisplayPage", () => {
 
     // Get close handler
     const closeHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "close",
-    )?.[1];
+      (call) => call[0] === "close",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       closeHandler?.();
@@ -510,8 +513,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "client-error-test",
@@ -525,8 +528,8 @@ describe("DisplayPage", () => {
 
     // Add stream
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       streamHandler?.(new MediaStream());
@@ -539,8 +542,8 @@ describe("DisplayPage", () => {
 
     // Get error handler
     const errorHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "error",
-    )?.[1];
+      (call) => call[0] === "error",
+    )?.[1] as EventHandler | undefined;
 
     const mockError = new Error("Call error");
     await act(async () => {
@@ -566,8 +569,8 @@ describe("DisplayPage", () => {
 
     // Get error handler
     const errorHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "error",
-    )?.[1];
+      (call) => call[0] === "error",
+    )?.[1] as EventHandler | undefined;
 
     const mockError = new Error("Peer connection error");
     await act(async () => {
@@ -591,8 +594,8 @@ describe("DisplayPage", () => {
 
     // First trigger open event to set displayId
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -601,8 +604,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     // Add multiple clients
     for (let i = 1; i <= 3; i++) {
@@ -650,8 +653,8 @@ describe("DisplayPage", () => {
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -665,8 +668,8 @@ describe("DisplayPage", () => {
 
     // Get call handler and add a client
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "client-qr-test",
@@ -679,8 +682,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       streamHandler?.(new MediaStream());
@@ -705,8 +708,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "video-cell-test-client",
@@ -719,8 +722,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     const mockStream = new MediaStream();
     await act(async () => {
@@ -731,7 +734,7 @@ describe("DisplayPage", () => {
     await waitFor(() => {
       const videos = document.querySelectorAll("video");
       expect(videos.length).toBeGreaterThan(0);
-      const video = videos[0];
+      const video = videos[0]!;
       expect(video).toHaveAttribute("autoplay");
       expect(video).toHaveAttribute("playsinline");
       expect(video.className).toContain("object-cover");
@@ -757,8 +760,8 @@ describe("DisplayPage", () => {
     });
 
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "stream-update-test",
@@ -771,8 +774,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     const mockStream = new MediaStream();
     await act(async () => {
@@ -782,7 +785,7 @@ describe("DisplayPage", () => {
     await waitFor(() => {
       const videos = document.querySelectorAll("video");
       expect(videos.length).toBeGreaterThan(0);
-      expect(videos[0].srcObject).toBe(mockStream);
+      expect(videos[0]!.srcObject).toBe(mockStream);
     });
   });
 
@@ -861,8 +864,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     // Add 4 clients
     for (let i = 1; i <= 4; i++) {
@@ -909,8 +912,8 @@ describe("DisplayPage", () => {
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -941,8 +944,8 @@ describe("DisplayPage", () => {
 
     // Trigger open event to generate QR code
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -985,8 +988,8 @@ describe("DisplayPage", () => {
 
     // Trigger open event to generate QR code and set displayId
     const openHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "open",
-    )?.[1];
+      (call) => call[0] === "open",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       openHandler?.("display-123");
@@ -995,8 +998,8 @@ describe("DisplayPage", () => {
 
     // Get call handler and add a client
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "client-corner-test",
@@ -1009,8 +1012,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       streamHandler?.(new MediaStream());
@@ -1024,7 +1027,7 @@ describe("DisplayPage", () => {
 
     // Click the corner button (the second "Open in New Window" button)
     const buttons = screen.getAllByText(/Open in New Window/i);
-    const cornerButton = buttons[buttons.length - 1]; // Get the last button (corner button)
+    const cornerButton = buttons[buttons.length - 1]!; // Get the last button (corner button)
 
     await act(async () => {
       cornerButton.click();
@@ -1050,8 +1053,8 @@ describe("DisplayPage", () => {
 
     // Get call handler
     const callHandler = mockPeerInstance.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "call",
-    )?.[1];
+      (call) => call[0] === "call",
+    )?.[1] as EventHandler | undefined;
 
     const mockCall = {
       peer: "grid-style-test",
@@ -1064,8 +1067,8 @@ describe("DisplayPage", () => {
     });
 
     const streamHandler = mockCall.on.mock.calls.find(
-      (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-    )?.[1];
+      (call) => call[0] === "stream",
+    )?.[1] as EventHandler | undefined;
 
     await act(async () => {
       streamHandler?.(new MediaStream());

@@ -23,12 +23,22 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 // Mock next/og ImageResponse
+interface MockImageResponseType {
+  element: React.ReactNode;
+  options: { width: number; height: number; };
+}
+
 vi.mock("next/og", () => ({
-  ImageResponse: class MockImageResponse {
+  ImageResponse: class MockImageResponse implements MockImageResponseType {
+    element: React.ReactNode;
+    options: { width: number; height: number; };
     constructor(
-      public element: React.ReactNode,
-      public options: { width: number; height: number; },
-    ) {}
+      element: React.ReactNode,
+      options: { width: number; height: number; },
+    ) {
+      this.element = element;
+      this.options = options;
+    }
   },
 }));
 
@@ -117,7 +127,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(mockImage);
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(mockPrisma.enhancedImage.findUnique).toHaveBeenCalledWith({
         where: { shareToken: "abc123" },
@@ -147,7 +157,7 @@ describe("opengraph-image", () => {
       );
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -157,7 +167,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(null);
 
       const params = Promise.resolve({ token: "nonexistent" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -172,7 +182,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithNoUrls);
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -194,7 +204,7 @@ describe("opengraph-image", () => {
       );
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -209,7 +219,7 @@ describe("opengraph-image", () => {
       );
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -225,7 +235,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(mockImage);
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       // Verify the element structure contains the expected background
       expect(result.element).toBeDefined();
@@ -243,7 +253,7 @@ describe("opengraph-image", () => {
       );
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -259,7 +269,7 @@ describe("opengraph-image", () => {
       );
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       expect(result).toBeDefined();
       expect(result.options).toEqual({ width: 1200, height: 630 });
@@ -274,7 +284,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithMixedUrls);
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       // Should still render (with just the enhanced image)
       expect(result).toBeDefined();
@@ -294,7 +304,7 @@ describe("opengraph-image", () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue(imageWithMixedUrls);
 
       const params = Promise.resolve({ token: "abc123" });
-      const result = await Image({ params });
+      const result = await Image({ params }) as unknown as MockImageResponseType;
 
       // Should still render (with just the original image)
       expect(result).toBeDefined();
