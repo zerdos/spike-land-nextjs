@@ -69,7 +69,7 @@ jobs:
         run: yarn npm audit --all --severity moderate
 
   unit-tests:
-    name: Unit Tests [${{ matrix.shard }}/8]
+    name: Unit Tests [${{ matrix.shard }}/4]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -230,62 +230,17 @@ jobs:
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
 
-      - name: Select feature files for shard
-        id: shard-files
-        run: |
-          # Get all feature files sorted alphabetically for consistent sharding
-          ALL_FILES=$(find e2e/features -name "*.feature" | sort)
-          TOTAL_FILES=$(echo "$ALL_FILES" | wc -l)
-          SHARD=${{ matrix.shard }}
-          TOTAL_SHARDS=8
-
-          # Calculate which files belong to this shard
-          FILES_PER_SHARD=$(( (TOTAL_FILES + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
-          START_IDX=$(( (SHARD - 1) * FILES_PER_SHARD + 1 ))
-          END_IDX=$(( SHARD * FILES_PER_SHARD ))
-
-          # Get files for this shard
-          SHARD_FILES=$(echo "$ALL_FILES" | sed -n "${START_IDX},${END_IDX}p" | tr '\n' ' ')
-
-          echo "Shard $SHARD/$TOTAL_SHARDS: Running $(echo "$SHARD_FILES" | wc -w) feature files"
-          echo "Files: $SHARD_FILES"
-          echo "files=$SHARD_FILES" >> $GITHUB_OUTPUT
-
-      - name: Start dev server
-        run: |
-          yarn dev &
-          DEV_PID=$!
-          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
-
-          # Wait for server to be ready (up to 120 seconds)
-          echo "Waiting for dev server to be ready..."
-          for i in {1..120}; do
-            if curl -s http://localhost:3000 > /dev/null 2>&1; then
-              echo "✓ Dev server is ready! (took ${i}s)"
-              exit 0
-            fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "Still waiting... (${i}s)"
-            fi
-            sleep 1
-          done
-          echo "✗ Dev server failed to start after 120 seconds"
-          exit 1
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-          NEXTAUTH_URL: http://localhost:3000
-          # Disable external services for E2E tests
-          SKIP_ENV_VALIDATION: "true"
-
       - name: Run E2E tests (shard ${{ matrix.shard }}/8)
         env:
           BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-        run: |
-          # Run cucumber with only the shard's feature files
-          npx cucumber-js --profile ci ${{ steps.shard-files.outputs.files }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          SKIP_ENV_VALIDATION: "true"
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_TOTAL: 8
+        run: yarn start:server:and:test:ci
 
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
