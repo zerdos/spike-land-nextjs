@@ -89,7 +89,7 @@ describe("GET /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     const request = new NextRequest("http://localhost/api/images/img-1");
@@ -189,7 +189,7 @@ describe("GET /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     const request = new NextRequest("http://localhost/api/images/img-1");
@@ -275,7 +275,7 @@ describe("DELETE /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     const request = new NextRequest("http://localhost/api/images/img-1", {
@@ -312,11 +312,11 @@ describe("DELETE /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     vi.mocked(prisma.enhancedImage.delete).mockResolvedValue(
-      mockImage as EnhancedImage,
+      mockImage as unknown as EnhancedImage,
     );
 
     vi.mocked(deleteFromR2).mockResolvedValue({
@@ -370,11 +370,11 @@ describe("DELETE /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     vi.mocked(prisma.enhancedImage.delete).mockResolvedValue(
-      mockImage as EnhancedImage,
+      mockImage as unknown as EnhancedImage,
     );
 
     vi.mocked(deleteFromR2).mockResolvedValue({
@@ -412,7 +412,7 @@ describe("DELETE /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     // R2 deletion fails
@@ -462,7 +462,7 @@ describe("DELETE /api/images/[id]", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     // First deletion succeeds, second and third fail

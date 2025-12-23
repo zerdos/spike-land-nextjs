@@ -19,11 +19,11 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
   ),
 }));
 
-const mockFetchResponse = (data: unknown, ok = true) => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const mockJob = {

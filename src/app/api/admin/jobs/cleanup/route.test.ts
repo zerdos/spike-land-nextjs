@@ -2,6 +2,7 @@
  * Tests for Admin Jobs Cleanup API Route
  */
 
+import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies BEFORE imports
@@ -32,7 +33,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 
@@ -44,16 +45,18 @@ describe("POST /api/admin/jobs/cleanup", () => {
   });
 
   it("should return 403 if not admin", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user123", email: "user@example.com" },
-      expires: "2024-12-31",
-    });
+    vi.mocked(auth).mockResolvedValue(
+      {
+        user: { id: "user123", email: "user@example.com" },
+        expires: "2024-12-31",
+      } as Parameters<typeof auth>[0] extends never ? never : Awaited<ReturnType<typeof auth>>,
+    );
 
     vi.mocked(requireAdminByUserId).mockRejectedValue(
       new Error("Forbidden: Admin access required"),
     );
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 
@@ -100,7 +103,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 
@@ -122,7 +125,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -135,7 +138,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ timeoutMs: 600000 }), // 10 minutes
@@ -155,7 +158,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -199,7 +202,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dryRun: true }),
@@ -225,7 +228,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -238,7 +241,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ batchSize: 50 }),
@@ -258,7 +261,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -271,7 +274,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       errors: [],
     });
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 
@@ -287,7 +290,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 
@@ -295,7 +298,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       new Error("Database connection failed"),
     );
 
-    const request = new Request("http://localhost/api/admin/jobs/cleanup", {
+    const request = new NextRequest("http://localhost/api/admin/jobs/cleanup", {
       method: "POST",
     });
 
@@ -311,7 +314,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin123", email: "admin@example.com" },
       expires: "2024-12-31",
-    } as any);
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
 

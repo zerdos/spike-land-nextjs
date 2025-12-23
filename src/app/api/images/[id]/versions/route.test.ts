@@ -130,7 +130,7 @@ describe("GET /api/images/[id]/versions", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     const request = new NextRequest(
@@ -509,7 +509,7 @@ describe("GET /api/images/[id]/versions", () => {
     };
 
     vi.mocked(prisma.enhancedImage.findUnique).mockResolvedValue(
-      mockImage as EnhancedImageWithJobs,
+      mockImage as unknown as EnhancedImageWithJobs,
     );
 
     const request = new NextRequest(

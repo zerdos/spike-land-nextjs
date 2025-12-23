@@ -14,9 +14,9 @@ const mockItem = {
   originalUrl: "https://example.com/original.jpg",
   enhancedUrl: "https://example.com/enhanced.jpg",
   isActive: true,
-  displayOrder: 1,
-  imageId: "img1",
-  jobId: "job1",
+  sortOrder: 1,
+  sourceImageId: "img1",
+  sourceJobId: "job1",
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
 };

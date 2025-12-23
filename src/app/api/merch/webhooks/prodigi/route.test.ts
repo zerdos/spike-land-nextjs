@@ -119,7 +119,7 @@ describe("POST /api/merch/webhooks/prodigi", () => {
     });
 
     it("should reject request in production without webhook secret configured", async () => {
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
       delete process.env.PRODIGI_WEBHOOK_SECRET;
       const event = createWebhookEvent("order.status.stage.changed");
       const request = createSignedRequest(event);
@@ -132,7 +132,7 @@ describe("POST /api/merch/webhooks/prodigi", () => {
     });
 
     it("should allow request in development without webhook secret", async () => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       delete process.env.PRODIGI_WEBHOOK_SECRET;
       const event = createWebhookEvent("order.status.stage.changed");
       const request = createSignedRequest(event);
@@ -145,7 +145,7 @@ describe("POST /api/merch/webhooks/prodigi", () => {
 
   describe("Event Handling", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       delete process.env.PRODIGI_WEBHOOK_SECRET;
     });
 
@@ -225,7 +225,7 @@ describe("POST /api/merch/webhooks/prodigi", () => {
 
   describe("Idempotency", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       delete process.env.PRODIGI_WEBHOOK_SECRET;
     });
 
@@ -283,7 +283,7 @@ describe("POST /api/merch/webhooks/prodigi", () => {
 
   describe("Error Handling", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       delete process.env.PRODIGI_WEBHOOK_SECRET;
     });
 

@@ -136,7 +136,7 @@ describe("DateRangePicker", () => {
     const inputs = document.querySelectorAll('input[type="date"]');
     expect(inputs.length).toBe(2);
 
-    fireEvent.change(inputs[0], { target: { value: "2024-02-01" } });
+    fireEvent.change(inputs[0]!, { target: { value: "2024-02-01" } });
 
     expect(onDateRangeChange).toHaveBeenCalled();
   });
@@ -158,7 +158,7 @@ describe("DateRangePicker", () => {
     );
 
     const inputs = document.querySelectorAll('input[type="date"]');
-    fireEvent.change(inputs[1], { target: { value: "2024-02-28" } });
+    fireEvent.change(inputs[1]!, { target: { value: "2024-02-28" } });
 
     expect(onDateRangeChange).toHaveBeenCalled();
   });

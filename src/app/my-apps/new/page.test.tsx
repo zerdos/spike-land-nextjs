@@ -53,7 +53,7 @@ describe("NewAppPage", () => {
         json: () => Promise.resolve({ id: "new-app-id", name: "New App" }),
       } as Response)
     );
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as typeof global.fetch;
 
     mockPush.mockClear();
   });
@@ -316,7 +316,7 @@ describe("NewAppPage", () => {
       });
 
       const options = screen.getAllByText("Free - No charge for users");
-      await user.click(options[options.length - 1]);
+      await user.click(options[options.length - 1]!);
 
       await user.click(screen.getByTestId("wizard-next-button"));
 
@@ -384,7 +384,7 @@ describe("NewAppPage", () => {
       const subscriptionOptions = screen.getAllByText(
         "Subscription - Recurring payments",
       );
-      await user.click(subscriptionOptions[subscriptionOptions.length - 1]);
+      await user.click(subscriptionOptions[subscriptionOptions.length - 1]!);
 
       await user.click(screen.getByTestId("wizard-next-button"));
 
@@ -442,8 +442,8 @@ describe("NewAppPage", () => {
           }),
         );
 
-        const callArgs = fetchMock.mock.calls[0];
-        const body = JSON.parse(callArgs[1].body);
+        const callArgs = fetchMock.mock.calls[0]!;
+        const body = JSON.parse((callArgs[1] as RequestInit).body as string);
         expect(body).toMatchObject({
           name: "My Test App",
           description: "This is my test app description",
@@ -563,7 +563,7 @@ describe("NewAppPage", () => {
         expect(options.length).toBeGreaterThan(0);
       });
       const freeOptions = screen.getAllByText("Free - No charge for users");
-      await user.click(freeOptions[freeOptions.length - 1]);
+      await user.click(freeOptions[freeOptions.length - 1]!);
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
@@ -700,7 +700,7 @@ describe("NewAppPage", () => {
       );
 
       const freeOptions = screen.getAllByText("Free - No charge for users");
-      await user.click(freeOptions[freeOptions.length - 1]);
+      await user.click(freeOptions[freeOptions.length - 1]!);
 
       await user.click(screen.getByTestId("wizard-next-button"));
 
@@ -1116,7 +1116,7 @@ describe("NewAppPage", () => {
       });
 
       const options = screen.getAllByText("Free - No charge for users");
-      await user.click(options[options.length - 1]);
+      await user.click(options[options.length - 1]!);
       await user.click(screen.getByTestId("wizard-next-button"));
 
       // Now on review step (step 3)
@@ -1176,7 +1176,7 @@ describe("NewAppPage", () => {
         expect(options.length).toBeGreaterThan(0);
       });
       const options = screen.getAllByText("Free - No charge for users");
-      await user.click(options[options.length - 1]);
+      await user.click(options[options.length - 1]!);
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {
@@ -1242,7 +1242,7 @@ describe("NewAppPage", () => {
         expect(options.length).toBeGreaterThan(0);
       });
       const options = screen.getAllByText("Free - No charge for users");
-      await user.click(options[options.length - 1]);
+      await user.click(options[options.length - 1]!);
       await user.click(screen.getByTestId("wizard-next-button"));
 
       await waitFor(() => {

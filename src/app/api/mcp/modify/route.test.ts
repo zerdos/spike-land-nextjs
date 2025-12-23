@@ -232,13 +232,15 @@ describe("POST /api/mcp/modify", () => {
       // 20MB = 20 * 1024 * 1024 bytes
       // Base64 encoding increases size by ~33%, so we need about 28MB of base64
       // For testing, we'll mock the Buffer.from to return a large length
-      const originalFrom = Buffer.from;
-      vi.spyOn(Buffer, "from").mockImplementation((data, encoding) => {
-        if (encoding === "base64") {
-          return { length: 25 * 1024 * 1024 } as Buffer; // 25MB
-        }
-        return originalFrom(data as string, encoding);
-      });
+      const originalFrom = Buffer.from.bind(Buffer);
+      vi.spyOn(Buffer, "from").mockImplementation(
+        (data: WithImplicitCoercion<string | ArrayLike<number>>, encoding?: BufferEncoding) => {
+          if (encoding === "base64") {
+            return { length: 25 * 1024 * 1024 } as Buffer; // 25MB
+          }
+          return originalFrom(data as string, encoding);
+        },
+      );
 
       const request = createMockRequest(
         { Authorization: "Bearer sk_test_validkey" },
