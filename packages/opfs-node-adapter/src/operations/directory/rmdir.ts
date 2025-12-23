@@ -2,6 +2,11 @@ import type { RmDirOptions } from "node:fs";
 import { tryCatch } from "../../try-catch";
 import { normalizePath } from "../../utils";
 
+// Extended options to include deprecated recursive option for backwards compatibility
+interface RmDirOptionsExtended extends RmDirOptions {
+  recursive?: boolean;
+}
+
 /**
  * Remove a directory
  * Node.js signature: rmdir(path[, options])
@@ -10,7 +15,7 @@ import { normalizePath } from "../../utils";
  */
 export async function rmdir(
   filePath: string,
-  options?: RmDirOptions,
+  options?: RmDirOptionsExtended,
 ): Promise<void> {
   const recursive = options?.recursive ?? true;
 

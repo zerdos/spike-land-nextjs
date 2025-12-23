@@ -74,14 +74,17 @@ async function mockAlbum(
   // Mark some images as already enhanced if specified
   if (options?.enhanced) {
     for (let i = 0; i < options.enhanced && i < images.length; i++) {
-      images[i].enhancementJobs = [
-        {
-          id: `job-${i + 1}`,
-          tier: options.tier || "TIER_1K",
-          status: "COMPLETED",
-          enhancedUrl: `https://example.com/enhanced-${i + 1}.jpg`,
-        },
-      ];
+      const image = images[i];
+      if (image) {
+        image.enhancementJobs = [
+          {
+            id: `job-${i + 1}`,
+            tier: options.tier || "TIER_1K",
+            status: "COMPLETED",
+            enhancedUrl: `https://example.com/enhanced-${i + 1}.jpg`,
+          },
+        ];
+      }
     }
   }
 
@@ -255,21 +258,24 @@ Given(
     const batchWorld = this as BatchEnhancementWorld;
     const images = batchWorld.mockImages || [];
     for (let i = 0; i < count && i < images.length; i++) {
-      images[i].enhancementJobs = [
-        {
-          id: `job-${i + 1}`,
-          tier,
-          status: "COMPLETED",
-          enhancedUrl: `https://example.com/enhanced-${i + 1}.jpg`,
-        },
-      ];
+      const image = images[i];
+      if (image) {
+        image.enhancementJobs = [
+          {
+            id: `job-${i + 1}`,
+            tier,
+            status: "COMPLETED",
+            enhancedUrl: `https://example.com/enhanced-${i + 1}.jpg`,
+          },
+        ];
+      }
     }
   },
 );
 
 Given(
   "all {int} images are already enhanced at {string}",
-  async function(this: CustomWorld, count: number, tier: string) {
+  async function(this: CustomWorld, _count: number, tier: string) {
     const batchWorld = this as BatchEnhancementWorld;
     const images = batchWorld.mockImages || [];
     images.forEach((img: MockImage, i: number) => {
@@ -320,8 +326,11 @@ Given(
     const batchWorld = this as BatchEnhancementWorld;
     const jobs = batchWorld.enhancementJobs || [];
     for (let i = 0; i < failCount && i < jobs.length; i++) {
-      jobs[i].status = "FAILED";
-      jobs[i].errorMessage = "Enhancement failed";
+      const job = jobs[i];
+      if (job) {
+        job.status = "FAILED";
+        job.errorMessage = "Enhancement failed";
+      }
     }
   },
 );

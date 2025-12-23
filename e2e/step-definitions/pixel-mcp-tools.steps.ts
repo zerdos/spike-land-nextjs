@@ -45,63 +45,6 @@ const mockProcessingJob = {
   processingCompletedAt: null,
 };
 
-// Helper to mock MCP APIs - keeping for future use
-async function _mockMcpApis(world: CustomWorld) {
-  // Mock generate endpoint
-  await world.page.route("**/api/mcp/generate", async (route) => {
-    const body = JSON.parse(route.request().postData() || "{}");
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        jobId: "new-generate-job",
-        tier: body.tier || "TIER_1K",
-        tokensCost: body.tier === "TIER_4K"
-          ? 10
-          : body.tier === "TIER_2K"
-          ? 5
-          : 2,
-      }),
-    });
-  });
-
-  // Mock modify endpoint
-  await world.page.route("**/api/mcp/modify", async (route) => {
-    const body = JSON.parse(route.request().postData() || "{}");
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        jobId: "new-modify-job",
-        tier: body.tier || "TIER_1K",
-        tokensCost: body.tier === "TIER_4K"
-          ? 10
-          : body.tier === "TIER_2K"
-          ? 5
-          : 2,
-      }),
-    });
-  });
-
-  // Mock balance endpoint
-  await world.page.route("**/api/mcp/balance", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ balance: 100 }),
-    });
-  });
-
-  // Mock job status endpoint
-  await world.page.route("**/api/mcp/jobs/*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockCompletedGenerateJob),
-    });
-  });
-}
-
 // Setup steps
 Given(
   "I mock token balance of {int} tokens",

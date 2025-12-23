@@ -166,6 +166,7 @@ function convertToIstanbul(v8Coverage: V8CoverageEntry[]): IstanbulCoverageMap {
     }
 
     const fileCov = istanbulCoverage[filePath];
+    if (!fileCov) continue; // Should never happen, but satisfies TypeScript
     let stmtIdx = Object.keys(fileCov.statementMap).length;
     let fnIdx = Object.keys(fileCov.fnMap).length;
 
@@ -174,6 +175,7 @@ function convertToIstanbul(v8Coverage: V8CoverageEntry[]): IstanbulCoverageMap {
       if (fn.ranges.length === 0) continue;
 
       const range = fn.ranges[0];
+      if (!range) continue; // Should never happen after length check, but satisfies TypeScript
       const covered = range.count > 0;
 
       // Add function
@@ -280,7 +282,7 @@ function extractReadableName(filePath: string): string {
   // -> "src/app/pricing/page.tsx"
 
   const match = filePath.match(/spike-land-nextjs_(.+?)_[a-f0-9]+\._\.js$/);
-  if (match) {
+  if (match && match[1]) {
     return match[1]
       .replace(/_tsx$/, ".tsx")
       .replace(/_ts$/, ".ts")
@@ -289,13 +291,13 @@ function extractReadableName(filePath: string): string {
 
   // For other chunk patterns, try to extract src path
   const srcMatch = filePath.match(/src_(.+?)(?:_[a-f0-9]+)?\._\.js$/);
-  if (srcMatch) {
+  if (srcMatch && srcMatch[1]) {
     return "src/" + srcMatch[1].replace(/_/g, "/");
   }
 
   // Return last part of path if no pattern matches
   const parts = filePath.split("/");
-  return parts[parts.length - 1];
+  return parts[parts.length - 1] || filePath;
 }
 
 /**
@@ -352,6 +354,7 @@ function generateSummary(coverage: IstanbulCoverageMap): string {
 
   for (const filePath of files) {
     const fileCov = coverage[filePath];
+    if (!fileCov) continue;
 
     const fileStatements = Object.keys(fileCov.s).length;
     const fileCoveredStatements = Object.values(fileCov.s).filter((v) => v > 0).length;
@@ -436,6 +439,7 @@ function generateConsoleSummary(coverage: IstanbulCoverageMap): void {
 
   for (const filePath of files) {
     const fileCov = coverage[filePath];
+    if (!fileCov) continue;
 
     const fileStatements = Object.keys(fileCov.s).length;
     const fileCoveredStatements = Object.values(fileCov.s).filter((v) => v > 0).length;

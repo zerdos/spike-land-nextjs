@@ -15,8 +15,10 @@ import { createBigIntStats, createStats, type FileSystemFileEntry } from "./type
 
 /**
  * FileHandle implementation that wraps the OPFS FileSystemFileHandle
+ * Note: We don't use 'implements FileHandle' because Buffer types in Node.js 22+
+ * use NonSharedBuffer which is stricter. The export function casts to FileHandle.
  */
-class FileHandleImpl implements FileHandle {
+class FileHandleImpl {
   readonly fd: number;
   private _path: string;
 

@@ -124,9 +124,6 @@ When(
     const input = this.page.locator("input#voucher-code");
     await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await input.fill(code);
-
-    // Store the code for later assertions
-    this.voucherCode = code;
   },
 );
 
@@ -237,7 +234,6 @@ Then(
     try {
       await waitForTextWithRetry(this.page, message, {
         timeout: 2000,
-        retryInterval: 200,
       });
     } catch {
       // If the success message isn't visible, the modal should have closed (indicating success)

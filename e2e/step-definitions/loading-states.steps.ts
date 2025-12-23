@@ -116,7 +116,11 @@ Then(
 
     loadingFiles.forEach((file, index) => {
       const filePath = path.join(process.cwd(), file);
-      const testPath = path.join(process.cwd(), testFiles[index]);
+      const testFile = testFiles[index];
+      if (!testFile) {
+        throw new Error(`Missing test file mapping for index ${index}`);
+      }
+      const testPath = path.join(process.cwd(), testFile);
 
       if (fs.existsSync(filePath)) {
         expect(fs.existsSync(testPath)).toBe(true);
@@ -144,7 +148,11 @@ Then(
 
     componentFiles.forEach((file, index) => {
       const filePath = path.join(process.cwd(), file);
-      const testPath = path.join(process.cwd(), testFiles[index]);
+      const testFile = testFiles[index];
+      if (!testFile) {
+        throw new Error(`Missing test file mapping for index ${index}`);
+      }
+      const testPath = path.join(process.cwd(), testFile);
 
       if (fs.existsSync(filePath)) {
         expect(fs.existsSync(testPath)).toBe(true);

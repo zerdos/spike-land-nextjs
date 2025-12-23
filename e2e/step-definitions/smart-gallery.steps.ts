@@ -172,7 +172,7 @@ Given(
 // =====================================
 
 Given("I am viewing an album gallery page", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.goto(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
@@ -188,7 +188,7 @@ Given("I am viewing an album gallery page", async function(this: CustomWorld) {
 Given(
   "I am viewing an album gallery page on a touch device",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Set viewport and user agent for touch device
     await this.page.setViewportSize({ width: 375, height: 667 });
@@ -211,7 +211,7 @@ Given(
 Given(
   "I am viewing an album gallery page with auto-cycle interval of {int} seconds",
   async function(this: CustomWorld, seconds: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     testContext.autoCycleInterval = seconds * 1000;
 
@@ -228,7 +228,7 @@ Given(
 Given(
   "I am viewing an album gallery page with rotation {int} degrees",
   async function(this: CustomWorld, degrees: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     testContext.rotation = degrees as 0 | 90 | 180 | 270;
 
@@ -245,7 +245,7 @@ Given(
 When(
   "I navigate to the album gallery page",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
@@ -260,7 +260,7 @@ When(
 // =====================================
 
 Given("I have selected an image", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const thumbnail = this.page.locator('[role="gridcell"]').first();
   await thumbnail.click();
@@ -271,7 +271,7 @@ Given("I have selected an image", async function(this: CustomWorld) {
 });
 
 Given("I have selected the first image", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const thumbnail = this.page.locator('[role="gridcell"]').first();
   await thumbnail.click();
@@ -282,7 +282,7 @@ Given("I have selected the first image", async function(this: CustomWorld) {
 });
 
 When("I click on an image thumbnail", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const thumbnail = this.page.locator('[role="gridcell"]').first();
   await thumbnail.click();
@@ -292,7 +292,7 @@ When("I click on an image thumbnail", async function(this: CustomWorld) {
 });
 
 When("I tap on an image thumbnail", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const thumbnail = this.page.locator('[role="gridcell"]').first();
   await thumbnail.tap();
@@ -304,7 +304,7 @@ When("I tap on an image thumbnail", async function(this: CustomWorld) {
 Then(
   "the image should have a green glow border",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
@@ -317,7 +317,7 @@ Then(
 Then(
   "the image should have aria-selected true",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
@@ -327,7 +327,7 @@ Then(
 Then(
   "the thumbnail should show the enhanced version if available",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     const img = selected.locator("img");
@@ -344,7 +344,7 @@ Then(
 Then(
   "the thumbnail should show the original version",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     const img = selected.locator("img");
@@ -360,14 +360,14 @@ Then(
 // NOTE: "I press the right arrow key", "I press the left arrow key" steps moved to common.steps.ts
 
 When("I press the spacebar key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.keyboard.press("Space");
   await this.page.waitForTimeout(400);
 });
 
 When("I press the Enter key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.keyboard.press("Enter");
   await this.page.waitForTimeout(400);
@@ -376,28 +376,28 @@ When("I press the Enter key", async function(this: CustomWorld) {
 // NOTE: "I press the Escape key" step moved to common.steps.ts
 
 When("I press Tab to navigate", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.keyboard.press("Tab");
   await this.page.waitForTimeout(200);
 });
 
 When("I press and hold the B key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.keyboard.down("KeyB");
   await this.page.waitForTimeout(100);
 });
 
 When("I release the B key", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.keyboard.up("KeyB");
   await this.page.waitForTimeout(100);
 });
 
 Then("the next image should be selected", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const selected = this.page.locator('[aria-selected="true"]');
   await expect(selected).toBeVisible();
@@ -410,7 +410,7 @@ Then("the next image should be selected", async function(this: CustomWorld) {
 Then(
   "the previous image should be selected",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
@@ -418,7 +418,7 @@ Then(
 );
 
 Then("the last image should be selected", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const allThumbnails = this.page.locator('[role="gridcell"]');
   const lastThumbnail = allThumbnails.last();
@@ -429,7 +429,7 @@ Then("the last image should be selected", async function(this: CustomWorld) {
 Then(
   "the first image should be selected again",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const firstThumbnail = this.page.locator('[role="gridcell"]').first();
     await expect(firstThumbnail).toHaveAttribute("aria-selected", "true");
@@ -439,7 +439,7 @@ Then(
 Then(
   "the previously selected image should not have the green glow",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Check that there's only one selected element
     const selectedCount = await this.page.locator('[aria-selected="true"]')
@@ -451,7 +451,7 @@ Then(
 Then(
   "a different image should be selected",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     const testId = await selected.getAttribute("data-testid");
@@ -469,7 +469,7 @@ Then(
 // =====================================
 
 Given("I am in slideshow mode", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   // First navigate to gallery and select an image
   await this.page.goto(
@@ -496,7 +496,7 @@ Given("I am in slideshow mode", async function(this: CustomWorld) {
 Given(
   "I am in slideshow mode on a touch device",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Set up touch device
     await this.page.setViewportSize({ width: 375, height: 667 });
@@ -528,7 +528,7 @@ Given(
 Given(
   "I am in slideshow mode on a touch device viewing an enhanced image",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     await this.page.setViewportSize({ width: 375, height: 667 });
     await this.context.addInitScript(() => {
@@ -553,7 +553,7 @@ Given(
 Given(
   "I am in slideshow mode viewing an enhanced image",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
@@ -572,7 +572,7 @@ Given(
 Given(
   "I am in slideshow mode with rotation {int} degrees",
   async function(this: CustomWorld, degrees: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&rotation=${degrees}`,
@@ -589,7 +589,7 @@ Given(
 );
 
 When("I enter slideshow mode", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const thumbnail = this.page.locator('[role="gridcell"]').first();
   await thumbnail.click();
@@ -600,7 +600,7 @@ When("I enter slideshow mode", async function(this: CustomWorld) {
 });
 
 When("I double-tap on the selected image", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const selected = this.page.locator('[aria-selected="true"]');
   await selected.dblclick();
@@ -608,7 +608,7 @@ When("I double-tap on the selected image", async function(this: CustomWorld) {
 });
 
 Then("I should see the slideshow view", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const slideshow = this.page.locator('[data-testid="slideshow-view"]');
   await expect(slideshow).toBeVisible({ timeout: 5000 });
@@ -617,7 +617,7 @@ Then("I should see the slideshow view", async function(this: CustomWorld) {
 Then(
   "the image should be displayed fullscreen",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toBeVisible();
@@ -633,7 +633,7 @@ Then(
 Then(
   "the slideshow should have role dialog",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toHaveAttribute("role", "dialog");
@@ -643,7 +643,7 @@ Then(
 Then(
   "the slideshow should animate from the grid position",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Check that the slideshow container exists (animation would have started)
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
@@ -654,7 +654,7 @@ Then(
 Then(
   "the transition should complete within {int}ms",
   async function(this: CustomWorld, ms: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Wait for the transition duration and verify slideshow is stable
     await this.page.waitForTimeout(ms);
@@ -667,7 +667,7 @@ Then(
 Then(
   "I should see the next image in the slideshow",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Verify the slideshow is still visible and image changed
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
@@ -678,7 +678,7 @@ Then(
 Then(
   "I should see the previous image in the slideshow",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toBeVisible();
@@ -686,7 +686,7 @@ Then(
 );
 
 Then("I should return to grid view", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   // Slideshow should not be visible
   const slideshow = this.page.locator('[data-testid="slideshow-view"]');
@@ -700,7 +700,7 @@ Then("I should return to grid view", async function(this: CustomWorld) {
 Then(
   "the previously viewed image should still be selected",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
@@ -714,7 +714,7 @@ Then(
 Then(
   "I should see the original image version",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // The slideshow image should be visible
     const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
@@ -725,7 +725,7 @@ Then(
 Then(
   "I should see the enhanced image version again",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
     await expect(slideshowImage).toBeVisible();
@@ -735,7 +735,7 @@ Then(
 Then(
   "the screen reader should announce showing original",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Check for aria-live region content
     const statusRegion = this.page.locator(
@@ -749,7 +749,7 @@ Then(
 Then(
   "the B key peek should have no visible effect",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // When there's no enhanced version, B key shouldn't change the display
     const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
@@ -762,7 +762,7 @@ Then(
 // =====================================
 
 When("I swipe left on the slideshow", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const slideshow = this.page.locator('[data-testid="slideshow-view"]');
   const boundingBox = await slideshow.boundingBox();
@@ -786,7 +786,7 @@ When("I swipe left on the slideshow", async function(this: CustomWorld) {
 });
 
 When("I swipe right on the slideshow", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const slideshow = this.page.locator('[data-testid="slideshow-view"]');
   const boundingBox = await slideshow.boundingBox();
@@ -810,7 +810,7 @@ When("I swipe right on the slideshow", async function(this: CustomWorld) {
 });
 
 When("I long press on the slideshow image", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const slideshow = this.page.locator('[data-testid="slideshow-view"]');
   const boundingBox = await slideshow.boundingBox();
@@ -827,7 +827,7 @@ When("I long press on the slideshow image", async function(this: CustomWorld) {
 });
 
 When("I release the long press", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.mouse.up();
   await this.page.waitForTimeout(100);
@@ -840,7 +840,7 @@ When("I release the long press", async function(this: CustomWorld) {
 Given(
   "the navigation controls are visible",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // Move mouse to trigger controls visibility
     await this.page.mouse.move(300, 300);
@@ -852,7 +852,7 @@ Given(
 );
 
 When("I move the mouse", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.mouse.move(400, 400);
   await this.page.waitForTimeout(100);
@@ -862,7 +862,7 @@ When("I do not move the mouse for {int} seconds", async function(
   this: CustomWorld,
   seconds: number,
 ) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   await this.page.waitForTimeout(seconds * 1000);
 });
@@ -870,7 +870,7 @@ When("I do not move the mouse for {int} seconds", async function(
 // NOTE: "I wait for {int} seconds" step moved to common.steps.ts
 
 When("I click the previous button", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const prevButton = this.page.locator('[data-testid="slideshow-prev-button"]');
   await prevButton.click();
@@ -878,7 +878,7 @@ When("I click the previous button", async function(this: CustomWorld) {
 });
 
 When("I click the next button", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const nextButton = this.page.locator('[data-testid="slideshow-next-button"]');
   await nextButton.click();
@@ -886,7 +886,7 @@ When("I click the next button", async function(this: CustomWorld) {
 });
 
 When("I click the exit button", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const exitButton = this.page.locator('[data-testid="slideshow-exit-button"]');
   await exitButton.click();
@@ -896,7 +896,7 @@ When("I click the exit button", async function(this: CustomWorld) {
 Then(
   "the navigation controls should be visible",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const controls = this.page.locator('[data-testid="slideshow-controls"]');
     await expect(controls).toHaveClass(/opacity-100/);
@@ -904,7 +904,7 @@ Then(
 );
 
 Then("the exit button should be visible", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const exitButton = this.page.locator('[data-testid="slideshow-exit-button"]');
   await expect(exitButton).toBeVisible();
@@ -913,7 +913,7 @@ Then("the exit button should be visible", async function(this: CustomWorld) {
 Then(
   "the navigation controls should be hidden",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const controls = this.page.locator('[data-testid="slideshow-controls"]');
     await expect(controls).toHaveClass(/opacity-0/);
@@ -927,7 +927,7 @@ Then(
 Then(
   "the previous button should be disabled",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const prevButton = this.page.locator(
       '[data-testid="slideshow-prev-button"]',
@@ -937,7 +937,7 @@ Then(
 );
 
 Then("the next button should be disabled", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const nextButton = this.page.locator('[data-testid="slideshow-next-button"]');
   await expect(nextButton).toBeDisabled();
@@ -946,7 +946,7 @@ Then("the next button should be disabled", async function(this: CustomWorld) {
 Then(
   "the arrow keys should not change the image",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     // With only one image, navigation should have no effect
     await this.page.keyboard.press("ArrowRight");
@@ -960,7 +960,7 @@ Then(
 Then(
   "I should see the empty album message",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const emptyState = this.page.locator('[data-testid="canvas-empty"]');
     await expect(emptyState).toBeVisible({ timeout: 10000 });
@@ -972,7 +972,7 @@ Then(
 Then(
   "the slideshow should show the original image",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshowImage = this.page.locator('[data-testid="slideshow-image"]');
     await expect(slideshowImage).toBeVisible();
@@ -982,7 +982,7 @@ Then(
 Then(
   "I should see an error fallback for the failed image",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const errorFallback = this.page.locator(
       '[data-testid="image-error-fallback"]',
@@ -996,7 +996,7 @@ Then(
 // =====================================
 
 Then("the grid should have role grid", async function(this: CustomWorld) {
-  if (shouldSkipGalleryTests) return "skipped";
+  if (shouldSkipGalleryTests) return;
 
   const grid = this.page.locator('[data-testid="smart-grid"]');
   await expect(grid).toHaveAttribute("role", "grid");
@@ -1005,7 +1005,7 @@ Then("the grid should have role grid", async function(this: CustomWorld) {
 Then(
   "the grid should have aria-label {string}",
   async function(this: CustomWorld, label: string) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const grid = this.page.locator('[data-testid="smart-grid"]');
     await expect(grid).toHaveAttribute("aria-label", label);
@@ -1015,7 +1015,7 @@ Then(
 Then(
   "each thumbnail should have role gridcell",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const thumbnails = this.page.locator('[data-testid="smart-grid"] > div');
     const count = await thumbnails.count();
@@ -1030,7 +1030,7 @@ Then(
 Then(
   "focus should move to the first thumbnail",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const firstThumbnail = this.page.locator('[role="gridcell"]').first();
     await expect(firstThumbnail).toBeFocused();
@@ -1040,7 +1040,7 @@ Then(
 Then(
   "the focused thumbnail should have a visible focus ring",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const focused = this.page.locator('[role="gridcell"]:focus');
     await expect(focused).toBeVisible();
@@ -1050,7 +1050,7 @@ Then(
 Then(
   "the slideshow should have aria-modal true",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toHaveAttribute("aria-modal", "true");
@@ -1060,7 +1060,7 @@ Then(
 Then(
   "the slideshow should have aria-label {string}",
   async function(this: CustomWorld, label: string) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toHaveAttribute("aria-label", label);
@@ -1070,7 +1070,7 @@ Then(
 Then(
   "there should be a screen reader status region",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const statusRegion = this.page.locator(
       '[role="status"][aria-live="polite"]',
@@ -1082,7 +1082,7 @@ Then(
 Then(
   "the status region should announce the new image position",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const statusRegion = this.page.locator(
       '[role="status"][aria-live="polite"]',
@@ -1095,7 +1095,7 @@ Then(
 Then(
   "the previous button should have aria-label {string}",
   async function(this: CustomWorld, label: string) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const prevButton = this.page.locator(
       '[data-testid="slideshow-prev-button"]',
@@ -1107,7 +1107,7 @@ Then(
 Then(
   "the next button should have aria-label {string}",
   async function(this: CustomWorld, label: string) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const nextButton = this.page.locator(
       '[data-testid="slideshow-next-button"]',
@@ -1119,7 +1119,7 @@ Then(
 Then(
   "the exit button should have aria-label {string}",
   async function(this: CustomWorld, label: string) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const exitButton = this.page.locator(
       '[data-testid="slideshow-exit-button"]',
@@ -1135,7 +1135,7 @@ Then(
 Then(
   "the grid should be rotated by {int} degrees",
   async function(this: CustomWorld, degrees: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const grid = this.page.locator('[data-testid="smart-grid"]');
     const transform = await grid.evaluate((el) => {
@@ -1152,7 +1152,7 @@ Then(
 Then(
   "the slideshow image should be rotated by {int} degrees",
   async function(this: CustomWorld, degrees: number) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const imageContainer = this.page.locator(
       '[data-testid="slideshow-view"] > div > div',
@@ -1171,7 +1171,7 @@ Then(
 Then(
   "the image should still have a green glow border",
   async function(this: CustomWorld) {
-    if (shouldSkipGalleryTests) return "skipped";
+    if (shouldSkipGalleryTests) return;
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();

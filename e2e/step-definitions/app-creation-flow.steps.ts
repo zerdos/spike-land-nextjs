@@ -67,7 +67,11 @@ Then(
       3: "Monetization",
       4: "Review",
     };
-    await expect(stepTitle).toContainText(expectedSteps[stepNumber], {
+    const expectedText = expectedSteps[stepNumber];
+    if (!expectedText) {
+      throw new Error(`Invalid step number: ${stepNumber}. Expected 1-4.`);
+    }
+    await expect(stepTitle).toContainText(expectedText, {
       timeout: TIMEOUTS.DEFAULT,
     });
   },

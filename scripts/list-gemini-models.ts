@@ -17,25 +17,32 @@ async function main() {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const models = await ai.models.list();
+    const modelsPager = await ai.models.list();
+    const models = [];
+    for await (const model of modelsPager) {
+      models.push(model);
+    }
 
     console.log(`Found ${models.length} models:\n`);
     console.log("=".repeat(80));
 
     for (const model of models) {
-      console.log(`\nModel: ${model.name}`);
-      console.log(`  Display Name: ${model.displayName || "N/A"}`);
-      console.log(`  Description: ${model.description || "N/A"}`);
+      // Cast to any to access properties that may exist but aren't in type definitions
+      const m = model as Record<string, unknown>;
+      console.log(`\nModel: ${m.name}`);
+      console.log(`  Display Name: ${m.displayName || "N/A"}`);
+      console.log(`  Description: ${m.description || "N/A"}`);
+      const supportedMethods = m.supportedGenerationMethods as string[] | undefined;
       console.log(
-        `  Supported Methods: ${model.supportedGenerationMethods?.join(", ") || "N/A"}`,
+        `  Supported Methods: ${supportedMethods?.join(", ") || "N/A"}`,
       );
-      console.log(`  Input Token Limit: ${model.inputTokenLimit || "N/A"}`);
-      console.log(`  Output Token Limit: ${model.outputTokenLimit || "N/A"}`);
+      console.log(`  Input Token Limit: ${m.inputTokenLimit || "N/A"}`);
+      console.log(`  Output Token Limit: ${m.outputTokenLimit || "N/A"}`);
 
       // Check if model supports image generation
-      const supportsImages = model.supportedGenerationMethods?.includes("generateContent") ||
-        model.name.includes("image") ||
-        model.name.includes("imagen");
+      const supportsImages = supportedMethods?.includes("generateContent") ||
+        String(m.name).includes("image") ||
+        String(m.name).includes("imagen");
 
       if (supportsImages) {
         console.log(`  ✨ SUPPORTS IMAGE GENERATION`);
