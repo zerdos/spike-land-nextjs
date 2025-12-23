@@ -105,6 +105,10 @@ export const FeedbackButton = memo(
       }
     };
 
+    if (pathname?.startsWith("/auth")) {
+      return null;
+    }
+
     const FeedbackTypeButton = ({
       type,
       icon: Icon,

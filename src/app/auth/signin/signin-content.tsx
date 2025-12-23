@@ -27,21 +27,27 @@ function SignInContentInner() {
   };
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
+    <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8 relative z-10">
       <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center space-y-4">
-            <div className="flex justify-center">
+        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl">
+          <CardHeader className="text-center space-y-6 pt-8">
+            <div className="flex justify-center scale-125 mb-2">
               <PixelLogo size="lg" variant="horizontal" />
             </div>
-            <div>
-              <CardTitle className="text-2xl">Welcome to Pixel</CardTitle>
-              <CardDescription>
-                Sign in or create an account to continue.
+            <div className="space-y-3">
+              <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Restore photos in minutes
+              </CardTitle>
+              <CardDescription className="text-base text-muted-foreground font-medium">
+                <span className="inline-block">Batch enhance</span>
+                <span className="mx-2 opacity-50">•</span>
+                <span className="inline-block">Compare before/after</span>
+                <span className="mx-2 opacity-50">•</span>
+                <span className="inline-block">Export in high quality</span>
               </CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-8">
             {error && (
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
@@ -51,25 +57,26 @@ function SignInContentInner() {
               </Alert>
             )}
 
+            <div className="space-y-2 mb-6 text-center">
+              <p className="text-sm text-foreground/80">
+                Enter your email to sign in or create an account.
+              </p>
+            </div>
+
             <AuthButtons className="w-full" />
+
+            <div className="mt-6 text-center space-y-4">
+              <p className="text-xs text-muted-foreground">
+                By continuing you agree to{" "}
+                <Link href="/terms" className="underline hover:text-foreground">Terms</Link> &{" "}
+                <Link href="/privacy" className="underline hover:text-foreground">Privacy</Link>.
+              </p>
+              <p className="text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
+                No spam. We never post to your accounts.
+              </p>
+            </div>
           </CardContent>
         </Card>
-
-        <div className="mt-4 flex justify-center gap-4 text-xs text-muted-foreground">
-          <Link
-            href="/terms"
-            className="hover:underline hover:text-foreground transition-colors"
-          >
-            Terms of Service
-          </Link>
-          <span>·</span>
-          <Link
-            href="/privacy"
-            className="hover:underline hover:text-foreground transition-colors"
-          >
-            Privacy Policy
-          </Link>
-        </div>
       </div>
     </div>
   );
