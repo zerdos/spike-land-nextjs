@@ -97,15 +97,16 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
     yarn build
 
 # ============================================================================
-# STAGE 6: Verified Build Gate
+# STAGE 6: Type Check (parallel with build)
 # ============================================================================
-FROM build AS verified-build
-COPY --from=lint /app/package.json /tmp/lint-passed
+
+FROM source AS tsc
+RUN yarn tsc --noEmit
 
 # ============================================================================
 # STAGE 7: Test Context (copy tests AFTER build)
 # ============================================================================
-FROM verified-build AS test-source
+FROM source AS test-source
 COPY vitest.config.ts vitest.setup.ts ./
 COPY vitest.mock-*.ts vitest.mock-*.tsx ./
 COPY cucumber.js ./
@@ -168,15 +169,20 @@ RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_module
 FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 
+
 # Yarn runtime metadata (so `yarn <script>` works)
 COPY --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=dep-context /app/.yarn/ ./.yarn/
 COPY --from=dep-context /app/packages/ ./packages/
 
+COPY --link --from=deps /app/node_modules ./node_modules
+COPY --link --from=build /app/.next ./.next
+
 # Built app (standalone mode) - preserve directory structure for start:ci script
 COPY --from=build /app/.next/standalone ./.next/standalone
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+
 
 # E2E tests + config only
 COPY --from=test-source /app/e2e ./e2e
@@ -203,44 +209,89 @@ FROM e2e-test-base AS e2e-test-shard
 ARG CACHE_NS
 ARG TARGETARCH
 ARG SHARD_INDEX=1
-ARG SHARD_TOTAL=4
-RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
-    > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
-    || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
+ARG SHARD_TOTAL=8
+ENV SHARD_INDEX=${SHARD_INDEX}
+ENV SHARD_TOTAL=${SHARD_TOTAL}
 
 FROM e2e-test-base AS e2e-tests-1
 ARG CACHE_NS
 ARG TARGETARCH
-RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci --shard 1/4 > /tmp/e2e-1.log 2>&1 || (cat /tmp/e2e-1.log && exit 1)
+ENV SHARD_INDEX=1
+RUN yarn start:server:and:test:ci
+
 FROM e2e-test-base AS e2e-tests-2
 ARG CACHE_NS
 ARG TARGETARCH
+ENV SHARD_INDEX=2
+ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci --shard 2/4 > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
+    yarn start:server:and:test:ci > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
+
 FROM e2e-test-base AS e2e-tests-3
 ARG CACHE_NS
 ARG TARGETARCH
+ENV SHARD_INDEX=3
+ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci --shard 3/4 > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
+    yarn start:server:and:test:ci > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
+
 FROM e2e-test-base AS e2e-tests-4
 ARG CACHE_NS
 ARG TARGETARCH
+ENV SHARD_INDEX=4
+ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci --shard 4/4 > /tmp/e2e-4.log 2>&1 || (cat /tmp/e2e-4.log && exit 1)
+    yarn start:server:and:test:ci > /tmp/e2e-4.log 2>&1 || (cat /tmp/e2e-4.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-5
+ARG CACHE_NS
+ARG TARGETARCH
+ENV SHARD_INDEX=5
+ENV SHARD_TOTAL=8
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
+    yarn start:server:and:test:ci > /tmp/e2e-5.log 2>&1 || (cat /tmp/e2e-5.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-6
+ARG CACHE_NS
+ARG TARGETARCH
+ENV SHARD_INDEX=6
+ENV SHARD_TOTAL=8
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
+    yarn start:server:and:test:ci > /tmp/e2e-6.log 2>&1 || (cat /tmp/e2e-6.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-7
+ARG CACHE_NS
+ARG TARGETARCH
+ENV SHARD_INDEX=7
+ENV SHARD_TOTAL=8
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
+    yarn start:server:and:test:ci > /tmp/e2e-7.log 2>&1 || (cat /tmp/e2e-7.log && exit 1)
+
+FROM e2e-test-base AS e2e-tests-8
+ARG CACHE_NS
+ARG TARGETARCH
+ENV SHARD_INDEX=8
+ENV SHARD_TOTAL=8
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
+    yarn start:server:and:test:ci > /tmp/e2e-8.log 2>&1 || (cat /tmp/e2e-8.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests
 COPY --from=e2e-tests-1 /tmp/e2e-1.log /tmp/
 COPY --from=e2e-tests-2 /tmp/e2e-2.log /tmp/
 COPY --from=e2e-tests-3 /tmp/e2e-3.log /tmp/
 COPY --from=e2e-tests-4 /tmp/e2e-4.log /tmp/
-RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 4 E2E test shards passed"
+COPY --from=e2e-tests-5 /tmp/e2e-5.log /tmp/
+COPY --from=e2e-tests-6 /tmp/e2e-6.log /tmp/
+COPY --from=e2e-tests-7 /tmp/e2e-7.log /tmp/
+COPY --from=e2e-tests-8 /tmp/e2e-8.log /tmp/
+RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 8 E2E test shards passed"
 
 # ============================================================================
 # STAGE 12: CI Gateway
@@ -249,6 +300,8 @@ RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 4 E2E test shards passed"
 FROM e2e-tests AS ci
 # Force unit-tests to complete by copying proof file
 COPY --from=unit-tests /tmp/unit-1.log /tmp/unit-passed
+COPY --from=lint   /app/package.json   /tmp/lint-passed
+COPY --from=tsc    /app/package.json   /tmp/tsc-passed
 RUN echo "::notice::✅ CI Pipeline Complete: Lint, Build, Unit Tests, E2E Tests"
 
 # ============================================================================

@@ -240,7 +240,7 @@ describe("opengraph-image", () => {
       // Verify the element structure contains the expected background
       expect(result.element).toBeDefined();
       const element = result.element as React.ReactElement;
-      expect((element.props as any).style.background).toBe("#0a0a0a");
+      expect((element.props as any).style.background).toBe("#000");
     });
 
     it("renders single image when only original URL exists", async () => {
