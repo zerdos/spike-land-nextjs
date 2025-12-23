@@ -541,7 +541,8 @@ describe("usePeerConnection", () => {
     } as DataConnection;
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 
@@ -571,7 +572,8 @@ describe("usePeerConnection", () => {
     renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 
@@ -599,7 +601,8 @@ describe("usePeerConnection", () => {
     renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 
@@ -627,7 +630,8 @@ describe("usePeerConnection", () => {
     renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 
@@ -655,7 +659,8 @@ describe("usePeerConnection", () => {
     renderHook(() => usePeerConnection(mockPeer as Peer));
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const callHandler = peerOnHandler.mock.calls.find((call) => call[0] === "call")?.[1] as (
+    expect(peerOnHandler).toBeDefined();
+    const callHandler = peerOnHandler!.mock.calls.find((call) => call[0] === "call")?.[1] as (
       call: MediaConnection,
     ) => void;
 
@@ -668,7 +673,10 @@ describe("usePeerConnection", () => {
   });
 
   it("should cleanup event listeners when peer changes", () => {
-    const { rerender } = renderHook(({ peer }) => usePeerConnection(peer), {
+    const { rerender } = renderHook<
+      ReturnType<typeof usePeerConnection>,
+      { peer: Peer | null; }
+    >(({ peer }) => usePeerConnection(peer), {
       initialProps: { peer: mockPeer as Peer },
     });
 
@@ -682,7 +690,7 @@ describe("usePeerConnection", () => {
   });
 
   it("should disconnect all peers on unmount", async () => {
-    mockDataConnection.open = true;
+    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
     const unmountMockTrack = { stop: vi.fn() };
     const streamWithTracks = {
       getTracks: vi.fn(() => [unmountMockTrack]),
@@ -700,7 +708,8 @@ describe("usePeerConnection", () => {
 
     // Trigger the stream event to set the stream in connection state
     const onHandler = vi.mocked(mockMediaConnection.on);
-    const streamHandler = onHandler.mock.calls.find((call) => call[0] === "stream")?.[1];
+    expect(onHandler).toBeDefined();
+    const streamHandler = onHandler!.mock.calls.find((call) => call[0] === "stream")?.[1];
 
     act(() => {
       streamHandler?.(streamWithTracks);
@@ -732,7 +741,8 @@ describe("usePeerConnection", () => {
 
     // Simulate data connection open which calls updateConnection
     const onHandler = vi.mocked(mockDataConnection.on);
-    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")
+    expect(onHandler).toBeDefined();
+    const openHandler = onHandler!.mock.calls.find((call) => call[0] === "open")
       ?.[1];
 
     act(() => {
@@ -765,7 +775,8 @@ describe("usePeerConnection", () => {
     } as unknown as DataConnection;
 
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 

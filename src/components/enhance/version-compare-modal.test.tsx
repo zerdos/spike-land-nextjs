@@ -43,44 +43,46 @@ vi.mock("./ImageComparisonSlider", () => ({
   ),
 }));
 
-const mockVersions: Version[] = [
-  {
-    jobId: "job-1",
-    tier: "TIER_1K",
-    status: "COMPLETED",
-    resultUrl: "https://example.com/enhanced-1k.jpg",
-    tokensSpent: 5,
-    createdAt: new Date("2024-01-01T10:00:00Z"),
-    processingTimeMs: 15000,
-    width: 1000,
-    height: 750,
-    sizeBytes: 300000,
-  },
-  {
-    jobId: "job-2",
-    tier: "TIER_2K",
-    status: "COMPLETED",
-    resultUrl: "https://example.com/enhanced-2k.jpg",
-    tokensSpent: 10,
-    createdAt: new Date("2024-01-01T11:00:00Z"),
-    processingTimeMs: 20000,
-    width: 2000,
-    height: 1500,
-    sizeBytes: 600000,
-  },
-  {
-    jobId: "job-3",
-    tier: "TIER_4K",
-    status: "COMPLETED",
-    resultUrl: "https://example.com/enhanced-4k.jpg",
-    tokensSpent: 20,
-    createdAt: new Date("2024-01-01T12:00:00Z"),
-    processingTimeMs: 30000,
-    width: 4000,
-    height: 3000,
-    sizeBytes: 1200000,
-  },
-];
+const baseVersion: Version = {
+  jobId: "job-1",
+  tier: "TIER_1K",
+  status: "COMPLETED",
+  resultUrl: "https://example.com/enhanced-1k.jpg",
+  tokensSpent: 5,
+  createdAt: new Date("2024-01-01T10:00:00Z"),
+  processingTimeMs: 15000,
+  width: 1000,
+  height: 750,
+  sizeBytes: 300000,
+};
+
+const mockVersion2: Version = {
+  jobId: "job-2",
+  tier: "TIER_2K",
+  status: "COMPLETED",
+  resultUrl: "https://example.com/enhanced-2k.jpg",
+  tokensSpent: 10,
+  createdAt: new Date("2024-01-01T11:00:00Z"),
+  processingTimeMs: 20000,
+  width: 2000,
+  height: 1500,
+  sizeBytes: 600000,
+};
+
+const mockVersion3: Version = {
+  jobId: "job-3",
+  tier: "TIER_4K",
+  status: "COMPLETED",
+  resultUrl: "https://example.com/enhanced-4k.jpg",
+  tokensSpent: 20,
+  createdAt: new Date("2024-01-01T12:00:00Z"),
+  processingTimeMs: 30000,
+  width: 4000,
+  height: 3000,
+  sizeBytes: 1200000,
+};
+
+const mockVersions: Version[] = [baseVersion, mockVersion2, mockVersion3];
 
 describe("VersionCompareModal", () => {
   it("should not render when versions array is empty", () => {
@@ -314,11 +316,14 @@ describe("VersionCompareModal", () => {
   it("should disable download button when resultUrl is null", async () => {
     const versionsWithNullUrl: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         resultUrl: null,
       },
-      mockVersions[1],
+      mockVersion2,
     ];
+
+    const versionWithNullUrl = versionsWithNullUrl[0] as Version;
+    const version2 = versionsWithNullUrl[1] as Version;
 
     render(
       <VersionCompareModal
@@ -328,8 +333,8 @@ describe("VersionCompareModal", () => {
         imageName="Test Image"
         originalUrl="https://example.com/original.jpg"
         versions={versionsWithNullUrl}
-        initialVersion1={versionsWithNullUrl[0]}
-        initialVersion2={versionsWithNullUrl[1]}
+        initialVersion1={versionWithNullUrl}
+        initialVersion2={version2}
       />,
     );
 
@@ -425,7 +430,7 @@ describe("VersionCompareModal", () => {
   it("should use default dimensions when version dimensions are null", async () => {
     const versionsWithNullDimensions: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         width: null,
         height: null,
       },
@@ -600,13 +605,11 @@ describe("VersionCompareModal", () => {
         },
       );
 
-    const versionsWithNullUrl: Version[] = [
-      {
-        ...mockVersions[0],
-        resultUrl: null,
-      },
-      mockVersions[1],
-    ];
+    const versionWithNullUrl: Version = {
+      ...baseVersion,
+      resultUrl: null,
+    };
+    const versionsWithNullUrl: Version[] = [versionWithNullUrl, mockVersion2];
 
     render(
       <VersionCompareModal
@@ -616,8 +619,8 @@ describe("VersionCompareModal", () => {
         imageName="Test Image"
         originalUrl="https://example.com/original.jpg"
         versions={versionsWithNullUrl}
-        initialVersion1={versionsWithNullUrl[0]}
-        initialVersion2={versionsWithNullUrl[1]}
+        initialVersion1={versionWithNullUrl}
+        initialVersion2={mockVersion2}
       />,
     );
 

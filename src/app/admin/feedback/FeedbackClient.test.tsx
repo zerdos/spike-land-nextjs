@@ -6,11 +6,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FeedbackClient } from "./FeedbackClient";
 
-const mockFetchResponse = (data: unknown, ok = true) => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const mockFeedback = [
@@ -223,7 +223,7 @@ describe("FeedbackClient", () => {
     render(<FeedbackClient initialFeedback={mockFeedback} />);
 
     // Click on the second feedback which has an admin note
-    const row = screen.getAllByRole("row")[2]; // Skip header row
+    const row = screen.getAllByRole("row")[2]!; // Skip header row
     fireEvent.click(row);
 
     await waitFor(() => {
@@ -294,7 +294,7 @@ describe("FeedbackClient", () => {
     // Click close button - the dialog has both a close icon and a "Close" text button
     const closeButtons = screen.getAllByRole("button", { name: /close/i });
     // Click the text "Close" button (last one in the dialog footer)
-    const closeTextButton = closeButtons[closeButtons.length - 1];
+    const closeTextButton = closeButtons[closeButtons.length - 1]!;
     fireEvent.click(closeTextButton);
 
     await waitFor(() => {
@@ -325,8 +325,8 @@ describe("FeedbackClient", () => {
 
   it("should filter feedback by status locally", () => {
     const mixedFeedback = [
-      { ...mockFeedback[0], status: "NEW" as const },
-      { ...mockFeedback[1], id: "cm123456791", status: "RESOLVED" as const },
+      { ...mockFeedback[0]!, status: "NEW" as const },
+      { ...mockFeedback[1]!, id: "cm123456791", status: "RESOLVED" as const },
     ];
 
     render(<FeedbackClient initialFeedback={mixedFeedback} />);

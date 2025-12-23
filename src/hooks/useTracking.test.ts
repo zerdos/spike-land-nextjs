@@ -179,7 +179,7 @@ describe("useTracking", () => {
         });
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.metadata).toEqual({ method: "google" });
     });
 
@@ -190,7 +190,7 @@ describe("useTracking", () => {
         await result.current.trackConversion("signup");
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.name).toBe("signup_completed");
       expect(body.metadata.conversionType).toBe("signup");
     });
@@ -202,7 +202,7 @@ describe("useTracking", () => {
         await result.current.trackConversion("purchase", 29.99);
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.name).toBe("purchase_completed");
       expect(body.value).toBe(29.99);
     });
@@ -214,7 +214,7 @@ describe("useTracking", () => {
         await result.current.trackConversionStarted("signup");
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.name).toBe("signup_started");
       expect(body.metadata.conversionType).toBe("signup");
     });
@@ -235,7 +235,7 @@ describe("useTracking", () => {
           await result.current.trackConversionStarted(type);
         });
 
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
         expect(body.name).toBe(`${type}_started`);
       }
     });

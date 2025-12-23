@@ -333,7 +333,7 @@ describe("MultiTierEnhancement Component", () => {
 
       await waitFor(() => {
         expect(mockOnEnhancementStart).toHaveBeenCalled();
-        const calledTiers = mockOnEnhancementStart.mock.calls[0][0];
+        const calledTiers = mockOnEnhancementStart.mock.calls[0]?.[0];
         expect(calledTiers).toContain("TIER_1K");
         expect(calledTiers).toContain("TIER_2K");
       });
@@ -486,9 +486,9 @@ describe("MultiTierEnhancement Component", () => {
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("FAILED");
-        expect(jobs[0].error).toBe("Server error");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("FAILED");
+        expect(jobs?.[0]?.error).toBe("Server error");
       });
 
       consoleErrorSpy.mockRestore();
@@ -510,9 +510,9 @@ describe("MultiTierEnhancement Component", () => {
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("FAILED");
-        expect(jobs[0].error).toBe("Network error");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("FAILED");
+        expect(jobs?.[0]?.error).toBe("Network error");
       });
 
       consoleErrorSpy.mockRestore();
@@ -534,9 +534,9 @@ describe("MultiTierEnhancement Component", () => {
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("FAILED");
-        expect(jobs[0].error).toBe("Enhancement failed");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("FAILED");
+        expect(jobs?.[0]?.error).toBe("Enhancement failed");
       });
 
       consoleErrorSpy.mockRestore();
@@ -561,8 +561,8 @@ describe("MultiTierEnhancement Component", () => {
 
       await waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].error).toBe("Failed to start enhancement");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.error).toBe("Failed to start enhancement");
       });
 
       consoleErrorSpy.mockRestore();
@@ -622,8 +622,8 @@ describe("MultiTierEnhancement Component", () => {
 
       await vi.waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("COMPLETED");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("COMPLETED");
       });
 
       vi.useRealTimers();
@@ -675,9 +675,9 @@ describe("MultiTierEnhancement Component", () => {
 
       await vi.waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("FAILED");
-        expect(jobs[0].error).toBe("Enhancement failed");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("FAILED");
+        expect(jobs?.[0]?.error).toBe("Enhancement failed");
       });
 
       vi.useRealTimers();
@@ -725,8 +725,8 @@ describe("MultiTierEnhancement Component", () => {
 
       await vi.waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("CANCELLED");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("CANCELLED");
       });
 
       vi.useRealTimers();
@@ -774,8 +774,8 @@ describe("MultiTierEnhancement Component", () => {
 
       await vi.waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].status).toBe("FAILED");
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.status).toBe("FAILED");
       });
 
       consoleErrorSpy.mockRestore();

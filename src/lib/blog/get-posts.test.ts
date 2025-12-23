@@ -361,7 +361,7 @@ describe("get-posts", () => {
       const posts = getPostsByCategory("testing");
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].frontmatter.category).toBe("Testing");
+      expect(posts[0]?.frontmatter.category).toBe("Testing");
     });
 
     it("returns empty array when no posts match category", () => {
@@ -416,7 +416,7 @@ describe("get-posts", () => {
       const posts = getFeaturedPosts();
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].frontmatter.featured).toBe(true);
+      expect(posts[0]?.frontmatter.featured).toBe(true);
     });
   });
 

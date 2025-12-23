@@ -557,7 +557,7 @@ describe("VersionHistory", () => {
 
     const versionsWithNullUrl: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         resultUrl: null,
       },
     ];

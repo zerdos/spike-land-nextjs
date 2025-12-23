@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ErrorBoundary, withErrorBoundary } from "./error-boundary";
 
@@ -409,7 +410,7 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
     );
 
     // Use a basic error that won't have a suggestion
-    function ThrowBasicError(): JSX.Element {
+    function ThrowBasicError(): ReactNode {
       throw new Error("Basic error message");
     }
 
@@ -428,11 +429,10 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
       () => {},
     );
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
 
     // Create component that throws error without stack
-    function ThrowErrorNoStack() {
+    function ThrowErrorNoStack(): ReactNode {
       const error = new Error("Error without stack");
       error.stack = undefined;
       throw error;
@@ -451,7 +451,7 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
       expect(preElements.length).toBe(0);
     }
 
-    process.env.NODE_ENV = originalEnv;
+    vi.unstubAllEnvs();
     consoleErrorSpy.mockRestore();
   });
 

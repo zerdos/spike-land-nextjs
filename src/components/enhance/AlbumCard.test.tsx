@@ -168,9 +168,10 @@ describe("AlbumCard Component", () => {
 
   describe("preview image grid layout", () => {
     it("renders single image spanning full grid", () => {
+      const firstPreviewImage = mockAlbum.previewImages[0];
       const singleImageAlbum = {
         ...mockAlbum,
-        previewImages: [mockAlbum.previewImages[0]],
+        previewImages: [firstPreviewImage],
       };
       const { container } = render(<AlbumCard album={singleImageAlbum} />);
 

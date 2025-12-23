@@ -484,7 +484,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
               errorMessage: null,
             } as never;
           }
-        }) as typeof prisma.imageEnhancementJob.findUnique,
+        }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
       );
 
       vi.useRealTimers();
@@ -545,7 +545,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
             errorMessage: null,
           } as never;
         }
-      }) as typeof prisma.imageEnhancementJob.findUnique,
+      }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
     );
 
     vi.useRealTimers();
@@ -683,7 +683,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
             enhancedHeight: 1536,
             errorMessage: null,
           } as never;
-        }) as typeof prisma.imageEnhancementJob.findUnique,
+        }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
       );
 
       vi.useRealTimers();
@@ -739,8 +739,8 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 10);
 
     expect(events.length).toBe(2);
-    expect(events[0].type).toBe("connected");
-    expect(events[1].status).toBe("COMPLETED");
+    expect(events[0]?.type).toBe("connected");
+    expect(events[1]?.status).toBe("COMPLETED");
   });
 
   it("handles checkStatus when stream is already closed", async () => {
@@ -750,7 +750,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
 
     let pollCount = 0;
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockImplementation(
-      async () => {
+      (async () => {
         pollCount++;
         if (pollCount === 1) {
           return {
@@ -769,7 +769,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
           enhancedHeight: null,
           errorMessage: null,
         } as never;
-      },
+      }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
     );
 
     vi.useRealTimers();
@@ -799,7 +799,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
 
     let _pollCount = 0;
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockImplementation(
-      async () => {
+      (async () => {
         _pollCount++;
         // Always return PENDING to keep polling
         return {
@@ -811,7 +811,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
           enhancedHeight: null,
           errorMessage: null,
         } as never;
-      },
+      }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
     );
 
     const abortController = new AbortController();
@@ -851,7 +851,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
 
     let _pollCount = 0;
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockImplementation(
-      async () => {
+      (async () => {
         _pollCount++;
         // First call for validation, then polling
         return {
@@ -863,7 +863,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
           enhancedHeight: null,
           errorMessage: null,
         } as never;
-      },
+      }) as unknown as typeof prisma.imageEnhancementJob.findUnique,
     );
 
     vi.useRealTimers();

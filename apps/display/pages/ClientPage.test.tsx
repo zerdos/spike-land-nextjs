@@ -1615,7 +1615,7 @@ describe("ClientPage", () => {
 
   it("should handle unmount during initialization", async () => {
     // Mock getUserMedia to delay response
-    let resolveGetUserMedia: ((value: MediaStream) => void) | null = null;
+    let resolveGetUserMedia: (value: MediaStream) => void = () => {};
     const getUserMediaPromise = new Promise<MediaStream>((resolve) => {
       resolveGetUserMedia = resolve;
     });
@@ -1655,9 +1655,7 @@ describe("ClientPage", () => {
     });
 
     // Resolve getUserMedia after unmount
-    if (resolveGetUserMedia) {
-      resolveGetUserMedia(mockStream);
-    }
+    resolveGetUserMedia(mockStream);
 
     // Wait a bit to ensure cleanup happens
     await new Promise((resolve) => setTimeout(resolve, 100));

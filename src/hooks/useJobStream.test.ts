@@ -119,11 +119,11 @@ describe("useJobStream", () => {
 
     it("should reset job to null when jobId changes to null", () => {
       const { result, rerender } = renderHook(
-        ({ jobId }) =>
+        ({ jobId }: { jobId: string | null; }) =>
           useJobStream({
             jobId,
           }),
-        { initialProps: { jobId: mockJobId } },
+        { initialProps: { jobId: mockJobId as string | null } },
       );
 
       // Simulate a connected message followed by status update

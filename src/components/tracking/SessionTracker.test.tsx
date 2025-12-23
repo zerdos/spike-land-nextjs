@@ -165,7 +165,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.visitorId).toBe("existing-visitor");
     });
 
@@ -202,7 +202,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.deviceType).toBe("desktop");
       expect(body.browser).toBe("Chrome");
       expect(body.os).toBe("macOS");
@@ -215,7 +215,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.landingPage).toBe("/test-page");
       expect(body.referrer).toBe("https://google.com");
     });
@@ -246,7 +246,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.utmSource).toBe("facebook");
       expect(body.utmMedium).toBe("cpc");
       expect(body.utmCampaign).toBe("christmas_2025");
@@ -266,7 +266,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.gclid).toBe("google-click-id-123");
     });
 
@@ -282,7 +282,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.fbclid).toBe("facebook-click-id-456");
     });
 
@@ -315,7 +315,7 @@ describe("SessionTracker", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]?.[1]?.body as string);
       expect(body.utmSource).toBeUndefined();
     });
   });
@@ -355,7 +355,7 @@ describe("SessionTracker", () => {
       const patchCalls = mockFetch.mock.calls.filter(
         (call) => call[1]?.method === "PATCH",
       );
-      const body = JSON.parse(patchCalls[0][1].body);
+      const body = JSON.parse(patchCalls[0]?.[1]?.body as string);
       expect(body.userId).toBe("user-123");
       expect(body.sessionId).toBe("existing-session-123");
     });

@@ -554,13 +554,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -583,8 +583,10 @@ describe("Job Cleanup Utilities", () => {
 
       const result = await cleanupStuckJobs();
 
-      expect(result.jobs[0].error).toBeDefined();
-      expect(result.jobs[0].error).toContain(errorMessage);
+      const firstJob = result.jobs[0];
+      expect(firstJob).toBeDefined();
+      expect(firstJob!.error).toBeDefined();
+      expect(firstJob!.error).toContain(errorMessage);
       expect(result.errors).toHaveLength(1);
     });
 
@@ -593,13 +595,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -640,13 +642,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -663,7 +665,9 @@ describe("Job Cleanup Utilities", () => {
       expect(result.failed).toBe(1);
       expect(result.cleanedUp).toBe(0);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].error).toBe("Non-Error string thrown");
+      const firstError = result.errors[0];
+      expect(firstError).toBeDefined();
+      expect(firstError!.error).toBe("Non-Error string thrown");
     });
 
     it("should throw error when result is missing for a job (defensive check)", async () => {
@@ -671,20 +675,20 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
-        {
+        }),
+        createMockJob({
           id: "job2",
           userId: "user2",
           tokensCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
