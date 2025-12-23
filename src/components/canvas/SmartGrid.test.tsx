@@ -549,7 +549,7 @@ describe("SmartGrid", () => {
       expect(screen.getAllByRole("gridcell")).toHaveLength(3);
 
       // Rerender with fewer images (simulating unmount)
-      const reducedImages = [mockImages[0]];
+      const reducedImages = mockImages[0] ? [mockImages[0]] : [];
       rerender(
         <SmartGrid
           images={reducedImages}

@@ -93,9 +93,10 @@ describe("DragPreview Component", () => {
 
   describe("Single Image", () => {
     it("should render single image without count badge", () => {
+      const singleImage = mockImages.filter((img) => img !== undefined)[0];
       render(
         <DragPreview
-          images={[mockImages[0]]}
+          images={singleImage ? [singleImage] : []}
           position={{ x: 100, y: 100 }}
           visible={true}
         />,
@@ -121,9 +122,10 @@ describe("DragPreview Component", () => {
     });
 
     it("should show count badge for multiple images", () => {
+      const twoImages = mockImages.filter((img) => img !== undefined).slice(0, 2);
       render(
         <DragPreview
-          images={[mockImages[0], mockImages[1]]}
+          images={twoImages}
           position={{ x: 100, y: 100 }}
           visible={true}
         />,

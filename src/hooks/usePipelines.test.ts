@@ -125,13 +125,13 @@ describe("usePipelines", () => {
       const { groupedPipelines } = result.current;
 
       expect(groupedPipelines.systemDefaults).toHaveLength(1);
-      expect(groupedPipelines.systemDefaults[0].id).toBe("system-1");
+      expect(groupedPipelines.systemDefaults[0]!.id).toBe("system-1");
 
       expect(groupedPipelines.myPipelines).toHaveLength(1);
-      expect(groupedPipelines.myPipelines[0].id).toBe("my-pipeline-1");
+      expect(groupedPipelines.myPipelines[0]!.id).toBe("my-pipeline-1");
 
       expect(groupedPipelines.publicPipelines).toHaveLength(1);
-      expect(groupedPipelines.publicPipelines[0].id).toBe("public-1");
+      expect(groupedPipelines.publicPipelines[0]!.id).toBe("public-1");
     });
 
     it("should provide getPipelineById helper", async () => {
@@ -380,8 +380,8 @@ describe("usePipelines", () => {
 
   describe("pagination and loadMore", () => {
     it("should load more pipelines when loadMore is called", async () => {
-      const page1Pipeline = mockPipelines[0];
-      const page2Pipeline = mockPipelines[1];
+      const page1Pipeline = mockPipelines[0]!;
+      const page2Pipeline = mockPipelines[1]!;
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -455,7 +455,7 @@ describe("usePipelines", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () =>
-          createPaginatedResponse([mockPipelines[0]], {
+          createPaginatedResponse([mockPipelines[0]!], {
             page: 0,
             hasMore: true,
           }),
@@ -473,7 +473,7 @@ describe("usePipelines", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () =>
-          createPaginatedResponse([mockPipelines[1]], {
+          createPaginatedResponse([mockPipelines[1]!], {
             page: 1,
             hasMore: false,
           }),

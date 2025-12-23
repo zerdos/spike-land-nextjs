@@ -148,9 +148,9 @@ describe("useAlbumBatchEnhance", () => {
     expect(result.current.progress).toBe(100);
 
     const jobs = result.current.jobs;
-    expect(jobs[0].status).toBe("COMPLETED");
-    expect(jobs[1].status).toBe("FAILED");
-    expect(jobs[1].error).toBe("Insufficient tokens");
+    expect(jobs[0]!.status).toBe("COMPLETED");
+    expect(jobs[1]!.status).toBe("FAILED");
+    expect(jobs[1]!.error).toBe("Insufficient tokens");
   });
 
   it("should handle API errors", async () => {
@@ -429,8 +429,8 @@ describe("useAlbumBatchEnhance", () => {
     expect(result.current.isProcessing).toBe(false);
     expect(result.current.completedCount).toBe(1);
     expect(onComplete).toHaveBeenCalled();
-    expect(onComplete.mock.calls[0][0]).toHaveLength(1);
-    expect(onComplete.mock.calls[0][0][0]).toMatchObject({
+    expect(onComplete.mock.calls[0]![0]).toHaveLength(1);
+    expect(onComplete.mock.calls[0]![0]![0]).toMatchObject({
       imageId: "img-1",
       jobId: "job-1",
       status: "COMPLETED",
@@ -522,7 +522,7 @@ describe("useAlbumBatchEnhance", () => {
 
     // Verify first batch job is set
     expect(result.current.jobs).toHaveLength(1);
-    expect(result.current.jobs[0].jobId).toBe("job-1");
+    expect(result.current.jobs[0]!.jobId).toBe("job-1");
 
     // Let the first poll happen
     await act(async () => {
@@ -539,7 +539,7 @@ describe("useAlbumBatchEnhance", () => {
 
     // Only the second batch's job should be present (first was cleared)
     expect(result.current.jobs).toHaveLength(1);
-    expect(result.current.jobs[0].jobId).toBe("job-2");
+    expect(result.current.jobs[0]!.jobId).toBe("job-2");
 
     // Complete polling for second batch
     await act(async () => {
