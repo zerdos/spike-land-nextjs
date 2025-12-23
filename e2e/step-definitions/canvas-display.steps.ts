@@ -117,6 +117,7 @@ When("I navigate to the canvas page", async function(this: CustomWorld) {
   const url = `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 When(
@@ -129,6 +130,7 @@ When(
     const url = `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`;
     await this.page.goto(url);
     await this.page.waitForLoadState("networkidle");
+    return;
   },
 );
 
@@ -142,6 +144,7 @@ When(
     const url = `${this.baseUrl}/canvas/${testContext.albumId}`;
     await this.page.goto(url);
     await this.page.waitForLoadState("networkidle");
+    return;
   },
 );
 
@@ -157,6 +160,7 @@ When("I navigate to the canvas page with rotation {string}", async function(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&rotation=${rotation}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 When(
@@ -170,6 +174,7 @@ When(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&interval=${interval}&order=${order}`;
     await this.page.goto(url);
     await this.page.waitForLoadState("networkidle");
+    return;
   },
 );
 
@@ -185,6 +190,7 @@ When("I navigate to the canvas page with interval {string}", async function(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&interval=${interval}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 When("I navigate to the canvas page with order {string}", async function(
@@ -199,6 +205,7 @@ When("I navigate to the canvas page with order {string}", async function(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&order=${order}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 // Album detail page navigation
@@ -210,6 +217,7 @@ When("I navigate to my album detail page", async function(this: CustomWorld) {
   const url = `${this.baseUrl}/albums/${testContext.albumId}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 Given("I am on my album detail page", async function(this: CustomWorld) {
@@ -220,6 +228,7 @@ Given("I am on my album detail page", async function(this: CustomWorld) {
   const url = `${this.baseUrl}/albums/${testContext.albumId}`;
   await this.page.goto(url);
   await this.page.waitForLoadState("networkidle");
+  return;
 });
 
 // Canvas page assertions
@@ -232,6 +241,7 @@ Then(
 
     const container = this.page.locator("div.bg-black").first();
     await expect(container).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -244,6 +254,7 @@ Then(
 
     const image = this.page.locator("img").first();
     await expect(image).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -255,6 +266,7 @@ Then("I should see a 404 error page", async function(this: CustomWorld) {
   // Check for 404 content or next.js not-found page
   const notFoundText = this.page.getByText(/not found|404/i);
   await expect(notFoundText).toBeVisible({ timeout: 10000 });
+  return;
 });
 
 Then("I should see the image rotated by {int} degrees", async function(
@@ -280,6 +292,7 @@ Then("I should see the image rotated by {int} degrees", async function(
   if (degrees === 90 || degrees === 270) {
     expect(transform).toContain("matrix");
   }
+  return;
 });
 
 Then(
@@ -305,6 +318,7 @@ Then(
 
     const qrPanel = this.page.getByText("Canvas Display");
     await expect(qrPanel).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -317,6 +331,7 @@ Then(
 
     const qrPanel = this.page.getByText("Canvas Display");
     await expect(qrPanel).not.toBeVisible({ timeout: 5000 });
+    return;
   },
 );
 
@@ -329,6 +344,7 @@ Then(
 
     const qrCode = this.page.locator('[data-testid="qr-code-container"] svg');
     await expect(qrCode).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -346,6 +362,7 @@ Then(
     await expect(rotationSelect).toBeVisible({ timeout: 10000 });
     await expect(orderSelect).toBeVisible({ timeout: 10000 });
     await expect(intervalInput).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -363,6 +380,7 @@ When("I change the rotation setting to {string}", async function(
 
   const option = this.page.getByText(`${rotation} clockwise`);
   await option.click();
+  return;
 });
 
 When("I change the order setting to {string}", async function(
@@ -380,6 +398,7 @@ When("I change the order setting to {string}", async function(
     order === "random" ? "Random" : "Album order",
   );
   await option.click();
+  return;
 });
 
 When("I change the interval setting to {string}", async function(
@@ -392,6 +411,7 @@ When("I change the interval setting to {string}", async function(
 
   const intervalInput = this.page.locator('[data-testid="interval-input"]');
   await intervalInput.fill(interval);
+  return;
 });
 
 Then("the QR code URL should contain {string}", async function(
@@ -410,6 +430,7 @@ Then("the QR code URL should contain {string}", async function(
     '[data-testid="qr-code-container"]',
   );
   await expect(settingsContainer).toBeVisible();
+  return;
 });
 
 // Button interaction steps
@@ -425,6 +446,7 @@ When("I click the {string} button in the QR panel", async function(
     `[data-testid="${buttonText.toLowerCase().replace(" ", "-")}-button"]`,
   );
   await button.click();
+  return;
 });
 
 // NOTE: "I should see {string} feedback text" step moved to common.steps.ts
@@ -441,6 +463,7 @@ Then(
     console.log(
       "Clipboard verification - implementation depends on test environment",
     );
+    return;
   },
 );
 
@@ -452,11 +475,14 @@ Then(
     }
 
     // Check for new page/tab
+    if (!this.context) return;
     const pages = this.context.pages();
     expect(pages.length).toBeGreaterThan(1);
 
     const newPage = pages[pages.length - 1];
+    if (!newPage) return;
     expect(newPage.url()).toContain("/canvas/");
+    return;
   },
 );
 
@@ -474,6 +500,7 @@ Then(
     // For now, we verify the slideshow container is still active
     const image = this.page.locator("img").first();
     await expect(image).toBeVisible();
+    return;
   },
 );
 
@@ -488,6 +515,7 @@ Then(
     // We just ensure the slideshow is running
     const image = this.page.locator("img").first();
     await expect(image).toBeVisible();
+    return;
   },
 );
 
@@ -501,6 +529,7 @@ Then(
     // Verify album order is active
     const image = this.page.locator("img").first();
     await expect(image).toBeVisible();
+    return;
   },
 );
 
@@ -517,6 +546,7 @@ Then("the cursor should be hidden", async function(this: CustomWorld) {
     return window.getComputedStyle(el).cursor;
   });
   expect(cursor).toBe("none");
+  return;
 });
 
 Then(
@@ -528,6 +558,7 @@ Then(
 
     const qrCode = this.page.locator("svg[aria-label]");
     await expect(qrCode).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
@@ -546,5 +577,6 @@ Then(
     await this.page.keyboard.press("Tab");
     const orderSelect = this.page.locator('[data-testid="order-select"]');
     await expect(orderSelect).toBeFocused();
+    return;
   },
 );

@@ -13,6 +13,9 @@ export class VideoWallWorld extends World {
   browser!: Browser;
   displayContext!: BrowserContext;
   displayPage!: Page;
+  get page() {
+    return this.displayPage;
+  }
   clientContexts: Map<string, ClientContext> = new Map();
   baseUrl: string;
   displayId?: string;

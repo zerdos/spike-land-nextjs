@@ -3,7 +3,25 @@ import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
 // Mock pipeline data
-const mockSystemPipeline = {
+interface Pipeline {
+  id: string;
+  name: string;
+  description: string;
+  userId: string | null;
+  visibility: string;
+  tier: string;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
+  isOwner: boolean;
+  isSystemDefault: boolean;
+  analysisConfig: any;
+  autoCropConfig: any;
+  promptConfig: any;
+  generationConfig: any;
+}
+
+const mockSystemPipeline: Pipeline = {
   id: "system-pipeline-001",
   name: "Default Enhancement",
   description: "Standard AI enhancement pipeline",
@@ -21,7 +39,7 @@ const mockSystemPipeline = {
   generationConfig: null,
 };
 
-const mockUserPipeline = {
+const mockUserPipeline: Pipeline = {
   id: "user-pipeline-001",
   name: "My Custom Pipeline",
   description: "A custom enhancement pipeline",
@@ -39,7 +57,7 @@ const mockUserPipeline = {
   generationConfig: { model: "gemini-2.0-flash-exp" },
 };
 
-const mockPublicPipeline = {
+const mockPublicPipeline: Pipeline = {
   id: "public-pipeline-001",
   name: "Community Pipeline",
   description: "A public pipeline shared by another user",
@@ -60,7 +78,7 @@ const mockPublicPipeline = {
 // Helper to mock pipelines API
 async function mockPipelinesApi(
   world: CustomWorld,
-  pipelines: typeof mockSystemPipeline[],
+  pipelines: Pipeline[],
 ) {
   await world.page.route("**/api/pipelines", async (route) => {
     const method = route.request().method();

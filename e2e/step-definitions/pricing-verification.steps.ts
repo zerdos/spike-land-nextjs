@@ -20,7 +20,7 @@ When("I click the buy button for the {string} pack", async function(
   this: CustomWorld,
   packName: string,
 ) {
-  await world.page.route("**/api/stripe/checkout", async (route) => {
+  await this.page.route("**/api/stripe/checkout", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",

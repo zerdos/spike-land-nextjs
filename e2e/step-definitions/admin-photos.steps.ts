@@ -2,7 +2,22 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
-const mockPhotos = [
+interface Photo {
+  id: string;
+  name: string;
+  originalUrl: string;
+  thumbnailUrl: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  format: string;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string; };
+  enhancementCount: number;
+  latestJobStatus: string;
+}
+
+const mockPhotos: Photo[] = [
   {
     id: "photo-1",
     name: "photo1.jpg",
@@ -49,7 +64,7 @@ const mockPhotos = [
 
 async function mockPhotosAPI(
   world: CustomWorld,
-  photos = mockPhotos,
+  photos: Photo[] = mockPhotos,
   pagination = { page: 1, limit: 20, total: photos.length, totalPages: 1 },
 ) {
   await world.page.route("**/api/admin/photos**", async (route) => {
@@ -69,7 +84,7 @@ Given(
   "there are more than {int} photos in the system",
   async function(this: CustomWorld, count: number) {
     const manyPhotos = Array.from({ length: count + 5 }, (_, i) => ({
-      ...mockPhotos[0],
+      ...mockPhotos[0]!,
       id: `photo-${i}`,
       name: `photo${i}.jpg`,
     }));
@@ -87,7 +102,7 @@ Given(
   "there are {int} photos in the system",
   async function(this: CustomWorld, count: number) {
     const photos = Array.from({ length: count }, (_, i) => ({
-      ...mockPhotos[0],
+      ...mockPhotos[0]!,
       id: `photo-${i}`,
       name: `photo${i}.jpg`,
     }));
@@ -105,10 +120,10 @@ Given(
   "there are photos with different job statuses",
   async function(this: CustomWorld) {
     const photosWithStatuses = [
-      { ...mockPhotos[0], latestJobStatus: "COMPLETED" },
-      { ...mockPhotos[1], latestJobStatus: "PENDING" },
-      { ...mockPhotos[2], latestJobStatus: "PROCESSING" },
-      { ...mockPhotos[0], id: "photo-4", latestJobStatus: "FAILED" },
+      { ...mockPhotos[0]!, latestJobStatus: "COMPLETED" },
+      { ...mockPhotos[1]!, latestJobStatus: "PENDING" },
+      { ...mockPhotos[2]!, latestJobStatus: "PROCESSING" },
+      { ...mockPhotos[0]!, id: "photo-4", latestJobStatus: "FAILED" },
     ];
 
     await mockPhotosAPI(this, photosWithStatuses);
@@ -116,7 +131,7 @@ Given(
 );
 
 Given("the photos API is slow", async function(this: CustomWorld) {
-  await world.page.route("**/api/admin/photos**", async (route) => {
+  await this.page.route("**/api/admin/photos**", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await route.fulfill({
       status: 200,
