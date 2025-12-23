@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -24,6 +25,19 @@ vi.mock("./user-avatar", () => ({
   UserAvatar: () => <div data-testid="user-avatar">User Avatar Component</div>,
 }));
 
+// Helper function to create mock session data with required fields
+const createMockUser = (overrides: {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+} = {}) => ({
+  id: "user-123",
+  role: UserRole.USER,
+  name: overrides.name ?? null,
+  email: overrides.email ?? null,
+  image: overrides.image ?? null,
+});
+
 describe("AuthHeader Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -35,10 +49,10 @@ describe("AuthHeader Component", () => {
     vi.mocked(usePathname).mockReturnValue("/storybook");
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -53,10 +67,10 @@ describe("AuthHeader Component", () => {
     vi.mocked(usePathname).mockReturnValue("/storybook/buttons");
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -112,10 +126,10 @@ describe("AuthHeader Component", () => {
   it("should render UserAvatar when user is authenticated", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -129,10 +143,10 @@ describe("AuthHeader Component", () => {
   it("should render UserAvatar in fixed position when authenticated", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -209,10 +223,10 @@ describe("AuthSection Component", () => {
   it("should return null when user is authenticated", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -226,10 +240,10 @@ describe("AuthSection Component", () => {
   it("should return null when session exists", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "Test User",
           email: "test@example.com",
-        },
+        }),
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -243,10 +257,10 @@ describe("AuthSection Component", () => {
   it("should not render AuthButtons when authenticated", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -289,10 +303,10 @@ describe("AuthSection Component", () => {
 
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",

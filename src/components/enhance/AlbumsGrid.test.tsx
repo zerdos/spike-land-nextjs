@@ -29,23 +29,26 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// Define the first album separately for type safety when spreading
+const firstMockAlbum: AlbumsGridProps["albums"][number] = {
+  id: "album-1",
+  name: "Vacation Photos",
+  description: "Summer 2024 vacation",
+  privacy: "PRIVATE",
+  coverImageId: null,
+  imageCount: 24,
+  previewImages: [
+    { id: "img-1", url: "https://example.com/img1.jpg", name: "Beach" },
+    { id: "img-2", url: "https://example.com/img2.jpg", name: "Sunset" },
+    { id: "img-3", url: "https://example.com/img3.jpg", name: "Mountains" },
+    { id: "img-4", url: "https://example.com/img4.jpg", name: "Forest" },
+  ],
+  createdAt: new Date("2024-06-15"),
+};
+
 describe("AlbumsGrid", () => {
   const mockAlbums: AlbumsGridProps["albums"] = [
-    {
-      id: "album-1",
-      name: "Vacation Photos",
-      description: "Summer 2024 vacation",
-      privacy: "PRIVATE",
-      coverImageId: null,
-      imageCount: 24,
-      previewImages: [
-        { id: "img-1", url: "https://example.com/img1.jpg", name: "Beach" },
-        { id: "img-2", url: "https://example.com/img2.jpg", name: "Sunset" },
-        { id: "img-3", url: "https://example.com/img3.jpg", name: "Mountains" },
-        { id: "img-4", url: "https://example.com/img4.jpg", name: "Forest" },
-      ],
-      createdAt: new Date("2024-06-15"),
-    },
+    firstMockAlbum,
     {
       id: "album-2",
       name: "Family",
@@ -232,11 +235,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders two image mosaic correctly", () => {
-    const baseAlbum = mockAlbums[0];
     const twoImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "two-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 2),
+      previewImages: firstMockAlbum.previewImages.slice(0, 2),
     };
 
     render(<AlbumsGrid albums={[twoImageAlbum]} />);
@@ -246,11 +248,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders three image mosaic correctly", () => {
-    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "three-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 3),
+      previewImages: firstMockAlbum.previewImages.slice(0, 3),
     };
 
     render(<AlbumsGrid albums={[threeImageAlbum]} />);
@@ -260,11 +261,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("limits mosaic to 4 images maximum", () => {
-    const baseAlbum = mockAlbums[0];
     const manyImagesAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       previewImages: [
-        ...baseAlbum.previewImages,
+        ...firstMockAlbum.previewImages,
         { id: "img-5", url: "https://example.com/img5.jpg", name: "Extra1" },
         { id: "img-6", url: "https://example.com/img6.jpg", name: "Extra2" },
       ],
@@ -277,9 +277,8 @@ describe("AlbumsGrid", () => {
   });
 
   it("truncates long album names with line-clamp", () => {
-    const baseAlbum = mockAlbums[0];
     const longNameAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       name: "This is a very long album name that should be truncated when displayed",
     };
 
@@ -330,9 +329,8 @@ describe("AlbumsGrid", () => {
   });
 
   it("falls back to 'Album image' when image name is empty", () => {
-    const baseAlbum = mockAlbums[0];
     const albumWithEmptyName = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       previewImages: [{
         id: "img-1",
         url: "https://example.com/img1.jpg",
@@ -426,11 +424,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders mosaic with 4 images without special layout classes", () => {
-    const baseAlbum = mockAlbums[0];
     const fourImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "four-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 4),
+      previewImages: firstMockAlbum.previewImages.slice(0, 4),
     };
 
     const { container } = render(<AlbumsGrid albums={[fourImageAlbum]} />);
@@ -444,20 +441,19 @@ describe("AlbumsGrid", () => {
     expect(mosaicGrid).toBeTruthy();
 
     // For 4 images, none should have col-span-2 or row-span-2
-    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
-    expect(imageContainers.length).toBe(4);
-    imageContainers.forEach((imgContainer) => {
+    const imageContainers = mosaicGrid?.querySelectorAll(":scope > .relative");
+    expect(imageContainers?.length).toBe(4);
+    imageContainers?.forEach((imgContainer) => {
       expect(imgContainer.classList.contains("col-span-2")).toBe(false);
       expect(imgContainer.classList.contains("row-span-2")).toBe(false);
     });
   });
 
   it("renders first image with row-span-2 when album has exactly 3 images", () => {
-    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "three-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 3),
+      previewImages: firstMockAlbum.previewImages.slice(0, 3),
     };
 
     const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);
@@ -473,11 +469,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders images with row-span-2 when album has exactly 2 images", () => {
-    const baseAlbum = mockAlbums[0];
     const twoImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "two-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 2),
+      previewImages: firstMockAlbum.previewImages.slice(0, 2),
     };
 
     const { container } = render(<AlbumsGrid albums={[twoImageAlbum]} />);
@@ -493,10 +488,9 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders single image with col-span-2 and row-span-2", () => {
-    const baseAlbum = mockAlbums[0];
-    const firstPreviewImage = baseAlbum.previewImages[0];
+    const firstPreviewImage = firstMockAlbum.previewImages[0];
     const singleImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "single-img-album",
       previewImages: [firstPreviewImage],
     };

@@ -619,9 +619,10 @@ describe("DisplayPage", () => {
         callHandler?.(mockCall);
       });
 
-      const streamHandler = mockCall.on.mock.calls.find(
-        (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-      )?.[1];
+      const streamHandler =
+        (mockCall.on.mock.calls as Array<[string, (...args: unknown[]) => void]>).find(
+          (call) => call[0] === "stream",
+        )?.[1];
 
       await act(async () => {
         streamHandler?.(new MediaStream());
@@ -879,9 +880,10 @@ describe("DisplayPage", () => {
         callHandler?.(mockCall);
       });
 
-      const streamHandler = mockCall.on.mock.calls.find(
-        (call: [string, (...args: unknown[]) => void]) => call[0] === "stream",
-      )?.[1];
+      const streamHandler =
+        (mockCall.on.mock.calls as Array<[string, (...args: unknown[]) => void]>).find(
+          (call) => call[0] === "stream",
+        )?.[1];
 
       await act(async () => {
         streamHandler?.(new MediaStream());

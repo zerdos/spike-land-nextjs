@@ -168,10 +168,10 @@ describe("UserAvatar Component", () => {
   it("should display user name and email in dropdown", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -189,9 +189,9 @@ describe("UserAvatar Component", () => {
   it("should display fallback text when no name", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -208,9 +208,9 @@ describe("UserAvatar Component", () => {
   it("should display fallback text when no email", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -227,10 +227,10 @@ describe("UserAvatar Component", () => {
   it("should have Pixel link pointing to /apps/pixel", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -250,10 +250,10 @@ describe("UserAvatar Component", () => {
   it("should have Token Management link pointing to /tokens", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -273,10 +273,10 @@ describe("UserAvatar Component", () => {
   it("should have My Apps link pointing to /my-apps", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -294,10 +294,10 @@ describe("UserAvatar Component", () => {
   it("should have Profile link pointing to /profile", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -315,10 +315,10 @@ describe("UserAvatar Component", () => {
   it("should have Settings link pointing to /settings", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -336,10 +336,10 @@ describe("UserAvatar Component", () => {
   it("should call signOut when logout menu item is clicked", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -359,11 +359,11 @@ describe("UserAvatar Component", () => {
   it("should render avatar image when provided", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
           image: "https://example.com/avatar.jpg",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -383,10 +383,10 @@ describe("UserAvatar Component", () => {
   it("should use User as alt text when no name", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           email: "john@example.com",
           image: "https://example.com/avatar.jpg",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -406,10 +406,10 @@ describe("UserAvatar Component", () => {
   it("should render Profile menu item with icon", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -430,10 +430,10 @@ describe("UserAvatar Component", () => {
   it("should render Settings menu item with icon", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -454,10 +454,10 @@ describe("UserAvatar Component", () => {
   it("should render Log out menu item with icon", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -476,10 +476,10 @@ describe("UserAvatar Component", () => {
   it("should handle single letter names", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "X",
           email: "x@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",

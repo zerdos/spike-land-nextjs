@@ -814,12 +814,10 @@ describe("useMultiFileUpload", () => {
       });
 
       // Clean up the pending promise
-      if (resolveFirstUpload) {
-        resolveFirstUpload({
-          ok: true,
-          json: async () => ({ imageId: "img-file1" }),
-        });
-      }
+      resolveFirstUpload({
+        ok: true,
+        json: async () => ({ imageId: "img-file1" }),
+      });
     });
 
     it("should track cancelledCount correctly", async () => {
@@ -911,9 +909,9 @@ describe("useMultiFileUpload", () => {
 
   describe("albumId option", () => {
     it("should include albumId in form data when provided", async () => {
-      let capturedFormData: FormData | null = null;
+      let capturedFormData: FormData | undefined;
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         capturedFormData = options.body as FormData;
         return {
           ok: true,
@@ -933,16 +931,18 @@ describe("useMultiFileUpload", () => {
         expect(result.current.completedCount).toBe(1);
       });
 
-      expect(capturedFormData).not.toBeNull();
-      expect(capturedFormData?.get("albumId")).toBe("album-456");
-      expect(capturedFormData?.get("file")).toBeInstanceOf(File);
+      expect(capturedFormData).toBeDefined();
+      if (capturedFormData) {
+        expect(capturedFormData.get("albumId")).toBe("album-456");
+        expect(capturedFormData.get("file")).toBeInstanceOf(File);
+      }
     });
 
     it("should not include albumId in form data when not provided", async () => {
       mockFetch.mockReset();
-      let capturedFormData: FormData | null = null;
+      let capturedFormData: FormData | undefined;
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         if (options?.body instanceof FormData) {
           capturedFormData = options.body;
         }
@@ -964,14 +964,16 @@ describe("useMultiFileUpload", () => {
         expect(result.current.completedCount).toBe(1);
       });
 
-      expect(capturedFormData).not.toBeNull();
-      expect(capturedFormData?.get("albumId")).toBeNull();
+      expect(capturedFormData).toBeDefined();
+      if (capturedFormData) {
+        expect(capturedFormData.get("albumId")).toBeNull();
+      }
     });
 
     it("should use albumId from upload options instead of hook options", async () => {
-      let capturedFormData: FormData | null = null;
+      let capturedFormData: FormData | undefined;
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         capturedFormData = options.body as FormData;
         return {
           ok: true,
@@ -993,15 +995,17 @@ describe("useMultiFileUpload", () => {
         expect(result.current.completedCount).toBe(1);
       });
 
-      expect(capturedFormData).not.toBeNull();
+      expect(capturedFormData).toBeDefined();
       // Upload-time albumId should override hook-level albumId
-      expect(capturedFormData?.get("albumId")).toBe("album-upload");
+      if (capturedFormData) {
+        expect(capturedFormData.get("albumId")).toBe("album-upload");
+      }
     });
 
     it("should fall back to hook albumId when upload options albumId is not provided", async () => {
-      let capturedFormData: FormData | null = null;
+      let capturedFormData: FormData | undefined;
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         capturedFormData = options.body as FormData;
         return {
           ok: true,
@@ -1023,15 +1027,17 @@ describe("useMultiFileUpload", () => {
         expect(result.current.completedCount).toBe(1);
       });
 
-      expect(capturedFormData).not.toBeNull();
+      expect(capturedFormData).toBeDefined();
       // Hook-level albumId should be used
-      expect(capturedFormData?.get("albumId")).toBe("album-hook");
+      if (capturedFormData) {
+        expect(capturedFormData.get("albumId")).toBe("album-hook");
+      }
     });
 
     it("should use upload albumId option when hook has no albumId", async () => {
-      let capturedFormData: FormData | null = null;
+      let capturedFormData: FormData | undefined;
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         capturedFormData = options.body as FormData;
         return {
           ok: true,
@@ -1053,8 +1059,10 @@ describe("useMultiFileUpload", () => {
         expect(result.current.completedCount).toBe(1);
       });
 
-      expect(capturedFormData).not.toBeNull();
-      expect(capturedFormData?.get("albumId")).toBe("album-upload");
+      expect(capturedFormData).toBeDefined();
+      if (capturedFormData) {
+        expect(capturedFormData.get("albumId")).toBe("album-upload");
+      }
     });
   });
 
@@ -1074,8 +1082,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toBe("Upload failed");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toBe("Upload failed");
       });
     });
 
@@ -1093,8 +1103,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toBe("Upload failed");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toBe("Upload failed");
       });
     });
   });

@@ -606,7 +606,7 @@ describe("CreateBoxForm", () => {
 
   describe("Edge Cases", () => {
     it("handles single tier correctly", () => {
-      render(<CreateBoxForm tiers={[mockTiers[0]]} />);
+      render(<CreateBoxForm tiers={[mockTiers[0]!]} />);
 
       expect(screen.getByText("Basic")).toBeInTheDocument();
       expect(screen.queryByText("Standard")).not.toBeInTheDocument();
@@ -614,7 +614,7 @@ describe("CreateBoxForm", () => {
 
     it("handles tier with 0 CPU correctly", () => {
       const tierWithZeroCpu: BoxTier = {
-        ...mockTiers[0],
+        ...mockTiers[0]!,
         cpu: 0,
       };
       render(<CreateBoxForm tiers={[tierWithZeroCpu]} />);
@@ -624,7 +624,7 @@ describe("CreateBoxForm", () => {
 
     it("handles tier with large RAM correctly", () => {
       const tierWithLargeRam: BoxTier = {
-        ...mockTiers[0],
+        ...mockTiers[0]!,
         ram: 16384, // 16GB
       };
       render(<CreateBoxForm tiers={[tierWithLargeRam]} />);
