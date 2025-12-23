@@ -31,9 +31,16 @@ interface TestResult {
 
 const results: TestResult[] = [];
 
+interface ViewportConfig {
+  viewport: { width: number; height: number; };
+  userAgent?: string;
+  isMobile?: boolean;
+  hasTouch?: boolean;
+}
+
 async function testViewport(
   deviceName: string,
-  viewportConfig: Record<string, unknown>,
+  viewportConfig: ViewportConfig,
 ) {
   console.log(`\n========================================`);
   console.log(`Testing ${deviceName}...`);
@@ -82,8 +89,8 @@ async function testViewport(
       // Test touch interaction (simulate by checking if touchstart handler exists)
       const sliderElement = await comparisonSlider.elementHandle();
       if (sliderElement) {
-        const hasTouch = await page.evaluate((el) => {
-          return el && typeof el.ontouchstart !== "undefined";
+        const hasTouch = await page.evaluate((el: any) => {
+          return el && typeof el["ontouchstart"] !== "undefined";
         }, sliderElement);
 
         if (!hasTouch) {
