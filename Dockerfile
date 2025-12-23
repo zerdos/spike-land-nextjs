@@ -238,7 +238,7 @@ ENV SHARD_INDEX=3
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci 
+    yarn start:server:and:test:ci > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-4
 ARG CACHE_NS
