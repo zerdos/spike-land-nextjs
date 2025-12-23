@@ -11,12 +11,14 @@ const { useTokenBalance } = await import("@/hooks/useTokenBalance");
 
 const defaultMockReturn = {
   balance: 25,
+  tier: null as string | null,
+  maxBalance: null as number | null,
   isLoading: false,
   error: null,
   isLowBalance: false,
   isCriticalBalance: false,
-  lastRegeneration: null,
-  timeUntilNextRegeneration: null,
+  lastRegeneration: null as Date | null,
+  timeUntilNextRegeneration: null as string | null,
   stats: null,
   estimatedEnhancements: {
     tier1K: 25,
@@ -25,7 +27,7 @@ const defaultMockReturn = {
     suggested: 25,
     suggestedTier: "1K",
   },
-  refetch: vi.fn(),
+  refetch: vi.fn() as () => Promise<void>,
 };
 
 describe("TokenBalanceDisplay Component", () => {

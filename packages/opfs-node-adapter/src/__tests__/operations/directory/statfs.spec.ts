@@ -71,13 +71,13 @@ describe("statfs", () => {
 
     expect(mockEstimate).toHaveBeenCalledOnce();
     expect(stats).toEqual({
-      type: 0n,
-      bsize: 4096n,
-      blocks: 262144n,
-      bfree: 131072n,
-      bavail: 131072n,
-      files: 0n,
-      ffree: 0n,
+      type: BigInt(0),
+      bsize: BigInt(4096),
+      blocks: BigInt(262144),
+      bfree: BigInt(131072),
+      bavail: BigInt(131072),
+      files: BigInt(0),
+      ffree: BigInt(0),
     });
     expect(typeof stats.type).toBe("bigint");
     expect(typeof stats.bsize).toBe("bigint");

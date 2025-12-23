@@ -22,7 +22,7 @@ vi.mock("@/lib/images/browser-image-processor", () => ({
 // Mock FileReader
 class MockFileReader {
   onload: ((e: { target: { result: string; }; }) => void) | null = null;
-  readAsDataURL(file: Blob) {
+  readAsDataURL(file: File) {
     if (this.onload) {
       this.onload({
         target: { result: `data:image/png;base64,mock-${file.name}` },
@@ -36,25 +36,28 @@ global.FileReader = MockFileReader as unknown as typeof FileReader;
 // Mock alert
 global.alert = vi.fn();
 
+// Test constants
+const TEST_ALBUM_ID = "test-album-123";
+
 describe("BatchUpload Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should render batch upload card", () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
     expect(screen.getByText("Batch Upload")).toBeInTheDocument();
     expect(screen.getByText(/Upload up to 20 images/i)).toBeInTheDocument();
   });
 
   it("should show drag and drop zone", () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
     expect(screen.getByText("Drag and drop files here")).toBeInTheDocument();
     expect(screen.getByText(/or click to browse/i)).toBeInTheDocument();
   });
 
   it("should accept files via file input", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -74,7 +77,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should validate file type", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "document.pdf", {
       type: "application/pdf",
@@ -96,7 +99,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should validate file size", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["a".repeat(11 * 1024 * 1024)], "large.png", {
       type: "image/png",
@@ -118,7 +121,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should limit batch size to 20 files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const files = Array.from(
       { length: 25 },
@@ -143,7 +146,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should display file thumbnails", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -166,7 +169,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should allow removing individual files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -196,7 +199,7 @@ describe("BatchUpload Component", () => {
 
   it("should upload batch successfully", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -236,7 +239,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show uploading state", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -287,7 +290,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle upload error", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -318,7 +321,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle partial upload failure", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -357,7 +360,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show file count summary", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -381,7 +384,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle drag and drop", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const dropZone = screen.getByText("Drag and drop files here").parentElement
       ?.parentElement;
@@ -410,7 +413,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should clear completed files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -455,7 +458,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should clear all files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -486,7 +489,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should disable upload button when no pending files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -528,7 +531,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle multiple file types", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -554,7 +557,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle dragOver event", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const dropZone = screen.getByText("Drag and drop files here").parentElement
       ?.parentElement;
@@ -572,7 +575,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle dragLeave event", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const dropZone = screen.getByText("Drag and drop files here").parentElement
       ?.parentElement;
@@ -601,7 +604,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should not upload when there are no pending files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     // Add a file with error (invalid type) - this file won't be pending
     const invalidFile = new File(["test"], "document.pdf", {
@@ -636,7 +639,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should exit early from uploadBatch when all files are already uploaded", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -688,7 +691,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle rapid double-click on upload button", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -746,7 +749,7 @@ describe("BatchUpload Component", () => {
 
   it("should handle files not found in upload results", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -792,7 +795,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should prevent click on drop zone when at max batch size", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     // Add 20 files (max batch size)
     const files = Array.from(
@@ -830,7 +833,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle network error during upload", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -862,7 +865,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle non-Error exception during upload", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -894,7 +897,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show singular file text for single file", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -915,7 +918,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle drop with zero files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const dropZone = screen.getByText("Drag and drop files here").parentElement
       ?.parentElement;
@@ -937,7 +940,7 @@ describe("BatchUpload Component", () => {
 
   it("should not call onUploadComplete when no successful uploads", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -977,7 +980,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show completed badge when files are completed", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -1016,7 +1019,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should show failed badge when files have errors", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "document.pdf", {
       type: "application/pdf",
@@ -1054,7 +1057,7 @@ describe("BatchUpload Component", () => {
     const { processImageForUpload } = await import("@/lib/images/browser-image-processor");
     vi.mocked(processImageForUpload).mockRejectedValueOnce(new Error("Processing failed"));
 
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -1082,7 +1085,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle click on drop zone to open file picker", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const dropZone = screen.getByText("Drag and drop files here").parentElement
       ?.parentElement;
@@ -1102,7 +1105,7 @@ describe("BatchUpload Component", () => {
   });
 
   it("should handle file input change with no files", async () => {
-    render(<BatchUpload />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
     const input = document.querySelector(
       'input[type="file"]',
@@ -1124,7 +1127,7 @@ describe("BatchUpload Component", () => {
 
   it("should handle upload with undefined results", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload onUploadComplete={mockOnUploadComplete} />);
+    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(

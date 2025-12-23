@@ -1,8 +1,22 @@
+import { UserRole } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { signOut, useSession } from "next-auth/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserAvatar } from "./user-avatar";
+
+// Helper function to create mock session data with required fields
+const createMockUser = (overrides: {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+} = {}) => ({
+  id: "user-123",
+  role: UserRole.USER,
+  name: overrides.name ?? null,
+  email: overrides.email ?? null,
+  image: overrides.image ?? null,
+});
 
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
@@ -29,7 +43,7 @@ describe("UserAvatar Component", () => {
     vi.mocked(useSession).mockReturnValue({
       data: { expires: "2024-01-01", user: undefined } as unknown as {
         expires: string;
-        user: { id: string; };
+        user: { id: string; role: UserRole; };
       },
       status: "authenticated",
       update: vi.fn(),
@@ -42,11 +56,11 @@ describe("UserAvatar Component", () => {
   it("should render avatar when user is authenticated", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
           image: "https://example.com/avatar.jpg",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -61,10 +75,10 @@ describe("UserAvatar Component", () => {
   it("should display user initials from name", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -78,10 +92,10 @@ describe("UserAvatar Component", () => {
   it("should display first two initials for three-word names", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Michael Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -95,9 +109,9 @@ describe("UserAvatar Component", () => {
   it("should display U as fallback when no name", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -111,10 +125,10 @@ describe("UserAvatar Component", () => {
   it("should apply custom className", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",
@@ -129,10 +143,10 @@ describe("UserAvatar Component", () => {
   it("should open dropdown menu when avatar is clicked", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: {
+        user: createMockUser({
           name: "John Doe",
           email: "john@example.com",
-        },
+        }),
         expires: "2024-01-01",
       },
       status: "authenticated",

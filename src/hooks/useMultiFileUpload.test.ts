@@ -148,8 +148,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toContain("Invalid file type");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toContain("Invalid file type");
       });
     });
 
@@ -163,8 +165,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toContain("exceeds");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toContain("exceeds");
       });
     });
 
@@ -197,7 +201,7 @@ describe("useMultiFileUpload", () => {
     it("should upload files sequentially", async () => {
       const uploadOrder: string[] = [];
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
         uploadOrder.push(file.name);
@@ -246,9 +250,11 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("completed");
-        expect(result.current.files[0].imageId).toBe("img-123");
-        expect(result.current.files[0].progress).toBe(100);
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("completed");
+        expect(file0?.imageId).toBe("img-123");
+        expect(file0?.progress).toBe(100);
       });
     });
   });
@@ -257,7 +263,7 @@ describe("useMultiFileUpload", () => {
     it("should upload files in parallel", async () => {
       const startTimes: Record<string, number> = {};
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
         startTimes[file.name] = Date.now();
@@ -298,7 +304,7 @@ describe("useMultiFileUpload", () => {
       // in different order than they were started
       const fileCompletionOrder: string[] = [];
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
 
@@ -357,7 +363,7 @@ describe("useMultiFileUpload", () => {
     });
 
     it("should handle mixed success and failure in parallel mode", async () => {
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
 
@@ -490,8 +496,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toBe("Network error");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toBe("Network error");
       });
     });
 
@@ -510,8 +518,10 @@ describe("useMultiFileUpload", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.files[0].status).toBe("failed");
-        expect(result.current.files[0].error).toBe("Server error");
+        const file0 = result.current.files[0];
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("failed");
+        expect(file0?.error).toBe("Server error");
       });
     });
 
@@ -541,9 +551,9 @@ describe("useMultiFileUpload", () => {
         expect(result.current.failedCount).toBe(2);
       });
 
-      expect(result.current.files[0].status).toBe("failed");
-      expect(result.current.files[1].status).toBe("completed");
-      expect(result.current.files[2].status).toBe("failed");
+      expect(result.current.files[0]?.status).toBe("failed");
+      expect(result.current.files[1]?.status).toBe("completed");
+      expect(result.current.files[2]?.status).toBe("failed");
     });
   });
 
@@ -627,9 +637,9 @@ describe("useMultiFileUpload", () => {
   describe("cancellation", () => {
     it("should stop sequential uploads when cancelled mid-way", async () => {
       const uploadedFiles: string[] = [];
-      let resolveFirstUpload: ((value: unknown) => void) | null = null;
+      let resolveFirstUpload: (value: unknown) => void = () => {};
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
 
@@ -678,9 +688,7 @@ describe("useMultiFileUpload", () => {
       });
 
       // Resolve the first upload (it will still complete since it was in progress)
-      if (resolveFirstUpload) {
-        resolveFirstUpload({});
-      }
+      resolveFirstUpload({});
 
       await waitFor(() => {
         expect(result.current.isUploading).toBe(false);
@@ -739,17 +747,19 @@ describe("useMultiFileUpload", () => {
 
       // File should be marked as cancelled for abort (not failed)
       await waitFor(() => {
+        const file0 = result.current.files[0];
         expect(result.current.isUploading).toBe(false);
-        expect(result.current.files[0].status).toBe("cancelled");
+        expect(file0).toBeDefined();
+        expect(file0?.status).toBe("cancelled");
         expect(result.current.failedCount).toBe(0);
         expect(result.current.cancelledCount).toBe(1);
       });
     });
 
     it("should mark all in-progress and pending files as cancelled when cancel is called", async () => {
-      let resolveFirstUpload: ((value: unknown) => void) | null = null;
+      let resolveFirstUpload: (value: unknown) => void = () => {};
 
-      mockFetch.mockImplementation(async (url, options) => {
+      mockFetch.mockImplementation(async (_url, options) => {
         const formData = options.body as FormData;
         const file = formData.get("file") as File;
 

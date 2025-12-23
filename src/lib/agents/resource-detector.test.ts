@@ -17,6 +17,15 @@ import fs from "fs/promises";
 // Save original env
 const originalEnv = { ...process.env };
 
+// Helper to set environment variables (bypasses read-only restriction)
+const setEnv = (key: string, value: string | undefined): void => {
+  if (value === undefined) {
+    delete (process.env as Record<string, string | undefined>)[key];
+  } else {
+    (process.env as Record<string, string | undefined>)[key] = value;
+  }
+};
+
 describe("resource-detector", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -31,11 +40,11 @@ describe("resource-detector", () => {
 
   describe("detectResources", () => {
     it("should detect all resource statuses", async () => {
-      process.env.NODE_ENV = "development";
-      process.env.PORT = "3000";
-      process.env.DATABASE_URL = "postgresql://localhost:5432/test";
-      process.env.JULES_API_KEY = "test-jules-key";
-      process.env.GH_PAT_TOKEN = "ghp_test_token";
+      setEnv("NODE_ENV", "development");
+      setEnv("PORT", "3000");
+      setEnv("DATABASE_URL", "postgresql://localhost:5432/test");
+      setEnv("JULES_API_KEY", "test-jules-key");
+      setEnv("GH_PAT_TOKEN", "ghp_test_token");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(
         JSON.stringify({
@@ -69,11 +78,11 @@ describe("resource-detector", () => {
     });
 
     it("should handle production environment", async () => {
-      process.env.NODE_ENV = "production";
-      delete process.env.PORT;
-      delete process.env.DATABASE_URL;
-      delete process.env.JULES_API_KEY;
-      delete process.env.GH_PAT_TOKEN;
+      setEnv("NODE_ENV", "production");
+      setEnv("PORT", undefined);
+      setEnv("DATABASE_URL", undefined);
+      setEnv("JULES_API_KEY", undefined);
+      setEnv("GH_PAT_TOKEN", undefined);
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -94,8 +103,8 @@ describe("resource-detector", () => {
     });
 
     it("should use default port 3000 when PORT not set", async () => {
-      process.env.NODE_ENV = "development";
-      delete process.env.PORT;
+      setEnv("NODE_ENV", "development");
+      setEnv("PORT", undefined);
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -107,8 +116,8 @@ describe("resource-detector", () => {
     });
 
     it("should use custom PORT when set", async () => {
-      process.env.NODE_ENV = "development";
-      process.env.PORT = "4000";
+      setEnv("NODE_ENV", "development");
+      setEnv("PORT", "4000");
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -120,7 +129,7 @@ describe("resource-detector", () => {
     });
 
     it("should handle empty MCP config", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(JSON.stringify({}));
 
@@ -131,7 +140,7 @@ describe("resource-detector", () => {
     });
 
     it("should handle MCP config with no servers", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(
         JSON.stringify({ mcpServers: {} }),
@@ -144,7 +153,7 @@ describe("resource-detector", () => {
     });
 
     it("should handle invalid JSON in MCP config", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce("not valid json");
 
@@ -155,7 +164,7 @@ describe("resource-detector", () => {
     });
 
     it("should use default type 'stdio' when MCP server type not specified", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(
         JSON.stringify({
@@ -177,7 +186,7 @@ describe("resource-detector", () => {
     });
 
     it("should use default 'development' for NODE_ENV when not set", async () => {
-      delete process.env.NODE_ENV;
+      setEnv("NODE_ENV", undefined);
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -188,7 +197,7 @@ describe("resource-detector", () => {
     });
 
     it("should handle file read returning empty string", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce("");
 
@@ -199,8 +208,8 @@ describe("resource-detector", () => {
     });
 
     it("should correctly identify database as not connected when URL missing", async () => {
-      process.env.NODE_ENV = "development";
-      process.env.DATABASE_URL = "";
+      setEnv("NODE_ENV", "development");
+      setEnv("DATABASE_URL", "");
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -211,8 +220,8 @@ describe("resource-detector", () => {
     });
 
     it("should correctly identify database as connected when URL present", async () => {
-      process.env.NODE_ENV = "development";
-      process.env.DATABASE_URL = "postgresql://user:pass@localhost:5432/mydb";
+      setEnv("NODE_ENV", "development");
+      setEnv("DATABASE_URL", "postgresql://user:pass@localhost:5432/mydb");
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 
@@ -224,7 +233,7 @@ describe("resource-detector", () => {
     });
 
     it("should handle multiple MCP servers with different types", async () => {
-      process.env.NODE_ENV = "development";
+      setEnv("NODE_ENV", "development");
 
       vi.mocked(fs.readFile).mockResolvedValueOnce(
         JSON.stringify({
@@ -246,9 +255,9 @@ describe("resource-detector", () => {
     });
 
     it("should detect partial configuration", async () => {
-      process.env.NODE_ENV = "development";
-      process.env.JULES_API_KEY = "test-key";
-      delete process.env.GH_PAT_TOKEN;
+      setEnv("NODE_ENV", "development");
+      setEnv("JULES_API_KEY", "test-key");
+      setEnv("GH_PAT_TOKEN", undefined);
 
       vi.mocked(fs.readFile).mockRejectedValueOnce(new Error("File not found"));
 

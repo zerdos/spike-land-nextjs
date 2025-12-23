@@ -3,6 +3,7 @@
  */
 
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import type { ImageEnhancementJob } from "@prisma/client";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanupStuckJobs, findStuckJobs } from "./cleanup";
@@ -42,6 +43,49 @@ vi.mock("@/lib/errors/structured-logger", () => ({
 // Import mocked prisma
 import prisma from "@/lib/prisma";
 
+/**
+ * Creates a mock ImageEnhancementJob with default values and optional overrides
+ */
+function createMockJob(
+  overrides: Partial<ImageEnhancementJob> & {
+    id: string;
+    userId: string;
+    tokensCost: number;
+  },
+): ImageEnhancementJob {
+  const now = new Date();
+  return {
+    imageId: "image-1",
+    tier: EnhancementTier.TIER_1K,
+    status: JobStatus.PROCESSING,
+    currentStage: null,
+    enhancedUrl: null,
+    enhancedR2Key: null,
+    enhancedWidth: null,
+    enhancedHeight: null,
+    enhancedSizeBytes: null,
+    errorMessage: null,
+    retryCount: 0,
+    maxRetries: 3,
+    geminiPrompt: null,
+    geminiModel: null,
+    geminiTemp: null,
+    processingStartedAt: now,
+    processingCompletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    workflowRunId: null,
+    analysisResult: null,
+    analysisSource: null,
+    wasCropped: false,
+    cropDimensions: null,
+    pipelineId: null,
+    sourceImageId: null,
+    isBlend: false,
+    ...overrides,
+  };
+}
+
 describe("Job Cleanup Utilities", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,13 +97,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000); // 10 minutes ago
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -85,13 +129,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job2",
           userId: "user2",
           tokensCost: 5,
           processingStartedAt: null,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -160,20 +204,20 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
-        {
+        }),
+        createMockJob({
           id: "job2",
           userId: "user2",
           tokensCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -195,13 +239,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: null, // null to trigger updatedAt fallback
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -214,7 +258,9 @@ describe("Job Cleanup Utilities", () => {
       expect(result.cleanedUp).toBe(0);
       expect(result.tokensRefunded).toBe(0);
       expect(result.jobs).toHaveLength(1);
-      expect(result.jobs[0].processingDuration).toBeGreaterThan(0);
+      const firstJob = result.jobs[0];
+      expect(firstJob).toBeDefined();
+      expect(firstJob!.processingDuration).toBeGreaterThan(0);
       expect(prisma.$transaction).not.toHaveBeenCalled();
       expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
     });
@@ -224,14 +270,14 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           tier: EnhancementTier.TIER_4K,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -272,7 +318,9 @@ describe("Job Cleanup Utilities", () => {
       expect(result.failed).toBe(0);
       expect(result.tokensRefunded).toBe(10);
       expect(result.jobs).toHaveLength(1);
-      expect(result.jobs[0].tokensRefunded).toBe(10);
+      const firstJob = result.jobs[0];
+      expect(firstJob).toBeDefined();
+      expect(firstJob!.tokensRefunded).toBe(10);
       expect(result.errors).toHaveLength(0);
 
       expect(prisma.imageEnhancementJob.update).toHaveBeenCalledWith(
@@ -299,27 +347,27 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
-        {
+        }),
+        createMockJob({
           id: "job2",
           userId: "user2",
           tokensCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
-        {
+        }),
+        createMockJob({
           id: "job3",
           userId: "user3",
           tokensCost: 2,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -364,20 +412,20 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
-        {
+        }),
+        createMockJob({
           id: "job2",
           userId: "user2",
           tokensCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -421,7 +469,9 @@ describe("Job Cleanup Utilities", () => {
       expect(result.failed).toBe(1);
       expect(result.tokensRefunded).toBe(10); // Only first job refunded
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].jobId).toBe("job2");
+      const firstError = result.errors[0];
+      expect(firstError).toBeDefined();
+      expect(firstError!.jobId).toBe("job2");
     });
 
     it("should use custom timeout threshold", async () => {
@@ -453,13 +503,13 @@ describe("Job Cleanup Utilities", () => {
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
       const mockJobs = [
-        {
+        createMockJob({
           id: "job1",
           userId: "user1",
           tokensCost: 10,
           processingStartedAt: null, // No timestamp
           updatedAt: stuckTime,
-        },
+        }),
       ];
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
@@ -494,7 +544,9 @@ describe("Job Cleanup Utilities", () => {
 
       expect(result.totalFound).toBe(1);
       expect(result.cleanedUp).toBe(1);
-      expect(result.jobs[0].processingDuration).toBeGreaterThan(0);
+      const firstJob = result.jobs[0];
+      expect(firstJob).toBeDefined();
+      expect(firstJob!.processingDuration).toBeGreaterThan(0);
     });
 
     it("should include error details in job results when cleanup fails", async () => {

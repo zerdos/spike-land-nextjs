@@ -35,19 +35,21 @@ vi.mock("./version-compare-modal", () => ({
   ),
 }));
 
+const baseVersion: Version = {
+  jobId: "job-1",
+  tier: "TIER_1K",
+  status: "COMPLETED",
+  resultUrl: "https://example.com/enhanced-1k.jpg",
+  tokensSpent: 5,
+  createdAt: new Date("2024-01-01T10:00:00Z"),
+  processingTimeMs: 15000,
+  width: 1000,
+  height: 750,
+  sizeBytes: 300000,
+};
+
 const mockVersions: Version[] = [
-  {
-    jobId: "job-1",
-    tier: "TIER_1K",
-    status: "COMPLETED",
-    resultUrl: "https://example.com/enhanced-1k.jpg",
-    tokensSpent: 5,
-    createdAt: new Date("2024-01-01T10:00:00Z"),
-    processingTimeMs: 15000,
-    width: 1000,
-    height: 750,
-    sizeBytes: 300000,
-  },
+  baseVersion,
   {
     jobId: "job-2",
     tier: "TIER_2K",
@@ -145,7 +147,7 @@ describe("VersionHistory", () => {
   it("should display N/A for null processing time", () => {
     const versionsWithNullTime: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         processingTimeMs: null,
       },
     ];
@@ -185,7 +187,7 @@ describe("VersionHistory", () => {
   it("should handle null dimensions and file size", () => {
     const versionsWithNullData: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         width: null,
         height: null,
         sizeBytes: null,
@@ -262,7 +264,7 @@ describe("VersionHistory", () => {
   it("should disable download button when resultUrl is null", () => {
     const versionsWithNullUrl: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         resultUrl: null,
       },
     ];
@@ -300,7 +302,7 @@ describe("VersionHistory", () => {
         imageId="img-1"
         imageName="Test Image"
         originalUrl="https://example.com/original.jpg"
-        versions={[mockVersions[0]]}
+        versions={[baseVersion]}
       />,
     );
 
@@ -396,7 +398,7 @@ describe("VersionHistory", () => {
   it("should format processing time over 60 seconds as minutes", () => {
     const versionsWithLongTime: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         processingTimeMs: 125000,
       },
     ];
@@ -416,7 +418,7 @@ describe("VersionHistory", () => {
   it("should format file size in bytes for small files", () => {
     const versionsWithSmallFile: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         sizeBytes: 500,
       },
     ];
@@ -439,7 +441,7 @@ describe("VersionHistory", () => {
         imageId="img-1"
         imageName="Test Image"
         originalUrl="https://example.com/original.jpg"
-        versions={[mockVersions[0]]}
+        versions={[baseVersion]}
       />,
     );
 
@@ -449,7 +451,7 @@ describe("VersionHistory", () => {
   it("should handle string dates", () => {
     const versionsWithStringDates: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         createdAt: "2024-01-01T10:00:00Z",
       },
     ];
@@ -469,7 +471,7 @@ describe("VersionHistory", () => {
   it("should handle unknown tier in getTierLabel and getTierColor", () => {
     const versionsWithUnknownTier: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         tier: "UNKNOWN_TIER" as "TIER_1K" | "TIER_2K" | "TIER_4K",
       },
     ];
@@ -489,7 +491,7 @@ describe("VersionHistory", () => {
   it("should display sizeBytes only when width is null", () => {
     const versionsWithSizeOnly: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         width: null,
         height: null,
         sizeBytes: 500000,
@@ -512,7 +514,7 @@ describe("VersionHistory", () => {
   it("should not display dimensions when only width is present without height", () => {
     const versionsWithWidthOnly: Version[] = [
       {
-        ...mockVersions[0],
+        ...baseVersion,
         width: 1000,
         height: null,
         sizeBytes: null,

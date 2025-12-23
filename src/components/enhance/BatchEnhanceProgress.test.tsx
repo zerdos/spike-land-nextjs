@@ -558,17 +558,17 @@ describe("BatchEnhanceProgress Component", () => {
       const listItems = screen.getAllByRole("listitem");
 
       // PENDING - gray background
-      expect(listItems[0].querySelector(".bg-gray-500\\/20"))
+      expect(listItems[0]!.querySelector(".bg-gray-500\\/20"))
         .toBeInTheDocument();
       // PROCESSING - blue background with spinner
-      expect(listItems[1].querySelector(".bg-blue-500\\/30"))
+      expect(listItems[1]!.querySelector(".bg-blue-500\\/30"))
         .toBeInTheDocument();
-      expect(listItems[1].querySelector(".animate-spin")).toBeInTheDocument();
+      expect(listItems[1]!.querySelector(".animate-spin")).toBeInTheDocument();
       // COMPLETED - green background
-      expect(listItems[2].querySelector(".bg-green-500\\/30"))
+      expect(listItems[2]!.querySelector(".bg-green-500\\/30"))
         .toBeInTheDocument();
       // FAILED - red background
-      expect(listItems[3].querySelector(".bg-red-500\\/30"))
+      expect(listItems[3]!.querySelector(".bg-red-500\\/30"))
         .toBeInTheDocument();
     });
   });

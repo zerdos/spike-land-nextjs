@@ -193,9 +193,10 @@ describe("EnhancementHistoryScroll", () => {
   });
 
   it("should show delete button for completed versions", () => {
+    const version = mockVersions[0]!;
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockOnJobDelete}
       />,
@@ -229,10 +230,11 @@ describe("EnhancementHistoryScroll", () => {
 
   it("should call onJobDelete when delete is confirmed", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
+    const version = mockVersions[0]!;
 
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockOnJobDelete}
       />,
@@ -246,10 +248,11 @@ describe("EnhancementHistoryScroll", () => {
 
   it("should not call onJobDelete when delete is cancelled", () => {
     vi.spyOn(window, "confirm").mockReturnValue(false);
+    const version = mockVersions[0]!;
 
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockOnJobDelete}
       />,
@@ -303,9 +306,10 @@ describe("EnhancementHistoryScroll", () => {
   });
 
   it("should handle image load error and show failed to load message", () => {
+    const version = mockVersions[0]!;
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
       />,
     );
@@ -477,10 +481,11 @@ describe("EnhancementHistoryScroll", () => {
     const mockDeleteError = vi.fn().mockRejectedValue(
       new Error("Delete failed"),
     );
+    const version = mockVersions[0]!;
 
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockDeleteError}
       />,
@@ -504,10 +509,11 @@ describe("EnhancementHistoryScroll", () => {
     vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     const mockDeleteError = vi.fn().mockRejectedValue("String error");
+    const version = mockVersions[0]!;
 
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockDeleteError}
       />,
@@ -523,9 +529,10 @@ describe("EnhancementHistoryScroll", () => {
   });
 
   it("should not show delete button when onJobDelete is not provided for completed versions", () => {
+    const version = mockVersions[0]!;
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         // No onJobDelete provided
       />,
@@ -733,10 +740,11 @@ describe("EnhancementHistoryScroll", () => {
       resolveDelete = resolve;
     });
     const mockDeleteDelayed = vi.fn().mockReturnValue(controlledDeletePromise);
+    const version = mockVersions[0]!;
 
     render(
       <EnhancementHistoryScroll
-        versions={[mockVersions[0]]}
+        versions={[version]}
         onVersionSelect={mockOnVersionSelect}
         onJobDelete={mockDeleteDelayed}
       />,

@@ -54,9 +54,9 @@ describe("get-posts", () => {
 
     // Default mock implementations
     vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(fs.readdirSync).mockReturnValue([
-      "test-post.mdx" as unknown as import("fs").Dirent,
-    ]);
+    vi.mocked(fs.readdirSync).mockReturnValue(
+      ["test-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+    );
     vi.mocked(fs.readFileSync).mockReturnValue(
       `---\ntitle: Test Post\n---\n${mockContent}`,
     );
@@ -90,11 +90,9 @@ describe("get-posts", () => {
     });
 
     it("returns slugs from mdx files", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "post-1.mdx" as unknown as import("fs").Dirent,
-        "post-2.mdx" as unknown as import("fs").Dirent,
-        "not-mdx.txt" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["post-1.mdx", "post-2.mdx", "not-mdx.txt"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       const slugs = getPostSlugs();
 
@@ -102,11 +100,9 @@ describe("get-posts", () => {
     });
 
     it("filters out non-mdx files", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "post.mdx" as unknown as import("fs").Dirent,
-        "readme.md" as unknown as import("fs").Dirent,
-        "script.ts" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["post.mdx", "readme.md", "script.ts"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       const slugs = getPostSlugs();
 
@@ -247,10 +243,9 @@ describe("get-posts", () => {
     });
 
     it("returns posts sorted by date (newest first)", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "old-post.mdx" as unknown as import("fs").Dirent,
-        "new-post.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["old-post.mdx", "new-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       // Mock different dates for each post
       let callCount = 0;
@@ -272,15 +267,14 @@ describe("get-posts", () => {
 
       const posts = getAllPosts();
 
-      expect(posts[0].frontmatter.date).toBe("2025-01-01");
-      expect(posts[1].frontmatter.date).toBe("2024-01-01");
+      expect(posts[0]?.frontmatter.date).toBe("2025-01-01");
+      expect(posts[1]?.frontmatter.date).toBe("2024-01-01");
     });
 
     it("filters out invalid posts", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "valid-post.mdx" as unknown as import("fs").Dirent,
-        "invalid-post.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["valid-post.mdx", "invalid-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       // First call returns valid, second returns null
       let callCount = 0;
@@ -295,10 +289,9 @@ describe("get-posts", () => {
     });
 
     it("filters out unlisted posts", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "listed-post.mdx" as unknown as import("fs").Dirent,
-        "unlisted-post.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["listed-post.mdx", "unlisted-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       let callCount = 0;
       vi.mocked(matter).mockImplementation(() => {
@@ -320,13 +313,13 @@ describe("get-posts", () => {
       const posts = getAllPosts();
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].frontmatter.listed).toBe(true);
+      expect(posts[0]?.frontmatter.listed).toBe(true);
     });
 
     it("includes posts without listed field (defaults to true)", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "post-without-listed.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["post-without-listed.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       vi.mocked(matter).mockReturnValue({
         data: {
@@ -350,7 +343,7 @@ describe("get-posts", () => {
       const posts = getAllPosts();
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].frontmatter.listed).toBe(true);
+      expect(posts[0]?.frontmatter.listed).toBe(true);
     });
   });
 
@@ -403,10 +396,9 @@ describe("get-posts", () => {
 
   describe("getFeaturedPosts", () => {
     it("returns only featured posts", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "featured.mdx" as unknown as import("fs").Dirent,
-        "not-featured.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["featured.mdx", "not-featured.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       let callCount = 0;
       vi.mocked(matter).mockImplementation(() => {
@@ -430,11 +422,9 @@ describe("get-posts", () => {
 
   describe("getAllCategories", () => {
     it("returns unique categories sorted alphabetically", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "post1.mdx" as unknown as import("fs").Dirent,
-        "post2.mdx" as unknown as import("fs").Dirent,
-        "post3.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["post1.mdx", "post2.mdx", "post3.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       let callCount = 0;
       const categories = ["Zebra", "Alpha", "Alpha"];
@@ -458,13 +448,12 @@ describe("get-posts", () => {
 
   describe("getAllTags", () => {
     it("returns unique tags sorted alphabetically", () => {
-      vi.mocked(fs.readdirSync).mockReturnValue([
-        "post1.mdx" as unknown as import("fs").Dirent,
-        "post2.mdx" as unknown as import("fs").Dirent,
-      ]);
+      vi.mocked(fs.readdirSync).mockReturnValue(
+        ["post1.mdx", "post2.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+      );
 
       let callCount = 0;
-      const tagSets = [
+      const tagSets: string[][] = [
         ["alpha", "beta"],
         ["beta", "gamma"],
       ];

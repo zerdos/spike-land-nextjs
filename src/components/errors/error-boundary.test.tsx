@@ -183,10 +183,9 @@ describe("ErrorBoundary", () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
       () => {},
     );
-    const originalEnv = process.env.NODE_ENV;
 
-    // Set to development mode
-    process.env.NODE_ENV = "development";
+    // Set to development mode using vi.stubEnv
+    vi.stubEnv("NODE_ENV", "development");
 
     render(
       <ErrorBoundary showDetails={true}>
@@ -201,7 +200,7 @@ describe("ErrorBoundary", () => {
       expect(errorElements.length).toBeGreaterThan(0);
     }
 
-    process.env.NODE_ENV = originalEnv;
+    vi.unstubAllEnvs();
     consoleErrorSpy.mockRestore();
   });
 });
@@ -410,7 +409,7 @@ describe("ErrorBoundary - Additional Edge Cases", () => {
     );
 
     // Use a basic error that won't have a suggestion
-    function ThrowBasicError() {
+    function ThrowBasicError(): JSX.Element {
       throw new Error("Basic error message");
     }
 

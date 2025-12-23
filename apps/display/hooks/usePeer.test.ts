@@ -109,7 +109,9 @@ describe("usePeer", () => {
 
     await waitFor(() => {
       expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
-      const [peerId, options] = MockPeer.mock.calls[0];
+      const call = MockPeer.mock.calls[0];
+      expect(call).toBeDefined();
+      const [peerId, options] = call!;
       expect(peerId).toBe("custom-id");
       expect(options).toMatchObject({ debug: expect.any(Number) });
     });
@@ -129,7 +131,9 @@ describe("usePeer", () => {
 
     await waitFor(() => {
       expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
-      const [, options] = MockPeer.mock.calls[0];
+      const call = MockPeer.mock.calls[0];
+      expect(call).toBeDefined();
+      const [, options] = call!;
       expect(options).toMatchObject({
         host: "peer.example.com",
         port: 9000,
