@@ -5,18 +5,17 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
-  glow?: boolean;
-}
-
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  ProgressProps
->(({ className, value, glow = false, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+    glow?: boolean;
+    variant?: "default" | "success" | "warning" | "destructive";
+  }
+>(({ className, value, glow = false, variant = "default", ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
+      "relative h-2 w-full overflow-hidden rounded-full bg-white/10",
       className,
     )}
     aria-valuenow={value ?? 0}
@@ -24,8 +23,15 @@ const Progress = React.forwardRef<
   >
     <ProgressPrimitive.Indicator
       className={cn(
-        "h-full w-full flex-1 bg-primary transition-all",
-        glow && "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
+        "h-full w-full flex-1 transition-all",
+        variant === "default" && "bg-primary",
+        variant === "success" && "bg-success",
+        variant === "warning" && "bg-warning",
+        variant === "destructive" && "bg-destructive",
+        glow && variant === "default" && "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
+        glow && variant === "success" && "shadow-[0_0_10px_hsl(var(--success)/0.5)]",
+        glow && variant === "warning" && "shadow-[0_0_10px_hsl(var(--warning)/0.5)]",
+        glow && variant === "destructive" && "shadow-[0_0_10px_hsl(var(--destructive)/0.5)]",
       )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />

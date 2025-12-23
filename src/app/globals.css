@@ -85,7 +85,7 @@
     /* Pixel Cyan */
     --accent-foreground: 240 24% 9%;
     /* Carbon Text */
-    --destructive: 350 85% 55%;
+    --destructive: 0 84% 60%;
     /* Shifted towards vibrant Ruby-Red */
     --destructive-foreground: 0 0% 100%;
     --border: 220 20% 88%;
@@ -154,11 +154,11 @@
     /* Dark Space */
 
     /* Semantic Colors - Dark Optimized */
-    --success: 145 75% 45%;
+    --success: 142 70% 50%;
     --success-foreground: 240 45% 4%;
     --warning: 38 92% 55%;
     --warning-foreground: 240 45% 4%;
-    --destructive: 350 85% 58%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 20% 25%;
@@ -474,28 +474,41 @@
   }
 
   /* Semantic state colors for feedback */
+  /* Semantic state colors for feedback - using variables */
   .bg-success {
-    background-color: hsl(142 76% 36% / 0.1);
+    background-color: hsl(var(--success) / 0.1);
   }
 
   .border-success {
-    border-color: hsl(142 76% 36%);
+    border-color: hsl(var(--success));
   }
 
   .text-success {
-    color: hsl(142 76% 36%);
+    color: hsl(var(--success));
   }
 
   .bg-warning {
-    background-color: hsl(38 92% 50% / 0.1);
+    background-color: hsl(var(--warning) / 0.1);
   }
 
   .border-warning {
-    border-color: hsl(38 92% 50%);
+    border-color: hsl(var(--warning));
   }
 
   .text-warning {
-    color: hsl(38 92% 50%);
+    color: hsl(var(--warning));
+  }
+
+  .bg-destructive {
+    background-color: hsl(var(--destructive) / 0.14);
+  }
+
+  .border-destructive {
+    border-color: hsl(var(--destructive));
+  }
+
+  .text-destructive {
+    color: hsl(var(--destructive));
   }
 
   /* Border glow effect for active/drag states */

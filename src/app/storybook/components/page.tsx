@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -200,6 +201,56 @@ export default function ComponentsPage() {
               </div>
             </ComponentSample>
           </div>
+        </div>
+      </section>
+
+      {/* Progress & Status */}
+      <section className="space-y-8 pt-10 border-t border-white/5">
+        <h2 className="text-3xl font-bold font-heading">Progress & Status</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <ComponentSample
+            title="Basic Progress"
+            description="Standard loading state with brand primary color."
+          >
+            <div className="w-full space-y-4">
+              <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest opacity-60">
+                <span>Task Progress</span>
+                <span>65%</span>
+              </div>
+              <Progress value={65} glow />
+            </div>
+          </ComponentSample>
+
+          <ComponentSample
+            title="Semantic States"
+            description="Progress bars reflecting system health or task outcome."
+          >
+            <div className="w-full space-y-6">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-success tracking-widest">
+                  <span>Optimization Complete</span>
+                  <span>100%</span>
+                </div>
+                <Progress value={100} variant="success" />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-warning tracking-widest">
+                  <span>Buffering Stream</span>
+                  <span>42%</span>
+                </div>
+                <Progress value={42} variant="warning" />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-destructive tracking-widest">
+                  <span>Storage Critical</span>
+                  <span>98%</span>
+                </div>
+                <Progress value={98} variant="destructive" />
+              </div>
+            </div>
+          </ComponentSample>
         </div>
       </section>
 
