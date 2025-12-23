@@ -31,6 +31,7 @@ dist
 .vscode
 *.swp
 *.swo
+*.tsbuildinfo
 
 # Logs
 *.log
@@ -65,3 +66,9 @@ node_modules
 coverage
 dist
 tmp
+
+
+tsconfig.tsbuildinfo
+tsconfig.e2e.tsbuildinfo
+
+.well-known
