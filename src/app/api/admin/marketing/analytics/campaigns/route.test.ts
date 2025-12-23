@@ -330,13 +330,13 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 50, visitorId: 40 },
           _sum: { pageViewCount: 100 },
         },
-      ]);
+      ] as unknown as Prisma.GetVisitorSessionGroupByPayload<any>[]);
 
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { utmCampaign: null, utmSource: null, pageViewCount: 2 },
-      ]);
+      ] as any);
 
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
