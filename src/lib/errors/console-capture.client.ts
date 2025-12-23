@@ -178,22 +178,21 @@ export function initializeConsoleCapture(): void {
   };
 
   // Listen for uncaught exceptions
-  window.onerror = (message, source, lineno, colno, error) => {
+  window.addEventListener("error", (event: ErrorEvent) => {
     const capturedError: CapturedError = {
-      message: error?.message || String(message),
-      stack: error?.stack,
-      sourceFile: source || undefined,
-      sourceLine: lineno || undefined,
-      sourceColumn: colno || undefined,
-      errorType: error?.name || "UncaughtException",
+      message: event.error?.message || event.message,
+      stack: event.error?.stack,
+      sourceFile: event.filename || undefined,
+      sourceLine: event.lineno || undefined,
+      sourceColumn: event.colno || undefined,
+      errorType: event.error?.name || "UncaughtException",
       route: window.location.pathname,
       metadata: { source: "uncaught-exception" as ErrorSource },
       timestamp: new Date().toISOString(),
       environment: "FRONTEND",
     };
     queueError(capturedError);
-    return false; // Don't prevent default handling
-  };
+  });
 
   // Listen for unhandled promise rejections
   window.addEventListener("unhandledrejection", (event) => {
