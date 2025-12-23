@@ -898,10 +898,10 @@ describe("MultiTierEnhancement Component", () => {
 
       await vi.waitFor(() => {
         expect(mockOnEnhancementComplete).toHaveBeenCalled();
-        const jobs = mockOnEnhancementComplete.mock.calls[0][0];
-        expect(jobs[0].enhancedUrl).toBe("/enhanced.jpg");
-        expect(jobs[0].enhancedWidth).toBe(1024);
-        expect(jobs[0].enhancedHeight).toBe(768);
+        const jobs = mockOnEnhancementComplete.mock.calls[0]?.[0];
+        expect(jobs?.[0]?.enhancedUrl).toBe("/enhanced.jpg");
+        expect(jobs?.[0]?.enhancedWidth).toBe(1024);
+        expect(jobs?.[0]?.enhancedHeight).toBe(768);
       });
 
       vi.useRealTimers();

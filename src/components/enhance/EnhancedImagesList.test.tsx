@@ -94,10 +94,56 @@ vi.mock("@/components/ui/masonry-grid", () => ({
   ),
 }));
 
-const mockImage: EnhancedImage & { enhancementJobs: ImageEnhancementJob[]; } = {
+type MockEnhancementJob = ImageEnhancementJob;
+type MockEnhancedImage = EnhancedImage & { enhancementJobs: MockEnhancementJob[]; };
+
+const createMockJob = (overrides: Partial<MockEnhancementJob> = {}): MockEnhancementJob => ({
+  id: "job-1",
+  imageId: "test-image-1",
+  userId: "user-123",
+  tier: "TIER_1K",
+  tokensCost: 2,
+  status: "COMPLETED",
+  currentStage: null,
+  enhancedUrl: "https://example.com/enhanced.jpg",
+  enhancedR2Key: null,
+  enhancedWidth: 1920,
+  enhancedHeight: 1080,
+  enhancedSizeBytes: 500000,
+  errorMessage: null,
+  retryCount: 0,
+  maxRetries: 3,
+  geminiPrompt: null,
+  geminiModel: null,
+  geminiTemp: null,
+  processingStartedAt: null,
+  processingCompletedAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  workflowRunId: null,
+  analysisResult: null,
+  analysisSource: null,
+  wasCropped: false,
+  cropDimensions: null,
+  pipelineId: null,
+  sourceImageId: null,
+  isBlend: false,
+  ...overrides,
+});
+
+const mockImage: MockEnhancedImage = {
   id: "test-image-1",
   name: "Test Image",
+  description: null,
+  shareToken: null,
   originalUrl: "https://example.com/original.jpg",
+  originalR2Key: "test-r2-key",
+  originalWidth: 1920,
+  originalHeight: 1080,
+  originalSizeBytes: 500000,
+  originalFormat: "image/jpeg",
+  isPublic: false,
+  viewCount: 0,
   userId: "user-123",
   createdAt: new Date("2024-01-15T10:00:00Z"),
   updatedAt: new Date("2024-01-15T10:00:00Z"),

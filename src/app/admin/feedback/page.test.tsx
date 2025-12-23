@@ -2,6 +2,7 @@
  * Tests for Admin Feedback Page
  */
 
+import { FeedbackStatus, FeedbackType } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminFeedbackPage from "./page";
@@ -36,11 +37,11 @@ describe("AdminFeedbackPage", () => {
         id: "cm123456789",
         userId: "user_abc123",
         email: null,
-        type: "BUG",
+        type: FeedbackType.BUG,
         message: "Test bug report",
         page: "/apps/pixel",
         userAgent: "Mozilla/5.0",
-        status: "NEW",
+        status: FeedbackStatus.NEW,
         adminNote: null,
         createdAt: new Date("2024-01-15T10:00:00Z"),
         updatedAt: new Date("2024-01-15T10:00:00Z"),
@@ -87,11 +88,11 @@ describe("AdminFeedbackPage", () => {
         id: "cm123456790",
         userId: null,
         email: "anonymous@example.com",
-        type: "IDEA",
+        type: FeedbackType.IDEA,
         message: "Great idea",
         page: "/",
         userAgent: null,
-        status: "REVIEWED",
+        status: FeedbackStatus.REVIEWED,
         adminNote: "Good suggestion",
         createdAt: new Date("2024-01-16T10:00:00Z"),
         updatedAt: new Date("2024-01-16T12:00:00Z"),
@@ -121,11 +122,11 @@ describe("AdminFeedbackPage", () => {
         id: "cm123456791",
         userId: null,
         email: "test@example.com",
-        type: "OTHER",
+        type: FeedbackType.OTHER,
         message: "Other feedback",
         page: "/contact",
         userAgent: null,
-        status: "RESOLVED",
+        status: FeedbackStatus.RESOLVED,
         adminNote: null,
         createdAt,
         updatedAt,
