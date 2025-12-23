@@ -51,7 +51,7 @@ COPY --from=dep-context /app /app
 
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     DATABASE_URL="${DUMMY_DATABASE_URL}" \
-    yarn install --immutable-cache
+    yarn install --immutable
 
 # Prisma client (postinstall usually does it, keep guard)
 RUN test -d node_modules/.prisma/client || \

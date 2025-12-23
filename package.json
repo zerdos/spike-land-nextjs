@@ -12,6 +12,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:changed": "vitest --changed $(yarn find-last-passing-ci test)",
     "test:run": "vitest run",
     "test:e2e": "CI=true cucumber-js",
     "test:e2e:local": "BASE_URL=http://localhost:3000 CI=true cucumber-js",
@@ -44,7 +45,8 @@
     "dead-code": "knip",
     "dead-code:files": "knip --include files",
     "dead-code:exports": "knip --include exports",
-    "dead-code:deps": "knip --include dependencies"
+    "dead-code:deps": "knip --include dependencies",
+    "find-last-passing-ci": "./scripts/find-last-passing-ci.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",
