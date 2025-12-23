@@ -12,9 +12,7 @@ import { ErrorEnvironment, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { data: session, error: authError } = await tryCatch(auth(), {
-    report: false,
-  });
+  const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError) {
     return NextResponse.json(
@@ -29,7 +27,6 @@ export async function GET(request: Request) {
 
   const { error: adminError } = await tryCatch(
     requireAdminByUserId(session.user.id),
-    { report: false },
   );
 
   if (adminError) {
@@ -143,7 +140,6 @@ export async function GET(request: Request) {
         take: 10,
       }),
     ]),
-    { report: false },
   );
 
   if (error) {
@@ -178,9 +174,7 @@ export async function GET(request: Request) {
 }
 
 export async function DELETE() {
-  const { data: session, error: authError } = await tryCatch(auth(), {
-    report: false,
-  });
+  const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError) {
     return NextResponse.json(
@@ -195,7 +189,6 @@ export async function DELETE() {
 
   const { error: adminError } = await tryCatch(
     requireAdminByUserId(session.user.id),
-    { report: false },
   );
 
   if (adminError) {
@@ -213,7 +206,6 @@ export async function DELETE() {
 
   const { data: result, error } = await tryCatch(
     prisma.errorLog.deleteMany({}),
-    { report: false },
   );
 
   if (error) {
