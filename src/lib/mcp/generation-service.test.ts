@@ -339,8 +339,8 @@ describe("generation-service", () => {
       expect(result.jobs).toHaveLength(2);
       expect(result.total).toBe(10);
       expect(result.hasMore).toBe(false);
-      expect(result.jobs[0].apiKeyName).toBe("Test Key");
-      expect(result.jobs[1].apiKeyName).toBeNull();
+      expect(result.jobs[0]!.apiKeyName).toBe("Test Key");
+      expect(result.jobs[1]!.apiKeyName).toBeNull();
     });
 
     it("should filter by job type", async () => {

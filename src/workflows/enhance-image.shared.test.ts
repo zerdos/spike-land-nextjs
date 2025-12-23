@@ -527,7 +527,8 @@ describe("enhance-image.shared", () => {
           autoCropConfig: { enabled: true },
           promptConfig: { customInstructions: "Test" },
           generationConfig: { retryAttempts: 5 },
-        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+        } as unknown as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends
+          Promise<infer T> ? T
           : never,
       );
 
@@ -552,7 +553,7 @@ describe("enhance-image.shared", () => {
       mockAlbumFindUnique.mockResolvedValue(
         {
           pipelineId: "album-pipeline-456",
-        } as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T
+        } as unknown as ReturnType<typeof prisma.album.findUnique> extends Promise<infer T> ? T
           : never,
       );
       mockPipelineFindUnique.mockResolvedValue(
@@ -562,7 +563,8 @@ describe("enhance-image.shared", () => {
           autoCropConfig: { enabled: false },
           promptConfig: null,
           generationConfig: null,
-        } as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends Promise<infer T> ? T
+        } as unknown as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends
+          Promise<infer T> ? T
           : never,
       );
 

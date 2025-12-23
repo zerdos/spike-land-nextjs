@@ -50,7 +50,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "App name must be at least 3 characters",
           );
         }
@@ -67,7 +67,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "App name must be less than 50 characters",
           );
         }
@@ -87,7 +87,7 @@ describe("App Validation Schemas", () => {
           const result = appCreationSchema.safeParse(data);
           expect(result.success).toBe(false);
           if (!result.success) {
-            expect(result.error.issues[0].message).toBe(
+            expect(result.error.issues[0]!.message).toBe(
               "App name can only contain letters, numbers, spaces, and hyphens",
             );
           }
@@ -129,7 +129,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "Description must be at least 10 characters",
           );
         }
@@ -146,7 +146,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "Description must be less than 500 characters",
           );
         }
@@ -189,7 +189,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "Requirements must be at least 20 characters",
           );
         }
@@ -206,7 +206,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "Requirements must be less than 2000 characters",
           );
         }
@@ -260,7 +260,7 @@ describe("App Validation Schemas", () => {
         const result = appCreationSchema.safeParse(data);
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.issues[0].message).toBe(
+          expect(result.error.issues[0]!.message).toBe(
             "Please select a monetization model",
           );
         }

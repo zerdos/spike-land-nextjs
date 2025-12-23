@@ -166,6 +166,7 @@ describe("POST /api/albums/[id]/enhance", () => {
         id: string;
         role: UserRole;
       },
+      expires: "2024-12-31",
     });
 
     const req = createMockRequest({ tier: "TIER_1K" });

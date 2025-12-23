@@ -286,7 +286,7 @@ describe("usePipelines", () => {
     it("should refetch pipelines when refetch is called", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => createPaginatedResponse([mockPipelines[0]]),
+        json: async () => createPaginatedResponse([mockPipelines[0]!]),
       });
 
       const { result } = renderHook(() => usePipelines());

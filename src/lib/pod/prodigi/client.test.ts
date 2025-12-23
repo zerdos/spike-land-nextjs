@@ -347,7 +347,7 @@ describe("Prodigi Client", () => {
       });
 
       const callBody = JSON.parse(
-        vi.mocked(fetch).mock.calls[0][1]?.body as string,
+        vi.mocked(fetch).mock.calls[0]![1]?.body as string,
       );
       expect(callBody.shippingMethod).toBe("Express");
       expect(callBody.recipient.email).toBe("john@example.com");
@@ -408,11 +408,11 @@ describe("Prodigi Client", () => {
 
       expect(result.currency).toBe("GBP");
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].sku).toBe("GLOBAL-POSTC-4X6");
-      expect(result.items[0].unitCost).toBe(15.0);
-      expect(result.items[0].totalCost).toBe(15.0);
+      expect(result.items[0]!.sku).toBe("GLOBAL-POSTC-4X6");
+      expect(result.items[0]!.unitCost).toBe(15.0);
+      expect(result.items[0]!.totalCost).toBe(15.0);
       expect(result.shipping).toHaveLength(1);
-      expect(result.shipping[0].cost).toBe(4.99);
+      expect(result.shipping[0]!.cost).toBe(4.99);
     });
 
     it("should throw error if no quote available", async () => {

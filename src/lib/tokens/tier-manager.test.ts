@@ -117,8 +117,8 @@ describe("TierManager", () => {
     it("should return all tiers in order", () => {
       const tiers = TierManager.getAllTiers();
       expect(tiers).toHaveLength(4);
-      expect(tiers[0].tier).toBe(SubscriptionTier.FREE);
-      expect(tiers[3].tier).toBe(SubscriptionTier.PREMIUM);
+      expect(tiers[0]!.tier).toBe(SubscriptionTier.FREE);
+      expect(tiers[3]!.tier).toBe(SubscriptionTier.PREMIUM);
     });
   });
 

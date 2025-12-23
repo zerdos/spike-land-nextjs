@@ -113,7 +113,7 @@ describe("Metrics Cache", () => {
 
       await setCachedMetrics("test-key", { value: 42 }, 600); // 10 minutes
 
-      const call = mockUpsert.mock.calls[0][0];
+      const call = mockUpsert.mock.calls[0]![0];
       const expiresAt = call.create.expiresAt as Date;
 
       // Should expire approximately 600 seconds from now
@@ -287,7 +287,7 @@ describe("Metrics Cache", () => {
       await getOrComputeMetrics("test-key", computeFn, 1800); // 30 minutes
 
       // Verify TTL is passed to upsert
-      const call = mockUpsert.mock.calls[0][0];
+      const call = mockUpsert.mock.calls[0]![0];
       const expiresAt = call.create.expiresAt as Date;
       const expectedMinExpiry = Date.now() + 1800 * 1000;
 

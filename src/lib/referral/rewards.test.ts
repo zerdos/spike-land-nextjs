@@ -287,11 +287,11 @@ describe("Referral Rewards", () => {
       const users = await rewards.getReferredUsers("referrer-123");
 
       expect(users).toHaveLength(2);
-      expect(users[0].email).toBe("j***@example.com");
-      expect(users[0].status).toBe("COMPLETED");
-      expect(users[0].tokensGranted).toBe(50); // Referrer's portion
-      expect(users[1].email).toBe("j***@test.com");
-      expect(users[1].status).toBe("PENDING");
+      expect(users[0]!.email).toBe("j***@example.com");
+      expect(users[0]!.status).toBe("COMPLETED");
+      expect(users[0]!.tokensGranted).toBe(50); // Referrer's portion
+      expect(users[1]!.email).toBe("j***@test.com");
+      expect(users[1]!.status).toBe("PENDING");
     });
 
     it("should handle empty referral list", async () => {
@@ -327,7 +327,7 @@ describe("Referral Rewards", () => {
 
       const users = await rewards.getReferredUsers("referrer-123");
 
-      expect(users[0].email).toBe("unknown");
+      expect(users[0]!.email).toBe("unknown");
     });
 
     it("should handle null email", async () => {
@@ -343,7 +343,7 @@ describe("Referral Rewards", () => {
 
       const users = await rewards.getReferredUsers("referrer-123");
 
-      expect(users[0].email).toBe("unknown");
+      expect(users[0]!.email).toBe("unknown");
     });
   });
 });

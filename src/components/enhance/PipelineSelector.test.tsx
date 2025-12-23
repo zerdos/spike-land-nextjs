@@ -35,7 +35,6 @@ const mockPipelines: Pipeline[] = [
     generationConfig: { retryAttempts: 3 },
     isOwner: false,
     isSystemDefault: true,
-    referenceImageId: null,
   },
   {
     id: "my-pipeline-1",
@@ -53,7 +52,6 @@ const mockPipelines: Pipeline[] = [
     generationConfig: {},
     isOwner: true,
     isSystemDefault: false,
-    referenceImageId: null,
   },
   {
     id: "public-1",
@@ -71,7 +69,6 @@ const mockPipelines: Pipeline[] = [
     generationConfig: {},
     isOwner: false,
     isSystemDefault: false,
-    referenceImageId: null,
   },
 ];
 
@@ -86,6 +83,10 @@ describe("PipelineSelector", () => {
     pipelines: mockPipelines,
     groupedPipelines: mockGroupedPipelines,
     isLoading: false,
+    isLoadingMore: false,
+    pagination: { page: 1, limit: 10, totalCount: 3, totalPages: 1, hasMore: false },
+    hasMore: false,
+    loadMore: vi.fn(),
     error: null,
     refetch: vi.fn(),
     getPipelineById: (id: string) => mockPipelines.find((p) => p.id === id),

@@ -737,7 +737,7 @@ describe("gemini-client", () => {
         ],
       });
 
-      const calledContents = mockGenerateContentStream.mock.calls[0][0].contents[0].parts;
+      const calledContents = mockGenerateContentStream.mock.calls[0]![0].contents[0].parts;
 
       // First should be original image
       expect(calledContents[0].inlineData.data).toBe("base64imagedata");

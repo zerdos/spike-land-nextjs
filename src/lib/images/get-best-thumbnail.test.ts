@@ -1,4 +1,5 @@
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
+import { EnhancementTier, JobStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import { getBestEnhancement, getBestThumbnail, type ImageWithJobs } from "./get-best-thumbnail";
 
@@ -38,9 +39,9 @@ function createMockJob(
     id: "job-1",
     imageId: "image-1",
     userId: "user-1",
-    tier: "TIER_1K",
+    tier: EnhancementTier.TIER_1K,
     tokensCost: 2,
-    status: "COMPLETED",
+    status: JobStatus.COMPLETED,
     enhancedUrl: "https://example.com/enhanced-1k.jpg",
     enhancedR2Key: "enhanced-1k-key",
     enhancedWidth: 1920,
@@ -55,6 +56,14 @@ function createMockJob(
     processingStartedAt: new Date(),
     processingCompletedAt: new Date(),
     workflowRunId: null,
+    pipelineId: null,
+    currentStage: null,
+    analysisResult: null,
+    analysisSource: null,
+    wasCropped: false,
+    cropDimensions: null,
+    sourceImageId: null,
+    isBlend: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
