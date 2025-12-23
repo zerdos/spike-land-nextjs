@@ -51,6 +51,15 @@ export function getModelForTier(tier: TierModelKey): string {
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
+/**
+ * Check if a model supports the imageSize parameter.
+ * Only gemini-3-pro-image-preview supports imageSize.
+ * gemini-2.5-flash-image always outputs 1024px and doesn't accept imageSize.
+ */
+function supportsImageSize(model: string): boolean {
+  return model === "gemini-3-pro-image-preview";
+}
+
 // Timeout for Gemini API requests (configurable via env, default 5 minutes)
 // 4K images can take up to 2 minutes based on observed successful jobs,
 // so 5 minutes provides a safe buffer while preventing indefinite hangs
@@ -691,11 +700,19 @@ export async function enhanceImageWithGemini(
     "4K": "4096x4096",
   };
 
+  // Use model from params if provided, otherwise use default
+  const modelToUse = params.model || DEFAULT_MODEL;
+
+  // Build config based on model capabilities
+  // gemini-2.5-flash-image doesn't support imageSize (always 1024px)
+  // gemini-3-pro-image-preview supports imageSize
   const config = {
     responseModalities: ["IMAGE", "TEXT"],
-    imageConfig: {
-      imageSize: params.tier,
-    },
+    ...(supportsImageSize(modelToUse) && {
+      imageConfig: {
+        imageSize: params.tier,
+      },
+    }),
   };
 
   // Build content parts - include reference images if provided
@@ -737,9 +754,6 @@ export async function enhanceImageWithGemini(
       parts,
     },
   ];
-
-  // Use model from params if provided, otherwise use default
-  const modelToUse = params.model || DEFAULT_MODEL;
 
   console.log(
     `Generating enhanced image with Gemini API using model: ${modelToUse}`,
@@ -922,12 +936,21 @@ export async function generateImageWithGemini(
     "4K": "4096x4096",
   };
 
+  // Build config based on model capabilities
+  // DEFAULT_MODEL (gemini-3-pro-image-preview) supports imageSize
   const config = {
     responseModalities: ["IMAGE", "TEXT"],
-    imageConfig: {
-      imageSize: params.tier,
-      ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
-    },
+    ...(supportsImageSize(DEFAULT_MODEL) && {
+      imageConfig: {
+        imageSize: params.tier,
+        ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
+      },
+    }),
+    ...(!supportsImageSize(DEFAULT_MODEL) && params.aspectRatio && {
+      imageConfig: {
+        aspectRatio: params.aspectRatio,
+      },
+    }),
   };
 
   let fullPrompt =
@@ -980,12 +1003,21 @@ export async function modifyImageWithGemini(
     "4K": "4096x4096",
   };
 
+  // Build config based on model capabilities
+  // DEFAULT_MODEL (gemini-3-pro-image-preview) supports imageSize
   const config = {
     responseModalities: ["IMAGE", "TEXT"],
-    imageConfig: {
-      imageSize: params.tier,
-      ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
-    },
+    ...(supportsImageSize(DEFAULT_MODEL) && {
+      imageConfig: {
+        imageSize: params.tier,
+        ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
+      },
+    }),
+    ...(!supportsImageSize(DEFAULT_MODEL) && params.aspectRatio && {
+      imageConfig: {
+        aspectRatio: params.aspectRatio,
+      },
+    }),
   };
 
   const fullPrompt =
@@ -1029,7 +1061,7 @@ async function processGeminiStream(
   ai: GoogleGenAI,
   config: {
     responseModalities: string[];
-    imageConfig: { imageSize: string; aspectRatio?: string; };
+    imageConfig?: { imageSize?: string; aspectRatio?: string; };
   },
   contents: {
     role: "user";
