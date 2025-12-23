@@ -77,9 +77,9 @@ describe("useAudioTracks", () => {
     });
 
     expect(result.current.tracks).toHaveLength(1);
-    expect(result.current.tracks[0].name).toBe("test");
-    expect(result.current.tracks[0].type).toBe("file");
-    expect(result.current.tracks[0].duration).toBe(10);
+    expect(result.current.tracks[0]!.name).toBe("test");
+    expect(result.current.tracks[0]!.type).toBe("file");
+    expect(result.current.tracks[0]!.duration).toBe(10);
   });
 
   it("adds a recorded track", async () => {
@@ -95,8 +95,8 @@ describe("useAudioTracks", () => {
     });
 
     expect(result.current.tracks).toHaveLength(1);
-    expect(result.current.tracks[0].name).toBe("My Recording");
-    expect(result.current.tracks[0].type).toBe("recording");
+    expect(result.current.tracks[0]!.name).toBe("My Recording");
+    expect(result.current.tracks[0]!.type).toBe("recording");
   });
 
   it("removes a track", async () => {
@@ -108,7 +108,7 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
     act(() => {
       result.current.removeTrack(trackId);
@@ -126,13 +126,13 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
     act(() => {
       result.current.setVolume(trackId, 0.5);
     });
 
-    expect(result.current.tracks[0].volume).toBe(0.5);
+    expect(result.current.tracks[0]!.volume).toBe(0.5);
   });
 
   it("toggles track mute", async () => {
@@ -144,21 +144,21 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
-    expect(result.current.tracks[0].muted).toBe(false);
-
-    act(() => {
-      result.current.toggleMute(trackId);
-    });
-
-    expect(result.current.tracks[0].muted).toBe(true);
+    expect(result.current.tracks[0]!.muted).toBe(false);
 
     act(() => {
       result.current.toggleMute(trackId);
     });
 
-    expect(result.current.tracks[0].muted).toBe(false);
+    expect(result.current.tracks[0]!.muted).toBe(true);
+
+    act(() => {
+      result.current.toggleMute(trackId);
+    });
+
+    expect(result.current.tracks[0]!.muted).toBe(false);
   });
 
   it("toggles track solo", async () => {
@@ -170,15 +170,15 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
-    expect(result.current.tracks[0].solo).toBe(false);
+    expect(result.current.tracks[0]!.solo).toBe(false);
 
     act(() => {
       result.current.toggleSolo(trackId);
     });
 
-    expect(result.current.tracks[0].solo).toBe(true);
+    expect(result.current.tracks[0]!.solo).toBe(true);
   });
 
   it("plays a track", async () => {
@@ -190,13 +190,13 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
     act(() => {
       result.current.playTrack(trackId, mockContext, mockMasterGain);
     });
 
-    expect(result.current.tracks[0].isPlaying).toBe(true);
+    expect(result.current.tracks[0]!.isPlaying).toBe(true);
     expect(mockSource.start).toHaveBeenCalled();
   });
 
@@ -209,7 +209,7 @@ describe("useAudioTracks", () => {
       await result.current.addTrack(file, mockContext, mockMasterGain);
     });
 
-    const trackId = result.current.tracks[0].id;
+    const trackId = result.current.tracks[0]!.id;
 
     act(() => {
       result.current.playTrack(trackId, mockContext, mockMasterGain);
@@ -219,7 +219,7 @@ describe("useAudioTracks", () => {
       result.current.stopTrack(trackId);
     });
 
-    expect(result.current.tracks[0].isPlaying).toBe(false);
+    expect(result.current.tracks[0]!.isPlaying).toBe(false);
   });
 
   it("plays all tracks", async () => {
@@ -237,8 +237,8 @@ describe("useAudioTracks", () => {
       result.current.playAllTracks(mockContext, mockMasterGain);
     });
 
-    expect(result.current.tracks[0].isPlaying).toBe(true);
-    expect(result.current.tracks[1].isPlaying).toBe(true);
+    expect(result.current.tracks[0]!.isPlaying).toBe(true);
+    expect(result.current.tracks[1]!.isPlaying).toBe(true);
   });
 
   it("stops all tracks", async () => {
@@ -251,14 +251,14 @@ describe("useAudioTracks", () => {
     });
 
     act(() => {
-      result.current.playTrack(result.current.tracks[0].id, mockContext, mockMasterGain);
+      result.current.playTrack(result.current.tracks[0]!.id, mockContext, mockMasterGain);
     });
 
     act(() => {
       result.current.stopAllTracks();
     });
 
-    expect(result.current.tracks[0].isPlaying).toBe(false);
+    expect(result.current.tracks[0]!.isPlaying).toBe(false);
   });
 
   it("clears all tracks", async () => {
@@ -290,7 +290,7 @@ describe("useAudioTracks", () => {
 
     // Solo the first track
     act(() => {
-      result.current.toggleSolo(result.current.tracks[0].id);
+      result.current.toggleSolo(result.current.tracks[0]!.id);
     });
 
     act(() => {
@@ -298,7 +298,7 @@ describe("useAudioTracks", () => {
     });
 
     // Only solo'd track should be playing
-    expect(result.current.tracks[0].isPlaying).toBe(true);
-    expect(result.current.tracks[1].isPlaying).toBe(false);
+    expect(result.current.tracks[0]!.isPlaying).toBe(true);
+    expect(result.current.tracks[1]!.isPlaying).toBe(false);
   });
 });

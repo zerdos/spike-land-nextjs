@@ -502,7 +502,7 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         if (typeof callback === "function") {
-          await callback({
+          await (callback as (tx: unknown) => Promise<void>)({
             pageView: { create: vi.fn() },
             visitorSession: { update: vi.fn() },
           });
@@ -556,7 +556,7 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         if (typeof callback === "function") {
-          await callback({
+          await (callback as (tx: unknown) => Promise<void>)({
             pageView: { create: vi.fn() },
             visitorSession: { update: vi.fn() },
           });
@@ -607,7 +607,7 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         if (typeof callback === "function") {
-          await callback({
+          await (callback as (tx: unknown) => Promise<void>)({
             pageView: { create: vi.fn() },
             visitorSession: { update: vi.fn() },
           });
@@ -671,7 +671,7 @@ describe("POST /api/tracking/pageview", () => {
       });
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         if (typeof callback === "function") {
-          await callback({
+          await (callback as (tx: unknown) => Promise<void>)({
             pageView: { create: vi.fn() },
             visitorSession: { update: vi.fn() },
           });

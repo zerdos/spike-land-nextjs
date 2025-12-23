@@ -89,6 +89,7 @@ describe("ProfilePage", async () => {
         name: "John Doe",
         email: "john@example.com",
         image: "https://example.com/avatar.jpg",
+        role: "USER",
       },
       expires: "2024-12-31",
     };
@@ -142,6 +143,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -157,6 +159,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -172,6 +175,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -188,6 +192,7 @@ describe("ProfilePage", async () => {
           name: "John Doe",
           email: "john@example.com",
           image: "https://example.com/avatar.jpg",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -205,6 +210,7 @@ describe("ProfilePage", async () => {
           name: "John Doe",
           email: "john@example.com",
           image: "https://example.com/avatar.jpg",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -221,6 +227,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -238,6 +245,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -253,6 +261,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "Madonna",
           email: "madonna@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -268,6 +277,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "Mary Jane Watson",
           email: "mary@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -283,6 +293,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "john doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -299,6 +310,7 @@ describe("ProfilePage", async () => {
         user: {
           id: "user-123",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -313,6 +325,7 @@ describe("ProfilePage", async () => {
         user: {
           id: "user-123",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -327,6 +340,7 @@ describe("ProfilePage", async () => {
         user: {
           id: "user-123",
           name: "John Doe",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -337,13 +351,15 @@ describe("ProfilePage", async () => {
     });
 
     it('should handle missing user ID with "Not available"', async () => {
-      const session: Session = {
+      // Type assertion to test edge case where id is missing
+      const session = {
         user: {
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
-      };
+      } as Session;
       mockAuth.mockResolvedValue(session);
       const page = await ProfilePage();
       render(page as React.ReactElement);
@@ -356,6 +372,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -372,6 +389,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -389,6 +407,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -404,6 +423,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -419,6 +439,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -435,6 +456,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -450,6 +472,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -465,6 +488,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -487,6 +511,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -504,6 +529,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -520,6 +546,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -536,6 +563,7 @@ describe("ProfilePage", async () => {
           id: "user-123",
           name: "John Doe",
           email: "john@example.com",
+          role: "USER",
         },
         expires: "2024-12-31",
       };

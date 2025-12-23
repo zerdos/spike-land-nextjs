@@ -957,8 +957,11 @@ describe("AdminPhotosPage", () => {
       expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
     });
 
-    const nextButton = screen.getAllByRole("button", { name: "Next" }).slice(-1)[0];
-    await user.click(nextButton);
+    const nextButtons = screen.getAllByRole("button", { name: "Next" });
+    const nextButton = nextButtons[nextButtons.length - 1];
+    if (nextButton) {
+      await user.click(nextButton);
+    }
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(

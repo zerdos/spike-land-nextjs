@@ -42,7 +42,7 @@ describe("Marketing Sync Cron Job", () => {
   });
 
   it("should return 401 if no CRON_SECRET configured in production", async () => {
-    process.env.NODE_ENV = "production";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
     delete process.env.CRON_SECRET;
 
     const request = createMockRequest();
@@ -95,7 +95,7 @@ describe("Marketing Sync Cron Job", () => {
   });
 
   it("should allow requests in development without secret", async () => {
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "development";
     delete process.env.CRON_SECRET;
     mockSyncExternalCampaigns.mockResolvedValueOnce({ synced: 0, errors: [] });
     mockCleanupExpiredCache.mockResolvedValueOnce(0);

@@ -6,7 +6,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EmailLogsPage from "./page";
 
-const mockFetchResponse = (data: unknown, ok = true) => {
+const mockFetchResponse = (data: unknown, ok = true): Promise<Response> => {
   return Promise.resolve({
     ok,
     json: () => Promise.resolve(data),

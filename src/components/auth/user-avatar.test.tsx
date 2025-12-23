@@ -27,7 +27,10 @@ describe("UserAvatar Component", () => {
 
   it("should return null when session exists but no user", () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { expires: "2024-01-01" } as { expires: string; },
+      data: { expires: "2024-01-01", user: undefined } as unknown as {
+        expires: string;
+        user: { id: string; };
+      },
       status: "authenticated",
       update: vi.fn(),
     });

@@ -13,7 +13,7 @@ global.fetch = mockFetch;
 
 describe("SitemapPreviewClient", () => {
   const defaultSitemapPaths = ["/", "/pricing", "/apps"];
-  const defaultTrackedPaths: { id: string; path: string; }[] = [];
+  const defaultTrackedPaths: { id: string; path: string; isActive: boolean; }[] = [];
   const defaultOrigin = "http://localhost:3000";
 
   beforeEach(() => {
@@ -449,9 +449,9 @@ describe("SitemapPreviewClient", () => {
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
         trackedPaths={[
-          { id: "1", path: "/" },
-          { id: "2", path: "/custom-page" },
-        ]}
+          { id: "1", path: "/", isActive: true },
+          { id: "2", path: "/custom-page", isActive: true },
+        ] as const}
         origin={defaultOrigin}
       />,
     );

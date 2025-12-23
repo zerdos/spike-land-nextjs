@@ -34,6 +34,7 @@ describe("SessionProvider Component", () => {
   it("should pass session prop to NextAuthSessionProvider", () => {
     const mockSession: Session = {
       user: {
+        id: "user-123",
         name: "Test User",
         email: "test@example.com",
       },
@@ -103,6 +104,7 @@ describe("SessionProvider Component", () => {
   it("should pass complete session with user details", () => {
     const mockSession: Session = {
       user: {
+        id: "user-456",
         name: "John Doe",
         email: "john@example.com",
         image: "https://example.com/avatar.jpg",
@@ -141,6 +143,7 @@ describe("SessionProvider Component", () => {
   it("should work with complex session object", () => {
     const complexSession: Session = {
       user: {
+        id: "user-789",
         name: "Test User",
         email: "test@example.com",
         image: "https://example.com/avatar.jpg",

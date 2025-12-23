@@ -795,9 +795,11 @@ describe("/api/images/move-to-album", () => {
 
       // Extract sort orders from mock calls
       for (let i = 0; i < 3; i++) {
-        const call = upsertMock.mock.calls[i][0];
-        const sortOrder = call.create.sortOrder;
-        sortOrders.add(sortOrder);
+        const call = upsertMock.mock.calls[i]?.[0];
+        if (call) {
+          const sortOrder = call.create.sortOrder;
+          sortOrders.add(sortOrder);
+        }
       }
 
       // All sort orders should be unique

@@ -183,7 +183,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toBeInTheDocument();
@@ -199,7 +199,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[1]);
+      await user.click(thumbnailButtons[1]!);
 
       const dialog = screen.getByRole("dialog");
       const images = within(dialog).getAllByAltText("Screenshot 2");
@@ -214,7 +214,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         const allTitles = screen.getAllByText("First Screenshot");
@@ -230,7 +230,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         expect(screen.getByText("1 of 3")).toBeInTheDocument();
@@ -254,7 +254,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       const dialog = screen.getByRole("dialog");
       const buttons = within(dialog).getAllByRole("button");
@@ -277,7 +277,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         const dialog = screen.getByRole("dialog");
@@ -296,7 +296,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         expect(screen.getByText("1 of 3")).toBeInTheDocument();
@@ -326,7 +326,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[1]);
+      await user.click(thumbnailButtons[1]!);
 
       await vi.waitFor(() => {
         expect(screen.getByText("2 of 3")).toBeInTheDocument();
@@ -356,7 +356,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         expect(screen.getByText("1 of 3")).toBeInTheDocument();
@@ -386,7 +386,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[2]);
+      await user.click(thumbnailButtons[2]!);
 
       await vi.waitFor(() => {
         expect(screen.getByText("3 of 3")).toBeInTheDocument();
@@ -433,7 +433,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         const images = screen.getAllByRole("img");
@@ -450,7 +450,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         const images = screen.getAllByRole("img");
@@ -473,7 +473,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toBeInTheDocument();
@@ -519,7 +519,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
       await vi.waitFor(() => {
         expect(screen.getByText("1 of 3")).toBeInTheDocument();
       });
@@ -577,7 +577,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toBeInTheDocument();
@@ -591,7 +591,7 @@ describe("AppScreenshotGallery", () => {
         btn.className.includes("group")
       );
 
-      await user.click(thumbnailButtons[0]);
+      await user.click(thumbnailButtons[0]!);
 
       await vi.waitFor(() => {
         const dialog = screen.getByRole("dialog");

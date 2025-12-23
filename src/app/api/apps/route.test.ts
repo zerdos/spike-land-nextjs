@@ -75,7 +75,7 @@ describe("POST /api/apps", () => {
     };
 
     vi.mocked(prisma.app.create).mockResolvedValue(
-      mockApp as App & {
+      mockApp as unknown as App & {
         requirements: Requirement[];
         monetizationModels: MonetizationModel[];
       },
@@ -212,7 +212,7 @@ describe("GET /api/apps", () => {
     ];
 
     vi.mocked(prisma.app.findMany).mockResolvedValue(
-      mockApps as (App & {
+      mockApps as unknown as (App & {
         requirements: Requirement[];
         monetizationModels: MonetizationModel[];
       })[],

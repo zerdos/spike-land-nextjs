@@ -97,9 +97,9 @@ describe("usePeerConnection", () => {
     });
 
     // Simulate data connection open
-    const onHandler = vi.mocked(mockDataConnection.on);
-    const openHandler = onHandler.mock.calls.find((call) => call[0] === "open")
-      ?.[1];
+    const onHandler = vi.mocked(mockDataConnection.on!);
+    const openCall = onHandler.mock.calls.find((call) => call[0] === "open");
+    const openHandler = openCall?.[1];
 
     act(() => {
       openHandler?.();
@@ -118,9 +118,9 @@ describe("usePeerConnection", () => {
       result.current.callPeer("remote-peer", mockStream);
     });
 
-    const onHandler = vi.mocked(mockDataConnection.on);
-    const dataHandler = onHandler.mock.calls.find((call) => call[0] === "data")
-      ?.[1];
+    const onHandler = vi.mocked(mockDataConnection.on!);
+    const dataCall = onHandler.mock.calls.find((call) => call[0] === "data");
+    const dataHandler = dataCall?.[1];
 
     const testData = { type: "test", payload: "hello" };
     act(() => {

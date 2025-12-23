@@ -18,6 +18,13 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Cast helper for partial mock data
+const mockUser = (id: string) =>
+  ({ id }) as unknown as ReturnType<
+    typeof prisma.user.findFirst
+  > extends Promise<infer R> ? R
+    : never;
+
 describe("GET /api/gallery/public-albums", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,9 +49,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should return empty items array when no public albums exist", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     vi.mocked(prisma.album.findMany).mockResolvedValue([]);
 
@@ -87,9 +94,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should return formatted items from public albums with completed enhancements", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     const mockAlbums = [
       {
@@ -208,7 +215,9 @@ describe("GET /api/gallery/public-albums", () => {
       },
     ];
 
-    vi.mocked(prisma.album.findMany).mockResolvedValue(mockAlbums);
+    vi.mocked(prisma.album.findMany).mockResolvedValue(
+      mockAlbums as unknown as Album[],
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -238,9 +247,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should skip images without completed enhancement jobs", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     const mockAlbums = [
       {
@@ -284,7 +293,9 @@ describe("GET /api/gallery/public-albums", () => {
       },
     ];
 
-    vi.mocked(prisma.album.findMany).mockResolvedValue(mockAlbums);
+    vi.mocked(prisma.album.findMany).mockResolvedValue(
+      mockAlbums as unknown as Album[],
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -294,9 +305,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should skip images with incomplete enhanced data", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     const mockAlbums = [
       {
@@ -365,7 +376,9 @@ describe("GET /api/gallery/public-albums", () => {
       },
     ];
 
-    vi.mocked(prisma.album.findMany).mockResolvedValue(mockAlbums);
+    vi.mocked(prisma.album.findMany).mockResolvedValue(
+      mockAlbums as unknown as Album[],
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -375,9 +388,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should limit results to 12 items", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     // Create mock data with 15 images (more than limit)
     const albumImages = Array.from({ length: 15 }, (_, i) => ({
@@ -451,7 +464,9 @@ describe("GET /api/gallery/public-albums", () => {
       },
     ];
 
-    vi.mocked(prisma.album.findMany).mockResolvedValue(mockAlbums);
+    vi.mocked(prisma.album.findMany).mockResolvedValue(
+      mockAlbums as unknown as Album[],
+    );
 
     const response = await GET();
     const data = await response.json();
@@ -483,9 +498,9 @@ describe("GET /api/gallery/public-albums", () => {
   });
 
   it("should set correct cache headers", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "super-admin-id",
-    });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(
+      mockUser("super-admin-id"),
+    );
 
     vi.mocked(prisma.album.findMany).mockResolvedValue([]);
 

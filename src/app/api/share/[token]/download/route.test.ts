@@ -16,14 +16,16 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const mockCheckRateLimit = vi.fn(async () => ({
-  isLimited: false,
-  remaining: 99,
-  resetAt: Date.now() + 60000,
-}));
+const mockCheckRateLimit = vi.fn(
+  async (_key: string, _config: object) => ({
+    isLimited: false,
+    remaining: 99,
+    resetAt: Date.now() + 60000,
+  }),
+);
 
 vi.mock("@/lib/rate-limiter", () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+  checkRateLimit: (key: string, config: object) => mockCheckRateLimit(key, config),
   rateLimitConfigs: { general: {} },
 }));
 

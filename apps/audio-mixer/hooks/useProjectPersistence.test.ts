@@ -54,6 +54,7 @@ describe("useProjectPersistence", () => {
     waveformData: [0.5, 0.6, 0.7],
     type: "file",
     delay: 0,
+    position: 0,
     trimStart: 0,
     trimEnd: 0,
   };
@@ -203,7 +204,7 @@ describe("useProjectPersistence", () => {
     expect(loaded).not.toBe(null);
     expect(loaded?.id).toBe("saved-project");
     expect(loaded?.tracks.length).toBe(1);
-    expect(loaded?.tracks[0].name).toBe("Saved Track");
+    expect(loaded?.tracks[0]!.name).toBe("Saved Track");
   });
 
   it("loadProject returns null for invalid JSON", () => {

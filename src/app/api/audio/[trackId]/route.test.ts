@@ -3,12 +3,21 @@
  * Resolves #332
  */
 
+import type { Session } from "next-auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock auth
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
+
+// Helper to create a mock session
+function createMockSession(userId: string): Session {
+  return {
+    user: { id: userId, role: "USER" },
+    expires: "2099-01-01",
+  } as Session;
+}
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -65,10 +74,7 @@ describe("GET /api/audio/[trackId]", () => {
   });
 
   it("returns 503 when R2 is not configured", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(false);
 
     const request = new Request(
@@ -81,10 +87,7 @@ describe("GET /api/audio/[trackId]", () => {
   });
 
   it("returns 400 when projectId is missing", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
 
     const request = new Request("http://localhost/api/audio/track-123");
@@ -95,10 +98,7 @@ describe("GET /api/audio/[trackId]", () => {
   });
 
   it("returns 404 when audio file not found", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(downloadAudioFromR2).mockResolvedValue(null);
@@ -117,10 +117,7 @@ describe("GET /api/audio/[trackId]", () => {
   });
 
   it("downloads audio file successfully", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(downloadAudioFromR2).mockResolvedValue(
@@ -166,10 +163,7 @@ describe("DELETE /api/audio/[trackId]", () => {
   });
 
   it("returns 400 when projectId is missing", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
 
     const request = new Request("http://localhost/api/audio/track-123", {
@@ -182,10 +176,7 @@ describe("DELETE /api/audio/[trackId]", () => {
   });
 
   it("deletes audio file successfully", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(deleteAudioFromR2).mockResolvedValue({
@@ -213,10 +204,7 @@ describe("DELETE /api/audio/[trackId]", () => {
   });
 
   it("returns 500 when delete fails", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(deleteAudioFromR2).mockResolvedValue({
@@ -265,10 +253,7 @@ describe("HEAD /api/audio/[trackId]", () => {
   });
 
   it("returns 404 when file not found", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(getAudioMetadata).mockResolvedValue(null);
@@ -290,10 +275,7 @@ describe("HEAD /api/audio/[trackId]", () => {
   });
 
   it("returns metadata headers", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-      expires: "2099-01-01",
-    });
+    vi.mocked(auth).mockResolvedValue(createMockSession("user-123"));
     vi.mocked(isAudioR2Configured).mockReturnValue(true);
     vi.mocked(generateAudioKey).mockReturnValue("test-key.wav");
     vi.mocked(getAudioMetadata).mockResolvedValue({

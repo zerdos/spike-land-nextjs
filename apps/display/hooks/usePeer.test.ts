@@ -95,7 +95,9 @@ describe("usePeer", () => {
 
     await waitFor(() => {
       expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
-      const [peerId, options] = MockPeer.mock.calls[0];
+      const call = MockPeer.mock.calls[0];
+      expect(call).toBeDefined();
+      const [peerId, options] = call!;
       expect(peerId).toBe("generated-peer-id");
       expect(options).toMatchObject({ debug: expect.any(Number) });
     });
@@ -462,34 +464,52 @@ describe("usePeer", () => {
 
   it("should use debug level 2 in development environment", async () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "development",
+      writable: true,
+      configurable: true,
+    });
 
     const config: PeerConfig = { role: "host" };
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
       expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
-      const [, options] = MockPeer.mock.calls[0];
+      const call = MockPeer.mock.calls[0];
+      const [, options] = call!;
       expect(options).toMatchObject({ debug: 2 });
     });
 
-    process.env.NODE_ENV = originalEnv;
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: originalEnv,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("should use debug level 0 in production environment", async () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "production",
+      writable: true,
+      configurable: true,
+    });
 
     const config: PeerConfig = { role: "host" };
     renderHook(() => usePeer(config));
 
     await waitFor(() => {
       expect(MockPeer.mock.calls.length).toBeGreaterThan(0);
-      const [, options] = MockPeer.mock.calls[0];
+      const call = MockPeer.mock.calls[0];
+      const [, options] = call!;
       expect(options).toMatchObject({ debug: 0 });
     });
 
-    process.env.NODE_ENV = originalEnv;
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: originalEnv,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("should handle non-Error exception in initialization catch block", async () => {

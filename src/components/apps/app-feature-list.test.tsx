@@ -100,7 +100,7 @@ describe("AppFeatureList", () => {
 
   describe("Icons", () => {
     it("should render icon when provided", () => {
-      render(<AppFeatureList features={[mockFeatures[0]]} />);
+      render(<AppFeatureList features={[mockFeatures[0]!]} />);
 
       const iconContainer = screen.getByText("Test Feature 1").parentElement
         ?.previousSibling;
@@ -109,7 +109,7 @@ describe("AppFeatureList", () => {
     });
 
     it("should not render icon container when icon is not provided", () => {
-      render(<AppFeatureList features={[mockFeatures[1]]} />);
+      render(<AppFeatureList features={[mockFeatures[1]!]} />);
 
       const iconContainer = screen.getByText("Test Feature 2").parentElement
         ?.previousSibling;
@@ -117,7 +117,7 @@ describe("AppFeatureList", () => {
     });
 
     it("should render custom icon element", () => {
-      render(<AppFeatureList features={[mockFeatures[2]]} />);
+      render(<AppFeatureList features={[mockFeatures[2]!]} />);
 
       expect(screen.getByText("Custom Icon")).toBeInTheDocument();
     });

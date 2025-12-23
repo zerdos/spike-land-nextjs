@@ -12,12 +12,18 @@ vi.mock("@apps/display/lib/webrtc/utils", () => ({
 }));
 
 describe("useMediaStream", () => {
+  const mockGetTracks = vi.fn(() => [] as MediaStreamTrack[]);
+  const mockGetVideoTracks = vi.fn(() => [] as MediaStreamTrack[]);
+  const mockGetAudioTracks = vi.fn(() => [] as MediaStreamTrack[]);
+  const mockAddTrack = vi.fn();
+  const mockRemoveTrack = vi.fn();
+
   const mockStream = {
-    getTracks: vi.fn(() => []),
-    getVideoTracks: vi.fn(() => []),
-    getAudioTracks: vi.fn(() => []),
-    addTrack: vi.fn(),
-    removeTrack: vi.fn(),
+    getTracks: mockGetTracks,
+    getVideoTracks: mockGetVideoTracks,
+    getAudioTracks: mockGetAudioTracks,
+    addTrack: mockAddTrack,
+    removeTrack: mockRemoveTrack,
   } as unknown as MediaStream;
 
   const mockMetadata = {
@@ -146,7 +152,7 @@ describe("useMediaStream", () => {
     await result.current.startStream("camera");
 
     // Get the onInactive callback
-    const onInactive = vi.mocked(monitorStreamHealth).mock.calls[0][1];
+    const onInactive = vi.mocked(monitorStreamHealth).mock.calls[0]![1];
     onInactive();
 
     await waitFor(() => {
@@ -222,7 +228,7 @@ describe("useMediaStream", () => {
 
   it("should toggle audio track", async () => {
     const audioTrack = { enabled: true };
-    mockStream.getAudioTracks.mockReturnValue([audioTrack]);
+    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -237,7 +243,7 @@ describe("useMediaStream", () => {
 
   it("should toggle audio track without explicit enabled value", async () => {
     const audioTrack = { enabled: true };
-    mockStream.getAudioTracks.mockReturnValue([audioTrack]);
+    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -252,7 +258,7 @@ describe("useMediaStream", () => {
 
   it("should toggle video track", async () => {
     const videoTrack = { enabled: true };
-    mockStream.getVideoTracks.mockReturnValue([videoTrack]);
+    mockGetVideoTracks.mockReturnValue([videoTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -270,7 +276,7 @@ describe("useMediaStream", () => {
 
   it("should check if audio track is enabled", async () => {
     const audioTrack = { enabled: true };
-    mockStream.getAudioTracks.mockReturnValue([audioTrack]);
+    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -284,7 +290,7 @@ describe("useMediaStream", () => {
 
   it("should check if video track is enabled", async () => {
     const videoTrack = { enabled: false };
-    mockStream.getVideoTracks.mockReturnValue([videoTrack]);
+    mockGetVideoTracks.mockReturnValue([videoTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -310,7 +316,7 @@ describe("useMediaStream", () => {
     vi.mocked(getDisplayMediaStream).mockResolvedValue(newStream);
 
     const oldVideoTrack = { stop: vi.fn() };
-    mockStream.getVideoTracks.mockReturnValue([oldVideoTrack]);
+    mockGetVideoTracks.mockReturnValue([oldVideoTrack] as unknown as MediaStreamTrack[]);
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -318,9 +324,9 @@ describe("useMediaStream", () => {
     await result.current.replaceVideoTrack("screen");
 
     expect(vi.mocked(getDisplayMediaStream)).toHaveBeenCalled();
-    expect(mockStream.removeTrack).toHaveBeenCalledWith(oldVideoTrack);
+    expect(mockRemoveTrack).toHaveBeenCalledWith(oldVideoTrack);
     expect(oldVideoTrack.stop).toHaveBeenCalled();
-    expect(mockStream.addTrack).toHaveBeenCalledWith({ id: "new-track" });
+    expect(mockAddTrack).toHaveBeenCalledWith({ id: "new-track" });
   });
 
   it("should replace video track from screen to camera", async () => {

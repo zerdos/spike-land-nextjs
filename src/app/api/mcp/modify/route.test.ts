@@ -234,12 +234,12 @@ describe("POST /api/mcp/modify", () => {
       // For testing, we'll mock the Buffer.from to return a large length
       const originalFrom = Buffer.from.bind(Buffer);
       vi.spyOn(Buffer, "from").mockImplementation(
-        (data: WithImplicitCoercion<string | ArrayLike<number>>, encoding?: BufferEncoding) => {
+        ((data: unknown, encoding?: BufferEncoding): Buffer => {
           if (encoding === "base64") {
             return { length: 25 * 1024 * 1024 } as Buffer; // 25MB
           }
           return originalFrom(data as string, encoding);
-        },
+        }) as typeof Buffer.from,
       );
 
       const request = createMockRequest(

@@ -23,7 +23,7 @@ vi.mock("@/lib/prisma", () => ({
 
 const mockAuth = vi.mocked(auth);
 const mockRedirect = vi.mocked(redirect);
-const mockPrisma = vi.mocked(prisma);
+const mockFindMany = vi.mocked(prisma.app.findMany);
 
 describe("MyAppsPage", () => {
   beforeEach(() => {
@@ -52,11 +52,12 @@ describe("MyAppsPage", () => {
           id: "123",
           name: "Test User",
           email: "test@example.com",
+          role: "USER",
         },
         expires: "2025-12-31",
       });
 
-      mockPrisma.app.findMany.mockResolvedValue([]);
+      mockFindMany.mockResolvedValue([]);
 
       const result = await MyAppsPage();
 
@@ -71,15 +72,16 @@ describe("MyAppsPage", () => {
           id: "user-123",
           name: "Test User",
           email: "test@example.com",
+          role: "USER",
         },
         expires: "2025-12-31",
       });
 
-      mockPrisma.app.findMany.mockResolvedValue([]);
+      mockFindMany.mockResolvedValue([]);
 
       await MyAppsPage();
 
-      expect(mockPrisma.app.findMany).toHaveBeenCalledWith({
+      expect(mockFindMany).toHaveBeenCalledWith({
         where: {
           userId: "user-123",
           status: {
@@ -104,10 +106,11 @@ describe("MyAppsPage", () => {
           id: "123",
           name: "Test User",
           email: "test@example.com",
+          role: "USER",
         },
         expires: "2025-12-31",
       });
-      mockPrisma.app.findMany.mockResolvedValue([]);
+      mockFindMany.mockResolvedValue([]);
     });
 
     it("should render page title", async () => {
@@ -154,6 +157,7 @@ describe("MyAppsPage", () => {
           id: "user-123",
           name: "Test User",
           email: "test@example.com",
+          role: "USER",
         },
         expires: "2025-12-31",
       });
@@ -211,7 +215,7 @@ describe("MyAppsPage", () => {
         },
       ];
 
-      mockPrisma.app.findMany.mockResolvedValue(mockApps);
+      mockFindMany.mockResolvedValue(mockApps);
 
       const component = await MyAppsPage();
       render(component);
@@ -252,7 +256,7 @@ describe("MyAppsPage", () => {
         },
       ];
 
-      mockPrisma.app.findMany.mockResolvedValue(mockApps);
+      mockFindMany.mockResolvedValue(mockApps);
 
       const component = await MyAppsPage();
       render(component);
@@ -299,7 +303,7 @@ describe("MyAppsPage", () => {
         },
       ];
 
-      mockPrisma.app.findMany.mockResolvedValue(mockApps);
+      mockFindMany.mockResolvedValue(mockApps);
 
       const component = await MyAppsPage();
       render(component);
@@ -339,7 +343,7 @@ describe("MyAppsPage", () => {
         },
       ];
 
-      mockPrisma.app.findMany.mockResolvedValue(mockApps);
+      mockFindMany.mockResolvedValue(mockApps);
 
       const component = await MyAppsPage();
       render(component);
@@ -391,7 +395,7 @@ describe("MyAppsPage", () => {
         },
       ];
 
-      mockPrisma.app.findMany.mockResolvedValue(mockApps);
+      mockFindMany.mockResolvedValue(mockApps);
 
       const component = await MyAppsPage();
       render(component);

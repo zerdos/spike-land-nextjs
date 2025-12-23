@@ -16,7 +16,20 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock useTier hook
-const mockUseTier = {
+const mockUseTier: {
+  tiers: Array<{ tier: string; displayName: string; wellCapacity: number; priceGBP: number; }>;
+  currentTier: string;
+  canUpgrade: boolean;
+  nextTier: { tier: string; displayName: string; wellCapacity: number; priceGBP: number; } | null;
+  showUpgradePrompt: boolean;
+  isPremiumAtZero: boolean;
+  premiumOptions: null;
+  isLoading: boolean;
+  error: Error | null;
+  dismissPrompt: ReturnType<typeof vi.fn>;
+  refetch: ReturnType<typeof vi.fn>;
+  checkPromptStatus: ReturnType<typeof vi.fn>;
+} = {
   tiers: [
     { tier: "FREE", displayName: "Free", wellCapacity: 100, priceGBP: 0 },
     { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
@@ -59,7 +72,12 @@ vi.mock("@/hooks/useTokenBalance", () => ({
 // Mock useTierUpgrade hook
 const mockUpgrade = vi.fn().mockResolvedValue({ success: true });
 const mockUpgradeAndRedirect = vi.fn().mockResolvedValue({ success: true });
-const mockUseTierUpgrade = {
+const mockUseTierUpgrade: {
+  upgrade: ReturnType<typeof vi.fn>;
+  upgradeAndRedirect: ReturnType<typeof vi.fn>;
+  isUpgrading: boolean;
+  error: Error | null;
+} = {
   upgrade: mockUpgrade,
   upgradeAndRedirect: mockUpgradeAndRedirect,
   isUpgrading: false,
@@ -73,7 +91,15 @@ vi.mock("@/hooks/useTierUpgrade", () => ({
 // Mock useDowngrade hook
 const mockScheduleDowngrade = vi.fn().mockResolvedValue({ success: true });
 const mockCancelDowngrade = vi.fn().mockResolvedValue({ success: true });
-const mockUseDowngrade = {
+const mockUseDowngrade: {
+  scheduleDowngrade: ReturnType<typeof vi.fn>;
+  cancelDowngrade: ReturnType<typeof vi.fn>;
+  scheduledDowngrade: { targetTier: string; effectiveDate: Date; } | null;
+  isScheduling: boolean;
+  isCanceling: boolean;
+  error: null;
+  clearScheduledDowngrade: ReturnType<typeof vi.fn>;
+} = {
   scheduleDowngrade: mockScheduleDowngrade,
   cancelDowngrade: mockCancelDowngrade,
   scheduledDowngrade: null,
@@ -191,7 +217,9 @@ describe("SubscriptionPage", () => {
       render(<SubscriptionPage />);
 
       const upgradeButtons = screen.getAllByTestId("upgrade-button");
-      fireEvent.click(upgradeButtons[0]); // Click first upgrade button (BASIC)
+      const firstUpgradeButton = upgradeButtons[0];
+      if (!firstUpgradeButton) throw new Error("No upgrade button found");
+      fireEvent.click(firstUpgradeButton); // Click first upgrade button (BASIC)
 
       await waitFor(() => {
         expect(mockUpgradeAndRedirect).toHaveBeenCalledWith("BASIC");
@@ -253,7 +281,9 @@ describe("SubscriptionPage - Premium user", () => {
     render(<SubscriptionPage />);
 
     const downgradeButtons = screen.getAllByTestId("downgrade-button");
-    fireEvent.click(downgradeButtons[0]); // Click first downgrade button (FREE)
+    const firstDowngradeButton = downgradeButtons[0];
+    if (!firstDowngradeButton) throw new Error("No downgrade button found");
+    fireEvent.click(firstDowngradeButton); // Click first downgrade button (FREE)
 
     await waitFor(() => {
       expect(mockScheduleDowngrade).toHaveBeenCalledWith("FREE");

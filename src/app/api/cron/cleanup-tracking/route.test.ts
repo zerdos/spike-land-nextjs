@@ -53,7 +53,7 @@ describe("Data Retention Cleanup Cron Job", () => {
   });
 
   it("should return 401 if no CRON_SECRET configured in production", async () => {
-    process.env.NODE_ENV = "production";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
     delete process.env.CRON_SECRET;
 
     const request = createMockRequest();
@@ -108,7 +108,7 @@ describe("Data Retention Cleanup Cron Job", () => {
   });
 
   it("should allow requests in development without secret", async () => {
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "development";
     delete process.env.CRON_SECRET;
     mockPageViewDeleteMany.mockResolvedValueOnce({ count: 0 });
     mockAnalyticsEventDeleteMany.mockResolvedValueOnce({ count: 0 });
@@ -159,8 +159,11 @@ describe("Data Retention Cleanup Cron Job", () => {
     await GET(request);
 
     // Verify the cutoff date is approximately 90 days ago
-    const pageViewsCall = mockPageViewDeleteMany.mock.calls[0][0];
-    const cutoffDate = pageViewsCall.where.timestamp.lt as Date;
+    const pageViewsCall = mockPageViewDeleteMany.mock.calls[0]?.[0] as {
+      where: { timestamp: { lt: Date; }; };
+    };
+    expect(pageViewsCall).toBeDefined();
+    const cutoffDate = pageViewsCall.where.timestamp.lt;
     const expectedCutoff = new Date();
     expectedCutoff.setDate(expectedCutoff.getDate() - 90);
 
