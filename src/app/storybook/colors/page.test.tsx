@@ -16,77 +16,65 @@ import ColorsPage from "./page";
 
 describe("ColorsPage", () => {
   describe("rendering", () => {
-    it("should render the section title", () => {
+    it("should render the main title", () => {
       render(<ColorsPage />);
-      expect(screen.getByText("Color Palette")).toBeInTheDocument();
+      expect(screen.getByText("Color System")).toBeInTheDocument();
     });
 
-    it("should render the section description", () => {
+    it("should render the page description", () => {
       render(<ColorsPage />);
       expect(
         screen.getByText(
-          /brand colors optimized for both light and dark modes/i,
+          /our color system is built on a foundation of deep space blues/i,
         ),
       ).toBeInTheDocument();
     });
   });
 
-  describe("color sections", () => {
-    it("should render brand colors card", () => {
+  describe("sections", () => {
+    it("should render brand identity section", () => {
       render(<ColorsPage />);
-      expect(screen.getByText("Brand Colors")).toBeInTheDocument();
-      expect(screen.getByText(/primary brand accent colors/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Brand Identity")).toBeInTheDocument();
+      expect(screen.getByText("SPIKE LAND CORE")).toBeInTheDocument();
     });
 
-    it("should render dark mode palette card", () => {
+    it("should render theme foundations section", () => {
       render(<ColorsPage />);
-      expect(screen.getByText("Dark Mode Palette")).toBeInTheDocument();
-      expect(screen.getByText(/colors optimized for dark backgrounds/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Theme Foundations")).toBeInTheDocument();
+      expect(screen.getByText(/Dark Mode/i)).toBeInTheDocument();
+      expect(screen.getByText(/Light Mode/i)).toBeInTheDocument();
     });
 
-    it("should render light mode palette card", () => {
+    it("should render optical effects section", () => {
       render(<ColorsPage />);
-      expect(screen.getByText("Light Mode Palette")).toBeInTheDocument();
-      expect(screen.getByText(/colors optimized for light backgrounds/i))
-        .toBeInTheDocument();
-    });
-
-    it("should render glow effects card", () => {
-      render(<ColorsPage />);
-      expect(screen.getByText("Glow Effects")).toBeInTheDocument();
-      expect(screen.getByText(/cyan glow utilities for emphasis/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Optical Effects")).toBeInTheDocument();
     });
   });
 
-  describe("brand accent display", () => {
-    it("should render Pixel Cyan accent", () => {
+  describe("swatches", () => {
+    it("should render spike.land Cyan swatch", () => {
       render(<ColorsPage />);
-      // Multiple occurrences due to color swatches and accent display
-      expect(screen.getAllByText("Pixel Cyan").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("spike.land Cyan").length).toBeGreaterThan(0);
     });
 
-    it("should render Pixel Fuchsia accent", () => {
+    it("should render spike.land Fuchsia swatch", () => {
       render(<ColorsPage />);
-      // Multiple occurrences due to color swatches and accent display
-      expect(screen.getAllByText("Pixel Fuchsia").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("spike.land Fuchsia").length).toBeGreaterThan(0);
     });
   });
 
-  describe("glow effect demos", () => {
+  describe("demos", () => {
     it("should render glow buttons", () => {
       render(<ColorsPage />);
-      expect(screen.getByRole("button", { name: /primary button/i }))
-        .toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /fuchsia button/i }))
-        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /action ready/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /priority focus/i })).toBeInTheDocument();
     });
 
-    it("should render glow input", () => {
+    it("should render glass elevation tiers", () => {
       render(<ColorsPage />);
-      expect(screen.getByPlaceholderText(/text input/i)).toBeInTheDocument();
+      expect(screen.getByText(/tier-0/i)).toBeInTheDocument();
+      expect(screen.getByText(/tier-1/i)).toBeInTheDocument();
+      expect(screen.getByText(/tier-2/i)).toBeInTheDocument();
     });
   });
 });
