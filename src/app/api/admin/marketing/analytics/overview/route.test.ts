@@ -476,13 +476,18 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
       // Check that the end date includes the entire day
       const sessionCall = vi.mocked(prisma.visitorSession.findMany).mock
-        .calls[0][0];
-      expect(sessionCall?.where?.sessionStart?.lte).toBeDefined();
+        .calls[0]?.[0];
+      expect(sessionCall).toBeDefined();
+      const sessionStart = sessionCall?.where?.sessionStart;
+      expect(sessionStart).toBeDefined();
 
-      const endDate = sessionCall?.where?.sessionStart?.lte as Date;
-      expect(endDate.getHours()).toBe(23);
-      expect(endDate.getMinutes()).toBe(59);
-      expect(endDate.getSeconds()).toBe(59);
+      const endDate = typeof sessionStart === "object" && sessionStart && "lte" in sessionStart
+        ? sessionStart.lte
+        : sessionStart;
+      expect(endDate).toBeInstanceOf(Date);
+      expect((endDate as Date).getHours()).toBe(23);
+      expect((endDate as Date).getMinutes()).toBe(59);
+      expect((endDate as Date).getSeconds()).toBe(59);
     });
 
     it("should calculate previous period correctly", async () => {
@@ -507,13 +512,25 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
 
       // Second call is for previous period
       const prevSessionCall = vi.mocked(prisma.visitorSession.findMany).mock
-        .calls[1][0];
-      const prevStart = prevSessionCall?.where?.sessionStart?.gte as Date;
-      const prevEnd = prevSessionCall?.where?.sessionStart?.lte as Date;
+        .calls[1]?.[0];
+      expect(prevSessionCall).toBeDefined();
+      const prevSessionStart = prevSessionCall?.where?.sessionStart;
+      expect(prevSessionStart).toBeDefined();
+
+      const prevStart = typeof prevSessionStart === "object" &&
+          prevSessionStart &&
+          "gte" in prevSessionStart
+        ? prevSessionStart.gte
+        : prevSessionStart;
+      const prevEnd = typeof prevSessionStart === "object" &&
+          prevSessionStart &&
+          "lte" in prevSessionStart
+        ? prevSessionStart.lte
+        : prevSessionStart;
 
       // Previous period should be 7 days before
-      expect(prevStart.getDate()).toBe(1);
-      expect(prevEnd.getDate()).toBe(7);
+      expect((prevStart as Date).getDate()).toBe(1);
+      expect((prevEnd as Date).getDate()).toBe(7);
     });
   });
 });
