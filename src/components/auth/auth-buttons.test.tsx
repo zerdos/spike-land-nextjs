@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { SignInResponse } from "next-auth/react";
 import { signIn } from "next-auth/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthButtons } from "./auth-buttons";
@@ -7,6 +8,18 @@ import { AuthButtons } from "./auth-buttons";
 vi.mock("next-auth/react", () => ({
   signIn: vi.fn(),
 }));
+
+// Helper to create properly typed SignInResponse mock
+const createSignInResponse = (
+  overrides: Partial<SignInResponse> = {},
+): SignInResponse => ({
+  ok: true,
+  error: undefined,
+  code: undefined,
+  status: 200,
+  url: "/",
+  ...overrides,
+});
 
 // Mock fetch for email check API
 const mockFetch = vi.fn();
@@ -493,12 +506,7 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       // Mock window.location
       const originalLocation = window.location;
@@ -549,12 +557,14 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({
-        error: "CredentialsSignin",
-        status: 401,
-        ok: false,
-        url: null,
-      });
+      vi.mocked(signIn).mockResolvedValue(
+        createSignInResponse({
+          error: "CredentialsSignin",
+          status: 401,
+          ok: false,
+          url: null,
+        }),
+      );
 
       render(<AuthButtons />);
 
@@ -588,7 +598,7 @@ describe("AuthButtons Component", () => {
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
 
-      let resolveSignIn: (value: unknown) => void;
+      let resolveSignIn: (value: SignInResponse) => void;
       vi.mocked(signIn).mockImplementation(
         () =>
           new Promise((resolve) => {
@@ -617,7 +627,7 @@ describe("AuthButtons Component", () => {
 
       expect(screen.getByText(/signing in/i)).toBeInTheDocument();
 
-      resolveSignIn!({ ok: false, error: "test" });
+      resolveSignIn!(createSignInResponse({ ok: false, error: "test" }));
     });
 
     it("should redirect to callback URL on successful sign in", async () => {
@@ -626,12 +636,7 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -680,12 +685,7 @@ describe("AuthButtons Component", () => {
         ok: true,
         json: () => Promise.resolve({ exists: true, hasPassword: true }),
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";

@@ -20,13 +20,20 @@ vi.mock("next/image", () => ({
   ),
 }));
 
+// Define first preview image separately for type safety
+const firstPreviewImage = {
+  id: "img-1",
+  url: "https://example.com/image1.jpg",
+  name: "Image 1",
+};
+
 const mockAlbum = {
   id: "album-1",
   name: "Test Album",
   privacy: "PRIVATE" as const,
   imageCount: 5,
   previewImages: [
-    { id: "img-1", url: "https://example.com/image1.jpg", name: "Image 1" },
+    firstPreviewImage,
     { id: "img-2", url: "https://example.com/image2.jpg", name: "Image 2" },
     { id: "img-3", url: "https://example.com/image3.jpg", name: "Image 3" },
     { id: "img-4", url: "https://example.com/image4.jpg", name: "Image 4" },
@@ -168,7 +175,6 @@ describe("AlbumCard Component", () => {
 
   describe("preview image grid layout", () => {
     it("renders single image spanning full grid", () => {
-      const firstPreviewImage = mockAlbum.previewImages[0];
       const singleImageAlbum = {
         ...mockAlbum,
         previewImages: [firstPreviewImage],

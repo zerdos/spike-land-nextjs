@@ -29,6 +29,13 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// Define preview images separately for type safety
+const firstPreviewImage = {
+  id: "img-1",
+  url: "https://example.com/img1.jpg",
+  name: "Beach",
+};
+
 // Define the first album separately for type safety when spreading
 const firstMockAlbum: AlbumsGridProps["albums"][number] = {
   id: "album-1",
@@ -38,7 +45,7 @@ const firstMockAlbum: AlbumsGridProps["albums"][number] = {
   coverImageId: null,
   imageCount: 24,
   previewImages: [
-    { id: "img-1", url: "https://example.com/img1.jpg", name: "Beach" },
+    firstPreviewImage,
     { id: "img-2", url: "https://example.com/img2.jpg", name: "Sunset" },
     { id: "img-3", url: "https://example.com/img3.jpg", name: "Mountains" },
     { id: "img-4", url: "https://example.com/img4.jpg", name: "Forest" },
@@ -488,7 +495,6 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders single image with col-span-2 and row-span-2", () => {
-    const firstPreviewImage = firstMockAlbum.previewImages[0];
     const singleImageAlbum = {
       ...firstMockAlbum,
       id: "single-img-album",
@@ -508,11 +514,10 @@ describe("AlbumsGrid", () => {
   });
 
   it("verifies non-first images in 3-image mosaic do not have row-span-2", () => {
-    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...baseAlbum,
+      ...firstMockAlbum,
       id: "three-img-album",
-      previewImages: baseAlbum.previewImages.slice(0, 3),
+      previewImages: firstMockAlbum.previewImages.slice(0, 3),
     };
 
     const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);

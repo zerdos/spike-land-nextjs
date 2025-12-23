@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
 import { Session } from "next-auth";
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
@@ -35,6 +36,7 @@ describe("SessionProvider Component", () => {
     const mockSession: Session = {
       user: {
         id: "user-123",
+        role: UserRole.USER,
         name: "Test User",
         email: "test@example.com",
       },
@@ -105,6 +107,7 @@ describe("SessionProvider Component", () => {
     const mockSession: Session = {
       user: {
         id: "user-456",
+        role: UserRole.USER,
         name: "John Doe",
         email: "john@example.com",
         image: "https://example.com/avatar.jpg",
@@ -144,6 +147,7 @@ describe("SessionProvider Component", () => {
     const complexSession: Session = {
       user: {
         id: "user-789",
+        role: UserRole.USER,
         name: "Test User",
         email: "test@example.com",
         image: "https://example.com/avatar.jpg",
