@@ -183,35 +183,21 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it("shows completed count badge when jobs are completed", () => {
-    const imageWithCompletedJobs: typeof mockImage = {
+    const imageWithCompletedJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
           tier: "TIER_1K",
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-1k.jpg",
-          width: 1920,
-          height: 1080,
-          fileSize: 500000,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
-        {
+        }),
+        createMockJob({
           id: "job-2",
-          imageId: "test-image-1",
           tier: "TIER_2K",
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-2k.jpg",
-          width: 2560,
-          height: 1440,
-          fileSize: 800000,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
+        }),
       ],
     };
 
@@ -221,22 +207,14 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it('shows "Processing..." badge when jobs are processing', () => {
-    const imageWithProcessingJobs: typeof mockImage = {
+    const imageWithProcessingJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
-          tier: "TIER_1K",
           status: "PROCESSING",
           enhancedUrl: null,
-          width: 1920,
-          height: 1080,
-          fileSize: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
+        }),
       ],
     };
 
@@ -246,22 +224,15 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it('shows "Failed" badge when all jobs failed', () => {
-    const imageWithFailedJobs: typeof mockImage = {
+    const imageWithFailedJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
-          tier: "TIER_1K",
           status: "FAILED",
           enhancedUrl: null,
-          width: 1920,
-          height: 1080,
-          fileSize: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: "Enhancement failed",
-        },
+          errorMessage: "Enhancement failed",
+        }),
       ],
     };
 
@@ -271,22 +242,14 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it('shows "Pending" badge when jobs are pending', () => {
-    const imageWithPendingJobs: typeof mockImage = {
+    const imageWithPendingJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
-          tier: "TIER_1K",
           status: "PENDING",
           enhancedUrl: null,
-          width: 1920,
-          height: 1080,
-          fileSize: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
+        }),
       ],
     };
 
@@ -315,22 +278,14 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it('shows "View" button for images with jobs', () => {
-    const imageWithJobs: typeof mockImage = {
+    const imageWithJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
-          tier: "TIER_1K",
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced.jpg",
-          width: 1920,
-          height: 1080,
-          fileSize: 500000,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
+        }),
       ],
     };
 
@@ -409,7 +364,7 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it("renders multiple images with different statuses", () => {
-    const images = [
+    const images: MockEnhancedImage[] = [
       {
         ...mockImage,
         id: "image-1",
@@ -419,38 +374,25 @@ describe("EnhancedImagesList Component", () => {
         ...mockImage,
         id: "image-2",
         enhancementJobs: [
-          {
+          createMockJob({
             id: "job-1",
             imageId: "image-2",
-            tier: "TIER_1K" as const,
-            status: "PROCESSING" as const,
+            status: "PROCESSING",
             enhancedUrl: null,
-            width: 1920,
-            height: 1080,
-            fileSize: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            error: null,
-          },
+          }),
         ],
       },
       {
         ...mockImage,
         id: "image-3",
         enhancementJobs: [
-          {
+          createMockJob({
             id: "job-2",
             imageId: "image-3",
-            tier: "TIER_2K" as const,
-            status: "COMPLETED" as const,
+            tier: "TIER_2K",
+            status: "COMPLETED",
             enhancedUrl: "https://example.com/enhanced.jpg",
-            width: 2560,
-            height: 1440,
-            fileSize: 800000,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            error: null,
-          },
+          }),
         ],
       },
     ];
@@ -478,35 +420,21 @@ describe("EnhancedImagesList Component", () => {
   });
 
   it("shows completed badge even when some jobs failed", () => {
-    const imageWithMixedJobs: typeof mockImage = {
+    const imageWithMixedJobs: MockEnhancedImage = {
       ...mockImage,
       enhancementJobs: [
-        {
+        createMockJob({
           id: "job-1",
-          imageId: "test-image-1",
-          tier: "TIER_1K",
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-1k.jpg",
-          width: 1920,
-          height: 1080,
-          fileSize: 500000,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: null,
-        },
-        {
+        }),
+        createMockJob({
           id: "job-2",
-          imageId: "test-image-1",
           tier: "TIER_2K",
           status: "FAILED",
           enhancedUrl: null,
-          width: 2560,
-          height: 1440,
-          fileSize: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          error: "Enhancement failed",
-        },
+          errorMessage: "Enhancement failed",
+        }),
       ],
     };
 

@@ -2,6 +2,7 @@
  * Tests for User Password Management API Route
  */
 
+import { UserRole } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies before importing route
@@ -61,7 +62,7 @@ describe("Password API Route", () => {
 
     // Default: authenticated admin user
     mockAuth.mockResolvedValue({
-      user: { id: "admin-user-id", email: "admin@test.com", name: "Admin" },
+      user: { id: "admin-user-id", email: "admin@test.com", name: "Admin", role: UserRole.ADMIN },
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
 

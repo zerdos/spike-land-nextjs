@@ -3,6 +3,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import type { Album } from "@prisma/client";
 import { AlbumPrivacy, EnhancementTier, JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
