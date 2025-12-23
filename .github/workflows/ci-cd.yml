@@ -60,7 +60,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Run linter
         run: yarn lint
@@ -69,7 +69,7 @@ jobs:
         run: yarn npm audit --all --severity moderate
 
   unit-tests:
-    name: Unit Tests [${{ matrix.shard }}/8]
+    name: unit-tests-${{ matrix.shard }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -101,7 +101,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -117,7 +117,7 @@ jobs:
             yarn test:run --shard=${{ matrix.shard }}/4 --reporter=github-actions
           else
             # On PR/feature branch: run only changed tests
-            yarn test:run --changed main --shard=${{ matrix.shard }}/4 --reporter=github-actions
+            yarn test:run --changed $(yarn find-last-passing-ci unit-tests-${{ matrix.shard }})  --shard=${{ matrix.shard }}/4 --reporter=github-actions
           fi
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
@@ -161,7 +161,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Build application
         run: yarn build
@@ -209,7 +209,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+        run: yarn install --immutable-cache
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5
@@ -230,62 +230,27 @@ jobs:
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
 
-      - name: Select feature files for shard
-        id: shard-files
-        run: |
-          # Get all feature files sorted alphabetically for consistent sharding
-          ALL_FILES=$(find e2e/features -name "*.feature" | sort)
-          TOTAL_FILES=$(echo "$ALL_FILES" | wc -l)
-          SHARD=${{ matrix.shard }}
-          TOTAL_SHARDS=8
-
-          # Calculate which files belong to this shard
-          FILES_PER_SHARD=$(( (TOTAL_FILES + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
-          START_IDX=$(( (SHARD - 1) * FILES_PER_SHARD + 1 ))
-          END_IDX=$(( SHARD * FILES_PER_SHARD ))
-
-          # Get files for this shard
-          SHARD_FILES=$(echo "$ALL_FILES" | sed -n "${START_IDX},${END_IDX}p" | tr '\n' ' ')
-
-          echo "Shard $SHARD/$TOTAL_SHARDS: Running $(echo "$SHARD_FILES" | wc -w) feature files"
-          echo "Files: $SHARD_FILES"
-          echo "files=$SHARD_FILES" >> $GITHUB_OUTPUT
-
-      - name: Start dev server
-        run: |
-          yarn dev &
-          DEV_PID=$!
-          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
-
-          # Wait for server to be ready (up to 120 seconds)
-          echo "Waiting for dev server to be ready..."
-          for i in {1..120}; do
-            if curl -s http://localhost:3000 > /dev/null 2>&1; then
-              echo "✓ Dev server is ready! (took ${i}s)"
-              exit 0
-            fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "Still waiting... (${i}s)"
-            fi
-            sleep 1
-          done
-          echo "✗ Dev server failed to start after 120 seconds"
-          exit 1
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-          NEXTAUTH_URL: http://localhost:3000
-          # Disable external services for E2E tests
-          SKIP_ENV_VALIDATION: "true"
-
       - name: Run E2E tests (shard ${{ matrix.shard }}/8)
         env:
           BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          SKIP_ENV_VALIDATION: "true"
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_TOTAL: 8
         run: |
-          # Run cucumber with only the shard's feature files
-          npx cucumber-js --profile ci ${{ steps.shard-files.outputs.files }}
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "::notice::Running full E2E suite (main branch, shard ${{ matrix.shard }}/8)"
+            yarn start:server:and:test:ci
+          elif [ "${{ matrix.shard }}" = "1" ]; then
+            echo "::notice::Running fast E2E tests (PR branch, shard 1 only)"
+            yarn start:server:and:test:ci
+          else
+            echo "::notice::Skipping shard ${{ matrix.shard }} on PR (only shard 1 runs on PRs)"
+            echo "To run full E2E suite, merge to main"
+          fi
 
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4

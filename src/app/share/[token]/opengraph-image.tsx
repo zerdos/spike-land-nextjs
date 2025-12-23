@@ -38,6 +38,7 @@ function createFallbackImage(): ImageResponse {
           color: "white",
           fontSize: 48,
           fontWeight: "bold",
+          fontFamily: "sans-serif",
         }}
       >
         Image Not Found
@@ -89,7 +90,7 @@ export default async function Image(
               flexDirection: "column",
               width: "100%",
               height: "100%",
-              background: "#0a0a0a",
+              background: "#000",
               position: "relative",
             }}
           >
@@ -129,14 +130,16 @@ export default async function Image(
                   style={{
                     display: "flex",
                     position: "absolute",
-                    top: "20px",
-                    left: "20px",
-                    background: "rgba(0,0,0,0.6)",
-                    color: "white",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    fontSize: "18px",
+                    top: "30px",
+                    left: "30px",
+                    background: "rgba(0,0,0,0.7)",
+                    color: "#e5e5e5",
+                    padding: "8px 24px",
+                    borderRadius: "100px",
+                    fontSize: "24px",
                     fontWeight: "600",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    fontFamily: "sans-serif",
                   }}
                 >
                   Before
@@ -152,11 +155,49 @@ export default async function Image(
                   top: 0,
                   bottom: 0,
                   width: "4px",
-                  background: "white",
+                  background: "linear-gradient(to bottom, #22d3ee, #3b82f6)",
                   transform: "translateX(-50%)",
-                  boxShadow: "0 0 10px rgba(0,0,0,0.5)",
+                  boxShadow: "0 0 20px rgba(34,211,238,0.8)",
+                  zIndex: 10,
                 }}
               />
+
+              {/* Slider handle graphic (centered) */}
+              <div
+                style={{
+                  display: "flex",
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  background: "white",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
+                  boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+                  border: "4px solid #000",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* Arrows */}
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="black"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M15 18l-6-6 6-6" />
+                    <path d="M21 18l-6-6 6-6" />
+                  </svg>
+                </div>
+              </div>
 
               {/* Right half - Enhanced */}
               <div
@@ -185,14 +226,16 @@ export default async function Image(
                   style={{
                     display: "flex",
                     position: "absolute",
-                    top: "20px",
-                    right: "20px",
-                    background: "rgba(34,211,238,0.8)",
+                    top: "30px",
+                    right: "30px",
+                    background: "linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%)",
                     color: "white",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    fontSize: "18px",
-                    fontWeight: "600",
+                    padding: "8px 24px",
+                    borderRadius: "100px",
+                    fontSize: "24px",
+                    fontWeight: "800",
+                    boxShadow: "0 4px 15px rgba(34,211,238,0.4)",
+                    fontFamily: "sans-serif",
                   }}
                 >
                   After
@@ -200,7 +243,7 @@ export default async function Image(
               </div>
             </div>
 
-            {/* Gradient overlay at bottom */}
+            {/* Bottom Branding Bar */}
             <div
               style={{
                 display: "flex",
@@ -208,10 +251,11 @@ export default async function Image(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: "100px",
-                background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+                height: "120px",
+                background: "linear-gradient(transparent, rgba(0,0,0,0.9))",
                 alignItems: "flex-end",
-                padding: "16px 24px",
+                padding: "0 40px 30px",
+                justifyContent: "space-between",
               }}
             >
               {/* Branding */}
@@ -219,7 +263,7 @@ export default async function Image(
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "10px",
+                  gap: "16px",
                 }}
               >
                 <div
@@ -227,32 +271,46 @@ export default async function Image(
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "8px",
+                    width: "50px",
+                    height: "50px",
+                    borderRadius: "12px",
                     background: "linear-gradient(135deg, #22d3ee, #06b6d4)",
+                    boxShadow: "0 0 15px rgba(34,211,238,0.5)",
                   }}
                 >
-                  <span style={{ fontSize: "20px" }}>✨</span>
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
                 </div>
-                <span
-                  style={{
-                    color: "white",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  pixel
-                </span>
-                <span
-                  style={{
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "16px",
-                    marginLeft: "6px",
-                  }}
-                >
-                  AI Enhanced
-                </span>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span
+                    style={{
+                      color: "white",
+                      fontSize: "36px",
+                      fontWeight: "800",
+                      lineHeight: 1,
+                      fontFamily: "sans-serif",
+                    }}
+                  >
+                    pixel
+                  </span>
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.8)",
+                      fontSize: "18px",
+                      fontWeight: "500",
+                      fontFamily: "sans-serif",
+                    }}
+                  >
+                    AI Enhanced
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -272,7 +330,7 @@ export default async function Image(
             flexDirection: "column",
             width: "100%",
             height: "100%",
-            background: "#0a0a0a",
+            background: "#000",
             position: "relative",
           }}
         >
@@ -297,17 +355,17 @@ export default async function Image(
               bottom: 0,
               left: 0,
               right: 0,
-              height: "100px",
-              background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+              height: "150px",
+              background: "linear-gradient(transparent, rgba(0,0,0,0.9))",
               alignItems: "flex-end",
-              padding: "16px 24px",
+              padding: "0 40px 30px",
             }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
+                gap: "16px",
               }}
             >
               <div
@@ -315,32 +373,46 @@ export default async function Image(
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "8px",
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "12px",
                   background: "linear-gradient(135deg, #22d3ee, #06b6d4)",
+                  boxShadow: "0 0 15px rgba(34,211,238,0.5)",
                 }}
               >
-                <span style={{ fontSize: "20px" }}>✨</span>
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
               </div>
-              <span
-                style={{
-                  color: "white",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              >
-                pixel
-              </span>
-              <span
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: "16px",
-                  marginLeft: "6px",
-                }}
-              >
-                AI Enhanced
-              </span>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span
+                  style={{
+                    color: "white",
+                    fontSize: "36px",
+                    fontWeight: "800",
+                    lineHeight: 1,
+                    fontFamily: "sans-serif",
+                  }}
+                >
+                  pixel
+                </span>
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.8)",
+                    fontSize: "18px",
+                    fontWeight: "500",
+                    fontFamily: "sans-serif",
+                  }}
+                >
+                  AI Enhanced
+                </span>
+              </div>
             </div>
           </div>
         </div>
