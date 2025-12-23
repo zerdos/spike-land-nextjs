@@ -109,7 +109,7 @@ describe("AgentsDashboardClient", () => {
   it("toggles session details", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
-    const expandBtn = screen.getAllByText("▼")[0];
+    const expandBtn = screen.getAllByText("▼")[0]!;
     fireEvent.click(expandBtn);
 
     expect(screen.getByText("Plan Summary")).toBeInTheDocument();

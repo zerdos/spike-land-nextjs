@@ -124,14 +124,14 @@ describe("PipelineForm", () => {
 
     // Analysis Tab
     await user.click(screen.getByText("Analysis"));
-    const analysisCheckbox = screen.getAllByRole("checkbox")[0]; // Enable Analysis checkbox
+    const analysisCheckbox = screen.getAllByRole("checkbox")[0]!; // Enable Analysis checkbox
     // It defaults to true. Let's toggle it.
     await user.click(analysisCheckbox);
     // Now it should be unchecked.
 
     // Auto-Crop Tab
     await user.click(screen.getByText("Auto-Crop"));
-    const autoCropCheckbox = screen.getAllByRole("checkbox")[0]; // Enable Auto-Crop
+    const autoCropCheckbox = screen.getAllByRole("checkbox")[0]!; // Enable Auto-Crop
     // Defaults to true.
     await user.click(autoCropCheckbox);
 

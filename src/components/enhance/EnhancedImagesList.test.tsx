@@ -618,7 +618,7 @@ describe("EnhancedImagesList Component", () => {
       const user = userEvent.setup();
       const imageWithNullName = {
         ...mockImage,
-        name: null,
+        name: "",
       };
 
       render(<EnhancedImagesList images={[imageWithNullName]} />);

@@ -5,8 +5,8 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
 // Mock FileReader with a proper class
 class MockFileReader {
   result: string | ArrayBuffer | null = "data:image/jpeg;base64,test";
-  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
-  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
+  onload: ((ev: ProgressEvent<FileReader>) => void) | null = null;
+  onerror: ((ev: ProgressEvent<FileReader>) => void) | null = null;
 
   readAsDataURL() {
     // Simulate async load

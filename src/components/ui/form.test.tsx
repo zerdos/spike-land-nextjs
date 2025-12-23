@@ -102,8 +102,8 @@ describe("Form", () => {
 
   it("successfully submits valid data", async () => {
     const user = userEvent.setup();
-    let submittedValues = null;
-    const handleSubmit = (values: any) => {
+    let submittedValues: { username: string; } | null = null;
+    const handleSubmit = (values: { username: string; }) => {
       submittedValues = values;
     };
 

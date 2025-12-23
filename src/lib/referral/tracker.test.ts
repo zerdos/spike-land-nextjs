@@ -34,7 +34,7 @@ describe("Referral Tracker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(cookies).mockResolvedValue(
-      mockCookieStore as unknown as ReturnType<typeof cookies>,
+      mockCookieStore as unknown as Awaited<ReturnType<typeof cookies>>,
     );
   });
 
@@ -74,7 +74,7 @@ describe("Referral Tracker", () => {
 
     it("should use secure flag in production", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
 
       const { getUserByReferralCode } = await import("./code-generator");
       vi.mocked(getUserByReferralCode).mockResolvedValue("referrer-123");
@@ -87,7 +87,7 @@ describe("Referral Tracker", () => {
         expect.objectContaining({ secure: true }),
       );
 
-      process.env.NODE_ENV = originalEnv;
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
     });
   });
 

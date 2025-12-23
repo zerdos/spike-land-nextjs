@@ -31,6 +31,7 @@ vi.mock("./HeroSection", () => ({
 }));
 
 import { getSuperAdminPublicPhotos } from "@/lib/gallery/super-admin-photos";
+import type { EnhancementTier } from "@/types/enhancement";
 
 // Need to import after mocks are set up
 const { HeroSectionWithData } = await import("./HeroSectionWithData");
@@ -49,7 +50,7 @@ describe("HeroSectionWithData Component", () => {
       width: 2000,
       height: 1500,
       albumName: "Test Album",
-      tier: "TIER_2K",
+      tier: "TIER_2K" as EnhancementTier,
     };
     vi.mocked(getSuperAdminPublicPhotos).mockResolvedValue([mockPhoto]);
 

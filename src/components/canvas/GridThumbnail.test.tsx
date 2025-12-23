@@ -445,7 +445,7 @@ describe("GridThumbnail", () => {
       );
 
       expect(ref).toHaveBeenCalled();
-      expect(ref.mock.calls[0][0]).toBeInstanceOf(HTMLDivElement);
+      expect(ref.mock.calls[0]![0]).toBeInstanceOf(HTMLDivElement);
     });
   });
 

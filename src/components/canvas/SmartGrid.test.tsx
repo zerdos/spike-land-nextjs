@@ -512,7 +512,7 @@ describe("SmartGrid", () => {
       );
 
       expect(ref).toHaveBeenCalled();
-      expect(ref.mock.calls[0][0]).toBeInstanceOf(HTMLDivElement);
+      expect(ref.mock.calls[0]![0]).toBeInstanceOf(HTMLDivElement);
     });
   });
 
@@ -528,9 +528,9 @@ describe("SmartGrid", () => {
       );
 
       const images = screen.getAllByTestId("next-image");
-      expect(images[0]).toHaveAttribute("src", mockImages[0].originalUrl);
-      expect(images[1]).toHaveAttribute("src", mockImages[1].originalUrl);
-      expect(images[2]).toHaveAttribute("src", mockImages[2].originalUrl);
+      expect(images[0]!).toHaveAttribute("src", mockImages[0]!.originalUrl);
+      expect(images[1]!).toHaveAttribute("src", mockImages[1]!.originalUrl);
+      expect(images[2]!).toHaveAttribute("src", mockImages[2]!.originalUrl);
     });
   });
 
@@ -577,7 +577,7 @@ describe("SmartGrid", () => {
 
       const images = screen.getAllByTestId("next-image");
       // First image is selected and has enhanced URL
-      expect(images[0]).toHaveAttribute("src", mockImages[0].enhancedUrl);
+      expect(images[0]!).toHaveAttribute("src", mockImages[0]!.enhancedUrl);
     });
 
     it("shows original image for selected image without enhancedUrl", () => {
@@ -592,7 +592,7 @@ describe("SmartGrid", () => {
 
       const images = screen.getAllByTestId("next-image");
       // Second image is selected but has no enhanced URL
-      expect(images[1]).toHaveAttribute("src", mockImages[1].originalUrl);
+      expect(images[1]!).toHaveAttribute("src", mockImages[1]!.originalUrl);
     });
   });
 });

@@ -32,6 +32,7 @@ describe("BlogCard", () => {
       tags: ["test", "vitest", "react"],
       image: "/images/test.jpg",
       featured: false,
+      listed: true,
     },
     slug: "test-blog-post",
     readingTime: "3 min read",

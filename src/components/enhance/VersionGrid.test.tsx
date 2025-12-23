@@ -271,7 +271,7 @@ describe("VersionGrid Component", () => {
       );
     });
 
-    const callArgs = mockFetch.mock.calls[0][1];
+    const callArgs = mockFetch.mock.calls[0]![1];
     const body = JSON.parse(callArgs.body);
     expect(body.type).toBe("ENHANCED_IMAGE_LOAD_ERROR");
     expect(body.versionId).toBe("version-1");
