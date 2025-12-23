@@ -577,7 +577,7 @@ describe("gemini-client", () => {
           config: {
             responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
-              imageSize: "2048x2048",
+              imageSize: "2K",
             },
           },
           contents: expect.arrayContaining([
@@ -623,7 +623,7 @@ describe("gemini-client", () => {
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
           config: expect.objectContaining({
-            imageConfig: { imageSize: "4096x4096" },
+            imageConfig: { imageSize: "4K" },
           }),
           contents: expect.arrayContaining([
             expect.objectContaining({
@@ -908,7 +908,7 @@ describe("gemini-client", () => {
           config: {
             responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
-              imageSize: "1024x1024",
+              imageSize: "1K",
             },
           },
           contents: expect.arrayContaining([
@@ -989,7 +989,7 @@ describe("gemini-client", () => {
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
           config: expect.objectContaining({
-            imageConfig: { imageSize: "4096x4096" },
+            imageConfig: { imageSize: "4K" },
           }),
           contents: expect.arrayContaining([
             expect.objectContaining({
@@ -1172,7 +1172,7 @@ describe("gemini-client", () => {
           config: {
             responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
-              imageSize: "1024x1024",
+              imageSize: "1K",
             },
           },
           contents: expect.arrayContaining([
@@ -1217,7 +1217,7 @@ describe("gemini-client", () => {
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
           config: expect.objectContaining({
-            imageConfig: { imageSize: "2048x2048" },
+            imageConfig: { imageSize: "2K" },
           }),
           contents: expect.arrayContaining([
             expect.objectContaining({
