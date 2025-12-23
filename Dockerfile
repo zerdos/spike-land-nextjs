@@ -97,15 +97,16 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
     yarn build
 
 # ============================================================================
-# STAGE 6: Verified Build Gate
+# STAGE 6: Type Check (parallel with build)
 # ============================================================================
-FROM build AS verified-build
-COPY --from=lint /app/package.json /tmp/lint-passed
+
+FROM source AS tsc
+RUN yarn tsc --noEmit
 
 # ============================================================================
 # STAGE 7: Test Context (copy tests AFTER build)
 # ============================================================================
-FROM verified-build AS test-source
+FROM source AS test-source
 COPY vitest.config.ts vitest.setup.ts ./
 COPY vitest.mock-*.ts vitest.mock-*.tsx ./
 COPY cucumber.js ./
@@ -237,7 +238,7 @@ ENV SHARD_INDEX=3
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
+    yarn start:server:and:test:ci 
 
 FROM e2e-test-base AS e2e-tests-4
 ARG CACHE_NS
@@ -302,6 +303,8 @@ RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 8 E2E test shards passed"
 FROM e2e-tests AS ci
 # Force unit-tests to complete by copying proof file
 COPY --from=unit-tests /tmp/unit-1.log /tmp/unit-passed
+COPY --from=lint   /app/package.json   /tmp/lint-passed
+COPY --from=tsc    /app/package.json   /tmp/tsc-passed
 RUN echo "::notice::✅ CI Pipeline Complete: Lint, Build, Unit Tests, E2E Tests"
 
 # ============================================================================
