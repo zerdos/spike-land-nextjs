@@ -6,11 +6,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EmailLogsPage from "./page";
 
-const mockFetchResponse = (data: unknown, ok = true): Promise<Response> => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const mockEmails = [
@@ -144,12 +144,7 @@ describe("EmailLogsPage", () => {
   it("should display loading state", async () => {
     vi.mocked(global.fetch).mockImplementationOnce(
       () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () => resolve(mockFetchResponse(mockResponse) as Response),
-            100,
-          )
-        ),
+        new Promise((resolve) => setTimeout(() => resolve(mockFetchResponse(mockResponse)), 100)),
     );
 
     render(<EmailLogsPage />);
@@ -306,7 +301,9 @@ describe("EmailLogsPage", () => {
     });
 
     const detailsButtons = screen.getAllByRole("button", { name: "Details" });
-    fireEvent.click(detailsButtons[0]);
+    const firstButton = detailsButtons[0];
+    expect(firstButton).toBeDefined();
+    fireEvent.click(firstButton!);
 
     expect(screen.getByText("Email Details")).toBeInTheDocument();
     expect(screen.getByText("resend_123")).toBeInTheDocument();
@@ -324,7 +321,9 @@ describe("EmailLogsPage", () => {
     });
 
     const detailsButtons = screen.getAllByRole("button", { name: "Details" });
-    fireEvent.click(detailsButtons[0]);
+    const firstButton = detailsButtons[0];
+    expect(firstButton).toBeDefined();
+    fireEvent.click(firstButton!);
 
     expect(screen.getByText("Email Details")).toBeInTheDocument();
 
@@ -347,7 +346,9 @@ describe("EmailLogsPage", () => {
     });
 
     const detailsButtons = screen.getAllByRole("button", { name: "Details" });
-    fireEvent.click(detailsButtons[0]);
+    const firstButton = detailsButtons[0];
+    expect(firstButton).toBeDefined();
+    fireEvent.click(firstButton!);
 
     expect(screen.getByText("Email Details")).toBeInTheDocument();
 

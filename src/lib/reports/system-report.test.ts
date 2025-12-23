@@ -108,13 +108,13 @@ describe("System Report Aggregator", () => {
       vi.mocked(prisma.account.groupBy).mockResolvedValue([
         { provider: "google", _count: { _all: 60 } },
         { provider: "github", _count: { _all: 40 } },
-      ]);
+      ] as never);
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(500);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.tokenTransaction.aggregate).mockResolvedValue({
         _sum: { amount: 5000 },
         _avg: { amount: null },
-        _count: 0,
+        _count: { _all: 0 },
         _max: { amount: null },
         _min: { amount: null },
       });
@@ -122,7 +122,7 @@ describe("System Report Aggregator", () => {
       vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
         _sum: { balance: 10000 },
         _avg: { balance: null },
-        _count: 0,
+        _count: { _all: 0 },
         _max: { balance: null },
         _min: { balance: null },
       });
@@ -186,12 +186,12 @@ describe("System Report Aggregator", () => {
         .mockResolvedValueOnce(30); // 30 days
 
       vi.mocked(prisma.visitorSession.findMany)
-        .mockResolvedValueOnce([{ userId: "u1" }, { userId: "u2" }]) // 7 days active
+        .mockResolvedValueOnce([{ userId: "u1" }, { userId: "u2" }] as never) // 7 days active
         .mockResolvedValueOnce([
           { userId: "u1" },
           { userId: "u2" },
           { userId: "u3" },
-        ]); // 30 days active
+        ] as never); // 30 days active
 
       const report = await generateSystemReport("30d", ["users"]);
 
@@ -207,10 +207,10 @@ describe("System Report Aggregator", () => {
         .mockResolvedValueOnce([
           { errorType: "TypeError", _count: { _all: 20 } },
           { errorType: "NetworkError", _count: { _all: 15 } },
-        ])
+        ] as never)
         .mockResolvedValueOnce([
           { sourceFile: "api/enhance.ts", _count: { _all: 25 } },
-        ]);
+        ] as never);
 
       const report = await generateSystemReport("30d", ["errors"]);
 
@@ -306,14 +306,14 @@ describe("System Report Aggregator", () => {
       vi.mocked(prisma.tokenTransaction.aggregate).mockResolvedValue({
         _sum: { amount: 5000 },
         _avg: { amount: null },
-        _count: 0,
+        _count: { _all: 0 },
         _max: { amount: null },
         _min: { amount: null },
       });
       vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
         _sum: { balance: 10000 },
         _avg: { balance: null },
-        _count: 0,
+        _count: { _all: 0 },
         _max: { balance: null },
         _min: { balance: null },
       });

@@ -68,10 +68,10 @@ describe("ImageUpload Component", () => {
     await waitFor(() => {
       expect(mockOnFilesSelected).toHaveBeenCalledTimes(1);
       // Files are processed before being passed to onFilesSelected
-      const calledFiles = mockOnFilesSelected.mock.calls[0][0] as File[];
+      const calledFiles = mockOnFilesSelected.mock.calls[0]?.[0] as File[];
       expect(calledFiles).toHaveLength(1);
-      expect(calledFiles[0].name).toBe("test.webp");
-      expect(calledFiles[0].type).toBe("image/webp");
+      expect(calledFiles[0]!.name).toBe("test.webp");
+      expect(calledFiles[0]!.type).toBe("image/webp");
     });
   });
 
@@ -95,10 +95,10 @@ describe("ImageUpload Component", () => {
     await waitFor(() => {
       expect(mockOnFilesSelected).toHaveBeenCalledTimes(1);
       // Files are processed before being passed to onFilesSelected
-      const calledFiles = mockOnFilesSelected.mock.calls[0][0] as File[];
+      const calledFiles = mockOnFilesSelected.mock.calls[0]?.[0] as File[];
       expect(calledFiles).toHaveLength(2);
-      expect(calledFiles[0].name).toBe("test1.webp");
-      expect(calledFiles[1].name).toBe("test2.webp");
+      expect(calledFiles[0]!.name).toBe("test1.webp");
+      expect(calledFiles[1]!.name).toBe("test2.webp");
     });
   });
 

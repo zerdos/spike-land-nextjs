@@ -252,10 +252,10 @@ describe("FacebookMarketingClient", () => {
       const accounts = await client.getAccounts();
 
       expect(accounts).toHaveLength(1);
-      expect(accounts[0].platform).toBe("FACEBOOK");
-      expect(accounts[0].accountId).toBe("123");
-      expect(accounts[0].accountName).toBe("Test Account");
-      expect(accounts[0].isActive).toBe(true);
+      expect(accounts[0]!.platform).toBe("FACEBOOK");
+      expect(accounts[0]!.accountId).toBe("123");
+      expect(accounts[0]!.accountName).toBe("Test Account");
+      expect(accounts[0]!.isActive).toBe(true);
     });
   });
 
@@ -288,12 +288,12 @@ describe("FacebookMarketingClient", () => {
       const campaigns = await client.listCampaigns("act_123");
 
       expect(campaigns).toHaveLength(1);
-      expect(campaigns[0].id).toBe("campaign_123");
-      expect(campaigns[0].name).toBe("Test Campaign");
-      expect(campaigns[0].status).toBe("ACTIVE");
-      expect(campaigns[0].objective).toBe("AWARENESS");
-      expect(campaigns[0].budgetType).toBe("DAILY");
-      expect(campaigns[0].budgetAmount).toBe(1000);
+      expect(campaigns[0]!.id).toBe("campaign_123");
+      expect(campaigns[0]!.name).toBe("Test Campaign");
+      expect(campaigns[0]!.status).toBe("ACTIVE");
+      expect(campaigns[0]!.objective).toBe("AWARENESS");
+      expect(campaigns[0]!.budgetType).toBe("DAILY");
+      expect(campaigns[0]!.budgetAmount).toBe(1000);
     });
 
     it("should handle account ID with act_ prefix", async () => {
@@ -308,7 +308,7 @@ describe("FacebookMarketingClient", () => {
       await client.listCampaigns("act_123");
 
       expect(mockFetch).toHaveBeenCalled();
-      const url = mockFetch.mock.calls[0][0];
+      const url = mockFetch.mock.calls[0]![0];
       expect(url).toContain("/act_123/campaigns");
     });
 
@@ -324,7 +324,7 @@ describe("FacebookMarketingClient", () => {
       await client.listCampaigns("123");
 
       expect(mockFetch).toHaveBeenCalled();
-      const url = mockFetch.mock.calls[0][0];
+      const url = mockFetch.mock.calls[0]![0];
       expect(url).toContain("/act_123/campaigns");
     });
   });

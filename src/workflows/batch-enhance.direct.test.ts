@@ -320,7 +320,7 @@ describe("batch-enhance.direct", () => {
 
       await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(console.error).toHaveBeenCalledWith(
@@ -334,7 +334,7 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(result.results[0]).toEqual({
@@ -355,7 +355,7 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(result.results[0]).toEqual({
@@ -371,7 +371,7 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(result.results[0]).toEqual({
@@ -419,7 +419,7 @@ describe("batch-enhance.direct", () => {
       const result = await batchEnhanceImagesDirect({
         ...validInput,
         tier: "TIER_2K",
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       // Verify the job is marked as refunded
@@ -441,7 +441,7 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(result.results[0]).toEqual({
@@ -457,7 +457,7 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
       expect(result.results[0]).toEqual({
@@ -466,7 +466,7 @@ describe("batch-enhance.direct", () => {
         refunded: false,
         error: "Failed to create job",
       });
-      expect(result.results[0].jobId).toBeUndefined();
+      expect(result.results[0]!.jobId).toBeUndefined();
     });
 
     it("should include error message and refunded flag in failed results", async () => {
@@ -477,11 +477,11 @@ describe("batch-enhance.direct", () => {
 
       const result = await batchEnhanceImagesDirect({
         ...validInput,
-        images: [validInput.images[0]],
+        images: [validInput.images[0]!],
       });
 
-      expect(result.results[0].error).toBe("Specific error message");
-      expect(result.results[0].refunded).toBe(true);
+      expect(result.results[0]!.error).toBe("Specific error message");
+      expect(result.results[0]!.refunded).toBe(true);
     });
   });
 });

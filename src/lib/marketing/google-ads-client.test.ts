@@ -338,9 +338,9 @@ describe("GoogleAdsClient", () => {
       const accounts = await client.getAccounts();
 
       expect(accounts).toHaveLength(2);
-      expect(accounts[0].platform).toBe("GOOGLE_ADS");
-      expect(accounts[0].accountId).toBe("1234567890");
-      expect(accounts[0].accountName).toBe("Test Account 1");
+      expect(accounts[0]!.platform).toBe("GOOGLE_ADS");
+      expect(accounts[0]!.accountId).toBe("1234567890");
+      expect(accounts[0]!.accountName).toBe("Test Account 1");
     });
 
     it("should skip inaccessible customers", async () => {
@@ -379,7 +379,7 @@ describe("GoogleAdsClient", () => {
       const accounts = await client.getAccounts();
 
       expect(accounts).toHaveLength(1);
-      expect(accounts[0].accountId).toBe("1234567890");
+      expect(accounts[0]!.accountId).toBe("1234567890");
     });
   });
 
@@ -417,12 +417,12 @@ describe("GoogleAdsClient", () => {
       const campaigns = await client.listCampaigns("123-456-789");
 
       expect(campaigns).toHaveLength(1);
-      expect(campaigns[0].id).toBe("456");
-      expect(campaigns[0].name).toBe("Test Campaign");
-      expect(campaigns[0].status).toBe("ACTIVE");
-      expect(campaigns[0].objective).toBe("TRAFFIC");
-      expect(campaigns[0].budgetType).toBe("DAILY");
-      expect(campaigns[0].budgetAmount).toBe(10000); // Converted to cents
+      expect(campaigns[0]!.id).toBe("456");
+      expect(campaigns[0]!.name).toBe("Test Campaign");
+      expect(campaigns[0]!.status).toBe("ACTIVE");
+      expect(campaigns[0]!.objective).toBe("TRAFFIC");
+      expect(campaigns[0]!.budgetType).toBe("DAILY");
+      expect(campaigns[0]!.budgetAmount).toBe(10000); // Converted to cents
     });
 
     it("should handle customer ID with dashes", async () => {
@@ -437,7 +437,7 @@ describe("GoogleAdsClient", () => {
       await client.listCampaigns("123-456-789");
 
       expect(mockFetch).toHaveBeenCalled();
-      const url = mockFetch.mock.calls[0][0];
+      const url = mockFetch.mock.calls[0]![0];
       expect(url).toContain("/customers/123456789/");
     });
   });
@@ -626,10 +626,10 @@ describe("GoogleAdsClient", () => {
 
       const campaigns = await client.listCampaigns("123");
 
-      expect(campaigns[0].startDate).toBeInstanceOf(Date);
-      expect(campaigns[0].startDate?.getFullYear()).toBe(2025);
-      expect(campaigns[0].startDate?.getMonth()).toBe(0); // January
-      expect(campaigns[0].startDate?.getDate()).toBe(15);
+      expect(campaigns[0]!.startDate).toBeInstanceOf(Date);
+      expect(campaigns[0]!.startDate?.getFullYear()).toBe(2025);
+      expect(campaigns[0]!.startDate?.getMonth()).toBe(0); // January
+      expect(campaigns[0]!.startDate?.getDate()).toBe(15);
     });
 
     it("should parse YYYY-MM-DD date format", async () => {
@@ -660,7 +660,7 @@ describe("GoogleAdsClient", () => {
 
       const campaigns = await client.listCampaigns("123");
 
-      expect(campaigns[0].startDate).toBeInstanceOf(Date);
+      expect(campaigns[0]!.startDate).toBeInstanceOf(Date);
     });
   });
 });

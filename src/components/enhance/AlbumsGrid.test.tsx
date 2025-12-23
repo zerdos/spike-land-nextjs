@@ -232,10 +232,11 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders two image mosaic correctly", () => {
+    const baseAlbum = mockAlbums[0];
     const twoImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "two-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 2),
+      previewImages: baseAlbum.previewImages.slice(0, 2),
     };
 
     render(<AlbumsGrid albums={[twoImageAlbum]} />);
@@ -245,10 +246,11 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders three image mosaic correctly", () => {
+    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "three-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 3),
+      previewImages: baseAlbum.previewImages.slice(0, 3),
     };
 
     render(<AlbumsGrid albums={[threeImageAlbum]} />);
@@ -258,10 +260,11 @@ describe("AlbumsGrid", () => {
   });
 
   it("limits mosaic to 4 images maximum", () => {
+    const baseAlbum = mockAlbums[0];
     const manyImagesAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       previewImages: [
-        ...mockAlbums[0].previewImages,
+        ...baseAlbum.previewImages,
         { id: "img-5", url: "https://example.com/img5.jpg", name: "Extra1" },
         { id: "img-6", url: "https://example.com/img6.jpg", name: "Extra2" },
       ],
@@ -274,8 +277,9 @@ describe("AlbumsGrid", () => {
   });
 
   it("truncates long album names with line-clamp", () => {
+    const baseAlbum = mockAlbums[0];
     const longNameAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       name: "This is a very long album name that should be truncated when displayed",
     };
 
@@ -326,8 +330,9 @@ describe("AlbumsGrid", () => {
   });
 
   it("falls back to 'Album image' when image name is empty", () => {
+    const baseAlbum = mockAlbums[0];
     const albumWithEmptyName = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       previewImages: [{
         id: "img-1",
         url: "https://example.com/img1.jpg",
@@ -421,10 +426,11 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders mosaic with 4 images without special layout classes", () => {
+    const baseAlbum = mockAlbums[0];
     const fourImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "four-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 4),
+      previewImages: baseAlbum.previewImages.slice(0, 4),
     };
 
     const { container } = render(<AlbumsGrid albums={[fourImageAlbum]} />);
@@ -447,10 +453,11 @@ describe("AlbumsGrid", () => {
   });
 
   it("renders first image with row-span-2 when album has exactly 3 images", () => {
+    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "three-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 3),
+      previewImages: baseAlbum.previewImages.slice(0, 3),
     };
 
     const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);
@@ -459,17 +466,18 @@ describe("AlbumsGrid", () => {
     const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
     expect(mosaicGrid).toBeTruthy();
 
-    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
-    expect(imageContainers.length).toBe(3);
+    const imageContainers = mosaicGrid?.querySelectorAll(":scope > .relative");
+    expect(imageContainers?.length).toBe(3);
     // First container should have row-span-2
-    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
+    expect(imageContainers?.[0]?.classList.contains("row-span-2")).toBe(true);
   });
 
   it("renders images with row-span-2 when album has exactly 2 images", () => {
+    const baseAlbum = mockAlbums[0];
     const twoImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "two-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 2),
+      previewImages: baseAlbum.previewImages.slice(0, 2),
     };
 
     const { container } = render(<AlbumsGrid albums={[twoImageAlbum]} />);
@@ -477,18 +485,20 @@ describe("AlbumsGrid", () => {
     const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
     expect(mosaicGrid).toBeTruthy();
 
-    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
-    expect(imageContainers.length).toBe(2);
+    const imageContainers = mosaicGrid?.querySelectorAll(":scope > .relative");
+    expect(imageContainers?.length).toBe(2);
     // Both containers should have row-span-2
-    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
-    expect(imageContainers[1].classList.contains("row-span-2")).toBe(true);
+    expect(imageContainers?.[0]?.classList.contains("row-span-2")).toBe(true);
+    expect(imageContainers?.[1]?.classList.contains("row-span-2")).toBe(true);
   });
 
   it("renders single image with col-span-2 and row-span-2", () => {
+    const baseAlbum = mockAlbums[0];
+    const firstPreviewImage = baseAlbum.previewImages[0];
     const singleImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "single-img-album",
-      previewImages: [mockAlbums[0].previewImages[0]],
+      previewImages: [firstPreviewImage],
     };
 
     const { container } = render(<AlbumsGrid albums={[singleImageAlbum]} />);
@@ -496,18 +506,19 @@ describe("AlbumsGrid", () => {
     const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
     expect(mosaicGrid).toBeTruthy();
 
-    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
-    expect(imageContainers.length).toBe(1);
+    const imageContainers = mosaicGrid?.querySelectorAll(":scope > .relative");
+    expect(imageContainers?.length).toBe(1);
     // Single image container should have both col-span-2 and row-span-2
-    expect(imageContainers[0].classList.contains("col-span-2")).toBe(true);
-    expect(imageContainers[0].classList.contains("row-span-2")).toBe(true);
+    expect(imageContainers?.[0]?.classList.contains("col-span-2")).toBe(true);
+    expect(imageContainers?.[0]?.classList.contains("row-span-2")).toBe(true);
   });
 
   it("verifies non-first images in 3-image mosaic do not have row-span-2", () => {
+    const baseAlbum = mockAlbums[0];
     const threeImageAlbum = {
-      ...mockAlbums[0],
+      ...baseAlbum,
       id: "three-img-album",
-      previewImages: mockAlbums[0].previewImages.slice(0, 3),
+      previewImages: baseAlbum.previewImages.slice(0, 3),
     };
 
     const { container } = render(<AlbumsGrid albums={[threeImageAlbum]} />);
@@ -515,11 +526,11 @@ describe("AlbumsGrid", () => {
     const mosaicGrid = container.querySelector(".grid.grid-cols-2.gap-0\\.5");
     expect(mosaicGrid).toBeTruthy();
 
-    const imageContainers = mosaicGrid!.querySelectorAll(":scope > .relative");
-    expect(imageContainers.length).toBe(3);
+    const imageContainers = mosaicGrid?.querySelectorAll(":scope > .relative");
+    expect(imageContainers?.length).toBe(3);
     // Second and third containers should NOT have row-span-2 (only first does for 3 images)
-    expect(imageContainers[1].classList.contains("row-span-2")).toBe(false);
-    expect(imageContainers[2].classList.contains("row-span-2")).toBe(false);
+    expect(imageContainers?.[1]?.classList.contains("row-span-2")).toBe(false);
+    expect(imageContainers?.[2]?.classList.contains("row-span-2")).toBe(false);
   });
 
   describe("file drop functionality", () => {

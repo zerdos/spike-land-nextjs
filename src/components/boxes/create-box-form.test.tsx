@@ -1,3 +1,4 @@
+import type { BoxTier } from "@prisma/client";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ vi.mock("sonner", () => ({
 global.fetch = vi.fn();
 
 describe("CreateBoxForm", () => {
-  const mockTiers = [
+  const mockTiers: BoxTier[] = [
     {
       id: "tier-1",
       name: "Basic",
@@ -53,7 +54,8 @@ describe("CreateBoxForm", () => {
       ram: 1024,
       storage: 10,
       pricePerHour: 5,
-      tokenCost: 100,
+      pricePerMonth: 100,
+      sortOrder: 0,
       isActive: true,
       createdAt: new Date("2025-01-01"),
       updatedAt: new Date("2025-01-01"),
@@ -66,7 +68,8 @@ describe("CreateBoxForm", () => {
       ram: 2048,
       storage: 20,
       pricePerHour: 10,
-      tokenCost: 200,
+      pricePerMonth: 200,
+      sortOrder: 1,
       isActive: true,
       createdAt: new Date("2025-01-01"),
       updatedAt: new Date("2025-01-01"),
@@ -79,7 +82,8 @@ describe("CreateBoxForm", () => {
       ram: 4096,
       storage: 50,
       pricePerHour: 20,
-      tokenCost: 400,
+      pricePerMonth: 400,
+      sortOrder: 2,
       isActive: true,
       createdAt: new Date("2025-01-01"),
       updatedAt: new Date("2025-01-01"),
@@ -609,7 +613,7 @@ describe("CreateBoxForm", () => {
     });
 
     it("handles tier with 0 CPU correctly", () => {
-      const tierWithZeroCpu = {
+      const tierWithZeroCpu: BoxTier = {
         ...mockTiers[0],
         cpu: 0,
       };
@@ -619,7 +623,7 @@ describe("CreateBoxForm", () => {
     });
 
     it("handles tier with large RAM correctly", () => {
-      const tierWithLargeRam = {
+      const tierWithLargeRam: BoxTier = {
         ...mockTiers[0],
         ram: 16384, // 16GB
       };

@@ -1,3 +1,4 @@
+import type { Box, BoxTier } from "@prisma/client";
 import { BoxActionType, BoxStatus } from "@prisma/client";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -41,8 +42,10 @@ Object.defineProperty(window, "confirm", {
 });
 Object.defineProperty(window, "prompt", { value: mockPrompt, writable: true });
 
+type BoxWithTier = Box & { tier: BoxTier; };
+
 describe("BoxCard", () => {
-  const mockTier = {
+  const mockTier: BoxTier = {
     id: "tier-1",
     name: "Basic",
     description: "Basic tier",
@@ -50,12 +53,14 @@ describe("BoxCard", () => {
     ram: 4096,
     storage: 50,
     pricePerHour: 5,
+    pricePerMonth: 100,
+    sortOrder: 0,
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  const mockBox = {
+  const mockBox: BoxWithTier = {
     id: "box-1",
     name: "Test Box",
     description: "Test description",
@@ -63,12 +68,11 @@ describe("BoxCard", () => {
     connectionUrl: "https://example.com/vnc",
     userId: "user-1",
     tierId: "tier-1",
+    storageVolumeId: null,
+    deletedAt: null,
     tier: mockTier,
     createdAt: new Date(),
     updatedAt: new Date(),
-    lastStartedAt: new Date(),
-    lastStoppedAt: null,
-    currentSpendTokens: 0,
   };
 
   beforeEach(() => {
@@ -592,14 +596,14 @@ describe("BoxCard", () => {
 
   describe("Edge Cases", () => {
     it("handles box with zero storage", () => {
-      const zeroStorageTier = { ...mockTier, storage: 0 };
+      const zeroStorageTier: BoxTier = { ...mockTier, storage: 0 };
       render(<BoxCard box={{ ...mockBox, tier: zeroStorageTier }} />);
 
       expect(screen.getByText(/Storage: 0GB/)).toBeInTheDocument();
     });
 
     it("handles box with large RAM values", () => {
-      const largeRamTier = { ...mockTier, ram: 32768 };
+      const largeRamTier: BoxTier = { ...mockTier, ram: 32768 };
       render(<BoxCard box={{ ...mockBox, tier: largeRamTier }} />);
 
       expect(screen.getByText(/32GB RAM/)).toBeInTheDocument();

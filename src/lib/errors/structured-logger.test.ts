@@ -25,7 +25,7 @@ describe("structured-logger", () => {
       // Store original NODE_ENV
       originalEnv = process.env.NODE_ENV;
       // Set to development so logs are output
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       vi.spyOn(console, "log").mockImplementation(() => {});
       consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -37,7 +37,7 @@ describe("structured-logger", () => {
     afterEach(() => {
       // Restore original NODE_ENV
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });
@@ -170,7 +170,7 @@ describe("structured-logger", () => {
       // Store original NODE_ENV
       originalEnv = process.env.NODE_ENV;
       // Set to development so logs are output
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       vi.spyOn(console, "log").mockImplementation(() => {});
       consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
@@ -179,7 +179,7 @@ describe("structured-logger", () => {
     afterEach(() => {
       // Restore original NODE_ENV
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });
@@ -202,13 +202,13 @@ describe("structured-logger", () => {
 
     beforeEach(() => {
       originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
       consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     });
 
     afterEach(() => {
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });
@@ -241,7 +241,7 @@ describe("structured-logger", () => {
 
     beforeEach(() => {
       originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       vi.spyOn(console, "log").mockImplementation(() => {});
       vi.spyOn(console, "info").mockImplementation(() => {});
       consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -251,7 +251,7 @@ describe("structured-logger", () => {
 
     afterEach(() => {
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });
@@ -299,14 +299,14 @@ describe("structured-logger", () => {
 
     beforeEach(() => {
       originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       vi.spyOn(console, "log").mockImplementation(() => {});
       consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     });
 
     afterEach(() => {
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });
@@ -333,14 +333,14 @@ describe("structured-logger", () => {
 
     beforeEach(() => {
       originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       vi.spyOn(console, "log").mockImplementation(() => {});
       consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
     });
 
     afterEach(() => {
       if (originalEnv !== undefined) {
-        process.env.NODE_ENV = originalEnv;
+        vi.stubEnv("NODE_ENV", originalEnv);
       }
       vi.restoreAllMocks();
     });

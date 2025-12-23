@@ -1,7 +1,17 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { DataConnection, MediaConnection, Peer } from "peerjs";
+import type { DataConnection, MediaConnection, Peer, PeerError } from "peerjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { usePeerConnection } from "./usePeerConnection";
+
+// Helper to create mock PeerError
+function createMockPeerError(
+  message: string,
+  type: "negotiation-failed" | "connection-closed" = "negotiation-failed",
+): PeerError<typeof type> {
+  const error = new Error(message) as PeerError<typeof type>;
+  error.type = type;
+  return error;
+}
 
 // Mock getStreamMetadata
 vi.mock("@apps/display/lib/webrtc/utils", () => ({
@@ -139,7 +149,8 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockDataConnection.on);
-    const closeHandler = onHandler.mock.calls.find((call) => call[0] === "close")?.[1];
+    expect(onHandler).toBeDefined();
+    const closeHandler = onHandler!.mock.calls.find((call) => call[0] === "close")?.[1];
 
     act(() => {
       closeHandler?.();
@@ -159,7 +170,8 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockDataConnection.on);
-    const errorHandler = onHandler.mock.calls.find((call) => call[0] === "error")?.[1];
+    expect(onHandler).toBeDefined();
+    const errorHandler = onHandler!.mock.calls.find((call) => call[0] === "error")?.[1];
 
     act(() => {
       errorHandler?.(new Error("Connection error"));
@@ -179,7 +191,8 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockMediaConnection.on);
-    const streamHandler = onHandler.mock.calls.find((call) => call[0] === "stream")?.[1];
+    expect(onHandler).toBeDefined();
+    const streamHandler = onHandler!.mock.calls.find((call) => call[0] === "stream")?.[1];
 
     act(() => {
       streamHandler?.(mockStream);
@@ -205,7 +218,8 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockMediaConnection.on);
-    const closeHandler = onHandler.mock.calls.find((call) => call[0] === "close")?.[1];
+    expect(onHandler).toBeDefined();
+    const closeHandler = onHandler!.mock.calls.find((call) => call[0] === "close")?.[1];
 
     act(() => {
       closeHandler?.();
@@ -223,10 +237,11 @@ describe("usePeerConnection", () => {
     });
 
     const onHandler = vi.mocked(mockMediaConnection.on);
-    const errorHandler = onHandler.mock.calls.find((call) => call[0] === "error")?.[1];
+    expect(onHandler).toBeDefined();
+    const errorHandler = onHandler!.mock.calls.find((call) => call[0] === "error")?.[1];
 
     act(() => {
-      errorHandler?.(new Error("Media error"));
+      errorHandler?.(createMockPeerError("Media error"));
     });
 
     // Just verify it doesn't throw
@@ -321,7 +336,7 @@ describe("usePeerConnection", () => {
     const errorHandler = onHandler.mock.calls.find((call) => call[0] === "error")?.[1];
 
     act(() => {
-      errorHandler?.(new Error("Call error"));
+      errorHandler?.(createMockPeerError("Call error"));
     });
 
     await waitFor(() => {
@@ -331,7 +346,7 @@ describe("usePeerConnection", () => {
   });
 
   it("should send message to specific client", async () => {
-    mockDataConnection.open = true;
+    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -349,7 +364,7 @@ describe("usePeerConnection", () => {
   });
 
   it("should not send message if connection is not open", async () => {
-    mockDataConnection.open = false;
+    Object.defineProperty(mockDataConnection, "open", { value: false, writable: true });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -378,7 +393,7 @@ describe("usePeerConnection", () => {
       .mockReturnValueOnce(mockDataConnection as DataConnection)
       .mockReturnValueOnce(mockDataConnection2 as DataConnection);
 
-    mockDataConnection.open = true;
+    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -398,7 +413,7 @@ describe("usePeerConnection", () => {
   });
 
   it("should disconnect from specific peer", async () => {
-    mockDataConnection.open = true;
+    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
     const mockTrack = { stop: vi.fn() };
     const streamWithTracks = {
       getTracks: vi.fn(() => [mockTrack]),
@@ -412,7 +427,8 @@ describe("usePeerConnection", () => {
 
     // Simulate receiving stream
     const onHandler = vi.mocked(mockMediaConnection.on);
-    const streamHandler = onHandler.mock.calls.find((call) => call[0] === "stream")?.[1];
+    expect(onHandler).toBeDefined();
+    const streamHandler = onHandler!.mock.calls.find((call) => call[0] === "stream")?.[1];
     act(() => {
       streamHandler?.(streamWithTracks);
     });
@@ -486,7 +502,8 @@ describe("usePeerConnection", () => {
 
     // Get the connection handler
     const peerOnHandler = vi.mocked(mockPeer.on);
-    const connectionHandler = peerOnHandler.mock.calls.find(
+    expect(peerOnHandler).toBeDefined();
+    const connectionHandler = peerOnHandler!.mock.calls.find(
       (call) => call[0] === "connection",
     )?.[1] as (conn: DataConnection) => void;
 

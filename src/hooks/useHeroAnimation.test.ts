@@ -2,6 +2,9 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useHeroAnimation } from "./useHeroAnimation";
 
+// Type for accessing CSS custom properties in animation styles
+type AnimationStylesWithCustomProps = Record<string, string>;
+
 describe("useHeroAnimation", () => {
   const createMockRect = (overrides: Partial<DOMRect> = {}): DOMRect => ({
     top: 100,
@@ -38,9 +41,10 @@ describe("useHeroAnimation", () => {
 
       expect(result.current.isAnimating).toBe(false);
       expect(result.current.animationRef.current).toBeNull();
-      expect(result.current.animationStyles["--hero-x"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-y"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-scale"]).toBe("1");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-x"]).toBe("0px");
+      expect(styles["--hero-y"]).toBe("0px");
+      expect(styles["--hero-scale"]).toBe("1");
     });
 
     it("should initialize with custom animation duration", () => {
@@ -53,7 +57,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      expect(result.current.animationStyles["--hero-duration"]).toBe("500ms");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-duration"]).toBe("500ms");
     });
 
     it("should use default animation duration of 300ms", () => {
@@ -65,7 +70,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      expect(result.current.animationStyles["--hero-duration"]).toBe("300ms");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-duration"]).toBe("300ms");
     });
   });
 
@@ -204,9 +210,10 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      expect(result.current.animationStyles["--hero-x"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-y"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-scale"]).toBe("1");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-x"]).toBe("0px");
+      expect(styles["--hero-y"]).toBe("0px");
+      expect(styles["--hero-scale"]).toBe("1");
     });
 
     it("should return default styles when inactive", () => {
@@ -218,9 +225,10 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      expect(result.current.animationStyles["--hero-x"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-y"]).toBe("0px");
-      expect(result.current.animationStyles["--hero-scale"]).toBe("1");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-x"]).toBe("0px");
+      expect(styles["--hero-y"]).toBe("0px");
+      expect(styles["--hero-scale"]).toBe("1");
     });
 
     it("should calculate styles when animationRef has element for expand", () => {
@@ -283,7 +291,8 @@ describe("useHeroAnimation", () => {
       // Target center: (0 + 400/2, 0 + 300/2) = (200, 150)
       // Translation: (100 - 200, 100 - 150) = (-100, -50)
       // Scale: min(100/400, 100/300) = min(0.25, 0.333) = 0.25
-      expect(result2.current.animationStyles["--hero-duration"]).toBe("300ms");
+      const styles2 = result2.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles2["--hero-duration"]).toBe("300ms");
     });
 
     it("should calculate styles for collapse direction", () => {
@@ -321,7 +330,8 @@ describe("useHeroAnimation", () => {
           .current = mockElement;
       });
 
-      expect(result.current.animationStyles["--hero-duration"]).toBe("300ms");
+      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      expect(styles["--hero-duration"]).toBe("300ms");
     });
   });
 

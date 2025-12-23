@@ -69,10 +69,10 @@ describe("coverage-helper", () => {
       const result = convertToIstanbul(v8Coverage);
 
       expect(result).toHaveProperty("_next/static/chunks/app.js");
-      const fileCov = result["_next/static/chunks/app.js"];
+      const fileCov = result["_next/static/chunks/app.js"]!;
       expect(fileCov.path).toBe("_next/static/chunks/app.js");
       expect(Object.keys(fileCov.fnMap)).toHaveLength(1);
-      expect(fileCov.fnMap["0"].name).toBe("myFunction");
+      expect(fileCov.fnMap["0"]!.name).toBe("myFunction");
       expect(fileCov.f["0"]).toBe(1); // covered
     });
 
@@ -92,7 +92,7 @@ describe("coverage-helper", () => {
       ];
 
       const result = convertToIstanbul(v8Coverage);
-      const fileCov = result["uncovered.js"];
+      const fileCov = result["uncovered.js"]!;
 
       expect(fileCov.f["0"]).toBe(0); // not covered
     });
@@ -113,9 +113,9 @@ describe("coverage-helper", () => {
       ];
 
       const result = convertToIstanbul(v8Coverage);
-      const fileCov = result["anon.js"];
+      const fileCov = result["anon.js"]!;
 
-      expect(fileCov.fnMap["0"].name).toBe("(anonymous)");
+      expect(fileCov.fnMap["0"]!.name).toBe("(anonymous)");
     });
 
     it("skips functions with no ranges", () => {
@@ -134,7 +134,7 @@ describe("coverage-helper", () => {
       ];
 
       const result = convertToIstanbul(v8Coverage);
-      const fileCov = result["empty.js"];
+      const fileCov = result["empty.js"]!;
 
       expect(Object.keys(fileCov.fnMap)).toHaveLength(0);
     });
@@ -194,11 +194,11 @@ describe("coverage-helper", () => {
       ];
 
       const result = convertToIstanbul(v8Coverage);
-      const fileCov = result["merged.js"];
+      const fileCov = result["merged.js"]!;
 
       expect(Object.keys(fileCov.fnMap)).toHaveLength(2);
-      expect(fileCov.fnMap["0"].name).toBe("fn1");
-      expect(fileCov.fnMap["1"].name).toBe("fn2");
+      expect(fileCov.fnMap["0"]!.name).toBe("fn1");
+      expect(fileCov.fnMap["1"]!.name).toBe("fn2");
     });
 
     it("creates statement entries for each range", () => {
@@ -220,7 +220,7 @@ describe("coverage-helper", () => {
       ];
 
       const result = convertToIstanbul(v8Coverage);
-      const fileCov = result["statements.js"];
+      const fileCov = result["statements.js"]!;
 
       expect(Object.keys(fileCov.statementMap)).toHaveLength(2);
       expect(fileCov.s["0"]).toBe(5);

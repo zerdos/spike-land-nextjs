@@ -127,7 +127,7 @@ describe("PurchaseModal", () => {
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      const buyButton = screen.getAllByText("Buy")[0];
+      const buyButton = screen.getAllByText("Buy")[0]!;
       fireEvent.click(buyButton);
     });
 
@@ -148,17 +148,17 @@ describe("PurchaseModal", () => {
     global.fetch = mockFetch;
 
     const originalLocation = window.location;
-    delete (window as { location?: typeof window.location; }).location;
-    window.location = {
+    delete (window as unknown as { location?: Location; }).location;
+    (window as unknown as { location: Partial<Location>; }).location = {
       ...originalLocation,
       href: "",
-    } as typeof window.location;
+    };
 
     render(<PurchaseModal />);
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      const buyButton = screen.getAllByText("Buy")[0];
+      const buyButton = screen.getAllByText("Buy")[0]!;
       fireEvent.click(buyButton);
     });
 
@@ -166,7 +166,7 @@ describe("PurchaseModal", () => {
       expect(window.location.href).toBe("https://checkout.stripe.com/test");
     });
 
-    window.location = originalLocation;
+    (window as unknown as { location: Location; }).location = originalLocation;
   });
 
   it("handles checkout error gracefully", async () => {
@@ -180,7 +180,7 @@ describe("PurchaseModal", () => {
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      const buyButton = screen.getAllByText("Buy")[0];
+      const buyButton = screen.getAllByText("Buy")[0]!;
       fireEvent.click(buyButton);
     });
 
@@ -207,7 +207,7 @@ describe("PurchaseModal", () => {
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      const buyButton = screen.getAllByText("Buy")[0];
+      const buyButton = screen.getAllByText("Buy")[0]!;
       fireEvent.click(buyButton);
     });
 
@@ -226,7 +226,7 @@ describe("PurchaseModal", () => {
     fireEvent.click(screen.getByText("Get Tokens"));
 
     await waitFor(() => {
-      const buyButton = screen.getAllByText("Buy")[0];
+      const buyButton = screen.getAllByText("Buy")[0]!;
       fireEvent.click(buyButton);
     });
 
