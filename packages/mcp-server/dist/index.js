@@ -25,6 +25,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { SpikeLandClient } from "./client.js";
+import { getJulesTools, handleJulesToolCall, isJulesAvailable } from "./tools/jules/index.js";
 // Supported aspect ratios
 const SUPPORTED_ASPECT_RATIOS = [
     "1:1",
@@ -231,9 +232,11 @@ async function main() {
             tools: {},
         },
     });
+    // Get all available tools (including Jules if configured)
+    const allTools = [...tools, ...getJulesTools()];
     // Handle list tools request
     server.setRequestHandler(ListToolsRequestSchema, async () => {
-        return { tools };
+        return { tools: allTools };
     });
     // Handle tool calls
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -422,6 +425,10 @@ Get more tokens at: https://spike.land/settings`,
                     };
                 }
                 default:
+                    // Check if it's a Jules tool
+                    if (name.startsWith("jules_") && isJulesAvailable()) {
+                        return await handleJulesToolCall(name, args);
+                    }
                     return {
                         content: [
                             {
@@ -452,6 +459,9 @@ Get more tokens at: https://spike.land/settings`,
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("Spike Land MCP Server started");
+    if (isJulesAvailable()) {
+        console.error("Jules integration enabled (JULES_API_KEY detected)");
+    }
 }
 main().catch((error) => {
     console.error("Fatal error:", error);
