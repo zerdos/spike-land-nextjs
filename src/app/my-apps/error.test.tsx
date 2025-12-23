@@ -1,13 +1,11 @@
-import * as errorLoggerModule from "@/lib/error-logger";
+import * as consoleCaptureModule from "@/lib/errors/console-capture.client";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MyAppsError from "./error";
 
-vi.mock("@/lib/error-logger", () => ({
-  errorLogger: {
-    logError: vi.fn(),
-  },
+vi.mock("@/lib/errors/console-capture.client", () => ({
+  reportErrorBoundary: vi.fn(),
 }));
 
 describe("MyAppsError (My Apps Error Boundary)", () => {
@@ -86,31 +84,11 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
     expect(window.location.href).toBe("/");
   });
 
-  it("should log error with correct route on mount", () => {
+  it("should report error on mount", () => {
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledWith(
       mockError,
-      {
-        route: "/my-apps",
-        digest: undefined,
-      },
-    );
-  });
-
-  it("should log error with digest when provided", () => {
-    const errorWithDigest = Object.assign(new Error("Error with digest"), {
-      digest: "xyz789",
-    });
-
-    render(<MyAppsError error={errorWithDigest} reset={mockReset} />);
-
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
-      errorWithDigest,
-      {
-        route: "/my-apps",
-        digest: "xyz789",
-      },
     );
   });
 
@@ -129,17 +107,17 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
       .toBeInTheDocument();
   });
 
-  it("should re-log error if error changes", () => {
+  it("should re-report error if error changes", () => {
     const { rerender } = render(
       <MyAppsError error={mockError} reset={mockReset} />,
     );
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
 
     const newError = new Error("New error");
     rerender(<MyAppsError error={newError} reset={mockReset} />);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(2);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(2);
   });
 
   it("should render within container", () => {

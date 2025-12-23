@@ -1,13 +1,11 @@
-import * as errorLoggerModule from "@/lib/error-logger";
+import * as consoleCaptureModule from "@/lib/errors/console-capture.client";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ErrorPage from "./error";
 
-vi.mock("@/lib/error-logger", () => ({
-  errorLogger: {
-    logError: vi.fn(),
-  },
+vi.mock("@/lib/errors/console-capture.client", () => ({
+  reportErrorBoundary: vi.fn(),
 }));
 
 describe("Error (Root Error Boundary)", () => {
@@ -30,8 +28,7 @@ describe("Error (Root Error Boundary)", () => {
     expect(screen.getByText("Something went wrong!")).toBeInTheDocument();
     expect(
       screen.getByText("We encountered an unexpected error. Please try again."),
-    )
-      .toBeInTheDocument();
+    ).toBeInTheDocument();
     expect(screen.getByText("Test error message")).toBeInTheDocument();
   });
 
@@ -45,8 +42,9 @@ describe("Error (Root Error Boundary)", () => {
     const emptyError = new Error("");
     render(<ErrorPage error={emptyError} reset={mockReset} />);
 
-    expect(screen.getByText("An unexpected error occurred"))
-      .toBeInTheDocument();
+    expect(
+      screen.getByText("An unexpected error occurred"),
+    ).toBeInTheDocument();
   });
 
   it("should call reset when Try again button is clicked", async () => {
@@ -69,31 +67,27 @@ describe("Error (Root Error Boundary)", () => {
     expect(window.location.href).toBe("/");
   });
 
-  it("should log error on mount", () => {
+  it("should report error on mount", () => {
     render(<ErrorPage error={mockError} reset={mockReset} />);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledWith(
       mockError,
-      {
-        route: "root",
-        digest: undefined,
-      },
     );
   });
 
-  it("should log error with digest when provided", () => {
-    const errorWithDigest = Object.assign(new Error("Error with digest"), {
-      digest: "abc123",
-    });
+  it("should re-report error if error changes", () => {
+    const { rerender } = render(
+      <ErrorPage error={mockError} reset={mockReset} />,
+    );
 
-    render(<ErrorPage error={errorWithDigest} reset={mockReset} />);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
-      errorWithDigest,
-      {
-        route: "root",
-        digest: "abc123",
-      },
+    const newError = new Error("New error");
+    rerender(<ErrorPage error={newError} reset={mockReset} />);
+
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(2);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenLastCalledWith(
+      newError,
     );
   });
 
@@ -125,26 +119,6 @@ describe("Error (Root Error Boundary)", () => {
 
     const alert = screen.getByRole("alert");
     expect(alert).toBeInTheDocument();
-  });
-
-  it("should re-log error if error changes", () => {
-    const { rerender } = render(
-      <ErrorPage error={mockError} reset={mockReset} />,
-    );
-
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
-
-    const newError = new Error("New error");
-    rerender(<ErrorPage error={newError} reset={mockReset} />);
-
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(2);
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenLastCalledWith(
-      newError,
-      {
-        route: "root",
-        digest: undefined,
-      },
-    );
   });
 
   it("should center content on screen", () => {

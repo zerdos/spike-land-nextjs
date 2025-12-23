@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMounted } from "@/hooks/useMounted";
-import { tryCatch } from "@/lib/try-catch";
 import { useCallback, useEffect, useState } from "react";
 
 type ErrorEnvironment = "FRONTEND" | "BACKEND";
@@ -178,10 +177,10 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
   };
 
   // Error simulation handlers
-  const simulateFrontendError = async () => {
-    await tryCatch(
-      Promise.reject(new Error("Test frontend error - simulated for testing")),
-      { context: { route: "/admin/errors", errorCode: "TEST_FRONTEND_ERROR" } },
+  const simulateFrontendError = () => {
+    // Trigger a console.error that will be captured by the console capture system
+    console.error(
+      new Error("Test frontend error - simulated for testing"),
     );
     // Refresh after a short delay to see the error
     setTimeout(fetchErrors, 1000);

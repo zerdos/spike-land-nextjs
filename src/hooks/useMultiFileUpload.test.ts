@@ -2,17 +2,10 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMultiFileUpload } from "./useMultiFileUpload";
 
-// Mock try-catch-stats to prevent it from making fetch calls during tests
-vi.mock("@/lib/observability/try-catch-stats.client", () => ({
-  recordFrontendTryCatchEvent: vi.fn(),
-  getPendingCount: vi.fn(() => 0),
-  forceSync: vi.fn(),
-}));
-
-// Mock error-reporter to prevent it from making fetch calls during tests
-vi.mock("@/lib/errors/error-reporter", () => ({
-  captureCallSite: vi.fn(() => ({})),
-  reportError: vi.fn(),
+// Mock console-capture to prevent it from making fetch calls during tests
+vi.mock("@/lib/errors/console-capture.client", () => ({
+  initializeConsoleCapture: vi.fn(),
+  reportErrorBoundary: vi.fn(),
 }));
 
 // Mock fetch

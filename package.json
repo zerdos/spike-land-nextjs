@@ -8,6 +8,7 @@
     "build": "yarn silent:install && next build",
     "start": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -r dotenv/config .next/standalone/server.js dotenv_config_path=.env.local",
     "start:server:and:test:ci": "start-server-and-test start http://localhost:3000 test:e2e:shard",
+    "start:server:and:test:pr": "start-server-and-test dev http://localhost:3000 test:e2e:shard",
     "lint": "eslint",
     "test": "vitest",
     "test:ui": "vitest --ui",

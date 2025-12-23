@@ -1,13 +1,11 @@
-import * as errorLoggerModule from "@/lib/error-logger";
+import * as consoleCaptureModule from "@/lib/errors/console-capture.client";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import SettingsError from "./error";
 
-vi.mock("@/lib/error-logger", () => ({
-  errorLogger: {
-    logError: vi.fn(),
-  },
+vi.mock("@/lib/errors/console-capture.client", () => ({
+  reportErrorBoundary: vi.fn(),
 }));
 
 describe("SettingsError (Settings Error Boundary)", () => {
@@ -67,31 +65,11 @@ describe("SettingsError (Settings Error Boundary)", () => {
     expect(window.location.href).toBe("/");
   });
 
-  it("should log error with correct route on mount", () => {
+  it("should report error on mount", () => {
     render(<SettingsError error={mockError} reset={mockReset} />);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledWith(
       mockError,
-      {
-        route: "/settings",
-        digest: undefined,
-      },
-    );
-  });
-
-  it("should log error with digest when provided", () => {
-    const errorWithDigest = Object.assign(new Error("Error with digest"), {
-      digest: "ghi789",
-    });
-
-    render(<SettingsError error={errorWithDigest} reset={mockReset} />);
-
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledWith(
-      errorWithDigest,
-      {
-        route: "/settings",
-        digest: "ghi789",
-      },
     );
   });
 
@@ -110,17 +88,17 @@ describe("SettingsError (Settings Error Boundary)", () => {
       .toBeInTheDocument();
   });
 
-  it("should re-log error if error changes", () => {
+  it("should re-report error if error changes", () => {
     const { rerender } = render(
       <SettingsError error={mockError} reset={mockReset} />,
     );
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(1);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
 
     const newError = new Error("Updated error");
     rerender(<SettingsError error={newError} reset={mockReset} />);
 
-    expect(errorLoggerModule.errorLogger.logError).toHaveBeenCalledTimes(2);
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(2);
   });
 
   it("should render within container", () => {
