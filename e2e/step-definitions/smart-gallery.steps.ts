@@ -350,6 +350,7 @@ Then(
     const img = selected.locator("img");
     const src = await img.getAttribute("src");
     expect(src).toBeDefined();
+    return;
   },
 );
 
