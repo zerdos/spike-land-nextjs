@@ -30,11 +30,11 @@ vi.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
-const mockFetchResponse = (data: unknown, ok = true) => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const createMockJob = (overrides: Partial<McpJob> = {}): McpJob => ({
@@ -615,7 +615,7 @@ describe("McpHistoryClient", () => {
       await waitFor(() => {
         // Should not include type parameter for "all" filter
         const calls = vi.mocked(global.fetch).mock.calls;
-        const lastCall = calls[calls.length - 1][0] as string;
+        const lastCall = calls[calls.length - 1]?.[0] as string | undefined;
         expect(lastCall).not.toContain("type=");
       });
     });
@@ -653,7 +653,7 @@ describe("McpHistoryClient", () => {
 
       await waitFor(() => {
         const calls = vi.mocked(global.fetch).mock.calls;
-        const lastCall = calls[calls.length - 1][0] as string;
+        const lastCall = calls[calls.length - 1]?.[0] as string | undefined;
         expect(lastCall).toContain("offset=0");
       });
     });
@@ -879,7 +879,10 @@ describe("McpHistoryClient", () => {
 
       // Find and click the card
       const cards = document.querySelectorAll("[class*='cursor-pointer']");
-      fireEvent.click(cards[0]);
+      const firstCard = cards[0];
+      if (firstCard) {
+        fireEvent.click(firstCard);
+      }
 
       await waitFor(() => {
         expect(screen.getByText("In progress")).toBeInTheDocument();

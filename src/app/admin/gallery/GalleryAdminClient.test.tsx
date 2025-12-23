@@ -6,11 +6,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GalleryAdminClient } from "./GalleryAdminClient";
 
-const mockFetchResponse = (data: unknown, ok = true) => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const mockGalleryItems = [
@@ -195,7 +195,7 @@ describe("GalleryAdminClient", () => {
     });
 
     const editButtons = screen.getAllByText("Edit");
-    fireEvent.click(editButtons[0]);
+    fireEvent.click(editButtons[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("Edit Gallery Item")).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe("GalleryAdminClient", () => {
     });
 
     const deleteButtons = screen.getAllByText("Delete");
-    fireEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("Delete Gallery Item")).toBeInTheDocument();
@@ -239,7 +239,7 @@ describe("GalleryAdminClient", () => {
 
     // Click delete button
     const deleteButtons = screen.getAllByText("Delete");
-    fireEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("Delete Gallery Item")).toBeInTheDocument();
@@ -289,7 +289,7 @@ describe("GalleryAdminClient", () => {
 
     // Click Move Up on the second item (item2 at index 1 wants to move to item1's sortOrder which is 1)
     const moveUpButtons = screen.getAllByText("Up");
-    fireEvent.click(moveUpButtons[1]);
+    fireEvent.click(moveUpButtons[1]!);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/admin/gallery/reorder", {
@@ -326,7 +326,7 @@ describe("GalleryAdminClient", () => {
 
     // Click Move Down on the first item (item1 at index 0 wants to move to item2's sortOrder which is 2)
     const moveDownButtons = screen.getAllByText("Down");
-    fireEvent.click(moveDownButtons[0]);
+    fireEvent.click(moveDownButtons[0]!);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/admin/gallery/reorder", {

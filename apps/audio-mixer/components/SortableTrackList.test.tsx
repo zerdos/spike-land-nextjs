@@ -66,6 +66,7 @@ describe("SortableTrackList", () => {
       waveformData: [0.5],
       type: "file",
       delay: 0,
+      position: 0,
       trimStart: 0,
       trimEnd: 0,
     },
@@ -85,6 +86,7 @@ describe("SortableTrackList", () => {
       waveformData: [0.3],
       type: "recording",
       delay: 1,
+      position: 0,
       trimStart: 5,
       trimEnd: 85,
     },
@@ -119,7 +121,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const playButtons = screen.getAllByText("Play");
-    fireEvent.click(playButtons[0]);
+    fireEvent.click(playButtons[0]!);
 
     expect(defaultProps.onPlay).toHaveBeenCalledWith("track-1");
   });
@@ -128,7 +130,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const stopButtons = screen.getAllByText("Stop");
-    fireEvent.click(stopButtons[1]);
+    fireEvent.click(stopButtons[1]!);
 
     expect(defaultProps.onStop).toHaveBeenCalledWith("track-2");
   });
@@ -137,7 +139,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const volumeButtons = screen.getAllByText("Volume");
-    fireEvent.click(volumeButtons[0]);
+    fireEvent.click(volumeButtons[0]!);
 
     expect(defaultProps.onVolumeChange).toHaveBeenCalledWith("track-1", 0.5);
   });
@@ -146,7 +148,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const muteButtons = screen.getAllByText("Mute");
-    fireEvent.click(muteButtons[0]);
+    fireEvent.click(muteButtons[0]!);
 
     expect(defaultProps.onMuteToggle).toHaveBeenCalledWith("track-1");
   });
@@ -155,7 +157,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const soloButtons = screen.getAllByText("Solo");
-    fireEvent.click(soloButtons[1]);
+    fireEvent.click(soloButtons[1]!);
 
     expect(defaultProps.onSoloToggle).toHaveBeenCalledWith("track-2");
   });
@@ -164,7 +166,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} />);
 
     const removeButtons = screen.getAllByText("Remove");
-    fireEvent.click(removeButtons[0]);
+    fireEvent.click(removeButtons[0]!);
 
     expect(defaultProps.onRemove).toHaveBeenCalledWith("track-1");
   });
@@ -174,7 +176,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} onSeek={onSeek} />);
 
     const seekButtons = screen.getAllByText("Seek");
-    fireEvent.click(seekButtons[0]);
+    fireEvent.click(seekButtons[0]!);
 
     expect(onSeek).toHaveBeenCalledWith("track-1", 0.5);
   });
@@ -190,7 +192,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} onDelayChange={onDelayChange} />);
 
     const delayButtons = screen.getAllByText("Delay");
-    fireEvent.click(delayButtons[1]);
+    fireEvent.click(delayButtons[1]!);
 
     expect(onDelayChange).toHaveBeenCalledWith("track-2", 2);
   });
@@ -206,7 +208,7 @@ describe("SortableTrackList", () => {
     render(<SortableTrackList {...defaultProps} onTrimChange={onTrimChange} />);
 
     const trimButtons = screen.getAllByText("Trim");
-    fireEvent.click(trimButtons[0]);
+    fireEvent.click(trimButtons[0]!);
 
     expect(onTrimChange).toHaveBeenCalledWith("track-1", 1, 10);
   });
@@ -225,7 +227,7 @@ describe("SortableTrackList", () => {
   });
 
   it("renders single track correctly", () => {
-    render(<SortableTrackList {...defaultProps} tracks={[mockTracks[0]]} />);
+    render(<SortableTrackList {...defaultProps} tracks={[mockTracks[0]!]} />);
 
     expect(screen.getByText("Track 1")).toBeInTheDocument();
     expect(screen.queryByText("Track 2")).not.toBeInTheDocument();

@@ -428,7 +428,7 @@ describe("AudioMixer", () => {
 
       const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(
         (node: Node) => {
-          if (node === mockAnchor) {
+          if (node === (mockAnchor as unknown as Node)) {
             return mockAnchor as unknown as Node;
           }
           return originalAppendChild(node);
@@ -437,7 +437,7 @@ describe("AudioMixer", () => {
 
       const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(
         (node: Node) => {
-          if (node === mockAnchor) {
+          if (node === (mockAnchor as unknown as Node)) {
             return mockAnchor as unknown as Node;
           }
           return originalRemoveChild(node);

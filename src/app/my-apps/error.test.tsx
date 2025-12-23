@@ -1,7 +1,7 @@
 import * as errorLoggerModule from "@/lib/error-logger";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MyAppsError from "./error";
 
 vi.mock("@/lib/error-logger", () => ({
@@ -17,7 +17,15 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete (window as { location?: unknown; }).location;
-    window.location = { href: "" } as Location;
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("should render error card with title", () => {
@@ -33,27 +41,21 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
   });
 
   it("should display error message in development mode", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
     expect(screen.getByText("Failed to load apps")).toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 
   it("should display generic message in production mode", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
     expect(screen.getByText(/An error occurred while loading your apps/i))
       .toBeInTheDocument();
     expect(screen.queryByText("Failed to load apps")).not.toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 
   it("should display default message when error message is empty", () => {
@@ -156,8 +158,7 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
   });
 
   it("should show troubleshooting section in development mode", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
@@ -170,13 +171,10 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
       .toBeInTheDocument();
     expect(screen.getByText(/Database migrations haven't been applied/i))
       .toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 
   it("should not show troubleshooting section in production mode", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
@@ -184,13 +182,10 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
       .toBeInTheDocument();
     expect(screen.queryByText(/Database is not running/i)).not
       .toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 
   it("should display error digest in development mode when provided", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
 
     const errorWithDigest = Object.assign(new Error("Error with digest"), {
       digest: "abc123xyz",
@@ -199,18 +194,13 @@ describe("MyAppsError (My Apps Error Boundary)", () => {
     render(<MyAppsError error={errorWithDigest} reset={mockReset} />);
 
     expect(screen.getByText(/Error digest: abc123xyz/i)).toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 
   it("should not display error digest section when no digest is provided", () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
 
     render(<MyAppsError error={mockError} reset={mockReset} />);
 
     expect(screen.queryByText(/Error digest:/i)).not.toBeInTheDocument();
-
-    process.env.NODE_ENV = originalEnv;
   });
 });

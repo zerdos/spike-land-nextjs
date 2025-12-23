@@ -17,7 +17,11 @@ describe("NewAppError (New App Creation Error Boundary)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete (window as { location?: unknown; }).location;
-    window.location = { href: "" } as Location;
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("should render error card with title", () => {

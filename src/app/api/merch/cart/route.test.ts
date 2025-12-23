@@ -544,7 +544,7 @@ describe("POST /api/merch/cart", () => {
       }),
     });
 
-    const _response = await POST(request);
+    await POST(request);
 
     expect(prisma.merchCartItem.create).toHaveBeenCalledWith(
       expect.objectContaining({

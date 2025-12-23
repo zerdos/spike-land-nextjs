@@ -182,22 +182,35 @@ describe("AppCard", () => {
 
     it("navigates to detailsUrl when onViewDetails not provided", async () => {
       const user = userEvent.setup();
-      delete (window as { location?: unknown; }).location;
-      window.location = { href: "" } as Location;
+      const originalLocation = window.location;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: { href: "" },
+      });
 
       render(<AppCard {...defaultProps} detailsUrl="/app/details" />);
 
       await user.click(screen.getByRole("button", { name: /view details/i }));
 
       expect(window.location.href).toBe("/app/details");
+
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: originalLocation,
+      });
     });
 
     it("prioritizes onViewDetails over detailsUrl", async () => {
       const user = userEvent.setup();
       const onViewDetails = vi.fn();
       const originalLocation = window.location;
-      delete (window as { location?: unknown; }).location;
-      window.location = { href: "" } as Location;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: { href: "" },
+      });
 
       render(
         <AppCard
@@ -212,14 +225,21 @@ describe("AppCard", () => {
       expect(onViewDetails).toHaveBeenCalledTimes(1);
       expect(window.location.href).toBe("");
 
-      window.location = originalLocation;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: originalLocation,
+      });
     });
 
     it("does nothing when neither onViewDetails nor detailsUrl provided", async () => {
       const user = userEvent.setup();
       const originalLocation = window.location;
-      delete (window as { location?: unknown; }).location;
-      window.location = { href: "original" } as Location;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: { href: "original" },
+      });
 
       render(<AppCard {...defaultProps} />);
 
@@ -227,7 +247,11 @@ describe("AppCard", () => {
 
       expect(window.location.href).toBe("original");
 
-      window.location = originalLocation;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: originalLocation,
+      });
     });
   });
 

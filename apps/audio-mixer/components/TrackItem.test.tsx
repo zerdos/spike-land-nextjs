@@ -41,6 +41,7 @@ describe("TrackItem", () => {
     waveformData: [0.5, 0.6, 0.7],
     type: "file",
     delay: 0,
+    position: 0,
     trimStart: 0,
     trimEnd: 0,
   };

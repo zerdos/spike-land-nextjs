@@ -36,9 +36,11 @@ describe("getUserMediaStream", () => {
   it("should request user media with default constraints", async () => {
     const mockStream = {} as MediaStream;
     const getUserMedia = vi.fn().mockResolvedValue(mockStream);
-    global.navigator.mediaDevices = {
-      getUserMedia,
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getUserMedia } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
 
     const stream = await getUserMediaStream();
     expect(stream).toBe(mockStream);
@@ -52,9 +54,11 @@ describe("getUserMediaStream", () => {
       audio: false,
     };
     const getUserMedia = vi.fn().mockResolvedValue(mockStream);
-    global.navigator.mediaDevices = {
-      getUserMedia,
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getUserMedia } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
 
     const stream = await getUserMediaStream(customConstraints);
     expect(stream).toBe(mockStream);
@@ -64,9 +68,11 @@ describe("getUserMediaStream", () => {
   it("should throw WebRTC error on failure", async () => {
     const error = new Error("Permission denied");
     const getUserMedia = vi.fn().mockRejectedValue(error);
-    global.navigator.mediaDevices = {
-      getUserMedia,
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getUserMedia } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
 
     await expect(getUserMediaStream()).rejects.toMatchObject({
       type: "permission-denied",
@@ -84,9 +90,11 @@ describe("getDisplayMediaStream", () => {
   it("should request display media", async () => {
     const mockStream = {} as MediaStream;
     const getDisplayMedia = vi.fn().mockResolvedValue(mockStream);
-    global.navigator.mediaDevices = {
-      getDisplayMedia,
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getDisplayMedia } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
 
     const stream = await getDisplayMediaStream();
     expect(stream).toBe(mockStream);
@@ -99,9 +107,11 @@ describe("getDisplayMediaStream", () => {
   it("should throw WebRTC error on failure", async () => {
     const error = new Error("Screen sharing denied");
     const getDisplayMedia = vi.fn().mockRejectedValue(error);
-    global.navigator.mediaDevices = {
-      getDisplayMedia,
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getDisplayMedia } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
 
     await expect(getDisplayMediaStream()).rejects.toMatchObject({
       type: "permission-denied",
@@ -234,9 +244,11 @@ describe("getStreamMetadata", () => {
 
 describe("isWebRTCSupported", () => {
   it("should return true when WebRTC is supported", () => {
-    global.navigator.mediaDevices = {
-      getUserMedia: vi.fn(),
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getUserMedia: vi.fn() } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
     global.RTCPeerConnection = vi.fn() as unknown as typeof RTCPeerConnection;
 
     expect(isWebRTCSupported()).toBe(true);
@@ -251,16 +263,22 @@ describe("isWebRTCSupported", () => {
   });
 
   it("should return false when getUserMedia is missing", () => {
-    global.navigator.mediaDevices = {} as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: {} as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
     global.RTCPeerConnection = vi.fn() as unknown as typeof RTCPeerConnection;
 
     expect(isWebRTCSupported()).toBe(false);
   });
 
   it("should return false when RTCPeerConnection is missing", () => {
-    global.navigator.mediaDevices = {
-      getUserMedia: vi.fn(),
-    } as unknown as MediaDevices;
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: { getUserMedia: vi.fn() } as unknown as MediaDevices,
+      writable: true,
+      configurable: true,
+    });
     // @ts-expect-error - Testing missing RTCPeerConnection
     delete global.RTCPeerConnection;
 
@@ -429,9 +447,12 @@ describe("monitorStreamHealth", () => {
     monitorStreamHealth(mockStream, onInactive);
 
     // Get the event handler that was registered
-    const addEventListenerCall = track.addEventListener.mock.calls[0];
-    expect(addEventListenerCall[0]).toBe("ended");
-    const handler = addEventListenerCall[1];
+    const addEventListenerCall = track.addEventListener.mock.calls[0] as
+      | [string, () => void]
+      | undefined;
+    expect(addEventListenerCall).toBeDefined();
+    expect(addEventListenerCall![0]).toBe("ended");
+    const handler = addEventListenerCall![1];
 
     // Trigger the handler
     handler();
@@ -453,7 +474,8 @@ describe("monitorStreamHealth", () => {
     monitorStreamHealth(mockStream, onInactive);
 
     // Get the event handler
-    const handler = track.addEventListener.mock.calls[0][1];
+    const addEventListenerCall = track.addEventListener.mock.calls[0] as [string, () => void];
+    const handler = addEventListenerCall[1];
 
     // Trigger the handler
     handler();

@@ -6,11 +6,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageBrowserDialog } from "./ImageBrowserDialog";
 
-const mockFetchResponse = (data: unknown, ok = true) => {
-  return Promise.resolve({
+const mockFetchResponse = (data: unknown, ok = true): Response => {
+  return {
     ok,
     json: () => Promise.resolve(data),
-  } as Response);
+  } as Response;
 };
 
 const mockImages = [
@@ -274,9 +274,11 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+    const imageCard = screen.getAllByText(/enhancement\(s\)/)[0]?.closest("div")
       ?.parentElement;
-    fireEvent.click(imageCards!);
+    if (imageCard) {
+      fireEvent.click(imageCard);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("Select an Enhancement")).toBeInTheDocument();
@@ -313,9 +315,11 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+    const imageCard = screen.getAllByText(/enhancement\(s\)/)[0]?.closest("div")
       ?.parentElement;
-    fireEvent.click(imageCards!);
+    if (imageCard) {
+      fireEvent.click(imageCard);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("TIER_1K")).toBeInTheDocument();
@@ -500,7 +504,9 @@ describe("ImageBrowserDialog", () => {
     // Click on the image
     const imageCard = screen.getByText("0 enhancement(s)").closest("div")
       ?.parentElement;
-    fireEvent.click(imageCard!);
+    if (imageCard) {
+      fireEvent.click(imageCard);
+    }
 
     await waitFor(() => {
       expect(
@@ -538,9 +544,11 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0].closest("div")
+    const imageCard = screen.getAllByText(/enhancement\(s\)/)[0]?.closest("div")
       ?.parentElement;
-    fireEvent.click(imageCards!);
+    if (imageCard) {
+      fireEvent.click(imageCard);
+    }
 
     await waitFor(() => {
       expect(screen.getByText("Select an Enhancement")).toBeInTheDocument();

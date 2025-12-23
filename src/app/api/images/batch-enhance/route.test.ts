@@ -97,7 +97,7 @@ describe("POST /api/images/batch-enhance", () => {
   it("should return 401 if user id is missing", async () => {
     vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce({
       user: { name: "Test", email: "test@example.com" },
-    });
+    } as unknown as Session);
 
     const req = createMockRequest({
       imageIds: ["img-1", "img-2"],

@@ -53,6 +53,7 @@ describe("McpHistoryPage", async () => {
         id: "user-123",
         name: "Test User",
         email: "test@example.com",
+        role: "USER",
       },
       expires: "2024-12-31",
     };
@@ -75,6 +76,7 @@ describe("McpHistoryPage", async () => {
       const minimalSession: Session = {
         user: {
           id: "user-456",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
@@ -91,6 +93,7 @@ describe("McpHistoryPage", async () => {
           name: "Image User",
           email: "image@example.com",
           image: "https://example.com/avatar.jpg",
+          role: "USER",
         },
         expires: "2024-12-31",
       };
