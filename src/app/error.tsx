@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { errorLogger } from "@/lib/error-logger";
+import { reportErrorBoundary } from "@/lib/errors/console-capture.client";
 import { useEffect } from "react";
 
 export default function Error({
@@ -21,11 +21,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to error reporting service
-    errorLogger.logError(error, {
-      route: "root",
-      digest: error.digest,
-    });
+    reportErrorBoundary(error);
   }, [error]);
 
   return (

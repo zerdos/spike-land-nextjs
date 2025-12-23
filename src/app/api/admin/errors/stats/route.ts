@@ -11,9 +11,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const { data: session, error: authError } = await tryCatch(auth(), {
-    report: false,
-  });
+  const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError) {
     return NextResponse.json(
@@ -28,7 +26,6 @@ export async function GET() {
 
   const { error: adminError } = await tryCatch(
     requireAdminByUserId(session.user.id),
-    { report: false },
   );
 
   if (adminError) {
@@ -97,7 +94,6 @@ export async function GET() {
         where: { timestamp: { gte: twentyFourHoursAgo } },
       }),
     ]),
-    { report: false },
   );
 
   if (error) {

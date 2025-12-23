@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { reportErrorBoundary } from "@/lib/errors/console-capture.client";
 import { useEffect } from "react";
 
 export default function GalleryError({
@@ -12,7 +13,7 @@ export default function GalleryError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Gallery admin error:", error);
+    reportErrorBoundary(error);
   }, [error]);
 
   return (

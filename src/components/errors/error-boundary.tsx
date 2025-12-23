@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { errorLogger } from "@/lib/error-logger";
+import { reportErrorBoundary } from "@/lib/errors/console-capture.client";
 import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { AlertCircle } from "lucide-react";
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
@@ -75,10 +75,8 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log error to error tracking service
-    errorLogger.logError(error, {
-      componentStack: errorInfo.componentStack || undefined,
-    });
+    // Report error to tracking service
+    reportErrorBoundary(error, errorInfo.componentStack || undefined);
 
     // Call custom error handler if provided
     if (this.props.onError) {
