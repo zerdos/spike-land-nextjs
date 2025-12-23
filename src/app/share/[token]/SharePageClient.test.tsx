@@ -52,17 +52,18 @@ describe("SharePageClient", () => {
   it("renders the description when provided", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    expect(
-      screen.getByText("A stunning sunset over the mountains"),
-    ).toBeInTheDocument();
+    const descriptions = screen.getAllByText(
+      "A stunning sunset over the mountains",
+    );
+    expect(descriptions).toHaveLength(2);
   });
 
   it("does not render description when null", () => {
     render(<SharePageClient {...defaultProps} description={null} />);
 
     expect(
-      screen.queryByText("A stunning sunset over the mountains"),
-    ).not.toBeInTheDocument();
+      screen.queryAllByText("A stunning sunset over the mountains"),
+    ).toHaveLength(0);
   });
 
   it("renders the ImageComparisonSlider with correct props", () => {
@@ -184,21 +185,21 @@ describe("SharePageClient", () => {
     const { container } = render(<SharePageClient {...defaultProps} />);
 
     const rootDiv = container.firstChild as HTMLElement;
-    expect(rootDiv.className).toContain("bg-neutral-950");
+    expect(rootDiv.className).toContain("bg-black");
   });
 
   it("sets max width based on enhanced dimensions", () => {
     const { container } = render(<SharePageClient {...defaultProps} />);
 
     const mainContent = container.querySelector("main > div");
-    expect(mainContent).toHaveStyle({ maxWidth: "min(3840px, 90vw)" });
+    expect(mainContent).toHaveStyle({ maxWidth: "1200px" });
   });
 
   it("renders the footer with CTA button linking to apps/pixel", () => {
     render(<SharePageClient {...defaultProps} />);
 
     const footerLink = screen.getByRole("link", {
-      name: /check out more/i,
+      name: /enhance your own photos with pixel/i,
     });
     expect(footerLink).toBeInTheDocument();
     expect(footerLink).toHaveAttribute("href", "/apps/pixel");
