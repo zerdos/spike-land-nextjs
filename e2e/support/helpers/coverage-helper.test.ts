@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  _testing,
-  clearCoverageData,
-  isCoverageEnabled,
-} from "../../e2e/support/helpers/coverage-helper";
+import { _testing, clearCoverageData, isCoverageEnabled } from "./coverage-helper";
 
 // Mock fs module (used by generateCoverageReport)
 vi.mock("fs", () => ({
