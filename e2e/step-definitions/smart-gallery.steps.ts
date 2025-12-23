@@ -182,6 +182,7 @@ Given("I am viewing an album gallery page", async function(this: CustomWorld) {
   // Wait for the smart grid to load
   const grid = this.page.locator('[data-testid="smart-grid"]');
   await expect(grid).toBeVisible({ timeout: 10000 });
+  return;
 });
 
 Given(
@@ -250,6 +251,7 @@ When(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
     );
     await this.page.waitForLoadState("networkidle");
+    return;
   },
 );
 
