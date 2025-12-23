@@ -1,31 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-// Mock the error reporter module
-const mockCaptureCallSite = vi.fn(() => ({
-  file: "test-file.ts",
-  line: 1,
-  column: 1,
-  caller: "testCaller",
-}));
-const mockReportError = vi.fn();
-
-vi.mock("@/lib/errors/error-reporter", () => ({
-  captureCallSite: mockCaptureCallSite,
-  reportError: mockReportError,
-}));
-
-// Import after mocking
+import { describe, expect, it } from "vitest";
 import { tryCatch, tryCatchSync } from "./try-catch";
 
 describe("try-catch", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   describe("tryCatch (async)", () => {
     it("should return data on success", async () => {
       const promise = Promise.resolve("success");
@@ -46,46 +22,6 @@ describe("try-catch", () => {
       expect(result.error).toBe(error);
     });
 
-    it("should report errors by default", async () => {
-      const error = new Error("test error");
-      const promise = Promise.reject(error);
-
-      await tryCatch(promise);
-
-      expect(mockReportError).toHaveBeenCalledWith(error, expect.any(Object), expect.any(Object));
-    });
-
-    it("should not report errors when report is false", async () => {
-      vi.clearAllMocks();
-      const error = new Error("test error");
-      const promise = Promise.reject(error);
-
-      await tryCatch(promise, { report: false });
-
-      expect(mockReportError).not.toHaveBeenCalled();
-    });
-
-    it("should include context in error report", async () => {
-      const error = new Error("test error");
-      const promise = Promise.reject(error);
-      const context = {
-        route: "/api/test",
-        userId: "user-123",
-      };
-
-      await tryCatch(promise, { context, errorCode: "TEST_CODE" });
-
-      expect(mockReportError).toHaveBeenCalledWith(
-        error,
-        expect.any(Object),
-        expect.objectContaining({
-          route: "/api/test",
-          userId: "user-123",
-          errorCode: "TEST_CODE",
-        }),
-      );
-    });
-
     it("should handle non-Error throws", async () => {
       const promise = Promise.reject("string error");
 
@@ -93,6 +29,34 @@ describe("try-catch", () => {
 
       expect(result.data).toBeNull();
       expect(result.error).toBe("string error");
+    });
+
+    it("should handle complex objects", async () => {
+      const data = { foo: "bar", nested: { value: 123 } };
+      const promise = Promise.resolve(data);
+
+      const result = await tryCatch(promise);
+
+      expect(result.data).toEqual(data);
+      expect(result.error).toBeNull();
+    });
+
+    it("should handle null values", async () => {
+      const promise = Promise.resolve(null);
+
+      const result = await tryCatch(promise);
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBeNull();
+    });
+
+    it("should handle undefined values", async () => {
+      const promise = Promise.resolve(undefined);
+
+      const result = await tryCatch(promise);
+
+      expect(result.data).toBeUndefined();
+      expect(result.error).toBeNull();
     });
   });
 
@@ -118,47 +82,77 @@ describe("try-catch", () => {
       expect(result.error).toBe(error);
     });
 
-    it("should report errors by default when reporter is loaded", async () => {
-      // First load the reporter by calling tryCatch
-      await tryCatch(Promise.resolve("preload"));
-      vi.clearAllMocks();
-
-      const error = new Error("test error");
+    it("should handle non-Error throws", () => {
       const fn = () => {
-        throw error;
+        throw "string error";
       };
 
-      tryCatchSync(fn);
+      const result = tryCatchSync(fn);
 
-      expect(mockReportError).toHaveBeenCalledWith(error, expect.any(Object), expect.any(Object));
+      expect(result.data).toBeNull();
+      expect(result.error).toBe("string error");
     });
 
-    it("should not report errors when report is false", async () => {
-      vi.clearAllMocks();
-      const error = new Error("test error");
-      const fn = () => {
-        throw error;
-      };
+    it("should handle complex objects", () => {
+      const data = { foo: "bar", nested: { value: 123 } };
+      const fn = () => data;
 
-      tryCatchSync(fn, { report: false });
+      const result = tryCatchSync(fn);
 
-      expect(mockReportError).not.toHaveBeenCalled();
+      expect(result.data).toEqual(data);
+      expect(result.error).toBeNull();
+    });
+
+    it("should handle null return values", () => {
+      const fn = () => null;
+
+      const result = tryCatchSync(fn);
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBeNull();
+    });
+
+    it("should handle undefined return values", () => {
+      const fn = () => undefined;
+
+      const result = tryCatchSync(fn);
+
+      expect(result.data).toBeUndefined();
+      expect(result.error).toBeNull();
     });
   });
 
-  describe("backward compatibility", () => {
-    it("should work without options parameter (async)", async () => {
-      const result = await tryCatch(Promise.resolve("value"));
+  describe("type safety", () => {
+    it("should preserve type information for data", async () => {
+      interface User {
+        id: number;
+        name: string;
+      }
 
-      expect(result.data).toBe("value");
-      expect(result.error).toBeNull();
+      const user: User = { id: 1, name: "Test" };
+      const result = await tryCatch<User>(Promise.resolve(user));
+
+      if (result.data) {
+        expect(result.data.id).toBe(1);
+        expect(result.data.name).toBe("Test");
+      }
     });
 
-    it("should work without options parameter (sync)", () => {
-      const result = tryCatchSync(() => "value");
+    it("should allow custom error types", async () => {
+      class CustomError extends Error {
+        code: string;
+        constructor(message: string, code: string) {
+          super(message);
+          this.code = code;
+        }
+      }
 
-      expect(result.data).toBe("value");
-      expect(result.error).toBeNull();
+      const error = new CustomError("test", "ERR_001");
+      const result = await tryCatch<string, CustomError>(Promise.reject(error));
+
+      if (result.error) {
+        expect(result.error.code).toBe("ERR_001");
+      }
     });
   });
 });

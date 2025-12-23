@@ -90,9 +90,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   console.log("Cleanup errors cron: Starting cleanup...");
 
   // Run the cleanup
-  const { data: stats, error } = await tryCatch(cleanupErrorLogs(), {
-    report: false, // Don't report errors from the error cleanup itself
-  });
+  const { data: stats, error } = await tryCatch(cleanupErrorLogs());
 
   if (error) {
     const duration = Date.now() - startTime;
