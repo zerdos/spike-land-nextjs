@@ -575,7 +575,7 @@ describe("gemini-client", () => {
         expect.objectContaining({
           model: "gemini-3-pro-image-preview", // DEFAULT_MODEL (always premium)
           config: {
-            responseModalities: ["IMAGE"],
+            responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
               imageSize: "2048x2048",
             },
@@ -906,7 +906,7 @@ describe("gemini-client", () => {
         expect.objectContaining({
           model: DEFAULT_MODEL,
           config: {
-            responseModalities: ["IMAGE"],
+            responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
               imageSize: "1024x1024",
             },
@@ -1170,7 +1170,7 @@ describe("gemini-client", () => {
         expect.objectContaining({
           model: DEFAULT_MODEL,
           config: {
-            responseModalities: ["IMAGE"],
+            responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
               imageSize: "1024x1024",
             },
