@@ -68,7 +68,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
     it("should return 401 when session has no user id", async () => {
       vi.mocked(auth).mockResolvedValue({
-        user: { name: "Test", email: "test@example.com" },
+        user: {
+          id: "",
+          name: "Test",
+          email: "test@example.com",
+          role: UserRole.ADMIN,
+        } as never,
         expires: new Date(Date.now() + 86400000).toISOString(),
       });
 
@@ -163,7 +168,7 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
       // Mock unique users per conversion type (3 signups, 2 enhancements, 1 purchase)
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
-        async (args: { where?: { conversionType?: string; }; }) => {
+        (async (args?: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
             return [{ userId: "u1" }, { userId: "u2" }, { userId: "u3" }] as unknown as never;
@@ -175,7 +180,7 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
             return [{ userId: "u1" }] as unknown as never;
           }
           return [] as unknown as never;
-        },
+        }) as never,
       );
 
       const request = new NextRequest(
@@ -285,13 +290,13 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v2" },
       ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
-        async (args: { where?: { conversionType?: string; }; }) => {
+        (async (args?: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
             return [{ userId: "u1" }, { userId: "u2" }] as unknown as never;
           }
           return [] as unknown as never;
-        },
+        }) as never,
       );
 
       const request = new NextRequest(
@@ -312,7 +317,7 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v1" },
       ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
-        async (args: { where?: { conversionType?: string; }; }) => {
+        (async (args?: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
             return [{ userId: "u1" }] as unknown as never;
@@ -321,7 +326,7 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
             return [{ userId: "u1" }] as unknown as never;
           }
           return [] as unknown as never;
-        },
+        }) as never,
       );
 
       const request = new NextRequest(
@@ -439,8 +444,11 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
       await GET(request);
 
       const sessionCall = vi.mocked(prisma.visitorSession.findMany).mock
-        .calls[0][0];
-      const endDate = sessionCall?.where?.sessionStart?.lte as Date;
+        .calls[0]![0];
+      const sessionStart = sessionCall?.where?.sessionStart;
+      const endDate = (typeof sessionStart === "object" && sessionStart && "lte" in sessionStart
+        ? sessionStart.lte
+        : null) as Date;
 
       expect(endDate.getHours()).toBe(23);
       expect(endDate.getMinutes()).toBe(59);
@@ -493,13 +501,13 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v3" },
       ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
-        async (args: { where?: { conversionType?: string; }; }) => {
+        (async (args?: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
             return [{ userId: "u1" }] as unknown as never;
           }
           return [] as unknown as never;
-        },
+        }) as never,
       );
 
       const request = new NextRequest(

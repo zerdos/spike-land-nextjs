@@ -6,7 +6,6 @@
  */
 
 import { UserRole } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
@@ -221,7 +220,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 50, visitorId: 40 },
           _sum: { pageViewCount: 200 },
         },
-      ] as unknown as Prisma.GetVisitorSessionGroupByPayload<any>[]);
+      ] as any);
 
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { utmCampaign: "brand", utmSource: "google", pageViewCount: 1 },
@@ -297,7 +296,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 15 },
         },
-      ] as unknown as Prisma.GetVisitorSessionGroupByPayload<any>[]);
+      ] as any);
 
       // 3 bounced sessions (1 page view each), 2 engaged sessions
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
@@ -330,7 +329,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 50, visitorId: 40 },
           _sum: { pageViewCount: 100 },
         },
-      ] as unknown as Prisma.GetVisitorSessionGroupByPayload<any>[]);
+      ] as any);
 
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { utmCampaign: null, utmSource: null, pageViewCount: 2 },
@@ -363,9 +362,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -385,9 +384,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -407,9 +406,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -429,9 +428,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -451,9 +450,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -473,9 +472,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -495,9 +494,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -517,9 +516,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 20 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -534,9 +533,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
 
   describe("Filtering", () => {
     it("should filter by platform", async () => {
-      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31&platform=google",
@@ -563,9 +562,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
         _sum: { pageViewCount: 20 },
       }));
 
-      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue(campaigns);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue(campaigns as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
@@ -587,9 +586,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
         _sum: { pageViewCount: 20 },
       }));
 
-      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue(campaigns);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue(campaigns as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31&limit=10&offset=5",
@@ -625,9 +624,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
           _count: { id: 10, visitorId: 10 },
           _sum: { pageViewCount: 100 },
         },
-      ]);
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      ] as any);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as any);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/campaigns?startDate=2024-01-01&endDate=2024-01-31",
