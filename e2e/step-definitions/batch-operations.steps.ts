@@ -3,27 +3,6 @@ import { expect } from "@playwright/test";
 import * as path from "path";
 import { CustomWorld } from "../support/world";
 
-// Helper to create mock file objects for testing
-function _createMockFiles(
-  count: number,
-  options?: { oversized?: boolean; nonImage?: boolean; },
-) {
-  const files: Array<{ name: string; size: number; type: string; }> = [];
-  for (let i = 0; i < count; i++) {
-    const fileName = options?.nonImage
-      ? `document${i}.pdf`
-      : `test-image${i}.jpg`;
-    const size = options?.oversized ? 60 * 1024 * 1024 : 2 * 1024 * 1024; // 60MB or 2MB
-
-    files.push({
-      name: fileName,
-      size,
-      type: options?.nonImage ? "application/pdf" : "image/jpeg",
-    });
-  }
-  return files;
-}
-
 // Given steps
 // NOTE: "I am on the enhance page" step moved to common.steps.ts
 

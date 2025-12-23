@@ -35,7 +35,7 @@ When("my session expires", async function(this: CustomWorld) {
 When(
   "I attempt to access the following protected routes:",
   async function(this: CustomWorld, dataTable: { raw: () => string[][]; }) {
-    const routes = dataTable.raw().map((row) => row[0]);
+    const routes = dataTable.raw().map((row) => row[0]).filter((r): r is string => !!r);
     this.attach(JSON.stringify({ routes }), "application/json");
 
     for (const route of routes) {

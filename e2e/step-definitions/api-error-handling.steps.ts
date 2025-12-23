@@ -21,21 +21,6 @@ async function mockApiError(
   });
 }
 
-// Helper for future use
-async function _mockApiSuccess(
-  world: CustomWorld,
-  pattern: string,
-  body: object,
-) {
-  await world.page.route(pattern, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    });
-  });
-}
-
 async function mockApiTimeout(
   world: CustomWorld,
   pattern: string,

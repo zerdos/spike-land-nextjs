@@ -18,7 +18,7 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
 
     await world.page.addInitScript(() => {
       // Intercept any admin checks client-side
-      (window as Record<string, unknown>).__mockIsAdmin = false;
+      (window as unknown as Record<string, unknown>).__mockIsAdmin = false;
     });
   }
 }

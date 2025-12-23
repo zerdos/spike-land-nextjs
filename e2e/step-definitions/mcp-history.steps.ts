@@ -23,7 +23,7 @@ interface MockMcpJob {
 async function mockMcpHistoryApi(
   world: CustomWorld,
   jobs: MockMcpJob[],
-  total: number,
+  _total: number,
   options: { delay?: number; error?: boolean; } = {},
 ) {
   await world.page.route("**/api/mcp/history*", async (route) => {

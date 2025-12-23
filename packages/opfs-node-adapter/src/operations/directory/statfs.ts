@@ -54,13 +54,13 @@ export async function statfs(
 
   if (options?.bigint) {
     return {
-      type: 0n,
+      type: BigInt(0),
       bsize: BigInt(BLOCK_SIZE),
       blocks: BigInt(blocks),
       bfree: BigInt(bfree),
       bavail: BigInt(bfree),
-      files: 0n,
-      ffree: 0n,
+      files: BigInt(0),
+      ffree: BigInt(0),
     };
   }
 

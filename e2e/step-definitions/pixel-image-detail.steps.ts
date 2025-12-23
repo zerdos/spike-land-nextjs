@@ -551,11 +551,7 @@ Then(
   "I should see the current stage progress",
   async function(this: CustomWorld) {
     // Stage indicator might not always be visible immediately
-    const _stageIndicator = this.page.getByText(
-      /analyzing|generating|cropping|upscaling/i,
-    ).or(
-      this.page.locator('[data-testid="stage-progress"]'),
-    );
+    // Just wait briefly for UI to settle
     await this.page.waitForTimeout(500);
   },
 );

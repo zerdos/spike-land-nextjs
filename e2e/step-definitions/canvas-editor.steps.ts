@@ -181,11 +181,7 @@ Then("I should see the slideshow controls", async function(this: CustomWorld) {
 Then(
   "the canvas should enter fullscreen mode",
   async function(this: CustomWorld) {
-    // Fullscreen API check (may be blocked in test environment)
-    const _isFullscreen = await this.page.evaluate(() => {
-      return document.fullscreenElement !== null;
-    });
-    // Just verify the button state changed
+    // Verify the button state changed (fullscreen API may be blocked in test environment)
     const canvasPage = getCanvasPage(this);
     const exitButton = await canvasPage.getExitFullscreenButton();
     await expect(exitButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });

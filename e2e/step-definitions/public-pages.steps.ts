@@ -10,6 +10,9 @@ Then(
 
     for (const row of rows) {
       const linkName = row.Link;
+      if (!linkName) {
+        throw new Error("Link column is required in data table");
+      }
       // Navigation links are rendered in the sidebar or as cards on the overview page
       const link = this.page.getByRole("link", {
         name: new RegExp(linkName, "i"),

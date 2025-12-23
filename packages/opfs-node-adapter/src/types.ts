@@ -247,9 +247,9 @@ export function createBigIntStats(
 ): BigIntStats {
   const isFile = entry.kind === "file";
   const isDirectory = entry.kind === "directory";
-  const size = isFile ? BigInt((entry as FileSystemFileEntry).size) : 0n;
+  const size = isFile ? BigInt((entry as FileSystemFileEntry).size) : BigInt(0);
   const mtime = isFile ? new Date((entry as FileSystemFileEntry).lastModified) : new Date();
-  const mtimeNs = BigInt(mtime.getTime()) * 1000000n;
+  const mtimeNs = BigInt(mtime.getTime()) * BigInt(1000000);
 
   return {
     isFile: () => isFile,
@@ -259,16 +259,16 @@ export function createBigIntStats(
     isSymbolicLink: () => false,
     isFIFO: () => false,
     isSocket: () => false,
-    dev: 0n,
-    ino: 0n,
-    mode: isDirectory ? 0o40755n : 0o100644n,
-    nlink: 1n,
-    uid: 0n,
-    gid: 0n,
-    rdev: 0n,
+    dev: BigInt(0),
+    ino: BigInt(0),
+    mode: isDirectory ? BigInt(0o40755) : BigInt(0o100644),
+    nlink: BigInt(1),
+    uid: BigInt(0),
+    gid: BigInt(0),
+    rdev: BigInt(0),
     size,
-    blksize: 4096n,
-    blocks: size / 512n,
+    blksize: BigInt(4096),
+    blocks: size / BigInt(512),
     atimeMs: BigInt(mtime.getTime()),
     mtimeMs: BigInt(mtime.getTime()),
     ctimeMs: BigInt(mtime.getTime()),
