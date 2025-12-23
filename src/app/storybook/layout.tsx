@@ -25,23 +25,23 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
 
   return (
     <div className="flex flex-col h-full bg-background/40 backdrop-blur-xl">
-      <div className="p-6">
+      <div className="p-4">
         <Link href="/storybook" onClick={onLinkClick} className="group">
-          <h1 className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
+          <h1 className="text-xl font-bold font-heading bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
             Design System
           </h1>
-          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-semibold opacity-70">
+          <p className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-widest font-semibold opacity-70">
             spike.land design system
           </p>
         </Link>
       </div>
 
-      <div className="px-4 mb-4">
+      <div className="px-3 mb-2">
         <Link
           href="/storybook"
           onClick={onLinkClick}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative group",
+            "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 relative group",
             pathname === "/storybook"
               ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]"
               : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -65,8 +65,8 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
         <div className="sticky top-0 h-4 bg-gradient-to-b from-background/0 to-transparent z-10 pointer-events-none" />
 
         {categories.map((category) => (
-          <div key={category} className="space-y-1">
-            <h3 className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2">
+          <div key={category} className="space-y-0.5">
+            <h3 className="px-3 text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-1.5">
               {category}
             </h3>
             <div className="space-y-0.5">
@@ -80,7 +80,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
                     href={`/storybook/${section.id}`}
                     onClick={onLinkClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group",
+                      "flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 relative group",
                       isActive
                         ? "bg-primary/8 text-primary font-semibold"
                         : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -109,14 +109,14 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
         <div className="sticky bottom-0 h-8 bg-gradient-to-t from-background/20 to-transparent pointer-events-none" />
       </nav>
 
-      <div className="p-6 border-t border-white/5 bg-black/10">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="p-4 border-t border-white/5 bg-black/10">
+        <div className="flex items-center gap-3 mb-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
             Version 1.2.0
           </span>
         </div>
-        <p className="text-[10px] text-muted-foreground leading-relaxed opacity-60">
+        <p className="text-[9px] text-muted-foreground leading-snug opacity-50">
           Built for Spike Land Platform<br />
           © 2024 spike.land
         </p>
@@ -171,13 +171,13 @@ export default function StorybookLayout(
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 border-r border-border bg-background/50 backdrop-blur-sm">
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 border-r border-border bg-background/50 backdrop-blur-sm">
           <SidebarContent />
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:pl-72">
-          <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <main className="flex-1 lg:pl-64">
+          <div className="container mx-auto py-6 px-4 max-w-6xl">
             {children}
           </div>
         </main>
