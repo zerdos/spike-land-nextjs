@@ -32,6 +32,7 @@ describe("BlogHeader", () => {
     tags: ["tech", "ai", "innovation"],
     image: "/images/hero.jpg",
     featured: true,
+    listed: true,
   };
 
   const mockReadingTime = "5 min read";

@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Session } from "next-auth";
 import { describe, expect, it, vi } from "vitest";
@@ -29,6 +30,7 @@ const mockSession: Session = {
     name: "Test User",
     email: "test@example.com",
     image: "https://example.com/avatar.jpg",
+    role: UserRole.USER,
   },
   expires: "2025-12-31",
 };

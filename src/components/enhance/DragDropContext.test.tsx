@@ -373,7 +373,7 @@ describe("DragDropContext", () => {
 
       await waitFor(() => {
         expect(onMoveError).toHaveBeenCalledWith(expect.any(Error));
-        expect(onMoveError.mock.calls[0][0].message).toBe("Server error");
+        expect(onMoveError.mock.calls[0]![0].message).toBe("Server error");
       });
     });
 
@@ -406,7 +406,7 @@ describe("DragDropContext", () => {
 
       await waitFor(() => {
         expect(onMoveError).toHaveBeenCalledWith(expect.any(Error));
-        expect(onMoveError.mock.calls[0][0].message).toContain(
+        expect(onMoveError.mock.calls[0]![0].message).toContain(
           "Failed to add images to album (500)",
         );
       });
@@ -509,7 +509,7 @@ describe("DragDropContext", () => {
 
       await waitFor(() => {
         expect(onMoveError).toHaveBeenCalledWith(expect.any(Error));
-        expect(onMoveError.mock.calls[0][0].message).toBe(
+        expect(onMoveError.mock.calls[0]![0].message).toBe(
           "Unknown error occurred",
         );
       });

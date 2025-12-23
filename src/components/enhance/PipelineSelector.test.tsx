@@ -35,6 +35,7 @@ const mockPipelines: Pipeline[] = [
     generationConfig: { retryAttempts: 3 },
     isOwner: false,
     isSystemDefault: true,
+    referenceImageId: null,
   },
   {
     id: "my-pipeline-1",
@@ -52,6 +53,7 @@ const mockPipelines: Pipeline[] = [
     generationConfig: {},
     isOwner: true,
     isSystemDefault: false,
+    referenceImageId: null,
   },
   {
     id: "public-1",
@@ -69,13 +71,14 @@ const mockPipelines: Pipeline[] = [
     generationConfig: {},
     isOwner: false,
     isSystemDefault: false,
+    referenceImageId: null,
   },
 ];
 
 const mockGroupedPipelines: GroupedPipelines = {
-  systemDefaults: [mockPipelines[0]],
-  myPipelines: [mockPipelines[1]],
-  publicPipelines: [mockPipelines[2]],
+  systemDefaults: [mockPipelines[0]!],
+  myPipelines: [mockPipelines[1]!],
+  publicPipelines: [mockPipelines[2]!],
 };
 
 describe("PipelineSelector", () => {
@@ -295,7 +298,7 @@ describe("PipelineSelector", () => {
       mockUsePipelines.mockReturnValue({
         ...defaultMockReturn,
         groupedPipelines: {
-          systemDefaults: [mockPipelines[0]],
+          systemDefaults: [mockPipelines[0]!],
           myPipelines: [],
           publicPipelines: [],
         },

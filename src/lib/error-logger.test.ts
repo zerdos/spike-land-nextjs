@@ -12,7 +12,7 @@ describe("ErrorLogger", () => {
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
-    process.env.NODE_ENV = originalNodeEnv;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalNodeEnv;
   });
 
   describe("constructor", () => {

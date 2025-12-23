@@ -107,7 +107,7 @@ describe("api-key-manager", () => {
 
     it("should reject development keys in production environment", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
 
       try {
         const result = await validateApiKey(
@@ -119,13 +119,13 @@ describe("api-key-manager", () => {
         // Should not even attempt to query the database
         expect(mockApiKey.findUnique).not.toHaveBeenCalled();
       } finally {
-        process.env.NODE_ENV = originalEnv;
+        (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
       }
     });
 
     it("should allow production keys in production environment", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockApiKey.findUnique.mockResolvedValue(null);
 
       try {
@@ -137,7 +137,7 @@ describe("api-key-manager", () => {
         expect(mockApiKey.findUnique).toHaveBeenCalled();
         expect(result.error).toBe("Invalid API key");
       } finally {
-        process.env.NODE_ENV = originalEnv;
+        (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
       }
     });
 
@@ -393,7 +393,7 @@ describe("api-key-manager", () => {
       const fullKey = createdKey.key;
 
       // Get the hash that should match
-      const createCall = mockApiKey.create.mock.calls[0][0];
+      const createCall = mockApiKey.create.mock.calls[0]![0];
       const expectedHash = createCall.data.keyHash;
 
       // Now set up the validation mock with matching hash
@@ -426,7 +426,7 @@ describe("api-key-manager", () => {
 
       const createdKey = await createApiKey(testUserId, "Test Key");
       const fullKey = createdKey.key;
-      const createCall = mockApiKey.create.mock.calls[0][0];
+      const createCall = mockApiKey.create.mock.calls[0]![0];
       const expectedHash = createCall.data.keyHash;
 
       // Set lastUsedAt to 10 minutes ago
@@ -464,7 +464,7 @@ describe("api-key-manager", () => {
 
       const createdKey = await createApiKey(testUserId, "Test Key");
       const fullKey = createdKey.key;
-      const createCall = mockApiKey.create.mock.calls[0][0];
+      const createCall = mockApiKey.create.mock.calls[0]![0];
       const expectedHash = createCall.data.keyHash;
 
       // Set lastUsedAt to 2 minutes ago (within threshold)
@@ -499,7 +499,7 @@ describe("api-key-manager", () => {
 
       const createdKey = await createApiKey(testUserId, "Test Key");
       const fullKey = createdKey.key;
-      const createCall = mockApiKey.create.mock.calls[0][0];
+      const createCall = mockApiKey.create.mock.calls[0]![0];
       const expectedHash = createCall.data.keyHash;
 
       // lastUsedAt is null (never used before)
@@ -536,7 +536,7 @@ describe("api-key-manager", () => {
 
       const createdKey = await createApiKey(testUserId, "Test Key");
       const fullKey = createdKey.key;
-      const createCall = mockApiKey.create.mock.calls[0][0];
+      const createCall = mockApiKey.create.mock.calls[0]![0];
       const expectedHash = createCall.data.keyHash;
 
       const mockKeyRecord = {

@@ -117,7 +117,7 @@ describe("MixShareQRCode", () => {
       render(<MixShareQRCode {...defaultProps} />);
 
       // Find and click the close button (X icon)
-      const closeButton = screen.getAllByRole("button")[0]; // First button is close
+      const closeButton = screen.getAllByRole("button")[0]!; // First button is close
       fireEvent.click(closeButton);
 
       // Should show collapsed state with QR icon button
@@ -130,7 +130,7 @@ describe("MixShareQRCode", () => {
       render(<MixShareQRCode {...defaultProps} />);
 
       // Collapse first
-      const closeButton = screen.getAllByRole("button")[0];
+      const closeButton = screen.getAllByRole("button")[0]!;
       fireEvent.click(closeButton);
 
       // Wait for collapsed state
@@ -152,7 +152,7 @@ describe("MixShareQRCode", () => {
       render(<MixShareQRCode {...defaultProps} />);
 
       // Collapse
-      const closeButton = screen.getAllByRole("button")[0];
+      const closeButton = screen.getAllByRole("button")[0]!;
       fireEvent.click(closeButton);
 
       await waitFor(() => {

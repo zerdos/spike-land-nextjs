@@ -28,7 +28,7 @@ describe("Prisma Client Singleton", () => {
 
   it("should use singleton pattern in development", async () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
 
     const prisma1 = await import("./prisma");
     const instance1 = prisma1.default;
@@ -40,24 +40,24 @@ describe("Prisma Client Singleton", () => {
 
     expect(instance1).toBe(instance2);
 
-    process.env.NODE_ENV = originalEnv;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 
   it("should attach to globalThis in non-production", async () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
 
     await import("./prisma");
 
     expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
       .toBeDefined();
 
-    process.env.NODE_ENV = originalEnv;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 
   it("should not attach to globalThis in production", async () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
 
     delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
 
@@ -66,7 +66,7 @@ describe("Prisma Client Singleton", () => {
     expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
       .toBeUndefined();
 
-    process.env.NODE_ENV = originalEnv;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 
   it("should use PrismaPg adapter when DATABASE_URL is set", async () => {
@@ -86,7 +86,7 @@ describe("Prisma Client Singleton", () => {
     const originalDatabaseUrl = process.env.DATABASE_URL;
     const originalEnv = process.env.NODE_ENV;
     process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/testdb";
-    process.env.NODE_ENV = "development";
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
 
     vi.resetModules();
     delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
@@ -95,6 +95,6 @@ describe("Prisma Client Singleton", () => {
     expect(prisma.default).toBeDefined();
 
     process.env.DATABASE_URL = originalDatabaseUrl;
-    process.env.NODE_ENV = originalEnv;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 });

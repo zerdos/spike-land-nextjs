@@ -590,7 +590,7 @@ describe("r2-client", () => {
     });
 
     it("should create new client in development mode", async () => {
-      process.env.NODE_ENV = "development";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
       mockSend.mockResolvedValue({});
 
       const { deleteFromR2 } = await importModule();
@@ -603,7 +603,7 @@ describe("r2-client", () => {
     });
 
     it("should use cached client in production mode", async () => {
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockSend.mockResolvedValue({});
 
       const { deleteFromR2 } = await importModule();
@@ -617,7 +617,7 @@ describe("r2-client", () => {
     });
 
     it("should cache bucket name in production mode", async () => {
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockSend.mockResolvedValue({});
 
       const { deleteFromR2 } = await importModule();
@@ -630,7 +630,7 @@ describe("r2-client", () => {
     });
 
     it("should reuse cached bucket name in production mode on subsequent calls", async () => {
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockSend.mockResolvedValue({});
 
       // Pre-set the global bucket name to simulate it was already cached
@@ -648,7 +648,7 @@ describe("r2-client", () => {
     });
 
     it("should set bucket name when global cache is empty in production", async () => {
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockSend.mockResolvedValue({});
 
       // Ensure global is undefined
@@ -667,7 +667,7 @@ describe("r2-client", () => {
     });
 
     it("should set bucket name from config when client exists but bucket name is not cached in production", async () => {
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
       mockSend.mockResolvedValue({});
 
       // Set up a scenario where client exists but bucket name is not cached
