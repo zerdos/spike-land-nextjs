@@ -49,6 +49,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment (~200MB vs ~1GB)
   output: "standalone",
+  experimental: {
+    instrumentationHook: true,
+  },
   turbopack: {
     root: __dirname,
   },
