@@ -500,7 +500,7 @@ describe("EnhancementHistoryGrid", () => {
     );
 
     const images = screen.getAllByTestId("next-image");
-    fireEvent.error(images[0]);
+    fireEvent.error(images[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("Image failed to load")).toBeInTheDocument();
@@ -530,7 +530,7 @@ describe("EnhancementHistoryGrid", () => {
     );
 
     const images = screen.getAllByTestId("next-image");
-    fireEvent.error(images[0]);
+    fireEvent.error(images[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("Image failed to load")).toBeInTheDocument();

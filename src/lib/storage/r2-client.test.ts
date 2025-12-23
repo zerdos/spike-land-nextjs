@@ -512,7 +512,7 @@ describe("r2-client", () => {
 
       expect(result.success).toBe(true);
       expect(result.stats?.totalSizeBytes).toBe(1000);
-      expect(result.stats?.byFileType.jpg.sizeBytes).toBe(1000);
+      expect(result.stats?.byFileType.jpg?.sizeBytes).toBe(1000);
     });
 
     it("should handle uppercase extensions", async () => {

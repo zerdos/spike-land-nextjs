@@ -275,17 +275,17 @@ describe("useDragDropPhotos", () => {
         result.current.handleDragStart(["img1"]);
       });
 
-      let caughtError: Error | null = null;
+      let caughtError: unknown = null;
       await act(async () => {
         try {
           await result.current.handleDrop("non-existent-album");
         } catch (error) {
-          caughtError = error as Error;
+          caughtError = error;
         }
       });
 
       expect(caughtError).toBeInstanceOf(Error);
-      expect(caughtError?.message).toBe("Album not found");
+      expect((caughtError as Error).message).toBe("Album not found");
       expect(mockOnMoveError).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "Album not found",
@@ -330,9 +330,7 @@ describe("useDragDropPhotos", () => {
       const mockFetch = global.fetch as ReturnType<typeof vi.fn>;
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        json: async () => {
-          throw new Error("Invalid JSON");
-        },
+        json: () => Promise.reject(new Error("Invalid JSON")),
       } as Response);
 
       const { result } = renderHook(() =>

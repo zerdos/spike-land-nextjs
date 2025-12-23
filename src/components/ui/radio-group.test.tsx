@@ -41,7 +41,7 @@ describe("RadioGroup", () => {
     const radios = screen.getAllByRole("radio");
     expect(radios[0]).toBeChecked();
 
-    await user.click(radios[1]);
+    await user.click(radios[1]!);
     expect(radios[1]).toBeChecked();
     expect(radios[0]).not.toBeChecked();
   });

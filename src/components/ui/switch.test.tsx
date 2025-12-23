@@ -178,7 +178,7 @@ describe("Switch Component", () => {
       const { container } = render(<Switch />);
       const switchElement = container.querySelector('button[role="switch"]')!;
 
-      switchElement.focus();
+      (switchElement as HTMLElement).focus();
       expect(switchElement).toHaveFocus();
 
       await user.keyboard(" ");
@@ -190,7 +190,7 @@ describe("Switch Component", () => {
       const { container } = render(<Switch />);
       const switchElement = container.querySelector('button[role="switch"]')!;
 
-      switchElement.focus();
+      (switchElement as HTMLElement).focus();
       await user.keyboard("{Enter}");
       expect(switchElement).toHaveAttribute("data-state", "checked");
     });
@@ -285,7 +285,7 @@ describe("Switch Component", () => {
       const { container } = render(<Switch onBlur={onBlur} />);
       const switchElement = container.querySelector('button[role="switch"]')!;
 
-      switchElement.focus();
+      (switchElement as HTMLElement).focus();
       await user.tab();
       expect(onBlur).toHaveBeenCalled();
     });
@@ -295,7 +295,7 @@ describe("Switch Component", () => {
       const { container } = render(<Switch onFocus={onFocus} />);
       const switchElement = container.querySelector('button[role="switch"]')!;
 
-      switchElement.focus();
+      (switchElement as HTMLElement).focus();
       expect(onFocus).toHaveBeenCalled();
     });
   });
@@ -356,7 +356,7 @@ describe("Switch Component", () => {
         </form>,
       );
       const form = screen.getByTestId("test-form");
-      const switchElement = container.querySelector('button[role="switch"]');
+      const switchElement = container.querySelector('button[role="switch"]') as HTMLElement;
       expect(form).toContainElement(switchElement);
     });
 
