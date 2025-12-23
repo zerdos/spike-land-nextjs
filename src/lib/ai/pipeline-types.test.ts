@@ -314,10 +314,10 @@ describe("pipeline-types", () => {
       const result = parsePipelineConfig("TIER_2K", dbConfigs);
 
       expect(result.prompt.referenceImages).toHaveLength(1);
-      expect(result.prompt.referenceImages?.[0].url).toBe(
+      expect(result.prompt.referenceImages?.[0]!.url).toBe(
         "https://example.com/ref.jpg",
       );
-      expect(result.prompt.referenceImages?.[0].description).toBe("Style ref");
+      expect(result.prompt.referenceImages?.[0]!.description).toBe("Style ref");
     });
 
     it("should handle null prompt config with default (no reference images)", () => {

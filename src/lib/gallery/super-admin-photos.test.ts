@@ -99,8 +99,8 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos();
 
@@ -175,8 +175,8 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos();
 
@@ -262,8 +262,8 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos();
 
@@ -388,13 +388,13 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos(1);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("image-1");
+    expect(result[0]!.id).toBe("image-1");
   });
 
   it("should handle multiple albums and return photos in correct order", async () => {
@@ -529,8 +529,8 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos();
 
@@ -560,7 +560,6 @@ describe("getSuperAdminPublicPhotos", () => {
   it("should use most recent enhancement job when multiple exist", async () => {
     const createdAt = new Date("2024-01-01");
     const updatedAt = new Date("2024-01-02");
-    const _olderDate = new Date("2024-01-01T10:00:00Z");
     const newerDate = new Date("2024-01-01T12:00:00Z");
 
     vi.mocked(prisma.album.findMany).mockResolvedValue([
@@ -627,16 +626,16 @@ describe("getSuperAdminPublicPhotos", () => {
             },
           },
         ],
-      },
-    ]);
+      } as unknown as Parameters<typeof getSuperAdminPublicPhotos>[0],
+    ] as unknown as Awaited<ReturnType<typeof prisma.album.findMany>>);
 
     const result = await getSuperAdminPublicPhotos();
 
     expect(result).toHaveLength(1);
-    expect(result[0].enhancedUrl).toBe(
+    expect(result[0]!.enhancedUrl).toBe(
       "https://example.com/enhanced-newer.jpg",
     );
-    expect(result[0].tier).toBe(EnhancementTier.TIER_4K);
+    expect(result[0]!.tier).toBe(EnhancementTier.TIER_4K);
   });
 
   it("should return [] when database query fails", async () => {

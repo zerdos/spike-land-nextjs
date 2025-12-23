@@ -198,19 +198,19 @@ describe("useSlideshow", () => {
 
     it("should reshuffle when order changes from album to random", () => {
       const { result, rerender } = renderHook(
-        ({ order }) =>
+        ({ order }: { order: "album" | "random"; }) =>
           useSlideshow({
             images: mockImages,
             interval: 10,
             order,
             autoPlay: false,
           }),
-        { initialProps: { order: "album" as const } },
+        { initialProps: { order: "album" as "album" | "random" } },
       );
 
       expect(result.current.currentImage).toEqual(mockImages[0]);
 
-      rerender({ order: "random" as const });
+      rerender({ order: "random" });
 
       // Should reset to index 0 with potentially different order
       expect(result.current.currentIndex).toBe(0);

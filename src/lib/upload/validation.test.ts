@@ -300,8 +300,8 @@ describe("validateFiles", () => {
     expect(result.valid).toBe(false);
     expect(result.validFiles).toHaveLength(2);
     expect(result.invalidFiles).toHaveLength(1);
-    expect(result.invalidFiles[0].file.name).toBe("invalid.pdf");
-    expect(result.invalidFiles[0].error).toContain("Invalid file type");
+    expect(result.invalidFiles[0]!.file.name).toBe("invalid.pdf");
+    expect(result.invalidFiles[0]!.error).toContain("Invalid file type");
   });
 
   it("should handle FileList input", () => {

@@ -281,10 +281,7 @@ describe("TokensPage", () => {
 
   it("should render with loading state", () => {
     vi.mocked(useSession).mockReturnValue({
-      data: {
-        user: mockAuthUser,
-        expires: "2024-12-31",
-      },
+      data: null,
       status: "loading",
       update: vi.fn(),
     });

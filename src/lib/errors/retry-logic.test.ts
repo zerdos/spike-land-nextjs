@@ -220,12 +220,12 @@ describe("retry-logic", () => {
       });
 
       expect(results).toHaveLength(3);
-      expect(results[0].success).toBe(true);
-      expect(results[0].data).toBe("result1");
-      expect(results[1].success).toBe(true);
-      expect(results[1].data).toBe("result2");
-      expect(results[2].success).toBe(true);
-      expect(results[2].data).toBe("result3");
+      expect(results[0]!.success).toBe(true);
+      expect(results[0]!.data).toBe("result1");
+      expect(results[1]!.success).toBe(true);
+      expect(results[1]!.data).toBe("result2");
+      expect(results[2]!.success).toBe(true);
+      expect(results[2]!.data).toBe("result3");
     });
 
     it("should handle failures in batch", async () => {
@@ -238,8 +238,8 @@ describe("retry-logic", () => {
         shouldRetry: () => false,
       });
 
-      expect(results[0].success).toBe(true);
-      expect(results[1].success).toBe(false);
+      expect(results[0]!.success).toBe(true);
+      expect(results[1]!.success).toBe(false);
     });
 
     it("should work with empty array", async () => {

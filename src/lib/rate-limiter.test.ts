@@ -795,7 +795,7 @@ describe("rate-limiter", () => {
       });
 
       // Remaining should decrease
-      expect(results[results.length - 1].remaining).toBe(5);
+      expect(results[results.length - 1]!.remaining).toBe(5);
     });
 
     it("should handle empty identifier", async () => {

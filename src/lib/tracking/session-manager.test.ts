@@ -348,7 +348,7 @@ describe("session-manager", () => {
         },
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1]!.body);
       expect(body.utmParams).toEqual({
         utm_source: "google",
         utm_campaign: "test",
@@ -524,7 +524,7 @@ describe("session-manager", () => {
         metadata: { tier: "TIER_4K" },
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1]!.body);
       expect(body.metadata).toEqual({ tier: "TIER_4K" });
     });
   });

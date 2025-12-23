@@ -125,7 +125,7 @@ describe("Token Regeneration", () => {
       const result = await processAllUserRegenerations();
 
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].error).toBe("Unknown error");
+      expect(result.errors[0]!.error).toBe("Unknown error");
     });
   });
 

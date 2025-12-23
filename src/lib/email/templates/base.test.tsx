@@ -1,5 +1,4 @@
 import { render } from "@react-email/components";
-import * as React from "react";
 import { describe, expect, it } from "vitest";
 import { BaseEmail, emailStyles } from "./base";
 

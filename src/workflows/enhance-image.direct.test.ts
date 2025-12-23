@@ -349,7 +349,7 @@ describe("enhance-image.direct", () => {
 
       for (let i = 0; i < tiers.length; i++) {
         vi.clearAllMocks();
-        await enhanceImageDirect({ ...validInput, tier: tiers[i] });
+        await enhanceImageDirect({ ...validInput, tier: tiers[i]! });
 
         expect(mockEnhanceImageWithGemini).toHaveBeenCalledWith(
           expect.objectContaining({
