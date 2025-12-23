@@ -179,6 +179,10 @@ async function mockAlbumsAPI(world: CustomWorld) {
 
     const url = route.request().url();
     const albumId = url.split("/albums/")[1]?.split("?")[0]?.split("/")[0];
+    if (!albumId) {
+      await route.continue();
+      return;
+    }
     const album = state.albums.find((a) => a.id === albumId);
 
     if (route.request().method() === "GET") {

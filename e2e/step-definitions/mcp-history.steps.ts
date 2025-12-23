@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForTextWithRetry } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock MCP history API response
@@ -41,13 +41,13 @@ async function mockMcpHistoryApi(
     }
 
     const url = new URL(route.request().url());
-    const typeFilter = url.searchParams.get("type");
+    const typeFilter = url.searchParams.get("type") || "all";
     const limit = parseInt(url.searchParams.get("limit") || "12", 10);
     const offset = parseInt(url.searchParams.get("offset") || "0", 10);
 
     let filteredJobs = jobs;
-    if (typeFilter && typeFilter !== "all") {
-      filteredJobs = jobs.filter((job) => job.type === typeFilter);
+    if (typeFilter !== "all") {
+      filteredJobs = jobs.filter((job) => job.type === typeFilter as any);
     }
 
     const paginatedJobs = filteredJobs.slice(offset, offset + limit);
@@ -87,7 +87,7 @@ function createMockJobs(count: number): MockMcpJob[] {
         ? new Date(Date.now() - i * 3600000 + 30000).toISOString()
         : undefined,
       apiKeyName: i % 3 === 0 ? "Test API Key" : undefined,
-    });
+    } as MockMcpJob);
   }
   return jobs;
 }

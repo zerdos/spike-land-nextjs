@@ -8,7 +8,7 @@ function _createMockFiles(
   count: number,
   options?: { oversized?: boolean; nonImage?: boolean; },
 ) {
-  const files = [];
+  const files: Array<{ name: string; size: number; type: string; }> = [];
   for (let i = 0; i < count; i++) {
     const fileName = options?.nonImage
       ? `document${i}.pdf`

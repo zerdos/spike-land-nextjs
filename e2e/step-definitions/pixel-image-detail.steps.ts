@@ -3,7 +3,53 @@ import { expect } from "@playwright/test";
 import { CustomWorld } from "../support/world";
 
 // Mock data for image detail tests
-const mockImageData = {
+interface Job {
+  id: string;
+  userId: string;
+  imageId: string;
+  tier: string;
+  status: string;
+  currentStage: string | null;
+  tokensCost: number;
+  enhancedUrl: string | null;
+  enhancedR2Key: string | null;
+  enhancedWidth: number | null;
+  enhancedHeight: number | null;
+  enhancedSizeBytes: number | null;
+  errorMessage: string | null;
+  retryCount: number;
+  maxRetries: number;
+  geminiPrompt: string | null;
+  geminiModel: string | null;
+  geminiTemp: number | null;
+  workflowRunId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  processingStartedAt: string | null;
+  processingCompletedAt: string | null;
+  analysisResult: any;
+  analysisSource: any;
+  wasCropped: boolean;
+  cropDimensions: any;
+  pipelineId: string | null;
+}
+
+interface MockImage {
+  id: string;
+  userId: string;
+  name: string;
+  originalUrl: string;
+  originalR2Key: string;
+  originalWidth: number;
+  originalHeight: number;
+  originalSizeBytes: number;
+  shareToken: string | null;
+  createdAt: string;
+  updatedAt: string;
+  enhancementJobs: Job[];
+}
+
+const mockImageData: MockImage = {
   id: "test-image-001",
   userId: "test-user-id",
   name: "Test Image",
@@ -18,7 +64,7 @@ const mockImageData = {
   enhancementJobs: [],
 };
 
-const mockCompletedJob = {
+const mockCompletedJob: Job = {
   id: "job-completed-001",
   userId: "test-user-id",
   imageId: "test-image-001",

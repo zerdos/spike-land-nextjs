@@ -37,7 +37,7 @@ const mockFailedJob = { ...mockPendingJob, status: "FAILED" };
 const mockCancelledJob = { ...mockPendingJob, status: "CANCELLED" };
 
 async function mockTokenBalance(world: CustomWorld, balance: number) {
-  await world.page.route("**/api/tokens/balance", async (route) => {
+  await world.page.route("**/api/tokens/balance", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -47,7 +47,7 @@ async function mockTokenBalance(world: CustomWorld, balance: number) {
 }
 
 Given("I have a pending enhancement job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**", async (route) => {
+  await this.page.route("**/api/jobs/**", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -60,7 +60,7 @@ Given("I have a pending enhancement job", async function(this: CustomWorld) {
 Given(
   "I have a processing enhancement job",
   async function(this: CustomWorld) {
-    await world.page.route("**/api/jobs/**", async (route) => {
+    await this.page.route("**/api/jobs/**", async (route: any) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -73,7 +73,7 @@ Given(
 );
 
 Given("I have a completed enhancement job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**", async (route) => {
+  await this.page.route("**/api/jobs/**", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -84,7 +84,7 @@ Given("I have a completed enhancement job", async function(this: CustomWorld) {
 });
 
 Given("I have a failed enhancement job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**", async (route) => {
+  await this.page.route("**/api/jobs/**", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -95,7 +95,7 @@ Given("I have a failed enhancement job", async function(this: CustomWorld) {
 });
 
 Given("I have a cancelled enhancement job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**", async (route) => {
+  await this.page.route("**/api/jobs/**", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -109,7 +109,7 @@ Given(
   "I have a pending enhancement job with {int} token cost",
   async function(this: CustomWorld, tokenCost: number) {
     const jobWithCost = { ...mockPendingJob, tokensCost: tokenCost };
-    await world.page.route("**/api/jobs/**", async (route) => {
+    await this.page.route("**/api/jobs/**", async (route: any) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -123,7 +123,7 @@ Given(
 // NOTE: "I have {int} tokens" step moved to common.steps.ts
 
 Given("I mock a failed job cancellation", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**/cancel", async (route) => {
+  await this.page.route("**/api/jobs/**/cancel", async (route: any) => {
     await route.fulfill({
       status: 500,
       contentType: "application/json",
@@ -164,7 +164,7 @@ When("I attempt to cancel the job", async function(this: CustomWorld) {
 });
 
 When("I cancel the job", async function(this: CustomWorld) {
-  await world.page.route("**/api/jobs/**/cancel", async (route) => {
+  await this.page.route("**/api/jobs/**/cancel", async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
