@@ -52,16 +52,22 @@ async function main() {
     console.log("\n" + "=".repeat(80));
 
     // Filter for image-related models
-    const imageModels = models.filter((m) =>
-      m.name.includes("image") ||
-      m.name.includes("imagen") ||
-      m.name.includes("vision") ||
-      m.displayName?.toLowerCase().includes("image")
-    );
+    const imageModels = models.filter((model) => {
+      const m = model as Record<string, unknown>;
+      const name = String(m.name || "");
+      const displayName = String(m.displayName || "");
+      return name.includes("image") ||
+        name.includes("imagen") ||
+        name.includes("vision") ||
+        displayName.toLowerCase().includes("image");
+    });
 
     if (imageModels.length > 0) {
       console.log("\nImage-related models:");
-      imageModels.forEach((m) => console.log(`  - ${m.name} (${m.displayName})`));
+      imageModels.forEach((model) => {
+        const m = model as Record<string, unknown>;
+        console.log(`  - ${m.name} (${m.displayName})`);
+      });
     }
   } catch (error) {
     console.error("Error fetching models:", error);
