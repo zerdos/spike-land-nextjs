@@ -468,11 +468,7 @@ describe("usePeer", () => {
 
   it("should use debug level 2 in development environment", async () => {
     const originalEnv = process.env.NODE_ENV;
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value: "development",
-      writable: true,
-      configurable: true,
-    });
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
 
     const config: PeerConfig = { role: "host" };
     renderHook(() => usePeer(config));
@@ -484,20 +480,12 @@ describe("usePeer", () => {
       expect(options).toMatchObject({ debug: 2 });
     });
 
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value: originalEnv,
-      writable: true,
-      configurable: true,
-    });
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 
   it("should use debug level 0 in production environment", async () => {
     const originalEnv = process.env.NODE_ENV;
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value: "production",
-      writable: true,
-      configurable: true,
-    });
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
 
     const config: PeerConfig = { role: "host" };
     renderHook(() => usePeer(config));
@@ -509,11 +497,7 @@ describe("usePeer", () => {
       expect(options).toMatchObject({ debug: 0 });
     });
 
-    Object.defineProperty(process.env, "NODE_ENV", {
-      value: originalEnv,
-      writable: true,
-      configurable: true,
-    });
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 
   it("should handle non-Error exception in initialization catch block", async () => {
