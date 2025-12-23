@@ -9,4 +9,5 @@ export {
   storybookSections,
 } from "./constants";
 export { ContrastCheckerDemo } from "./ContrastCheckerDemo";
+export * from "./Docs";
 export { Section } from "./Section";

@@ -26,10 +26,10 @@
 }
 
 /**
- * Pixel Brand Design System
+ * spike.land design system
  *
  * Brand Philosophy: Dark Futuristic - "The AI Spark"
- * Primary Color: Pixel Cyan #00E5FF
+ * Primary Color: spike.land Cyan #00E5FF
  *
  * Light Mode: Clean white with subtle surfaces
  * Dark Mode: Deep Space with Surface Blue cards (Default/Primary)
@@ -47,31 +47,31 @@
     --font-montserrat:
       "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-    /* Glass-morphism variables */
-    --glass-blur: 12px;
+    /* Glass-morphism variables - Reduced blur as requested */
+    --glass-blur: 8px;
     --glass-opacity-light: 0.85;
-    --glass-opacity-dark: 0.15;
-    --shadow-opacity-light: 0.1;
-    --shadow-opacity-dark: 0.3;
+    --glass-opacity-dark: 0.12;
+    --shadow-opacity-light: 0.08;
+    --shadow-opacity-dark: 0.35;
 
     /* Light Mode - Pixel Brand */
-    --background: 0 0% 100%;
-    /* Clean White #FFFFFF */
+    --background: 210 20% 98%;
+    /* Slightly cooler, brighter grey #F8FAFB */
     --foreground: 240 24% 9%;
     /* Carbon Text #12121C */
-    --card: 210 22% 97%;
-    /* Light Surface #F4F6F8 */
+    --card: 0 0% 100%;
+    /* Pure White for higher contrast #FFFFFF */
     --card-foreground: 240 24% 9%;
     /* Carbon Text */
-    --popover: 210 22% 97%;
-    /* Light Surface */
+    --popover: 0 0% 100%;
+    /* Pure White */
     --popover-foreground: 240 24% 9%;
     /* Carbon Text */
-    --primary: 187 100% 50%;
-    /* Pixel Cyan #00E5FF */
-    --primary-foreground: 240 24% 9%;
-    /* Carbon Text for contrast */
-    --primary-text: 187 100% 28%;
+    --primary: 187 100% 45%;
+    /* Slightly deeper cyan for light mode */
+    --primary-foreground: 0 0% 100%;
+    /* White for contrast on deep cyan */
+    --primary-text: 187 100% 25%;
     /* Accessible Dark Teal for Light Mode Text */
     --secondary: 240 38% 14%;
     /* Surface Blue for accents */
@@ -85,34 +85,31 @@
     /* Pixel Cyan */
     --accent-foreground: 240 24% 9%;
     /* Carbon Text */
-    --destructive: 0 84.2% 50%;
+    --destructive: 350 85% 55%;
+    /* Shifted towards vibrant Ruby-Red */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 24% 89%;
-    /* Grid Grey #DCE0E8 */
-    --input: 220 24% 89%;
+    --border: 220 20% 88%;
     /* Grid Grey */
-    --ring: 187 100% 50%;
-    /* Pixel Cyan */
-    --radius: 1rem;
+    --input: 220 20% 88%;
+    --ring: 187 100% 45%;
+    --radius: 0.875rem;
+
+    /* Semantic Colors - ADDED */
+    --success: 145 75% 42%;
+    --warning: 38 92% 52%;
 
     /* Brand-specific variables */
-    --pixel-cyan: 187 100% 50%;
-    --pixel-fuchsia: 300 100% 50%;
-    /* #FF00FF */
-    --grid-inactive: 220 24% 89%;
-    /* Grid Grey for light mode */
+    --pixel-cyan: 187 100% 45%;
+    --pixel-fuchsia: 320 90% 55%;
+    /* More vibrant fuchsia */
+    --grid-inactive: 220 20% 88%;
 
     /* Chart Colors - Light mode */
     --chart-1: 187 100% 45%;
-    /* Pixel Cyan darker */
-    --chart-2: 160 60% 40%;
-    /* Green */
-    --chart-3: 30 80% 50%;
-    /* Orange */
+    --chart-2: 145 75% 42%;
+    --chart-3: 38 92% 52%;
     --chart-4: 240 38% 30%;
-    /* Surface Blue lighter */
-    --chart-5: 340 75% 50%;
-    /* Pink */
+    --chart-5: 350 85% 55%;
 
     /* Animation Duration Tokens */
     --animation-fast: 150ms;
@@ -125,70 +122,67 @@
 
   .dark {
     /* Dark Mode - Pixel Brand (Default/Primary) */
-    --background: 220 35% 13%;
-    /* Deep Space Lighter #161e2e */
+    --background: 240 45% 4%;
+    /* Darker background for contrast #08080C */
     --foreground: 0 0% 100%;
     /* Pure White */
-    --card: 220 30% 19%;
-    /* Surface Blue Lighter #21293a */
-    --card-foreground: 0 0% 100%;
-    /* Pure White */
-    --popover: 220 30% 19%;
+    --card: 220 30% 14%;
+    /* Dark surface lighter than background #181c25 */
+    --card-foreground: 0 0% 98%;
+    /* Slightly off-white for body reading */
+    --popover: 220 30% 14%;
     /* Surface Blue */
     --popover-foreground: 0 0% 100%;
     /* Pure White */
     --primary: 187 100% 50%;
     /* Pixel Cyan #00E5FF */
-    --primary-foreground: 240 55% 7%;
-    /* Deep Space for contrast */
+    --primary-foreground: 240 45% 4%;
+    /* Dark Space for contrast */
     --primary-text: 187 100% 50%;
     /* Original Cyan for Dark Mode */
-    --secondary: 220 20% 32%;
-    /* Border Color as Secondary Surface */
+    --secondary: 220 20% 25%;
+    /* Darker components */
     --secondary-foreground: 0 0% 100%;
     /* Pure White */
-    --muted: 220 30% 19%;
-    /* Surface Blue */
-    --muted-foreground: 220 15% 70%;
-    /* Text Muted Lighter #aab5c5 */
+    --muted: 220 30% 12%;
+    /* Focused Muted */
+    --muted-foreground: 220 15% 75%;
+    /* Brightened by ~5% for readability */
     --accent: 187 100% 50%;
     /* Pixel Cyan */
-    --accent-foreground: 240 55% 7%;
-    /* Deep Space */
-    --destructive: 0 62.8% 50%;
+    --accent-foreground: 240 45% 4%;
+    /* Dark Space */
+
+    /* Semantic Colors - Dark Optimized */
+    --success: 145 75% 45%;
+    --success-foreground: 240 45% 4%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 240 45% 4%;
+    --destructive: 350 85% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 32%;
-    /* Card Border Lighter #414d60 */
-    --input: 220 20% 32%;
+
+    --border: 220 20% 25%;
+    /* Card Border #3F4451 */
+    --input: 220 20% 25%;
     --ring: 187 100% 50%;
     /* Pixel Cyan */
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
-    --pixel-fuchsia: 300 100% 50%;
-    /* #FF00FF */
-    --grid-inactive: 220 30% 19%;
-    /* Surface Blue for dark mode */
+    --pixel-fuchsia: 320 90% 60%;
+    --grid-inactive: 220 30% 12%;
 
     /* Dark Mode Palette - Enhanced */
-    --surface-blue: 220 30% 19%;
-    /* #21293a */
-    --border-dark: 220 20% 32%;
-    /* #414d60 */
-    --border-item: 220 18% 40%;
-    /* #535f72 */
+    --surface-blue: 220 30% 14%;
+    --border-dark: 220 20% 25%;
+    --border-item: 220 18% 32%;
 
     /* Chart Colors - Dark mode */
     --chart-1: 187 100% 50%;
-    /* Pixel Cyan */
-    --chart-2: 160 60% 45%;
-    /* Green */
-    --chart-3: 30 80% 55%;
-    /* Orange */
+    --chart-2: 145 75% 45%;
+    --chart-3: 38 92% 55%;
     --chart-4: 240 38% 40%;
-    /* Surface Blue lighter */
-    --chart-5: 340 75% 55%;
-    /* Pink */
+    --chart-5: 350 85% 58%;
   }
 
   /* Global Styles */
@@ -259,34 +253,37 @@
 @layer utilities {
   /* Glass-morphism System Tiers */
 
-  /* Glass 0: Background / Subtle (Blur 4-6px, Opacity 4-6%) */
+  /* Elevation Tier 0: Background / Subtle Context */
   .glass-0 {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid transparent;
-    /* Placeholder for glass-edge */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Glass 1: Containers / Cards (Blur 10-14px, Opacity 8-10%) */
+  /* Elevation Tier 1: Section Surface / Cards */
   .glass-1 {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Glass 2: Interactive / Modals (Blur 18-24px, Opacity 12-16%) */
+  /* Elevation Tier 2: Interactive Surface / Modals / Popovers */
   .glass-2 {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 12%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   }
 
-  /* Optical Physics: Dual-tone detailed edges */
+  /* Optical Physics: Dual-tone detailed edges with top highlight */
   .glass-edge {
     box-shadow:
-      inset 1px 1px 0 0 rgba(255, 255, 255, 0.12),
-      inset -1px -1px 0 0 rgba(0, 0, 0, 0.35);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+      /* Top highlighted edge */ inset 1px 0 0 0 rgba(255, 255, 255, 0.1),
+      inset -1px 0 0 0 rgba(0, 0, 0, 0.2),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.3);
   }
 
   /* Glass Input: Glass-within-glass */
@@ -342,35 +339,19 @@
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(
-      135deg,
-      hsl(217 91% 60%) 0%,
-      hsl(221 83% 53%) 100%
-    );
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 100%);
   }
 
   .gradient-purple {
-    background: linear-gradient(
-      135deg,
-      hsl(258 90% 66%) 0%,
-      hsl(263 70% 50%) 100%
-    );
+    background: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(263 70% 50%) 100%);
   }
 
   .gradient-pink {
-    background: linear-gradient(
-      135deg,
-      hsl(330 81% 60%) 0%,
-      hsl(338 78% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(338 78% 48%) 100%);
   }
 
   .gradient-orange {
-    background: linear-gradient(
-      135deg,
-      hsl(25 95% 53%) 0%,
-      hsl(21 90% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(21 90% 48%) 100%);
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -388,19 +369,11 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--accent)),
-      hsl(var(--primary))
-    );
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
   }
 
   .bg-gradient-hero {
@@ -447,31 +420,15 @@
   /* Grid background pattern for landing page */
   .bg-grid-pattern {
     background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.3) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.3) 1px,
-      transparent 1px
-    );
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.3) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .dark .bg-grid-pattern {
     background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.5) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.5) 1px,
-      transparent 1px
-    );
+      linear-gradient(to right, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-inactive) / 0.5) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 

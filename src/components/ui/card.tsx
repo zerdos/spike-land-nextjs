@@ -8,12 +8,13 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: "glass-1 glass-edge text-card-foreground shadow-lg hover:shadow-xl glass-hover",
-        solid: "bg-card text-card-foreground border border-border shadow-sm",
+        default:
+          "glass-1 glass-edge text-card-foreground shadow-lg hover:shadow-2xl hover:bg-white/10 glass-hover",
+        solid: "bg-secondary text-secondary-foreground border border-white/5 shadow-sm",
         highlighted:
-          "glass-1 glass-edge text-card-foreground shadow-glow-primary scale-[1.01] backdrop-blur-[14px] ring-1 ring-primary/20",
+          "glass-1 glass-edge text-card-foreground shadow-glow-cyan scale-[1.01] backdrop-blur-[14px] ring-1 ring-primary/30",
         dashed:
-          "border-2 border-dashed border-white/20 bg-[radial-gradient(circle_at_center,_var(--grid-inactive)_1px,_transparent_1px)] bg-[size:24px_24px] text-muted-foreground shadow-none opacity-80 hover:opacity-100 hover:border-white/30 transition-all",
+          "border-2 border-dashed border-white/10 bg-white/[0.02] text-muted-foreground shadow-none opacity-60 hover:opacity-100 hover:border-primary/40 hover:bg-primary/5 transition-all",
         ghost: "border-none shadow-none bg-transparent hover:glass-0 transition-colors",
       },
     },
@@ -56,7 +57,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("font-semibold leading-none tracking-tight", className)}
+    className={cn("font-bold font-heading leading-tight tracking-tight text-foreground", className)}
     {...props}
   />
 ));

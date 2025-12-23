@@ -68,27 +68,26 @@ export function CookieConsent() {
       aria-labelledby="cookie-consent-title"
       aria-describedby="cookie-consent-description"
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50",
-        "bg-background/95 backdrop-blur-sm border-t border-border",
-        "p-4 md:p-6",
-        "animate-in slide-in-from-bottom-4 duration-300",
+        "fixed bottom-0 left-0 right-0 z-40",
+        "bg-background/60 backdrop-blur-md border-t border-white/5",
+        "p-3 md:p-4",
+        "animate-in slide-in-from-bottom-2 duration-300",
       )}
     >
-      <div className="container mx-auto max-w-4xl">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="container mx-auto max-w-5xl px-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex-1">
             <h2
               id="cookie-consent-title"
-              className="text-lg font-semibold text-foreground mb-1"
+              className="text-sm font-bold font-heading text-foreground mb-0.5"
             >
               Cookie Preferences
             </h2>
             <p
               id="cookie-consent-description"
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground leading-relaxed max-w-2xl"
             >
-              We use cookies to enhance your experience, analyze site traffic, and for marketing
-              purposes. By clicking &quot;Accept&quot;, you consent to our use of cookies.{" "}
+              We use cookies to enhance your experience and analyze traffic.{" "}
               <a
                 href="/cookies"
                 className="text-primary hover:underline"
@@ -97,17 +96,19 @@ export function CookieConsent() {
               </a>
             </p>
           </div>
-          <div className="flex gap-3 shrink-0">
+          <div className="flex gap-2 shrink-0">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
+              className="text-[10px] h-8"
               onClick={handleDecline}
             >
               Decline
             </Button>
             <Button
-              variant="default"
+              variant="secondary"
               size="sm"
+              className="text-[10px] h-8 px-4"
               onClick={handleAccept}
             >
               Accept
