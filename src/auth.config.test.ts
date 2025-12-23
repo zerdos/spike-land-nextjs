@@ -13,8 +13,14 @@ vi.mock("next-auth/providers/google", () => ({
   default: vi.fn(() => ({ id: "google" })),
 }));
 
+vi.mock("next-auth/providers/apple", () => ({
+  default: vi.fn(() => ({ id: "apple" })),
+}));
+
 describe("authConfig", () => {
   beforeEach(() => {
+    process.env.AUTH_APPLE_ID = "test-apple-id";
+    process.env.AUTH_APPLE_SECRET = "test-apple-secret";
     process.env.AUTH_FACEBOOK_ID = "test-facebook-id";
     process.env.AUTH_FACEBOOK_SECRET = "test-facebook-secret";
     process.env.GITHUB_ID = "test-github-id";
@@ -25,7 +31,7 @@ describe("authConfig", () => {
   });
 
   it("should have providers configured", () => {
-    expect(authConfig.providers).toHaveLength(3);
+    expect(authConfig.providers).toHaveLength(4);
   });
 
   it("should have session callback", () => {
