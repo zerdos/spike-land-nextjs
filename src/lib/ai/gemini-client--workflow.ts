@@ -692,7 +692,7 @@ export async function enhanceImageWithGemini(
   };
 
   const config = {
-    responseModalities: ["IMAGE"],
+    responseModalities: ["IMAGE", "TEXT"],
     imageConfig: {
       imageSize: params.tier,
     },
@@ -923,7 +923,7 @@ export async function generateImageWithGemini(
   };
 
   const config = {
-    responseModalities: ["IMAGE"],
+    responseModalities: ["IMAGE", "TEXT"],
     imageConfig: {
       imageSize: params.tier,
       ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
@@ -981,7 +981,7 @@ export async function modifyImageWithGemini(
   };
 
   const config = {
-    responseModalities: ["IMAGE"],
+    responseModalities: ["IMAGE", "TEXT"],
     imageConfig: {
       imageSize: params.tier,
       ...(params.aspectRatio && { aspectRatio: params.aspectRatio }),
