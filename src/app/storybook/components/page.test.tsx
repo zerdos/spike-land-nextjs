@@ -4,96 +4,54 @@ import ComponentsPage from "./page";
 
 describe("ComponentsPage", () => {
   describe("rendering", () => {
-    it("should render the section title", () => {
+    it("should render the main title", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Components")).toBeInTheDocument();
+      expect(screen.getByText("UI Components")).toBeInTheDocument();
     });
 
-    it("should render the section description", () => {
+    it("should render usage guide", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText(/ui component library showcase/i))
-        .toBeInTheDocument();
-    });
-  });
-
-  describe("cards section", () => {
-    it("should render cards card", () => {
-      render(<ComponentsPage />);
-      expect(screen.getByText("Cards")).toBeInTheDocument();
-      expect(screen.getByText(/container components with glass-morphism/i))
-        .toBeInTheDocument();
-    });
-
-    it("should render different card variants", () => {
-      render(<ComponentsPage />);
-      expect(screen.getByText("Default Card")).toBeInTheDocument();
-      expect(screen.getByText("Highlighted Card")).toBeInTheDocument();
-      expect(screen.getByText("Dashed Card")).toBeInTheDocument();
+      expect(screen.getByText(/Use these components to build consistent/i)).toBeInTheDocument();
     });
   });
 
-  describe("badges section", () => {
-    it("should render badges card", () => {
+  describe("sections", () => {
+    it("should render surface system section", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Badges")).toBeInTheDocument();
-      expect(screen.getByText(/small status indicators/i)).toBeInTheDocument();
+      expect(screen.getByText("Surface System")).toBeInTheDocument();
     });
 
-    it("should render badge variants", () => {
+    it("should render inputs and controls", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Default")).toBeInTheDocument();
-      expect(screen.getByText("Secondary")).toBeInTheDocument();
-      expect(screen.getByText("Outline")).toBeInTheDocument();
-      expect(screen.getByText("Destructive")).toBeInTheDocument();
-    });
-  });
-
-  describe("form elements section", () => {
-    it("should render form elements card", () => {
-      render(<ComponentsPage />);
-      expect(screen.getByText("Form Elements")).toBeInTheDocument();
-      expect(screen.getByText(/input fields and form controls/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Inputs & Controls")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("e.g. user@spike.land")).toBeInTheDocument();
+      expect(screen.getByText("Enable GPU")).toBeInTheDocument();
     });
 
-    it("should render input fields", () => {
+    it("should render selection elements", () => {
       render(<ComponentsPage />);
-      expect(screen.getByPlaceholderText("Enter text...")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Disabled")).toBeInTheDocument();
+      expect(screen.getByText("Hobby (Free)")).toBeInTheDocument();
+      expect(screen.getByText("Standard Enhancement")).toBeInTheDocument();
     });
 
-    it("should render checkboxes", () => {
+    it("should render progress & status section", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Checkboxes")).toBeInTheDocument();
-      expect(screen.getByLabelText("Option 1")).toBeInTheDocument();
-      expect(screen.getByLabelText("Option 2 (checked)")).toBeInTheDocument();
+      expect(screen.getByText("Progress & Status")).toBeInTheDocument();
+      expect(screen.getByText("Task Progress")).toBeInTheDocument();
+      expect(screen.getByText("Optimization Complete")).toBeInTheDocument();
     });
 
-    it("should render radio group", () => {
+    it("should render semantic messaging section", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Radio Group")).toBeInTheDocument();
-      expect(screen.getByLabelText("Standard Enhancement")).toBeInTheDocument();
-      expect(screen.getByLabelText("Pro Enhancement")).toBeInTheDocument();
-      expect(screen.getByLabelText("Max Enhancement")).toBeInTheDocument();
+      expect(screen.getByText("Semantic Messaging")).toBeInTheDocument();
+      expect(screen.getByText("System Update")).toBeInTheDocument();
+      expect(screen.getByText("Deployment Success")).toBeInTheDocument();
+      expect(screen.getByText("Critical Failure")).toBeInTheDocument();
     });
 
-    it("should render select dropdown", () => {
+    it("should render navigation & layout section", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Select / Dropdown")).toBeInTheDocument();
-    });
-
-    it("should render toggle switch", () => {
-      render(<ComponentsPage />);
-      expect(screen.getByLabelText("Toggle switch")).toBeInTheDocument();
-    });
-  });
-
-  describe("separators section", () => {
-    it("should render separators card", () => {
-      render(<ComponentsPage />);
-      expect(screen.getByText("Separators")).toBeInTheDocument();
-      expect(screen.getByText(/visual dividers for content sections/i))
-        .toBeInTheDocument();
+      expect(screen.getByText("Navigation & Layout")).toBeInTheDocument();
     });
   });
 });
