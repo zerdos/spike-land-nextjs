@@ -223,7 +223,9 @@ export function initializeConsoleCapture(): void {
     if (pendingErrors.length > 0) {
       navigator.sendBeacon(
         "/api/errors/report",
-        JSON.stringify({ errors: pendingErrors }),
+        new Blob([JSON.stringify({ errors: pendingErrors })], {
+          type: "application/json",
+        }),
       );
     }
   });
