@@ -429,8 +429,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
   describe("Date range handling", () => {
     it("should include entire end day", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-15&endDate=2024-01-15",
@@ -468,7 +468,7 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     it("should return 500 on database error during attribution lookup", async () => {
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([
         { visitorId: "v1" },
-      ]);
+      ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockRejectedValue(
         new Error("Attribution query failed"),
       );
@@ -491,14 +491,14 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v1" },
         { visitorId: "v2" },
         { visitorId: "v3" },
-      ]);
+      ] as unknown as never);
       vi.mocked(prisma.campaignAttribution.findMany).mockImplementation(
         async (args: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
-            return [{ userId: "u1" }];
+            return [{ userId: "u1" }] as unknown as never;
           }
-          return [];
+          return [] as unknown as never;
         },
       );
 
