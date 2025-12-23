@@ -305,6 +305,7 @@ Then(
     // Verify the page loaded successfully
     const image = this.page.locator("img").first();
     await expect(image).toBeVisible({ timeout: 10000 });
+    return;
   },
 );
 
