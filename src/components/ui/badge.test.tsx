@@ -8,15 +8,16 @@ describe("Badge Component", () => {
       render(<Badge>Default Badge</Badge>);
       const badge = screen.getByText("Default Badge");
       expect(badge).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-primary");
-      expect(badge).toHaveClass("text-primary-foreground");
+      expect(badge).toHaveClass("glass-1");
+      expect(badge).toHaveClass("glass-edge");
+      expect(badge).toHaveClass("text-foreground");
     });
 
     it("should render with secondary variant", () => {
       render(<Badge variant="secondary">Secondary Badge</Badge>);
       const badge = screen.getByText("Secondary Badge");
-      expect(badge).toHaveClass("bg-secondary");
-      expect(badge).toHaveClass("text-secondary-foreground");
+      expect(badge).toHaveClass("bg-white/5");
+      expect(badge).toHaveClass("text-muted-foreground");
     });
 
     it("should render with destructive variant", () => {
@@ -53,7 +54,7 @@ describe("Badge Component", () => {
         </Badge>,
       );
       const badge = screen.getByText("Custom Badge");
-      expect(badge).toHaveClass("bg-secondary");
+      expect(badge).toHaveClass("bg-white/5");
       expect(badge).toHaveClass("custom-spacing");
     });
   });
@@ -84,9 +85,8 @@ describe("Badge Component", () => {
       expect(badge).toHaveClass("inline-flex");
       expect(badge).toHaveClass("items-center");
       expect(badge).toHaveClass("rounded-full");
-      expect(badge).toHaveClass("border");
-      expect(badge).toHaveClass("px-2.5");
-      expect(badge).toHaveClass("py-0.5");
+      expect(badge).toHaveClass("px-2");
+      expect(badge).toHaveClass("py-1");
       expect(badge).toHaveClass("text-xs");
       expect(badge).toHaveClass("font-semibold");
     });

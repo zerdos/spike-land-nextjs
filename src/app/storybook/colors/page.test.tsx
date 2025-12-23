@@ -41,8 +41,8 @@ describe("ColorsPage", () => {
     it("should render theme foundations section", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Theme Foundations")).toBeInTheDocument();
-      expect(screen.getByText(/Dark Mode/i)).toBeInTheDocument();
-      expect(screen.getByText(/Light Mode/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dark Mode \(Deep Space\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Light Mode \(Carbon\)/i)).toBeInTheDocument();
     });
 
     it("should render optical effects section", () => {

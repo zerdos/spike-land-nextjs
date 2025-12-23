@@ -47,9 +47,10 @@ describe("Card Components", () => {
       render(<Card variant="solid" data-testid="card">Content</Card>);
       const card = screen.getByTestId("card");
       expect(card).toHaveClass(
-        "bg-card",
+        "bg-secondary",
+        "text-secondary-foreground",
         "border",
-        "border-border",
+        "border-white/5",
         "shadow-sm",
       );
     });
@@ -57,7 +58,15 @@ describe("Card Components", () => {
     it("should render with highlighted variant", () => {
       render(<Card variant="highlighted" data-testid="card">Content</Card>);
       const card = screen.getByTestId("card");
-      expect(card).toHaveClass("glass-1", "glass-edge", "shadow-glow-primary");
+      expect(card).toHaveClass(
+        "glass-1",
+        "glass-edge",
+        "shadow-glow-cyan",
+        "scale-[1.01]",
+        "backdrop-blur-[14px]",
+        "ring-1",
+        "ring-primary/30",
+      );
     });
 
     it("should render with dashed variant", () => {
@@ -117,9 +126,11 @@ describe("Card Components", () => {
       render(<CardTitle data-testid="title">Content</CardTitle>);
       const title = screen.getByTestId("title");
       expect(title).toHaveClass(
-        "font-semibold",
-        "leading-none",
+        "font-bold",
+        "font-heading",
+        "leading-tight",
         "tracking-tight",
+        "text-foreground",
       );
     });
 

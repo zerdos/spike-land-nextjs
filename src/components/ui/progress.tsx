@@ -5,13 +5,57 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+import { cva, type VariantProps } from "class-variance-authority";
+
+const indicatorVariants = cva(
+  "h-full w-full flex-1 transition-all duration-500 ease-out relative",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary",
+        success: "bg-success",
+        warning: "bg-warning",
+        destructive: "bg-destructive",
+      },
+      glow: {
+        true: "",
+        false: "",
+      },
+    },
+    compoundVariants: [
+      {
+        variant: "default",
+        glow: true,
+        className: "shadow-glow-cyan",
+      },
+      {
+        variant: "success",
+        glow: true,
+        className: "shadow-glow-success",
+      },
+      {
+        variant: "warning",
+        glow: true,
+        className: "shadow-glow-warning",
+      },
+      {
+        variant: "destructive",
+        glow: true,
+        className: "shadow-glow-destructive",
+      },
+    ],
+    defaultVariants: {
+      variant: "default",
+      glow: false,
+    },
+  },
+);
+
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
-    glow?: boolean;
-    variant?: "default" | "success" | "warning" | "destructive";
-  }
->(({ className, value, glow = false, variant = "default", ...props }, ref) => (
+  & React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+  & VariantProps<typeof indicatorVariants>
+>(({ className, value, variant, glow, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
@@ -22,17 +66,7 @@ const Progress = React.forwardRef<
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className={cn(
-        "h-full w-full flex-1 transition-all",
-        variant === "default" && "bg-primary",
-        variant === "success" && "bg-success",
-        variant === "warning" && "bg-warning",
-        variant === "destructive" && "bg-destructive",
-        glow && variant === "default" && "shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
-        glow && variant === "success" && "shadow-[0_0_10px_hsl(var(--success)/0.5)]",
-        glow && variant === "warning" && "shadow-[0_0_10px_hsl(var(--warning)/0.5)]",
-        glow && variant === "destructive" && "shadow-[0_0_10px_hsl(var(--destructive)/0.5)]",
-      )}
+      className={cn(indicatorVariants({ variant, glow }))}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
