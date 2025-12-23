@@ -823,12 +823,7 @@ describe("AuthButtons Component", () => {
         );
       });
 
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       render(<AuthButtons />);
 
@@ -874,12 +869,7 @@ describe("AuthButtons Component", () => {
             }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -944,12 +934,7 @@ describe("AuthButtons Component", () => {
             }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       const originalLocation = window.location;
       const mockOrigin = "http://localhost:3000";
@@ -1060,12 +1045,7 @@ describe("AuthButtons Component", () => {
             }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({
-        ok: true,
-        error: null,
-        status: 200,
-        url: "/",
-      });
+      vi.mocked(signIn).mockResolvedValue(createSignInResponse());
 
       const originalLocation = window.location;
       Object.defineProperty(window, "location", {
@@ -1290,12 +1270,14 @@ describe("AuthButtons Component", () => {
             }),
         });
       });
-      vi.mocked(signIn).mockResolvedValue({
-        error: "CredentialsSignin",
-        status: 401,
-        ok: false,
-        url: null,
-      });
+      vi.mocked(signIn).mockResolvedValue(
+        createSignInResponse({
+          error: "CredentialsSignin",
+          status: 401,
+          ok: false,
+          url: null,
+        }),
+      );
 
       render(<AuthButtons />);
 

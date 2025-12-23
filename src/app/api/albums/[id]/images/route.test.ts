@@ -229,7 +229,7 @@ describe("Album Images API", () => {
 
       // Extract sort orders from mock calls
       for (let i = 0; i < 3; i++) {
-        const call = createMock.mock.calls[i][0];
+        const call = createMock.mock.calls[i]![0] as { data: { sortOrder: number; }; };
         const sortOrder = call.data.sortOrder;
         sortOrders.add(sortOrder);
       }

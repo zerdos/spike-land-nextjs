@@ -1,10 +1,19 @@
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { UserRole } from "@prisma/client";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
 import { useTransitionRouter } from "next-view-transitions";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import TokensPage from "./page";
+
+// Mock authenticated user for tests
+const mockAuthUser = {
+  id: "user-123",
+  name: "Test User",
+  email: "test@example.com",
+  role: UserRole.USER,
+} as const;
 
 // Mock next-auth
 vi.mock("next-auth/react", () => ({
@@ -65,7 +74,7 @@ describe("TokensPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useTransitionRouter).mockReturnValue(
-      mockRouter as ReturnType<typeof useTransitionRouter>,
+      mockRouter as unknown as ReturnType<typeof useTransitionRouter>,
     );
     vi.mocked(global.fetch).mockResolvedValue({
       json: () => Promise.resolve({ url: "https://checkout.stripe.com/test" }),
@@ -88,7 +97,7 @@ describe("TokensPage", () => {
   it("should render page for authenticated users", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -102,7 +111,7 @@ describe("TokensPage", () => {
   it("should display current token balance", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -119,7 +128,7 @@ describe("TokensPage", () => {
   it("should display estimated enhancements", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -139,7 +148,7 @@ describe("TokensPage", () => {
   it("should display token stats", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -157,7 +166,7 @@ describe("TokensPage", () => {
   it("should display voucher input", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -172,7 +181,7 @@ describe("TokensPage", () => {
   it("should display token packages", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -191,7 +200,7 @@ describe("TokensPage", () => {
   it("should show popular badge on pro package", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -205,7 +214,7 @@ describe("TokensPage", () => {
   it("should show best value badge on power package", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -220,7 +229,7 @@ describe("TokensPage", () => {
     const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -256,7 +265,7 @@ describe("TokensPage", () => {
   it("should display token usage guide", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -273,7 +282,7 @@ describe("TokensPage", () => {
   it("should render with loading state", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "loading",
@@ -289,7 +298,7 @@ describe("TokensPage", () => {
   it("should have refresh button", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -304,7 +313,7 @@ describe("TokensPage", () => {
     const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -322,7 +331,7 @@ describe("TokensPage", () => {
     const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -341,7 +350,7 @@ describe("TokensPage", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -368,7 +377,7 @@ describe("TokensPage", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -398,7 +407,7 @@ describe("TokensPage", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -424,7 +433,7 @@ describe("TokensPage", () => {
     const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: null,
-      status: "authenticated",
+      status: "unauthenticated",
       update: vi.fn(),
     });
 
@@ -440,7 +449,7 @@ describe("TokensPage", () => {
   it("should show loading spinner when balance is loading", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -449,9 +458,11 @@ describe("TokensPage", () => {
 
     vi.mocked(useTokenBalance).mockReturnValue({
       balance: 0,
+      tier: null,
+      maxBalance: null,
       isLoading: true,
       stats: null,
-      estimatedEnhancements: null,
+      estimatedEnhancements: { tier1K: 0, tier2K: 0, tier4K: 0, suggested: 0, suggestedTier: "1K" },
       refetch: mockRefetch,
       error: null,
       isLowBalance: false,
@@ -468,7 +479,7 @@ describe("TokensPage", () => {
   it("should not display estimated enhancements when null", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -477,9 +488,11 @@ describe("TokensPage", () => {
 
     vi.mocked(useTokenBalance).mockReturnValue({
       balance: 50,
+      tier: null,
+      maxBalance: null,
       isLoading: false,
       stats: null,
-      estimatedEnhancements: null,
+      estimatedEnhancements: { tier1K: 0, tier2K: 0, tier4K: 0, suggested: 0, suggestedTier: "1K" },
       refetch: mockRefetch,
       error: null,
       isLowBalance: false,
@@ -496,7 +509,7 @@ describe("TokensPage", () => {
   it("should display null stats as zeros", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -505,6 +518,8 @@ describe("TokensPage", () => {
 
     vi.mocked(useTokenBalance).mockReturnValue({
       balance: 50,
+      tier: null,
+      maxBalance: null,
       isLoading: false,
       stats: null,
       estimatedEnhancements: {
@@ -532,7 +547,7 @@ describe("TokensPage", () => {
   it("should show save badge for non-starter packages", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -549,7 +564,7 @@ describe("TokensPage", () => {
     const user = userEvent.setup();
     vi.mocked(useSession).mockReturnValue({
       data: {
-        user: { name: "Test User", email: "test@example.com" },
+        user: mockAuthUser,
         expires: "2024-12-31",
       },
       status: "authenticated",
@@ -596,6 +611,27 @@ describe("TokensPage", () => {
       data: null,
       status: "loading",
       update: vi.fn(),
+    });
+
+    vi.mocked(useTokenBalance).mockReturnValue({
+      balance: 50,
+      tier: null,
+      maxBalance: null,
+      isLoading: false,
+      stats: null,
+      estimatedEnhancements: {
+        tier1K: 25,
+        tier2K: 10,
+        tier4K: 5,
+        suggested: 25,
+        suggestedTier: "1K",
+      },
+      refetch: mockRefetch,
+      error: null,
+      isLowBalance: false,
+      isCriticalBalance: false,
+      lastRegeneration: null,
+      timeUntilNextRegeneration: null,
     });
 
     render(<TokensPage />);

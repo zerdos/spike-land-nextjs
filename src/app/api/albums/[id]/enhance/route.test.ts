@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
@@ -8,6 +9,7 @@ const mockSession = {
     id: "user-123",
     name: "Test User",
     email: "test@example.com",
+    role: UserRole.USER,
   },
 };
 
@@ -160,7 +162,10 @@ describe("POST /api/albums/[id]/enhance", () => {
 
   it("should return 401 if user id is missing", async () => {
     vi.mocked(await import("@/auth")).auth.mockResolvedValueOnce({
-      user: { name: "Test", email: "test@example.com" },
+      user: { name: "Test", email: "test@example.com" } as unknown as {
+        id: string;
+        role: UserRole;
+      },
     });
 
     const req = createMockRequest({ tier: "TIER_1K" });

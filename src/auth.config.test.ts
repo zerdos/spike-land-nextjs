@@ -46,13 +46,13 @@ describe("authConfig", () => {
   });
 
   describe("session callback", () => {
-    it("should add user id from token.sub", () => {
+    it("should add user id from token.sub", async () => {
       const session = { user: { name: "Test User" } } as {
         user: { name: string; id?: string; };
       };
       const token = { sub: "user_abc123" };
 
-      const result = authConfig.callbacks?.session?.(
+      const result = await authConfig.callbacks?.session?.(
         { session, token } as Parameters<
           NonNullable<typeof authConfig.callbacks.session>
         >[0],
@@ -61,13 +61,13 @@ describe("authConfig", () => {
       expect(result?.user?.id).toBe("user_abc123");
     });
 
-    it("should handle missing token.sub", () => {
+    it("should handle missing token.sub", async () => {
       const session = { user: { name: "Test User" } } as {
         user: { name: string; id?: string; };
       };
       const token = {};
 
-      const result = authConfig.callbacks?.session?.(
+      const result = await authConfig.callbacks?.session?.(
         { session, token } as Parameters<
           NonNullable<typeof authConfig.callbacks.session>
         >[0],
@@ -78,11 +78,11 @@ describe("authConfig", () => {
   });
 
   describe("jwt callback", () => {
-    it("should use stable ID for users with email", () => {
+    it("should use stable ID for users with email", async () => {
       const token = {} as { sub?: string; };
       const user = { id: "some-id", email: "test@example.com" };
 
-      const result = authConfig.callbacks?.jwt?.(
+      const result = await authConfig.callbacks?.jwt?.(
         { token, user } as Parameters<
           NonNullable<typeof authConfig.callbacks.jwt>
         >[0],
@@ -91,11 +91,11 @@ describe("authConfig", () => {
       expect(result?.sub).toMatch(/^user_[a-f0-9]{32}$/);
     });
 
-    it("should use provider prefix for users without email", () => {
+    it("should use provider prefix for users without email", async () => {
       const token = {} as { sub?: string; };
       const user = { id: "provider-id-123" };
 
-      const result = authConfig.callbacks?.jwt?.(
+      const result = await authConfig.callbacks?.jwt?.(
         { token, user } as Parameters<
           NonNullable<typeof authConfig.callbacks.jwt>
         >[0],
@@ -104,10 +104,10 @@ describe("authConfig", () => {
       expect(result?.sub).toBe("provider_provider-id-123");
     });
 
-    it("should preserve existing token.sub when no user", () => {
+    it("should preserve existing token.sub when no user", async () => {
       const token = { sub: "existing-id" };
 
-      const result = authConfig.callbacks?.jwt?.(
+      const result = await authConfig.callbacks?.jwt?.(
         { token } as Parameters<
           NonNullable<typeof authConfig.callbacks.jwt>
         >[0],
