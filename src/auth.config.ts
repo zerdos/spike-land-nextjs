@@ -9,6 +9,7 @@
  */
 
 import type { NextAuthConfig } from "next-auth";
+import Apple from "next-auth/providers/apple";
 import Facebook from "next-auth/providers/facebook";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
@@ -100,6 +101,10 @@ export const authConfig: NextAuthConfig = {
     },
   },
   providers: [
+    Apple({
+      clientId: process.env.AUTH_APPLE_ID?.trim(),
+      clientSecret: process.env.AUTH_APPLE_SECRET?.trim(),
+    }),
     Facebook({
       clientId: process.env.AUTH_FACEBOOK_ID?.trim(),
       clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim(),
