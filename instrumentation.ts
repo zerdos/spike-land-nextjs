@@ -4,6 +4,9 @@
  * Runs once when the Next.js server starts.
  * Used to initialize server-side error capture.
  *
+ * Note: As of Next.js 16.x, instrumentation.ts is supported natively without
+ * requiring the experimental.instrumentationHook flag in next.config.ts.
+ *
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 
