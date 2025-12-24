@@ -302,6 +302,42 @@
       backdrop-filter: blur(var(--glass-blur));
       -webkit-backdrop-filter: blur(var(--glass-blur));
     }
+
+    /* Aura Surfaces: Vibrant, colorful glass variants */
+    .glass-aura-blue {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.1));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 1px 0 rgba(14, 165, 233, 0.4);
+    }
+
+    .glass-aura-green {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.4);
+    }
+
+    .glass-aura-orange {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(249, 115, 22, 0.1));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 1px 0 rgba(249, 115, 22, 0.4);
+    }
+
+    .glass-aura-fuchsia {
+      background: linear-gradient(135deg, rgba(217, 70, 239, 0.2), rgba(217, 70, 239, 0.1));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 1px 0 rgba(217, 70, 239, 0.4);
+    }
+
+    .glass-aura-purple {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 1px 0 rgba(168, 85, 247, 0.4);
+    }
   }
 
   /* Elevation Tier 2: Interactive Surface / Modals / Popovers */
@@ -460,6 +496,26 @@
 
   .shadow-glow-cyan-sm {
     box-shadow: 0 0 10px hsl(var(--pixel-cyan) / 0.3), 0 2px 8px hsl(var(--pixel-cyan) / 0.2);
+  }
+
+  .shadow-negative {
+    box-shadow:
+      rgb(204, 219, 232) 3px 3px 6px 0px inset,
+      rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset;
+  }
+
+  .shadow-floating {
+    box-shadow:
+      rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+      rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+      rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  }
+
+  .shadow-magic {
+    box-shadow:
+      0 50px 100px -20px rgba(0, 0, 0, 0.6),
+      0 30px 60px -30px rgba(0, 0, 0, 0.7),
+      inset 0 1px 1px 0 rgba(0, 229, 255, 0.1);
   }
 
   /* Grid background pattern for landing page */

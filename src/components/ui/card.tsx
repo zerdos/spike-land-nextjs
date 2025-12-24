@@ -9,15 +9,23 @@ const cardVariants = cva(
     variants: {
       variant: {
         default:
-          "glass-1 glass-edge text-card-foreground shadow-lg hover:shadow-2xl hover:bg-white/10 glass-hover active:scale-[0.99] active:duration-150",
+          "glass-1 glass-edge text-card-foreground shadow-lg active:scale-[0.99] active:duration-150",
         solid:
           "bg-secondary text-secondary-foreground border border-white/5 shadow-sm active:scale-[0.99]",
         highlighted:
-          "glass-1 glass-edge text-card-foreground shadow-glow-cyan scale-[1.01] backdrop-blur-[14px] ring-1 ring-primary/30 active:scale-[1.0]",
+          "glass-1 glass-edge text-card-foreground shadow-glow-cyan backdrop-blur-[14px] ring-1 ring-primary/30 active:scale-[1.0]",
         dashed:
-          "border-2 border-dashed border-white/10 bg-white/[0.02] text-muted-foreground shadow-none opacity-60 hover:opacity-100 hover:border-primary/40 hover:bg-primary/5 transition-all active:scale-[0.98]",
-        ghost:
-          "border-none shadow-none bg-transparent hover:glass-0 transition-colors active:bg-white/5",
+          "border-2 border-dashed border-white/10 bg-white/[0.02] text-muted-foreground shadow-none opacity-60 transition-all active:scale-[0.98]",
+        ghost: "border-none shadow-none bg-transparent transition-colors active:bg-white/5",
+        negative: "shadow-negative bg-[#E0E5EC] text-slate-800 border-none",
+        floating: "shadow-floating bg-card glass-edge text-card-foreground",
+        magic:
+          "shadow-magic bg-card/80 border-t border-white/10 glass-edge-sm text-card-foreground backdrop-blur-3xl",
+        blue: "glass-aura-blue border-none text-white",
+        green: "glass-aura-green border-none text-white",
+        orange: "glass-aura-orange border-none text-white",
+        fuchsia: "glass-aura-fuchsia border-none text-white",
+        purple: "glass-aura-purple border-none text-white",
       },
     },
     defaultVariants: {

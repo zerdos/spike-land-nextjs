@@ -34,7 +34,15 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  Instagram,
+  MessageSquare,
+  Music4,
+  Twitter,
+} from "lucide-react";
 
 export default function ComponentsPage() {
   return (
@@ -60,40 +68,153 @@ export default function ComponentsPage() {
         ]}
       />
 
-      {/* Surface System */}
+      {/* Card Variants */}
       <section className="space-y-8">
-        <h2 className="text-3xl font-bold font-heading">Surface System</h2>
+        <h2 className="text-3xl font-bold font-heading">Card Variants</h2>
         <p className="text-muted-foreground -mt-4">
-          Our elevation system uses glass-morphism tiers to create visual hierarchy and depth.
+          Beyond glass-morphism, we use specialized card styles for specific contexts.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="glass-0">
-            <CardContent className="pt-6 space-y-2 text-center">
-              <Badge variant="outline" className="mb-2">Tier 0: Base</Badge>
-              <p className="text-xs text-muted-foreground">
-                Minimal blur. Used for nested items or subtle backgrounds.
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <Card variant="default">
+            <CardContent className="pt-6 text-center">
+              <Badge className="mb-2">Default</Badge>
+              <p className="text-xs text-muted-foreground">Standard glass-1 with hover effects.</p>
             </CardContent>
           </Card>
-          <Card className="glass-1">
-            <CardContent className="pt-6 space-y-2 text-center">
+          <Card variant="solid">
+            <CardContent className="pt-6 text-center">
+              <Badge variant="secondary" className="mb-2">Solid</Badge>
+              <p className="text-xs text-muted-foreground">High-contrast opaque background.</p>
+            </CardContent>
+          </Card>
+          <Card variant="dashed">
+            <CardContent className="pt-6 text-center">
+              <Badge variant="outline" className="mb-2">Dashed</Badge>
+              <p className="text-xs text-muted-foreground">Placeholders or secondary actions.</p>
+            </CardContent>
+          </Card>
+          <Card variant="highlighted">
+            <CardContent className="pt-6 text-center">
               <Badge variant="outline" className="mb-2 border-primary/30 text-primary">
-                Tier 1: Standard
+                Highlighted
               </Badge>
               <p className="text-xs text-muted-foreground">
-                Medium blur. The default surface for most cards and panels.
+                Attention-grabbing with persistent glow.
               </p>
             </CardContent>
           </Card>
-          <Card className="glass-2">
-            <CardContent className="pt-6 space-y-2 text-center">
-              <Badge variant="outline" className="mb-2 border-accent/30 text-accent">
-                Tier 2: Interactive
+          <Card variant="negative">
+            <CardContent className="pt-6 text-center">
+              <Badge variant="outline" className="mb-2 border-slate-400 text-slate-600">
+                Negative
               </Badge>
-              <p className="text-xs text-muted-foreground">
-                High blur. Used for overlays, modals, and hovering elements.
+              <p className="text-xs text-slate-500 font-medium font-mono uppercase tracking-tighter">
+                Inset Shadows
               </p>
             </CardContent>
+          </Card>
+          <Card variant="floating" className="transition-all">
+            <CardContent className="pt-6 text-center">
+              <Badge variant="outline" className="mb-2 border-indigo-500/30 text-indigo-400">
+                Floating
+              </Badge>
+              <p className="text-xs text-muted-foreground">
+                Extreme depth with multi-layered shadows.
+              </p>
+            </CardContent>
+          </Card>
+          <Card variant="magic" className="transition-all">
+            <CardContent className="pt-6 py-10 text-center space-y-3">
+              <Badge variant="outline" className="border-primary/40 text-primary shadow-glow-cyan">
+                Magic
+              </Badge>
+              <div className="space-y-1">
+                <p className="text-2xl font-black font-heading">#14</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
+                  by Spike Land
+                </p>
+              </div>
+              <p className="text-[10px] text-muted-foreground max-w-[140px] mx-auto leading-relaxed">
+                Ultra-elevated "Stripe-style" depth optimized for dark mode.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-8 pt-10 border-t border-white/5">
+        <h2 className="text-3xl font-bold font-heading">Vibrant Cards</h2>
+        <p className="text-muted-foreground -mt-4">
+          Integrated colors for high-energy layouts and semantic grouping.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card variant="blue" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <Twitter className="w-5 h-5 text-white" />
+              </div>
+              <Badge variant="outline" className="text-white border-white/30">Connect</Badge>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Twitter</p>
+              <p className="text-xs text-white/60">@spike.land</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white"
+            >
+              Follow
+            </Button>
+          </Card>
+
+          <Card variant="green" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <Music4 className="w-5 h-5 text-white" />
+              </div>
+              <Badge variant="outline" className="text-white border-white/30">Live Now</Badge>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Listening to...</p>
+              <p className="text-xs text-white/60">Midnight City - M83</p>
+            </div>
+            <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-white w-2/3" />
+            </div>
+          </Card>
+
+          <Card variant="fuchsia" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <Instagram className="w-5 h-5 text-white" />
+              </div>
+              <Badge variant="outline" className="text-white border-white/30">Gallery</Badge>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Instagram</p>
+              <p className="text-xs text-white/60">@spike_ai</p>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {[1, 2, 3].map(i => <div key={i} className="aspect-square bg-white/20 rounded" />)}
+            </div>
+          </Card>
+
+          <Card variant="orange" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Substack.com</p>
+              <p className="text-xs text-white/60">The AI Spark Newsletter</p>
+            </div>
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-6 h-6 rounded-full border border-white/20 bg-white/10" />
+              ))}
+            </div>
           </Card>
         </div>
       </section>
