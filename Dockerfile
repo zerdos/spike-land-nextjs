@@ -44,8 +44,8 @@ ARG DUMMY_DATABASE_URL
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-      python3 make g++ \
-      libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
+    python3 make g++ \
+    libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
 
 COPY --from=dep-context /app /app
 
@@ -176,12 +176,8 @@ COPY --from=dep-context /app/.yarn/ ./.yarn/
 COPY --from=dep-context /app/packages/ ./packages/
 
 COPY --link --from=deps /app/node_modules ./node_modules
-COPY --link --from=build /app/.next ./.next
 
-# Built app (standalone mode) - preserve directory structure for start:ci script
-COPY --from=build /app/.next/standalone ./.next/standalone
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
+COPY .env.local ./
 
 
 # E2E tests + config only
@@ -200,6 +196,9 @@ ENV CI=true \
     E2E_BYPASS_SECRET=${E2E_BYPASS_SECRET}
 
 RUN mkdir -p e2e/reports
+COPY . .
+RUN yarn silent:install
+
 
 # ============================================================================
 # STAGE 11: E2E Tests (sharded)
@@ -210,14 +209,15 @@ ARG CACHE_NS
 ARG TARGETARCH
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=8
-ENV SHARD_INDEX=${SHARD_INDEX}
+ENV SHARD_INDEX=${SHARD_INDEX}  
 ENV SHARD_TOTAL=${SHARD_TOTAL}
+RUN yarn start:server:and:test:pr > /tmp/e2e-${SHARD_INDEX}.log 2>&1 || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-1
 ARG CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=1
-RUN yarn start:server:and:test:ci
+RUN yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-2
 ARG CACHE_NS
@@ -226,7 +226,7 @@ ENV SHARD_INDEX=2
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 || (cat /tmp/e2e-2.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-3
 ARG CACHE_NS
@@ -235,7 +235,7 @@ ENV SHARD_INDEX=3
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-3.log 2>&1 || (cat /tmp/e2e-3.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-4
 ARG CACHE_NS
@@ -244,7 +244,7 @@ ENV SHARD_INDEX=4
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-4.log 2>&1 || (cat /tmp/e2e-4.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 || (cat /tmp/e2e-4.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-5
 ARG CACHE_NS
@@ -253,7 +253,7 @@ ENV SHARD_INDEX=5
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-5.log 2>&1 || (cat /tmp/e2e-5.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-5.log 2>&1 || (cat /tmp/e2e-5.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-6
 ARG CACHE_NS
@@ -262,7 +262,7 @@ ENV SHARD_INDEX=6
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-6.log 2>&1 || (cat /tmp/e2e-6.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-6.log 2>&1 || (cat /tmp/e2e-6.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-7
 ARG CACHE_NS
@@ -271,7 +271,7 @@ ENV SHARD_INDEX=7
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-7.log 2>&1 || (cat /tmp/e2e-7.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-7.log 2>&1 || (cat /tmp/e2e-7.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-8
 ARG CACHE_NS
@@ -280,7 +280,7 @@ ENV SHARD_INDEX=8
 ENV SHARD_TOTAL=8
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
     --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    yarn start:server:and:test:ci > /tmp/e2e-8.log 2>&1 || (cat /tmp/e2e-8.log && exit 1)
+    yarn start:server:and:test:pr > /tmp/e2e-8.log 2>&1 || (cat /tmp/e2e-8.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests
 COPY --from=e2e-tests-1 /tmp/e2e-1.log /tmp/
@@ -313,9 +313,9 @@ WORKDIR /app
 ARG BUILD_SHA
 ARG BUILD_DATE
 LABEL org.opencontainers.image.revision="${BUILD_SHA}" \
-      org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.title="spike.land" \
-      org.opencontainers.image.description="Next.js production image"
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.title="spike.land" \
+    org.opencontainers.image.description="Next.js production image"
 
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nextjs
 
