@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { authConfig, createStableUserId } from "./auth.config";
 
 vi.mock("next-auth/providers/facebook", () => ({
   default: vi.fn(() => ({ id: "facebook" })),
@@ -17,20 +16,28 @@ vi.mock("next-auth/providers/apple", () => ({
   default: vi.fn(() => ({ id: "apple" })),
 }));
 
+// Set up environment variables BEFORE importing authConfig
+// This ensures buildProviders() sees the credentials when the module loads
+process.env.AUTH_APPLE_ID = "test-apple-id";
+process.env.AUTH_APPLE_SECRET = "test-apple-secret";
+process.env.AUTH_FACEBOOK_ID = "test-facebook-id";
+process.env.AUTH_FACEBOOK_SECRET = "test-facebook-secret";
+process.env.GITHUB_ID = "test-github-id";
+process.env.GITHUB_SECRET = "test-github-secret";
+process.env.GOOGLE_ID = "test-google-id";
+process.env.GOOGLE_SECRET = "test-google-secret";
+process.env.AUTH_SECRET = "test-auth-secret";
+
+// Import AFTER setting environment variables
+import { authConfig, createStableUserId } from "./auth.config";
+
 describe("authConfig", () => {
   beforeEach(() => {
-    process.env.AUTH_APPLE_ID = "test-apple-id";
-    process.env.AUTH_APPLE_SECRET = "test-apple-secret";
-    process.env.AUTH_FACEBOOK_ID = "test-facebook-id";
-    process.env.AUTH_FACEBOOK_SECRET = "test-facebook-secret";
-    process.env.GITHUB_ID = "test-github-id";
-    process.env.GITHUB_SECRET = "test-github-secret";
-    process.env.GOOGLE_ID = "test-google-id";
-    process.env.GOOGLE_SECRET = "test-google-secret";
-    process.env.AUTH_SECRET = "test-auth-secret";
+    // Environment variables are already set above before module import
   });
 
-  it("should have providers configured", () => {
+  it("should have providers configured when env vars are set", () => {
+    // With all OAuth credentials set, we should have 4 providers
     expect(authConfig.providers).toHaveLength(4);
   });
 
