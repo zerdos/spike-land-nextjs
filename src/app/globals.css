@@ -49,8 +49,10 @@
 
     /* Glass-morphism variables - Reduced blur as requested */
     --glass-blur: 8px;
+    --glass-blur-mobile: 4px;
     --glass-opacity-light: 0.85;
     --glass-opacity-dark: 0.12;
+    --glass-opacity-dark-mobile: 0.18;
     --shadow-opacity-light: 0.08;
     --shadow-opacity-dark: 0.35;
 
@@ -153,6 +155,12 @@
     --accent-foreground: 240 45% 4%;
     /* Dark Space */
 
+    /* Increased contrast for body reading - Target +10-15% */
+    --foreground: 0 0% 100%;
+    --card-foreground: 0 0% 100%;
+    --muted-foreground: 220 20% 85%;
+    /* Was 220 15% 75%, increased lightness for contrast */
+
     /* Semantic Colors - Dark Optimized */
     --success: 142 70% 50%;
     --success-foreground: 240 45% 4%;
@@ -194,6 +202,16 @@
   html,
   body {
     overflow-x: hidden;
+    /* Enforce 16px minimum font size on mobile for accessibility/contrast */
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    html,
+    body {
+      font-size: 14px;
+      /* Maintain standard for desktop if preferred, or keep 16px */
+    }
   }
 
   /* Body background using pseudo-element for better mobile performance */
@@ -201,6 +219,8 @@
     position: relative;
     color: hsl(var(--foreground));
     min-height: 100vh;
+    line-height: 1.6;
+    /* Improved vertical rhythm */
   }
 
   body::before {
@@ -256,25 +276,50 @@
   /* Elevation Tier 0: Background / Subtle Context */
   .glass-0 {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--glass-blur-mobile));
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  @media (min-width: 768px) {
+    .glass-0 {
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
   }
 
   /* Elevation Tier 1: Section Surface / Cards */
   .glass-1 {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, var(--glass-opacity-dark-mobile));
+    backdrop-filter: blur(var(--glass-blur-mobile));
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    .glass-1 {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+    }
   }
 
   /* Elevation Tier 2: Interactive Surface / Modals / Popovers */
   .glass-2 {
-    background: rgba(255, 255, 255, 12%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.85);
+    /* Tier 2 → Tier 1 like opacity on mobile */
+    backdrop-filter: blur(8px);
+    /* Reduced blur */
+    -webkit-backdrop-filter: blur(8px);
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (min-width: 768px) {
+    .glass-2 {
+      background: rgba(255, 255, 255, 12%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
   }
 
   /* Optical Physics: Dual-tone detailed edges with top highlight */
@@ -659,5 +704,28 @@
     font-size: 1.125rem;
     line-height: 1.7;
     color: hsl(var(--foreground) / 0.85);
+  }
+
+  /* Vertical Rhythm Utilities */
+  .section-spacing {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-spacing {
+      margin-top: 4rem;
+      margin-bottom: 4rem;
+    }
+  }
+
+  .stack-spacing > * + * {
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .stack-spacing > * + * {
+      margin-top: 1.5rem;
+    }
   }
 }
