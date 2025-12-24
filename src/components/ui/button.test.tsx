@@ -49,19 +49,19 @@ describe("Button Component", () => {
   it("should apply small size", () => {
     render(<Button size="sm">Small</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-9");
+    expect(button).toHaveClass("h-10", "md:h-9");
   });
 
   it("should apply large size", () => {
     render(<Button size="lg">Large</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-12");
+    expect(button).toHaveClass("h-14", "md:h-12");
   });
 
   it("should apply icon size", () => {
     render(<Button size="icon">Icon</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("h-10", "w-10");
+    expect(button).toHaveClass("h-11", "w-11", "md:h-10", "md:w-10");
   });
 
   it("should apply custom className", () => {
@@ -194,7 +194,8 @@ describe("Button Component", () => {
 
     it("should generate size-specific classes", () => {
       const classes = buttonVariants({ size: "lg" });
-      expect(classes).toContain("h-12");
+      expect(classes).toContain("h-14");
+      expect(classes).toContain("md:h-12");
     });
 
     it("should merge custom className", () => {
