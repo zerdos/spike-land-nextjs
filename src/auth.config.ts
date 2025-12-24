@@ -8,11 +8,58 @@
  * Database operations are handled in auth.ts (route handlers only).
  */
 
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig, Provider } from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Facebook from "next-auth/providers/facebook";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+
+/**
+ * Build the list of OAuth providers based on available environment variables.
+ * This allows E2E tests to run without OAuth provider secrets configured.
+ */
+function buildProviders(): Provider[] {
+  const providers: Provider[] = [];
+
+  // Only add providers when their credentials are fully configured
+  if (process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET) {
+    providers.push(
+      Apple({
+        clientId: process.env.AUTH_APPLE_ID.trim(),
+        clientSecret: process.env.AUTH_APPLE_SECRET.trim(),
+      }),
+    );
+  }
+
+  if (process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET) {
+    providers.push(
+      Facebook({
+        clientId: process.env.AUTH_FACEBOOK_ID.trim(),
+        clientSecret: process.env.AUTH_FACEBOOK_SECRET.trim(),
+      }),
+    );
+  }
+
+  if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
+    providers.push(
+      GitHub({
+        clientId: process.env.GITHUB_ID,
+        clientSecret: process.env.GITHUB_SECRET,
+      }),
+    );
+  }
+
+  if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
+    providers.push(
+      Google({
+        clientId: process.env.GOOGLE_ID,
+        clientSecret: process.env.GOOGLE_SECRET,
+      }),
+    );
+  }
+
+  return providers;
+}
 
 /**
  * Creates a stable user ID based on email address.
@@ -100,24 +147,7 @@ export const authConfig: NextAuthConfig = {
       },
     },
   },
-  providers: [
-    Apple({
-      clientId: process.env.AUTH_APPLE_ID?.trim(),
-      clientSecret: process.env.AUTH_APPLE_SECRET?.trim(),
-    }),
-    Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID?.trim(),
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim(),
-    }),
-    GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-    }),
-    Google({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
-    }),
-  ],
+  providers: buildProviders(),
   callbacks: {
     session({ session, token }) {
       if (token.sub && session.user) {
