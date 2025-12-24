@@ -426,15 +426,7 @@ module.exports = {
    }
    ```
 
-5. Enable instrumentation in config:
-   ```javascript
-   // next.config.js
-   module.exports = {
-     experimental: {
-       instrumentationHook: true,
-     },
-   };
-   ```
+5. Enable instrumentation in config, use instrumentation.ts
 
 **Key Features:**
 
