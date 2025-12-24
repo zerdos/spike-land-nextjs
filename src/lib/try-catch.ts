@@ -5,7 +5,7 @@
  * This is a pure utility with no side effects - no error reporting, no stats.
  *
  * Error reporting is now handled automatically by:
- * - Browser: ConsoleCapture component (captures console.error, uncaught exceptions)
+ * - Browser: ConsoleCapture component initializes console.error capture and exception handlers
  * - Server: instrumentation.ts (captures console.error)
  * - React: Error boundaries (reportErrorBoundary)
  *
