@@ -20,28 +20,51 @@ const TabsList = React.forwardRef<
   });
 
   const listRef = React.useRef<HTMLDivElement>(null);
+  const isUpdating = React.useRef(false);
 
   const updateIndicator = React.useCallback(() => {
-    const list = listRef.current;
-    if (!list) return;
+    if (isUpdating.current || !listRef.current) return;
 
-    const activeTrigger = list.querySelector('[data-state="active"]') as HTMLElement;
-    if (activeTrigger) {
-      setIndicatorStyle({
-        left: activeTrigger.offsetLeft,
-        top: activeTrigger.offsetTop,
-        width: activeTrigger.offsetWidth,
-        height: activeTrigger.offsetHeight,
-        opacity: 1,
-      });
-    }
+    isUpdating.current = true;
+    requestAnimationFrame(() => {
+      const list = listRef.current;
+      if (!list) {
+        isUpdating.current = false;
+        return;
+      }
+
+      const activeTrigger = list.querySelector('[data-state="active"]') as HTMLElement;
+      if (activeTrigger) {
+        setIndicatorStyle((prev) => {
+          // Avoid state updates if nothing changed
+          if (
+            prev.left === activeTrigger.offsetLeft &&
+            prev.top === activeTrigger.offsetTop &&
+            prev.width === activeTrigger.offsetWidth &&
+            prev.height === activeTrigger.offsetHeight &&
+            prev.opacity === 1
+          ) {
+            return prev;
+          }
+          return {
+            left: activeTrigger.offsetLeft,
+            top: activeTrigger.offsetTop,
+            width: activeTrigger.offsetWidth,
+            height: activeTrigger.offsetHeight,
+            opacity: 1,
+          };
+        });
+      }
+      isUpdating.current = false;
+    });
   }, []);
 
   React.useEffect(() => {
     updateIndicator();
-    // Re-calculate on window resize
-    window.addEventListener("resize", updateIndicator);
-    return () => window.removeEventListener("resize", updateIndicator);
+    // Re-calculate on window resize with a small debounce/throttle effect via rAF
+    const handleResize = () => updateIndicator();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [updateIndicator]);
 
   // We need to re-run updateIndicator when the value changes.
@@ -51,14 +74,13 @@ const TabsList = React.forwardRef<
     if (!list) return;
 
     const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "data-state"
-        ) {
-          updateIndicator();
-        }
-      });
+      const hasStateChange = mutations.some(
+        (mutation) => mutation.type === "attributes" && mutation.attributeName === "data-state",
+      );
+
+      if (hasStateChange) {
+        updateIndicator();
+      }
     });
 
     observer.observe(list, {
