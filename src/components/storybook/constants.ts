@@ -150,6 +150,13 @@ export const storybookSections = [
     icon: "Type",
   },
   {
+    id: "surfaces",
+    label: "Surfaces",
+    category: "Foundation",
+    description: "Glass-morphism tiers, elevation system, and transparency",
+    icon: "Layers",
+  },
+  {
     id: "buttons",
     label: "Buttons",
     category: "Actions",
