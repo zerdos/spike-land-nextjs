@@ -121,14 +121,14 @@ export default function LoadingPage() {
                 <span className="text-xs text-muted-foreground">Spinner</span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-primary animate-pulse-cyan" />
+                <div className="w-12 h-12 rounded-full animate-pulse-cyan" />
                 <span className="text-xs text-muted-foreground">
                   Pulse Cyan
                 </span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs text-muted-foreground">Pulse</span>
+                <div className="w-12 h-12 rounded-full animate-pulse-aura" />
+                <span className="text-xs text-muted-foreground">Pulse Aura</span>
               </div>
             </div>
           </CardContent>

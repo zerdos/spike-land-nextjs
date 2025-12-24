@@ -39,6 +39,7 @@ import {
   CheckCircle2,
   Info,
   Instagram,
+  Layers,
   MessageSquare,
   Music4,
   Twitter,
@@ -147,7 +148,7 @@ export default function ComponentsPage() {
         <p className="text-muted-foreground -mt-4">
           Integrated colors for high-energy layouts and semantic grouping.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card variant="blue" className="p-6 space-y-4">
             <div className="flex justify-between items-start">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
@@ -181,6 +182,51 @@ export default function ComponentsPage() {
             </div>
             <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
               <div className="h-full bg-white w-2/3" />
+            </div>
+          </Card>
+
+          <Card variant="pink" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <Instagram className="w-5 h-5 text-white" />
+              </div>
+              <Badge variant="outline" className="text-white border-white/30">News</Badge>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Dribbble.com</p>
+              <p className="text-xs text-white/60">Pixel-Perfect Design</p>
+            </div>
+            <div className="flex -space-x-1">
+              {[1, 2, 3, 4].map(i => (
+                <div
+                  key={i}
+                  className="w-7 h-7 rounded-full border-2 border-pink-500/50 bg-white/10"
+                />
+              ))}
+            </div>
+          </Card>
+
+          <Card variant="layers" className="p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <Layers className="w-5 h-5 text-white" />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-white/40 hover:text-white"
+              >
+                <Info className="w-4 h-4" />
+              </Button>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">vqw07's layers.</p>
+              <p className="text-xs text-white/40">layers.to</p>
+            </div>
+            <div className="aspect-video bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-white/5">
+              <p className="text-[10px] font-black text-white/10 uppercase tracking-widest">
+                Portfolio
+              </p>
             </div>
           </Card>
 
