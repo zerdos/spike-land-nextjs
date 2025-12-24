@@ -8,7 +8,7 @@
  * Database operations are handled in auth.ts (route handlers only).
  */
 
-import type { NextAuthConfig, Provider } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Facebook from "next-auth/providers/facebook";
 import GitHub from "next-auth/providers/github";
@@ -18,8 +18,8 @@ import Google from "next-auth/providers/google";
  * Build the list of OAuth providers based on available environment variables.
  * This allows E2E tests to run without OAuth provider secrets configured.
  */
-function buildProviders(): Provider[] {
-  const providers: Provider[] = [];
+function buildProviders(): NextAuthConfig["providers"] {
+  const providers: NextAuthConfig["providers"] = [];
 
   // Only add providers when their credentials are fully configured
   if (process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET) {
