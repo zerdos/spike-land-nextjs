@@ -26,6 +26,8 @@ const cardVariants = cva(
         orange: "glass-aura-orange border-none text-white",
         fuchsia: "glass-aura-fuchsia border-none text-white",
         purple: "glass-aura-purple border-none text-white",
+        pink: "glass-aura-pink border-none text-white",
+        layers: "glass-layers border-none text-white",
       },
     },
     defaultVariants: {

@@ -143,7 +143,7 @@ export default function SurfacesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <div className="space-y-3">
             <Card variant="blue" className="h-24 flex items-center justify-center">
               <span className="font-bold text-xs text-white">Blue</span>
@@ -169,11 +169,61 @@ export default function SurfacesPage() {
             <p className="text-[10px] text-center text-muted-foreground">Neon Aura</p>
           </div>
           <div className="space-y-3">
+            <Card variant="pink" className="h-24 flex items-center justify-center">
+              <span className="font-bold text-xs text-white">Pink</span>
+            </Card>
+            <p className="text-[10px] text-center text-muted-foreground">Rose Aura</p>
+          </div>
+          <div className="space-y-3">
             <Card variant="purple" className="h-24 flex items-center justify-center">
               <span className="font-bold text-xs text-white">Purple</span>
             </Card>
             <p className="text-[10px] text-center text-muted-foreground">Deep Aura</p>
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-12 pt-10 border-t border-white/5">
+        <div className="space-y-4">
+          <h2 className="text-3xl font-bold font-heading">High-Fidelity Layers</h2>
+          <p className="text-muted-foreground">
+            Our most sophisticated surfaces. Deep, dark charcoal glass with extreme background blur
+            (20px) and multi-layered shadows for a truly premium feel.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <ComponentSample
+            title="Minimalist Layers"
+            description="Ultra-dark glass with crisp elevation."
+          >
+            <Card variant="layers" className="w-full">
+              <CardContent className="pt-6 text-center h-48 flex flex-col justify-center items-center space-y-4">
+                <div className="p-3 bg-white/10 rounded-xl">
+                  <div className="w-8 h-8 rounded-lg bg-white/20" />
+                </div>
+                <div>
+                  <p className="font-bold text-white">vqw07's layers.</p>
+                  <p className="text-xs text-white/40">layers.to</p>
+                </div>
+              </CardContent>
+            </Card>
+          </ComponentSample>
+
+          <ComponentSample
+            title="Content Overlay"
+            description="Layers used to showcase high-contrast content."
+          >
+            <Card variant="layers" className="w-full overflow-hidden">
+              <div className="h-24 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                <p className="text-xs font-bold text-white/20">PREVIEW IMAGE</p>
+              </div>
+              <CardContent className="pt-6 space-y-2">
+                <p className="font-bold text-white">Aan Ragil's layers.</p>
+                <p className="text-xs text-white/40">layers.to</p>
+              </CardContent>
+            </Card>
+          </ComponentSample>
         </div>
       </section>
 
