@@ -240,7 +240,7 @@ jobs:
           SKIP_ENV_VALIDATION: "true"
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: 8
-        run: yarn start:server:and:test:ci
+        run: yarn start:server:and:test:pr
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
         if: always()
