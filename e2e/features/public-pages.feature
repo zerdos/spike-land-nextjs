@@ -27,9 +27,9 @@ Feature: Public Pages - Storybook and Easter Eggs
   Scenario: Storybook brand page displays logo variants
     When I visit "/storybook/brand"
     Then the page should load successfully
-    And I should see "Logo - The AI Spark" text
-    And I should see "Sizes" text
-    And I should see "Variants" text
+    And I should see "AI Spark Logo" text
+    And I should see "Sizes & Scale" text
+    And I should see "Structural Variants" text
 
   @fast
   Scenario: Storybook colors page displays color palette

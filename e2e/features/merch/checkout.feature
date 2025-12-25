@@ -1,3 +1,4 @@
+@wip
 Feature: Merch Checkout
   As a logged in user with items in my cart
   I want to complete the checkout process

@@ -234,12 +234,12 @@ reducing build times by 5-10 minutes on average.
     cache: "yarn" # Automatically caches yarn.lock
 
 - name: Install Dependencies
-  run: yarn install --immutable-cache
+  run: yarn install --immutable
 ```
 
 **Performance Impact:**
 
-- Without cache: 2-3 minutes for `yarn install --immutable-cache`
+- Without cache: 2-3 minutes for `yarn install --immutable`
 - With cache (warm): 10-15 seconds
 
 #### 2. **Build Artifact Caching**

@@ -168,7 +168,7 @@ RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_module
 # ============================================================================
 FROM e2e-browser AS e2e-test-base
 WORKDIR /app
-
+ARG DUMMY_DATABASE_URL
 
 # Yarn runtime metadata (so `yarn <script>` works)
 COPY --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
@@ -184,7 +184,7 @@ COPY .env.local ./
 COPY --from=test-source /app/e2e ./e2e
 COPY --from=test-source /app/cucumber.js ./cucumber.js
 
-ARG DATABASE_URL
+ARG DATABASE_URL=${DUMMY_DATABASE_URL}
 ARG AUTH_SECRET
 ARG E2E_BYPASS_SECRET
 ENV CI=true \
