@@ -85,7 +85,7 @@ module.exports = {
     retry: 0, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky", // Skip db-dependent tests (no seeded test data in CI)
     timeout: 10000, // 30 second timeout for CI
-    parallel: 8, // Run 4 scenarios in parallel
+    parallel: 8,
   },
   // Coverage profile - collect V8 coverage during E2E tests
   coverage: {
