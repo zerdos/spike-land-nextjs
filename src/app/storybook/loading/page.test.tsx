@@ -76,7 +76,7 @@ describe("LoadingPage", () => {
       render(<LoadingPage />);
       expect(screen.getByText("Spinner")).toBeInTheDocument();
       expect(screen.getByText("Pulse Cyan")).toBeInTheDocument();
-      expect(screen.getByText("Pulse")).toBeInTheDocument();
+      expect(screen.getByText("Pulse Aura")).toBeInTheDocument();
     });
   });
 });

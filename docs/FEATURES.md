@@ -471,7 +471,7 @@ See `prisma/schema.prisma` for the complete schema. Key models:
 
 ```bash
 # Install dependencies
-yarn install --immutable-cache
+yarn install --immutable
 
 # Set up environment variables
 cp .env.example .env.local

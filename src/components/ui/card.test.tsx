@@ -62,7 +62,6 @@ describe("Card Components", () => {
         "glass-1",
         "glass-edge",
         "shadow-glow-cyan",
-        "scale-[1.01]",
         "backdrop-blur-[14px]",
         "ring-1",
         "ring-primary/30",

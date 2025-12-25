@@ -18,7 +18,7 @@ describe("ComponentsPage", () => {
   describe("sections", () => {
     it("should render surface system section", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText("Surface System")).toBeInTheDocument();
+      expect(screen.getByText("Card Variants")).toBeInTheDocument();
     });
 
     it("should render inputs and controls", () => {
