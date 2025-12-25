@@ -116,6 +116,7 @@ FROM test-source AS unit-test-shard
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
 ENV NODE_ENV=test
+ENV DATABASE_URL=${DUMMY_DATABASE_URL}
 RUN yarn test:run --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
     > /tmp/unit-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/unit-${SHARD_INDEX}.log && exit 1)
