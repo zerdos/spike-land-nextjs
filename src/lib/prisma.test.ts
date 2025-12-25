@@ -19,6 +19,7 @@ describe("Prisma Client Singleton", () => {
   beforeEach(() => {
     vi.resetModules();
     delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+    process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/testdb";
   });
 
   it("should create a Prisma client instance", async () => {
