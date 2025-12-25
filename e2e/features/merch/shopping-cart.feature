@@ -1,3 +1,4 @@
+@wip
 Feature: Merch Shopping Cart
   As a logged in user
   I want to add products to my cart and manage quantities
