@@ -306,6 +306,9 @@ model ImageEnhancementJob {
   sourceImage   EnhancedImage? @relation("BlendSource", fields: [sourceImageId], references: [id], onDelete: SetNull)
   isBlend       Boolean        @default(false) // True when job uses blend enhancement (file upload or stored image)
 
+  // Anonymous access - jobs created by non-logged-in users
+  isAnonymous   Boolean        @default(false) // True when job was created by anonymous user
+
   image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   featuredGalleryItems FeaturedGalleryItem[]
