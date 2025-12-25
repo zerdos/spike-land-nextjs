@@ -43,7 +43,8 @@ interface ImageSlotProps {
   image: SelectedImage | null;
   onImageSelect: (image: SelectedImage) => void;
   onImageClear: () => void;
-  onOpenGallery: () => void;
+  /** Optional for anonymous users who can't access gallery */
+  onOpenGallery?: () => void;
   disabled?: boolean;
 }
 
@@ -306,10 +307,12 @@ export function ImageSlot({
                           <Camera className="h-4 w-4 mr-2" />
                           Upload from device
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onOpenGallery}>
-                          <FolderOpen className="h-4 w-4 mr-2" />
-                          Choose from gallery
-                        </DropdownMenuItem>
+                        {onOpenGallery && (
+                          <DropdownMenuItem onClick={onOpenGallery}>
+                            <FolderOpen className="h-4 w-4 mr-2" />
+                            Choose from gallery
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
