@@ -410,9 +410,9 @@ Then(
 Then(
   "I should see {string} heading",
   async function(this: CustomWorld, headingText: string) {
-    // Look for any heading level (h1-h6) or CardTitle (div with font-semibold) with the specified text
+    // Look for any heading level (h1-h6) or CardTitle (div with font-bold) with the specified text
     const heading = this.page.locator(
-      "h1, h2, h3, h4, h5, h6, [class*='CardTitle'], .font-semibold",
+      "h1, h2, h3, h4, h5, h6, .font-bold, .font-semibold",
       { hasText: headingText },
     );
     await expect(heading.first()).toBeVisible();
