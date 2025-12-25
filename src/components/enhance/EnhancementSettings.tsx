@@ -93,8 +93,7 @@ export function EnhancementSettings({
 
   // Check if user has enough tokens for the selected tier
   const tierCost = TIER_DISPLAY_INFO[selectedTier].cost;
-  const hasEnoughTokens = currentBalance >= tierCost;
-
+  const hasEnoughTokens = currentBalance >= tierCost || !currentBalance; // during loading treat as enough
   // Main content component - shared between card and dialog modes
   const content = (
     <div className="space-y-6">

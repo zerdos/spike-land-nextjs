@@ -354,4 +354,24 @@ export const rateLimitConfigs = {
     maxRequests: 60,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Anonymous image upload: 5 requests per minute per IP (more restrictive) */
+  anonymousUpload: {
+    maxRequests: 5,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** Anonymous mix creation: 3 requests per minute per IP (more restrictive) */
+  anonymousMix: {
+    maxRequests: 3,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** Anonymous job stream: 10 connections per minute per IP */
+  anonymousStream: {
+    maxRequests: 10,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** Anonymous download: 20 requests per minute per IP */
+  anonymousDownload: {
+    maxRequests: 20,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

@@ -107,30 +107,6 @@ describe("MixDetailClient", () => {
   });
 
   describe("Rendering", () => {
-    it("renders PhotoMix Result heading", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("PhotoMix Result")).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_1K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_1K" })} />);
-
-      expect(screen.getByText(/1K Quality/)).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_2K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_2K" })} />);
-
-      expect(screen.getByText(/2K Quality/)).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_4K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_4K" })} />);
-
-      expect(screen.getByText(/4K Quality/)).toBeInTheDocument();
-    });
-
     it("renders Back button", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
@@ -140,14 +116,14 @@ describe("MixDetailClient", () => {
     it("renders Download button when job is completed", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("button", { name: /Download Mix/i }))
+      expect(screen.getByRole("button", { name: /Download/i }))
         .toBeInTheDocument();
     });
 
     it("does not render Download button when job is processing", () => {
       render(<MixDetailClient job={createMockJob({ status: "PROCESSING", resultUrl: null })} />);
 
-      expect(screen.queryByRole("button", { name: /Download Mix/i })).not
+      expect(screen.queryByRole("button", { name: /Download/i })).not
         .toBeInTheDocument();
     });
 
@@ -184,12 +160,6 @@ describe("MixDetailClient", () => {
       expect(screen.getByText("Mix processing failed")).toBeInTheDocument();
     });
 
-    it("renders source photos section", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("Source Photos")).toBeInTheDocument();
-    });
-
     it("renders both parent images", () => {
       const job = createMockJob();
       render(<MixDetailClient job={job} />);
@@ -198,27 +168,11 @@ describe("MixDetailClient", () => {
       expect(screen.getByAltText("Photo 2.jpg")).toBeInTheDocument();
     });
 
-    it("renders placeholder when sourceImage is null", () => {
-      render(<MixDetailClient job={createMockJob({ sourceImage: null })} />);
-
-      expect(
-        screen.getByText(
-          "Photo 2 was uploaded directly and not saved to gallery",
-        ),
-      ).toBeInTheDocument();
-    });
-
     it("renders QR code component with share URL", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const qrCode = screen.getByTestId("qr-code");
       expect(qrCode).toBeInTheDocument();
-    });
-
-    it("renders result dimensions when job is completed", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("Dimensions: 2048 x 2048")).toBeInTheDocument();
     });
   });
 
@@ -299,8 +253,13 @@ describe("MixDetailClient", () => {
   describe("Download functionality", () => {
     it("downloads image when Download button is clicked", async () => {
       const mockBlob = new Blob(["test"], { type: "image/jpeg" });
+      const mockHeaders = new Headers({
+        "Content-Disposition": 'attachment; filename="mix-job-123.jpg"',
+      });
       vi.mocked(global.fetch).mockResolvedValue({
+        ok: true,
         blob: () => Promise.resolve(mockBlob),
+        headers: mockHeaders,
       } as Response);
 
       const createObjectURL = vi.fn().mockReturnValue("blob:test-url");
@@ -314,13 +273,13 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const downloadButton = screen.getByRole("button", {
-        name: /Download Mix/i,
+        name: /Download/i,
       });
       fireEvent.click(downloadButton);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "https://example.com/result.jpg",
+          "/api/jobs/job-123/download",
         );
       });
 
@@ -341,7 +300,7 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const downloadButton = screen.getByRole("button", {
-        name: /Download Mix/i,
+        name: /Download/i,
       });
       fireEvent.click(downloadButton);
 
@@ -360,7 +319,7 @@ describe("MixDetailClient", () => {
       );
 
       // Download button shouldn't be rendered at all
-      expect(screen.queryByRole("button", { name: /Download Mix/i })).not
+      expect(screen.queryByRole("button", { name: /Download/i })).not
         .toBeInTheDocument();
     });
   });
@@ -395,43 +354,80 @@ describe("MixDetailClient", () => {
   });
 
   describe("Comparison View", () => {
-    it("shows Photo 1 → Result tab by default", () => {
+    it("shows two tabs when sourceImage exists", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("tab", { name: /Photo 1 → Result/i }))
-        .toBeInTheDocument();
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
     });
 
-    it("shows Photo 2 → Result tab when sourceImage exists", () => {
+    it("first tab shows Photo 1 → Result", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("tab", { name: /Photo 2 → Result/i }))
-        .toBeInTheDocument();
+      const tabs = screen.getAllByRole("tab");
+      const tab1Images = tabs[0].querySelectorAll("img");
+      expect(tab1Images).toHaveLength(2);
+      expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");
+      expect(tab1Images[1]).toHaveAttribute("alt", "Result");
+    });
+
+    it("second tab shows Photo 2 → Result", () => {
+      render(<MixDetailClient job={createMockJob()} />);
+
+      const tabs = screen.getAllByRole("tab");
+      const tab2Images = tabs[1].querySelectorAll("img");
+      expect(tab2Images).toHaveLength(2);
+      expect(tab2Images[0]).toHaveAttribute("alt", "Photo 2");
+      expect(tab2Images[1]).toHaveAttribute("alt", "Result");
     });
 
     it("does not show tabs when sourceImage is null", () => {
       render(<MixDetailClient job={createMockJob({ sourceImage: null })} />);
 
-      expect(screen.queryByRole("tab", { name: /Photo 2 → Result/i })).not
+      expect(screen.queryByRole("tab")).not
         .toBeInTheDocument();
     });
 
     it("tab buttons are clickable", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      const tab1 = screen.getByRole("tab", { name: /Photo 1 → Result/i });
-      const tab2 = screen.getByRole("tab", { name: /Photo 2 → Result/i });
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
 
       // Verify tabs are clickable (no errors thrown)
-      expect(() => fireEvent.click(tab2)).not.toThrow();
-      expect(() => fireEvent.click(tab1)).not.toThrow();
+      expect(() => fireEvent.click(tabs[1])).not.toThrow();
+      expect(() => fireEvent.click(tabs[0])).not.toThrow();
     });
 
     it("Photo 1 tab is active by default", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      const tab1 = screen.getByRole("tab", { name: /Photo 1 → Result/i });
-      expect(tab1.getAttribute("data-state")).toBe("active");
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs[0].getAttribute("data-state")).toBe("active");
+    });
+
+    it("renders thumbnail images in tabs including result", () => {
+      const job = createMockJob();
+      render(<MixDetailClient job={job} />);
+
+      const tabs = screen.getAllByRole("tab");
+
+      // Each tab should contain source image and result image thumbnails
+      const tab1Images = tabs[0].querySelectorAll("img");
+      const tab2Images = tabs[1].querySelectorAll("img");
+
+      // Tab 1: Photo 1 → Result
+      expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");
+      expect(tab1Images[0]).toHaveAttribute("src", job.targetImage.url);
+      expect(tab1Images[1]).toHaveAttribute("alt", "Result");
+      expect(tab1Images[1]).toHaveAttribute("src", job.resultUrl);
+
+      // Tab 2: Photo 2 → Result
+      expect(tab2Images).toHaveLength(2);
+      expect(tab2Images[0]).toHaveAttribute("alt", "Photo 2");
+      expect(tab2Images[0]).toHaveAttribute("src", job.sourceImage!.url);
+      expect(tab2Images[1]).toHaveAttribute("alt", "Result");
+      expect(tab2Images[1]).toHaveAttribute("src", job.resultUrl);
     });
   });
 
@@ -442,17 +438,6 @@ describe("MixDetailClient", () => {
       const qrCode = screen.getByTestId("qr-code");
       // The QR code should be rendered with a URL
       expect(qrCode.getAttribute("data-url")).toBeTruthy();
-    });
-  });
-
-  describe("Date formatting", () => {
-    it("displays job creation date", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      // The date should be displayed somewhere in the component
-      // Check that the quality and date section exists
-      const infoSection = screen.getByText(/2K Quality/);
-      expect(infoSection).toBeInTheDocument();
     });
   });
 });

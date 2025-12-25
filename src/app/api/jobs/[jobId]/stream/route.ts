@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { NextRequest } from "next/server";
 
@@ -20,9 +21,27 @@ const PROCESSING_POLL_INTERVAL = 3000; // 3 seconds for processing jobs
 const MAX_POLL_INTERVAL = 5000; // Maximum interval with backoff
 const BACKOFF_THRESHOLD = 5; // Start backoff after this many polls
 
-// SSE connection rate limiting per user
+// SSE connection rate limiting per user/IP
 const MAX_SSE_CONNECTIONS_PER_USER = 5;
 const activeConnections = new Map<string, number>();
+
+/**
+ * Get client IP address from request headers.
+ */
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const firstIP = forwarded.split(",")[0];
+    if (firstIP) {
+      return firstIP.trim();
+    }
+  }
+  const realIP = request.headers.get("x-real-ip");
+  if (realIP) {
+    return realIP;
+  }
+  return "unknown";
+}
 
 /**
  * Get current active connection count for a user
@@ -61,24 +80,19 @@ function releaseConnection(userId: string): void {
  *
  * Streams job status changes to the client without requiring polling.
  * The server polls the database internally and pushes updates.
+ *
+ * Anonymous jobs are accessible without authentication.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ jobId: string; }>; },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   const { jobId } = await params;
 
-  // Verify job exists and belongs to user
+  // Verify job exists first
   const job = await prisma.imageEnhancementJob.findUnique({
     where: { id: jobId },
+    select: { isAnonymous: true, userId: true },
   });
 
   if (!job) {
@@ -88,15 +102,50 @@ export async function GET(
     });
   }
 
-  if (job.userId !== session.user.id) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
+  // Connection identifier for rate limiting
+  let connectionId: string;
+
+  if (job.isAnonymous) {
+    // For anonymous jobs, use IP-based rate limiting
+    const clientIP = getClientIP(request);
+    connectionId = `anon:${clientIP}`;
+
+    // Check rate limit for anonymous connections
+    const rateLimitResult = await checkRateLimit(
+      `anonymous-stream:${clientIP}`,
+      rateLimitConfigs.anonymousStream,
+    );
+    if (rateLimitResult.isLimited) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded" }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  } else {
+    // For non-anonymous jobs, require authentication and ownership
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (job.userId !== session.user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    connectionId = session.user.id;
   }
 
   // Check SSE connection rate limit
-  if (!acquireConnection(session.user.id)) {
+  if (!acquireConnection(connectionId)) {
     return new Response(
       JSON.stringify({
         error: "Too many active connections",
@@ -108,8 +157,6 @@ export async function GET(
       },
     );
   }
-
-  const userId = session.user.id; // Capture for cleanup
   const encoder = new TextEncoder();
   let isStreamClosed = false;
   let timeoutId: NodeJS.Timeout | null = null;
@@ -181,7 +228,7 @@ export async function GET(
           sendEvent({ type: "error", message: "Job not found" });
           controller.close();
           isStreamClosed = true;
-          releaseConnection(userId);
+          releaseConnection(connectionId);
           return;
         }
 
@@ -214,7 +261,7 @@ export async function GET(
         ) {
           controller.close();
           isStreamClosed = true;
-          releaseConnection(userId);
+          releaseConnection(connectionId);
           return;
         }
 
@@ -232,7 +279,7 @@ export async function GET(
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      releaseConnection(userId);
+      releaseConnection(connectionId);
     },
   });
 
@@ -243,7 +290,7 @@ export async function GET(
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      releaseConnection(userId);
+      releaseConnection(connectionId);
     }
   });
 

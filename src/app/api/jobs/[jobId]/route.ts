@@ -1,10 +1,29 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-async function getJobHandler(jobId: string, userId: string) {
+/**
+ * Get client IP address from request headers.
+ */
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const firstIP = forwarded.split(",")[0];
+    if (firstIP) {
+      return firstIP.trim();
+    }
+  }
+  const realIP = request.headers.get("x-real-ip");
+  if (realIP) {
+    return realIP;
+  }
+  return "unknown";
+}
+
+async function getJobHandler(jobId: string, userId: string | null) {
   const job = await prisma.imageEnhancementJob.findUnique({
     where: { id: jobId },
     include: {
@@ -12,7 +31,13 @@ async function getJobHandler(jobId: string, userId: string) {
     },
   });
 
-  if (!job || job.userId !== userId) {
+  if (!job) {
+    return { notFound: true as const };
+  }
+
+  // For anonymous jobs, allow public access
+  // For non-anonymous jobs, require ownership
+  if (!job.isAnonymous && job.userId !== userId) {
     return { notFound: true as const };
   }
 
@@ -30,6 +55,7 @@ async function getJobHandler(jobId: string, userId: string) {
       createdAt: job.createdAt,
       processingStartedAt: job.processingStartedAt,
       processingCompletedAt: job.processingCompletedAt,
+      isAnonymous: job.isAnonymous,
       image: {
         id: job.image.id,
         name: job.image.name,
@@ -42,17 +68,59 @@ async function getJobHandler(jobId: string, userId: string) {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ jobId: string; }>; },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { jobId } = await params;
 
-  const { data, error } = await tryCatch(getJobHandler(jobId, session.user.id));
+  // First, check if this is an anonymous job (without fetching full job details)
+  const { data: jobCheck, error: jobCheckError } = await tryCatch(
+    prisma.imageEnhancementJob.findUnique({
+      where: { id: jobId },
+      select: { isAnonymous: true, userId: true },
+    }),
+  );
+
+  if (jobCheckError) {
+    console.error("Error checking job:", jobCheckError);
+    return NextResponse.json(
+      { error: jobCheckError instanceof Error ? jobCheckError.message : "Failed to check job" },
+      { status: 500 },
+    );
+  }
+
+  if (!jobCheck) {
+    return NextResponse.json({ error: "Job not found" }, { status: 404 });
+  }
+
+  // For anonymous jobs, rate limit by IP
+  if (jobCheck.isAnonymous) {
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(
+      `anonymous-job-status:${clientIP}`,
+      rateLimitConfigs.general,
+    );
+    if (rateLimitResult.isLimited) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 },
+      );
+    }
+  } else {
+    // For non-anonymous jobs, require authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (jobCheck.userId !== session.user.id) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+  }
+
+  const session = await auth();
+  const { data, error } = await tryCatch(
+    getJobHandler(jobId, session?.user?.id || null),
+  );
 
   if (error) {
     console.error("Error fetching job:", error);
