@@ -4,18 +4,10 @@ import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle"
 import { MixShareQRCode } from "@/components/mix/MixShareQRCode";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { EnhancementTier, JobStatus } from "@prisma/client";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Download,
-  ExternalLink,
-  Loader2,
-  LogIn,
-  Sparkles,
-} from "lucide-react";
+import type { JobStatus } from "@prisma/client";
+import { ArrowLeft, ArrowRight, Download, Loader2, LogIn, Sparkles } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -53,13 +45,6 @@ interface MixDetailClientProps {
 }
 
 type ComparisonParent = "parent1" | "parent2";
-
-const tierLabels: Record<EnhancementTier, string> = {
-  FREE: "Free",
-  TIER_1K: "1K",
-  TIER_2K: "2K",
-  TIER_4K: "4K",
-};
 
 export function MixDetailClient({
   job,
@@ -160,9 +145,9 @@ export function MixDetailClient({
 
   const comparison = getCurrentComparison();
 
-  // Calculate thumbnail dimensions preserving aspect ratio with max 64px
+  // Calculate thumbnail dimensions preserving aspect ratio with max 128px
   const getThumbnailDimensions = (width: number, height: number) => {
-    const maxSize = 64;
+    const maxSize = 128;
     if (width >= height) {
       return { width: maxSize, height: Math.round((height / width) * maxSize) };
     }
@@ -214,7 +199,7 @@ export function MixDetailClient({
           {/* Comparison View */}
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-start">
                 {/* Parent Toggle */}
                 {job.sourceImage && (
                   <Tabs
@@ -366,16 +351,6 @@ export function MixDetailClient({
                             className="object-cover"
                             sizes="(max-width: 768px) 50vw, 300px"
                           />
-                          <div className="absolute top-2 left-2">
-                            <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                              Photo 2
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-2 bg-card">
-                          <p className="text-xs text-muted-foreground truncate">
-                            {job.sourceImage.name}
-                          </p>
                         </div>
                       </div>
                     )
@@ -394,37 +369,12 @@ export function MixDetailClient({
                             sizes="(max-width: 768px) 50vw, 300px"
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                          <div className="absolute top-2 left-2">
-                            <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                              Photo 2
-                            </span>
-                          </div>
-                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
-                              <ExternalLink className="h-3 w-3" />
-                              View
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-2 bg-card">
-                          <p className="text-xs text-muted-foreground truncate">
-                            {job.sourceImage.name}
-                          </p>
                         </div>
                       </button>
                     )
                   : (
                     <div className="rounded-lg overflow-hidden border border-dashed border-border">
-                      <div className="aspect-square relative bg-muted flex items-center justify-center">
-                        <p className="text-xs text-muted-foreground text-center px-4">
-                          Photo 2 was uploaded directly and not saved to gallery
-                        </p>
-                      </div>
-                      <div className="p-2 bg-card">
-                        <p className="text-xs text-muted-foreground truncate">
-                          Uploaded file
-                        </p>
-                      </div>
+                      <div className="aspect-square relative bg-muted" />
                     </div>
                   )}
               </div>
@@ -435,40 +385,23 @@ export function MixDetailClient({
         {/* Right Column - Sidebar */}
         <div>
           <Card>
-            <CardContent className="pt-6 space-y-6">
-              {/* Actions */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Actions</h3>
-                {isCompleted && (
-                  <Button
-                    onClick={handleDownload}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Mix
-                  </Button>
-                )}
+            <CardContent className="pt-6 space-y-3">
+              {isCompleted && (
                 <Button
-                  onClick={() => router.push("/apps/pixel/mix")}
+                  onClick={handleDownload}
                   className="w-full"
+                  variant="outline"
                 >
-                  Create New Mix
+                  <Download className="mr-2 h-4 w-4" />
+                  Download
                 </Button>
-              </div>
-
-              {/* Mix Result Info */}
-              {isCompleted && job.resultWidth && job.resultHeight && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Result Details</h3>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <p>
-                      Dimensions: {job.resultWidth} x {job.resultHeight}
-                    </p>
-                    <p>Quality: {tierLabels[job.tier]}</p>
-                  </div>
-                </div>
               )}
+              <Button
+                onClick={() => router.push("/apps/pixel/mix")}
+                className="w-full"
+              >
+                Create New Mix
+              </Button>
             </CardContent>
           </Card>
         </div>
