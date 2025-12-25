@@ -53,8 +53,8 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   experimental: {
-    turbopackFileSystemCacheForDev: true,
-    turbopackFileSystemCacheForBuild: true,
+    turbopackFileSystemCacheForDev: false,
+    turbopackFileSystemCacheForBuild: false,
   },
   images: {
     remotePatterns: [
