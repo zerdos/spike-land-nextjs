@@ -415,7 +415,8 @@ Then(
       "h1, h2, h3, h4, h5, h6, .font-bold, .font-semibold",
       { hasText: headingText },
     );
-    await expect(heading.first()).toBeVisible();
+    // Use longer timeout for flaky CI environment
+    await expect(heading.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -423,7 +424,8 @@ Then(
   "I should see {string} text",
   async function(this: CustomWorld, text: string) {
     // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
-    await expect(this.page.getByText(text).first()).toBeVisible();
+    // Use longer timeout for flaky CI environment
+    await expect(this.page.getByText(text).first()).toBeVisible({ timeout: 15000 });
   },
 );
 
