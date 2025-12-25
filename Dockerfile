@@ -184,7 +184,7 @@ COPY .env.local ./
 COPY --from=test-source /app/e2e ./e2e
 COPY --from=test-source /app/cucumber.js ./cucumber.js
 
-ARG DATABASE_URL
+ARG DATABASE_URL=${DUMMY_DATABASE_URL}
 ARG AUTH_SECRET
 ARG E2E_BYPASS_SECRET
 ENV CI=true \
