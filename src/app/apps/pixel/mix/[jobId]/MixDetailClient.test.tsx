@@ -299,8 +299,13 @@ describe("MixDetailClient", () => {
   describe("Download functionality", () => {
     it("downloads image when Download button is clicked", async () => {
       const mockBlob = new Blob(["test"], { type: "image/jpeg" });
+      const mockHeaders = new Headers({
+        "Content-Disposition": 'attachment; filename="mix-job-123.jpg"',
+      });
       vi.mocked(global.fetch).mockResolvedValue({
+        ok: true,
         blob: () => Promise.resolve(mockBlob),
+        headers: mockHeaders,
       } as Response);
 
       const createObjectURL = vi.fn().mockReturnValue("blob:test-url");
@@ -320,7 +325,7 @@ describe("MixDetailClient", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "https://example.com/result.jpg",
+          "/api/jobs/job-123/download",
         );
       });
 
@@ -395,43 +400,80 @@ describe("MixDetailClient", () => {
   });
 
   describe("Comparison View", () => {
-    it("shows Photo 1 → Result tab by default", () => {
+    it("shows two tabs when sourceImage exists", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("tab", { name: /Photo 1 → Result/i }))
-        .toBeInTheDocument();
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
     });
 
-    it("shows Photo 2 → Result tab when sourceImage exists", () => {
+    it("first tab shows Photo 1 → Result", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("tab", { name: /Photo 2 → Result/i }))
-        .toBeInTheDocument();
+      const tabs = screen.getAllByRole("tab");
+      const tab1Images = tabs[0].querySelectorAll("img");
+      expect(tab1Images).toHaveLength(2);
+      expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");
+      expect(tab1Images[1]).toHaveAttribute("alt", "Result");
+    });
+
+    it("second tab shows Photo 2 → Result", () => {
+      render(<MixDetailClient job={createMockJob()} />);
+
+      const tabs = screen.getAllByRole("tab");
+      const tab2Images = tabs[1].querySelectorAll("img");
+      expect(tab2Images).toHaveLength(2);
+      expect(tab2Images[0]).toHaveAttribute("alt", "Photo 2");
+      expect(tab2Images[1]).toHaveAttribute("alt", "Result");
     });
 
     it("does not show tabs when sourceImage is null", () => {
       render(<MixDetailClient job={createMockJob({ sourceImage: null })} />);
 
-      expect(screen.queryByRole("tab", { name: /Photo 2 → Result/i })).not
+      expect(screen.queryByRole("tab")).not
         .toBeInTheDocument();
     });
 
     it("tab buttons are clickable", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      const tab1 = screen.getByRole("tab", { name: /Photo 1 → Result/i });
-      const tab2 = screen.getByRole("tab", { name: /Photo 2 → Result/i });
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
 
       // Verify tabs are clickable (no errors thrown)
-      expect(() => fireEvent.click(tab2)).not.toThrow();
-      expect(() => fireEvent.click(tab1)).not.toThrow();
+      expect(() => fireEvent.click(tabs[1])).not.toThrow();
+      expect(() => fireEvent.click(tabs[0])).not.toThrow();
     });
 
     it("Photo 1 tab is active by default", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      const tab1 = screen.getByRole("tab", { name: /Photo 1 → Result/i });
-      expect(tab1.getAttribute("data-state")).toBe("active");
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs[0].getAttribute("data-state")).toBe("active");
+    });
+
+    it("renders thumbnail images in tabs including result", () => {
+      const job = createMockJob();
+      render(<MixDetailClient job={job} />);
+
+      const tabs = screen.getAllByRole("tab");
+
+      // Each tab should contain source image and result image thumbnails
+      const tab1Images = tabs[0].querySelectorAll("img");
+      const tab2Images = tabs[1].querySelectorAll("img");
+
+      // Tab 1: Photo 1 → Result
+      expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");
+      expect(tab1Images[0]).toHaveAttribute("src", job.targetImage.url);
+      expect(tab1Images[1]).toHaveAttribute("alt", "Result");
+      expect(tab1Images[1]).toHaveAttribute("src", job.resultUrl);
+
+      // Tab 2: Photo 2 → Result
+      expect(tab2Images).toHaveLength(2);
+      expect(tab2Images[0]).toHaveAttribute("alt", "Photo 2");
+      expect(tab2Images[0]).toHaveAttribute("src", job.sourceImage!.url);
+      expect(tab2Images[1]).toHaveAttribute("alt", "Result");
+      expect(tab2Images[1]).toHaveAttribute("src", job.resultUrl);
     });
   });
 
