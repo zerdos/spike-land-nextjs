@@ -25,16 +25,23 @@ import { useCallback, useState } from "react";
 
 type SelectorTarget = "image1" | "image2" | null;
 
-export function PhotoMixClient() {
+interface PhotoMixClientProps {
+  /** Whether the user is anonymous (not logged in) */
+  isAnonymous?: boolean;
+}
+
+export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   const router = useRouter();
+  // Only fetch token balance for authenticated users
   const {
     balance,
     isLowBalance,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
   } = useTokenBalance({
-    autoRefreshOnFocus: true,
+    autoRefreshOnFocus: !isAnonymous,
   });
+  // Only fetch history for authenticated users
   const { refetch: refetchHistory } = useMixHistory();
 
   // Image selection state
@@ -47,16 +54,19 @@ export function PhotoMixClient() {
   const [isCreatingMix, setIsCreatingMix] = useState(false);
   const [needsUpload, setNeedsUpload] = useState(false);
 
-  // Tier selection (default to FREE for easy onboarding)
+  // Tier selection - anonymous users are forced to FREE tier
   const [selectedTier, setSelectedTier] = useState<EnhancementTier>("FREE");
-  const tokenCost = ENHANCEMENT_COSTS[selectedTier];
+  // Force FREE tier for anonymous users
+  const effectiveTier = isAnonymous ? "FREE" : selectedTier;
+  const tokenCost = ENHANCEMENT_COSTS[effectiveTier];
 
   const canCreateMix = image1 !== null && image2 !== null && !activeJobId && !isCreatingMix;
-  // FREE tier always has enough tokens (costs 0)
-  const hasEnoughTokens = tokenCost === 0 || balance >= tokenCost;
+  // FREE tier always has enough tokens (costs 0), anonymous users always have enough
+  const hasEnoughTokens = isAnonymous || tokenCost === 0 || balance >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
-  const hasUploadedImages = image1?.type === "upload" || image2?.type === "upload";
+  // For anonymous users, we always need to upload
+  const hasUploadedImages = isAnonymous || image1?.type === "upload" || image2?.type === "upload";
 
   const handleImage1Select = useCallback((image: SelectedImage) => {
     setImage1(image);
@@ -94,6 +104,7 @@ export function PhotoMixClient() {
 
   const uploadImageAndGetId = async (
     image: SelectedImage,
+    useAnonymousUpload: boolean,
   ): Promise<string> => {
     if (image.type === "gallery") {
       return image.id;
@@ -113,7 +124,12 @@ export function PhotoMixClient() {
 
     formData.append("file", file);
 
-    const uploadResponse = await fetch("/api/images/upload", {
+    // Use anonymous upload endpoint for anonymous users
+    const uploadEndpoint = useAnonymousUpload
+      ? "/api/images/anonymous-upload"
+      : "/api/images/upload";
+
+    const uploadResponse = await fetch(uploadEndpoint, {
       method: "POST",
       body: formData,
     });
@@ -140,7 +156,7 @@ export function PhotoMixClient() {
 
       if (image1.type === "upload") {
         // Upload image1 first to use as target
-        targetImageId = await uploadImageAndGetId(image1);
+        targetImageId = await uploadImageAndGetId(image1, isAnonymous);
       } else {
         targetImageId = image1.id;
       }
@@ -160,14 +176,19 @@ export function PhotoMixClient() {
 
       setNeedsUpload(false);
 
-      const response = await fetch("/api/images/enhance", {
+      // Use anonymous enhance endpoint for anonymous users
+      const enhanceEndpoint = isAnonymous
+        ? "/api/images/anonymous-enhance"
+        : "/api/images/enhance";
+
+      const response = await fetch(enhanceEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           imageId: targetImageId,
-          tier: selectedTier,
+          tier: effectiveTier,
           blendSource,
         }),
       });
@@ -179,7 +200,9 @@ export function PhotoMixClient() {
 
       const result = await response.json();
       setActiveJobId(result.jobId);
-      refetchBalance();
+      if (!isAnonymous) {
+        refetchBalance();
+      }
     } catch (error) {
       console.error("Failed to create mix:", error);
       alert(error instanceof Error ? error.message : "Failed to create mix");
@@ -187,7 +210,7 @@ export function PhotoMixClient() {
       setIsCreatingMix(false);
       setNeedsUpload(false);
     }
-  }, [image1, image2, selectedTier, refetchBalance, hasUploadedImages]);
+  }, [image1, image2, effectiveTier, isAnonymous, refetchBalance, hasUploadedImages]);
 
   const handleMixComplete = useCallback(
     (_result: MixResult) => {
@@ -232,8 +255,8 @@ export function PhotoMixClient() {
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4 max-w-4xl">
-      {/* Low balance warning */}
-      {!isBalanceLoading && isLowBalance && (
+      {/* Low balance warning - only for authenticated users */}
+      {!isAnonymous && !isBalanceLoading && isLowBalance && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
@@ -249,6 +272,26 @@ export function PhotoMixClient() {
               }
               onPurchaseComplete={refetchBalance}
             />
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Anonymous user notice */}
+      {isAnonymous && (
+        <Alert className="mb-6 border-blue-500/50 bg-blue-500/10">
+          <Sparkles className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <span className="text-sm">
+              Try PhotoMix for free! Sign in to unlock premium features and save your creations.
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-4"
+              onClick={() => router.push("/auth/signin")}
+            >
+              Sign In
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -282,7 +325,7 @@ export function PhotoMixClient() {
               image={image1}
               onImageSelect={handleImage1Select}
               onImageClear={handleClearImage1}
-              onOpenGallery={() => handleOpenGallery("image1")}
+              onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image1")}
               disabled={activeJobId !== null}
             />
             <ImageSlot
@@ -290,51 +333,53 @@ export function PhotoMixClient() {
               image={image2}
               onImageSelect={handleImage2Select}
               onImageClear={handleClearImage2}
-              onOpenGallery={() => handleOpenGallery("image2")}
+              onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image2")}
               disabled={activeJobId !== null}
             />
           </div>
 
-          {/* Tier selector */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedTier("FREE")}
-              disabled={activeJobId !== null}
-              className={cn(
-                "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
-                selectedTier === "FREE"
-                  ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500 text-emerald-400"
-                  : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
-                activeJobId !== null && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              {selectedTier === "FREE" && <Check className="h-4 w-4" />}
-              Free (Nano)
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedTier("TIER_1K")}
-              disabled={activeJobId !== null}
-              className={cn(
-                "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
-                selectedTier === "TIER_1K"
-                  ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-2 border-amber-500 text-amber-400"
-                  : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
-                activeJobId !== null && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              <Crown className="h-4 w-4" />
-              Premium (2 tokens)
-            </button>
-          </div>
+          {/* Tier selector - only show for authenticated users */}
+          {!isAnonymous && (
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedTier("FREE")}
+                disabled={activeJobId !== null}
+                className={cn(
+                  "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
+                  effectiveTier === "FREE"
+                    ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500 text-emerald-400"
+                    : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
+                  activeJobId !== null && "opacity-50 cursor-not-allowed",
+                )}
+              >
+                {effectiveTier === "FREE" && <Check className="h-4 w-4" />}
+                Free (Nano)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTier("TIER_1K")}
+                disabled={activeJobId !== null}
+                className={cn(
+                  "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
+                  effectiveTier === "TIER_1K"
+                    ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-2 border-amber-500 text-amber-400"
+                    : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
+                  activeJobId !== null && "opacity-50 cursor-not-allowed",
+                )}
+              >
+                <Crown className="h-4 w-4" />
+                Premium (2 tokens)
+              </button>
+            </div>
+          )}
 
           {/* Create Mix button */}
           <Button
             size="lg"
             className={cn(
               "w-full",
-              selectedTier === "FREE"
+              effectiveTier === "FREE"
                 ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
                 : "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500",
             )}
@@ -371,18 +416,22 @@ export function PhotoMixClient() {
         <div>
           <Card>
             <CardContent className="pt-6 space-y-6">
-              {/* Balance Display */}
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Coins className="h-5 w-5 text-yellow-500" />
-                  Your Balance
-                </span>
-                <span className="text-lg font-bold">
-                  {isBalanceLoading ? "..." : `${balance} tokens`}
-                </span>
-              </div>
+              {/* Balance Display - only for authenticated users */}
+              {!isAnonymous && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-sm font-medium">
+                      <Coins className="h-5 w-5 text-yellow-500" />
+                      Your Balance
+                    </span>
+                    <span className="text-lg font-bold">
+                      {isBalanceLoading ? "..." : `${balance} tokens`}
+                    </span>
+                  </div>
 
-              <Separator />
+                  <Separator />
+                </>
+              )}
 
               {/* Quality options */}
               <div className="space-y-3">
@@ -390,17 +439,17 @@ export function PhotoMixClient() {
                 <div
                   className={cn(
                     "flex items-center justify-between p-3 rounded-lg border transition-colors",
-                    selectedTier === "FREE"
+                    effectiveTier === "FREE"
                       ? "border-emerald-500/50 bg-emerald-500/10"
                       : "border-border bg-muted/30",
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    {selectedTier === "FREE" && <Check className="h-4 w-4 text-emerald-500" />}
+                    {effectiveTier === "FREE" && <Check className="h-4 w-4 text-emerald-500" />}
                     <span
                       className={cn(
                         "text-sm font-medium",
-                        selectedTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                        effectiveTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
                       )}
                     >
                       Free Tier
@@ -410,49 +459,52 @@ export function PhotoMixClient() {
                   <span
                     className={cn(
                       "text-sm font-semibold",
-                      selectedTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                      effectiveTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
                     )}
                   >
                     0 tokens
                   </span>
                 </div>
-                <div
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border transition-colors",
-                    selectedTier === "TIER_1K"
-                      ? "border-amber-500/50 bg-amber-500/10"
-                      : "border-border bg-muted/30",
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Crown
-                      className={cn(
-                        "h-4 w-4",
-                        selectedTier === "TIER_1K" ? "text-amber-500" : "text-muted-foreground",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selectedTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
-                      )}
-                    >
-                      Premium Tier
-                    </span>
-                    <span className="text-xs text-muted-foreground">1K Quality</span>
-                  </div>
-                  <span
+                {!isAnonymous && (
+                  <div
                     className={cn(
-                      "text-sm font-semibold",
-                      selectedTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                      "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                      effectiveTier === "TIER_1K"
+                        ? "border-amber-500/50 bg-amber-500/10"
+                        : "border-border bg-muted/30",
                     )}
                   >
-                    2 tokens
-                  </span>
-                </div>
+                    <div className="flex items-center gap-2">
+                      <Crown
+                        className={cn(
+                          "h-4 w-4",
+                          effectiveTier === "TIER_1K" ? "text-amber-500" : "text-muted-foreground",
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "text-sm font-medium",
+                          effectiveTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                        )}
+                      >
+                        Premium Tier
+                      </span>
+                      <span className="text-xs text-muted-foreground">1K Quality</span>
+                    </div>
+                    <span
+                      className={cn(
+                        "text-sm font-semibold",
+                        effectiveTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                      )}
+                    >
+                      2 tokens
+                    </span>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  Free tier uses Nano model for quick previews. Premium tier uses 1K quality for
-                  better results. Upgrade for more tokens and features.
+                  {isAnonymous
+                    ? "Sign in to unlock Premium tier with 1K quality for better results."
+                    : "Free tier uses Nano model for quick previews. Premium tier uses 1K quality for better results."}
                 </p>
               </div>
 
@@ -469,8 +521,8 @@ export function PhotoMixClient() {
                 </ol>
               </div>
 
-              {/* Only show "not enough tokens" for paid tiers */}
-              {tokenCost > 0 && !hasEnoughTokens && !isBalanceLoading && (
+              {/* Only show "not enough tokens" for paid tiers - not for anonymous */}
+              {!isAnonymous && tokenCost > 0 && !hasEnoughTokens && !isBalanceLoading && (
                 <>
                   <Separator />
                   <div className="space-y-3">
@@ -495,27 +547,31 @@ export function PhotoMixClient() {
         </div>
       </div>
 
-      {/* History section */}
-      <div className="mt-8">
-        <MixHistory onMixClick={handleHistoryClick} />
-      </div>
+      {/* History section - only for authenticated users */}
+      {!isAnonymous && (
+        <div className="mt-8">
+          <MixHistory onMixClick={handleHistoryClick} />
+        </div>
+      )}
 
-      {/* Image selector dialog */}
-      <ImageSelectorDialog
-        open={selectorTarget !== null}
-        onOpenChange={(open) => !open && setSelectorTarget(null)}
-        onSelect={handleSelectorSelect}
-        excludeImageId={selectorTarget === "image1"
-          ? image2?.type === "gallery"
-            ? image2.id
-            : undefined
-          : image1?.type === "gallery"
-          ? image1.id
-          : undefined}
-        title={selectorTarget === "image1"
-          ? "Select Input Photo 1"
-          : "Select Input Photo 2"}
-      />
+      {/* Image selector dialog - only for authenticated users */}
+      {!isAnonymous && (
+        <ImageSelectorDialog
+          open={selectorTarget !== null}
+          onOpenChange={(open) => !open && setSelectorTarget(null)}
+          onSelect={handleSelectorSelect}
+          excludeImageId={selectorTarget === "image1"
+            ? image2?.type === "gallery"
+              ? image2.id
+              : undefined
+            : image1?.type === "gallery"
+            ? image1.id
+            : undefined}
+          title={selectorTarget === "image1"
+            ? "Select Input Photo 1"
+            : "Select Input Photo 2"}
+        />
+      )}
     </div>
   );
 }

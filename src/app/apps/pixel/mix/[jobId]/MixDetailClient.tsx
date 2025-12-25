@@ -2,11 +2,20 @@
 
 import { ComparisonViewToggle } from "@/components/enhance/ComparisonViewToggle";
 import { MixShareQRCode } from "@/components/mix/MixShareQRCode";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { EnhancementTier, JobStatus } from "@prisma/client";
-import { ArrowLeft, Download, ExternalLink, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Download,
+  ExternalLink,
+  Loader2,
+  LogIn,
+  Sparkles,
+} from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -35,6 +44,12 @@ interface MixJob {
 
 interface MixDetailClientProps {
   job: MixJob;
+  /** Whether this job was created by an anonymous user */
+  isAnonymousJob?: boolean;
+  /** Whether the current user owns this job */
+  isOwner?: boolean;
+  /** Whether the current user is authenticated */
+  isAuthenticated?: boolean;
 }
 
 type ComparisonParent = "parent1" | "parent2";
@@ -46,7 +61,12 @@ const tierLabels: Record<EnhancementTier, string> = {
   TIER_4K: "4K",
 };
 
-export function MixDetailClient({ job }: MixDetailClientProps) {
+export function MixDetailClient({
+  job,
+  isAnonymousJob = false,
+  isOwner = true,
+  isAuthenticated = true,
+}: MixDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeParent, setActiveParent] = useState<ComparisonParent>("parent1");
@@ -75,12 +95,26 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
     if (!job.resultUrl) return;
 
     try {
-      const response = await fetch(job.resultUrl);
+      const response = await fetch(`/api/jobs/${job.id}/download`);
+
+      if (!response.ok) {
+        throw new Error("Download failed");
+      }
+
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `mix-${job.id}.jpg`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="([^"]+)"/);
+        if (match?.[1]) {
+          filename = match[1];
+        }
+      }
+
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `mix-${job.id}.jpg`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -126,6 +160,15 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
 
   const comparison = getCurrentComparison();
 
+  // Calculate thumbnail dimensions preserving aspect ratio with max 64px
+  const getThumbnailDimensions = (width: number, height: number) => {
+    const maxSize = 64;
+    if (width >= height) {
+      return { width: maxSize, height: Math.round((height / width) * maxSize) };
+    }
+    return { width: Math.round((width / height) * maxSize), height: maxSize };
+  };
+
   const isCompleted = job.status === "COMPLETED" && job.resultUrl;
   const isProcessing = job.status === "PROCESSING" || job.status === "PENDING";
 
@@ -142,23 +185,28 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">PhotoMix Result</h1>
-            <p className="text-muted-foreground mt-1">
-              {tierLabels[job.tier]} Quality &bull;{" "}
-              {new Date(job.createdAt).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        </div>
       </div>
+
+      {/* Sign-in prompt for unauthenticated users */}
+      {!isAuthenticated && (
+        <Alert className="mb-6 border-blue-500/50 bg-blue-500/10">
+          <Sparkles className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <span className="text-sm">
+              Love this mix? Sign in to create your own and save them forever!
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-4"
+              onClick={() => router.push("/auth/signin")}
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Left Column - Main Content */}
@@ -166,20 +214,71 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
           {/* Comparison View */}
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle>Comparison</CardTitle>
+              <div className="flex items-center justify-end">
                 {/* Parent Toggle */}
                 {job.sourceImage && (
                   <Tabs
                     value={activeParent}
                     onValueChange={(v) => setActiveParent(v as ComparisonParent)}
                   >
-                    <TabsList>
-                      <TabsTrigger value="parent1" className="text-xs">
-                        Photo 1 → Result
+                    <TabsList className="h-auto p-1">
+                      <TabsTrigger value="parent1" className="flex items-center gap-2 px-3 py-2">
+                        <Image
+                          src={job.targetImage.url}
+                          alt="Photo 1"
+                          width={getThumbnailDimensions(
+                            job.targetImage.width,
+                            job.targetImage.height,
+                          ).width}
+                          height={getThumbnailDimensions(
+                            job.targetImage.width,
+                            job.targetImage.height,
+                          ).height}
+                          className="rounded-sm object-contain"
+                        />
+                        <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                        {job.resultUrl && job.resultWidth && job.resultHeight
+                          ? (
+                            <Image
+                              src={job.resultUrl}
+                              alt="Result"
+                              width={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                                .width}
+                              height={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                                .height}
+                              className="rounded-sm object-contain"
+                            />
+                          )
+                          : <span className="text-sm">Result</span>}
                       </TabsTrigger>
-                      <TabsTrigger value="parent2" className="text-xs">
-                        Photo 2 → Result
+                      <TabsTrigger value="parent2" className="flex items-center gap-2 px-3 py-2">
+                        <Image
+                          src={job.sourceImage.url}
+                          alt="Photo 2"
+                          width={getThumbnailDimensions(
+                            job.sourceImage.width,
+                            job.sourceImage.height,
+                          ).width}
+                          height={getThumbnailDimensions(
+                            job.sourceImage.width,
+                            job.sourceImage.height,
+                          ).height}
+                          className="rounded-sm object-contain"
+                        />
+                        <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                        {job.resultUrl && job.resultWidth && job.resultHeight
+                          ? (
+                            <Image
+                              src={job.resultUrl}
+                              alt="Result"
+                              width={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                                .width}
+                              height={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                                .height}
+                              className="rounded-sm object-contain"
+                            />
+                          )
+                          : <span className="text-sm">Result</span>}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -223,51 +322,41 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 {/* Parent 1 (Target Image) */}
-                <button
-                  type="button"
-                  onClick={() => handleViewParent(job.targetImage.id)}
-                  className="group relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
-                >
-                  <div className="aspect-square relative bg-muted">
-                    <Image
-                      src={job.targetImage.url}
-                      alt={job.targetImage.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 50vw, 300px"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                        Photo 1
-                      </span>
-                    </div>
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
-                        <ExternalLink className="h-3 w-3" />
-                        View
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-2 bg-card">
-                    <p className="text-xs text-muted-foreground truncate">
-                      {job.targetImage.name}
-                    </p>
-                  </div>
-                </button>
-
-                {/* Parent 2 (Source Image) */}
-                {job.sourceImage
+                {/* Hide "View" link for anonymous jobs or non-owners (they can't access parent images) */}
+                {(isAnonymousJob || !isOwner)
                   ? (
+                    <div className="relative rounded-lg overflow-hidden border border-border">
+                      <div className="aspect-square relative bg-muted">
+                        <Image
+                          src={job.targetImage.url}
+                          alt={job.targetImage.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 300px"
+                        />
+                        <div className="absolute top-2 left-2">
+                          <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                            Photo 1
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-2 bg-card">
+                        <p className="text-xs text-muted-foreground truncate">
+                          {job.targetImage.name}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                  : (
                     <button
                       type="button"
-                      onClick={() => handleViewParent(job.sourceImage!.id)}
+                      onClick={() => handleViewParent(job.targetImage.id)}
                       className="group relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
                     >
                       <div className="aspect-square relative bg-muted">
                         <Image
-                          src={job.sourceImage.url}
-                          alt={job.sourceImage.name}
+                          src={job.targetImage.url}
+                          alt={job.targetImage.name}
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 50vw, 300px"
@@ -275,7 +364,7 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                         <div className="absolute top-2 left-2">
                           <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                            Photo 2
+                            Photo 1
                           </span>
                         </div>
                         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -287,11 +376,72 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
                       </div>
                       <div className="p-2 bg-card">
                         <p className="text-xs text-muted-foreground truncate">
-                          {job.sourceImage.name}
+                          {job.targetImage.name}
                         </p>
                       </div>
                     </button>
-                  )
+                  )}
+
+                {/* Parent 2 (Source Image) */}
+                {job.sourceImage
+                  ? (isAnonymousJob || !isOwner)
+                    ? (
+                      <div className="relative rounded-lg overflow-hidden border border-border">
+                        <div className="aspect-square relative bg-muted">
+                          <Image
+                            src={job.sourceImage.url}
+                            alt={job.sourceImage.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 300px"
+                          />
+                          <div className="absolute top-2 left-2">
+                            <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                              Photo 2
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-2 bg-card">
+                          <p className="text-xs text-muted-foreground truncate">
+                            {job.sourceImage.name}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                    : (
+                      <button
+                        type="button"
+                        onClick={() => handleViewParent(job.sourceImage!.id)}
+                        className="group relative rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+                      >
+                        <div className="aspect-square relative bg-muted">
+                          <Image
+                            src={job.sourceImage.url}
+                            alt={job.sourceImage.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 300px"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                          <div className="absolute top-2 left-2">
+                            <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                              Photo 2
+                            </span>
+                          </div>
+                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3" />
+                              View
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-2 bg-card">
+                          <p className="text-xs text-muted-foreground truncate">
+                            {job.sourceImage.name}
+                          </p>
+                        </div>
+                      </button>
+                    )
                   : (
                     <div className="rounded-lg overflow-hidden border border-dashed border-border">
                       <div className="aspect-square relative bg-muted flex items-center justify-center">
@@ -353,8 +503,8 @@ export function MixDetailClient({ job }: MixDetailClientProps) {
         </div>
       </div>
 
-      {/* QR Code Overlay - Desktop Only */}
-      <MixShareQRCode shareUrl={shareUrl} />
+      {/* QR Code Overlay - Desktop Only - Only show for owners */}
+      {isOwner && <MixShareQRCode shareUrl={shareUrl} />}
     </div>
   );
 }

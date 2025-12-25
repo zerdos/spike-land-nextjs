@@ -72,8 +72,13 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     vi.useRealTimers();
   });
 
-  it("returns 401 if user is not authenticated", async () => {
+  it("returns 401 if user is not authenticated for non-anonymous job", async () => {
     vi.mocked(auth).mockResolvedValue(null);
+    // Job exists and is not anonymous
+    vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue({
+      isAnonymous: false,
+      userId: mockUserId,
+    } as never);
 
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/test-job-id/stream",
@@ -87,9 +92,14 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     expect(json.error).toBe("Unauthorized");
   });
 
-  it("returns 401 if session has no user id", async () => {
+  it("returns 401 if session has no user id for non-anonymous job", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: {},
+    } as never);
+    // Job exists and is not anonymous
+    vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue({
+      isAnonymous: false,
+      userId: mockUserId,
     } as never);
 
     const request = new NextRequest(

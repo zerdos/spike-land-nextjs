@@ -11,11 +11,6 @@ interface MixDetailPageProps {
 
 export default async function MixDetailPage({ params }: MixDetailPageProps) {
   const session = await auth();
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
   const { jobId } = await params;
 
   // Fetch the mix job with both parent images
@@ -50,10 +45,10 @@ export default async function MixDetailPage({ params }: MixDetailPageProps) {
     notFound();
   }
 
-  // Check if user owns this job
-  if (job.userId !== session.user.id) {
-    redirect("/apps/pixel");
-  }
+  // All mix results are publicly viewable via direct URL
+  // Ownership determines which features are shown (QR code, etc.)
+  const isAnonymousJob = job.isAnonymous;
+  const isOwner = session?.user?.id === job.userId;
 
   // Check if this is a blend job (has sourceImageId or isBlend flag)
   // If not a blend, redirect to the standard image page
@@ -88,6 +83,9 @@ export default async function MixDetailPage({ params }: MixDetailPageProps) {
           }
           : null,
       }}
+      isAnonymousJob={isAnonymousJob}
+      isOwner={isOwner}
+      isAuthenticated={!!session}
     />
   );
 }

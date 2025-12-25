@@ -27,8 +27,14 @@ describe("/api/jobs/[jobId] - GET", () => {
     vi.clearAllMocks();
   });
 
-  it("returns 401 if user is not authenticated", async () => {
+  it("returns 401 if user is not authenticated for non-anonymous job", async () => {
     vi.mocked(auth).mockResolvedValue(null);
+
+    // First call is the initial check for isAnonymous
+    vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue({
+      isAnonymous: false,
+      userId: mockUserId,
+    } as any);
 
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/test-job-id",
