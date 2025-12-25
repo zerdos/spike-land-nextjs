@@ -411,10 +411,10 @@ Then(
   "I should see {string} heading",
   async function(this: CustomWorld, headingText: string) {
     // Look for any heading level (h1-h6) or CardTitle (div with font-bold) with the specified text
+    // Filter to only visible elements to avoid selecting hidden mobile/desktop variants
     const heading = this.page.locator(
-      "h1, h2, h3, h4, h5, h6, .font-bold, .font-semibold",
-      { hasText: headingText },
-    );
+      "h1:visible, h2:visible, h3:visible, h4:visible, h5:visible, h6:visible, .font-bold:visible, .font-semibold:visible",
+    ).filter({ hasText: headingText });
     // Use longer timeout for flaky CI environment
     await expect(heading.first()).toBeVisible({ timeout: 15000 });
   },
