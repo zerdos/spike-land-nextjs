@@ -410,12 +410,15 @@ Then(
 Then(
   "I should see {string} heading",
   async function(this: CustomWorld, headingText: string) {
-    // Look for any heading level (h1-h6) or CardTitle (div with font-bold) with the specified text
-    // Filter to only visible elements to avoid selecting hidden mobile/desktop variants
-    const heading = this.page.locator(
-      "h1:visible, h2:visible, h3:visible, h4:visible, h5:visible, h6:visible, .font-bold:visible, .font-semibold:visible",
-    ).filter({ hasText: headingText });
-    // Use longer timeout for flaky CI environment
+    // Use getByRole for better reliability - searches for headings with specific text
+    // Falls back to text-based search if no heading role found
+    const headingByRole = this.page.getByRole("heading", { name: headingText });
+    const headingByText = this.page.locator("h1, h2, h3, h4, h5, h6, .font-bold", {
+      hasText: headingText,
+    });
+
+    // Try role-based first, then fall back to text-based
+    const heading = (await headingByRole.count()) > 0 ? headingByRole : headingByText;
     await expect(heading.first()).toBeVisible({ timeout: 15000 });
   },
 );
