@@ -60,7 +60,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable-cache
+        run: yarn install --immutable
 
       - name: Run linter
         run: yarn lint
@@ -101,7 +101,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable-cache
+        run: yarn install --immutable
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -161,7 +161,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable-cache
+        run: yarn install --immutable
 
       - name: Cache Next.js build (Turbopack)
         uses: actions/cache@v5
@@ -218,7 +218,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable-cache
+        run: yarn install --immutable
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5

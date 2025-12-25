@@ -21,7 +21,7 @@
     "test:e2e:local:sharded": "BASE_URL=http://localhost:3000 CI=true cucumber-js --profile ci --shard ${SHARD_INDEX:-1}/${SHARD_TOTAL:-1}",
     "test:e2e:review:parallel": "BASE_URL=$(./scripts/get-review-url.sh) CI=true cucumber-js --profile local",
     "review": "./scripts/get-review-url.sh",
-    "silent:install": "yarn install --immutable-cache > /dev/null 2> /dev/null || true && yarn prisma generate --no-hints",
+    "silent:install": "yarn install --immutable > /dev/null 2> /dev/null || true && yarn prisma generate --no-hints",
     "start:server:and:test": "start-server-and-test start http://localhost:3000 test:e2e:local:sharded",
     "test:e2e:shard": "./scripts/e2e-shard.sh",
     "test:e2e:ci": "CI=TRUE cucumber-js --profile ci",

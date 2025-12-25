@@ -254,7 +254,7 @@ git worktree add ../feature-name -b feature-name
 
 # Work in the new worktree
 cd ../feature-name
-yarn install --immutable-cache
+yarn install --immutable
 yarn dev
 
 # Remove worktree when done

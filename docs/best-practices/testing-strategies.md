@@ -1221,7 +1221,7 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      - run: yarn install --immutable-cache
+      - run: yarn install --immutable
 
       - run: yarn test:coverage --shard=${{ matrix.shard }}/4
 
@@ -1245,7 +1245,7 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      - run: yarn install --immutable-cache
+      - run: yarn install --immutable
 
       - run: yarn build
 
@@ -1315,7 +1315,7 @@ gh run view <RUN-ID> --log-failed
 1. **Shard tests strategically** - Balance speed vs. cost
 2. **Fail fast for unit tests** - Stop early on coverage failures
 3. **Continue E2E on unit failure** - Some overlaps are okay
-4. **Cache dependencies** - Speed up `yarn install --immutable-cache`
+4. **Cache dependencies** - Speed up `yarn install --immutable`
 5. **Upload coverage reports** - Track trends over time
 6. **Keep CI logs clean** - Use appropriate log levels
 7. **Monitor performance** - Track execution time trends

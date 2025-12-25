@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies (if cache miss)
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable-cache
+        run: yarn install --immutable
 
       - name: download diff
         run: |
