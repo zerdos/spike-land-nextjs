@@ -35,9 +35,9 @@ Feature: Public Pages - Storybook and Easter Eggs
   Scenario: Storybook colors page displays color palette
     When I visit "/storybook/colors"
     Then the page should load successfully
-    And I should see "Color Palette" text
-    And I should see "Brand Colors" text
-    And I should see "Pixel Cyan" text
+    And I should see "Color System" text
+    And I should see "Brand Identity" text
+    And I should see "Theme Foundations" text
 
   @fast
   Scenario: Storybook typography page displays fonts
