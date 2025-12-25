@@ -316,10 +316,7 @@ export function MixDetailClient({
 
           {/* Parent Images */}
           <Card>
-            <CardHeader>
-              <CardTitle>Source Photos</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="grid grid-cols-2 gap-4">
                 {/* Parent 1 (Target Image) */}
                 {/* Hide "View" link for anonymous jobs or non-owners (they can't access parent images) */}
@@ -334,16 +331,6 @@ export function MixDetailClient({
                           className="object-cover"
                           sizes="(max-width: 768px) 50vw, 300px"
                         />
-                        <div className="absolute top-2 left-2">
-                          <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                            Photo 1
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-2 bg-card">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {job.targetImage.name}
-                        </p>
                       </div>
                     </div>
                   )
@@ -362,22 +349,6 @@ export function MixDetailClient({
                           sizes="(max-width: 768px) 50vw, 300px"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                        <div className="absolute top-2 left-2">
-                          <span className="px-2 py-1 bg-black/60 text-white text-xs rounded-md">
-                            Photo 1
-                          </span>
-                        </div>
-                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-md flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3" />
-                            View
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-2 bg-card">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {job.targetImage.name}
-                        </p>
                       </div>
                     </button>
                   )}
