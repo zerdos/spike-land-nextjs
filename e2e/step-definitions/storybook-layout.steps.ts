@@ -119,18 +119,10 @@ When(
 When(
   "I close the mobile navigation drawer",
   async function(this: CustomWorld) {
-    // Sheet has a close button with X icon and sr-only "Close" text
-    const closeButton = this.page.getByRole("button", { name: /close/i });
-    // Wait for the button to be visible with a shorter timeout
-    const isVisible = await closeButton.isVisible().catch(() => false);
-    if (isVisible) {
-      await closeButton.click();
-    } else {
-      // Fallback: press Escape to close the dialog
-      await this.page.keyboard.press("Escape");
-    }
-    // Wait a moment for animation to complete
-    await this.page.waitForTimeout(300);
+    // Use Escape key as primary method - more reliable than finding close button
+    await this.page.keyboard.press("Escape");
+    // Wait for animation to complete
+    await this.page.waitForTimeout(500);
   },
 );
 
