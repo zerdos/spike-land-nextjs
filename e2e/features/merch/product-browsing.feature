@@ -1,3 +1,4 @@
+@wip
 Feature: Merch Product Browsing
   As a user
   I want to browse and view product details

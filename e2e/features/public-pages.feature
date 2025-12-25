@@ -9,7 +9,7 @@ Feature: Public Pages - Storybook and Easter Eggs
     When I visit "/storybook"
     Then the page should load successfully
     And I should see "Design System" heading
-    And I should see "Pixel Brand Guidelines" text
+    And I should see "Design system & component library" text
 
   @fast
   Scenario: Storybook page shows navigation links
@@ -27,24 +27,24 @@ Feature: Public Pages - Storybook and Easter Eggs
   Scenario: Storybook brand page displays logo variants
     When I visit "/storybook/brand"
     Then the page should load successfully
-    And I should see "Logo - The AI Spark" text
-    And I should see "Sizes" text
-    And I should see "Variants" text
+    And I should see "AI Spark Logo" text
+    And I should see "Sizes & Scale" text
+    And I should see "Structural Variants" text
 
   @fast
   Scenario: Storybook colors page displays color palette
     When I visit "/storybook/colors"
     Then the page should load successfully
-    And I should see "Color Palette" text
-    And I should see "Brand Colors" text
-    And I should see "Pixel Cyan" text
+    And I should see "Color System" text
+    And I should see "Brand Identity" text
+    And I should see "Theme Foundations" text
 
   @fast
   Scenario: Storybook typography page displays fonts
     When I visit "/storybook/typography"
     Then the page should load successfully
     And I should see "Typography" text
-    And I should see "Font Families" text
+    And I should see "The Font Stack" text
     And I should see "Montserrat" text
 
   @fast
@@ -58,17 +58,17 @@ Feature: Public Pages - Storybook and Easter Eggs
   Scenario: Storybook components page displays UI components
     When I visit "/storybook/components"
     Then the page should load successfully
-    And I should see "Components" text
-    And I should see "Cards" text
+    And I should see "UI Components" text
+    And I should see "Card Variants" text
     And I should see "Badges" text
-    And I should see "Form Elements" text
+    And I should see "Inputs & Controls" text
 
   @fast
   Scenario: Storybook page shows footer
     When I visit "/storybook"
     Then the page should load successfully
-    And I should see "Pixel Design System" text
-    And I should see "Spike Land Platform" text
+    And I should see "Stable Version 1.2.0" text
+    And I should see "Built for Spike Land Platform" text
 
   @fast
   Scenario: Storybook page is accessible without authentication

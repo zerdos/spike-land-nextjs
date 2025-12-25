@@ -21,12 +21,19 @@ Then(
     const section = this.page.locator(`#${sectionId}`);
     await expect(section).toBeVisible();
 
-    // Verify the section is in viewport
-    const isInViewport = await section.evaluate((el) => {
-      const rect = el.getBoundingClientRect();
-      return rect.top >= 0 && rect.top <= window.innerHeight;
-    });
-
-    expect(isInViewport).toBe(true);
+    // Wait for smooth scroll to complete and verify the section is near the top of viewport
+    // Allow for sticky header (up to 150px) and some margin for smooth scroll settling
+    await this.page.waitForFunction(
+      (id) => {
+        const el = document.getElementById(id);
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        // Section top should be near the viewport top (within 200px to account for headers)
+        // and the section should be at least partially visible
+        return rect.top >= -50 && rect.top <= 200 && rect.bottom > 0;
+      },
+      sectionId,
+      { timeout: 2000 },
+    );
   },
 );

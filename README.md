@@ -37,7 +37,7 @@ cd spike-land-nextjs
 corepack enable
 
 # Install dependencies
-yarn install --immutable-cache
+yarn install --immutable
 
 # Install Playwright browsers (for E2E tests)
 yarn dlx playwright install chromium

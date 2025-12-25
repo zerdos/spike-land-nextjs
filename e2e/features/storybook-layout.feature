@@ -68,5 +68,5 @@ Feature: Storybook Design System Layout
   Scenario: Sidebar displays version footer
     When I visit "/storybook" on a desktop viewport
     Then the page should load successfully
-    And I should see "Pixel Design System v1.0" text
+    And I should see "Version 1.2.0" text
     And I should see "Spike Land Platform" text

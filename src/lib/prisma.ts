@@ -4,13 +4,11 @@ import { PrismaClient } from "@prisma/client";
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
 
-  // For build-time: return client without adapter if no DATABASE_URL
-  // This allows Next.js page collection to succeed during build
-  // Runtime will use the adapter when DATABASE_URL is available
   if (!connectionString) {
-    return new PrismaClient({
-      log: ["error", "warn"],
-    });
+    throw new Error(
+      "DATABASE_URL environment variable is required for database access. " +
+        "Please ensure it is set in your environment.",
+    );
   }
 
   const adapter = new PrismaPg({ connectionString });
