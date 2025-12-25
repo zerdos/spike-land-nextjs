@@ -7,27 +7,6 @@
         "-y",
         "@playwright/mcp@latest"
       ]
-    },
-    "spike.land": {
-      "type": "stdio",
-      "command": "npx",
-      "env": {
-        "SPIKE_LAND_API_KEY": "${SPIKE_LAND_API_KEY}",
-        "GH_PAT_TOKEN": "${GH_PAT_TOKEN}"
-      },
-      "args": [
-        "-y",
-        "@spike-npm-land/mcp-server"
-      ]
-    },
-    "MCP_DOCKER": {
-      "command": "docker",
-      "args": [
-        "mcp",
-        "gateway",
-        "run"
-      ],
-      "type": "stdio"
     }
   }
 }
