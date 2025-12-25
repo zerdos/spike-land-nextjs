@@ -1,4 +1,6 @@
+import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 /**
  * System anonymous user configuration.
@@ -14,17 +16,29 @@ const ANONYMOUS_USER_NAME = "Anonymous User";
  * non-logged-in users.
  *
  * @returns The anonymous user ID
+ * @throws Error if the anonymous user cannot be created
  */
 export async function getOrCreateAnonymousUser(): Promise<string> {
-  const user = await prisma.user.upsert({
-    where: { id: ANONYMOUS_USER_ID },
-    update: {},
-    create: {
-      id: ANONYMOUS_USER_ID,
-      email: ANONYMOUS_USER_EMAIL,
-      name: ANONYMOUS_USER_NAME,
-    },
-  });
+  const { data: user, error } = await tryCatch(
+    prisma.user.upsert({
+      where: { id: ANONYMOUS_USER_ID },
+      update: {},
+      create: {
+        id: ANONYMOUS_USER_ID,
+        email: ANONYMOUS_USER_EMAIL,
+        name: ANONYMOUS_USER_NAME,
+      },
+    }),
+  );
+
+  if (error || !user) {
+    logger.error(
+      "Failed to get or create anonymous user",
+      error instanceof Error ? error : new Error("Unknown error"),
+    );
+    throw new Error("Anonymous user initialization failed");
+  }
+
   return user.id;
 }
 
