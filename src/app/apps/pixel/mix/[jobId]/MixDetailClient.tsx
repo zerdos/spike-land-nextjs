@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 import { ArrowLeft, ArrowRight, Download, Loader2, LogIn, Sparkles } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";

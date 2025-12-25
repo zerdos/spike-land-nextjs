@@ -31,7 +31,10 @@ const activeConnections = new Map<string, number>();
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    return forwarded.split(",")[0].trim();
+    const firstIP = forwarded.split(",")[0];
+    if (firstIP) {
+      return firstIP.trim();
+    }
   }
   const realIP = request.headers.get("x-real-ip");
   if (realIP) {

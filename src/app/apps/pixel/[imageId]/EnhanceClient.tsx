@@ -197,6 +197,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           pipelineId: null,
           sourceImageId: null,
           isBlend: true, // Auto-enhance is always a blend (file upload)
+          isAnonymous: false, // This is an authenticated user's job
         };
 
         setImage((prev: ImageWithJobs) => ({
@@ -280,6 +281,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         sourceImageId: null,
         // Track blend jobs
         isBlend: !!blendImageData,
+        isAnonymous: false, // This is an authenticated user's job
       };
 
       setImage((prev: ImageWithJobs) => ({
