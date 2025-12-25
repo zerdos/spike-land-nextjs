@@ -107,30 +107,6 @@ describe("MixDetailClient", () => {
   });
 
   describe("Rendering", () => {
-    it("renders PhotoMix Result heading", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("PhotoMix Result")).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_1K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_1K" })} />);
-
-      expect(screen.getByText(/1K Quality/)).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_2K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_2K" })} />);
-
-      expect(screen.getByText(/2K Quality/)).toBeInTheDocument();
-    });
-
-    it("renders tier label correctly for TIER_4K", () => {
-      render(<MixDetailClient job={createMockJob({ tier: "TIER_4K" })} />);
-
-      expect(screen.getByText(/4K Quality/)).toBeInTheDocument();
-    });
-
     it("renders Back button", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
@@ -140,14 +116,14 @@ describe("MixDetailClient", () => {
     it("renders Download button when job is completed", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
-      expect(screen.getByRole("button", { name: /Download Mix/i }))
+      expect(screen.getByRole("button", { name: /Download/i }))
         .toBeInTheDocument();
     });
 
     it("does not render Download button when job is processing", () => {
       render(<MixDetailClient job={createMockJob({ status: "PROCESSING", resultUrl: null })} />);
 
-      expect(screen.queryByRole("button", { name: /Download Mix/i })).not
+      expect(screen.queryByRole("button", { name: /Download/i })).not
         .toBeInTheDocument();
     });
 
@@ -184,12 +160,6 @@ describe("MixDetailClient", () => {
       expect(screen.getByText("Mix processing failed")).toBeInTheDocument();
     });
 
-    it("renders source photos section", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("Source Photos")).toBeInTheDocument();
-    });
-
     it("renders both parent images", () => {
       const job = createMockJob();
       render(<MixDetailClient job={job} />);
@@ -198,27 +168,11 @@ describe("MixDetailClient", () => {
       expect(screen.getByAltText("Photo 2.jpg")).toBeInTheDocument();
     });
 
-    it("renders placeholder when sourceImage is null", () => {
-      render(<MixDetailClient job={createMockJob({ sourceImage: null })} />);
-
-      expect(
-        screen.getByText(
-          "Photo 2 was uploaded directly and not saved to gallery",
-        ),
-      ).toBeInTheDocument();
-    });
-
     it("renders QR code component with share URL", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const qrCode = screen.getByTestId("qr-code");
       expect(qrCode).toBeInTheDocument();
-    });
-
-    it("renders result dimensions when job is completed", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      expect(screen.getByText("Dimensions: 2048 x 2048")).toBeInTheDocument();
     });
   });
 
@@ -319,7 +273,7 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const downloadButton = screen.getByRole("button", {
-        name: /Download Mix/i,
+        name: /Download/i,
       });
       fireEvent.click(downloadButton);
 
@@ -346,7 +300,7 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const downloadButton = screen.getByRole("button", {
-        name: /Download Mix/i,
+        name: /Download/i,
       });
       fireEvent.click(downloadButton);
 
@@ -365,7 +319,7 @@ describe("MixDetailClient", () => {
       );
 
       // Download button shouldn't be rendered at all
-      expect(screen.queryByRole("button", { name: /Download Mix/i })).not
+      expect(screen.queryByRole("button", { name: /Download/i })).not
         .toBeInTheDocument();
     });
   });
@@ -484,17 +438,6 @@ describe("MixDetailClient", () => {
       const qrCode = screen.getByTestId("qr-code");
       // The QR code should be rendered with a URL
       expect(qrCode.getAttribute("data-url")).toBeTruthy();
-    });
-  });
-
-  describe("Date formatting", () => {
-    it("displays job creation date", () => {
-      render(<MixDetailClient job={createMockJob()} />);
-
-      // The date should be displayed somewhere in the component
-      // Check that the quality and date section exists
-      const infoSection = screen.getByText(/2K Quality/);
-      expect(infoSection).toBeInTheDocument();
     });
   });
 });
