@@ -145,9 +145,9 @@ export function MixDetailClient({
 
   const comparison = getCurrentComparison();
 
-  // Calculate thumbnail dimensions preserving aspect ratio with max 128px
+  // Calculate thumbnail dimensions preserving aspect ratio with max 85px (2/3 of original)
   const getThumbnailDimensions = (width: number, height: number) => {
-    const maxSize = 128;
+    const maxSize = 85;
     if (width >= height) {
       return { width: maxSize, height: Math.round((height / width) * maxSize) };
     }
