@@ -426,7 +426,9 @@ function constantTimeCompare(a: string, b: string): boolean {
   const bBytes = encoder.encode(b);
   let result = 0;
   for (let i = 0; i < aBytes.length; i++) {
-    result |= aBytes[i] ^ bBytes[i];
+    const aByte = aBytes[i] ?? 0;
+    const bByte = bBytes[i] ?? 0;
+    result |= aByte ^ bByte;
   }
   return result === 0;
 }
