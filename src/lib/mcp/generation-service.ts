@@ -669,3 +669,174 @@ export async function getJobHistory(
     hasMore: offset + limit < total,
   };
 }
+
+/**
+ * Cancel/kill a MCP job
+ * Only works for PENDING or PROCESSING jobs
+ * Refunds tokens to user
+ */
+export async function cancelMcpJob(
+  jobId: string,
+): Promise<{ success: boolean; error?: string; tokensRefunded?: number; }> {
+  const job = await prisma.mcpGenerationJob.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!job) {
+    return { success: false, error: "Job not found" };
+  }
+
+  if (job.status !== JobStatus.PENDING && job.status !== JobStatus.PROCESSING) {
+    return {
+      success: false,
+      error:
+        `Cannot cancel job with status ${job.status}. Only PENDING or PROCESSING jobs can be cancelled.`,
+    };
+  }
+
+  // Update job status to CANCELLED
+  await prisma.mcpGenerationJob.update({
+    where: { id: jobId },
+    data: {
+      status: JobStatus.CANCELLED,
+      errorMessage: "Cancelled by admin",
+      processingCompletedAt: new Date(),
+    },
+  });
+
+  // Refund tokens
+  await TokenBalanceManager.refundTokens(
+    job.userId,
+    job.tokensCost,
+    jobId,
+    "Admin cancelled job",
+  );
+
+  return { success: true, tokensRefunded: job.tokensCost };
+}
+
+/**
+ * Rerun/duplicate a MCP job
+ * Creates a new job with the same parameters and starts processing
+ */
+export async function rerunMcpJob(
+  jobId: string,
+): Promise<{ success: boolean; error?: string; newJobId?: string; }> {
+  const job = await prisma.mcpGenerationJob.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!job) {
+    return { success: false, error: "Job not found" };
+  }
+
+  // Check concurrent job limit for user
+  const canCreateJob = await checkConcurrentJobLimit(job.userId);
+  if (!canCreateJob) {
+    return {
+      success: false,
+      error:
+        `Too many concurrent jobs. Maximum ${MAX_CONCURRENT_JOBS_PER_USER} jobs can be processed at once.`,
+    };
+  }
+
+  // Consume tokens for new job
+  const consumeResult = await TokenBalanceManager.consumeTokens({
+    userId: job.userId,
+    amount: job.tokensCost,
+    source: "mcp_generation",
+    sourceId: "pending",
+    metadata: { tier: job.tier, type: job.type, rerunOf: jobId },
+  });
+
+  if (!consumeResult.success) {
+    return {
+      success: false,
+      error: consumeResult.error ||
+        `Insufficient token balance. Required: ${job.tokensCost} tokens`,
+    };
+  }
+
+  // Create new job with same parameters
+  const newJob = await prisma.mcpGenerationJob.create({
+    data: {
+      userId: job.userId,
+      apiKeyId: job.apiKeyId,
+      type: job.type,
+      tier: job.tier,
+      tokensCost: job.tokensCost,
+      status: JobStatus.PROCESSING,
+      prompt: job.prompt,
+      inputImageUrl: job.inputImageUrl,
+      inputImageR2Key: job.inputImageR2Key,
+      geminiModel: job.geminiModel,
+      processingStartedAt: new Date(),
+    },
+  });
+
+  // Start processing based on job type
+  if (job.type === McpJobType.GENERATE) {
+    processGenerationJob(newJob.id, {
+      prompt: job.prompt,
+      tier: job.tier.replace("TIER_", "") as "1K" | "2K" | "4K",
+      userId: job.userId,
+    }).catch((error) => {
+      console.error(`Rerun generation job ${newJob.id} failed:`, error);
+    });
+  } else if (job.type === McpJobType.MODIFY && job.inputImageUrl) {
+    // For modify jobs, we need to fetch the original image
+    fetchAndProcessModification(newJob.id, job).catch((error) => {
+      console.error(`Rerun modification job ${newJob.id} failed:`, error);
+    });
+  }
+
+  return { success: true, newJobId: newJob.id };
+}
+
+/**
+ * Helper to fetch and process a modification job rerun
+ */
+async function fetchAndProcessModification(
+  newJobId: string,
+  originalJob: {
+    inputImageUrl: string | null;
+    prompt: string;
+    tier: string;
+    userId: string;
+  },
+): Promise<void> {
+  if (!originalJob.inputImageUrl) {
+    await handleGenerationJobFailure(
+      newJobId,
+      new Error("No input image URL available for modification rerun"),
+    );
+    return;
+  }
+
+  // Fetch the original input image
+  const { data: response, error: fetchError } = await tryCatch(
+    fetch(originalJob.inputImageUrl),
+  );
+
+  if (fetchError || !response?.ok) {
+    await handleGenerationJobFailure(
+      newJobId,
+      new Error("Failed to fetch original input image for rerun"),
+    );
+    return;
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const imageData = Buffer.from(arrayBuffer).toString("base64");
+  const mimeType = response.headers.get("content-type") || "image/jpeg";
+
+  processModificationJob(newJobId, {
+    prompt: originalJob.prompt,
+    tier: originalJob.tier.replace("TIER_", "") as "1K" | "2K" | "4K",
+    imageData,
+    mimeType,
+    userId: originalJob.userId,
+  }).catch((error) => {
+    console.error(`Rerun modification job ${newJobId} failed:`, error);
+  });
+}

@@ -3,10 +3,12 @@
  *
  * Client-side component for the admin jobs management page.
  * Features:
- * - Tab filtering by job status
+ * - Tab filtering by job status and type
  * - Job list with pagination
  * - Job detail panel with before/after comparison
  * - Processing time and metadata display
+ * - Job actions: Kill, Rerun, Copy Link
+ * - Direct link support via initialJobId
  */
 
 "use client";
@@ -15,50 +17,12 @@ import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlide
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
-interface JobImage {
-  id: string;
-  name: string;
-  originalUrl: string;
-  originalWidth: number | null;
-  originalHeight: number | null;
-  originalSizeBytes: number | null;
-}
-
-interface JobUser {
-  id: string;
-  name: string | null;
-  email: string;
-}
-
-interface Job {
-  id: string;
-  imageId: string;
-  userId: string;
-  tier: EnhancementTier;
-  tokensCost: number;
-  status: JobStatus;
-  enhancedUrl: string | null;
-  enhancedR2Key: string | null;
-  enhancedWidth: number | null;
-  enhancedHeight: number | null;
-  enhancedSizeBytes: number | null;
-  errorMessage: string | null;
-  retryCount: number;
-  maxRetries: number;
-  geminiPrompt: string | null;
-  geminiModel: string | null;
-  geminiTemp: number | null;
-  processingStartedAt: string | null;
-  processingCompletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  workflowRunId: string | null;
-  image: JobImage;
-  user: JobUser;
-}
+// Unified Job type from API
+type Job = UnifiedJob;
 
 interface JobsResponse {
   jobs: Job[];
@@ -69,6 +33,15 @@ interface JobsResponse {
     totalPages: number;
   };
   statusCounts: Record<string, number>;
+  typeCounts: {
+    all: number;
+    enhancement: number;
+    mcp: number;
+  };
+}
+
+interface JobsAdminClientProps {
+  initialJobId?: string;
 }
 
 const STATUS_TABS: Array<
@@ -82,6 +55,17 @@ const STATUS_TABS: Array<
   { key: "CANCELLED", label: "Cancelled", status: "CANCELLED" },
   { key: "REFUNDED", label: "Refunded", status: "REFUNDED" },
 ];
+
+const TYPE_TABS: Array<{ key: JobSource | "all"; label: string; }> = [
+  { key: "all", label: "All Types" },
+  { key: "enhancement", label: "Enhancement" },
+  { key: "mcp", label: "MCP Generation" },
+];
+
+const SOURCE_COLORS: Record<JobSource, string> = {
+  enhancement: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  mcp: "bg-emerald-100 text-emerald-800 border-emerald-200",
+};
 
 const STATUS_COLORS: Record<JobStatus, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -139,11 +123,13 @@ function formatAbsoluteTime(dateString: string): string {
   return new Date(dateString).toLocaleString();
 }
 
-export function JobsAdminClient() {
+export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
   const [activeTab, setActiveTab] = useState<string>("ALL");
+  const [activeType, setActiveType] = useState<JobSource | "all">("all");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
+  const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -153,15 +139,28 @@ export function JobsAdminClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<
+    {
+      type: "success" | "error";
+      text: string;
+    } | null
+  >(null);
 
   const fetchJobs = useCallback(
-    async (status: JobStatus | null, page: number, search: string) => {
+    async (
+      status: JobStatus | null,
+      type: JobSource | "all",
+      page: number,
+      search: string,
+    ) => {
       setLoading(true);
       setError(null);
 
       try {
         const params = new URLSearchParams();
         if (status) params.set("status", status);
+        if (type !== "all") params.set("type", type);
         params.set("page", page.toString());
         params.set("limit", "20");
         if (search) params.set("search", search);
@@ -176,6 +175,7 @@ export function JobsAdminClient() {
         setJobs(data.jobs);
         setPagination(data.pagination);
         setStatusCounts(data.statusCounts);
+        setTypeCounts(data.typeCounts);
 
         // Clear selection if the selected job is no longer in the list
         if (selectedJob && !data.jobs.find((j) => j.id === selectedJob.id)) {
@@ -190,30 +190,147 @@ export function JobsAdminClient() {
     [selectedJob],
   );
 
+  // Fetch specific job by ID (for initial load with jobId)
+  const fetchJobById = useCallback(async (jobId: string) => {
+    try {
+      const response = await fetch(`/api/admin/jobs/${jobId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedJob(data.job);
+      }
+    } catch (err) {
+      console.error("Failed to fetch job by ID:", err);
+    }
+  }, []);
+
+  // Kill job action
+  const handleKillJob = useCallback(async (jobId: string) => {
+    setActionLoading(jobId);
+    setActionMessage(null);
+    try {
+      const response = await fetch(`/api/admin/jobs/${jobId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to cancel job");
+      }
+
+      setActionMessage({
+        type: "success",
+        text: `Job cancelled. ${data.tokensRefunded} tokens refunded.`,
+      });
+
+      // Refresh jobs list
+      const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ??
+        null;
+      fetchJobs(status, activeType, pagination.page, searchQuery);
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to cancel job",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  }, [activeTab, activeType, fetchJobs, pagination.page, searchQuery]);
+
+  // Rerun job action
+  const handleRerunJob = useCallback(async (jobId: string) => {
+    setActionLoading(jobId);
+    setActionMessage(null);
+    try {
+      const response = await fetch(`/api/admin/jobs/${jobId}/rerun`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to rerun job");
+      }
+
+      setActionMessage({
+        type: "success",
+        text: `Job rerun started. New job ID: ${data.newJobId}`,
+      });
+
+      // Refresh jobs list
+      const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ??
+        null;
+      fetchJobs(status, activeType, pagination.page, searchQuery);
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to rerun job",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  }, [activeTab, activeType, fetchJobs, pagination.page, searchQuery]);
+
+  // Copy link action
+  const handleCopyLink = useCallback((jobId: string) => {
+    const url = `${window.location.origin}/admin/jobs/${jobId}`;
+    navigator.clipboard.writeText(url);
+    setActionMessage({ type: "success", text: "Link copied to clipboard!" });
+    setTimeout(() => setActionMessage(null), 2000);
+  }, []);
+
+  // Update URL when job is selected
+  const selectJob = useCallback((job: Job | null) => {
+    setSelectedJob(job);
+    if (job) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("jobId", job.id);
+      window.history.replaceState({}, "", url.toString());
+    } else {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("jobId");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
+  // Load initial job if provided
+  useEffect(() => {
+    if (initialJobId) {
+      fetchJobById(initialJobId);
+    }
+  }, [initialJobId, fetchJobById]);
+
   // Note: eslint-disable is intentional here. We exclude:
   // - fetchJobs: it's memoized with useCallback and stable
   // - searchQuery: changes are handled separately via handleSearch() to avoid fetches on every keystroke
   useEffect(() => {
     const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
-    fetchJobs(status, pagination.page, searchQuery);
-  }, [activeTab, pagination.page]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchJobs(status, activeType, pagination.page, searchQuery);
+  }, [activeTab, activeType, pagination.page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = () => {
     setPagination((p) => ({ ...p, page: 1 }));
     const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
-    fetchJobs(status, 1, searchQuery);
+    fetchJobs(status, activeType, 1, searchQuery);
   };
 
   const handleRefresh = () => {
     const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
-    fetchJobs(status, pagination.page, searchQuery);
+    fetchJobs(status, activeType, pagination.page, searchQuery);
   };
 
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);
     setPagination((p) => ({ ...p, page: 1 }));
-    setSelectedJob(null);
+    selectJob(null);
   };
+
+  const handleTypeChange = (typeKey: JobSource | "all") => {
+    setActiveType(typeKey);
+    setPagination((p) => ({ ...p, page: 1 }));
+    selectJob(null);
+  };
+
+  // Check if job can be killed
+  const canKillJob = (job: Job) => job.status === "PENDING" || job.status === "PROCESSING";
 
   return (
     <div className="space-y-6">
@@ -225,7 +342,30 @@ export function JobsAdminClient() {
         </p>
       </div>
 
-      {/* Tabs */}
+      {/* Type Tabs */}
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="text-sm font-medium text-neutral-500">Type:</span>
+        <div className="flex gap-2">
+          {TYPE_TABS.map((tab) => (
+            <Button
+              key={tab.key}
+              variant={activeType === tab.key ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTypeChange(tab.key)}
+              className="gap-2"
+            >
+              {tab.label}
+              <Badge variant="secondary" className="ml-1">
+                {Object.keys(typeCounts).length === 0
+                  ? "..."
+                  : (typeCounts[tab.key] ?? 0)}
+              </Badge>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Status Tabs */}
       <div className="flex flex-wrap gap-2">
         {STATUS_TABS.map((tab) => (
           <Button
@@ -244,6 +384,25 @@ export function JobsAdminClient() {
           </Button>
         ))}
       </div>
+
+      {/* Action Message */}
+      {actionMessage && (
+        <Card
+          className={`p-3 ${
+            actionMessage.type === "success"
+              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
+              : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
+          }`}
+        >
+          <p
+            className={actionMessage.type === "success"
+              ? "text-green-600 dark:text-green-400"
+              : "text-red-600 dark:text-red-400"}
+          >
+            {actionMessage.text}
+          </p>
+        </Card>
+      )}
 
       {/* Search and Refresh */}
       <div className="flex gap-2" role="search">
@@ -300,7 +459,7 @@ export function JobsAdminClient() {
                 {jobs.map((job) => (
                   <div
                     key={job.id}
-                    onClick={() => setSelectedJob(job)}
+                    onClick={() => selectJob(job)}
                     className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                       selectedJob?.id === job.id
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -309,6 +468,9 @@ export function JobsAdminClient() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
+                        <Badge className={SOURCE_COLORS[job.source]}>
+                          {job.source === "mcp" ? "MCP" : "ENH"}
+                        </Badge>
                         <Badge className={STATUS_COLORS[job.status]}>
                           {job.status}
                         </Badge>
@@ -325,7 +487,7 @@ export function JobsAdminClient() {
                         {job.id.slice(0, 12)}...
                       </span>
                       {" | "}
-                      {job.user.email}
+                      {job.userEmail}
                     </div>
                     {job.status === "COMPLETED" && (
                       <div className="mt-1 text-xs text-green-600">
@@ -378,24 +540,66 @@ export function JobsAdminClient() {
             ? <p className="text-neutral-500">Select a job to view details</p>
             : (
               <div className="space-y-4">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyLink(selectedJob.id)}
+                    disabled={actionLoading === selectedJob.id}
+                  >
+                    Copy Link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRerunJob(selectedJob.id)}
+                    disabled={actionLoading === selectedJob.id}
+                  >
+                    {actionLoading === selectedJob.id ? "..." : "Rerun"}
+                  </Button>
+                  {canKillJob(selectedJob) && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleKillJob(selectedJob.id)}
+                      disabled={actionLoading === selectedJob.id}
+                    >
+                      {actionLoading === selectedJob.id ? "..." : "Kill Job"}
+                    </Button>
+                  )}
+                </div>
+
                 {/* Before/After Comparison for Completed Jobs */}
                 {selectedJob.status === "COMPLETED" &&
-                  selectedJob.enhancedUrl && (
+                  selectedJob.outputUrl &&
+                  selectedJob.inputUrl && (
                   <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
                     <ImageComparisonSlider
-                      originalUrl={selectedJob.image.originalUrl}
-                      enhancedUrl={selectedJob.enhancedUrl}
+                      originalUrl={selectedJob.inputUrl}
+                      enhancedUrl={selectedJob.outputUrl}
                       originalLabel="Original"
-                      enhancedLabel="Enhanced"
-                      width={selectedJob.enhancedWidth || 16}
-                      height={selectedJob.enhancedHeight || 9}
+                      enhancedLabel={selectedJob.source === "mcp" ? "Generated" : "Enhanced"}
+                      width={selectedJob.outputWidth || 16}
+                      height={selectedJob.outputHeight || 9}
                     />
                   </div>
                 )}
 
                 {/* Job Info Grid */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {/* Status & Timing */}
+                  {/* Source & Status */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-neutral-500">
+                      Source
+                    </h3>
+                    <Badge className={SOURCE_COLORS[selectedJob.source]}>
+                      {selectedJob.source === "mcp"
+                        ? "MCP Generation"
+                        : "Enhancement"}
+                    </Badge>
+                  </div>
+
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-neutral-500">
                       Status
@@ -438,11 +642,9 @@ export function JobsAdminClient() {
                   )}
                 </div>
 
-                {/* Enhancement Details */}
+                {/* Job Details */}
                 <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                  <h3 className="mb-2 text-sm font-semibold">
-                    Enhancement Details
-                  </h3>
+                  <h3 className="mb-2 text-sm font-semibold">Job Details</h3>
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Tier</span>
@@ -450,59 +652,60 @@ export function JobsAdminClient() {
                         {TIER_LABELS[selectedJob.tier]} ({selectedJob.tokensCost} tokens)
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Original</span>
-                      <span>
-                        {selectedJob.image.name || "Unnamed"}{" "}
-                        ({selectedJob.image.originalWidth}x{selectedJob.image
-                          .originalHeight}, {formatBytes(selectedJob.image.originalSizeBytes)})
-                      </span>
-                    </div>
-                    {selectedJob.enhancedUrl && (
+                    {selectedJob.source === "mcp" && selectedJob.mcpJobType && (
                       <div className="flex justify-between">
-                        <span className="text-neutral-500">Enhanced</span>
+                        <span className="text-neutral-500">MCP Type</span>
+                        <span>{selectedJob.mcpJobType}</span>
+                      </div>
+                    )}
+                    {selectedJob.outputUrl && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Output</span>
                         <span>
-                          {selectedJob.enhancedWidth}x{selectedJob
-                            .enhancedHeight}, {formatBytes(selectedJob.enhancedSizeBytes)}
+                          {selectedJob.outputWidth}x{selectedJob.outputHeight},{" "}
+                          {formatBytes(selectedJob.outputSizeBytes)}
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Retries</span>
-                      <span>
-                        {selectedJob.retryCount}/{selectedJob.maxRetries}
-                      </span>
-                    </div>
+                    {selectedJob.retryCount !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Retries</span>
+                        <span>
+                          {selectedJob.retryCount}/{selectedJob.maxRetries}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* AI Model Details */}
-                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                  <h3 className="mb-2 text-sm font-semibold">AI Model</h3>
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Model</span>
-                      <span className="font-mono text-xs">
-                        {selectedJob.geminiModel || "N/A"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Temperature</span>
-                      <span>
-                        {selectedJob.geminiTemp !== null
-                          ? selectedJob.geminiTemp
-                          : "Default"}
-                      </span>
+                {selectedJob.geminiModel && (
+                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                    <h3 className="mb-2 text-sm font-semibold">AI Model</h3>
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Model</span>
+                        <span className="font-mono text-xs">
+                          {selectedJob.geminiModel}
+                        </span>
+                      </div>
+                      {selectedJob.geminiTemp !== null &&
+                        selectedJob.geminiTemp !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Temperature</span>
+                          <span>{selectedJob.geminiTemp}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Prompt */}
-                {selectedJob.geminiPrompt && (
+                {selectedJob.prompt && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
                     <h3 className="mb-2 text-sm font-semibold">Prompt</h3>
                     <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-neutral-100 p-2 text-xs dark:bg-neutral-800">
-                    {selectedJob.geminiPrompt}
+                      {selectedJob.prompt}
                     </pre>
                   </div>
                 )}
@@ -523,8 +726,8 @@ export function JobsAdminClient() {
                 <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
                   <h3 className="mb-2 text-sm font-semibold">User</h3>
                   <div className="text-sm">
-                    <p>{selectedJob.user.name || "Unknown"}</p>
-                    <p className="text-neutral-500">{selectedJob.user.email}</p>
+                    <p>{selectedJob.userName || "Unknown"}</p>
+                    <p className="text-neutral-500">{selectedJob.userEmail}</p>
                   </div>
                 </div>
 
@@ -534,16 +737,48 @@ export function JobsAdminClient() {
                   <div className="grid gap-1 text-xs font-mono">
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Job</span>
-                      <span>{selectedJob.id}</span>
+                      <span className="truncate max-w-[180px]" title={selectedJob.id}>
+                        {selectedJob.id}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Image</span>
-                      <span>{selectedJob.imageId}</span>
-                    </div>
-                    {selectedJob.workflowRunId && (
+                    {/* Enhancement-specific IDs */}
+                    {selectedJob.source === "enhancement" && selectedJob.imageId && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Image</span>
+                        <span className="truncate max-w-[180px]" title={selectedJob.imageId}>
+                          {selectedJob.imageId}
+                        </span>
+                      </div>
+                    )}
+                    {selectedJob.source === "enhancement" && selectedJob.workflowRunId && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Workflow</span>
-                        <span>{selectedJob.workflowRunId}</span>
+                        <span className="truncate max-w-[180px]" title={selectedJob.workflowRunId}>
+                          {selectedJob.workflowRunId}
+                        </span>
+                      </div>
+                    )}
+                    {/* MCP-specific IDs */}
+                    {selectedJob.source === "mcp" && selectedJob.apiKeyId && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">API Key</span>
+                        <span>{selectedJob.apiKeyName || selectedJob.apiKeyId}</span>
+                      </div>
+                    )}
+                    {selectedJob.source === "mcp" && selectedJob.inputR2Key && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Input R2</span>
+                        <span className="truncate max-w-[180px]" title={selectedJob.inputR2Key}>
+                          {selectedJob.inputR2Key}
+                        </span>
+                      </div>
+                    )}
+                    {selectedJob.source === "mcp" && selectedJob.outputR2Key && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Output R2</span>
+                        <span className="truncate max-w-[180px]" title={selectedJob.outputR2Key}>
+                          {selectedJob.outputR2Key}
+                        </span>
                       </div>
                     )}
                   </div>
