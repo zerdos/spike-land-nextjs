@@ -52,7 +52,7 @@ function transformEnhancementJob(job: {
   workflowRunId: string | null;
   imageId: string;
   image: { name: string; originalUrl: string; };
-  user: { email: string; name: string | null; };
+  user: { email: string | null; name: string | null; };
 }): UnifiedJob {
   return {
     id: job.id,
@@ -68,7 +68,7 @@ function transformEnhancementJob(job: {
     outputSizeBytes: job.enhancedSizeBytes,
     errorMessage: job.errorMessage,
     userId: job.userId,
-    userEmail: job.user.email,
+    userEmail: job.user.email ?? "Unknown",
     userName: job.user.name,
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
@@ -109,7 +109,7 @@ function transformMcpJob(job: {
   updatedAt: Date;
   processingStartedAt: Date | null;
   processingCompletedAt: Date | null;
-  user: { email: string; name: string | null; };
+  user: { email: string | null; name: string | null; };
   apiKey: { name: string; } | null;
 }): UnifiedJob {
   return {
@@ -126,7 +126,7 @@ function transformMcpJob(job: {
     outputSizeBytes: job.outputSizeBytes,
     errorMessage: job.errorMessage,
     userId: job.userId,
-    userEmail: job.user.email,
+    userEmail: job.user.email ?? "Unknown",
     userName: job.user.name,
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
