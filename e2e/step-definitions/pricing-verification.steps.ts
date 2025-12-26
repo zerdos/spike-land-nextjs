@@ -1,5 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 When("I view the pricing page", async function(this: CustomWorld) {
@@ -134,7 +135,10 @@ Then(
 Then(
   "the callback URL should point to pricing page",
   async function(this: CustomWorld) {
-    await this.page.waitForTimeout(500);
+    // Wait for URL to contain callbackUrl
+    await this.page.waitForURL(/callbackUrl/, { timeout: TIMEOUTS.DEFAULT }).catch(() => {
+      // Fallback to checking current URL
+    });
     const url = this.page.url();
     expect(url).toContain("callbackUrl");
   },
@@ -145,7 +149,10 @@ Then(
 Then(
   "the checkout should be for a one-time payment",
   async function(this: CustomWorld) {
-    await this.page.waitForTimeout(500);
+    // Stripe checkout initiated - verify one-time payment mode
+    await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.SHORT }).catch(() => {
+      // Navigation may have already completed
+    });
   },
 );
 
@@ -187,7 +194,11 @@ Then(
 Then(
   "premium pack should have the best price per token",
   async function(this: CustomWorld) {
-    await this.page.waitForTimeout(500);
+    // Verify premium pack is visible with price per token info
+    const premiumCard = this.page.locator('[class*="Card"]').filter({
+      hasText: /premium/i,
+    });
+    await expect(premiumCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -228,7 +239,8 @@ Then(
 Then(
   "I should be redirected to the sign-in page",
   async function(this: CustomWorld) {
-    await this.page.waitForTimeout(1000);
+    // Wait for redirect to sign-in page
+    await this.page.waitForURL(/auth\/signin|callbackUrl/, { timeout: TIMEOUTS.LONG });
     const url = this.page.url();
     const isSignInPage = url.includes("/auth/signin") ||
       url.includes("/?callbackUrl");

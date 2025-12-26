@@ -1,6 +1,5 @@
-# TODO: Fix authentication bypass in CI - See GitHub issue
-# Temporarily disabled until authentication bypass is fixed for Vercel preview deployments
-@skip
+# Authentication bypass fixed in src/auth.ts - See GitHub issue #435
+# Note: Some scenarios may still be @flaky due to localStorage timing
 Feature: App Creation Wizard - Draft Auto-Save & Persistence
   As an authenticated user
   I want my app creation progress to be automatically saved

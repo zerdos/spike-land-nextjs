@@ -1,4 +1,4 @@
-@skip
+# Authentication bypass fixed in src/auth.ts - See GitHub issue #435
 Feature: Site Navigation
   As a user
   I want to navigate through the application

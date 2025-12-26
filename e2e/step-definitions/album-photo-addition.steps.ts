@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock data
@@ -150,24 +151,31 @@ When(
     const addToAlbumButton = this.page.getByRole("button", {
       name: /add to album/i,
     }).first();
-    await expect(addToAlbumButton).toBeVisible();
+    await expect(addToAlbumButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await addToAlbumButton.click();
-    await this.page.waitForTimeout(300);
+    // Wait for modal to open
+    await this.page.waitForSelector('[role="dialog"]', {
+      state: "visible",
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
 When("I select an album from the dropdown", async function(this: CustomWorld) {
   // Wait for the dropdown to be ready
   const selectTrigger = this.page.getByText("Select an album");
-  await expect(selectTrigger).toBeVisible();
+  await expect(selectTrigger).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await selectTrigger.click();
 
-  // Wait for dropdown to open and select an album
-  await this.page.waitForTimeout(200);
+  // Wait for dropdown options to be visible
   const albumOption = this.page.getByText("Vacation Photos");
-  await expect(albumOption).toBeVisible();
+  await expect(albumOption).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await albumOption.click();
-  await this.page.waitForTimeout(200);
+
+  // Wait for selection to be reflected
+  await expect(selectTrigger).not.toHaveText("Select an album", {
+    timeout: TIMEOUTS.SHORT,
+  });
 });
 
 When(
@@ -176,9 +184,13 @@ When(
     // Find the Add to Album button inside the dialog
     const dialog = this.page.getByRole("dialog");
     const confirmButton = dialog.getByRole("button", { name: /add to album/i });
-    await expect(confirmButton).toBeEnabled();
+    await expect(confirmButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await confirmButton.click();
-    await this.page.waitForTimeout(500);
+    // Wait for modal to close after successful addition
+    await this.page.waitForSelector('[role="dialog"]', {
+      state: "hidden",
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
@@ -186,9 +198,13 @@ When(
   "I click the Cancel button in the modal",
   async function(this: CustomWorld) {
     const cancelButton = this.page.getByRole("button", { name: /cancel/i });
-    await expect(cancelButton).toBeVisible();
+    await expect(cancelButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await cancelButton.click();
-    await this.page.waitForTimeout(200);
+    // Wait for modal to close
+    await this.page.waitForSelector('[role="dialog"]', {
+      state: "hidden",
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
