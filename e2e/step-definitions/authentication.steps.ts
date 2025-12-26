@@ -195,9 +195,14 @@ When(
     await mockSession(this, null);
 
     // Clear previous user's data for isolation
-    await this.page.evaluate(() => {
-      localStorage.clear();
-    });
+    // Wrap in try-catch to handle cross-origin/security restrictions
+    try {
+      await this.page.evaluate(() => {
+        localStorage.clear();
+      });
+    } catch {
+      // localStorage access denied - likely cross-origin, continue anyway
+    }
 
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
