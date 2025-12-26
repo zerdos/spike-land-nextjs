@@ -588,7 +588,14 @@ Then("the country selector should have {string} option", async function(
   this: CustomWorld,
   countryName: string,
 ) {
+  // Wait for checkout page to finish loading (loading spinner to disappear)
+  await this.page
+    .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+    .catch(() => {});
+
+  // Wait for the country selector to be visible
   const countrySelect = this.page.locator('[id="country"]');
+  await expect(countrySelect).toBeVisible({ timeout: 10000 });
   await countrySelect.click();
 
   const option = this.page.getByRole("option", { name: countryName });

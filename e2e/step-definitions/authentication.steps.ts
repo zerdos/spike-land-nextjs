@@ -436,17 +436,28 @@ Then(
 Then(
   "I should see {string} link",
   async function(this: CustomWorld, linkText: string) {
+    // Wait for any loading spinners to disappear first
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
     const link = this.page.getByRole("link", { name: linkText });
     // Use .first() to handle cases where there are multiple links with similar names
-    await expect(link.first()).toBeVisible();
+    // Use longer timeout for pages with async loading
+    await expect(link.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 When(
   "I click the {string} link",
   async function(this: CustomWorld, linkText: string) {
+    // Wait for any loading spinners to disappear first
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
     const link = this.page.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: 10000 });
     await link.click();
     await this.page.waitForLoadState("networkidle");
   },
