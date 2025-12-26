@@ -226,10 +226,8 @@ When("authentication is loading", async function(this: CustomWorld) {
 });
 
 When("I click on the user avatar", async function(this: CustomWorld) {
-  // Find the avatar button (it's wrapped in a button with role)
-  const avatar = this.page.locator('[role="button"]').filter({
-    has: this.page.locator("img, .avatar-fallback"),
-  }).first();
+  // Find the avatar using the data-testid attribute
+  const avatar = this.page.getByTestId("user-avatar");
   await expect(avatar).toBeVisible();
   await avatar.click();
 });
@@ -256,15 +254,13 @@ Then(
 );
 
 Then("I should see the user avatar", async function(this: CustomWorld) {
-  // Look for avatar in the header
-  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]')
-    .first();
+  // Look for avatar using the data-testid attribute
+  const avatar = this.page.getByTestId("user-avatar");
   await expect(avatar).toBeVisible();
 });
 
 Then("I should not see the user avatar", async function(this: CustomWorld) {
-  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]')
-    .first();
+  const avatar = this.page.getByTestId("user-avatar");
   await expect(avatar).not.toBeVisible();
 });
 
