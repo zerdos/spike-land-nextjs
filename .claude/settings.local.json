@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(git -C /Users/z/Developer/spike-land-nextjs/main branch:*)",
+      "Bash(git -C /Users/z/Developer/spike-land-nextjs/main log --oneline image-enhancement-app..main)",
+      "Bash(git ls-tree:*)",
+      "Bash(git cat-file:*)",
+      "Bash(git worktree:*)",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_close",
+      "Bash(gh pr view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_run_code",
+      "mcp__playwright__browser_tabs",
+      "Bash(find:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_network_requests",
+      "Bash(vercel env:*)",
+      "Bash(gh secret list:*)",
+      "Bash(yarn vercel env:*)",
+      "Bash(yarn lint)",
+      "Bash(yarn test:run:*)",
+      "Bash(yarn build:*)",
+      "Bash(xargs:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "spike.land",
+    "vitest"
+  ]
+}
