@@ -27,7 +27,15 @@ export default defineConfig({
     // Enable file parallelism for faster execution
     fileParallelism: true,
     // Use reporter optimized for CI
-    reporters: process.env.CI ? ["github-actions"] : ["default"],
+    // When VITEST_COVERAGE is set, also use the coverage mapper for intelligent caching
+    reporters: process.env.CI
+      ? [
+        "github-actions",
+        ...(process.env.VITEST_COVERAGE
+          ? ["./scripts/vitest-coverage-mapper-reporter.ts"]
+          : []),
+      ]
+      : ["default"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],

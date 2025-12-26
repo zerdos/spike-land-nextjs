@@ -3,6 +3,7 @@
 ARG NODE_IMAGE=node:24.12.0-bookworm-slim
 ARG DUMMY_DATABASE_URL=postgresql://build:build@localhost:5432/build
 ARG CACHE_NS=vercel-app
+ARG TEST_CACHE_NS=test-cache
 
 # ============================================================================
 # STAGE 0: Base
@@ -108,34 +109,80 @@ COPY --link vitest.config.ts vitest.setup.ts ./
 COPY --link vitest.mock-*.ts vitest.mock-*.tsx ./
 COPY --link cucumber.js ./
 COPY --link e2e ./e2e
+# Copy test caching scripts
+COPY --link scripts/vitest-coverage-mapper-reporter.ts scripts/test-cache-manager.ts scripts/run-cached-tests.sh ./scripts/
+RUN chmod +x ./scripts/run-cached-tests.sh
 
 # ============================================================================
-# STAGE 8: Unit Tests (sharded)
+# STAGE 8: Unit Tests (sharded) - with coverage-based caching
 # ============================================================================
 FROM test-source AS unit-test-shard
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=4
-ENV NODE_ENV=test
-ENV DATABASE_URL=${DUMMY_DATABASE_URL}
-RUN yarn test:run --shard ${SHARD_INDEX}/${SHARD_TOTAL} \
-    > /tmp/unit-${SHARD_INDEX}.log 2>&1 \
+ARG TEST_CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+ENV NODE_ENV=test \
+    DATABASE_URL=${DUMMY_DATABASE_URL} \
+    SHARD_INDEX=${SHARD_INDEX} \
+    SHARD_TOTAL=${SHARD_TOTAL} \
+    TEST_CACHE_DIR=/app/.test-cache \
+    VITEST_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
+    ./scripts/run-cached-tests.sh > /tmp/unit-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/unit-${SHARD_INDEX}.log && exit 1)
 
 FROM test-source AS unit-tests-1
-ENV NODE_ENV=test
-RUN yarn test:run --shard 1/4 > /tmp/unit-1.log 2>&1 || (cat /tmp/unit-1.log && exit 1)
+ARG TEST_CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+ENV NODE_ENV=test \
+    DATABASE_URL=${DUMMY_DATABASE_URL} \
+    SHARD_INDEX=1 \
+    SHARD_TOTAL=4 \
+    TEST_CACHE_DIR=/app/.test-cache \
+    VITEST_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
+    ./scripts/run-cached-tests.sh > /tmp/unit-1.log 2>&1 || (cat /tmp/unit-1.log && exit 1)
 
 FROM test-source AS unit-tests-2
-ENV NODE_ENV=test
-RUN yarn test:run --shard 2/4 > /tmp/unit-2.log 2>&1 || (cat /tmp/unit-2.log && exit 1)
+ARG TEST_CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+ENV NODE_ENV=test \
+    DATABASE_URL=${DUMMY_DATABASE_URL} \
+    SHARD_INDEX=2 \
+    SHARD_TOTAL=4 \
+    TEST_CACHE_DIR=/app/.test-cache \
+    VITEST_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
+    ./scripts/run-cached-tests.sh > /tmp/unit-2.log 2>&1 || (cat /tmp/unit-2.log && exit 1)
 
 FROM test-source AS unit-tests-3
-ENV NODE_ENV=test
-RUN yarn test:run --shard 3/4 > /tmp/unit-3.log 2>&1 || (cat /tmp/unit-3.log && exit 1)
+ARG TEST_CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+ENV NODE_ENV=test \
+    DATABASE_URL=${DUMMY_DATABASE_URL} \
+    SHARD_INDEX=3 \
+    SHARD_TOTAL=4 \
+    TEST_CACHE_DIR=/app/.test-cache \
+    VITEST_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
+    ./scripts/run-cached-tests.sh > /tmp/unit-3.log 2>&1 || (cat /tmp/unit-3.log && exit 1)
 
 FROM test-source AS unit-tests-4
-ENV NODE_ENV=test
-RUN yarn test:run --shard 4/4 > /tmp/unit-4.log 2>&1 || (cat /tmp/unit-4.log && exit 1)
+ARG TEST_CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+ENV NODE_ENV=test \
+    DATABASE_URL=${DUMMY_DATABASE_URL} \
+    SHARD_INDEX=4 \
+    SHARD_TOTAL=4 \
+    TEST_CACHE_DIR=/app/.test-cache \
+    VITEST_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
+    ./scripts/run-cached-tests.sh > /tmp/unit-4.log 2>&1 || (cat /tmp/unit-4.log && exit 1)
 
 FROM test-source AS unit-tests
 COPY --link --from=unit-tests-1 /tmp/unit-1.log /tmp/
@@ -190,6 +237,9 @@ COPY --link --from=source /app/content ./content
 COPY --link .env.local ./
 COPY --link --from=test-source /app/e2e ./e2e
 COPY --link --from=test-source /app/cucumber.js ./cucumber.js
+# Copy E2E cache scripts
+COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh ./scripts/
+RUN chmod +x ./scripts/run-cached-e2e.sh
 
 ARG DATABASE_URL=${DUMMY_DATABASE_URL}
 ARG AUTH_SECRET
@@ -205,62 +255,107 @@ ENV CI=true \
 RUN mkdir -p e2e/reports
 
 # ============================================================================
-# STAGE 11: E2E Tests (sharded)
+# STAGE 11: E2E Tests (sharded) - with coverage-based caching
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
 ARG SHARD_INDEX=1
 ARG SHARD_TOTAL=8
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=${SHARD_INDEX} \
-    SHARD_TOTAL=${SHARD_TOTAL}
-RUN yarn start:server:and:test:pr > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
+    SHARD_TOTAL=${SHARD_TOTAL} \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
     || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-1
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=1 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-1.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-1.log 2>&1 \
     || (cat /tmp/e2e-1.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-2
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=2 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 \
     || (cat /tmp/e2e-2.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-3
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=3 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-3.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-3.log 2>&1 \
     || (cat /tmp/e2e-3.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-4
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=4 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 \
     || (cat /tmp/e2e-4.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-5
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=5 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-5.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-5.log 2>&1 \
     || (cat /tmp/e2e-5.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-6
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=6 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-6.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-6.log 2>&1 \
     || (cat /tmp/e2e-6.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-7
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=7 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-7.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-7.log 2>&1 \
     || (cat /tmp/e2e-7.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-8
+ARG TEST_CACHE_NS
+ARG TARGETARCH
 ENV SHARD_INDEX=8 \
-    SHARD_TOTAL=8
-RUN yarn start:server:and:test:pr > /tmp/e2e-8.log 2>&1 \
+    SHARD_TOTAL=8 \
+    E2E_CACHE_DIR=/app/.e2e-cache \
+    E2E_COVERAGE=true
+RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
+    yarn start:server:and:test:pr > /tmp/e2e-8.log 2>&1 \
     || (cat /tmp/e2e-8.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests
