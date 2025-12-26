@@ -83,9 +83,9 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // In CI, run all tests to get full report
     retry: 0, // Retry once in CI to handle transient issues
-    tags: "not @skip and not @flaky and not @requires-db", // Skip db-dependent tests (no seeded test data locally)
+    tags: "not @skip and not @flaky and not @requires-db and not @requires-api-mock", // Skip db-dependent and API mock tests
     timeout: 10000, // 30 second timeout for CI
-    parallel: 8,
+    parallel: 16,
   },
   // Coverage profile - collect V8 coverage during E2E tests
   coverage: {

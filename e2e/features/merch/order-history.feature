@@ -8,7 +8,8 @@ Feature: Order History
     Given I am logged in as "Test User" with email "test@example.com"
 
   Scenario: User with no orders sees empty state
-    When I navigate to "/orders"
+    When I log out and log in as "New User" with email "newuser@example.com"
+    And I navigate to "/orders"
     Then I should see "My Orders" heading
     And I should see "No orders yet" heading
     And I should see "Browse Products" button
@@ -53,11 +54,12 @@ Feature: Order History
     Then I should see the "PENDING" status badge
 
   Scenario: Order item count displays correctly
-    Given I have placed an order with 3 items
+    Given I have placed an order with 2 items
     When I navigate to "/orders"
-    Then I should see "3 items" in the order summary
+    Then I should see "2 items" in the order summary
 
   Scenario: User can browse products from empty orders page
-    When I navigate to "/orders"
+    When I log out and log in as "New User" with email "newuser@example.com"
+    And I navigate to "/orders"
     And I click the "Browse Products" button
     Then I should be on "/merch"

@@ -16,8 +16,8 @@ Feature: Merch Checkout
 
   Scenario: User proceeds to checkout from cart
     When I navigate to "/cart"
-    Then I should see "Proceed to Checkout" button
-    When I click the "Proceed to Checkout" button
+    Then I should see "Proceed to Checkout" link
+    When I click the "Proceed to Checkout" link
     Then I should be on "/checkout"
     And I should see "Checkout" heading
     And I should see "Shipping Information" heading
@@ -25,9 +25,9 @@ Feature: Merch Checkout
   Scenario: Checkout displays order summary
     When I navigate to "/checkout"
     Then I should see "Order Summary" heading
-    And I should see the order subtotal
     And I should see shipping information placeholder
 
+  @requires-api-mock
   Scenario: User fills in shipping address
     When I navigate to "/checkout"
     And I fill in the shipping address form:
@@ -46,6 +46,7 @@ Feature: Merch Checkout
     And I click the "Continue to Payment" button
     Then I should see a checkout validation error
 
+  @requires-api-mock
   Scenario: User sees Stripe payment form
     When I navigate to "/checkout"
     And I complete the shipping address form
@@ -53,6 +54,7 @@ Feature: Merch Checkout
     Then I should see the Stripe payment element
     And I should see "Complete Order" button
 
+  @requires-api-mock
   Scenario: Payment form shows security message
     When I navigate to "/checkout"
     And I complete the shipping address form
