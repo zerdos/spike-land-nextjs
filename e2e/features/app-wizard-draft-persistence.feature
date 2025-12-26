@@ -15,7 +15,7 @@ Feature: App Creation Wizard - Draft Auto-Save & Persistence
     Then the draft should be saved to localStorage
     And the draft indicator should show "Draft saved"
 
-  @slow @integration
+  @slow @flaky @integration
   Scenario: Draft is saved when progressing between steps
     When I complete step 1 with name "Draft Test"
     And I navigate to step 2
@@ -31,14 +31,14 @@ Feature: App Creation Wizard - Draft Auto-Save & Persistence
     And the "App Name" field should contain "Restored App"
     And the "Description" field should contain "Will be restored"
 
-  @slow @integration
+  @slow @flaky @integration
   Scenario: Draft is cleared after successful submission
     Given I complete all wizard steps with valid data
     When I click the "Submit" button
     Then the draft should be removed from localStorage
     And the draft indicator should not be visible
 
-  @slow @integration
+  @slow @flaky @integration
   Scenario: Multiple drafts do not interfere (isolation)
     Given I start creating an app as "User1" with name "User1 App"
     When I log out and log in as "User2"
