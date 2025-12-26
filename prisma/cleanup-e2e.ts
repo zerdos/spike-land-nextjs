@@ -95,7 +95,7 @@ async function cleanup() {
   console.log(`Deleted ${deletedImages.count} test images`);
 
   // 7. Delete enhancement jobs for test user
-  const deletedJobs = await prisma.enhancementJob.deleteMany({
+  const deletedJobs = await prisma.imageEnhancementJob.deleteMany({
     where: {
       userId: TEST_USER_ID,
     },
