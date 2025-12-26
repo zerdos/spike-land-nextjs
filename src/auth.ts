@@ -392,7 +392,12 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
  */
 async function getMockE2ESession() {
   const { data: cookieStore } = await tryCatch(cookies());
-  const role = (cookieStore?.get("e2e-user-role")?.value || "USER") as UserRole;
+  // Validate role against UserRole enum to prevent type assertion bypass
+  const roleValue = cookieStore?.get("e2e-user-role")?.value;
+  const validRoles = Object.values(UserRole);
+  const role = validRoles.includes(roleValue as UserRole)
+    ? (roleValue as UserRole)
+    : UserRole.USER;
   const email = cookieStore?.get("e2e-user-email")?.value || "test@example.com";
   const name = cookieStore?.get("e2e-user-name")?.value || "Test User";
 
@@ -416,19 +421,17 @@ async function getMockE2ESession() {
 
 /**
  * Constant-time string comparison to prevent timing attacks.
+ * Avoids early return on length mismatch by including length difference in XOR.
  */
 function constantTimeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
   const encoder = new TextEncoder();
   const aBytes = encoder.encode(a);
   const bBytes = encoder.encode(b);
-  let result = 0;
-  for (let i = 0; i < aBytes.length; i++) {
-    const aByte = aBytes[i] ?? 0;
-    const bByte = bBytes[i] ?? 0;
-    result |= aByte ^ bByte;
+  const maxLen = Math.max(aBytes.length, bBytes.length);
+  // Include length difference in result to avoid early return on mismatch
+  let result = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < maxLen; i++) {
+    result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
   }
   return result === 0;
 }
@@ -437,8 +440,11 @@ function constantTimeCompare(a: string, b: string): boolean {
 export const auth = async (...args: any[]) => {
   // Check for E2E bypass via header (works on Vercel previews)
   // This is the primary bypass mechanism for CI/CD
+  // SECURITY: Only enabled in non-production environments
+  const isProduction = process.env.NODE_ENV === "production" &&
+    process.env.VERCEL_ENV === "production";
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
-  if (e2eBypassSecret) {
+  if (!isProduction && e2eBypassSecret) {
     const { data: headersList } = await tryCatch(headers());
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 

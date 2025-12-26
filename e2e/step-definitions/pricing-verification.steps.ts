@@ -135,10 +135,11 @@ Then(
 Then(
   "the callback URL should point to pricing page",
   async function(this: CustomWorld) {
-    // Wait for URL to contain callbackUrl
+    // Wait for URL to contain callbackUrl - may already be present
     await this.page.waitForURL(/callbackUrl/, { timeout: TIMEOUTS.DEFAULT }).catch(() => {
-      // Fallback to checking current URL
+      // URL may already contain callbackUrl, verification follows below
     });
+    // Always verify the URL contains callbackUrl
     const url = this.page.url();
     expect(url).toContain("callbackUrl");
   },
@@ -150,9 +151,13 @@ Then(
   "the checkout should be for a one-time payment",
   async function(this: CustomWorld) {
     // Stripe checkout initiated - verify one-time payment mode
+    // Wait for network to settle, may timeout if already idle
     await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.SHORT }).catch(() => {
-      // Navigation may have already completed
+      // Navigation may have already completed, this is expected
     });
+    // Verify we're in a checkout context (URL or page state)
+    const url = this.page.url();
+    expect(url).toMatch(/stripe|checkout|payment/i);
   },
 );
 

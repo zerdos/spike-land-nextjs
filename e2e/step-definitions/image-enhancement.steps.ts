@@ -301,12 +301,19 @@ When("I upload a valid image file", async function(this: CustomWorld) {
   });
 
   // Wait for upload response or loading state to appear
-  await Promise.race([
-    this.page.waitForResponse((resp) => resp.url().includes("/api/images")),
-    this.page.waitForSelector(".animate-spin", { state: "visible", timeout: TIMEOUTS.DEFAULT }),
-  ]).catch(() => {
-    // Either response received or loading spinner appeared
-  });
+  // One of these conditions should be met for a successful upload
+  const uploadResult = await Promise.race([
+    this.page.waitForResponse((resp) => resp.url().includes("/api/images")).then(() =>
+      "response" as const
+    ),
+    this.page.waitForSelector(".animate-spin", { state: "visible", timeout: TIMEOUTS.DEFAULT })
+      .then(
+        () => "spinner" as const,
+      ),
+  ]).catch(() => "timeout" as const);
+
+  // Verify at least one condition was met (response or spinner visible)
+  expect(["response", "spinner"]).toContain(uploadResult);
 });
 
 When(
