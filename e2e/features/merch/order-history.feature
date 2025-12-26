@@ -1,4 +1,3 @@
-@wip
 Feature: Order History
   As a logged in user
   I want to view my order history
@@ -12,7 +11,7 @@ Feature: Order History
     And I navigate to "/orders"
     Then I should see "My Orders" heading
     And I should see "No orders yet" heading
-    And I should see "Browse Products" button
+    And I should see "Browse Products" link
 
   Scenario: User views order list
     Given I have placed an order
@@ -46,7 +45,7 @@ Feature: Order History
     When I am not logged in
     And I navigate to "/orders"
     Then I should be redirected to the login page
-    And the URL should contain "callbackUrl=%2Forders"
+    And the URL should contain "callbackUrl=/orders"
 
   Scenario: Order status badge displays correctly
     Given I have an order with status "PENDING"
@@ -61,5 +60,5 @@ Feature: Order History
   Scenario: User can browse products from empty orders page
     When I log out and log in as "New User" with email "newuser@example.com"
     And I navigate to "/orders"
-    And I click the "Browse Products" button
+    And I click the "Browse Products" link
     Then I should be on "/merch"

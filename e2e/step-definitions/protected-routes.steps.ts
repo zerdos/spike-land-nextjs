@@ -85,6 +85,10 @@ Then(
 Then(
   "I should be on {string}",
   async function(this: CustomWorld, expectedPath: string) {
+    // Wait for URL to stabilize (handles client-side redirects from useEffect)
+    await this.page
+      .waitForURL((url) => url.pathname === expectedPath, { timeout: 10000 })
+      .catch(() => {});
     await assertUrlPath(this.page, expectedPath);
   },
 );

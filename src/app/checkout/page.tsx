@@ -386,7 +386,7 @@ export default function CheckoutPage() {
                             countryCode: value,
                           })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="country">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
