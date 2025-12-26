@@ -32,6 +32,12 @@ const mockUser = {
   image: null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  stripeCustomerId: null,
+  role: "USER" as const,
+  referralCode: null,
+  referredById: null,
+  referralCount: 0,
+  passwordHash: null,
 };
 
 describe("getOrCreateAnonymousUser", () => {

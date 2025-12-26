@@ -14,7 +14,6 @@ const eslintConfig = tseslint.config(
       "build/**",
       "next-env.d.ts",
       "src/generated/**",
-      "prisma.config.ts",
       "fix-r2-versioning-cache/**",
       "coverage/**",
       ".yarn/**",

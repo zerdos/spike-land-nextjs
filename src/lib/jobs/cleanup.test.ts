@@ -82,6 +82,7 @@ function createMockJob(
     pipelineId: null,
     sourceImageId: null,
     isBlend: false,
+    isAnonymous: false,
     ...overrides,
   };
 }

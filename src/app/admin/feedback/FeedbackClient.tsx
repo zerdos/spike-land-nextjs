@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useCallback, useState } from "react";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
@@ -553,8 +554,8 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                 <span className="text-sm font-medium text-muted-foreground">
                   Admin Note
                 </span>
-                <textarea
-                  className="mt-2 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-ring"
+                <Textarea
+                  className="mt-2 min-h-[100px]"
                   placeholder="Add a note about this feedback..."
                   value={adminNote}
                   onChange={(e) => setAdminNote(e.target.value)}
