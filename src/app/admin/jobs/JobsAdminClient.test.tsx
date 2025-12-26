@@ -28,20 +28,25 @@ const mockFetchResponse = (data: unknown, ok = true): Response => {
 
 const mockJob = {
   id: "job_12345678901234567890123",
+  source: "enhancement" as const,
   imageId: "img_12345678901234567890123",
+  imageName: "vacation.jpg",
   userId: "user_12345678901234567890",
+  userEmail: "test@example.com",
+  userName: "Test User",
   tier: "TIER_4K" as const,
   tokensCost: 10,
   status: "COMPLETED" as const,
-  enhancedUrl: "https://example.com/enhanced.jpg",
-  enhancedR2Key: "enhanced/test/job_12345.jpg",
-  enhancedWidth: 4096,
-  enhancedHeight: 2304,
-  enhancedSizeBytes: 5000000,
+  prompt: "Enhance this image to high resolution",
+  inputUrl: "https://example.com/original.jpg",
+  outputUrl: "https://example.com/enhanced.jpg",
+  outputR2Key: "enhanced/test/job_12345.jpg",
+  outputWidth: 4096,
+  outputHeight: 2304,
+  outputSizeBytes: 5000000,
   errorMessage: null,
   retryCount: 0,
   maxRetries: 3,
-  geminiPrompt: "Enhance this image to high resolution",
   geminiModel: "gemini-3-pro-image-preview",
   geminiTemp: null,
   processingStartedAt: "2025-01-01T10:00:00Z",
@@ -49,30 +54,17 @@ const mockJob = {
   createdAt: "2025-01-01T09:59:50Z",
   updatedAt: "2025-01-01T10:00:12Z",
   workflowRunId: "workflow_123",
-  image: {
-    id: "img_12345678901234567890123",
-    name: "vacation.jpg",
-    originalUrl: "https://example.com/original.jpg",
-    originalWidth: 1920,
-    originalHeight: 1080,
-    originalSizeBytes: 2000000,
-  },
-  user: {
-    id: "user_12345678901234567890",
-    name: "Test User",
-    email: "test@example.com",
-  },
 };
 
 const mockFailedJob = {
   ...mockJob,
   id: "job_failed123456789012345",
   status: "FAILED" as const,
-  enhancedUrl: null,
-  enhancedR2Key: null,
-  enhancedWidth: null,
-  enhancedHeight: null,
-  enhancedSizeBytes: null,
+  outputUrl: null,
+  outputR2Key: null,
+  outputWidth: null,
+  outputHeight: null,
+  outputSizeBytes: null,
   errorMessage: "Gemini API quota exceeded",
   processingCompletedAt: null,
 };
@@ -93,6 +85,11 @@ const mockJobsResponse = {
     PROCESSING: 0,
     CANCELLED: 0,
     REFUNDED: 0,
+  },
+  typeCounts: {
+    all: 2,
+    enhancement: 2,
+    mcp: 0,
   },
 };
 
@@ -122,7 +119,8 @@ describe("JobsAdminClient", () => {
     render(<JobsAdminClient />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /all/i })).toBeInTheDocument();
+      // Check for status tabs (not type tabs)
+      expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();
     });
 
     expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();
@@ -201,6 +199,7 @@ describe("JobsAdminClient", () => {
         jobs: [],
         pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
         statusCounts: { ALL: 0 },
+        typeCounts: { all: 0, enhancement: 0, mcp: 0 },
       }),
     );
 
@@ -227,8 +226,7 @@ describe("JobsAdminClient", () => {
     fireEvent.click(completedJobElement.closest("[class*='cursor-pointer']")!);
 
     await waitFor(() => {
-      // vacation.jpg appears in the details panel
-      expect(screen.getByText(/vacation\.jpg/)).toBeInTheDocument();
+      // User email appears in the details panel
       expect(screen.getByText("test@example.com")).toBeInTheDocument();
     });
   });
@@ -389,7 +387,7 @@ describe("JobsAdminClient", () => {
       expect(screen.getByText("AI Model")).toBeInTheDocument();
       expect(screen.getByText("gemini-3-pro-image-preview"))
         .toBeInTheDocument();
-      expect(screen.getByText("Default")).toBeInTheDocument(); // Temperature is null
+      // Temperature row is only shown when geminiTemp is not null
     });
   });
 
@@ -504,9 +502,8 @@ describe("JobsAdminClient", () => {
     }
 
     await waitFor(() => {
-      // Check for formatted sizes (2MB original, 5MB enhanced)
-      expect(screen.getByText(/1\.91 MB/)).toBeInTheDocument(); // Original
-      expect(screen.getByText(/4\.77 MB/)).toBeInTheDocument(); // Enhanced
+      // Check for formatted output size (5MB = 4.77 MB)
+      expect(screen.getByText(/4\.77 MB/)).toBeInTheDocument();
     });
   });
 

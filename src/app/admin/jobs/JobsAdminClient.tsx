@@ -17,8 +17,25 @@ import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlide
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
 import { EnhancementTier, JobStatus } from "@prisma/client";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 // Unified Job type from API
@@ -146,6 +163,11 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
       text: string;
     } | null
   >(null);
+
+  // Modify & Run dialog state
+  const [showModifyDialog, setShowModifyDialog] = useState(false);
+  const [modifiedPrompt, setModifiedPrompt] = useState("");
+  const [modifyTier, setModifyTier] = useState<EnhancementTier>("TIER_1K");
 
   const fetchJobs = useCallback(
     async (
@@ -276,6 +298,68 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
     setActionMessage({ type: "success", text: "Link copied to clipboard!" });
     setTimeout(() => setActionMessage(null), 2000);
   }, []);
+
+  // Modify & Run action - create new job with modified prompt
+  const handleModifyAndRun = useCallback(async () => {
+    if (!selectedJob || !modifiedPrompt.trim()) return;
+
+    setActionLoading("modify");
+    setActionMessage(null);
+
+    try {
+      const isModifyJob = selectedJob.mcpJobType === "MODIFY";
+      const endpoint = isModifyJob ? "/api/mcp/modify" : "/api/mcp/generate";
+
+      const body = isModifyJob
+        ? {
+          prompt: modifiedPrompt.trim(),
+          tier: modifyTier,
+          imageUrl: selectedJob.inputUrl, // Use original input image
+        }
+        : {
+          prompt: modifiedPrompt.trim(),
+          tier: modifyTier,
+        };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create job");
+      }
+
+      setActionMessage({
+        type: "success",
+        text: `New job created: ${data.jobId}`,
+      });
+      setShowModifyDialog(false);
+
+      // Refresh jobs list
+      const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
+      fetchJobs(status, activeType, pagination.page, searchQuery);
+    } catch (err) {
+      setActionMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to create job",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  }, [
+    selectedJob,
+    modifiedPrompt,
+    modifyTier,
+    activeTab,
+    activeType,
+    fetchJobs,
+    pagination.page,
+    searchQuery,
+  ]);
 
   // Update URL when job is selected
   const selectJob = useCallback((job: Job | null) => {
@@ -568,9 +652,23 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       {actionLoading === selectedJob.id ? "..." : "Kill Job"}
                     </Button>
                   )}
+                  {selectedJob.source === "mcp" && selectedJob.prompt && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setModifiedPrompt(selectedJob.prompt || "");
+                        setModifyTier(selectedJob.tier);
+                        setShowModifyDialog(true);
+                      }}
+                      disabled={actionLoading === "modify"}
+                    >
+                      Modify & Run
+                    </Button>
+                  )}
                 </div>
 
-                {/* Before/After Comparison for Completed Jobs */}
+                {/* Before/After Comparison for Completed Jobs with both URLs */}
                 {selectedJob.status === "COMPLETED" &&
                   selectedJob.outputUrl &&
                   selectedJob.inputUrl && (
@@ -583,6 +681,24 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       width={selectedJob.outputWidth || 16}
                       height={selectedJob.outputHeight || 9}
                     />
+                  </div>
+                )}
+
+                {/* Output Only - for GENERATE jobs without input image */}
+                {selectedJob.status === "COMPLETED" &&
+                  selectedJob.outputUrl &&
+                  !selectedJob.inputUrl && (
+                  <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+                    <div className="relative aspect-square w-full">
+                      <img
+                        src={selectedJob.outputUrl}
+                        alt="Generated result"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <div className="bg-neutral-100 px-3 py-2 text-center text-sm font-medium dark:bg-neutral-800">
+                      Generated Output
+                    </div>
                   </div>
                 )}
 
@@ -703,7 +819,20 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {/* Prompt */}
                 {selectedJob.prompt && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <h3 className="mb-2 text-sm font-semibold">Prompt</h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">Prompt</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedJob.prompt!);
+                          setActionMessage({ type: "success", text: "Prompt copied!" });
+                          setTimeout(() => setActionMessage(null), 2000);
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
                     <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-neutral-100 p-2 text-xs dark:bg-neutral-800">
                       {selectedJob.prompt}
                     </pre>
@@ -787,6 +916,70 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
             )}
         </Card>
       </div>
+
+      {/* Modify & Run Dialog */}
+      <Dialog open={showModifyDialog} onOpenChange={setShowModifyDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Modify & Run</DialogTitle>
+            <DialogDescription>
+              Edit the prompt and create a new{" "}
+              {selectedJob?.mcpJobType === "MODIFY" ? "modification" : "generation"} job.
+              {selectedJob?.mcpJobType === "MODIFY" && " The original input image will be used."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Tier Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tier</label>
+              <Select
+                value={modifyTier}
+                onValueChange={(value: string) => setModifyTier(value as EnhancementTier)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TIER_1K">1K (2 tokens)</SelectItem>
+                  <SelectItem value="TIER_2K">2K (5 tokens)</SelectItem>
+                  <SelectItem value="TIER_4K">4K (10 tokens)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Prompt Editing */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Prompt</label>
+              <Textarea
+                value={modifiedPrompt}
+                onChange={(e) => setModifiedPrompt(e.target.value)}
+                placeholder="Enter your prompt..."
+                className="min-h-[200px]"
+              />
+              <p className="text-xs text-neutral-500">
+                {modifiedPrompt.length} / 4000 characters
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowModifyDialog(false)}
+              disabled={actionLoading === "modify"}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleModifyAndRun}
+              disabled={actionLoading === "modify" || !modifiedPrompt.trim()}
+            >
+              {actionLoading === "modify" ? "Creating..." : "Create Job"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
