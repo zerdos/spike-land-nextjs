@@ -690,10 +690,12 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   !selectedJob.inputUrl && (
                   <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
                     <div className="relative aspect-square w-full">
-                      <img
+                      <Image
                         src={selectedJob.outputUrl}
                         alt="Generated result"
-                        className="h-full w-full object-contain"
+                        fill
+                        className="object-contain"
+                        unoptimized
                       />
                     </div>
                     <div className="bg-neutral-100 px-3 py-2 text-center text-sm font-medium dark:bg-neutral-800">
