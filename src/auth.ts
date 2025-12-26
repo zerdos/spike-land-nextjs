@@ -170,7 +170,7 @@ export async function handleSignIn(user: {
   return true;
 }
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
   ...authConfig,
@@ -386,37 +386,77 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
   secret: process.env.AUTH_SECRET,
 });
 
+/**
+ * Helper to create mock session for E2E testing.
+ * Extracts user info from cookies or uses defaults.
+ */
+async function getMockE2ESession() {
+  const { data: cookieStore } = await tryCatch(cookies());
+  const role = (cookieStore?.get("e2e-user-role")?.value || "USER") as UserRole;
+  const email = cookieStore?.get("e2e-user-email")?.value || "test@example.com";
+  const name = cookieStore?.get("e2e-user-name")?.value || "Test User";
+
+  // Map known test emails to seeded IDs
+  let id = "test-user-id";
+  if (email === "admin@example.com") {
+    id = "admin-user-id";
+  }
+
+  return {
+    user: {
+      id,
+      name,
+      email,
+      image: null,
+      role,
+    },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+}
+
+/**
+ * Constant-time string comparison to prevent timing attacks.
+ */
+function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  let result = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    result |= aBytes[i] ^ bBytes[i];
+  }
+  return result === 0;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const auth = async (...args: any[]) => {
+  // Check for E2E bypass via header (works on Vercel previews)
+  // This is the primary bypass mechanism for CI/CD
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+  if (e2eBypassSecret) {
+    const { data: headersList } = await tryCatch(headers());
+    const bypassHeader = headersList?.get("x-e2e-auth-bypass");
+
+    if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
+      return getMockE2ESession();
+    }
+  }
+
+  // Fallback: Check for E2E bypass via env var (local dev with yarn dev:e2e)
   if (process.env.E2E_BYPASS_AUTH === "true") {
     const { data: cookieStore } = await tryCatch(cookies());
-    // Ignore if cookies cannot be read
+    // Check for mock session token cookie
     if (cookieStore) {
       const sessionToken = cookieStore.get("authjs.session-token")?.value;
       if (sessionToken === "mock-session-token") {
-        const role = (cookieStore.get("e2e-user-role")?.value || "USER") as UserRole;
-        const email = cookieStore.get("e2e-user-email")?.value || "test@example.com";
-        const name = cookieStore.get("e2e-user-name")?.value || "Test User";
-
-        // Map known test emails to seeded IDs
-        let id = "test-user-id";
-        if (email === "admin@example.com") {
-          id = "admin-user-id";
-        }
-
-        return {
-          user: {
-            id,
-            name,
-            email,
-            image: null,
-            role,
-          },
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        };
+        return getMockE2ESession();
       }
     }
   }
+
   // @ts-expect-error - auth accepts variable arguments
   return originalAuth(...args);
 };

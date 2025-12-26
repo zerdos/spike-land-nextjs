@@ -1,4 +1,4 @@
-@skip
+# Authentication bypass fixed in src/auth.ts - See GitHub issue #435
 Feature: Protected Routes
   As a user
   I want certain routes to require authentication

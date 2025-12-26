@@ -1,6 +1,4 @@
-# TODO: Fix authentication bypass in CI - See GitHub issue
-# Temporarily disabled until authentication bypass is fixed for Vercel preview deployments
-@skip
+# Authentication bypass fixed in src/auth.ts - See GitHub issue #435
 Feature: App Creation Wizard - Step 1: Basic Info
   As an authenticated user
   I want to enter basic information about my app

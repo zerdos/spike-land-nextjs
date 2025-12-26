@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock data for testing
@@ -299,8 +300,13 @@ When("I upload a valid image file", async function(this: CustomWorld) {
     buffer: Buffer.from("fake-image-content"),
   });
 
-  // Wait for upload to start (loading state)
-  await this.page.waitForTimeout(1000);
+  // Wait for upload response or loading state to appear
+  await Promise.race([
+    this.page.waitForResponse((resp) => resp.url().includes("/api/images")),
+    this.page.waitForSelector(".animate-spin", { state: "visible", timeout: TIMEOUTS.DEFAULT }),
+  ]).catch(() => {
+    // Either response received or loading spinner appeared
+  });
 });
 
 When(
@@ -320,7 +326,13 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    await this.page.waitForTimeout(500);
+    // Wait for error message to appear
+    await this.page.waitForSelector(".text-destructive, [role='alert']", {
+      state: "visible",
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // Error display may vary
+    });
   },
 );
 
@@ -339,7 +351,13 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    await this.page.waitForTimeout(500);
+    // Wait for error message to appear
+    await this.page.waitForSelector(".text-destructive, [role='alert']", {
+      state: "visible",
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // Error display may vary
+    });
   },
 );
 
@@ -356,8 +374,13 @@ When("I start uploading an image", async function(this: CustomWorld) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
-  // Don't wait for completion - we want to check loading state
-  await this.page.waitForTimeout(100);
+  // Wait for loading spinner to appear (indicates upload started)
+  await this.page.waitForSelector(".animate-spin", {
+    state: "visible",
+    timeout: TIMEOUTS.SHORT,
+  }).catch(() => {
+    // Upload may be too fast to catch spinner
+  });
 });
 
 When("I visit the image enhancement page", async function(this: CustomWorld) {
@@ -384,7 +407,13 @@ When("I try to enhance the image", async function(this: CustomWorld) {
     name: /enhance|start/i,
   });
   await enhanceButton.click();
-  await this.page.waitForTimeout(500);
+  // Wait for error response
+  await this.page.waitForResponse(
+    (resp) => resp.url().includes("/api/images/enhance"),
+    { timeout: TIMEOUTS.DEFAULT },
+  ).catch(() => {
+    // Response may already have been handled
+  });
 });
 
 When(
@@ -399,7 +428,13 @@ When(
       name: /enhance|start/i,
     });
     await enhanceButton.click();
-    await this.page.waitForTimeout(500);
+    // Wait for API response
+    await this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/images/enhance"),
+      { timeout: TIMEOUTS.DEFAULT },
+    ).catch(() => {
+      // Response may already have been handled
+    });
   },
 );
 
