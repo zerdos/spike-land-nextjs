@@ -23,15 +23,15 @@ Then(
   },
 );
 
-When("I view the tech stack section", async function(this: CustomWorld) {
-  const section = this.page.getByText("Tech Stack:");
+When("I view the features section", async function(this: CustomWorld) {
+  const section = this.page.getByRole("heading", { name: "Why Pixel?" });
   await expect(section).toBeVisible();
 });
 
 // NOTE: "I should see {string} heading" step is defined in authentication.steps.ts
 
 Then(
-  "I should see the following tech stack items:",
+  "I should see the following feature items:",
   async function(this: CustomWorld, dataTable: DataTable) {
     const items = dataTable.rows().map((row) => row[0]).filter((
       item,
@@ -45,17 +45,17 @@ Then(
 );
 
 Then(
-  "I should see a {string} button",
-  async function(this: CustomWorld, buttonName: string) {
-    const button = this.page.getByRole("button", { name: buttonName });
-    await expect(button).toBeVisible();
+  "I should see a {string} link",
+  async function(this: CustomWorld, linkName: string) {
+    const link = this.page.getByRole("link", { name: linkName });
+    await expect(link).toBeVisible();
   },
 );
 
-// NOTE: "I click the {string} button" step is defined in authentication.steps.ts
+// NOTE: "I click the {string} link" step is defined in authentication.steps.ts
 
-Then("the button should be interactive", async function(this: CustomWorld) {
-  // Button click was successful if we got here without error
+Then("the link should be interactive", async function(this: CustomWorld) {
+  // Link click was successful if we got here without error
   // In a real app, we'd verify navigation or state change
   expect(true).toBe(true);
 });
