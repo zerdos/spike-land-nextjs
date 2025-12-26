@@ -128,6 +128,7 @@ const createMockJob = (overrides: Partial<MockEnhancementJob> = {}): MockEnhance
   pipelineId: null,
   sourceImageId: null,
   isBlend: false,
+  isAnonymous: false,
   ...overrides,
 });
 

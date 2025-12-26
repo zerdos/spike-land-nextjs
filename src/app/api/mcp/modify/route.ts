@@ -37,7 +37,7 @@ function detectMimeType(url: string, contentType: string | null): string {
   }
 
   // Fall back to URL extension
-  const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
+  const ext = (url.split("?")[0] ?? "").split(".").pop()?.toLowerCase();
   switch (ext) {
     case "jpg":
     case "jpeg":

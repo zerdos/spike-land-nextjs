@@ -13,7 +13,8 @@ import { execSync } from "child_process";
 import { createHash } from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import type { File, Reporter, Vitest } from "vitest";
+import type { RunnerTestFile as File } from "vitest";
+import type { Reporter, Vitest } from "vitest/node";
 
 interface TestCacheEntry {
   lastPassedCommit: string;
@@ -144,8 +145,10 @@ export default class CoverageMapperReporter implements Reporter {
     // If no coverage file found, try to get file dependencies from Vitest's module graph
     if (this.ctx?.projects) {
       for (const project of this.ctx.projects) {
-        const moduleGraph = project.browser?.vite?.moduleGraph ||
-          project.vitenode?.server?.moduleGraph;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const moduleGraph = (project as any).browser?.vite?.moduleGraph ||
+          (project as any).server?.moduleGraph;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (moduleGraph) {
           for (const [testPath, result] of this.testResults) {
             const fullTestPath = path.join(this.projectRoot, testPath);

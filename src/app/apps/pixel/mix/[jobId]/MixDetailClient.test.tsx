@@ -365,7 +365,7 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const tabs = screen.getAllByRole("tab");
-      const tab1Images = tabs[0].querySelectorAll("img");
+      const tab1Images = tabs[0]!.querySelectorAll("img");
       expect(tab1Images).toHaveLength(2);
       expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");
       expect(tab1Images[1]).toHaveAttribute("alt", "Result");
@@ -375,7 +375,7 @@ describe("MixDetailClient", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const tabs = screen.getAllByRole("tab");
-      const tab2Images = tabs[1].querySelectorAll("img");
+      const tab2Images = tabs[1]!.querySelectorAll("img");
       expect(tab2Images).toHaveLength(2);
       expect(tab2Images[0]).toHaveAttribute("alt", "Photo 2");
       expect(tab2Images[1]).toHaveAttribute("alt", "Result");
@@ -395,15 +395,15 @@ describe("MixDetailClient", () => {
       expect(tabs).toHaveLength(2);
 
       // Verify tabs are clickable (no errors thrown)
-      expect(() => fireEvent.click(tabs[1])).not.toThrow();
-      expect(() => fireEvent.click(tabs[0])).not.toThrow();
+      expect(() => fireEvent.click(tabs[1]!)).not.toThrow();
+      expect(() => fireEvent.click(tabs[0]!)).not.toThrow();
     });
 
     it("Photo 1 tab is active by default", () => {
       render(<MixDetailClient job={createMockJob()} />);
 
       const tabs = screen.getAllByRole("tab");
-      expect(tabs[0].getAttribute("data-state")).toBe("active");
+      expect(tabs[0]!.getAttribute("data-state")).toBe("active");
     });
 
     it("renders thumbnail images in tabs including result", () => {
@@ -413,8 +413,8 @@ describe("MixDetailClient", () => {
       const tabs = screen.getAllByRole("tab");
 
       // Each tab should contain source image and result image thumbnails
-      const tab1Images = tabs[0].querySelectorAll("img");
-      const tab2Images = tabs[1].querySelectorAll("img");
+      const tab1Images = tabs[0]!.querySelectorAll("img");
+      const tab2Images = tabs[1]!.querySelectorAll("img");
 
       // Tab 1: Photo 1 → Result
       expect(tab1Images[0]).toHaveAttribute("alt", "Photo 1");

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
@@ -238,13 +239,12 @@ export default function AdminPhotosPage() {
             >
               User ID
             </label>
-            <input
+            <Input
               id="userSearch"
               type="text"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               placeholder="Enter user ID..."
-              className="w-full rounded-lg border px-4 py-2 bg-background text-foreground border-input"
             />
           </div>
           <div>
@@ -254,24 +254,22 @@ export default function AdminPhotosPage() {
             >
               Start Date
             </label>
-            <input
+            <Input
               id="startDate"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full rounded-lg border px-4 py-2 bg-background text-foreground border-input"
             />
           </div>
           <div>
             <label htmlFor="endDate" className="mb-2 block text-sm font-medium">
               End Date
             </label>
-            <input
+            <Input
               id="endDate"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-lg border px-4 py-2 bg-background text-foreground border-input"
             />
           </div>
         </div>

@@ -9,6 +9,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 
 interface User {
@@ -212,12 +213,12 @@ export default function UserManagementPage() {
       {/* Search */}
       <Card className="p-6">
         <div className="flex gap-4">
-          <input
+          <Input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by email or name..."
-            className="flex-1 rounded-lg border px-4 py-2 bg-background text-foreground border-input"
+            className="flex-1"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 fetchUsers(search);

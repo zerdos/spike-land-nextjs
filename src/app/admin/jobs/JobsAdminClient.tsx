@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -490,13 +491,13 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
       {/* Search and Refresh */}
       <div className="flex gap-2" role="search">
-        <input
+        <Input
           type="text"
           placeholder="Search by Job ID or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="flex-1 rounded-md border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+          className="flex-1"
           aria-label="Search by Job ID or email"
         />
         <Button variant="outline" onClick={handleSearch} aria-label="Search">

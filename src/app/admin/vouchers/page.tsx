@@ -9,6 +9,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 
 interface Voucher {
@@ -159,11 +160,10 @@ export default function VouchersPage() {
           <form onSubmit={handleCreateVoucher} className="space-y-4">
             <div>
               <label className="mb-1 block text-sm font-medium">Code</label>
-              <input
+              <Input
                 type="text"
                 value={formData.code}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                 placeholder="PROMO2025"
                 required
               />
@@ -185,11 +185,10 @@ export default function VouchersPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">Value</label>
-                <input
+                <Input
                   type="number"
                   value={formData.value}
                   onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                   placeholder="100"
                   required
                 />
@@ -199,11 +198,10 @@ export default function VouchersPage() {
                 <label className="mb-1 block text-sm font-medium">
                   Max Uses (optional)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={formData.maxUses}
                   onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                   placeholder="Unlimited"
                 />
               </div>
@@ -212,11 +210,10 @@ export default function VouchersPage() {
                 <label className="mb-1 block text-sm font-medium">
                   Expires At (optional)
                 </label>
-                <input
+                <Input
                   type="datetime-local"
                   value={formData.expiresAt}
                   onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2"
                 />
               </div>
             </div>

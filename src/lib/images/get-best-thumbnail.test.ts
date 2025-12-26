@@ -64,6 +64,7 @@ function createMockJob(
     cropDimensions: null,
     sourceImageId: null,
     isBlend: false,
+    isAnonymous: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
