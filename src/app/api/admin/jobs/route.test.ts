@@ -21,6 +21,11 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       groupBy: vi.fn(),
     },
+    mcpGenerationJob: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      groupBy: vi.fn(),
+    },
   },
 }));
 
@@ -143,6 +148,9 @@ describe("Admin Jobs API", () => {
         { status: "COMPLETED", _count: { status: 1 } },
         { status: "PENDING", _count: { status: 2 } },
       ] as any);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost/api/admin/jobs");
       const response = await GET(request);
@@ -176,6 +184,9 @@ describe("Admin Jobs API", () => {
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([
         { status: "COMPLETED", _count: { status: 1 } },
       ] as any);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?status=COMPLETED",
@@ -211,9 +222,21 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(100);
+      // Create 25 mock jobs to test pagination
+      const mockJobs = Array.from({ length: 25 }, (_, i) => ({
+        ...mockJob,
+        id: `job_${String(i).padStart(24, "0")}`,
+        createdAt: new Date(`2025-01-01T${String(i).padStart(2, "0")}:00:00Z`),
+      }));
+
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs as any,
+      );
+      vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(25);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?page=3&limit=10",
@@ -222,14 +245,11 @@ describe("Admin Jobs API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skip: 20,
-          take: 10,
-        }),
-      );
+      // Pagination is now applied in memory after fetching all jobs
       expect(data.pagination.page).toBe(3);
       expect(data.pagination.limit).toBe(10);
+      // Page 3 with 25 items and limit 10 should return 5 items (items 21-25)
+      expect(data.jobs).toHaveLength(5);
     });
 
     it("should cap limit at 50", async () => {
@@ -237,22 +257,33 @@ describe("Admin Jobs API", () => {
         user: { id: VALID_ADMIN_ID },
       } as any);
 
-      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(0);
+      // Create 60 mock jobs to test limit capping
+      const mockJobs = Array.from({ length: 60 }, (_, i) => ({
+        ...mockJob,
+        id: `job_${String(i).padStart(24, "0")}`,
+        createdAt: new Date(Date.now() - i * 60000), // Each job 1 minute apart
+        updatedAt: new Date(Date.now() - i * 60000),
+      }));
+
+      vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
+        mockJobs as any,
+      );
+      vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(60);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?limit=100",
       );
       const response = await GET(request);
-      await response.json();
+      const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(prisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          take: 50,
-        }),
-      );
+      // Limit should be capped at 50 and applied during pagination
+      expect(data.pagination.limit).toBe(50);
+      expect(data.jobs).toHaveLength(50);
     });
 
     it("should handle search by job ID", async () => {
@@ -265,6 +296,9 @@ describe("Admin Jobs API", () => {
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?search=job_123",
@@ -295,16 +329,20 @@ describe("Admin Jobs API", () => {
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost/api/admin/jobs");
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.jobs[0].image).toBeDefined();
-      expect(data.jobs[0].image.name).toBe("vacation.jpg");
-      expect(data.jobs[0].user).toBeDefined();
-      expect(data.jobs[0].user.email).toBe("test@example.com");
+      // Jobs are now transformed to unified format with flattened fields
+      expect(data.jobs[0].imageName).toBe("vacation.jpg");
+      expect(data.jobs[0].userEmail).toBe("test@example.com");
+      expect(data.jobs[0].userName).toBe("Test User");
+      expect(data.jobs[0].source).toBe("enhancement");
     });
 
     it("should handle database errors", async () => {
@@ -315,6 +353,9 @@ describe("Admin Jobs API", () => {
       vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(
         new Error("Database connection failed"),
       );
+      vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
+      vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost/api/admin/jobs");
       const response = await GET(request);
