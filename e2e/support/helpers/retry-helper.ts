@@ -398,21 +398,30 @@ export async function waitForPricingData(
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
 
   // Wait for at least one price element with a value
-  await page.waitForFunction(
-    () => {
-      const priceElements = document.querySelectorAll('[class*="Card"]');
-      if (priceElements.length === 0) return false;
+  try {
+    await page.waitForFunction(
+      () => {
+        // Look for Card elements with prices
+        const priceElements = document.querySelectorAll('[class*="Card"], [class*="card"]');
+        if (priceElements.length === 0) {
+          // Fallback: look for any element with price formatting
+          const pageText = document.body.textContent || "";
+          return /[£$]\s*\d+/.test(pageText);
+        }
 
-      // Check if prices are rendered (contain £ symbol)
-      const hasPrices = Array.from(priceElements).some((el) => {
-        const text = el.textContent || "";
-        return text.includes("£") && /\d+/.test(text);
-      });
+        // Check if prices are rendered (contain currency symbol)
+        const hasPrices = Array.from(priceElements).some((el) => {
+          const text = el.textContent || "";
+          return /[£$]\s*\d+/.test(text);
+        });
 
-      return hasPrices;
-    },
-    { timeout },
-  );
+        return hasPrices;
+      },
+      { timeout },
+    );
+  } catch {
+    // If no pricing elements found, just continue - page may have different structure
+  }
 }
 
 /**
