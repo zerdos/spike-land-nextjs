@@ -5,9 +5,9 @@
 
 import type { User } from "@spike-npm-land/shared";
 import * as AuthSession from "expo-auth-session";
-import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import { apiClient } from "./api-client";
+import * as storage from "./storage";
 
 // Complete any pending auth sessions
 WebBrowser.maybeCompleteAuthSession();
@@ -251,8 +251,8 @@ class AuthService {
    */
   async signOut(): Promise<void> {
     await apiClient.clearAuthToken();
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.SESSION);
+    await storage.deleteItemAsync(STORAGE_KEYS.USER);
+    await storage.deleteItemAsync(STORAGE_KEYS.SESSION);
   }
 
   /**
@@ -260,7 +260,7 @@ class AuthService {
    */
   async getSession(): Promise<SessionInfo | null> {
     try {
-      const sessionStr = await SecureStore.getItemAsync(STORAGE_KEYS.SESSION);
+      const sessionStr = await storage.getItemAsync(STORAGE_KEYS.SESSION);
       if (!sessionStr) return null;
 
       const session = JSON.parse(sessionStr) as SessionInfo;
@@ -281,11 +281,11 @@ class AuthService {
    * Set current session
    */
   private async setSession(session: SessionInfo): Promise<void> {
-    await SecureStore.setItemAsync(
+    await storage.setItemAsync(
       STORAGE_KEYS.SESSION,
       JSON.stringify(session),
     );
-    await SecureStore.setItemAsync(
+    await storage.setItemAsync(
       STORAGE_KEYS.USER,
       JSON.stringify(session.user),
     );

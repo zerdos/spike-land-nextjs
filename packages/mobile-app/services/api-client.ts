@@ -4,7 +4,7 @@
  */
 //
 import { API_CONFIG } from "@spike-npm-land/shared";
-import * as SecureStore from "expo-secure-store";
+import * as storage from "./storage";
 
 // ============================================================================
 // Types
@@ -51,7 +51,7 @@ class ApiClient {
    */
   async getAuthToken(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+      return await storage.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
     } catch {
       return null;
     }
@@ -61,15 +61,15 @@ class ApiClient {
    * Store authentication token
    */
   async setAuthToken(token: string): Promise<void> {
-    await SecureStore.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, token);
+    await storage.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, token);
   }
 
   /**
    * Clear authentication token
    */
   async clearAuthToken(): Promise<void> {
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-    await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
+    await storage.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+    await storage.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
   }
 
   /**
@@ -77,7 +77,7 @@ class ApiClient {
    */
   async getApiKey(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(STORAGE_KEYS.API_KEY);
+      return await storage.getItemAsync(STORAGE_KEYS.API_KEY);
     } catch {
       return null;
     }
@@ -87,7 +87,7 @@ class ApiClient {
    * Store API key
    */
   async setApiKey(apiKey: string): Promise<void> {
-    await SecureStore.setItemAsync(STORAGE_KEYS.API_KEY, apiKey);
+    await storage.setItemAsync(STORAGE_KEYS.API_KEY, apiKey);
   }
 
   /**
