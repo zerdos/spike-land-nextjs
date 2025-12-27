@@ -2,7 +2,6 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import {
   TIMEOUTS,
-  waitForApiResponse,
   waitForModalState,
   waitForTextWithRetry,
   waitForTokenBalance,

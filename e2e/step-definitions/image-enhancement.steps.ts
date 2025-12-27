@@ -589,7 +589,10 @@ Then(
 Then(
   "I should see the token balance display",
   async function(this: CustomWorld) {
-    // Look for the balance display showing "X tokens" where X is a number
+    // Wait for token balance to be fully rendered with a numeric value
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
+
+    // Verify it's visible
     const balanceDisplay = this.page.locator('[data-testid="token-balance"]')
       .or(
         this.page.getByText(/\d+\s*tokens/i),
@@ -838,8 +841,8 @@ Then(
 Then(
   "the token balance should refresh automatically",
   async function(this: CustomWorld) {
-    // Check that balance is being fetched
-    await this.page.waitForTimeout(500);
+    // Wait for token balance to be displayed (indicates refresh completed)
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
