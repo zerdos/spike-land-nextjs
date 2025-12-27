@@ -1,5 +1,5 @@
 {
-  "name": "@spike-land/mobile",
+  "name": "@spike-npm-land/mobile",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
@@ -14,7 +14,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/native": "^7.1.8",
-    "@spike-land/shared": "workspace:*",
+    "@spike-npm-land/shared": "workspace:*",
     "@tamagui/config": "^1.121.6",
     "@tamagui/font-inter": "^1.121.6",
     "@tanstack/react-query": "^5.62.0",

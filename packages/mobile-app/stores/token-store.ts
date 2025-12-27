@@ -3,8 +3,8 @@
  * Manages token balance and regeneration with Zustand
  */
 
-import { calculateRegeneratedTokens, getTimeUntilNextRegen } from "@spike-land/shared";
-import type { SubscriptionTier } from "@spike-land/shared";
+import { calculateRegeneratedTokens, getTimeUntilNextRegen } from "@spike-npm-land/shared";
+import type { SubscriptionTier } from "@spike-npm-land/shared";
 import { create } from "zustand";
 import { getTokenBalance, TokenBalanceResponse } from "../services/api/tokens";
 

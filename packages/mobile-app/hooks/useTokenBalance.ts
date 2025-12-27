@@ -3,7 +3,7 @@
  * Real-time token balance with regeneration countdown
  */
 
-import { ENHANCEMENT_COSTS, formatDuration } from "@spike-land/shared";
+import { ENHANCEMENT_COSTS, formatDuration } from "@spike-npm-land/shared";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTokenStore } from "../stores";
 

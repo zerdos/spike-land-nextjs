@@ -3,7 +3,7 @@
  * Displays current balance, regeneration timer, and quick actions
  */
 
-import { ENHANCEMENT_COSTS, TOKEN_REGENERATION } from "@spike-land/shared";
+import { ENHANCEMENT_COSTS, TOKEN_REGENERATION } from "@spike-npm-land/shared";
 import { Link, useRouter } from "expo-router";
 import { useCallback } from "react";
 import { RefreshControl, ScrollView, StyleSheet } from "react-native";

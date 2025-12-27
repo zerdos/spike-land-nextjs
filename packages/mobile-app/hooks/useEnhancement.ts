@@ -3,8 +3,8 @@
  * Handles the complete enhancement flow: upload, enhance, and poll for results
  */
 
-import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-land/shared";
-import { ENHANCEMENT_COSTS } from "@spike-land/shared";
+import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-npm-land/shared";
+import { ENHANCEMENT_COSTS } from "@spike-npm-land/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   enhanceImage,

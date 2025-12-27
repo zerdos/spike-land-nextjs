@@ -3,7 +3,7 @@
  * Manages enhancement history and current enhancement state with Zustand
  */
 
-import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-land/shared";
+import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-npm-land/shared";
 import { create } from "zustand";
 import { getImages, ImagesListResponse } from "../services/api/images";
 

@@ -13,7 +13,7 @@ import type {
   MerchProduct,
   MerchVariant,
   ShippingAddress,
-} from "@spike-land/shared";
+} from "@spike-npm-land/shared";
 import type { Cart, CartItemWithDetails } from "../../stores/cart-store";
 import { apiClient, ApiResponse } from "../api-client";
 

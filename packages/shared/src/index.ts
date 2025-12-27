@@ -1,5 +1,5 @@
 /**
- * @spike-land/shared
+ * @spike-npm-land/shared
  *
  * Shared types, constants, validations, and utilities
  * for web and mobile applications

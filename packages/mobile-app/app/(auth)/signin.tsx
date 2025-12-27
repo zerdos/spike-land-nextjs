@@ -142,7 +142,6 @@ export default function SignInScreen() {
             elevate
             size="$4"
             bordered
-            animation="bouncy"
             paddingHorizontal="$4"
             paddingVertical="$6"
           >

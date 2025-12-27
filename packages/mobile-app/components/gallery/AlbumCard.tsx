@@ -3,7 +3,7 @@
  * Preview card for displaying album information with cover image
  */
 
-import type { Album, AlbumPrivacy } from "@spike-land/shared";
+import type { Album, AlbumPrivacy } from "@spike-npm-land/shared";
 import { Globe, Link2, Lock } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import React, { useCallback, useMemo } from "react";

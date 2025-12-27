@@ -3,7 +3,7 @@
  * Handles OAuth authentication with Expo AuthSession
  */
 
-import type { User } from "@spike-land/shared";
+import type { User } from "@spike-npm-land/shared";
 import * as AuthSession from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";

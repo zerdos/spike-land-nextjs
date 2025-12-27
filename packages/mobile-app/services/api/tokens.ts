@@ -8,7 +8,7 @@ import type {
   TokensPackage,
   TokenTransaction,
   UserTokenBalance,
-} from "@spike-land/shared";
+} from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================

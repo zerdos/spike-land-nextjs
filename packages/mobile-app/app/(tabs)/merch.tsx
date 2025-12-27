@@ -3,7 +3,7 @@
  * Displays product grid with category filters and search
  */
 
-import type { MerchCategory } from "@spike-land/shared";
+import type { MerchCategory } from "@spike-npm-land/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";

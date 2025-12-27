@@ -3,7 +3,7 @@
  * Handles In-App Purchases for token packages
  */
 
-import { REVENUECAT_PRODUCTS } from "@spike-land/shared";
+import { REVENUECAT_PRODUCTS } from "@spike-npm-land/shared";
 import { Platform } from "react-native";
 import Purchases, {
   type CustomerInfo,

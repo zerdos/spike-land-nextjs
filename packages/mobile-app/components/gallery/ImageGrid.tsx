@@ -3,7 +3,7 @@
  * Reusable masonry-style grid for displaying images with selection support
  */
 
-import type { EnhancedImage } from "@spike-land/shared";
+import type { EnhancedImage } from "@spike-npm-land/shared";
 import React, { useCallback, useMemo } from "react";
 import {
   FlatList,

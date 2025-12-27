@@ -3,7 +3,7 @@
  * Manages gallery state with Zustand including images, albums, and selection
  */
 
-import type { Album, EnhancedImage, EnhancementTier } from "@spike-land/shared";
+import type { Album, EnhancedImage, EnhancementTier } from "@spike-npm-land/shared";
 import { create } from "zustand";
 import {
   addImagesToAlbum,

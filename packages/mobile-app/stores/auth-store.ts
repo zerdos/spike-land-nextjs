@@ -3,7 +3,7 @@
  * Manages auth state with Zustand
  */
 
-import type { User } from "@spike-land/shared";
+import type { User } from "@spike-npm-land/shared";
 import { create } from "zustand";
 import { AuthProvider, authService } from "../services/auth";
 

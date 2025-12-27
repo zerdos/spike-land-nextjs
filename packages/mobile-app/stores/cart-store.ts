@@ -3,7 +3,7 @@
  * Manages shopping cart state with Zustand
  */
 
-import type { MerchCartItem, MerchProduct, MerchVariant } from "@spike-land/shared";
+import type { MerchCartItem, MerchProduct, MerchVariant } from "@spike-npm-land/shared";
 import { create } from "zustand";
 
 // ============================================================================

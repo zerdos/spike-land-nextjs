@@ -8,7 +8,7 @@ import type {
   EnhancedImage,
   EnhancementTier,
   ImageEnhancementJob,
-} from "@spike-land/shared";
+} from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================

@@ -3,7 +3,7 @@
  * Handles referral program functionality
  */
 
-import type { Referral, ReferralStatus } from "@spike-land/shared";
+import type { Referral, ReferralStatus } from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================

@@ -3,7 +3,7 @@
  * Grid item displaying an image with selection support
  */
 
-import type { EnhancedImage } from "@spike-land/shared";
+import type { EnhancedImage } from "@spike-npm-land/shared";
 import { Check, Circle } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import React, { useCallback, useMemo } from "react";
