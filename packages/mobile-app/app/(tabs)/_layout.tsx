@@ -1,11 +1,13 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import React from "react";
-import { Pressable } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "tamagui";
 
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useCartStore } from "@/stores";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -13,6 +15,36 @@ function TabBarIcon(props: {
   color: string;
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+}
+
+function CartTabIcon({ color }: { color: string; }) {
+  const itemCount = useCartStore((state) => state.getItemCount());
+
+  return (
+    <View style={{ position: "relative" }}>
+      <TabBarIcon name="shopping-cart" color={color} />
+      {itemCount > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: -8,
+            right: -10,
+            backgroundColor: "#ef4444",
+            borderRadius: 10,
+            minWidth: 20,
+            height: 20,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 4,
+          }}
+        >
+          <Text fontSize={11} color="white" fontWeight="bold">
+            {itemCount > 99 ? "99+" : itemCount}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 }
 
 export default function TabLayout() {
@@ -30,8 +62,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Tab One",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Home",
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -49,10 +81,35 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="merch"
+        options={{
+          title: "Shop",
+          tabBarIcon: ({ color }) => <TabBarIcon name="shopping-bag" color={color} />,
+          headerRight: () => (
+            <Link href="/cart" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <View style={{ opacity: pressed ? 0.5 : 1, marginRight: 15 }}>
+                    <CartTabIcon color={Colors[colorScheme ?? "light"].text} />
+                  </View>
+                )}
+              </Pressable>
+            </Link>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="two"
         options={{
-          title: "Tab Two",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Gallery",
+          tabBarIcon: ({ color }) => <TabBarIcon name="photo" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
     </Tabs>
