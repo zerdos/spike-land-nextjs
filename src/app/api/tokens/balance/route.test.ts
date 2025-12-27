@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { getTimeUntilNextRegeneration, processUserRegeneration } from "@/lib/tokens/regeneration";
+import { createMinimalSession } from "@/test-utils";
+import type { MockSession } from "@/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
@@ -32,9 +34,7 @@ describe("GET /api/tokens/balance", () => {
   it("should return token balance and stats for authenticated user", async () => {
     const mockDate = new Date("2024-01-15T12:00:00.000Z");
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(5);
 
@@ -88,7 +88,7 @@ describe("GET /api/tokens/balance", () => {
   });
 
   it("should return 401 if session has no user", async () => {
-    vi.mocked(auth).mockResolvedValue({} as any);
+    vi.mocked(auth).mockResolvedValue({} as MockSession);
 
     const response = await GET();
     const data = await response.json();
@@ -100,7 +100,7 @@ describe("GET /api/tokens/balance", () => {
   it("should return 401 if session user has no ID", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: {},
-    } as any);
+    } as MockSession);
 
     const response = await GET();
     const data = await response.json();
@@ -111,8 +111,8 @@ describe("GET /api/tokens/balance", () => {
 
   it("should return 401 if session user ID is undefined", async () => {
     vi.mocked(auth).mockResolvedValue({
-      user: { id: undefined },
-    } as any);
+      user: { id: undefined as unknown as string },
+    } as MockSession);
 
     const response = await GET();
     const data = await response.json();
@@ -124,9 +124,7 @@ describe("GET /api/tokens/balance", () => {
   it("should handle errors gracefully and return 500", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockRejectedValue(
       new Error("Database error"),
@@ -148,9 +146,7 @@ describe("GET /api/tokens/balance", () => {
   it("should handle getBalance failure", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
     vi.mocked(TokenBalanceManager.getBalance).mockRejectedValue(
@@ -170,9 +166,7 @@ describe("GET /api/tokens/balance", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const mockDate = new Date("2024-01-15T12:00:00.000Z");
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
@@ -198,9 +192,7 @@ describe("GET /api/tokens/balance", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const mockDate = new Date("2024-01-15T12:00:00.000Z");
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({
@@ -226,9 +218,7 @@ describe("GET /api/tokens/balance", () => {
   it("should return zero tokens added when no regeneration occurs", async () => {
     const mockDate = new Date("2024-01-15T12:00:00.000Z");
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
 
@@ -259,9 +249,7 @@ describe("GET /api/tokens/balance", () => {
   it("should return JSON response with correct content-type", async () => {
     const mockDate = new Date("2024-01-15T12:00:00.000Z");
 
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
+    vi.mocked(auth).mockResolvedValue(createMinimalSession("user-123"));
 
     vi.mocked(processUserRegeneration).mockResolvedValue(0);
     vi.mocked(TokenBalanceManager.getBalance).mockResolvedValue({

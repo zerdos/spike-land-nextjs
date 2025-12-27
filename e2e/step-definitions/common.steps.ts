@@ -64,15 +64,18 @@ When("I cancel the deletion confirmation", async function(this: CustomWorld) {
   await cancelButton.click();
 });
 
-// Common button visibility check
+// Common button visibility check (handles Button asChild pattern which renders as <a>)
 Then(
   "I should see {string} button",
   async function(this: CustomWorld, buttonText: string) {
+    // Check for both button and link (Button asChild pattern renders as <a>)
     const button = this.page
       .getByRole("button", { name: new RegExp(buttonText, "i") })
       .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+    const link = this.page.getByRole("link", { name: new RegExp(buttonText, "i") });
 
-    await expect(button.first()).toBeVisible();
+    const element = button.or(link);
+    await expect(element.first()).toBeVisible();
   },
 );
 
@@ -386,14 +389,21 @@ Then(
 
 // "I click the {string} button" - consolidated from authentication.steps.ts,
 // app-creation-flow.steps.ts, canvas-editor.steps.ts
+// Handles Button asChild pattern which renders as <a> instead of <button>
 When(
   "I click the {string} button",
   async function(this: CustomWorld, buttonText: string) {
+    // Check for both button and link (Button asChild pattern renders as <a>)
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
-    await expect(button.first()).toBeVisible({ timeout: 10000 });
-    await button.first().click();
+    const link = this.page.getByRole("link", {
+      name: new RegExp(buttonText, "i"),
+    });
+
+    const element = button.or(link);
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+    await element.first().click();
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -646,6 +656,8 @@ Then(
     const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
     const field = this.page.locator(`[data-testid="${testId}"]`)
       .or(this.page.locator(`[data-testid="${testId}-input"]`))
+      .or(this.page.locator(`[data-testid="${testId}-textarea"]`))
+      .or(this.page.locator(`[data-testid="app-${testId}-textarea"]`))
       .or(this.page.getByLabel(new RegExp(fieldName, "i")));
     await expect(field.first()).toHaveValue(value);
   },

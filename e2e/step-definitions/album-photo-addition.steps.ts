@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForModalState } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock data
@@ -162,20 +162,29 @@ When(
 );
 
 When("I select an album from the dropdown", async function(this: CustomWorld) {
-  // Wait for the dropdown to be ready
+  // Wait for the dropdown to be ready and populated with albums
   const selectTrigger = this.page.getByText("Select an album");
   await expect(selectTrigger).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+  // Click to open dropdown
   await selectTrigger.click();
 
-  // Wait for dropdown options to be visible
+  // Wait for dropdown options to be visible (albums are loaded async)
   const albumOption = this.page.getByText("Vacation Photos");
   await expect(albumOption).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await albumOption.click();
 
-  // Wait for selection to be reflected
-  await expect(selectTrigger).not.toHaveText("Select an album", {
-    timeout: TIMEOUTS.SHORT,
-  });
+  // Wait for selection to be reflected - use waitForFunction for more reliable check
+  await this.page.waitForFunction(
+    () => {
+      const trigger = document.querySelector('[role="combobox"]') ||
+        Array.from(document.querySelectorAll("button")).find((b) =>
+          b.textContent?.includes("Vacation Photos")
+        );
+      return trigger && !trigger.textContent?.includes("Select an album");
+    },
+    { timeout: TIMEOUTS.DEFAULT },
+  );
 });
 
 When(
@@ -185,12 +194,20 @@ When(
     const dialog = this.page.getByRole("dialog");
     const confirmButton = dialog.getByRole("button", { name: /add to album/i });
     await expect(confirmButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+    // Set up API response wait BEFORE clicking
+    const responsePromise = this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/albums/") && resp.url().includes("/images"),
+      { timeout: TIMEOUTS.DEFAULT },
+    ).catch(() => null);
+
     await confirmButton.click();
+
+    // Wait for API response
+    await responsePromise;
+
     // Wait for modal to close after successful addition
-    await this.page.waitForSelector('[role="dialog"]', {
-      state: "hidden",
-      timeout: TIMEOUTS.LONG,
-    });
+    await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -201,10 +218,7 @@ When(
     await expect(cancelButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await cancelButton.click();
     // Wait for modal to close
-    await this.page.waitForSelector('[role="dialog"]', {
-      state: "hidden",
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -238,11 +252,23 @@ Then(
 Then(
   "I should see a success toast notification",
   async function(this: CustomWorld) {
-    // Look for the toast container/message
+    // Wait for toast notification to appear (may have animation delay)
+    await this.page.waitForFunction(
+      () => {
+        const toast = document.querySelector("[data-sonner-toast]") ||
+          Array.from(document.querySelectorAll("*")).find((el) =>
+            /added to/i.test(el.textContent || "")
+          );
+        return !!toast;
+      },
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
+    // Verify toast is visible
     const toast = this.page.getByText(/added to/i).or(
       this.page.locator("[data-sonner-toast]"),
     );
-    await expect(toast.first()).toBeVisible({ timeout: 5000 });
+    await expect(toast.first()).toBeVisible({ timeout: TIMEOUTS.SHORT });
   },
 );
 
@@ -267,9 +293,22 @@ Then(
 Then(
   "I should see an info toast about image already in album",
   async function(this: CustomWorld) {
+    // Wait for toast notification to appear (may have animation delay)
+    await this.page.waitForFunction(
+      () => {
+        const toast = document.querySelector("[data-sonner-toast]") ||
+          Array.from(document.querySelectorAll("*")).find((el) =>
+            /already in this album/i.test(el.textContent || "")
+          );
+        return !!toast;
+      },
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
+    // Verify toast is visible
     const toast = this.page.getByText(/already in this album/i).or(
       this.page.locator("[data-sonner-toast]"),
     );
-    await expect(toast.first()).toBeVisible({ timeout: 5000 });
+    await expect(toast.first()).toBeVisible({ timeout: TIMEOUTS.SHORT });
   },
 );

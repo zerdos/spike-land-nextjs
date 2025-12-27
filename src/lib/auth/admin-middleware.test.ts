@@ -3,6 +3,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { createMockUser } from "@/test-utils";
 import { UserRole } from "@prisma/client";
 import { Session } from "next-auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -69,10 +70,9 @@ describe("admin-middleware", () => {
 
   describe("isAdminByUserId", () => {
     it("should return true for ADMIN role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.ADMIN }),
+      );
 
       const result = await isAdminByUserId("user_123");
 
@@ -84,10 +84,9 @@ describe("admin-middleware", () => {
     });
 
     it("should return true for SUPER_ADMIN role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.SUPER_ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.SUPER_ADMIN }),
+      );
 
       const result = await isAdminByUserId("user_123");
 
@@ -95,10 +94,9 @@ describe("admin-middleware", () => {
     });
 
     it("should return false for USER role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.USER,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.USER }),
+      );
 
       const result = await isAdminByUserId("user_123");
 
@@ -168,10 +166,9 @@ describe("admin-middleware", () => {
 
   describe("requireAdminByUserId", () => {
     it("should throw error if user is not admin", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.USER,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.USER }),
+      );
 
       await expect(requireAdminByUserId("user_123")).rejects.toThrow(
         "Forbidden: Admin access required",
@@ -179,19 +176,17 @@ describe("admin-middleware", () => {
     });
 
     it("should not throw if user is admin", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.ADMIN }),
+      );
 
       await expect(requireAdminByUserId("user_123")).resolves.not.toThrow();
     });
 
     it("should not throw if user is super admin", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.SUPER_ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.SUPER_ADMIN }),
+      );
 
       await expect(requireAdminByUserId("user_123")).resolves.not.toThrow();
     });
@@ -199,10 +194,9 @@ describe("admin-middleware", () => {
 
   describe("isSuperAdmin", () => {
     it("should return true for SUPER_ADMIN role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.SUPER_ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.SUPER_ADMIN }),
+      );
 
       const result = await isSuperAdmin("user_123");
 
@@ -210,10 +204,9 @@ describe("admin-middleware", () => {
     });
 
     it("should return false for ADMIN role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.ADMIN,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.ADMIN }),
+      );
 
       const result = await isSuperAdmin("user_123");
 
@@ -221,10 +214,9 @@ describe("admin-middleware", () => {
     });
 
     it("should return false for USER role", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: "user_123",
-        role: UserRole.USER,
-      } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        createMockUser({ id: "user_123", role: UserRole.USER }),
+      );
 
       const result = await isSuperAdmin("user_123");
 

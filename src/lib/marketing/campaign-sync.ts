@@ -5,6 +5,7 @@
  * with internal UTM campaign tracking for ROI calculation.
  */
 
+import { safeDecryptToken, safeEncryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import { setCachedMetrics } from "@/lib/tracking/metrics-cache";
 import { tryCatch } from "@/lib/try-catch";
@@ -29,17 +30,6 @@ interface CampaignSpendData {
     start: Date;
     end: Date;
   };
-}
-
-/**
- * Decrypt access token stored in database
- * Note: In production, use proper encryption (e.g., AWS KMS, Vault)
- * For now, we store tokens as-is (should be encrypted in production)
- */
-function decryptToken(encryptedToken: string): string {
-  // TODO: Implement proper decryption
-  // For now, assuming tokens are stored as-is
-  return encryptedToken;
 }
 
 /**
@@ -121,7 +111,7 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
           refreshAccountToken(
             account.id,
             account.platform as MarketingPlatform,
-            decryptToken(account.refreshToken),
+            safeDecryptToken(account.refreshToken),
           ),
         );
 
@@ -149,7 +139,7 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
     const client = createMarketingClient(
       account.platform as MarketingPlatform,
       {
-        accessToken: decryptToken(account.accessToken),
+        accessToken: safeDecryptToken(account.accessToken),
         customerId: account.accountId,
       },
     );
@@ -235,12 +225,18 @@ async function refreshAccountToken(
     return false;
   }
 
+  // Encrypt new tokens before storing in database
+  const encryptedAccessToken = safeEncryptToken(newTokens.accessToken);
+  const encryptedRefreshToken = safeEncryptToken(
+    newTokens.refreshToken || refreshToken,
+  );
+
   const { error: updateError } = await tryCatch(
     prisma.marketingAccount.update({
       where: { id: accountId },
       data: {
-        accessToken: newTokens.accessToken,
-        refreshToken: newTokens.refreshToken || refreshToken,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
         expiresAt: newTokens.expiresAt,
         updatedAt: new Date(),
       },

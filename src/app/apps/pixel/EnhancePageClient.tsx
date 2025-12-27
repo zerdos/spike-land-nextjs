@@ -33,9 +33,9 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <PixelLogo size="lg" />
-            <span className="text-muted-foreground text-lg hidden sm:inline">
+            <h1 className="text-muted-foreground text-lg">
               AI Image Enhancement
-            </span>
+            </h1>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>

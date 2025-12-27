@@ -27,14 +27,18 @@ platform documentation.
 | Set up the database    | [DATABASE_SETUP.md](./DATABASE_SETUP.md)                   |
 | Understand the schema  | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                 |
 | Set up Stripe payments | [STRIPE_INTEGRATION_PLAN.md](./STRIPE_INTEGRATION_PLAN.md) |
+| Understand testing     | [TESTING_STRATEGY.md](./TESTING_STRATEGY.md)               |
 | Run E2E tests          | [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) |
+| Manage dependencies    | [DEPENDENCY_MANAGEMENT.md](./DEPENDENCY_MANAGEMENT.md)     |
 
 ### For Project Setup
 
 | I want to...                  | Document                                                 |
 | ----------------------------- | -------------------------------------------------------- |
 | Set up development            | [../README.md](../README.md)                             |
+| Configure secrets/env vars    | [SECRETS_SETUP.md](./SECRETS_SETUP.md)                   |
 | Understand CI/CD              | [../README.md](../README.md#cicd-pipeline)               |
+| Debug CI/CD failures          | [CI_CD_DEBUGGING.md](./CI_CD_DEBUGGING.md)               |
 | Set up Vercel                 | [VERCEL_ANALYTICS_SETUP.md](./VERCEL_ANALYTICS_SETUP.md) |
 | Understand business structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)         |
 
@@ -44,16 +48,20 @@ platform documentation.
 
 ```
 docs/
-├── README.md              # This index file
-├── FEATURES.md            # Platform features & roadmap
-├── API_REFERENCE.md       # Complete API documentation
-├── TOKEN_SYSTEM.md        # Token economy details
-├── DATABASE_SCHEMA.md     # Database models & relations
-├── DATABASE_SETUP.md      # Database installation guide
-├── api/                   # OpenAPI specs & examples
-├── best-practices/        # Development best practices
-├── database/              # Database-specific docs
-└── archive/               # Historical documentation
+├── README.md                  # This index file
+├── FEATURES.md                # Platform features & roadmap
+├── API_REFERENCE.md           # Complete API documentation
+├── TOKEN_SYSTEM.md            # Token economy details
+├── DATABASE_SCHEMA.md         # Database models & relations
+├── DATABASE_SETUP.md          # Database installation guide
+├── SECRETS_SETUP.md           # Secrets & environment variables
+├── TESTING_STRATEGY.md        # Comprehensive testing guide
+├── DEPENDENCY_MANAGEMENT.md   # Dependency management guide
+├── CI_CD_DEBUGGING.md         # CI/CD troubleshooting guide
+├── api/                       # OpenAPI specs & examples
+├── best-practices/            # Development best practices
+├── database/                  # Database-specific docs
+└── archive/                   # Historical documentation
 ```
 
 ---
@@ -107,20 +115,29 @@ docs/
 | [STRIPE_PAYMENT_FLOW.md](./STRIPE_PAYMENT_FLOW.md)         | Payment flow documentation     |
 | [STRIPE_TESTING_GUIDE.md](./STRIPE_TESTING_GUIDE.md)       | Testing payments               |
 
-### Testing
+### Testing & CI/CD
 
-| Document                                                   | Description               |
-| ---------------------------------------------------------- | ------------------------- |
-| [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) | E2E testing setup         |
-| [MANUAL_TESTING_GUIDE.md](./MANUAL_TESTING_GUIDE.md)       | Manual testing procedures |
+| Document                                                   | Description                          |
+| ---------------------------------------------------------- | ------------------------------------ |
+| [TESTING_STRATEGY.md](./TESTING_STRATEGY.md)               | Comprehensive testing infrastructure |
+| [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) | E2E testing setup                    |
+| [MANUAL_TESTING_GUIDE.md](./MANUAL_TESTING_GUIDE.md)       | Manual testing procedures            |
+| [CI_CD_DEBUGGING.md](./CI_CD_DEBUGGING.md)                 | CI/CD troubleshooting guide          |
 
 ### Security & Operations
 
-| Document                                                   | Description                  |
-| ---------------------------------------------------------- | ---------------------------- |
-| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit |
-| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist         |
-| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                 |
+| Document                                                   | Description                            |
+| ---------------------------------------------------------- | -------------------------------------- |
+| [SECRETS_SETUP.md](./SECRETS_SETUP.md)                     | Secrets & environment variables (SSOT) |
+| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit           |
+| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist                   |
+| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                           |
+
+### Maintenance
+
+| Document                                               | Description                         |
+| ------------------------------------------------------ | ----------------------------------- |
+| [DEPENDENCY_MANAGEMENT.md](./DEPENDENCY_MANAGEMENT.md) | Adding, removing, auditing packages |
 
 ---
 

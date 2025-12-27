@@ -22,6 +22,7 @@ Feature: Site Navigation
 
   Scenario: Auth buttons visible when not logged in
     When I am not logged in
+    And I navigate to "/auth/signin"
     Then I should see the "Continue with GitHub" button
     And I should see the "Continue with Google" button
     And I should not see the user avatar

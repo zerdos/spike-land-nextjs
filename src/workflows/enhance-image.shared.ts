@@ -13,6 +13,277 @@
 import type { CropDimensions, CropRegionPixels } from "@/lib/ai/gemini-client";
 import { EnhancementTier } from "@prisma/client";
 
+// =============================================================================
+// ERROR BOUNDARY TYPES
+// =============================================================================
+
+/**
+ * Workflow stages for error tracking and recovery
+ *
+ * Each stage represents a distinct phase in the enhancement pipeline with
+ * specific error handling behavior.
+ */
+export enum WorkflowStage {
+  /** Downloading original image from R2 */
+  DOWNLOAD = "DOWNLOAD",
+  /** Extracting image metadata (dimensions, format) */
+  METADATA = "METADATA",
+  /** Analyzing image with vision model */
+  ANALYSIS = "ANALYSIS",
+  /** Downloading/preparing blend source image */
+  BLEND_SOURCE = "BLEND_SOURCE",
+  /** Auto-cropping image based on analysis */
+  CROP = "CROP",
+  /** Padding image to square for Gemini */
+  PAD = "PAD",
+  /** Enhancing image with Gemini AI */
+  ENHANCE = "ENHANCE",
+  /** Post-processing (resize, format conversion) */
+  POST_PROCESS = "POST_PROCESS",
+  /** Saving results to database and R2 */
+  SAVE = "SAVE",
+  /** Refunding tokens on failure */
+  REFUND = "REFUND",
+}
+
+/**
+ * Error boundary configuration for each workflow stage
+ *
+ * Defines how errors should be handled at each stage:
+ * - isRecoverable: Whether the workflow can continue with defaults
+ * - retryable: Whether transient failures should be retried
+ * - defaultBehavior: What to do when error occurs (if recoverable)
+ */
+export interface ErrorBoundaryConfig {
+  /** Stage this configuration applies to */
+  stage: WorkflowStage;
+  /** Whether the workflow can continue after this error */
+  isRecoverable: boolean;
+  /** Whether the error is retryable (transient failures) */
+  retryable: boolean;
+  /** Description of default behavior when error is recovered */
+  defaultBehavior?: string;
+}
+
+/**
+ * Error boundary configurations for all workflow stages
+ *
+ * Three-tier error classification:
+ * 1. Fatal Errors (non-recoverable, non-retryable): Missing source, invalid credentials
+ * 2. Retryable Errors (non-recoverable, retryable): Network timeouts, rate limiting
+ * 3. Soft Failures (recoverable): Analysis failure, crop failure - continue with defaults
+ */
+export const ERROR_BOUNDARIES: Record<WorkflowStage, ErrorBoundaryConfig> = {
+  [WorkflowStage.DOWNLOAD]: {
+    stage: WorkflowStage.DOWNLOAD,
+    isRecoverable: false,
+    retryable: true, // Network issues may be transient
+  },
+  [WorkflowStage.METADATA]: {
+    stage: WorkflowStage.METADATA,
+    isRecoverable: true,
+    retryable: false,
+    defaultBehavior: "Use default dimensions (1024x1024)",
+  },
+  [WorkflowStage.ANALYSIS]: {
+    stage: WorkflowStage.ANALYSIS,
+    isRecoverable: true,
+    retryable: false,
+    defaultBehavior: "Skip analysis, use generic enhancement prompt",
+  },
+  [WorkflowStage.BLEND_SOURCE]: {
+    stage: WorkflowStage.BLEND_SOURCE,
+    isRecoverable: true,
+    retryable: false,
+    defaultBehavior: "Proceed without blend source",
+  },
+  [WorkflowStage.CROP]: {
+    stage: WorkflowStage.CROP,
+    isRecoverable: true,
+    retryable: false,
+    defaultBehavior: "Keep original image without cropping",
+  },
+  [WorkflowStage.PAD]: {
+    stage: WorkflowStage.PAD,
+    isRecoverable: false,
+    retryable: true,
+  },
+  [WorkflowStage.ENHANCE]: {
+    stage: WorkflowStage.ENHANCE,
+    isRecoverable: false,
+    retryable: true, // Rate limiting, network issues
+  },
+  [WorkflowStage.POST_PROCESS]: {
+    stage: WorkflowStage.POST_PROCESS,
+    isRecoverable: false,
+    retryable: true,
+  },
+  [WorkflowStage.SAVE]: {
+    stage: WorkflowStage.SAVE,
+    isRecoverable: false,
+    retryable: true, // Database connection issues
+  },
+  [WorkflowStage.REFUND]: {
+    stage: WorkflowStage.REFUND,
+    isRecoverable: true, // Refund failure shouldn't block status update
+    retryable: false,
+    defaultBehavior: "Log error, continue with status update",
+  },
+};
+
+/**
+ * Custom error class for workflow stage failures
+ *
+ * Provides structured error information including:
+ * - Which stage failed
+ * - Whether the error is recoverable
+ * - Whether the error should be retried
+ * - Original error cause
+ */
+export class WorkflowStageError extends Error {
+  /** The workflow stage where the error occurred */
+  public readonly stage: WorkflowStage;
+  /** Whether the workflow can continue with default behavior */
+  public readonly isRecoverable: boolean;
+  /** Whether the operation should be retried */
+  public readonly retryable: boolean;
+  /** The original error that caused this failure */
+  public readonly cause?: Error;
+
+  constructor(
+    message: string,
+    stage: WorkflowStage,
+    options?: {
+      isRecoverable?: boolean;
+      retryable?: boolean;
+      cause?: Error;
+    },
+  ) {
+    super(message);
+    this.name = "WorkflowStageError";
+    this.stage = stage;
+
+    // Use provided values or fall back to error boundary config
+    const boundaryConfig = ERROR_BOUNDARIES[stage];
+    this.isRecoverable = options?.isRecoverable ?? boundaryConfig.isRecoverable;
+    this.retryable = options?.retryable ?? boundaryConfig.retryable;
+    this.cause = options?.cause;
+
+    // Capture stack trace
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, WorkflowStageError);
+    }
+  }
+
+  /**
+   * Creates a WorkflowStageError from an unknown error
+   */
+  static fromError(
+    error: unknown,
+    stage: WorkflowStage,
+    options?: { isRecoverable?: boolean; retryable?: boolean; },
+  ): WorkflowStageError {
+    const message = error instanceof Error ? error.message : String(error);
+    const cause = error instanceof Error ? error : undefined;
+
+    return new WorkflowStageError(message, stage, {
+      ...options,
+      cause,
+    });
+  }
+
+  /**
+   * Checks if an error indicates a permanent failure (non-retryable)
+   */
+  static isPermanentFailure(error: unknown): boolean {
+    if (error instanceof WorkflowStageError) {
+      return !error.retryable && !error.isRecoverable;
+    }
+
+    // Check for known permanent failure patterns in error messages
+    const message = error instanceof Error ? error.message : String(error);
+    const permanentPatterns = [
+      /API key/i,
+      /invalid.*credentials/i,
+      /quota.*exceeded/i,
+      /not found/i,
+      /forbidden/i,
+      /unauthorized/i,
+    ];
+
+    return permanentPatterns.some((pattern) => pattern.test(message));
+  }
+}
+
+/**
+ * Workflow context for tracking failures and warnings across stages
+ */
+export interface WorkflowContext {
+  /** Job ID for logging and tracking */
+  jobId: string;
+  /** Stages that completed successfully */
+  completedStages: WorkflowStage[];
+  /** Soft failures that were recovered from */
+  warnings: Array<{
+    stage: WorkflowStage;
+    message: string;
+    defaultUsed: string;
+  }>;
+  /** The stage that caused a fatal failure, if any */
+  failedStage?: WorkflowStage;
+  /** Error message from fatal failure */
+  failureMessage?: string;
+}
+
+/**
+ * Creates a new workflow context for tracking progress
+ */
+export function createWorkflowContext(jobId: string): WorkflowContext {
+  return {
+    jobId,
+    completedStages: [],
+    warnings: [],
+  };
+}
+
+/**
+ * Records a successful stage completion
+ */
+export function recordStageSuccess(
+  context: WorkflowContext,
+  stage: WorkflowStage,
+): void {
+  context.completedStages.push(stage);
+}
+
+/**
+ * Records a soft failure that was recovered from
+ */
+export function recordSoftFailure(
+  context: WorkflowContext,
+  stage: WorkflowStage,
+  message: string,
+): void {
+  const boundaryConfig = ERROR_BOUNDARIES[stage];
+  context.warnings.push({
+    stage,
+    message,
+    defaultUsed: boundaryConfig.defaultBehavior ?? "Unknown default",
+  });
+}
+
+/**
+ * Records a fatal failure
+ */
+export function recordFatalFailure(
+  context: WorkflowContext,
+  stage: WorkflowStage,
+  message: string,
+): void {
+  context.failedStage = stage;
+  context.failureMessage = message;
+}
+
 // Resolution constants for each enhancement tier
 export const TIER_RESOLUTIONS = {
   FREE: 1024, // Free tier uses same resolution as 1K

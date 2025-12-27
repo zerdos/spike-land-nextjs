@@ -20,14 +20,19 @@ import { FatalError } from "workflow";
 import {
   calculateCropRegion,
   calculateTargetDimensions,
+  createWorkflowContext,
   cropDimensionsToPixels,
   DEFAULT_IMAGE_DIMENSION,
   ENHANCED_JPEG_QUALITY,
   type EnhanceImageInput,
   generateEnhancedR2Key,
   PADDING_BACKGROUND,
+  recordSoftFailure,
+  recordStageSuccess,
   TIER_TO_SIZE,
   validateCropDimensions,
+  type WorkflowContext,
+  WorkflowStage,
 } from "./enhance-image.shared";
 
 export type { EnhanceImageInput };
@@ -47,8 +52,69 @@ interface EnhancedResult {
   sizeBytes: number;
 }
 
+/** Blend source input - either base64 data or R2 key */
+interface BlendSourceInput {
+  /** Base64 data provided directly (preferred) */
+  blendSource?: { base64: string; mimeType: string; } | null;
+  /** R2 key for backwards compatibility (deprecated) */
+  sourceImageR2Key?: string | null;
+}
+
+/**
+ * Resolves blend source from multiple input formats
+ *
+ * Handles two input formats:
+ * 1. blendSource (new): Base64 data provided directly from client upload
+ * 2. sourceImageR2Key (deprecated): R2 key requiring download
+ *
+ * Error Boundary: BLEND_SOURCE (recoverable)
+ * - On failure: Returns undefined, workflow continues without blend
+ *
+ * @param input - Blend source input containing either base64 or R2 key
+ * @param context - Workflow context for tracking
+ * @returns ReferenceImageData if successful, undefined if failed or not provided
+ */
+async function resolveBlendSource(
+  input: BlendSourceInput,
+  context: WorkflowContext,
+): Promise<ReferenceImageData | undefined> {
+  const { blendSource, sourceImageR2Key } = input;
+
+  // Priority 1: Use blendSource if provided (new approach - no download needed)
+  if (blendSource?.base64 && blendSource?.mimeType) {
+    recordStageSuccess(context, WorkflowStage.BLEND_SOURCE);
+    return {
+      imageData: blendSource.base64,
+      mimeType: blendSource.mimeType,
+      description: "Image to blend/merge with target",
+    };
+  }
+
+  // Priority 2: Download from R2 if key provided (deprecated approach)
+  if (sourceImageR2Key) {
+    const result = await downloadBlendSourceStep(sourceImageR2Key);
+    if (result) {
+      recordStageSuccess(context, WorkflowStage.BLEND_SOURCE);
+      return result;
+    }
+    // downloadBlendSourceStep handles its own error logging
+    recordSoftFailure(
+      context,
+      WorkflowStage.BLEND_SOURCE,
+      "Failed to download blend source from R2",
+    );
+    return undefined;
+  }
+
+  // No blend source provided - this is fine, not an error
+  return undefined;
+}
+
 /**
  * Step 1: Download original image from R2
+ *
+ * Error Boundary: DOWNLOAD (non-recoverable, retryable)
+ * - On failure: FatalError thrown, workflow stops
  */
 async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
   "use step";
@@ -62,6 +128,9 @@ async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
 
 /**
  * Step 2: Get image metadata (without padding yet - we may auto-crop first)
+ *
+ * Error Boundary: METADATA (recoverable)
+ * - On failure: Uses default dimensions (1024x1024) and JPEG mime type
  */
 async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
   "use step";
@@ -86,6 +155,10 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
 
 /**
  * Step 3: Analyze image with vision model
+ *
+ * Error Boundary: ANALYSIS (recoverable)
+ * - On failure: Returns default analysis with no defects detected
+ * - Workflow continues with generic enhancement prompt
  */
 async function analyzeImageStep(
   imageBase64: string,
@@ -96,7 +169,8 @@ async function analyzeImageStep(
   const { data, error } = await tryCatch(analyzeImageV2(imageBase64, mimeType));
 
   if (error) {
-    // Don't fail the job if analysis fails - return default analysis
+    // Soft failure: Don't fail the job if analysis fails - return default analysis
+    // This is documented as a recoverable error in ERROR_BOUNDARIES[WorkflowStage.ANALYSIS]
     console.warn("Image analysis failed, using defaults:", error);
     return {
       description: "Analysis failed",
@@ -124,6 +198,9 @@ async function analyzeImageStep(
 
 /**
  * Step 4: Save analysis results to database
+ *
+ * Error Boundary: SAVE (non-recoverable, retryable)
+ * - On failure: Error propagates, workflow retries
  */
 async function saveAnalysisToDb(
   jobId: string,
@@ -144,7 +221,12 @@ async function saveAnalysisToDb(
 
 /**
  * Step 4b: Download and prepare blend source image for reference
- * Returns ReferenceImageData if successful, undefined if failed
+ *
+ * Error Boundary: BLEND_SOURCE (recoverable)
+ * - On failure: Returns undefined, workflow continues without blend
+ * - This step is soft-failing by design
+ *
+ * @deprecated Use resolveBlendSource() which handles both base64 and R2 key inputs
  */
 async function downloadBlendSourceStep(
   sourceR2Key: string,
@@ -237,7 +319,12 @@ async function performCropOperations(
 
 /**
  * Step 5: Auto-crop image if needed
- * Returns new image buffer and dimensions, or original if no crop needed
+ *
+ * Error Boundary: CROP (recoverable)
+ * - On failure: Returns original image without cropping
+ * - Workflow continues with uncropped image
+ *
+ * @returns New image buffer and dimensions, or original if no crop needed/failed
  */
 async function autoCropStep(
   imageBuffer: Buffer,
@@ -312,6 +399,10 @@ async function autoCropStep(
 
 /**
  * Step 6: Pad image to square for Gemini
+ *
+ * Error Boundary: PAD (non-recoverable, retryable)
+ * - On failure: Error propagates, workflow retries
+ * - Required for Gemini which expects square input
  */
 async function padImageForGemini(
   imageBuffer: Buffer,
@@ -333,6 +424,10 @@ async function padImageForGemini(
 
 /**
  * Step 7: Enhance image with Gemini AI using dynamic prompt
+ *
+ * Error Boundary: ENHANCE (non-recoverable, selective retry)
+ * - On API key/quota/invalid errors: FatalError thrown, no retry
+ * - On transient errors: Error propagates, workflow retries
  */
 async function enhanceWithGemini(
   imageBase64: string,
@@ -378,6 +473,10 @@ async function enhanceWithGemini(
 
 /**
  * Step 8: Post-process (crop, resize) and upload to R2
+ *
+ * Error Boundary: POST_PROCESS (non-recoverable, retryable)
+ * - On dimension errors: FatalError thrown
+ * - On upload errors: Error propagates, workflow retries
  */
 async function processAndUpload(
   enhancedBuffer: Buffer,
@@ -457,6 +556,9 @@ async function processAndUpload(
 
 /**
  * Step 9: Update job status in database
+ *
+ * Error Boundary: SAVE (non-recoverable, retryable)
+ * - On failure: Error propagates, workflow retries
  */
 async function updateJobStatus(
   jobId: string,
@@ -498,6 +600,10 @@ async function updateJobStatus(
 
 /**
  * Step 10: Refund tokens on failure
+ *
+ * Error Boundary: REFUND (recoverable)
+ * - On failure: Error is logged but not propagated
+ * - Job status update continues regardless of refund success
  */
 async function refundTokens(
   userId: string,
@@ -523,7 +629,24 @@ async function refundTokens(
 /**
  * Main Enhancement Workflow
  *
- * Orchestrates the 4-stage AI image enhancement pipeline with durable execution:
+ * Orchestrates the 4-stage AI image enhancement pipeline with durable execution.
+ *
+ * ## Error Boundary Summary
+ *
+ * | Stage       | Error Type          | Behavior                    |
+ * |-------------|---------------------|----------------------------|
+ * | DOWNLOAD    | Non-recoverable     | FatalError, stops workflow |
+ * | METADATA    | Recoverable         | Uses defaults (1024x1024)  |
+ * | ANALYSIS    | Recoverable         | Uses generic prompt        |
+ * | BLEND_SOURCE| Recoverable         | Proceeds without blend     |
+ * | CROP        | Recoverable         | Keeps original image       |
+ * | PAD         | Non-recoverable     | Retries automatically      |
+ * | ENHANCE     | Selective           | FatalError on API errors   |
+ * | POST_PROCESS| Non-recoverable     | Retries or FatalError      |
+ * | SAVE        | Non-recoverable     | Retries automatically      |
+ * | REFUND      | Recoverable         | Logs error, continues      |
+ *
+ * ## Pipeline Stages
  *
  * STAGE 1 - Analysis:
  *   1. Download original image from R2
@@ -544,6 +667,7 @@ async function refundTokens(
  *   10. Update job status
  *   11. Refund tokens on failure
  */
+
 /**
  * Helper function containing the core workflow steps
  */
@@ -552,43 +676,41 @@ async function executeEnhancementWorkflow(
 ): Promise<string> {
   const { jobId, originalR2Key, tier, sourceImageR2Key, blendSource } = input;
 
+  // Create workflow context for tracking progress and errors
+  const context = createWorkflowContext(jobId);
+
   // === STAGE 1: ANALYSIS ===
 
-  // Step 1: Download original image
+  // Step 1: Download original image (DOWNLOAD - non-recoverable)
   let imageBuffer = await downloadOriginalImage(originalR2Key);
+  recordStageSuccess(context, WorkflowStage.DOWNLOAD);
 
-  // Step 1b: Prepare blend source image for reference (if applicable)
-  // Priority: blendSource (new - base64 data) > sourceImageR2Key (deprecated - R2 key)
-  let sourceImageData: ReferenceImageData | undefined;
-  if (blendSource) {
-    // New approach: base64 data provided directly (no download needed)
-    sourceImageData = {
-      imageData: blendSource.base64,
-      mimeType: blendSource.mimeType,
-      description: "Image to blend/merge with target",
-    };
-  } else if (sourceImageR2Key) {
-    // Deprecated: download from R2 (for backwards compatibility)
-    sourceImageData = await downloadBlendSourceStep(sourceImageR2Key);
-  }
+  // Step 1b: Resolve blend source using unified handler (BLEND_SOURCE - recoverable)
+  // This consolidates the 6+ conditional branches into a single function
+  const sourceImageData = await resolveBlendSource(
+    { blendSource, sourceImageR2Key },
+    context,
+  );
 
-  // Step 2: Get image metadata
+  // Step 2: Get image metadata (METADATA - recoverable, uses defaults)
   const metadata = await getImageMetadata(imageBuffer);
+  recordStageSuccess(context, WorkflowStage.METADATA);
   let currentWidth = metadata.width;
   let currentHeight = metadata.height;
 
-  // Step 3: Analyze image with vision model
+  // Step 3: Analyze image with vision model (ANALYSIS - recoverable)
   const analysisResult = await analyzeImageStep(
     metadata.imageBase64,
     metadata.mimeType,
   );
+  recordStageSuccess(context, WorkflowStage.ANALYSIS);
 
-  // Step 4: Save analysis to database
+  // Step 4: Save analysis to database (SAVE - retryable)
   await saveAnalysisToDb(jobId, analysisResult);
 
   // === STAGE 2: AUTO-CROP (Conditional) ===
 
-  // Step 5: Auto-crop if needed
+  // Step 5: Auto-crop if needed (CROP - recoverable)
   const cropResult = await autoCropStep(
     imageBuffer,
     currentWidth,
@@ -598,6 +720,7 @@ async function executeEnhancementWorkflow(
     jobId,
     metadata.mimeType,
   );
+  recordStageSuccess(context, WorkflowStage.CROP);
 
   // Update current state with crop result
   imageBuffer = cropResult.buffer;
@@ -606,12 +729,13 @@ async function executeEnhancementWorkflow(
 
   // === STAGE 3: DYNAMIC PROMPT & ENHANCEMENT ===
 
-  // Step 6: Pad image to square for Gemini
+  // Step 6: Pad image to square for Gemini (PAD - retryable)
   const paddedBase64 = await padImageForGemini(
     imageBuffer,
     currentWidth,
     currentHeight,
   );
+  recordStageSuccess(context, WorkflowStage.PAD);
 
   // Build enhancement prompt based on analysis (blend or dynamic)
   const dynamicPrompt = sourceImageData
@@ -621,7 +745,7 @@ async function executeEnhancementWorkflow(
   // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
   const modelToUse = getModelForTier(tier);
 
-  // Step 7: Enhance with Gemini using dynamic prompt
+  // Step 7: Enhance with Gemini using dynamic prompt (ENHANCE - selective retry)
   const enhancedBuffer = await enhanceWithGemini(
     paddedBase64,
     metadata.mimeType,
@@ -632,10 +756,11 @@ async function executeEnhancementWorkflow(
     sourceImageData ? [sourceImageData] : undefined,
     modelToUse,
   );
+  recordStageSuccess(context, WorkflowStage.ENHANCE);
 
   // === STAGE 4: POST-PROCESSING ===
 
-  // Step 8: Post-process and upload
+  // Step 8: Post-process and upload (POST_PROCESS - retryable)
   const result = await processAndUpload(
     enhancedBuffer,
     tier,
@@ -644,8 +769,9 @@ async function executeEnhancementWorkflow(
     originalR2Key,
     jobId,
   );
+  recordStageSuccess(context, WorkflowStage.POST_PROCESS);
 
-  // Step 9: Update job as completed
+  // Step 9: Update job as completed (SAVE - retryable)
   await updateJobStatus(jobId, "COMPLETED", {
     enhancedUrl: result.enhancedUrl,
     r2Key: result.r2Key,
@@ -654,6 +780,7 @@ async function executeEnhancementWorkflow(
     sizeBytes: result.sizeBytes,
     geminiModel: modelToUse,
   });
+  recordStageSuccess(context, WorkflowStage.SAVE);
 
   return result.enhancedUrl;
 }

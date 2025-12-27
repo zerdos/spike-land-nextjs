@@ -53,10 +53,10 @@
     --glass-blur-lg: 16px;
     --glass-blur-xl: 20px;
     --glass-blur: var(--glass-blur-md);
-    --glass-blur-mobile: var(--glass-blur-sm);
+    --glass-blur-mobile: 3px;
     --glass-opacity-light: 0.85;
     --glass-opacity-dark: 0.12;
-    --glass-opacity-dark-mobile: 0.18;
+    --glass-opacity-dark-mobile: 0.7;
     --shadow-opacity-light: 0.08;
     --shadow-opacity-dark: 0.35;
 
@@ -162,8 +162,8 @@
     /* Increased contrast for body reading - Target +10-15% */
     --foreground: 0 0% 100%;
     --card-foreground: 0 0% 100%;
-    --muted-foreground: 220 20% 85%;
-    /* Was 220 15% 75%, increased lightness for contrast */
+    --muted-foreground: 220 20% 90%;
+    /* Was 220 20% 85%, increased to 90% for mobile contrast */
 
     /* Semantic Colors - Dark Optimized */
     --success: 142 70% 50%;
@@ -855,6 +855,55 @@
   @media (min-width: 768px) {
     .stack-spacing > * + * {
       margin-top: 1.5rem;
+    }
+  }
+
+  /* Mobile-first spacing utilities */
+  .spacing-mobile-4 {
+    padding: 1rem;
+  }
+
+  .spacing-mobile-8 {
+    padding: 2rem;
+  }
+
+  .section-mobile {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-mobile {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  }
+
+  /* Touch target utility - ensures 44x44px minimum tap area per Apple/Google HIG */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  @media (min-width: 768px) {
+    .tap-target {
+      min-height: unset;
+      min-width: unset;
+    }
+  }
+
+  /* Interactive feedback for motion states */
+  .interactive-feedback {
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  .interactive-feedback:active {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .interactive-feedback:active {
+      transform: none;
     }
   }
 }

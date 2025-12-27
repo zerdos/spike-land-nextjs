@@ -1238,7 +1238,7 @@ describe("gemini-client", () => {
       );
 
       await expect(modifyImageWithGemini(defaultParams)).rejects.toThrow(
-        "Failed to start image generation: Service unavailable",
+        "Failed to start image modification: Service unavailable",
       );
     });
 

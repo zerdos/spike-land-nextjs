@@ -40,20 +40,24 @@ describe("AuthButtons Component", () => {
         .toBeInTheDocument();
     });
 
-    it("should render Google and GitHub social buttons", () => {
+    it("should render Google, GitHub, and Apple social buttons", () => {
       render(<AuthButtons />);
       expect(screen.getByRole("button", { name: /continue with google/i }))
         .toBeInTheDocument();
       expect(screen.getByRole("button", { name: /continue with github/i }))
         .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue with apple/i }))
+        .toBeInTheDocument();
     });
 
-    it("should render social buttons in correct order: Google, GitHub", () => {
+    it("should render social buttons in correct order: Google, GitHub, Apple", () => {
       render(<AuthButtons />);
       const buttons = screen.getAllByRole("button");
       const googleIndex = buttons.findIndex((b) => b.textContent?.includes("Google"));
       const githubIndex = buttons.findIndex((b) => b.textContent?.includes("GitHub"));
+      const appleIndex = buttons.findIndex((b) => b.textContent?.includes("Apple"));
       expect(googleIndex).toBeLessThan(githubIndex);
+      expect(githubIndex).toBeLessThan(appleIndex);
     });
 
     it("should render separator with text", () => {
@@ -79,7 +83,7 @@ describe("AuthButtons Component", () => {
       );
     });
 
-    it("should have correct button variants - social buttons neutral styling", () => {
+    it("should have correct button variants - social buttons styling", () => {
       render(<AuthButtons />);
       const googleButton = screen.getByRole("button", {
         name: /continue with google/i,
@@ -87,10 +91,15 @@ describe("AuthButtons Component", () => {
       const githubButton = screen.getByRole("button", {
         name: /continue with github/i,
       });
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
 
-      // Social buttons should have neutral bg-card styling
+      // Google and GitHub buttons should have neutral bg-card styling
       expect(googleButton).toHaveClass("bg-card");
       expect(githubButton).toHaveClass("bg-card");
+      // Apple button should have black background with white text (Apple HIG)
+      expect(appleButton).toHaveClass("bg-black", "text-white");
     });
 
     it("should have correct button sizes", () => {
@@ -101,9 +110,13 @@ describe("AuthButtons Component", () => {
       const githubButton = screen.getByRole("button", {
         name: /continue with github/i,
       });
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
 
       expect(googleButton).toHaveClass("h-12");
       expect(githubButton).toHaveClass("h-12");
+      expect(appleButton).toHaveClass("h-12");
     });
 
     it("should disable continue button when email is empty", () => {
@@ -152,6 +165,19 @@ describe("AuthButtons Component", () => {
         screen.getByRole("button", { name: /continue with github/i }),
       );
       expect(signIn).toHaveBeenCalledWith("github", {
+        callbackUrl: "/apps/pixel",
+      });
+      expect(signIn).toHaveBeenCalledTimes(1);
+    });
+
+    it("should call signIn with apple and default callbackUrl when Apple button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<AuthButtons />);
+
+      await user.click(
+        screen.getByRole("button", { name: /continue with apple/i }),
+      );
+      expect(signIn).toHaveBeenCalledWith("apple", {
         callbackUrl: "/apps/pixel",
       });
       expect(signIn).toHaveBeenCalledTimes(1);
@@ -212,6 +238,33 @@ describe("AuthButtons Component", () => {
       });
     });
 
+    it("should use callbackUrl from URL params for Apple sign in", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=/profile",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(
+        screen.getByRole("button", { name: /continue with apple/i }),
+      );
+
+      expect(signIn).toHaveBeenCalledWith("apple", {
+        callbackUrl: "/profile",
+      });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
     it("should reject external URLs in callbackUrl to prevent open redirect", async () => {
       const user = userEvent.setup();
       Object.defineProperty(window, "location", {
@@ -248,9 +301,13 @@ describe("AuthButtons Component", () => {
       const githubButton = screen.getByRole("button", {
         name: /continue with github/i,
       });
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
 
       expect(googleButton).toHaveClass("w-full");
       expect(githubButton).toHaveClass("w-full");
+      expect(appleButton).toHaveClass("w-full");
     });
 
     it("should render Google button with icon", () => {
@@ -268,6 +325,15 @@ describe("AuthButtons Component", () => {
         name: /continue with github/i,
       });
       const icon = githubButton.querySelector("svg");
+      expect(icon).toBeInTheDocument();
+    });
+
+    it("should render Apple button with icon", () => {
+      render(<AuthButtons />);
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
+      const icon = appleButton.querySelector("svg");
       expect(icon).toBeInTheDocument();
     });
   });
@@ -1124,7 +1190,7 @@ describe("AuthButtons Component", () => {
       await waitFor(() => {
         expect(
           screen.getByText(
-            /this account was created with google, facebook, or github/i,
+            /this account was created with google, apple, facebook, or github/i,
           ),
         ).toBeInTheDocument();
       });
