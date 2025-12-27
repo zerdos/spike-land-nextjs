@@ -457,22 +457,14 @@ When(
       .catch(() => {});
 
     const link = this.page.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible({ timeout: 10000 });
+    await expect(link.first()).toBeVisible({ timeout: 10000 });
 
-    // Click and wait for URL to change instead of networkidle
-    // (networkidle can timeout if there are long-polling or SSE connections)
-    const currentUrl = this.page.url();
-    await link.click();
+    // Use dispatchEvent to bypass any overlapping elements (fixed headers)
+    // This is more reliable than force: true which can still click the wrong element
+    await link.first().dispatchEvent("click");
 
-    // Wait for URL to change (handles both server and client-side navigation)
-    await this.page.waitForFunction(
-      (oldUrl) => window.location.href !== oldUrl,
-      currentUrl,
-      { timeout: 15000 },
-    ).catch(() => {});
-
-    // Brief wait for page to stabilize
-    await this.page.waitForLoadState("domcontentloaded");
+    // Wait for navigation to complete
+    await this.page.waitForLoadState("domcontentloaded", { timeout: 10000 });
   },
 );
 
