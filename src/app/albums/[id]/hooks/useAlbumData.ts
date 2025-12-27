@@ -91,6 +91,20 @@ export function useAlbumData(
 ): UseAlbumDataReturn {
   const { onFetchComplete, onUpdateComplete, onDeleteComplete, onError } = options;
 
+  // Refs for callbacks (to avoid infinite loops from unstable callback references)
+  const onFetchCompleteRef = useRef(onFetchComplete);
+  const onUpdateCompleteRef = useRef(onUpdateComplete);
+  const onDeleteCompleteRef = useRef(onDeleteComplete);
+  const onErrorRef = useRef(onError);
+
+  // Keep refs updated with latest callbacks
+  useEffect(() => {
+    onFetchCompleteRef.current = onFetchComplete;
+    onUpdateCompleteRef.current = onUpdateComplete;
+    onDeleteCompleteRef.current = onDeleteComplete;
+    onErrorRef.current = onError;
+  });
+
   // Core state
   const [album, setAlbum] = useState<Album | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,7 +139,7 @@ export function useAlbumData(
         ? fetchError.message
         : "Failed to fetch album";
       setError(errorMessage);
-      onError?.(new Error(errorMessage));
+      onErrorRef.current?.(new Error(errorMessage));
       setIsLoading(false);
       return;
     }
@@ -138,7 +152,7 @@ export function useAlbumData(
 
     if (!response.ok) {
       setError("Failed to fetch album");
-      onError?.(new Error("Failed to fetch album"));
+      onErrorRef.current?.(new Error("Failed to fetch album"));
       setIsLoading(false);
       return;
     }
@@ -149,7 +163,7 @@ export function useAlbumData(
 
     if (jsonError) {
       setError("Failed to parse album data");
-      onError?.(new Error("Failed to parse album data"));
+      onErrorRef.current?.(new Error("Failed to parse album data"));
       setIsLoading(false);
       return;
     }
@@ -162,9 +176,9 @@ export function useAlbumData(
       pipelineId: data.album.pipelineId || null,
     });
     originalOrderRef.current = data.album.images.map((img: AlbumImage) => img.id);
-    onFetchComplete?.(data.album);
+    onFetchCompleteRef.current?.(data.album);
     setIsLoading(false);
-  }, [albumId, onFetchComplete, onError]);
+  }, [albumId]);
 
   /**
    * Save album settings
@@ -188,7 +202,7 @@ export function useAlbumData(
     );
 
     if (fetchError) {
-      onError?.(
+      onErrorRef.current?.(
         fetchError instanceof Error
           ? fetchError
           : new Error("Failed to update album"),
@@ -198,7 +212,7 @@ export function useAlbumData(
     }
 
     if (!response.ok) {
-      onError?.(new Error("Failed to update album"));
+      onErrorRef.current?.(new Error("Failed to update album"));
       setIsSaving(false);
       return;
     }
@@ -208,7 +222,7 @@ export function useAlbumData(
     );
 
     if (jsonError) {
-      onError?.(new Error("Failed to parse response"));
+      onErrorRef.current?.(new Error("Failed to parse response"));
       setIsSaving(false);
       return;
     }
@@ -226,9 +240,9 @@ export function useAlbumData(
         : null
     );
     setShowSettings(false);
-    onUpdateComplete?.(data.album);
+    onUpdateCompleteRef.current?.(data.album);
     setIsSaving(false);
-  }, [albumId, editForm, onUpdateComplete, onError]);
+  }, [albumId, editForm]);
 
   /**
    * Delete the album
@@ -241,7 +255,7 @@ export function useAlbumData(
     );
 
     if (fetchError) {
-      onError?.(
+      onErrorRef.current?.(
         fetchError instanceof Error
           ? fetchError
           : new Error("Failed to delete album"),
@@ -249,8 +263,8 @@ export function useAlbumData(
       return;
     }
 
-    onDeleteComplete?.();
-  }, [albumId, onDeleteComplete, onError]);
+    onDeleteCompleteRef.current?.();
+  }, [albumId]);
 
   /**
    * Copy share link to clipboard

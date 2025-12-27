@@ -29,13 +29,15 @@ describe("Switch Component", () => {
       expect(switchElement).toHaveClass(
         "peer",
         "inline-flex",
-        "h-7",
-        "w-14",
+        "h-11",
+        "w-20",
         "shrink-0",
         "cursor-pointer",
         "items-center",
         "rounded-full",
         "border",
+        "md:h-7",
+        "md:w-14",
       );
     });
 
@@ -244,12 +246,14 @@ describe("Switch Component", () => {
       expect(thumb).toHaveClass(
         "pointer-events-none",
         "block",
-        "h-6",
-        "w-6",
+        "h-9",
+        "w-9",
         "rounded-full",
         "bg-white",
         "shadow-lg",
         "ring-0",
+        "md:h-6",
+        "md:w-6",
       );
     });
 

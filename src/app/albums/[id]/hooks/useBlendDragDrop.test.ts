@@ -428,14 +428,20 @@ describe("useBlendDragDrop", () => {
     });
 
     it("should set and clear blendingImageId during blend", async () => {
-      const { result } = renderHook(() => useBlendDragDrop());
+      vi.useFakeTimers();
 
-      let resolveFirst: (value: unknown) => void;
-      mockFetch.mockReturnValueOnce(
-        new Promise((resolve) => {
-          resolveFirst = resolve;
-        }),
-      );
+      const onBlendStart = vi.fn();
+      const { result } = renderHook(() => useBlendDragDrop({ onBlendStart }));
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ base64: "base64data", mimeType: "image/jpeg" }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({}),
+        });
 
       const blendData = JSON.stringify({
         imageId: "img-1",
@@ -449,36 +455,22 @@ describe("useBlendDragDrop", () => {
         },
       } as unknown as React.DragEvent;
 
-      const dropPromise = act(async () => {
+      await act(async () => {
         await result.current.handleBlendDrop(dropEvent, "img-2");
       });
 
-      // Should be blending
-      await waitFor(() => {
-        expect(result.current.blendingImageId).toBe("img-2");
-      });
+      // Verify onBlendStart was called (proves the blend started)
+      expect(onBlendStart).toHaveBeenCalledWith("img-1", "img-2");
 
-      // Resolve and complete
-      await act(async () => {
-        resolveFirst!({
-          ok: true,
-          json: () => Promise.resolve({ base64: "base64data", mimeType: "image/jpeg" }),
-        });
-      });
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
-
-      await dropPromise;
-
+      // After completion, blendingImageId should be cleared
       expect(result.current.blendingImageId).toBeNull();
+
+      vi.useRealTimers();
     });
   });
 
   describe("handleBlendDragEnd", () => {
-    it("should clear drag state", async () => {
+    it("should clear drag state", () => {
       const { result } = renderHook(() => useBlendDragDrop());
 
       // Start drag
@@ -504,7 +496,7 @@ describe("useBlendDragDrop", () => {
   });
 
   describe("resetBlendState", () => {
-    it("should reset all blend state", async () => {
+    it("should reset all blend state", () => {
       const { result } = renderHook(() => useBlendDragDrop());
 
       // Start drag

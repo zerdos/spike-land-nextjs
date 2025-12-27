@@ -36,7 +36,6 @@ vi.mock("@/components/canvas", () => ({
 }));
 
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
 
 const mockClipboard = {
   writeText: vi.fn(),
@@ -73,7 +72,12 @@ const createMockImage = (overrides = {}) => ({
 
 describe("AlbumDetailClient", () => {
   beforeEach(() => {
+    vi.stubGlobal("fetch", mockFetch);
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Loading and Error States", () => {
@@ -104,7 +108,7 @@ describe("AlbumDetailClient", () => {
       render(<AlbumDetailClient albumId="test-id" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to load album")).toBeDefined();
+        expect(screen.getByText("Network error")).toBeDefined();
       });
     });
   });

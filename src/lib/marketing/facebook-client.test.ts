@@ -301,15 +301,18 @@ describe("FacebookMarketingClient", () => {
 
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ data: [] }),
+        json: () => Promise.resolve({ data: [], currency: "USD" }),
       });
       vi.stubGlobal("fetch", mockFetch);
 
       await client.listCampaigns("act_123");
 
       expect(mockFetch).toHaveBeenCalled();
-      const url = mockFetch.mock.calls[0]![0];
-      expect(url).toContain("/act_123/campaigns");
+      const campaignsCall = mockFetch.mock.calls.find((call: unknown[]) =>
+        (call[0] as string).includes("/campaigns")
+      );
+      expect(campaignsCall).toBeDefined();
+      expect(campaignsCall![0]).toContain("/act_123/campaigns");
     });
 
     it("should add act_ prefix if missing", async () => {
@@ -317,15 +320,18 @@ describe("FacebookMarketingClient", () => {
 
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ data: [] }),
+        json: () => Promise.resolve({ data: [], currency: "USD" }),
       });
       vi.stubGlobal("fetch", mockFetch);
 
       await client.listCampaigns("123");
 
       expect(mockFetch).toHaveBeenCalled();
-      const url = mockFetch.mock.calls[0]![0];
-      expect(url).toContain("/act_123/campaigns");
+      const campaignsCall = mockFetch.mock.calls.find((call: unknown[]) =>
+        (call[0] as string).includes("/campaigns")
+      );
+      expect(campaignsCall).toBeDefined();
+      expect(campaignsCall![0]).toContain("/act_123/campaigns");
     });
   });
 
