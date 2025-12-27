@@ -760,16 +760,30 @@ Then(
 When(
   "I fill in the shipping address form:",
   async function(this: CustomWorld, dataTable: DataTable) {
+    // Wait for loading spinner to disappear before filling the form
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
     const data = dataTable.rowsHash();
 
     for (const [field, value] of Object.entries(data)) {
+      // Skip header row (rowsHash includes the header as "field: value")
+      if (field === "field") continue;
+
       const input = this.page.locator(`[id="${field}"]`);
+      await expect(input).toBeVisible({ timeout: 5000 });
       await input.fill(value);
     }
   },
 );
 
 When("I complete the shipping address form", async function(this: CustomWorld) {
+  // Wait for loading spinner to disappear before filling the form
+  await this.page
+    .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+    .catch(() => {});
+
   await this.page.fill('[id="name"]', "John Doe");
   await this.page.fill('[id="line1"]', "123 Test Street");
   await this.page.fill('[id="city"]', "London");

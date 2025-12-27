@@ -65,6 +65,11 @@ VITEST_CMD="yarn vitest run --coverage"
 VITEST_CMD="$VITEST_CMD --reporter=github-actions"
 VITEST_CMD="$VITEST_CMD --reporter=./scripts/vitest-coverage-mapper-reporter.ts"
 VITEST_CMD="$VITEST_CMD --shard ${SHARD_INDEX}/${SHARD_TOTAL}"
+# Disable coverage thresholds in Docker CI - thresholds are handled by codecov
+VITEST_CMD="$VITEST_CMD --coverage.thresholds.lines=0"
+VITEST_CMD="$VITEST_CMD --coverage.thresholds.functions=0"
+VITEST_CMD="$VITEST_CMD --coverage.thresholds.branches=0"
+VITEST_CMD="$VITEST_CMD --coverage.thresholds.statements=0"
 
 # Add test files if specific ones need to run
 if [ -n "$TESTS_TO_RUN" ]; then
