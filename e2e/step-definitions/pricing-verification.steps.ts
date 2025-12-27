@@ -195,13 +195,13 @@ Then(
 );
 
 Then(
-  "premium pack should have the best price per token",
+  "power pack should have the best price per token",
   async function(this: CustomWorld) {
-    // Verify premium pack is visible with price per token info
-    const premiumCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /premium/i,
+    // Verify power pack is visible with price per token info
+    const powerCard = this.page.locator('[class*="Card"]').filter({
+      hasText: /power/i,
     });
-    await expect(premiumCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(powerCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -318,19 +318,19 @@ Then(
 );
 
 Then(
-  "the premium pack should display:",
+  "the power pack should display:",
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
-    const premiumCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /premium/i,
+    const powerCard = this.page.locator('[class*="Card"]').filter({
+      hasText: /power/i,
     });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
-        const name = premiumCard.getByText(row.Value);
+        const name = powerCard.getByText(row.Value);
         await expect(name).toBeVisible();
       } else if (row.Attribute === "Tokens") {
-        const tokens = premiumCard.getByText(
+        const tokens = powerCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
         await expect(tokens).toBeVisible();

@@ -73,12 +73,12 @@ Feature: Pricing Page Verification
       | starter  |
       | basic    |
       | pro      |
-      | premium  |
+      | power    |
 
   Scenario: Token pack value proposition displays
     When I view the pricing page
     Then each pack should show price per token
-    And premium pack should have the best price per token
+    And power pack should have the best price per token
 
   Scenario: Loading state during purchase
     Given I am logged in as "Test User" with email "test@example.com"
@@ -114,9 +114,9 @@ Feature: Pricing Page Verification
       | Name      | Pro   |
       | Tokens    | 100   |
 
-  Scenario: Premium pack displays correctly
+  Scenario: Power pack displays correctly
     When I view the pricing page
-    Then the premium pack should display:
+    Then the power pack should display:
       | Attribute | Value |
-      | Name      | Premium |
-      | Tokens    | 500     |
+      | Name      | Power |
+      | Tokens    | 500   |

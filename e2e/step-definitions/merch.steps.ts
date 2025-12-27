@@ -784,6 +784,34 @@ When("I complete the shipping address form", async function(this: CustomWorld) {
     .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
     .catch(() => {});
 
+  // Mock the checkout API to return a valid response with clientSecret
+  // This enables the payment step to render
+  await this.page.route("**/api/merch/checkout", async (route) => {
+    const method = route.request().method();
+    if (method === "POST") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          clientSecret: "pi_mock_secret_test",
+          orderId: "e2e-mock-order-id",
+          orderNumber: "SL-E2E-MOCK",
+          summary: {
+            subtotal: 29.99,
+            shipping: 4.99,
+            shippingZone: "UK",
+            freeShippingThreshold: 50,
+            total: 34.98,
+            currency: "GBP",
+            itemCount: 1,
+          },
+        }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
   await this.page.fill('[id="name"]', "John Doe");
   await this.page.fill('[id="line1"]', "123 Test Street");
   await this.page.fill('[id="city"]', "London");
