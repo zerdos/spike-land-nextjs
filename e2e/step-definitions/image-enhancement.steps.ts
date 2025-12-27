@@ -857,8 +857,8 @@ Then("the slider should work on mobile", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then("the slider should work on desktop", async function(this: CustomWorld) {
@@ -866,8 +866,8 @@ Then("the slider should work on desktop", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then("the slider should work on tablet", async function(this: CustomWorld) {
@@ -875,8 +875,8 @@ Then("the slider should work on tablet", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then(

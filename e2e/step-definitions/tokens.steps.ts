@@ -1,6 +1,12 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForTextWithRetry } from "../support/helpers/retry-helper";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForModalState,
+  waitForTextWithRetry,
+  waitForTokenBalance,
+} from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock token balance API
@@ -130,10 +136,17 @@ When(
 When("I click the apply voucher button", async function(this: CustomWorld) {
   const applyButton = this.page.locator("button").filter({ hasText: "Apply" });
   await expect(applyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+  // Set up response wait BEFORE clicking
+  const responsePromise = this.page.waitForResponse(
+    (resp) => resp.url().includes("/api/vouchers/redeem"),
+    { timeout: TIMEOUTS.DEFAULT },
+  ).catch(() => null);
+
   await applyButton.click();
 
-  // Wait a moment for the API call to complete
-  await this.page.waitForTimeout(100);
+  // Wait for the API call to complete
+  await responsePromise;
 });
 
 When(
@@ -152,8 +165,8 @@ When(
     await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await packageCard.click();
 
-    // Wait for redirect (we'll check URL in Then step)
-    await this.page.waitForTimeout(500);
+    // Wait for navigation to Stripe checkout
+    await this.page.waitForURL(/stripe|checkout/i, { timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -161,8 +174,8 @@ When("I close the purchase modal", async function(this: CustomWorld) {
   // Find and click the close button (X) or press Escape
   await this.page.keyboard.press("Escape");
 
-  // Wait for modal to close
-  await this.page.waitForTimeout(300);
+  // Wait for modal to close using proper modal state wait
+  await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
 });
 
 // Then steps
@@ -329,15 +342,17 @@ Then("I should not see the purchase modal", async function(this: CustomWorld) {
 });
 
 Then("the purchase modal should close", async function(this: CustomWorld) {
-  // After successful redemption, modal should close
-  await this.page.waitForTimeout(500);
+  // Wait for modal to close after successful redemption
+  await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
+  // Verify title is no longer visible
   const modalTitle = this.page.getByText("Get More Tokens");
-  await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.SHORT });
 });
 
 Then("the token balance should be updated", async function(this: CustomWorld) {
-  // The balance should have been refetched
-  // We verify by checking the balance display is still visible (it refreshed)
+  // Wait for token balance to be updated
+  await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
+  // Verify the balance display is visible
   await expect(this.page.getByText(/\d+\s*Tokens/i)).toBeVisible({
     timeout: TIMEOUTS.DEFAULT,
   });

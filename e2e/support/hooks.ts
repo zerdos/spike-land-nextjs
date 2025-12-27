@@ -9,10 +9,16 @@ setDefaultTimeout(30 * 1000);
 
 // Database verification for @requires-db scenarios
 // This ensures the test database is properly configured before running DB-dependent tests
-let databaseVerified = false;
+// Note: BeforeAll runs once for the entire test run, not per tag, so we check env vars
+// when running with the 'db' profile which only includes @requires-db scenarios
+BeforeAll(async function() {
+  // Only verify if we appear to be running database tests (db profile)
+  const isDbProfile = process.env.npm_lifecycle_event?.includes("db") ||
+    process.argv.some((arg) =>
+      arg.includes("--profile") && process.argv[process.argv.indexOf(arg) + 1] === "db"
+    );
 
-BeforeAll({ tags: "@requires-db" }, async function() {
-  if (databaseVerified) return;
+  if (!isDbProfile) return;
 
   const dbUrl = process.env.DATABASE_URL_E2E || process.env.DATABASE_URL;
 
@@ -35,7 +41,6 @@ BeforeAll({ tags: "@requires-db" }, async function() {
 
   console.log("\n[Database] Test database configured");
   console.log("[Database] Connection verified for @requires-db scenarios\n");
-  databaseVerified = true;
 });
 
 // Clean localStorage before each scenario to prevent test pollution

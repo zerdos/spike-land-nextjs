@@ -18,12 +18,19 @@ vi.mock("@/lib/prisma", () => ({
 import {
   calculateCropRegion,
   calculateTargetDimensions,
+  createWorkflowContext,
   cropDimensionsToPixels,
   ENHANCED_JPEG_QUALITY,
+  ERROR_BOUNDARIES,
   generateEnhancedR2Key,
+  recordFatalFailure,
+  recordSoftFailure,
+  recordStageSuccess,
   TIER_RESOLUTIONS,
   validateCropDimensions,
   validateEnhanceImageInput,
+  WorkflowStage,
+  WorkflowStageError,
 } from "./enhance-image.shared";
 
 // Import pipeline resolver separately (it uses Prisma)
@@ -690,6 +697,281 @@ describe("enhance-image.shared", () => {
       expect(result.config.generation).toEqual(
         SYSTEM_DEFAULT_PIPELINE.generation,
       );
+    });
+  });
+
+  describe("WorkflowStage", () => {
+    it("should have all expected stages", () => {
+      expect(WorkflowStage.DOWNLOAD).toBe("DOWNLOAD");
+      expect(WorkflowStage.METADATA).toBe("METADATA");
+      expect(WorkflowStage.ANALYSIS).toBe("ANALYSIS");
+      expect(WorkflowStage.BLEND_SOURCE).toBe("BLEND_SOURCE");
+      expect(WorkflowStage.CROP).toBe("CROP");
+      expect(WorkflowStage.PAD).toBe("PAD");
+      expect(WorkflowStage.ENHANCE).toBe("ENHANCE");
+      expect(WorkflowStage.POST_PROCESS).toBe("POST_PROCESS");
+      expect(WorkflowStage.SAVE).toBe("SAVE");
+      expect(WorkflowStage.REFUND).toBe("REFUND");
+    });
+  });
+
+  describe("ERROR_BOUNDARIES", () => {
+    it("should have configuration for all stages", () => {
+      const stages = Object.values(WorkflowStage);
+      for (const stage of stages) {
+        expect(ERROR_BOUNDARIES[stage]).toBeDefined();
+        expect(ERROR_BOUNDARIES[stage].stage).toBe(stage);
+      }
+    });
+
+    it("should mark DOWNLOAD as non-recoverable and retryable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.DOWNLOAD].isRecoverable).toBe(
+        false,
+      );
+      expect(ERROR_BOUNDARIES[WorkflowStage.DOWNLOAD].retryable).toBe(true);
+    });
+
+    it("should mark ANALYSIS as recoverable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.ANALYSIS].isRecoverable).toBe(true);
+      expect(ERROR_BOUNDARIES[WorkflowStage.ANALYSIS].defaultBehavior).toBe(
+        "Skip analysis, use generic enhancement prompt",
+      );
+    });
+
+    it("should mark BLEND_SOURCE as recoverable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.BLEND_SOURCE].isRecoverable).toBe(
+        true,
+      );
+      expect(ERROR_BOUNDARIES[WorkflowStage.BLEND_SOURCE].defaultBehavior).toBe(
+        "Proceed without blend source",
+      );
+    });
+
+    it("should mark CROP as recoverable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.CROP].isRecoverable).toBe(true);
+      expect(ERROR_BOUNDARIES[WorkflowStage.CROP].defaultBehavior).toBe(
+        "Keep original image without cropping",
+      );
+    });
+
+    it("should mark ENHANCE as non-recoverable and retryable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.ENHANCE].isRecoverable).toBe(false);
+      expect(ERROR_BOUNDARIES[WorkflowStage.ENHANCE].retryable).toBe(true);
+    });
+
+    it("should mark REFUND as recoverable", () => {
+      expect(ERROR_BOUNDARIES[WorkflowStage.REFUND].isRecoverable).toBe(true);
+      expect(ERROR_BOUNDARIES[WorkflowStage.REFUND].defaultBehavior).toBe(
+        "Log error, continue with status update",
+      );
+    });
+  });
+
+  describe("WorkflowStageError", () => {
+    it("should create error with stage and message", () => {
+      const error = new WorkflowStageError(
+        "Test error",
+        WorkflowStage.DOWNLOAD,
+      );
+      expect(error.message).toBe("Test error");
+      expect(error.stage).toBe(WorkflowStage.DOWNLOAD);
+      expect(error.name).toBe("WorkflowStageError");
+    });
+
+    it("should use default error boundary config when options not provided", () => {
+      const error = new WorkflowStageError(
+        "Test error",
+        WorkflowStage.DOWNLOAD,
+      );
+      expect(error.isRecoverable).toBe(
+        ERROR_BOUNDARIES[WorkflowStage.DOWNLOAD].isRecoverable,
+      );
+      expect(error.retryable).toBe(
+        ERROR_BOUNDARIES[WorkflowStage.DOWNLOAD].retryable,
+      );
+    });
+
+    it("should allow overriding isRecoverable", () => {
+      const error = new WorkflowStageError(
+        "Test error",
+        WorkflowStage.DOWNLOAD,
+        { isRecoverable: true },
+      );
+      expect(error.isRecoverable).toBe(true);
+    });
+
+    it("should allow overriding retryable", () => {
+      const error = new WorkflowStageError(
+        "Test error",
+        WorkflowStage.DOWNLOAD,
+        { retryable: false },
+      );
+      expect(error.retryable).toBe(false);
+    });
+
+    it("should store cause error", () => {
+      const cause = new Error("Original error");
+      const error = new WorkflowStageError(
+        "Wrapped error",
+        WorkflowStage.ENHANCE,
+        { cause },
+      );
+      expect(error.cause).toBe(cause);
+    });
+
+    describe("fromError", () => {
+      it("should create WorkflowStageError from Error", () => {
+        const cause = new Error("Original error");
+        const error = WorkflowStageError.fromError(
+          cause,
+          WorkflowStage.ENHANCE,
+        );
+        expect(error.message).toBe("Original error");
+        expect(error.stage).toBe(WorkflowStage.ENHANCE);
+        expect(error.cause).toBe(cause);
+      });
+
+      it("should create WorkflowStageError from string", () => {
+        const error = WorkflowStageError.fromError(
+          "String error",
+          WorkflowStage.SAVE,
+        );
+        expect(error.message).toBe("String error");
+        expect(error.stage).toBe(WorkflowStage.SAVE);
+        expect(error.cause).toBeUndefined();
+      });
+
+      it("should allow overriding options", () => {
+        const error = WorkflowStageError.fromError(
+          new Error("Test"),
+          WorkflowStage.DOWNLOAD,
+          { isRecoverable: true, retryable: false },
+        );
+        expect(error.isRecoverable).toBe(true);
+        expect(error.retryable).toBe(false);
+      });
+    });
+
+    describe("isPermanentFailure", () => {
+      it("should return true for non-retryable, non-recoverable WorkflowStageError", () => {
+        const error = new WorkflowStageError("Test", WorkflowStage.DOWNLOAD, {
+          isRecoverable: false,
+          retryable: false,
+        });
+        expect(WorkflowStageError.isPermanentFailure(error)).toBe(true);
+      });
+
+      it("should return false for retryable WorkflowStageError", () => {
+        const error = new WorkflowStageError("Test", WorkflowStage.DOWNLOAD, {
+          isRecoverable: false,
+          retryable: true,
+        });
+        expect(WorkflowStageError.isPermanentFailure(error)).toBe(false);
+      });
+
+      it("should return false for recoverable WorkflowStageError", () => {
+        const error = new WorkflowStageError("Test", WorkflowStage.ANALYSIS, {
+          isRecoverable: true,
+          retryable: false,
+        });
+        expect(WorkflowStageError.isPermanentFailure(error)).toBe(false);
+      });
+
+      it("should detect permanent failure patterns in Error messages", () => {
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("Invalid API key")),
+        ).toBe(true);
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("quota exceeded")),
+        ).toBe(true);
+        expect(
+          WorkflowStageError.isPermanentFailure(
+            new Error("invalid credentials provided"),
+          ),
+        ).toBe(true);
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("resource not found")),
+        ).toBe(true);
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("forbidden access")),
+        ).toBe(true);
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("unauthorized request")),
+        ).toBe(true);
+      });
+
+      it("should return false for transient error messages", () => {
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("Connection timeout")),
+        ).toBe(false);
+        expect(
+          WorkflowStageError.isPermanentFailure(new Error("Network error")),
+        ).toBe(false);
+      });
+
+      it("should handle string errors", () => {
+        expect(WorkflowStageError.isPermanentFailure("Invalid API key")).toBe(
+          true,
+        );
+        expect(WorkflowStageError.isPermanentFailure("Connection timeout")).toBe(
+          false,
+        );
+      });
+    });
+  });
+
+  describe("WorkflowContext", () => {
+    describe("createWorkflowContext", () => {
+      it("should create context with jobId", () => {
+        const context = createWorkflowContext("job-123");
+        expect(context.jobId).toBe("job-123");
+        expect(context.completedStages).toEqual([]);
+        expect(context.warnings).toEqual([]);
+        expect(context.failedStage).toBeUndefined();
+        expect(context.failureMessage).toBeUndefined();
+      });
+    });
+
+    describe("recordStageSuccess", () => {
+      it("should add stage to completedStages", () => {
+        const context = createWorkflowContext("job-123");
+        recordStageSuccess(context, WorkflowStage.DOWNLOAD);
+        expect(context.completedStages).toContain(WorkflowStage.DOWNLOAD);
+      });
+
+      it("should allow multiple stages to be recorded", () => {
+        const context = createWorkflowContext("job-123");
+        recordStageSuccess(context, WorkflowStage.DOWNLOAD);
+        recordStageSuccess(context, WorkflowStage.METADATA);
+        recordStageSuccess(context, WorkflowStage.ANALYSIS);
+        expect(context.completedStages).toEqual([
+          WorkflowStage.DOWNLOAD,
+          WorkflowStage.METADATA,
+          WorkflowStage.ANALYSIS,
+        ]);
+      });
+    });
+
+    describe("recordSoftFailure", () => {
+      it("should add warning with stage and message", () => {
+        const context = createWorkflowContext("job-123");
+        recordSoftFailure(context, WorkflowStage.ANALYSIS, "Vision API timeout");
+        expect(context.warnings).toHaveLength(1);
+        expect(context.warnings[0].stage).toBe(WorkflowStage.ANALYSIS);
+        expect(context.warnings[0].message).toBe("Vision API timeout");
+        expect(context.warnings[0].defaultUsed).toBe(
+          "Skip analysis, use generic enhancement prompt",
+        );
+      });
+    });
+
+    describe("recordFatalFailure", () => {
+      it("should set failedStage and failureMessage", () => {
+        const context = createWorkflowContext("job-123");
+        recordFatalFailure(context, WorkflowStage.DOWNLOAD, "File not found");
+        expect(context.failedStage).toBe(WorkflowStage.DOWNLOAD);
+        expect(context.failureMessage).toBe("File not found");
+      });
     });
   });
 });

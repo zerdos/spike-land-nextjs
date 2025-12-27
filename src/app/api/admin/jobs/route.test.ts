@@ -2,6 +2,7 @@
  * Tests for Admin Jobs API Route
  */
 
+import { createMinimalSession } from "@/test-utils";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -106,9 +107,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 403 if not admin", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_USER_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_USER_ID));
       vi.mocked(isAdminByUserId).mockResolvedValue(false);
 
       const request = new NextRequest("http://localhost/api/admin/jobs");
@@ -120,9 +119,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 500 if admin check throws an error", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_USER_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_USER_ID));
       vi.mocked(isAdminByUserId).mockRejectedValue(
         new Error("Database connection lost"),
       );
@@ -136,18 +133,16 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return paginated jobs with default parameters", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        [mockJob] as any,
+        [mockJob],
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([
-        { status: "COMPLETED", _count: { status: 1 } },
-        { status: "PENDING", _count: { status: 2 } },
-      ] as any);
+        { status: "COMPLETED" as JobStatus, _count: { status: 1 } },
+        { status: "PENDING" as JobStatus, _count: { status: 2 } },
+      ]);
       vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
       vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
       vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
@@ -173,17 +168,15 @@ describe("Admin Jobs API", () => {
     });
 
     it("should filter by status", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        [mockJob] as any,
+        [mockJob],
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([
-        { status: "COMPLETED", _count: { status: 1 } },
-      ] as any);
+        { status: "COMPLETED" as JobStatus, _count: { status: 1 } },
+      ]);
       vi.mocked(prisma.mcpGenerationJob.findMany).mockResolvedValue([]);
       vi.mocked(prisma.mcpGenerationJob.count).mockResolvedValue(0);
       vi.mocked(prisma.mcpGenerationJob.groupBy).mockResolvedValue([]);
@@ -203,9 +196,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 400 for invalid status", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?status=INVALID",
@@ -218,9 +209,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle pagination parameters", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       // Create 25 mock jobs to test pagination
       const mockJobs = Array.from({ length: 25 }, (_, i) => ({
@@ -230,7 +219,7 @@ describe("Admin Jobs API", () => {
       }));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        mockJobs as any,
+        mockJobs,
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(25);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
@@ -253,9 +242,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should cap limit at 50", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       // Create 60 mock jobs to test limit capping
       const mockJobs = Array.from({ length: 60 }, (_, i) => ({
@@ -266,7 +253,7 @@ describe("Admin Jobs API", () => {
       }));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        mockJobs as any,
+        mockJobs,
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(60);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
@@ -287,12 +274,10 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle search by job ID", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        [mockJob] as any,
+        [mockJob],
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
@@ -320,12 +305,10 @@ describe("Admin Jobs API", () => {
     });
 
     it("should include job relations in response", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
-        [mockJob] as any,
+        [mockJob],
       );
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(1);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
@@ -346,9 +329,7 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle database errors", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
+      vi.mocked(auth).mockResolvedValue(createMinimalSession(VALID_ADMIN_ID));
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(
         new Error("Database connection failed"),
