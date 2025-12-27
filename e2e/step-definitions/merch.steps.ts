@@ -4,13 +4,51 @@ import { CustomWorld } from "../support/world";
 
 // ===== Helper Functions for E2E Mocking =====
 
+// Interface for cart item structure
+interface MockCartItem {
+  id: string;
+  quantity: number;
+  customText: string | null;
+  product: {
+    id: string;
+    name: string;
+    retailPrice: number;
+    currency: string;
+    mockupTemplate: string | null;
+  };
+  variant: {
+    id: string;
+    name: string;
+    priceDelta: number;
+  };
+  image: {
+    id: string;
+    originalUrl: string;
+  };
+  uploadedImageUrl: string | null;
+}
+
+// Interface for cart state
+interface MockCartState {
+  id: string;
+  items: MockCartItem[];
+  itemCount: number;
+  subtotal: number;
+}
+
+// Extend CustomWorld with cart state
+interface CustomWorldWithCart extends CustomWorld {
+  __mockCartState?: MockCartState;
+}
+
 /**
  * Mocks the cart API to return a cart with the specified number of items.
  * Used when test images are not available in the database.
+ * This version maintains state across GET/PATCH/DELETE operations.
  */
 async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
   const basePrice = 29.99;
-  const items = Array.from({ length: itemCount }, (_, i) => ({
+  const items: MockCartItem[] = Array.from({ length: itemCount }, (_, i) => ({
     id: `e2e-cart-item-${i + 1}`,
     quantity: 1,
     customText: null,
@@ -33,23 +71,81 @@ async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
     uploadedImageUrl: null,
   }));
 
-  const cart = {
+  // Create mutable cart state stored on the world object
+  const cartState: MockCartState = {
     id: "e2e-test-cart",
     items,
     itemCount: itemCount,
     subtotal: basePrice * itemCount,
   };
 
+  // Store state on world for access across route handlers
+  (world as CustomWorldWithCart).__mockCartState = cartState;
+
+  // Helper to recalculate cart totals
+  const recalculateCart = (state: MockCartState) => {
+    state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+    state.subtotal = state.items.reduce(
+      (sum, item) => sum + (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
+      0,
+    );
+  };
+
+  // Mock the main cart endpoint
   await world.page.route("**/api/merch/cart", async (route) => {
     const method = route.request().method();
+    const state = (world as CustomWorldWithCart).__mockCartState;
+
     if (method === "GET") {
+      // Return current cart state, or null if empty
+      const cartData = state && state.items.length > 0 ? state : null;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ cart }),
+        body: JSON.stringify({ cart: cartData }),
       });
-    } else if (method === "DELETE" || method === "PATCH") {
-      // Handle cart item operations - just return success
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Mock cart item operations (PATCH/DELETE for specific items)
+  await world.page.route("**/api/merch/cart/*", async (route) => {
+    const method = route.request().method();
+    const state = (world as CustomWorldWithCart).__mockCartState;
+    const url = route.request().url();
+    const itemId = url.split("/").pop();
+
+    if (!state) {
+      await route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Cart not found" }),
+      });
+      return;
+    }
+
+    if (method === "PATCH") {
+      // Update item quantity
+      const postData = route.request().postData();
+      const body = postData ? JSON.parse(postData) : {};
+      const item = state.items.find((i) => i.id === itemId);
+
+      if (item && typeof body.quantity === "number") {
+        item.quantity = body.quantity;
+        recalculateCart(state);
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    } else if (method === "DELETE") {
+      // Remove item from cart
+      state.items = state.items.filter((i) => i.id !== itemId);
+      recalculateCart(state);
+
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -73,7 +169,7 @@ async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
     });
   });
 
-  return cart;
+  return cartState;
 }
 
 /**
@@ -278,7 +374,136 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
   this.attach(JSON.stringify({ cartAddedViaUI: true }), "application/json");
 });
 
+/**
+ * Helper to create a cart mock with a single item having the specified quantity.
+ * Used for quantity adjustment tests where we need to increase/decrease.
+ */
+async function mockCartWithQuantity(world: CustomWorld, quantity: number) {
+  const basePrice = 29.99;
+  const items: MockCartItem[] = [{
+    id: "e2e-cart-item-1",
+    quantity: quantity,
+    customText: null,
+    product: {
+      id: "e2e-product-1",
+      name: "Test Product 1",
+      retailPrice: basePrice,
+      currency: "GBP",
+      mockupTemplate: null,
+    },
+    variant: {
+      id: "e2e-variant-1",
+      name: "Medium",
+      priceDelta: 0,
+    },
+    image: {
+      id: "e2e-image-1",
+      originalUrl: "https://placehold.co/600x400?text=Test+Image",
+    },
+    uploadedImageUrl: null,
+  }];
+
+  // Create mutable cart state
+  const cartState: MockCartState = {
+    id: "e2e-test-cart",
+    items,
+    itemCount: quantity,
+    subtotal: basePrice * quantity,
+  };
+
+  // Store state on world
+  (world as CustomWorldWithCart).__mockCartState = cartState;
+
+  // Helper to recalculate cart totals
+  const recalculateCart = (state: MockCartState) => {
+    state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+    state.subtotal = state.items.reduce(
+      (sum, item) => sum + (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
+      0,
+    );
+  };
+
+  // Mock the main cart endpoint
+  await world.page.route("**/api/merch/cart", async (route) => {
+    const method = route.request().method();
+    const state = (world as CustomWorldWithCart).__mockCartState;
+
+    if (method === "GET") {
+      const cartData = state && state.items.length > 0 ? state : null;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ cart: cartData }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Mock cart item operations
+  await world.page.route("**/api/merch/cart/*", async (route) => {
+    const method = route.request().method();
+    const state = (world as CustomWorldWithCart).__mockCartState;
+    const url = route.request().url();
+    const itemId = url.split("/").pop();
+
+    if (!state) {
+      await route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Cart not found" }),
+      });
+      return;
+    }
+
+    if (method === "PATCH") {
+      const postData = route.request().postData();
+      const body = postData ? JSON.parse(postData) : {};
+      const item = state.items.find((i) => i.id === itemId);
+
+      if (item && typeof body.quantity === "number") {
+        item.quantity = body.quantity;
+        recalculateCart(state);
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    } else if (method === "DELETE") {
+      state.items = state.items.filter((i) => i.id !== itemId);
+      recalculateCart(state);
+
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Mock user API
+  await world.page.route("**/api/user", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "e2e-test-user",
+        email: "test@example.com",
+        name: "Test User",
+      }),
+    });
+  });
+
+  return cartState;
+}
+
 Given("I have added {int} products to my cart", async function(this: CustomWorld, count: number) {
+  // For quantity tests (e.g., decreasing from 2 to 1), create a single item with that quantity
+  // This ensures the decrease button is enabled (quantity > 1)
   // Try to add the first product to check if test images are available
   await this.page.goto(`${this.baseUrl}/merch`);
   await this.page.waitForLoadState("domcontentloaded");
@@ -299,12 +524,17 @@ Given("I have added {int} products to my cart", async function(this: CustomWorld
   const imageAvailable = await testImage.isVisible({ timeout: 3000 }).catch(() => false);
 
   if (!imageAvailable) {
-    // Close dialog and mock the cart instead
+    // Close dialog and mock the cart with a single item having higher quantity
     await this.page.keyboard.press("Escape");
     await this.page.waitForTimeout(300);
 
-    await mockCartWithItems(this, count);
-    this.attach(JSON.stringify({ cartMocked: true, itemCount: count }), "application/json");
+    // Use specialized mock that creates a single item with quantity=count
+    // This ensures the decrease button is enabled for quantity adjustment tests
+    await mockCartWithQuantity(this, count);
+    this.attach(
+      JSON.stringify({ cartMocked: true, singleItemQuantity: count }),
+      "application/json",
+    );
     return;
   }
 
