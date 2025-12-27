@@ -238,6 +238,33 @@ describe("AuthButtons Component", () => {
       });
     });
 
+    it("should use callbackUrl from URL params for Apple sign in", async () => {
+      const user = userEvent.setup();
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          search: "?callbackUrl=/profile",
+          origin: "http://localhost",
+        },
+        writable: true,
+      });
+
+      render(<AuthButtons />);
+      await user.click(
+        screen.getByRole("button", { name: /continue with apple/i }),
+      );
+
+      expect(signIn).toHaveBeenCalledWith("apple", {
+        callbackUrl: "/profile",
+      });
+
+      // Reset
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, search: "", origin: "http://localhost" },
+        writable: true,
+      });
+    });
+
     it("should reject external URLs in callbackUrl to prevent open redirect", async () => {
       const user = userEvent.setup();
       Object.defineProperty(window, "location", {
@@ -274,9 +301,13 @@ describe("AuthButtons Component", () => {
       const githubButton = screen.getByRole("button", {
         name: /continue with github/i,
       });
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
 
       expect(googleButton).toHaveClass("w-full");
       expect(githubButton).toHaveClass("w-full");
+      expect(appleButton).toHaveClass("w-full");
     });
 
     it("should render Google button with icon", () => {
@@ -294,6 +325,15 @@ describe("AuthButtons Component", () => {
         name: /continue with github/i,
       });
       const icon = githubButton.querySelector("svg");
+      expect(icon).toBeInTheDocument();
+    });
+
+    it("should render Apple button with icon", () => {
+      render(<AuthButtons />);
+      const appleButton = screen.getByRole("button", {
+        name: /continue with apple/i,
+      });
+      const icon = appleButton.querySelector("svg");
       expect(icon).toBeInTheDocument();
     });
   });
@@ -1150,7 +1190,7 @@ describe("AuthButtons Component", () => {
       await waitFor(() => {
         expect(
           screen.getByText(
-            /this account was created with google, facebook, or github/i,
+            /this account was created with google, apple, facebook, or github/i,
           ),
         ).toBeInTheDocument();
       });

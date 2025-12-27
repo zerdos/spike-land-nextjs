@@ -471,30 +471,34 @@ export class GoogleAdsClient implements IMarketingClient {
       "",
     );
 
-    const results = await this.query<{
-      metrics: {
-        impressions: string;
-        clicks: string;
-        costMicros: string;
-        conversions: string;
-        ctr: string;
-        averageCpc: string;
-        averageCpm: string;
-      };
-    }>(
-      customerId,
-      `SELECT
-        metrics.impressions,
-        metrics.clicks,
-        metrics.cost_micros,
-        metrics.conversions,
-        metrics.ctr,
-        metrics.average_cpc,
-        metrics.average_cpm
-      FROM campaign
-      WHERE campaign.id = ${campaignId}
-        AND segments.date BETWEEN '${startStr}' AND '${endStr}'`,
-    );
+    // Fetch currency and metrics in parallel for better performance
+    const [currency, results] = await Promise.all([
+      this.getCustomerCurrency(customerId),
+      this.query<{
+        metrics: {
+          impressions: string;
+          clicks: string;
+          costMicros: string;
+          conversions: string;
+          ctr: string;
+          averageCpc: string;
+          averageCpm: string;
+        };
+      }>(
+        customerId,
+        `SELECT
+          metrics.impressions,
+          metrics.clicks,
+          metrics.cost_micros,
+          metrics.conversions,
+          metrics.ctr,
+          metrics.average_cpc,
+          metrics.average_cpm
+        FROM campaign
+        WHERE campaign.id = ${campaignId}
+          AND segments.date BETWEEN '${startStr}' AND '${endStr}'`,
+      ),
+    ]);
 
     const data = results[0]?.metrics ?? {
       impressions: "0",
@@ -513,7 +517,7 @@ export class GoogleAdsClient implements IMarketingClient {
       impressions: parseInt(data.impressions, 10),
       clicks: parseInt(data.clicks, 10),
       spend: Math.round(parseInt(data.costMicros, 10) / 10000), // Convert micros to cents
-      spendCurrency: "USD", // TODO: Get from account settings
+      spendCurrency: currency,
       conversions: parseFloat(data.conversions),
       ctr: parseFloat(data.ctr) * 100, // Convert to percentage
       cpc: Math.round(parseInt(data.averageCpc, 10) / 10000), // Convert micros to cents
@@ -530,6 +534,7 @@ export class GoogleAdsClient implements IMarketingClient {
     ga: GoogleAdsCampaign,
     customerId: string,
     budget?: { amountMicros: string; },
+    currency: string = "USD",
   ): Campaign {
     const budgetMicros = parseInt(budget?.amountMicros || "0", 10);
 
@@ -542,7 +547,7 @@ export class GoogleAdsClient implements IMarketingClient {
       objective: mapGoogleAdsObjective(ga.advertisingChannelType),
       budgetType: "DAILY", // Google Ads uses daily budgets by default
       budgetAmount: Math.round(budgetMicros / 10000), // Convert micros to cents
-      budgetCurrency: "USD", // TODO: Get from account settings
+      budgetCurrency: currency,
       startDate: ga.startDate ? this.parseGoogleDate(ga.startDate) : null,
       endDate: ga.endDate ? this.parseGoogleDate(ga.endDate) : null,
       createdAt: new Date(), // Google Ads doesn't expose creation time in basic query

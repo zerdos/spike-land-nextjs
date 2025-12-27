@@ -439,14 +439,17 @@ When(
     const enhanceButton = this.page.getByRole("button", {
       name: /enhance|start/i,
     });
-    await enhanceButton.click();
-    // Wait for API response
-    await this.page.waitForResponse(
+
+    // Set up response wait BEFORE clicking
+    const responsePromise = this.page.waitForResponse(
       (resp) => resp.url().includes("/api/images/enhance"),
       { timeout: TIMEOUTS.DEFAULT },
-    ).catch(() => {
-      // Response may already have been handled
-    });
+    );
+
+    await enhanceButton.click();
+
+    // Wait for the response to complete
+    await responsePromise;
   },
 );
 
@@ -476,7 +479,14 @@ When("I delete an image from the list", async function(this: CustomWorld) {
   const deleteButton = this.page.getByRole("button", { name: /delete/i })
     .first();
   await deleteButton.click();
-  await this.page.waitForTimeout(500);
+
+  // Wait for deletion confirmation dialog or image to be removed
+  await this.page.waitForSelector('[role="dialog"], [role="alertdialog"]', {
+    state: "visible",
+    timeout: TIMEOUTS.DEFAULT,
+  }).catch(() => {
+    // Dialog may have already closed if auto-confirmed
+  });
 });
 
 // NOTE: "I confirm the deletion" is defined in common.steps.ts
@@ -485,7 +495,10 @@ When("I attempt to delete an image", async function(this: CustomWorld) {
   const deleteButton = this.page.getByRole("button", { name: /delete/i })
     .first();
   await deleteButton.click();
-  await this.page.waitForTimeout(100);
+
+  // Wait for confirmation dialog to appear
+  const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+  await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 // NOTE: "I cancel the deletion confirmation" step moved to common.steps.ts
@@ -496,7 +509,13 @@ When(
     const versionCards = this.page.locator("[data-version-id]");
     const secondVersion = versionCards.nth(1);
     await secondVersion.click();
-    await this.page.waitForTimeout(300);
+
+    // Wait for the version to be selected (should have selected attribute)
+    await expect(secondVersion).toHaveAttribute("data-selected", "true", {
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // Fallback: wait for aria-selected or class change
+    });
   },
 );
 

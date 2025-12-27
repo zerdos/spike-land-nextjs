@@ -769,43 +769,6 @@ export function isGeminiConfigured(): boolean {
 
 // MCP Generation types and functions
 
-/**
- * Configuration for the unified Gemini stream processor.
- * Used by all image generation/enhancement/modification functions.
- */
-interface GeminiStreamConfig {
-  responseModalities: string[];
-  imageConfig?: { imageSize?: string; aspectRatio?: string; };
-}
-
-/**
- * Content structure for Gemini API requests.
- */
-interface GeminiContent {
-  role: "user";
-  parts: Array<
-    { text?: string; inlineData?: { mimeType: string; data: string; }; }
-  >;
-}
-
-/**
- * Options for the unified stream processor.
- */
-interface StreamProcessorOptions {
-  /** GoogleGenAI client instance */
-  ai: GoogleGenAI;
-  /** Model to use for generation */
-  model: string;
-  /** API configuration */
-  config: GeminiStreamConfig;
-  /** Content to send to the API */
-  contents: GeminiContent[];
-  /** Timeout in milliseconds (defaults to GEMINI_TIMEOUT_MS) */
-  timeoutMs?: number;
-  /** Type of operation for error messages */
-  operationType?: "enhancement" | "generation" | "modification";
-}
-
 export interface GenerateImageParams {
   prompt: string;
   tier: "1K" | "2K" | "4K";

@@ -131,6 +131,9 @@ async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
 
 /**
  * Step 2: Get image metadata (without padding yet - we may auto-crop first)
+ *
+ * Error Boundary: METADATA (recoverable)
+ * - On failure: Uses default dimensions (1024x1024) and JPEG mime type
  */
 async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
   "use step";
@@ -155,6 +158,10 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
 
 /**
  * Step 3: Analyze image with vision model
+ *
+ * Error Boundary: ANALYSIS (recoverable)
+ * - On failure: Returns default analysis with no defects detected
+ * - Workflow continues with generic enhancement prompt
  */
 async function analyzeImageStep(
   imageBase64: string,
@@ -165,7 +172,8 @@ async function analyzeImageStep(
   const { data, error } = await tryCatch(analyzeImageV2(imageBase64, mimeType));
 
   if (error) {
-    // Don't fail the job if analysis fails - return default analysis
+    // Soft failure: Don't fail the job if analysis fails - return default analysis
+    // This is documented as a recoverable error in ERROR_BOUNDARIES[WorkflowStage.ANALYSIS]
     console.warn("Image analysis failed, using defaults:", error);
     return {
       description: "Analysis failed",
