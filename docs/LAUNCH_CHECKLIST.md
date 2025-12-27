@@ -18,7 +18,8 @@ processes are verified before launching Spike Land to production.
   - [x] Production callback URLs registered
   - [x] Client IDs and secrets stored in Vercel secrets
 
-- [x] **Environment Variables Set**
+- [x] **Environment Variables Set** (See
+      [SECRETS_SETUP.md](./SECRETS_SETUP.md) for complete reference)
   - [x] `AUTH_SECRET` generated (minimum 32 bytes)
   - [x] `USER_ID_SALT` generated (never rotate this!)
   - [x] `NEXTAUTH_URL` set to production domain
@@ -351,7 +352,8 @@ processes are verified before launching Spike Land to production.
   - [x] Environment variables configured for production
   - [x] Build command and output directory correct
 
-- [x] **Environment Variables**
+- [x] **Environment Variables** (See
+      [SECRETS_SETUP.md](./SECRETS_SETUP.md) for complete reference)
   - [x] All required env vars set in Vercel production environment
   - [x] No secrets in git or public logs
   - [x] .env.example file up-to-date

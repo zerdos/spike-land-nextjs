@@ -11,81 +11,39 @@ import { EnhancementTier, getMcpGenerationCost } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import sharp from "sharp";
+import { classifyError as classifyErrorImpl } from "./error-classifier";
+import type { ClassifiedError } from "./errors";
 
 // Security: Maximum concurrent PROCESSING jobs per user to prevent burst attacks
 const MAX_CONCURRENT_JOBS_PER_USER = 3;
 
+// Re-export error types for consumers
+export type { ClassifiedError } from "./errors";
+export { McpError, McpErrorCode } from "./errors";
+
 /**
- * Classifies errors into user-friendly messages with error codes
- * Helps users understand what went wrong and how to fix it
+ * Classifies errors into user-friendly messages with error codes.
+ * Helps users understand what went wrong and how to fix it.
+ *
+ * Uses a robust classification approach that prioritizes:
+ * 1. Error code/type properties (most reliable)
+ * 2. HTTP status codes
+ * 3. Error name/constructor
+ * 4. Message patterns (fallback only)
+ *
+ * @param error - The error to classify
+ * @returns Object with message, code, and retryable flag
  * @internal Exported for testing purposes
  */
 export function classifyError(
   error: unknown,
-): { message: string; code: string; } {
-  if (error instanceof Error) {
-    const errorMessage = error.message.toLowerCase();
-
-    // Timeout errors
-    if (
-      errorMessage.includes("timeout") || errorMessage.includes("timed out")
-    ) {
-      return {
-        message: "Generation took too long. Try a lower quality tier.",
-        code: "TIMEOUT",
-      };
-    }
-
-    // Content policy violations
-    if (
-      errorMessage.includes("content") &&
-      (errorMessage.includes("policy") || errorMessage.includes("blocked"))
-    ) {
-      return {
-        message: "Your prompt may violate content policies. Please revise.",
-        code: "CONTENT_POLICY",
-      };
-    }
-
-    // Rate limiting
-    if (
-      errorMessage.includes("rate") || errorMessage.includes("quota") ||
-      errorMessage.includes("429")
-    ) {
-      return {
-        message: "Service temporarily unavailable. Please try again later.",
-        code: "RATE_LIMITED",
-      };
-    }
-
-    // API key or authentication errors
-    if (
-      errorMessage.includes("api key") ||
-      errorMessage.includes("unauthorized") ||
-      errorMessage.includes("401")
-    ) {
-      return {
-        message: "API configuration error. Please contact support.",
-        code: "AUTH_ERROR",
-      };
-    }
-
-    // Image processing errors
-    if (
-      errorMessage.includes("image") &&
-      (errorMessage.includes("invalid") || errorMessage.includes("corrupt"))
-    ) {
-      return {
-        message: "Unable to process the image. Please try a different format.",
-        code: "INVALID_IMAGE",
-      };
-    }
-
-    // Return original message for other errors
-    return { message: error.message, code: "GENERATION_ERROR" };
-  }
-
-  return { message: "An unexpected error occurred", code: "UNKNOWN" };
+): { message: string; code: string; retryable?: boolean; } {
+  const classified: ClassifiedError = classifyErrorImpl(error);
+  return {
+    message: classified.message,
+    code: classified.code,
+    retryable: classified.retryable,
+  };
 }
 
 interface CreateGenerationJobParams {

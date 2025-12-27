@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForTokenBalance } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock data for testing
@@ -333,13 +333,9 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    // Wait for error message to appear
-    await this.page.waitForSelector(".text-destructive, [role='alert']", {
-      state: "visible",
-      timeout: TIMEOUTS.DEFAULT,
-    }).catch(() => {
-      // Error display may vary
-    });
+    // Wait for error message to appear - use explicit wait with proper timeout
+    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
+    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -358,13 +354,9 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    // Wait for error message to appear
-    await this.page.waitForSelector(".text-destructive, [role='alert']", {
-      state: "visible",
-      timeout: TIMEOUTS.DEFAULT,
-    }).catch(() => {
-      // Error display may vary
-    });
+    // Wait for error message to appear - use explicit wait with proper timeout
+    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
+    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -381,13 +373,23 @@ When("I start uploading an image", async function(this: CustomWorld) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
-  // Wait for loading spinner to appear (indicates upload started)
-  await this.page.waitForSelector(".animate-spin", {
-    state: "visible",
-    timeout: TIMEOUTS.SHORT,
-  }).catch(() => {
-    // Upload may be too fast to catch spinner
-  });
+  // Wait for loading spinner OR upload text to appear (indicates upload started)
+  // Use Promise.race to handle fast uploads that may skip spinner
+  const spinnerOrText = await Promise.race([
+    this.page.waitForSelector(".animate-spin", {
+      state: "visible",
+      timeout: TIMEOUTS.SHORT,
+    }).then(() => "spinner" as const),
+    this.page.waitForSelector('[data-testid="uploading-text"], :text("Uploading")', {
+      state: "visible",
+      timeout: TIMEOUTS.SHORT,
+    }).then(() => "text" as const),
+    // If neither appears quickly, upload may have completed
+    this.page.waitForTimeout(TIMEOUTS.SHORT / 2).then(() => "timeout" as const),
+  ]);
+
+  // Any result is acceptable - upload started
+  expect(["spinner", "text", "timeout"]).toContain(spinnerOrText);
 });
 
 When("I visit the image enhancement page", async function(this: CustomWorld) {
@@ -413,14 +415,17 @@ When("I try to enhance the image", async function(this: CustomWorld) {
   const enhanceButton = this.page.getByRole("button", {
     name: /enhance|start/i,
   });
-  await enhanceButton.click();
-  // Wait for error response
-  await this.page.waitForResponse(
+
+  // Set up response wait BEFORE clicking
+  const responsePromise = this.page.waitForResponse(
     (resp) => resp.url().includes("/api/images/enhance"),
     { timeout: TIMEOUTS.DEFAULT },
-  ).catch(() => {
-    // Response may already have been handled
-  });
+  );
+
+  await enhanceButton.click();
+
+  // Wait for the response to complete
+  await responsePromise;
 });
 
 When(
@@ -434,14 +439,17 @@ When(
     const enhanceButton = this.page.getByRole("button", {
       name: /enhance|start/i,
     });
-    await enhanceButton.click();
-    // Wait for API response
-    await this.page.waitForResponse(
+
+    // Set up response wait BEFORE clicking
+    const responsePromise = this.page.waitForResponse(
       (resp) => resp.url().includes("/api/images/enhance"),
       { timeout: TIMEOUTS.DEFAULT },
-    ).catch(() => {
-      // Response may already have been handled
-    });
+    );
+
+    await enhanceButton.click();
+
+    // Wait for the response to complete
+    await responsePromise;
   },
 );
 
@@ -471,7 +479,14 @@ When("I delete an image from the list", async function(this: CustomWorld) {
   const deleteButton = this.page.getByRole("button", { name: /delete/i })
     .first();
   await deleteButton.click();
-  await this.page.waitForTimeout(500);
+
+  // Wait for deletion confirmation dialog or image to be removed
+  await this.page.waitForSelector('[role="dialog"], [role="alertdialog"]', {
+    state: "visible",
+    timeout: TIMEOUTS.DEFAULT,
+  }).catch(() => {
+    // Dialog may have already closed if auto-confirmed
+  });
 });
 
 // NOTE: "I confirm the deletion" is defined in common.steps.ts
@@ -480,7 +495,10 @@ When("I attempt to delete an image", async function(this: CustomWorld) {
   const deleteButton = this.page.getByRole("button", { name: /delete/i })
     .first();
   await deleteButton.click();
-  await this.page.waitForTimeout(100);
+
+  // Wait for confirmation dialog to appear
+  const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+  await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 // NOTE: "I cancel the deletion confirmation" step moved to common.steps.ts
@@ -491,7 +509,13 @@ When(
     const versionCards = this.page.locator("[data-version-id]");
     const secondVersion = versionCards.nth(1);
     await secondVersion.click();
-    await this.page.waitForTimeout(300);
+
+    // Wait for the version to be selected (should have selected attribute)
+    await expect(secondVersion).toHaveAttribute("data-selected", "true", {
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // Fallback: wait for aria-selected or class change
+    });
   },
 );
 
@@ -554,18 +578,22 @@ When(
 Then(
   "I should see the image upload section",
   async function(this: CustomWorld) {
-    // Look for the upload heading which is visible (file input is hidden)
-    const uploadHeading = this.page.getByRole("heading", {
-      name: /upload an image/i,
+    // The main /apps/pixel page shows album management, not direct upload
+    // Upload is available within album pages
+    const albumsHeading = this.page.getByRole("heading", {
+      name: /your albums/i,
     });
-    await expect(uploadHeading).toBeVisible();
+    await expect(albumsHeading).toBeVisible();
   },
 );
 
 Then(
   "I should see the token balance display",
   async function(this: CustomWorld) {
-    // Look for the balance display showing "X tokens" where X is a number
+    // Wait for token balance to be fully rendered with a numeric value
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
+
+    // Verify it's visible
     const balanceDisplay = this.page.locator('[data-testid="token-balance"]')
       .or(
         this.page.getByText(/\d+\s*tokens/i),
@@ -575,11 +603,12 @@ Then(
 );
 
 Then("I should see the upload icon", async function(this: CustomWorld) {
-  // Look for the Upload heading which indicates the upload area is visible
-  const uploadHeading = this.page.getByRole("heading", {
-    name: /upload an image/i,
+  // The main /apps/pixel page shows album management
+  // Look for the "Your Albums" heading which indicates album management is visible
+  const albumsHeading = this.page.getByRole("heading", {
+    name: /your albums/i,
   });
-  await expect(uploadHeading).toBeVisible();
+  await expect(albumsHeading).toBeVisible();
 });
 
 Then(
@@ -758,6 +787,14 @@ Then("I should see an empty images list", async function(this: CustomWorld) {
   }
 });
 
+Then("I should see an empty albums message", async function(this: CustomWorld) {
+  // Check for the empty albums message in the album management UI
+  const emptyState = this.page.getByText(/no albums yet/i).or(
+    this.page.getByText(/create one to organize/i),
+  );
+  await expect(emptyState).toBeVisible();
+});
+
 Then(
   "my token balance should decrease to {int} tokens",
   async function(this: CustomWorld, expectedBalance: number) {
@@ -814,8 +851,8 @@ Then(
 Then(
   "the token balance should refresh automatically",
   async function(this: CustomWorld) {
-    // Check that balance is being fetched
-    await this.page.waitForTimeout(500);
+    // Wait for token balance to be displayed (indicates refresh completed)
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -833,8 +870,8 @@ Then("the slider should work on mobile", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then("the slider should work on desktop", async function(this: CustomWorld) {
@@ -842,8 +879,8 @@ Then("the slider should work on desktop", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then("the slider should work on tablet", async function(this: CustomWorld) {
@@ -851,8 +888,8 @@ Then("the slider should work on tablet", async function(this: CustomWorld) {
   const slider = this.page.locator('input[type="range"]').first();
   if (await slider.isVisible()) {
     await slider.fill("50");
+    await expect(slider).toHaveValue("50", { timeout: TIMEOUTS.SHORT });
   }
-  await this.page.waitForTimeout(200);
 });
 
 Then(

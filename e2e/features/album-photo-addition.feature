@@ -6,13 +6,13 @@ Feature: Album Photo Addition
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  @flaky @requires-db
+  @requires-db
   Scenario: View Add to Album button on enhance page
     Given I have uploaded images with enhancement jobs
     When I visit "/apps/pixel"
     Then I should see the Add to Album button for each image
 
-  @flaky @requires-db
+  @requires-db
   Scenario: Open Add to Album modal
     Given I have uploaded images with enhancement jobs
     And I have albums
@@ -21,7 +21,7 @@ Feature: Album Photo Addition
     Then I should see the Add to Album modal
     And I should see the album selection dropdown
 
-  @flaky @requires-db
+  @requires-db
   Scenario: Add image to album successfully
     Given I have uploaded images with enhancement jobs
     And I have albums
@@ -32,7 +32,7 @@ Feature: Album Photo Addition
     And I click the Add to Album confirm button
     Then I should see a success toast notification
 
-  @flaky @requires-db
+  @requires-db
   Scenario: Cancel Add to Album modal
     Given I have uploaded images with enhancement jobs
     And I have albums
@@ -41,7 +41,7 @@ Feature: Album Photo Addition
     And I click the Cancel button in the modal
     Then the modal should close
 
-  @flaky @requires-db
+  @requires-db
   Scenario: Empty albums state shows create album link
     Given I have uploaded images with enhancement jobs
     And I have no albums
@@ -50,7 +50,7 @@ Feature: Album Photo Addition
     Then I should see the empty albums message
     And I should see a link to create an album
 
-  @flaky @requires-db
+  @requires-db
   Scenario: Image already in album shows info message
     Given I have uploaded images with enhancement jobs
     And I have albums

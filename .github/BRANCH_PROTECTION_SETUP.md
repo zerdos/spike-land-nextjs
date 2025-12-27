@@ -216,5 +216,7 @@ documented in PRs
 
 ## Additional Resources
 
+- [Secrets Setup Guide](../docs/SECRETS_SETUP.md) - Complete secrets and
+  environment variables documentation
 - [GitHub Branch Protection Documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 - [Status Checks Documentation](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks)

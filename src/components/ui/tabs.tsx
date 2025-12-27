@@ -108,7 +108,7 @@ const TabsList = React.forwardRef<
       {/* Animated Background Indicator */}
       <div
         aria-hidden="true"
-        className="absolute z-0 rounded-lg bg-white/10 shadow-[0_0_15px_rgba(0,229,255,0.15)] transition-all duration-300 ease-in-out pointer-events-none glass-edge"
+        className="absolute z-0 rounded-lg bg-primary/15 border border-primary/20 shadow-[0_0_20px_rgba(0,229,255,0.25)] transition-all duration-300 ease-out pointer-events-none glass-edge"
         style={indicatorStyle}
       />
       {props.children}
@@ -124,7 +124,22 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "relative z-10 inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground/30 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:drop-shadow-[0_0_8px_rgba(0,229,255,0.3)]",
+      // Base styles
+      "relative z-10 inline-flex items-center justify-center whitespace-nowrap rounded-lg",
+      // Sizing - minimum 44px tap target for mobile accessibility
+      "min-h-[44px] px-4 py-2.5",
+      // Typography
+      "text-sm font-medium",
+      // Focus states for accessibility
+      "ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      // Disabled state
+      "disabled:pointer-events-none disabled:opacity-50",
+      // Inactive state - improved visibility (70% vs 30%)
+      "text-muted-foreground/70",
+      // Hover state for inactive tabs
+      "hover:text-muted-foreground hover:bg-white/5",
+      // Active state - enhanced visibility
+      "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]",
       className,
     )}
     {...props}

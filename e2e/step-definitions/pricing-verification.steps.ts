@@ -1,10 +1,12 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForPricingData } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 When("I view the pricing page", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
+  // Wait for pricing data to be fully rendered
+  await waitForPricingData(this.page, { timeout: TIMEOUTS.DEFAULT });
 });
 
 When(
@@ -135,11 +137,9 @@ Then(
 Then(
   "the callback URL should point to pricing page",
   async function(this: CustomWorld) {
-    // Wait for URL to contain callbackUrl - may already be present
-    await this.page.waitForURL(/callbackUrl/, { timeout: TIMEOUTS.DEFAULT }).catch(() => {
-      // URL may already contain callbackUrl, verification follows below
-    });
-    // Always verify the URL contains callbackUrl
+    // Wait for URL to contain callbackUrl
+    await this.page.waitForURL(/callbackUrl/, { timeout: TIMEOUTS.DEFAULT });
+    // Verify the URL contains callbackUrl
     const url = this.page.url();
     expect(url).toContain("callbackUrl");
   },
@@ -151,10 +151,8 @@ Then(
   "the checkout should be for a one-time payment",
   async function(this: CustomWorld) {
     // Stripe checkout initiated - verify one-time payment mode
-    // Wait for network to settle, may timeout if already idle
-    await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.SHORT }).catch(() => {
-      // Navigation may have already completed, this is expected
-    });
+    // Wait for navigation to Stripe checkout
+    await this.page.waitForURL(/stripe|checkout|payment/i, { timeout: TIMEOUTS.LONG });
     // Verify we're in a checkout context (URL or page state)
     const url = this.page.url();
     expect(url).toMatch(/stripe|checkout|payment/i);

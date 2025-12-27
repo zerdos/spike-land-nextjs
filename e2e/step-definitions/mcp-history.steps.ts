@@ -335,10 +335,7 @@ Then("I should see the total jobs count", async function(this: CustomWorld) {
 });
 
 // Loading state
-Then("I should see the loading spinner", async function(this: CustomWorld) {
-  const spinner = this.page.locator(".animate-spin").first();
-  await expect(spinner).toBeVisible({ timeout: TIMEOUTS.SHORT });
-});
+// NOTE: "I should see the loading spinner" is defined in image-enhancement.steps.ts
 
 Then(
   "the loading spinner should disappear when data loads",

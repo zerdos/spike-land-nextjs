@@ -6,50 +6,50 @@ Feature: Image Enhancement
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  @flaky
   Scenario: View enhance page as authenticated user
     When I visit "/apps/pixel"
     Then I should be on the "/apps/pixel" page
     And I should see "AI Image Enhancement" heading
-    And I should see the image upload section
+    And I should see "Your Albums" heading
     And I should see the token balance display
 
-  @flaky
   Scenario: Unauthenticated user redirected from enhance page
     Given I am not logged in
     When I visit "/apps/pixel"
     Then I should be on the "/auth/signin" page
 
-  @flaky
-  Scenario: Image upload section displays correctly
+  Scenario: Album management section displays correctly
     When I visit "/apps/pixel"
-    Then I should see the upload icon
-    And I should see "Upload an Image" text
-    And I should see "Choose an image to enhance with AI" text
-    And I should see "Select Image" text
+    Then I should see "Your Albums" heading
+    And I should see "How to Upload Images" text
+    And I should see "New Album" text
 
-  @requires-db
+  @skip @requires-album-page
   Scenario: Upload an image successfully
+    # Upload happens within album pages, not the main /apps/pixel page
     Given I am on the enhance page
     And I mock a successful image upload
     When I upload a valid image file
     Then I should be redirected to the image enhancement page
     And the URL should contain "/apps/pixel/"
 
-  @flaky
+  @skip @requires-album-page
   Scenario: Image upload shows validation error for large file
+    # Upload validation happens within album pages
     Given I am on the enhance page
     When I attempt to upload a file larger than 50MB
     Then I should see upload error "File size must be less than 50MB"
 
-  @flaky
+  @skip @requires-album-page
   Scenario: Image upload shows validation error for non-image file
+    # Upload validation happens within album pages
     Given I am on the enhance page
     When I attempt to upload a non-image file
     Then I should see upload error "Please select an image file"
 
-  @flaky
+  @skip @requires-album-page
   Scenario: Image upload shows loading state
+    # Upload state happens within album pages
     Given I am on the enhance page
     And I mock a slow image upload
     When I start uploading an image
@@ -141,19 +141,19 @@ Feature: Image Enhancement
     Then the image should remain in the list
 
   @fast @requires-db
-  Scenario: Navigate back to images list
+  Scenario: Navigate back to albums list
     Given I have an uploaded image
     And I am on the image enhancement page
     When I click the "Back to Images" button
     Then I should be on the "/apps/pixel" page
-    And I should see "Your Images" heading
+    And I should see "Your Albums" heading
 
   @requires-db
-  Scenario: View empty state when no images
+  Scenario: View empty state when no albums
     Given I have no uploaded images
     When I visit "/apps/pixel"
-    Then I should see "Your Images" heading
-    And I should see an empty images list
+    Then I should see "Your Albums" heading
+    And I should see an empty albums message
 
   @requires-db
   Scenario: Token balance updates after enhancement

@@ -52,22 +52,26 @@ export function PixelHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="bottom">
               <VisuallyHidden>
                 <SheetTitle>Navigation Menu</SheetTitle>
               </VisuallyHidden>
-              <nav className="flex flex-col gap-4 mt-8">
+              {/* Drag handle indicator for bottom sheet */}
+              <div className="flex justify-center mb-4">
+                <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+              </div>
+              <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary"
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-3 min-h-[44px] flex items-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
                 ))}
-                <Button asChild className="mt-4 shadow-glow-cyan-sm">
+                <Button asChild className="mt-4 shadow-glow-cyan-sm h-12">
                   <Link
                     href="/auth/signin"
                     onClick={() => setMobileMenuOpen(false)}

@@ -35,6 +35,28 @@ interface TestResult {
   sourceFiles: Set<string>;
 }
 
+/**
+ * Vitest internal module graph interface (not exported in public types).
+ * Used to traverse module dependencies for coverage mapping.
+ */
+interface ViteModuleGraph {
+  getModuleById(id: string): ViteModuleNode | undefined;
+}
+
+interface ViteModuleNode {
+  id: string | null;
+  importedModules: Set<ViteModuleNode>;
+}
+
+/**
+ * Vitest project with internal vite server access.
+ * These properties exist at runtime but aren't in the public type definitions.
+ */
+interface VitestProjectWithInternals {
+  browser?: { vite?: { moduleGraph?: ViteModuleGraph; }; };
+  server?: { moduleGraph?: ViteModuleGraph; };
+}
+
 export default class CoverageMapperReporter implements Reporter {
   private ctx!: Vitest;
   private projectRoot: string;
@@ -145,10 +167,10 @@ export default class CoverageMapperReporter implements Reporter {
     // If no coverage file found, try to get file dependencies from Vitest's module graph
     if (this.ctx?.projects) {
       for (const project of this.ctx.projects) {
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        const moduleGraph = (project as any).browser?.vite?.moduleGraph ||
-          (project as any).server?.moduleGraph;
-        /* eslint-enable @typescript-eslint/no-explicit-any */
+        // Cast to internal type - these properties exist at runtime but not in public types
+        const projectWithInternals = project as unknown as VitestProjectWithInternals;
+        const moduleGraph = projectWithInternals.browser?.vite?.moduleGraph ||
+          projectWithInternals.server?.moduleGraph;
         if (moduleGraph) {
           for (const [testPath, result] of this.testResults) {
             const fullTestPath = path.join(this.projectRoot, testPath);

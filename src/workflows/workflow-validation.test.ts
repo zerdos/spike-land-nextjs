@@ -62,14 +62,16 @@ describe("Workflow Configuration Validation", () => {
       expect(content).toMatch(/import.*FatalError.*from ["']workflow["']/);
     });
 
-    it("should use workflow/api start function in API routes", () => {
+    it("should use workflow start function in API routes", () => {
       const routePath = path.join(
         process.cwd(),
         "src/app/api/images/enhance/route.ts",
       );
       const content = fs.readFileSync(routePath, "utf-8");
-      expect(content).toMatch(/import.*start.*from ["']workflow\/api["']/);
-      expect(content).toContain("start(enhanceImage");
+      expect(content).toMatch(
+        /import.*startEnhancement.*from ["']@\/lib\/workflows\/enhancement-executor["']/,
+      );
+      expect(content).toContain("startEnhancement(");
     });
   });
 });

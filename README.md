@@ -26,7 +26,37 @@ pipeline.
 - Node.js 20+
 - Yarn 4 (corepack enabled)
 
-### Installation
+### Automated Setup (Recommended)
+
+The fastest way to get started is using the interactive setup script:
+
+```bash
+# Clone the repository
+git clone https://github.com/zerdos/spike-land-nextjs.git
+cd spike-land-nextjs
+
+# Run the setup script
+./scripts/setup.sh
+```
+
+The setup script will:
+
+- Check and enable corepack
+- Install all dependencies
+- Generate required secrets (AUTH_SECRET, E2E_BYPASS_SECRET)
+- Optionally configure a local PostgreSQL database (via Docker)
+- Optionally configure OAuth providers (GitHub, Google)
+- Install Playwright browsers for E2E testing
+- Build the application to verify everything works
+
+**Script options:**
+
+- `--quick` - Skip optional OAuth and database prompts
+- `--ci` - Non-interactive mode for CI environments
+
+### Manual Installation
+
+If you prefer manual setup:
 
 ```bash
 # Clone the repository
@@ -56,6 +86,9 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 This application uses [NextAuth.js v5](https://authjs.dev/) for authentication
 with support for GitHub and Google OAuth providers.
+
+**For complete secrets documentation**, see
+[docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md).
 
 #### 1. Generate AUTH_SECRET
 
@@ -354,6 +387,7 @@ git push origin feature/my-feature
 
 ## 📚 Documentation
 
+- **`docs/SECRETS_SETUP.md`** - Complete secrets and environment variables guide
 - **`.github/BRANCH_PROTECTION_SETUP.md`** - Branch protection setup guide
 - **`.github/workflows/README.md`** - CI/CD workflow documentation
 - **`e2e/README.md`** - E2E testing guide

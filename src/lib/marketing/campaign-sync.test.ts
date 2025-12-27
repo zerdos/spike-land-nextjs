@@ -27,6 +27,14 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock token encryption - passthrough for testing
+// safeDecryptToken handles both encrypted and unencrypted tokens
+// safeEncryptToken adds encryption prefix in production but returns plaintext if key not configured
+vi.mock("@/lib/crypto/token-encryption", () => ({
+  safeDecryptToken: vi.fn((token: string) => token),
+  safeEncryptToken: vi.fn((token: string) => `encrypted:${token}`),
+}));
+
 // Mock metrics cache
 vi.mock("@/lib/tracking/metrics-cache", () => ({
   setCachedMetrics: vi.fn().mockResolvedValue(undefined),
@@ -177,6 +185,16 @@ describe("Campaign Sync Service", () => {
         "refresh-token",
       );
       expect(mockMarketingAccountUpdate).toHaveBeenCalled();
+      // Verify encrypted tokens are stored
+      expect(mockMarketingAccountUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "acc-1" },
+          data: expect.objectContaining({
+            accessToken: "encrypted:new-token",
+            refreshToken: "encrypted:new-refresh-token",
+          }),
+        }),
+      );
       expect(result.errors).toHaveLength(0);
     });
 

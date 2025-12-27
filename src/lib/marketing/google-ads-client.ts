@@ -65,6 +65,8 @@ export class GoogleAdsClient implements IMarketingClient {
   private developerToken: string;
   private accessToken?: string;
   private customerId?: string;
+  // Cache for customer currency codes to avoid repeated API calls
+  private customerCurrencyCache: Map<string, string> = new Map();
 
   constructor(options?: { accessToken?: string; customerId?: string; }) {
     // Trim whitespace/newlines that may be added by environment variable management systems
@@ -352,7 +354,29 @@ export class GoogleAdsClient implements IMarketingClient {
       return null;
     }
 
-    return results[0]?.customer || null;
+    const customer = results[0]?.customer || null;
+
+    // Cache the currency code for this customer
+    if (customer?.currencyCode) {
+      this.customerCurrencyCache.set(customerId, customer.currencyCode);
+    }
+
+    return customer;
+  }
+
+  /**
+   * Get customer currency code (from cache or API)
+   */
+  private async getCustomerCurrency(customerId: string): Promise<string> {
+    // Check cache first
+    const cached = this.customerCurrencyCache.get(customerId);
+    if (cached) {
+      return cached;
+    }
+
+    // Fetch from API
+    const customer = await this.getCustomerInfo(customerId);
+    return customer?.currencyCode || "USD";
   }
 
   /**
@@ -361,40 +385,9 @@ export class GoogleAdsClient implements IMarketingClient {
   async listCampaigns(accountId: string): Promise<Campaign[]> {
     const customerId = accountId.replace(/-/g, "");
 
-    const results = await this.query<{
-      campaign: GoogleAdsCampaign;
-      campaignBudget?: { amountMicros: string; };
-    }>(
-      customerId,
-      `SELECT
-        campaign.id,
-        campaign.name,
-        campaign.status,
-        campaign.advertising_channel_type,
-        campaign.start_date,
-        campaign.end_date,
-        campaign.campaign_budget,
-        campaign_budget.amount_micros
-      FROM campaign
-      WHERE campaign.status != 'REMOVED'
-      ORDER BY campaign.name`,
-    );
-
-    return results.map((result) =>
-      this.mapCampaign(result.campaign, customerId, result.campaignBudget)
-    );
-  }
-
-  /**
-   * Get single campaign details
-   */
-  async getCampaign(
-    accountId: string,
-    campaignId: string,
-  ): Promise<Campaign | null> {
-    const customerId = accountId.replace(/-/g, "");
-
-    const { data: results, error } = await tryCatch(
+    // Fetch currency and campaigns in parallel for better performance
+    const [currency, results] = await Promise.all([
+      this.getCustomerCurrency(customerId),
       this.query<{
         campaign: GoogleAdsCampaign;
         campaignBudget?: { amountMicros: string; };
@@ -410,9 +403,50 @@ export class GoogleAdsClient implements IMarketingClient {
           campaign.campaign_budget,
           campaign_budget.amount_micros
         FROM campaign
-        WHERE campaign.id = ${campaignId}`,
+        WHERE campaign.status != 'REMOVED'
+        ORDER BY campaign.name`,
       ),
+    ]);
+
+    return results.map((result) =>
+      this.mapCampaign(result.campaign, customerId, result.campaignBudget, currency)
     );
+  }
+
+  /**
+   * Get single campaign details
+   */
+  async getCampaign(
+    accountId: string,
+    campaignId: string,
+  ): Promise<Campaign | null> {
+    const customerId = accountId.replace(/-/g, "");
+
+    // Fetch currency and campaign in parallel for better performance
+    const [currency, queryResult] = await Promise.all([
+      this.getCustomerCurrency(customerId),
+      tryCatch(
+        this.query<{
+          campaign: GoogleAdsCampaign;
+          campaignBudget?: { amountMicros: string; };
+        }>(
+          customerId,
+          `SELECT
+            campaign.id,
+            campaign.name,
+            campaign.status,
+            campaign.advertising_channel_type,
+            campaign.start_date,
+            campaign.end_date,
+            campaign.campaign_budget,
+            campaign_budget.amount_micros
+          FROM campaign
+          WHERE campaign.id = ${campaignId}`,
+        ),
+      ),
+    ]);
+
+    const { data: results, error } = queryResult;
 
     if (error || !results) {
       return null;
@@ -425,6 +459,7 @@ export class GoogleAdsClient implements IMarketingClient {
       result.campaign,
       customerId,
       result.campaignBudget,
+      currency,
     );
   }
 
@@ -447,30 +482,34 @@ export class GoogleAdsClient implements IMarketingClient {
       "",
     );
 
-    const results = await this.query<{
-      metrics: {
-        impressions: string;
-        clicks: string;
-        costMicros: string;
-        conversions: string;
-        ctr: string;
-        averageCpc: string;
-        averageCpm: string;
-      };
-    }>(
-      customerId,
-      `SELECT
-        metrics.impressions,
-        metrics.clicks,
-        metrics.cost_micros,
-        metrics.conversions,
-        metrics.ctr,
-        metrics.average_cpc,
-        metrics.average_cpm
-      FROM campaign
-      WHERE campaign.id = ${campaignId}
-        AND segments.date BETWEEN '${startStr}' AND '${endStr}'`,
-    );
+    // Fetch currency and metrics in parallel for better performance
+    const [currency, results] = await Promise.all([
+      this.getCustomerCurrency(customerId),
+      this.query<{
+        metrics: {
+          impressions: string;
+          clicks: string;
+          costMicros: string;
+          conversions: string;
+          ctr: string;
+          averageCpc: string;
+          averageCpm: string;
+        };
+      }>(
+        customerId,
+        `SELECT
+          metrics.impressions,
+          metrics.clicks,
+          metrics.cost_micros,
+          metrics.conversions,
+          metrics.ctr,
+          metrics.average_cpc,
+          metrics.average_cpm
+        FROM campaign
+        WHERE campaign.id = ${campaignId}
+          AND segments.date BETWEEN '${startStr}' AND '${endStr}'`,
+      ),
+    ]);
 
     const data = results[0]?.metrics ?? {
       impressions: "0",
@@ -489,7 +528,7 @@ export class GoogleAdsClient implements IMarketingClient {
       impressions: parseInt(data.impressions, 10),
       clicks: parseInt(data.clicks, 10),
       spend: Math.round(parseInt(data.costMicros, 10) / 10000), // Convert micros to cents
-      spendCurrency: "USD", // TODO: Get from account settings
+      spendCurrency: currency,
       conversions: parseFloat(data.conversions),
       ctr: parseFloat(data.ctr) * 100, // Convert to percentage
       cpc: Math.round(parseInt(data.averageCpc, 10) / 10000), // Convert micros to cents
@@ -506,6 +545,7 @@ export class GoogleAdsClient implements IMarketingClient {
     ga: GoogleAdsCampaign,
     customerId: string,
     budget?: { amountMicros: string; },
+    currency: string = "USD",
   ): Campaign {
     const budgetMicros = parseInt(budget?.amountMicros || "0", 10);
 
@@ -518,7 +558,7 @@ export class GoogleAdsClient implements IMarketingClient {
       objective: mapGoogleAdsObjective(ga.advertisingChannelType),
       budgetType: "DAILY", // Google Ads uses daily budgets by default
       budgetAmount: Math.round(budgetMicros / 10000), // Convert micros to cents
-      budgetCurrency: "USD", // TODO: Get from account settings
+      budgetCurrency: currency,
       startDate: ga.startDate ? this.parseGoogleDate(ga.startDate) : null,
       endDate: ga.endDate ? this.parseGoogleDate(ga.endDate) : null,
       createdAt: new Date(), // Google Ads doesn't expose creation time in basic query

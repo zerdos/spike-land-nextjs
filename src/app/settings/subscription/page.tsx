@@ -15,6 +15,8 @@ import { useTier } from "@/hooks/useTier";
 import type { UpgradeTierId } from "@/hooks/useTierUpgrade";
 import { useTierUpgrade } from "@/hooks/useTierUpgrade";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useTokenPackPurchase } from "@/hooks/useTokenPackPurchase";
+import type { TokenPackageId } from "@/lib/stripe/client";
 import { ArrowLeft, Calendar, RefreshCw, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -41,6 +43,7 @@ export default function SubscriptionPage() {
 
   const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useTokenBalance();
   const { upgradeAndRedirect, isUpgrading, error: upgradeError } = useTierUpgrade();
+  const { purchaseAndRedirect, isPurchasing, error: purchaseError } = useTokenPackPurchase();
   const {
     scheduleDowngrade,
     cancelDowngrade,
@@ -147,12 +150,13 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Errors */}
-      {(tierError || upgradeError || downgradeError) && (
+      {(tierError || upgradeError || downgradeError || purchaseError) && (
         <div
           className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400"
           data-testid="error-message"
         >
-          {tierError?.message || upgradeError?.message || downgradeError?.message}
+          {tierError?.message || upgradeError?.message || downgradeError?.message ||
+            purchaseError?.message}
         </div>
       )}
 
@@ -230,9 +234,9 @@ export default function SubscriptionPage() {
             timeUntilNextRegen={premiumOptions.timeUntilNextRegen}
             tokenPacks={premiumOptions.tokenPacks}
             onPurchasePack={(packId) => {
-              // TODO: Implement token pack purchase
-              console.log("Purchase pack:", packId);
+              purchaseAndRedirect(packId as TokenPackageId);
             }}
+            isPurchasing={isPurchasing}
           />
         </div>
       )}

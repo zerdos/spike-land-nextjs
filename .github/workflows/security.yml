@@ -1,5 +1,8 @@
 name: Security Audit
 
+permissions:
+  contents: read
+
 on:
   # Run on every pull request
   pull_request:
@@ -15,8 +18,48 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Secret scanning with gitleaks
+  # Prevents accidental secret commits from being merged
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Required for gitleaks to scan git history
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_NOTIFY_USER_LIST: "@zerdos" # Notify repository owner
+
+      - name: Secret scan summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## ✅ Secret Scanning Passed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No secrets or sensitive data detected in this PR." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Secret Scanning Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**CRITICAL**: Potential secrets detected in this PR!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Required Actions:" >> $GITHUB_STEP_SUMMARY
+            echo "1. **DO NOT MERGE** this PR until secrets are removed" >> $GITHUB_STEP_SUMMARY
+            echo "2. Remove the secrets from your code" >> $GITHUB_STEP_SUMMARY
+            echo "3. If secrets were already pushed, they are compromised - rotate them immediately" >> $GITHUB_STEP_SUMMARY
+            echo "4. See [CREDENTIAL_ROTATION.md](docs/CREDENTIAL_ROTATION.md) for rotation procedures" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### For False Positives:" >> $GITHUB_STEP_SUMMARY
+            echo "Add the pattern to \`.gitleaksignore\` if this is a known false positive." >> $GITHUB_STEP_SUMMARY
+          fi
+
   security-audit:
-    name: Security Audit
+    name: Dependency Audit
     runs-on: ubuntu-latest
 
     steps:
@@ -71,6 +114,6 @@ jobs:
       - name: Success summary
         if: success()
         run: |
-          echo "## ✅ Security Audit Passed" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Dependency Audit Passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "No security vulnerabilities detected!" >> $GITHUB_STEP_SUMMARY
+          echo "No security vulnerabilities detected in dependencies!" >> $GITHUB_STEP_SUMMARY
