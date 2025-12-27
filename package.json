@@ -165,7 +165,6 @@
     "tsx@4.19.2": "4.21.0"
   },
   "workspaces": [
-    "apps/*",
     "packages/*"
   ]
 }
