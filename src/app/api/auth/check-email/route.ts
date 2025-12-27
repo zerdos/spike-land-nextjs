@@ -46,6 +46,11 @@ function getClientIP(request: NextRequest): string {
   return "unknown";
 }
 
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204 });
+}
+
 export async function POST(request: NextRequest) {
   // Check content length to prevent oversized payloads
   const contentLength = request.headers.get("content-length");

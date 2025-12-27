@@ -349,7 +349,10 @@ class AuthService {
       return { exists: false, hasPassword: false, providers: [] };
     }
 
-    return response.data;
+    return {
+      ...response.data,
+      providers: response.data.providers || [],
+    };
   }
 }
 
