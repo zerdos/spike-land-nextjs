@@ -132,7 +132,7 @@ export default function ReferralsScreen() {
       await Clipboard.setStringAsync(referralUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch (_err) {
       Alert.alert("Error", "Failed to copy to clipboard");
     }
   }, [referralUrl]);
@@ -157,8 +157,8 @@ export default function ReferralsScreen() {
           "Sharing is not available, but the link has been copied to your clipboard.",
         );
       }
-    } catch (err) {
-      console.error("Share error:", err);
+    } catch (_err) {
+      console.error("Share error:", _err);
     }
   }, [referralUrl, handleCopyLink]);
 

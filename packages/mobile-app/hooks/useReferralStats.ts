@@ -8,7 +8,6 @@ import {
   getReferralCode,
   getReferralStats,
   getReferredUsers,
-  ReferralCodeResponse,
   ReferralStatsResponse,
   ReferredUser,
 } from "../services/api/referrals";

@@ -7,20 +7,7 @@ import { ENHANCEMENT_COSTS, TOKEN_REGENERATION } from "@spike-npm-land/shared";
 import { Link, useRouter } from "expo-router";
 import { useCallback } from "react";
 import { RefreshControl, ScrollView, StyleSheet } from "react-native";
-import {
-  Button,
-  Card,
-  H1,
-  H3,
-  H4,
-  Paragraph,
-  Separator,
-  Spinner,
-  Text,
-  View,
-  XStack,
-  YStack,
-} from "tamagui";
+import { Button, Card, H1, H3, H4, Paragraph, Spinner, Text, View, XStack, YStack } from "tamagui";
 
 import { useTokenBalance } from "../../hooks";
 

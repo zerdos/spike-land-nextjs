@@ -3,7 +3,7 @@
  * Main gallery view with masonry grid, selection mode, and album filtering
  */
 
-import type { Album, EnhancedImage, EnhancementTier } from "@spike-npm-land/shared";
+import type { EnhancedImage, EnhancementTier } from "@spike-npm-land/shared";
 import {
   Check,
   CheckSquare,
@@ -20,7 +20,7 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Popover, Separator, Sheet, Stack, Text, XStack, YStack } from "tamagui";
+import { Button, Popover, Separator, Sheet, Text, XStack, YStack } from "tamagui";
 
 import { ImageGrid } from "@/components/gallery";
 import { useGalleryStore } from "@/stores";

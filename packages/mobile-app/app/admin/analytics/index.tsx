@@ -3,13 +3,11 @@
  * Shows platform analytics and metrics
  */
 
-import { useRouter } from "expo-router";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Card, Text, XStack, YStack } from "tamagui";
 
 export default function AdminAnalyticsScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   return (

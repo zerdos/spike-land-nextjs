@@ -31,7 +31,7 @@ import { useEnhancementStore, useTokenStore } from "../../stores";
 // ============================================================================
 
 function TokenBalanceCard() {
-  const { balance, maxBalance, isLoading, fetchBalance } = useTokenStore();
+  const { balance, isLoading, fetchBalance } = useTokenStore();
 
   useEffect(() => {
     fetchBalance();

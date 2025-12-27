@@ -16,7 +16,6 @@ import {
   calculateShippingCost,
   type CartItemWithDetails,
   formatPrice,
-  FREE_SHIPPING_THRESHOLD,
   getRemainingForFreeShipping,
   MAX_QUANTITY_PER_ITEM,
   useCartStore,
@@ -282,7 +281,7 @@ function LoadingState() {
 
 export default function CartScreen() {
   const queryClient = useQueryClient();
-  const { cart, setCart, setLoading, setError, getItemPrice } = useCartStore();
+  const { cart, setCart, setLoading, setError } = useCartStore();
   const [updatingItemId, setUpdatingItemId] = React.useState<string | null>(null);
 
   // Fetch cart

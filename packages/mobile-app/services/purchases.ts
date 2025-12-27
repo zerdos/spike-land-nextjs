@@ -182,7 +182,7 @@ class PurchasesService {
       }
 
       // Make the purchase through RevenueCat
-      const { customerInfo } = await Purchases.purchasePackage(pkg.rcPackage);
+      const { customerInfo: _customerInfo } = await Purchases.purchasePackage(pkg.rcPackage);
 
       // Verify the purchase with our backend
       const verifyResult = await this.verifyPurchase(

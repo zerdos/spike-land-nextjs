@@ -39,7 +39,7 @@ export default function CreateAlbumScreen() {
       } else {
         Alert.alert("Error", "Failed to create album. Please try again.");
       }
-    } catch (error) {
+    } catch (_error) {
       Alert.alert("Error", "An unexpected error occurred");
     } finally {
       setIsCreating(false);

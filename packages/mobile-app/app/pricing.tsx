@@ -6,7 +6,7 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Card, Text, XStack, YStack } from "tamagui";
+import { Button, Card, Text, YStack } from "tamagui";
 
 export default function PricingScreen() {
   const router = useRouter();

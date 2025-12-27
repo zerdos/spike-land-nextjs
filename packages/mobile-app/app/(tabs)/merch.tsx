@@ -6,7 +6,7 @@
 import type { MerchCategory } from "@spike-npm-land/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { Dimensions, FlatList, RefreshControl, TextInput } from "react-native";
 import {

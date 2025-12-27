@@ -7,7 +7,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Alert, FlatList, RefreshControl, TouchableOpacity } from "react-native";
-import { Card, H4, Paragraph, Text, View, XStack, YStack } from "tamagui";
+import { Card, H4, Text, View, XStack, YStack } from "tamagui";
 import { getJobs, JobSource, JobStatus, retryJob, UnifiedJob } from "../../../services/api/admin";
 
 // ============================================================================

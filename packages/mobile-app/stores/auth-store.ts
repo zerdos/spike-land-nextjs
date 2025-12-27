@@ -39,7 +39,7 @@ type AuthStore = AuthState & AuthActions;
 // Store
 // ============================================================================
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useAuthStore = create<AuthStore>((set, _get) => ({
   // Initial state
   user: null,
   isAuthenticated: false,

@@ -325,7 +325,7 @@ class AuthService {
       }
 
       return { success: true, user: response.data.user };
-    } catch (error) {
+    } catch (_error) {
       await this.signOut();
       return { success: false, error: "Session expired" };
     }

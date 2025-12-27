@@ -3,12 +3,7 @@
  * Handles token balance, purchases, and transactions
  */
 
-import type {
-  SubscriptionTier,
-  TokensPackage,
-  TokenTransaction,
-  UserTokenBalance,
-} from "@spike-npm-land/shared";
+import type { SubscriptionTier, TokensPackage, TokenTransaction } from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================

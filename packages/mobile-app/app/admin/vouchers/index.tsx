@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View as RNView,
 } from "react-native";
-import { Button, Card, H4, Paragraph, Text, View, XStack, YStack } from "tamagui";
+import { Card, H4, Text, View, XStack, YStack } from "tamagui";
 import {
   createVoucher,
   CreateVoucherRequest,

@@ -6,11 +6,7 @@
 import { calculateRegeneratedTokens, getTimeUntilNextRegen } from "@spike-npm-land/shared";
 import type { SubscriptionTier } from "@spike-npm-land/shared";
 import { create } from "zustand";
-import {
-  getTokenBalance,
-  redeemVoucher as redeemVoucherApi,
-  TokenBalanceResponse,
-} from "../services/api/tokens";
+import { getTokenBalance, redeemVoucher as redeemVoucherApi } from "../services/api/tokens";
 
 // ============================================================================
 // Types

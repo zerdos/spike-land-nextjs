@@ -3,7 +3,6 @@
  * Full-screen image viewer with swipe navigation
  */
 
-import type { EnhancedImage } from "@spike-npm-land/shared";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +15,7 @@ import {
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, Platform, Pressable, StatusBar, StyleSheet } from "react-native";
+import { Dimensions, Pressable, StatusBar, StyleSheet } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -34,7 +33,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function CanvasScreen() {
   const router = useRouter();
-  const { albumId } = useLocalSearchParams<{ albumId: string; }>();
+  const { albumId: _albumId } = useLocalSearchParams<{ albumId: string; }>();
   const insets = useSafeAreaInsets();
   const [showControls, setShowControls] = useState(true);
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,7 +157,7 @@ export default function CanvasScreen() {
 
   const doubleTapGesture = Gesture.Tap()
     .numberOfTaps(2)
-    .onEnd((e) => {
+    .onEnd((_e) => {
       if (scale.value > 1) {
         scale.value = withSpring(1);
         savedScale.value = 1;

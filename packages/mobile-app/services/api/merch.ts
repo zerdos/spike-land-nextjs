@@ -14,7 +14,7 @@ import type {
   MerchVariant,
   ShippingAddress,
 } from "@spike-npm-land/shared";
-import type { Cart, CartItemWithDetails } from "../../stores/cart-store";
+import type { Cart } from "../../stores/cart-store";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================

@@ -67,7 +67,7 @@ export function useTokenBalance(
     stopRegenTimer,
   } = useTokenStore();
 
-  const [stats, setStats] = useState<TokenBalanceStats | null>(null);
+  const [stats, _setStats] = useState<TokenBalanceStats | null>(null);
 
   // Fetch balance on mount
   useEffect(() => {

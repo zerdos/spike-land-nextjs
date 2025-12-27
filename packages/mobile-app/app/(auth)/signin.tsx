@@ -37,7 +37,7 @@ export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailCheckLoading, setEmailCheckLoading] = useState(false);
-  const [emailInfo, setEmailInfo] = useState<
+  const [_emailInfo, setEmailInfo] = useState<
     {
       exists: boolean;
       hasPassword: boolean;

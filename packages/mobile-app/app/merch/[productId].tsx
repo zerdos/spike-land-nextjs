@@ -25,14 +25,7 @@ import {
   YStack,
 } from "tamagui";
 
-import {
-  addToCart,
-  getCart,
-  getProduct,
-  getUserEnhancedImages,
-  type ProductWithDetails,
-  uploadMerchImage,
-} from "@/services";
+import { addToCart, getProduct, getUserEnhancedImages, uploadMerchImage } from "@/services";
 import { formatPrice, useCartStore } from "@/stores";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -76,7 +69,7 @@ function VariantSelector({
         <XStack gap="$2">
           {variants.map((variant) => {
             const isSelected = variant.id === selectedVariantId;
-            const price = basePrice + variant.priceDelta;
+            const _price = basePrice + variant.priceDelta;
 
             return (
               <Button
@@ -180,7 +173,7 @@ function ImageSelector({
           height: uploadResult.data.height,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       Alert.alert("Error", "Failed to pick image");
     } finally {
       setIsUploading(false);

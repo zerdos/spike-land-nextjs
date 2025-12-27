@@ -3,7 +3,7 @@
  * Handles job status polling and management
  */
 
-import type { ImageEnhancementJob, JobStatus, PipelineStage } from "@spike-npm-land/shared";
+import type { ImageEnhancementJob, PipelineStage } from "@spike-npm-land/shared";
 import { API_CONFIG } from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 

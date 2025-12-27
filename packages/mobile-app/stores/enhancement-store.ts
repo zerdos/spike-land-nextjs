@@ -5,7 +5,7 @@
 
 import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-npm-land/shared";
 import { create } from "zustand";
-import { getImages, ImagesListResponse } from "../services/api/images";
+import { getImages } from "../services/api/images";
 
 // ============================================================================
 // Types
@@ -179,7 +179,7 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
     set({ currentJobId: jobId, currentJobStatus: jobId ? "QUEUED" : null });
   },
 
-  checkJobStatus: async (jobId) => {
+  checkJobStatus: async (_jobId) => {
     // In a real implementation, this would call the jobs API
     // For now, just return the current status
     return get().currentJobStatus;

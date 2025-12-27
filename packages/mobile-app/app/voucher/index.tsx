@@ -4,7 +4,6 @@
  */
 
 import { Gift, Ticket } from "@tamagui/lucide-icons";
-import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,7 +12,6 @@ import { Button, Card, Input, Spinner, Text, XStack, YStack } from "tamagui";
 import { useTokenStore } from "@/stores";
 
 export default function VoucherRedemptionScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [code, setCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -47,7 +45,7 @@ export default function VoucherRedemptionScreen() {
           message: response.error || "Failed to redeem voucher",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       setResult({
         success: false,
         message: "An unexpected error occurred",

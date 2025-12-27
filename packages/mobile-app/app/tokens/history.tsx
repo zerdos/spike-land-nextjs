@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet } from "react-native";
 import { Button, Card, H4, Paragraph, Spinner, Text, View, XStack, YStack } from "tamagui";
 
-import { getTokenHistory, TokenHistoryResponse } from "../../services/api/tokens";
+import { getTokenHistory } from "../../services/api/tokens";
 
 // ============================================================================
 // Types

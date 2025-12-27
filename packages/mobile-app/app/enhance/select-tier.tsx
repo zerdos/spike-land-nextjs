@@ -4,7 +4,6 @@
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import type { EnhancementTier } from "@spike-npm-land/shared";
 import { ENHANCEMENT_COSTS, IMAGE_CONSTRAINTS } from "@spike-npm-land/shared";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
@@ -16,7 +15,6 @@ import {
   Card,
   H3,
   H4,
-  Paragraph,
   Progress,
   ScrollView,
   Separator,

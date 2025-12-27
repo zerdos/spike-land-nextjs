@@ -26,10 +26,8 @@ export default function AlbumsListScreen() {
   // Store state
   const {
     albums,
-    images,
     isLoadingAlbums,
     fetchAlbums,
-    fetchImages,
   } = useGalleryStore();
 
   // Fetch albums on mount
@@ -46,7 +44,7 @@ export default function AlbumsListScreen() {
 
   // Get image count for album
   const getAlbumImageCount = useCallback(
-    (albumId: string) => {
+    (_albumId: string) => {
       // In a real app, this would be from the album data
       // For now, we just return 0
       return 0;
@@ -56,7 +54,7 @@ export default function AlbumsListScreen() {
 
   // Get cover image URL for album
   const getCoverImageUrl = useCallback(
-    (album: Album) => {
+    (_album: Album) => {
       // In a real app, this would be from the album's cover image
       return undefined;
     },
@@ -76,7 +74,7 @@ export default function AlbumsListScreen() {
 
   // Handle album long press
   const handleAlbumLongPress = useCallback(
-    (album: Album) => {
+    (_album: Album) => {
       // Could show a context menu here
     },
     [],
