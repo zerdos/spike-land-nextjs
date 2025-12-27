@@ -3,7 +3,7 @@
  * Displays album images with header, settings, and batch operations
  */
 
-import type { EnhancedImage, EnhancementTier } from "@spike-npm-land/shared ";
+import type { EnhancedImage, EnhancementTier } from "@spike-npm-land/shared";
 import {
   ArrowLeft,
   Check,

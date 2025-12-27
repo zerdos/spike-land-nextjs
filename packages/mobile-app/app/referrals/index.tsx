@@ -3,7 +3,7 @@
  * Displays referral code, stats, and referred users
  */
 
-import { REFERRAL_CONFIG } from "@spike-npm-land/shared ";
+import { REFERRAL_CONFIG } from "@spike-npm-land/shared";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import { useCallback, useState } from "react";

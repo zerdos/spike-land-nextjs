@@ -37,7 +37,7 @@ export default function CanvasScreen() {
   const { albumId } = useLocalSearchParams<{ albumId: string; }>();
   const insets = useSafeAreaInsets();
   const [showControls, setShowControls] = useState(true);
-  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store state
   const { images, slideshowIndex: currentSlideshowIndex, goToSlide } = useGalleryStore();
@@ -244,7 +244,7 @@ export default function CanvasScreen() {
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[styles.imageContainer, animatedStyle]}>
           <Image
-            source={{ uri: currentImage.enhancedUrl || currentImage.originalUrl }}
+            source={{ uri: currentImage.originalUrl }}
             style={styles.image}
             contentFit="contain"
           />
