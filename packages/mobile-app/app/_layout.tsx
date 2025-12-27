@@ -85,6 +85,34 @@ function RootLayoutNav() {
                 presentation: "card",
               }}
             />
+            <Stack.Screen name="tokens" options={{ headerShown: false }} />
+            <Stack.Screen name="referrals" options={{ headerShown: false }} />
+            <Stack.Screen name="admin" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="enhance/upload"
+              options={{ title: "Upload Image", headerShown: true }}
+            />
+            <Stack.Screen
+              name="enhance/select-tier"
+              options={{ title: "Select Tier", headerShown: true }}
+            />
+            <Stack.Screen
+              name="merch/[productId]"
+              options={{ title: "Product", headerShown: true }}
+            />
+            <Stack.Screen
+              name="cart/index"
+              options={{ title: "Cart", headerShown: true }}
+            />
+            <Stack.Screen
+              name="album/[id]"
+              options={{ title: "Album", headerShown: true }}
+            />
+            <Stack.Screen
+              name="albums/index"
+              options={{ title: "Albums", headerShown: true }}
+            />
+            <Stack.Screen name="voucher" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>
       </TamaguiProvider>
