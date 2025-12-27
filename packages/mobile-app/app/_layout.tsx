@@ -97,6 +97,18 @@ function RootLayoutNav() {
               options={{ title: "Select Tier", headerShown: true }}
             />
             <Stack.Screen
+              name="enhance/processing"
+              options={{ title: "Processing", headerShown: false }}
+            />
+            <Stack.Screen
+              name="pricing"
+              options={{ title: "Pricing", headerShown: true }}
+            />
+            <Stack.Screen
+              name="checkout"
+              options={{ title: "Checkout", headerShown: true }}
+            />
+            <Stack.Screen
               name="merch/[productId]"
               options={{ title: "Product", headerShown: true }}
             />

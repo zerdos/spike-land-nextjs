@@ -44,7 +44,7 @@ export default function CreateAlbumScreen() {
     } finally {
       setIsCreating(false);
     }
-  }, [name, description, createAlbum, router]);
+  }, [name, description, createNewAlbum, router]);
 
   return (
     <KeyboardAvoidingView

@@ -30,6 +30,10 @@ interface EnhancementState {
   currentImageUri: string | null;
   currentImageId: string | null;
   selectedTier: EnhancementTier | null;
+
+  // Current job tracking
+  currentJobId: string | null;
+  currentJobStatus: string | null;
 }
 
 interface EnhancementActions {
@@ -44,6 +48,10 @@ interface EnhancementActions {
   setCurrentImage: (uri: string | null, id?: string | null) => void;
   setSelectedTier: (tier: EnhancementTier | null) => void;
   clearCurrentEnhancement: () => void;
+
+  // Job tracking
+  setCurrentJobId: (jobId: string | null) => void;
+  checkJobStatus: (jobId: string) => Promise<string | null>;
 }
 
 type EnhancementStore = EnhancementState & EnhancementActions;
@@ -69,6 +77,9 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
   currentImageUri: null,
   currentImageId: null,
   selectedTier: null,
+
+  currentJobId: null,
+  currentJobStatus: null,
 
   // Actions
   fetchRecentImages: async (refresh = false) => {
@@ -159,7 +170,19 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
       currentImageUri: null,
       currentImageId: null,
       selectedTier: null,
+      currentJobId: null,
+      currentJobStatus: null,
     });
+  },
+
+  setCurrentJobId: (jobId) => {
+    set({ currentJobId: jobId, currentJobStatus: jobId ? "QUEUED" : null });
+  },
+
+  checkJobStatus: async (jobId) => {
+    // In a real implementation, this would call the jobs API
+    // For now, just return the current status
+    return get().currentJobStatus;
   },
 }));
 
