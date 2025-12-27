@@ -191,15 +191,3 @@ export function isAllowedMimeType(mimeType: string): boolean {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
   return allowed.includes(mimeType);
 }
-
-/**
- * Generate a share token for images/albums
- */
-export function generateShareToken(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < 16; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
