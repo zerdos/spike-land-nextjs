@@ -458,8 +458,21 @@ When(
 
     const link = this.page.getByRole("link", { name: linkText });
     await expect(link).toBeVisible({ timeout: 10000 });
+
+    // Click and wait for URL to change instead of networkidle
+    // (networkidle can timeout if there are long-polling or SSE connections)
+    const currentUrl = this.page.url();
     await link.click();
-    await this.page.waitForLoadState("networkidle");
+
+    // Wait for URL to change (handles both server and client-side navigation)
+    await this.page.waitForFunction(
+      (oldUrl) => window.location.href !== oldUrl,
+      currentUrl,
+      { timeout: 15000 },
+    ).catch(() => {});
+
+    // Brief wait for page to stabilize
+    await this.page.waitForLoadState("domcontentloaded");
   },
 );
 
