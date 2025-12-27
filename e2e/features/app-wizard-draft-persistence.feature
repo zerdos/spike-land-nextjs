@@ -34,7 +34,7 @@ Feature: App Creation Wizard - Draft Auto-Save & Persistence
   @slow @integration
   Scenario: Draft is cleared after successful submission
     Given I complete all wizard steps with valid data
-    When I click the "Submit" button
+    When I click the "Create App" button
     Then the draft should be removed from localStorage
     And the draft indicator should not be visible
 

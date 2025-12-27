@@ -202,7 +202,9 @@ Then(
     await expect(select).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     // Open dropdown and verify option exists
     await select.click();
-    const optionElement = this.page.getByRole("option", { name: new RegExp(option, "i") });
+    // Use exact match pattern to avoid "Free" matching "Freemium"
+    const optionPattern = new RegExp(`^${option}\\s*-`, "i");
+    const optionElement = this.page.getByRole("option", { name: optionPattern });
     await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.SHORT });
     // Close dropdown by pressing Escape
     await this.page.keyboard.press("Escape");

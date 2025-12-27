@@ -103,8 +103,10 @@ export class AppCreationWizard {
   ) {
     // Click the select trigger to open dropdown
     await this.page.getByTestId("monetization-select").click();
-    // Wait for dropdown to open and click the option by partial text match
-    await this.page.getByRole("option", { name: new RegExp(option, "i") }).click();
+    // Wait for dropdown to open and click the option
+    // Use exact match pattern to avoid "Free" matching "Freemium"
+    const optionPattern = new RegExp(`^${option}\\s*-`, "i");
+    await this.page.getByRole("option", { name: optionPattern }).click();
   }
 
   async getPriceInput() {
