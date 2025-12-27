@@ -205,8 +205,10 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     && apt-get install -y --no-install-recommends procps
 
 RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/ms-playwright,sharing=locked \
-    /app/node_modules/.bin/playwright install chromium --with-deps
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
+    mkdir -p /ms-playwright \
+    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache /app/node_modules/.bin/playwright install chromium --with-deps \
+    && cp -a /tmp/pw-cache/* /ms-playwright/
 
 # ============================================================================
 # STAGE 10: E2E Test Base
