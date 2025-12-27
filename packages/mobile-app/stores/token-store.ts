@@ -6,7 +6,11 @@
 import { calculateRegeneratedTokens, getTimeUntilNextRegen } from "@spike-npm-land/shared";
 import type { SubscriptionTier } from "@spike-npm-land/shared";
 import { create } from "zustand";
-import { getTokenBalance, TokenBalanceResponse } from "../services/api/tokens";
+import {
+  getTokenBalance,
+  redeemVoucher as redeemVoucherApi,
+  TokenBalanceResponse,
+} from "../services/api/tokens";
 
 // ============================================================================
 // Types
@@ -27,6 +31,7 @@ interface TokenActions {
   updateBalance: (newBalance: number) => void;
   deductTokens: (amount: number) => void;
   addTokens: (amount: number) => void;
+  redeemVoucher: (code: string) => Promise<{ success: boolean; tokens?: number; error?: string; }>;
   startRegenTimer: () => void;
   stopRegenTimer: () => void;
 }
@@ -99,6 +104,23 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     set((state) => ({
       balance: Math.min(state.maxBalance, state.balance + amount),
     }));
+  },
+
+  redeemVoucher: async (code) => {
+    try {
+      const response = await redeemVoucherApi(code);
+      if (response.error || !response.data) {
+        return { success: false, error: response.error || "Failed to redeem voucher" };
+      }
+
+      set({ balance: response.data.newBalance });
+      return { success: true, tokens: response.data.tokensGranted };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to redeem voucher",
+      };
+    }
   },
 
   startRegenTimer: () => {

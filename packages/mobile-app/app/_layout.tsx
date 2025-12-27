@@ -112,6 +112,14 @@ function RootLayoutNav() {
               name="albums/index"
               options={{ title: "Albums", headerShown: true }}
             />
+            <Stack.Screen
+              name="albums/create"
+              options={{ title: "Create Album", headerShown: true }}
+            />
+            <Stack.Screen
+              name="canvas/[albumId]"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="voucher" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>
