@@ -6,13 +6,11 @@ Feature: Pricing Page Verification
   Background:
     Given I visit "/pricing"
 
-  
   Scenario: Pricing page displays correctly
     Then I should be on the "/pricing" page
     And I should see "Pricing" heading
     And I should see "Get tokens to enhance your images with AI" text
 
-  
   Scenario: Token usage information displays
     When I view the pricing page
     Then I should see "Token Usage" text
@@ -20,14 +18,12 @@ Feature: Pricing Page Verification
     And I should see "2K" enhancement cost
     And I should see "4K" enhancement cost
 
-  
   Scenario: Only token packs are displayed
     When I view the pricing page
     Then I should see "Token Packs" text
     And I should see 4 token pack options
     And I should not see any subscription options
 
-  
   Scenario: Token packs display correct information
     When I view the pricing page
     Then each token pack should display:
@@ -38,18 +34,15 @@ Feature: Pricing Page Verification
       | Price per token |
       | Buy button   |
 
-  
   Scenario: Pro pack is marked as most popular
     When I view the pricing page
     Then I should see "Most Popular" badge on the pro pack
 
-  
   Scenario: Token pack prices are in GBP
     When I view the pricing page
     Then all prices should be displayed in GBP currency
     And I should see the "£" symbol on all prices
 
-  
   Scenario: FAQ section displays
     When I view the pricing page
     Then I should see "FAQ" text
@@ -57,7 +50,6 @@ Feature: Pricing Page Verification
     And I should see "Do tokens expire?" question
     And I should see "How do I get more tokens?" question
 
-  
   Scenario: Unauthenticated user clicks buy button
     Given I am not logged in
     When I click the buy button for a token pack
@@ -83,20 +75,17 @@ Feature: Pricing Page Verification
       | pro      |
       | premium  |
 
-  
   Scenario: Token pack value proposition displays
     When I view the pricing page
     Then each pack should show price per token
     And premium pack should have the best price per token
 
-  
   Scenario: Loading state during purchase
     Given I am logged in as "Test User" with email "test@example.com"
     When I click the buy button for a token pack
     Then the button should show "Processing..." text
     And the button should be disabled during processing
 
-  
   Scenario: No subscription interval mentioned
     When I view the pricing page
     Then I should not see "monthly" text
@@ -104,7 +93,6 @@ Feature: Pricing Page Verification
     And I should not see "subscription" text
     And I should not see "recurring" text
 
-  
   Scenario: Starter pack displays correctly
     When I view the pricing page
     Then the starter pack should display:
@@ -112,7 +100,6 @@ Feature: Pricing Page Verification
       | Name      | Starter |
       | Tokens    | 10     |
 
-  
   Scenario: Basic pack displays correctly
     When I view the pricing page
     Then the basic pack should display:
@@ -120,7 +107,6 @@ Feature: Pricing Page Verification
       | Name      | Basic |
       | Tokens    | 25    |
 
-  
   Scenario: Pro pack displays correctly
     When I view the pricing page
     Then the pro pack should display:
@@ -128,7 +114,6 @@ Feature: Pricing Page Verification
       | Name      | Pro   |
       | Tokens    | 100   |
 
-  
   Scenario: Premium pack displays correctly
     When I view the pricing page
     Then the premium pack should display:

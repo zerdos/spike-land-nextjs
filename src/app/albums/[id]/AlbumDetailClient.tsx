@@ -61,7 +61,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     saveSettings,
     deleteAlbum,
     updateLocalAlbum,
-    originalOrderRef,
   } = useAlbumData(albumId, {
     onDeleteComplete: () => router.push(ROUTES.albums),
     onError: (err) => {
@@ -78,7 +77,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     exitSelectionMode,
     toggleSelectAll,
     toggleImageSelection,
-    clearSelections,
   } = useImageSelection();
 
   // Image reorder hook
@@ -91,7 +89,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
     handleDragLeave: reorderDragLeave,
     handleDrop: reorderDrop,
     handleDragEnd: reorderDragEnd,
-    setOriginalOrder,
   } = useImageReorder({
     albumId,
     onError: (err) => {
@@ -102,7 +99,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
 
   // Blend drag-drop hook
   const {
-    blendDragSourceId,
     blendDropTargetId,
     blendingImageId,
     handleBlendDragStart,
@@ -186,13 +182,6 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
       }
     },
   });
-
-  // Update original order when album loads
-  const handleAlbumImageOrderInit = useCallback(() => {
-    if (album) {
-      setOriginalOrder(album.images.map((img) => img.id));
-    }
-  }, [album, setOriginalOrder]);
 
   // Get image URL based on display type
   const getImageUrl = useCallback(

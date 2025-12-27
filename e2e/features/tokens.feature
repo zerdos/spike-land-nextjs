@@ -111,7 +111,6 @@ Feature: Token Management
     And I enter the voucher code "lowercase"
     Then the voucher input should show "LOWERCASE"
 
-  
   Scenario: Token balance displayed in header on enhance page
     Given I have 25 tokens
     And I am on the enhance page

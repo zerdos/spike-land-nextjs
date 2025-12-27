@@ -1,6 +1,5 @@
 # Authentication bypass fixed in src/auth.ts - See GitHub issue #435
-# @skip due to localStorage timing issues - needs investigation (see GitHub issue #437)
-@skip
+# localStorage timing issues fixed in PR for issue #437
 Feature: App Creation Wizard - Draft Auto-Save & Persistence
   As an authenticated user
   I want my app creation progress to be automatically saved
