@@ -25,17 +25,14 @@ import {
   DEFAULT_IMAGE_DIMENSION,
   ENHANCED_JPEG_QUALITY,
   type EnhanceImageInput,
-  ERROR_BOUNDARIES,
   generateEnhancedR2Key,
   PADDING_BACKGROUND,
-  recordFatalFailure,
   recordSoftFailure,
   recordStageSuccess,
   TIER_TO_SIZE,
   validateCropDimensions,
   type WorkflowContext,
   WorkflowStage,
-  WorkflowStageError,
 } from "./enhance-image.shared";
 
 export type { EnhanceImageInput };
