@@ -101,7 +101,7 @@ export function EnhancementSettings({
       {(imageUrl || imageName) && (
         <div className="flex gap-4">
           {imageUrl && (
-            <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/10">
               <Image
                 src={imageUrl}
                 alt={imageName || "Selected image"}
@@ -126,7 +126,7 @@ export function EnhancementSettings({
               id="image-name"
               value={imageName || ""}
               readOnly
-              className="bg-white/5"
+              className="bg-white/10"
             />
           </div>
         </div>
@@ -196,7 +196,7 @@ export function EnhancementSettings({
                   htmlFor={tier}
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-xl border cursor-pointer transition-all duration-200",
-                    "border-white/10 bg-white/5 hover:bg-white/10",
+                    "border-white/10 bg-white/10 hover:bg-white/15",
                     isSelected &&
                       "border-primary bg-primary/10 shadow-[0_0_20px_rgba(0,229,255,0.3)]",
                     !canAfford && "opacity-50 cursor-not-allowed",

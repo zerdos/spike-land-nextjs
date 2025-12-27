@@ -81,11 +81,35 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    // CORS headers for API routes (allows mobile app in development)
+    const corsHeaders = [
+      {
+        key: "Access-Control-Allow-Origin",
+        value: process.env.NODE_ENV === "development" ? "*" : "https://spike.land",
+      },
+      {
+        key: "Access-Control-Allow-Methods",
+        value: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      },
+      {
+        key: "Access-Control-Allow-Headers",
+        value: "Content-Type, Authorization, X-API-Key",
+      },
+      {
+        key: "Access-Control-Max-Age",
+        value: "86400",
+      },
+    ];
+
     // Apply security headers to all routes
     // Note: X-Frame-Options: SAMEORIGIN and frame-ancestors 'self' allow
     // same-origin iframes (used by admin sitemap preview) while preventing
     // cross-origin clickjacking attacks
     return [
+      {
+        source: "/api/:path*",
+        headers: corsHeaders,
+      },
       {
         source: "/:path*",
         headers: securityHeaders,

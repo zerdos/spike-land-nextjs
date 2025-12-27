@@ -55,7 +55,7 @@ export const PERSONAS: Persona[] = [
     ],
     triggers: [
       "Family birthdays and anniversaries",
-      "Christmas/holiday gatherings",
+      "Family gatherings",
       "Grandparent health scares",
       "Visiting family home",
     ],

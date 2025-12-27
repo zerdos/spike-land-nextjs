@@ -109,7 +109,7 @@ describe("Tabs Component", () => {
       expect(inactiveTab).toHaveClass("text-muted-foreground/70");
       // Verify hover states are present
       expect(inactiveTab).toHaveClass("hover:text-muted-foreground");
-      expect(inactiveTab).toHaveClass("hover:bg-white/5");
+      expect(inactiveTab).toHaveClass("hover:bg-white/10");
     });
 
     it("should have minimum tap target size for accessibility", () => {

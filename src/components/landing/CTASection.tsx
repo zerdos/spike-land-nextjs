@@ -9,11 +9,11 @@ export function CTASection() {
     <section className="bg-gradient-primary py-20 text-primary-foreground relative overflow-hidden">
       <div className="container mx-auto px-4 text-center relative z-10">
         <h2 className="mb-6 text-3xl font-bold sm:text-4xl">
-          Christmas is coming.
+          Blend your photos. Create something new.
         </h2>
         <p className="mx-auto mb-10 max-w-2xl text-lg opacity-95 leading-relaxed">
-          Dig out those old photos before the family visits. Restore them. Impress your grandma.
-          Maybe make someone cry (in a good way — it&apos;s happened).
+          Combine two images into something unexpected. Mix old with new, portraits with landscapes,
+          memories with dreams. Our Photo Mixer uses AI to blend them seamlessly.
         </p>
         <Button
           asChild
@@ -21,9 +21,9 @@ export function CTASection() {
           variant="secondary"
           className="text-base font-semibold shadow-xl"
         >
-          <Link href="/pixel">
+          <Link href="/apps/pixel/mix">
             <Sparkles className="mr-2 h-5 w-5" />
-            Try Pixel for free
+            Try Photo Mixer
           </Link>
         </Button>
       </div>

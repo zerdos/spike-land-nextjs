@@ -29,7 +29,7 @@ export default function StorybookPage() {
                 <CardHeader className="p-5">
                   <div className="flex items-center gap-3">
                     {Icon && (
-                      <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-glow-cyan transition-all duration-300">
+                      <div className="p-2.5 rounded-xl bg-white/10 border border-white/10 text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-glow-cyan transition-all duration-300">
                         <Icon className="h-5 w-5" />
                       </div>
                     )}
@@ -49,7 +49,7 @@ export default function StorybookPage() {
 
       {/* Footer */}
       <div className="pt-8 border-t border-white/5 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-3">
           <div className="w-1 h-1 rounded-full bg-success" />
           Stable Version 1.2.0
         </div>

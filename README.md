@@ -19,6 +19,30 @@ pipeline.
 - 🔒 **Branch Protection** - Enforced code quality standards
 - 📊 **Code Coverage** - Codecov integration
 
+## 📦 Monorepo Structure
+
+This project is a monorepo containing multiple packages:
+
+| Package                                 | Description                            | Documentation                                    |
+| --------------------------------------- | -------------------------------------- | ------------------------------------------------ |
+| **Web App** (`src/`)                    | Next.js 15 web application             | This README                                      |
+| **Mobile App** (`packages/mobile-app/`) | Expo/React Native mobile app           | [Mobile README](./packages/mobile-app/README.md) |
+| **Shared** (`packages/shared/`)         | Shared types, constants, and utilities | [Shared README](./packages/shared/README.md)     |
+
+### Cross-Platform Code Sharing
+
+The `@spike-npm-land/shared` package provides:
+
+- **Types** - TypeScript interfaces from Prisma schema
+- **Constants** - Token costs, limits, and configuration
+- **Validations** - Zod schemas for API requests
+- **Utilities** - Formatting and calculation helpers
+
+```typescript
+// Import in web or mobile app
+import { ENHANCEMENT_COSTS, formatCurrency, User } from "@spike-npm-land/shared";
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites

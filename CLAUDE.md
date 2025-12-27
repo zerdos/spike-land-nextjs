@@ -22,14 +22,16 @@ documentation.
 
 **DO NOT duplicate content from these docs in this file. Link to them instead.**
 
-| Topic                      | Document                                             |
-| -------------------------- | ---------------------------------------------------- |
-| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)               |
-| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)     |
-| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)       |
-| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) |
-| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)   |
-| Development Setup          | [README.md](./README.md)                             |
+| Topic                      | Document                                                         |
+| -------------------------- | ---------------------------------------------------------------- |
+| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)                           |
+| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)                 |
+| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)                   |
+| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)             |
+| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)               |
+| Development Setup          | [README.md](./README.md)                                         |
+| Mobile App                 | [packages/mobile-app/README.md](./packages/mobile-app/README.md) |
+| Shared Package             | [packages/shared/README.md](./packages/shared/README.md)         |
 
 ---
 
@@ -274,6 +276,8 @@ cd ../main && git worktree remove ../feature-name
 
 ### Development Commands
 
+**Web App:**
+
 ```bash
 yarn dev              # Start dev server (http://localhost:3000)
 yarn build            # Build for production
@@ -282,7 +286,27 @@ yarn test:coverage    # Unit tests with 100% coverage
 yarn test:e2e:local   # E2E tests (requires dev server)
 ```
 
+**Mobile App:**
+
+```bash
+cd packages/mobile-app
+yarn start            # Start Expo dev server
+yarn ios              # Run on iOS Simulator
+yarn android          # Run on Android Emulator
+yarn web              # Run in web browser
+```
+
+**Shared Package:**
+
+```bash
+cd packages/shared
+yarn build            # Build shared package
+yarn dev              # Watch mode
+```
+
 ### Tech Stack
+
+**Web App:**
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript (strict mode)
@@ -290,18 +314,41 @@ yarn test:e2e:local   # E2E tests (requires dev server)
 - **Testing**: Vitest + Playwright + Cucumber
 - **CI/CD**: GitHub Actions + Vercel
 
-### Directory Structure
+**Mobile App:**
+
+- **Framework**: Expo 52, React Native 0.76
+- **Navigation**: Expo Router (file-based)
+- **UI**: Tamagui
+- **State**: Zustand, React Query
+
+### Directory Structure (Monorepo)
 
 ```
-src/
-├── app/           # Next.js App Router pages
-├── components/    # React components
-│   └── ui/        # shadcn/ui components
-└── lib/           # Utilities
-
-e2e/
-├── features/      # Cucumber feature files
-└── step-definitions/  # Playwright steps
+spike-land-nextjs/
+├── src/                      # Web app (Next.js)
+│   ├── app/                  # App Router pages
+│   ├── components/           # React components
+│   │   └── ui/               # shadcn/ui components
+│   └── lib/                  # Utilities
+│
+├── packages/
+│   ├── mobile-app/           # Mobile app (Expo)
+│   │   ├── app/              # Expo Router pages
+│   │   ├── components/       # Mobile components
+│   │   ├── hooks/            # Custom hooks
+│   │   ├── services/         # API clients
+│   │   └── stores/           # Zustand stores
+│   │
+│   └── shared/               # Shared code
+│       └── src/
+│           ├── types/        # TypeScript types
+│           ├── constants/    # Shared constants
+│           ├── validations/  # Zod schemas
+│           └── utils/        # Utility functions
+│
+└── e2e/
+    ├── features/             # Cucumber feature files
+    └── step-definitions/     # Playwright steps
 ```
 
 See [README.md](./README.md) for full development setup.

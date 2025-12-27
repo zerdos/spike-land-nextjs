@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
-  "flex h-12 w-full rounded-xl border-none glass-input px-4 py-2 text-base text-foreground transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-black/40 disabled:cursor-not-allowed disabled:grayscale disabled:bg-white/5 disabled:opacity-50 md:text-sm",
+  "flex h-12 w-full rounded-xl border-none glass-input px-4 py-2 text-base text-foreground transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-black/40 disabled:cursor-not-allowed disabled:grayscale disabled:bg-white/10 disabled:opacity-60 md:text-sm",
   {
     variants: {
       variant: {

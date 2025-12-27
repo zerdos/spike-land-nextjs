@@ -226,10 +226,10 @@ export default function DataDisplayPage() {
               <Label className="text-xs text-muted-foreground">Copy Code</Label>
               <div className="relative">
                 <pre className="bg-muted p-4 rounded-lg text-sm font-mono overflow-x-auto">
-                  {`npm install @spike-land/pixel-sdk`}
+                  {`npm install @spike-npm-land/pixel-sdk`}
                 </pre>
                 <div className="absolute top-2 right-2">
-                  <CopyButton text="npm install @spike-land/pixel-sdk" />
+                  <CopyButton text="npm install @spike-npm-land/pixel-sdk" />
                 </div>
               </div>
             </div>

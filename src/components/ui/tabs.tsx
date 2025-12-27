@@ -137,7 +137,7 @@ const TabsTrigger = React.forwardRef<
       // Inactive state - improved visibility (70% vs 30%)
       "text-muted-foreground/70",
       // Hover state for inactive tabs
-      "hover:text-muted-foreground hover:bg-white/5",
+      "hover:text-muted-foreground hover:bg-white/10",
       // Active state - enhanced visibility
       "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]",
       className,

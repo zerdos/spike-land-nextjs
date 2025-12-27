@@ -11,7 +11,7 @@ const cardVariants = cva(
         default:
           "glass-1 glass-edge text-card-foreground shadow-lg active:scale-[0.99] active:duration-150",
         solid:
-          "bg-secondary text-secondary-foreground border border-white/5 shadow-sm active:scale-[0.99]",
+          "bg-secondary text-secondary-foreground border border-white/10 shadow-sm active:scale-[0.99]",
         highlighted:
           "glass-1 glass-edge text-card-foreground shadow-glow-cyan backdrop-blur-[14px] ring-1 ring-primary/30 active:scale-[1.0]",
         dashed:
