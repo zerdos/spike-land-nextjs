@@ -45,16 +45,16 @@ Feature: Pricing Page Verification
 
   Scenario: FAQ section displays
     When I view the pricing page
-    Then I should see "FAQ" text
+    Then I should see "Frequently Asked Questions" text
     And I should see "What are tokens used for?" question
     And I should see "Do tokens expire?" question
-    And I should see "How do I get more tokens?" question
+    And I should see "Which pack should I choose?" question
 
-  Scenario: Unauthenticated user clicks buy button
+  Scenario: Unauthenticated user sees sign-in prompt
     Given I am not logged in
-    When I click the buy button for a token pack
-    Then I should be redirected to the sign-in page
-    And the callback URL should point to pricing page
+    When I view the pricing page
+    Then I should not see any buy buttons
+    And I should see "Sign in to get free tokens" link
 
   @requires-db
   Scenario: Authenticated user clicks buy button

@@ -42,9 +42,12 @@ When("I click the buy button for the {string} pack", async function(
 Then(
   "I should see {int} token pack options",
   async function(this: CustomWorld, count: number) {
-    const cards = this.page.locator('[class*="Card"]').filter({
-      hasText: /tokens/,
-    });
+    // Use data-testid for reliable selection
+    const packagesGrid = this.page.locator('[data-testid="token-packages-grid"]');
+    await expect(packagesGrid).toBeVisible({ timeout: 10000 });
+
+    // Count cards using data-testid pattern
+    const cards = this.page.locator('[data-testid^="package-card-"]');
     const cardCount = await cards.count();
     expect(cardCount).toBeGreaterThanOrEqual(count);
   },
@@ -57,6 +60,15 @@ Then(
       /subscription|monthly|yearly/i,
     );
     await expect(subscriptionText).not.toBeVisible();
+  },
+);
+
+Then(
+  "I should not see any buy buttons",
+  async function(this: CustomWorld) {
+    // Buy buttons are only visible for authenticated users
+    const buyButtons = this.page.getByRole("button", { name: /buy now/i });
+    await expect(buyButtons).toHaveCount(0);
   },
 );
 
@@ -197,11 +209,13 @@ Then(
 Then(
   "power pack should have the best price per token",
   async function(this: CustomWorld) {
-    // Verify power pack is visible with price per token info
-    const powerCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /power/i,
-    });
-    await expect(powerCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    // Verify power pack is visible using data-testid
+    const powerCard = this.page.locator('[data-testid="package-card-power"]');
+    await expect(powerCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Verify it has the "Best Value" badge
+    const bestValueBadge = powerCard.getByText("Best Value");
+    await expect(bestValueBadge).toBeVisible();
   },
 );
 
@@ -321,9 +335,9 @@ Then(
   "the power pack should display:",
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
-    const powerCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /power/i,
-    });
+    // Use data-testid for reliable selection
+    const powerCard = this.page.locator('[data-testid="package-card-power"]');
+    await expect(powerCard).toBeVisible({ timeout: 10000 });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
