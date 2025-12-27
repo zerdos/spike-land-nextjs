@@ -646,6 +646,8 @@ Then(
     const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
     const field = this.page.locator(`[data-testid="${testId}"]`)
       .or(this.page.locator(`[data-testid="${testId}-input"]`))
+      .or(this.page.locator(`[data-testid="${testId}-textarea"]`))
+      .or(this.page.locator(`[data-testid="app-${testId}-textarea"]`))
       .or(this.page.getByLabel(new RegExp(fieldName, "i")));
     await expect(field.first()).toHaveValue(value);
   },

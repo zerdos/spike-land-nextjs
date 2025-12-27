@@ -197,15 +197,15 @@ Then(
 Then(
   "I should see the {string} monetization option",
   async function(this: CustomWorld, option: string) {
-    // Try testid first, fall back to role selector
-    try {
-      const testId = `monetization-option-${option.toLowerCase()}`;
-      const radio = this.page.getByTestId(testId);
-      await expect(radio).toBeVisible({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      const radio = this.page.getByRole("radio", { name: option });
-      await expect(radio).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    }
+    // Monetization uses a Select dropdown - verify the select trigger is visible
+    const select = this.page.getByTestId("monetization-select");
+    await expect(select).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    // Open dropdown and verify option exists
+    await select.click();
+    const optionElement = this.page.getByRole("option", { name: new RegExp(option, "i") });
+    await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.SHORT });
+    // Close dropdown by pressing Escape
+    await this.page.keyboard.press("Escape");
   },
 );
 
@@ -222,15 +222,11 @@ When(
 Then(
   "the {string} option should be selected",
   async function(this: CustomWorld, option: string) {
-    // Try testid first, fall back to role selector
-    try {
-      const testId = `monetization-option-${option.toLowerCase()}`;
-      const radio = this.page.getByTestId(testId);
-      await expect(radio).toBeChecked({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      const radio = this.page.getByRole("radio", { name: option });
-      await expect(radio).toBeChecked({ timeout: TIMEOUTS.DEFAULT });
-    }
+    // Monetization uses a Select dropdown - verify the displayed value contains the option
+    const selectTrigger = this.page.getByTestId("monetization-select");
+    await expect(selectTrigger).toContainText(new RegExp(option, "i"), {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
@@ -432,8 +428,9 @@ Then(
       return data ? JSON.parse(data) : null;
     });
     expect(draft).toBeTruthy();
-    expect(draft.step1).toBeDefined();
-    expect(draft.step2).toBeDefined();
+    // Draft uses flat structure: { name, description, requirements, monetizationModel }
+    expect(draft.name).toBeDefined();
+    expect(draft.requirements).toBeDefined();
   },
 );
 
@@ -497,7 +494,8 @@ Then(
       const data = localStorage.getItem("app-creation-draft");
       return data ? JSON.parse(data) : null;
     });
-    expect(draft.step1?.name).toBe(appName);
+    // Draft uses flat structure: { name, description, requirements, monetizationModel }
+    expect(draft.name).toBe(appName);
   },
 );
 
@@ -508,6 +506,7 @@ Then(
       const data = localStorage.getItem("app-creation-draft");
       return data ? JSON.parse(data) : null;
     });
-    expect(draft?.step1?.name).not.toBe(appName);
+    // Draft uses flat structure: { name, description, requirements, monetizationModel }
+    expect(draft?.name).not.toBe(appName);
   },
 );

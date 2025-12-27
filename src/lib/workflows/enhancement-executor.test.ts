@@ -1,11 +1,43 @@
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Run } from "workflow/api";
 import {
   getExecutionMode,
   handleEnhancementFailure,
   isVercelEnvironment,
   startEnhancement,
 } from "./enhancement-executor";
+
+// Helper to create a mock Run object with all required properties
+function createMockRun<T>(runId: string): Run<T> {
+  // Cast through unknown because Run is a class with private properties
+  return {
+    runId,
+    cancel: vi.fn().mockResolvedValue(undefined),
+    get status() {
+      return Promise.resolve("running" as const);
+    },
+    get returnValue() {
+      return Promise.resolve(undefined as T);
+    },
+    get workflowName() {
+      return Promise.resolve("test-workflow");
+    },
+    get createdAt() {
+      return Promise.resolve(new Date());
+    },
+    get startedAt() {
+      return Promise.resolve(new Date());
+    },
+    get completedAt() {
+      return Promise.resolve(undefined);
+    },
+    get readable() {
+      return new ReadableStream();
+    },
+    getReadable: vi.fn().mockReturnValue(new ReadableStream()),
+  } as unknown as Run<T>;
+}
 
 // Mock dependencies
 vi.mock("@/lib/prisma", () => ({
@@ -23,7 +55,9 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
 }));
 
 vi.mock("@/workflows/enhance-image.direct", () => ({
-  enhanceImageDirect: vi.fn().mockResolvedValue(undefined),
+  enhanceImageDirect: vi
+    .fn()
+    .mockResolvedValue({ success: true, enhancedUrl: "https://example.com/enhanced.jpg" }),
 }));
 
 vi.mock("@/workflows/enhance-image.workflow", () => ({
@@ -31,7 +65,7 @@ vi.mock("@/workflows/enhance-image.workflow", () => ({
 }));
 
 vi.mock("workflow/api", () => ({
-  start: vi.fn().mockResolvedValue({ runId: "test-run-id" }),
+  start: vi.fn(),
 }));
 
 vi.mock("@/lib/try-catch", () => ({
@@ -141,7 +175,7 @@ describe("startEnhancement", () => {
 
     it("should start workflow and return success", async () => {
       const { start } = await import("workflow/api");
-      vi.mocked(start).mockResolvedValue({ runId: "workflow-run-123" });
+      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
 
       const result = await startEnhancement(mockInput);
 
@@ -155,7 +189,7 @@ describe("startEnhancement", () => {
       const { start } = await import("workflow/api");
       const { default: prisma } = await import("@/lib/prisma");
 
-      vi.mocked(start).mockResolvedValue({ runId: "workflow-run-123" });
+      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
 
       await startEnhancement(mockInput);
 
@@ -191,7 +225,7 @@ describe("startEnhancement", () => {
 
     it("should call logger when provided", async () => {
       const { start } = await import("workflow/api");
-      vi.mocked(start).mockResolvedValue({ runId: "workflow-run-123" });
+      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
 
       const mockLogger = { info: vi.fn() };
       await startEnhancement(mockInput, mockLogger);
@@ -232,9 +266,15 @@ describe("startEnhancement", () => {
         "@/workflows/enhance-image.direct"
       );
 
-      // Create a delayed promise
-      let resolveEnhancement: () => void;
-      const enhancementPromise = new Promise<void>((resolve) => {
+      // Create a delayed promise with correct return type
+      let resolveEnhancement: (
+        value: { success: boolean; enhancedUrl?: string; error?: string; },
+      ) => void;
+      const enhancementPromise = new Promise<{
+        success: boolean;
+        enhancedUrl?: string;
+        error?: string;
+      }>((resolve) => {
         resolveEnhancement = resolve;
       });
       vi.mocked(enhanceImageDirect).mockReturnValue(enhancementPromise);
@@ -246,7 +286,7 @@ describe("startEnhancement", () => {
       expect(enhanceImageDirect).toHaveBeenCalledWith(mockInput);
 
       // Clean up
-      resolveEnhancement!();
+      resolveEnhancement!({ success: true });
     });
   });
 });

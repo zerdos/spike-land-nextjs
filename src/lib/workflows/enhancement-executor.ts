@@ -1,3 +1,4 @@
+import type { LogContext } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
@@ -76,7 +77,7 @@ export interface EnhancementContext {
  */
 export async function startEnhancement(
   input: EnhanceImageInput,
-  logger?: { info: (msg: string, ctx?: object) => void; },
+  logger?: { info: (msg: string, ctx?: LogContext) => void; },
 ): Promise<StartEnhancementResult> {
   const mode = getExecutionMode();
 
@@ -92,7 +93,7 @@ export async function startEnhancement(
  */
 async function startWorkflowEnhancement(
   input: EnhanceImageInput,
-  logger?: { info: (msg: string, ctx?: object) => void; },
+  logger?: { info: (msg: string, ctx?: LogContext) => void; },
 ): Promise<StartEnhancementResult> {
   const { data: workflowRun, error: workflowError } = await tryCatch(
     start(enhanceImage, [input]),
@@ -133,7 +134,7 @@ async function startWorkflowEnhancement(
  */
 async function startDirectEnhancement(
   input: EnhanceImageInput,
-  logger?: { info: (msg: string, ctx?: object) => void; },
+  logger?: { info: (msg: string, ctx?: LogContext) => void; },
 ): Promise<StartEnhancementResult> {
   logger?.info("Running enhancement directly (dev mode)", {
     jobId: input.jobId,

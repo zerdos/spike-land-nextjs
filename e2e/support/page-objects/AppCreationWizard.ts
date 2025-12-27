@@ -93,20 +93,18 @@ export class AppCreationWizard {
     return this.page.getByTestId("requirements-error");
   }
 
-  // Step 3: Monetization
-  async getMonetizationOption(
-    option: "Free" | "Paid" | "Freemium" | "Subscription",
-  ) {
-    return this.page.getByTestId(`monetization-option-${option.toLowerCase()}`);
+  // Step 3: Monetization (uses Select dropdown, not radio buttons)
+  async getMonetizationSelect() {
+    return this.page.getByTestId("monetization-select");
   }
 
   async selectMonetizationOption(
     option: "Free" | "Paid" | "Freemium" | "Subscription",
   ) {
-    const testId = `monetization-option-${option.toLowerCase()}`;
-    await clickButtonWithRetry(this.page, testId, {
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    // Click the select trigger to open dropdown
+    await this.page.getByTestId("monetization-select").click();
+    // Wait for dropdown to open and click the option by partial text match
+    await this.page.getByRole("option", { name: new RegExp(option, "i") }).click();
   }
 
   async getPriceInput() {

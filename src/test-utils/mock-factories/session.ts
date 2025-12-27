@@ -99,7 +99,7 @@ export function createMockSuperAdminSession(
  */
 export function createMinimalSession(userId: string): MockSession {
   return {
-    user: { id: userId },
+    user: { id: userId, role: "USER" },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   };
 }

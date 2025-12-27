@@ -1020,9 +1020,9 @@ describe("enhance-image.shared", () => {
         const context = createWorkflowContext("job-123");
         recordSoftFailure(context, WorkflowStage.ANALYSIS, "Vision API timeout");
         expect(context.warnings).toHaveLength(1);
-        expect(context.warnings[0].stage).toBe(WorkflowStage.ANALYSIS);
-        expect(context.warnings[0].message).toBe("Vision API timeout");
-        expect(context.warnings[0].defaultUsed).toBe(
+        expect(context.warnings[0]!.stage).toBe(WorkflowStage.ANALYSIS);
+        expect(context.warnings[0]!.message).toBe("Vision API timeout");
+        expect(context.warnings[0]!.defaultUsed).toBe(
           "Skip analysis, use generic enhancement prompt",
         );
       });

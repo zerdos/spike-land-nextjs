@@ -16,6 +16,7 @@ import type {
   MerchCartItem,
   MerchProduct,
   PodProvider,
+  Prisma,
   Referral,
   ReferralStatus,
   Subscription,
@@ -435,10 +436,10 @@ export function createMockMerchProduct(
     providerSku: "SKU-TEST-001",
     basePrice: {
       toNumber: () => 15.0,
-    } as unknown as import("@prisma/client/runtime/library").Decimal,
+    } as unknown as Prisma.Decimal,
     retailPrice: {
       toNumber: () => 25.0,
-    } as unknown as import("@prisma/client/runtime/library").Decimal,
+    } as unknown as Prisma.Decimal,
     currency: "GBP",
     isActive: true,
     minDpi: 150,

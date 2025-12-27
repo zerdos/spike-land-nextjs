@@ -64,7 +64,7 @@ export interface MockSessionUser {
   email?: string | null;
   name?: string | null;
   image?: string | null;
-  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
 }
 
 /**

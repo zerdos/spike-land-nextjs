@@ -578,11 +578,12 @@ When(
 Then(
   "I should see the image upload section",
   async function(this: CustomWorld) {
-    // Look for the upload heading which is visible (file input is hidden)
-    const uploadHeading = this.page.getByRole("heading", {
-      name: /upload an image/i,
+    // The main /apps/pixel page shows album management, not direct upload
+    // Upload is available within album pages
+    const albumsHeading = this.page.getByRole("heading", {
+      name: /your albums/i,
     });
-    await expect(uploadHeading).toBeVisible();
+    await expect(albumsHeading).toBeVisible();
   },
 );
 
@@ -602,11 +603,12 @@ Then(
 );
 
 Then("I should see the upload icon", async function(this: CustomWorld) {
-  // Look for the Upload heading which indicates the upload area is visible
-  const uploadHeading = this.page.getByRole("heading", {
-    name: /upload an image/i,
+  // The main /apps/pixel page shows album management
+  // Look for the "Your Albums" heading which indicates album management is visible
+  const albumsHeading = this.page.getByRole("heading", {
+    name: /your albums/i,
   });
-  await expect(uploadHeading).toBeVisible();
+  await expect(albumsHeading).toBeVisible();
 });
 
 Then(
@@ -783,6 +785,14 @@ Then("I should see an empty images list", async function(this: CustomWorld) {
   } else {
     await expect(emptyState).toBeVisible();
   }
+});
+
+Then("I should see an empty albums message", async function(this: CustomWorld) {
+  // Check for the empty albums message in the album management UI
+  const emptyState = this.page.getByText(/no albums yet/i).or(
+    this.page.getByText(/create one to organize/i),
+  );
+  await expect(emptyState).toBeVisible();
 });
 
 Then(

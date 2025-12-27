@@ -50,9 +50,7 @@ const blendSourceSchema = z
 export const enhanceImageRequestSchema = z.object({
   imageId: z.string().min(1, "imageId is required"),
   tier: z.enum(VALID_TIERS, {
-    errorMap: () => ({
-      message: `tier must be one of: ${VALID_TIERS.join(", ")}`,
-    }),
+    message: `tier must be one of: ${VALID_TIERS.join(", ")}`,
   }),
   blendSource: blendSourceSchema.optional(),
 });
@@ -101,6 +99,14 @@ export function validateEnhanceRequest(
     }
 
     const firstIssue = issues[0];
+    if (!firstIssue) {
+      return {
+        success: false,
+        error: "Invalid request format",
+        suggestion: "Please check your request and try again.",
+      };
+    }
+
     const path = firstIssue.path.join(".");
     const message = path ? `${path}: ${firstIssue.message}` : firstIssue.message;
 

@@ -78,9 +78,9 @@ async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
 
 /**
  * Mocks the orders API to return orders with the specified configuration.
- * Note: Prefixed with underscore as it's prepared for future use.
+ * Exported for use in other test files when order mocking is needed.
  */
-async function _mockOrdersWithItems(
+export async function mockOrdersWithItems(
   world: CustomWorld,
   orders: Array<{ status: string; itemCount: number; }>,
 ) {
