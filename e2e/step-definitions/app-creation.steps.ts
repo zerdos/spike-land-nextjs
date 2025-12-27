@@ -1,6 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPageLoad, waitForTextWithRetry } from "../support/helpers/retry-helper";
+import {
+  TIMEOUTS,
+  waitForLocalStorage,
+  waitForPageLoad,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import { AppCreationWizard } from "../support/page-objects/AppCreationWizard";
 import { CustomWorld } from "../support/world";
 
@@ -370,6 +375,13 @@ Then(
 Then(
   "the draft should be saved to localStorage",
   async function(this: CustomWorld) {
+    // Wait for localStorage to be populated (debounce delay)
+    await waitForLocalStorage(this.page, "app-creation-draft", {
+      shouldExist: true,
+      minLength: 2, // At least "{}"
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const draft = await this.page.evaluate(() => {
       return localStorage.getItem("app-creation-draft");
     });

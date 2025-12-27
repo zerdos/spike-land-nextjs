@@ -143,6 +143,69 @@ describe("enhance-image.shared", () => {
       expect(() => validateEnhanceImageInput({ ...validInput, tokensCost: 0 }))
         .not.toThrow();
     });
+
+    it("should throw for invalid sourceImageR2Key type", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          sourceImageR2Key: 123 as any,
+        })
+      ).toThrow("Invalid sourceImageR2Key");
+    });
+
+    it("should accept null sourceImageR2Key", () => {
+      expect(() => validateEnhanceImageInput({ ...validInput, sourceImageR2Key: null })).not
+        .toThrow();
+    });
+
+    it("should accept valid blendSource", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          blendSource: { base64: "abc123", mimeType: "image/jpeg" },
+        })
+      ).not.toThrow();
+    });
+
+    it("should throw for empty blendSource.base64", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          blendSource: { base64: "", mimeType: "image/jpeg" },
+        })
+      ).toThrow("Invalid blendSource.base64");
+    });
+
+    it("should throw for non-string blendSource.base64", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          blendSource: { base64: 123 as any, mimeType: "image/jpeg" },
+        })
+      ).toThrow("Invalid blendSource.base64");
+    });
+
+    it("should throw for empty blendSource.mimeType", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          blendSource: { base64: "abc123", mimeType: "" },
+        })
+      ).toThrow("Invalid blendSource.mimeType");
+    });
+
+    it("should throw for non-string blendSource.mimeType", () => {
+      expect(() =>
+        validateEnhanceImageInput({
+          ...validInput,
+          blendSource: { base64: "abc123", mimeType: 123 as any },
+        })
+      ).toThrow("Invalid blendSource.mimeType");
+    });
+
+    it("should accept null blendSource", () => {
+      expect(() => validateEnhanceImageInput({ ...validInput, blendSource: null })).not.toThrow();
+    });
   });
 
   describe("calculateCropRegion", () => {
