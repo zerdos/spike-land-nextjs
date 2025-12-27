@@ -19,7 +19,7 @@ const buttonVariants = cva(
         warning:
           "bg-warning text-warning-foreground shadow-lg shadow-warning/25 hover:bg-warning/90 hover:shadow-xl hover:shadow-warning/30 hover:scale-[1.02]",
         outline:
-          "border border-border bg-background/50 text-foreground shadow-sm hover:bg-muted hover:border-border/80",
+          "border border-border bg-background/50 text-foreground shadow-sm hover:bg-muted hover:border-border/80 hover:shadow-md active:shadow-sm",
         secondary:
           "bg-secondary text-secondary-foreground shadow-lg shadow-secondary/25 hover:shadow-xl hover:shadow-secondary/30 hover:scale-[1.02] active:scale-[0.98]",
         ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",

@@ -385,40 +385,9 @@ export class GoogleAdsClient implements IMarketingClient {
   async listCampaigns(accountId: string): Promise<Campaign[]> {
     const customerId = accountId.replace(/-/g, "");
 
-    const results = await this.query<{
-      campaign: GoogleAdsCampaign;
-      campaignBudget?: { amountMicros: string; };
-    }>(
-      customerId,
-      `SELECT
-        campaign.id,
-        campaign.name,
-        campaign.status,
-        campaign.advertising_channel_type,
-        campaign.start_date,
-        campaign.end_date,
-        campaign.campaign_budget,
-        campaign_budget.amount_micros
-      FROM campaign
-      WHERE campaign.status != 'REMOVED'
-      ORDER BY campaign.name`,
-    );
-
-    return results.map((result) =>
-      this.mapCampaign(result.campaign, customerId, result.campaignBudget)
-    );
-  }
-
-  /**
-   * Get single campaign details
-   */
-  async getCampaign(
-    accountId: string,
-    campaignId: string,
-  ): Promise<Campaign | null> {
-    const customerId = accountId.replace(/-/g, "");
-
-    const { data: results, error } = await tryCatch(
+    // Fetch currency and campaigns in parallel for better performance
+    const [currency, results] = await Promise.all([
+      this.getCustomerCurrency(customerId),
       this.query<{
         campaign: GoogleAdsCampaign;
         campaignBudget?: { amountMicros: string; };
@@ -434,9 +403,50 @@ export class GoogleAdsClient implements IMarketingClient {
           campaign.campaign_budget,
           campaign_budget.amount_micros
         FROM campaign
-        WHERE campaign.id = ${campaignId}`,
+        WHERE campaign.status != 'REMOVED'
+        ORDER BY campaign.name`,
       ),
+    ]);
+
+    return results.map((result) =>
+      this.mapCampaign(result.campaign, customerId, result.campaignBudget, currency)
     );
+  }
+
+  /**
+   * Get single campaign details
+   */
+  async getCampaign(
+    accountId: string,
+    campaignId: string,
+  ): Promise<Campaign | null> {
+    const customerId = accountId.replace(/-/g, "");
+
+    // Fetch currency and campaign in parallel for better performance
+    const [currency, queryResult] = await Promise.all([
+      this.getCustomerCurrency(customerId),
+      tryCatch(
+        this.query<{
+          campaign: GoogleAdsCampaign;
+          campaignBudget?: { amountMicros: string; };
+        }>(
+          customerId,
+          `SELECT
+            campaign.id,
+            campaign.name,
+            campaign.status,
+            campaign.advertising_channel_type,
+            campaign.start_date,
+            campaign.end_date,
+            campaign.campaign_budget,
+            campaign_budget.amount_micros
+          FROM campaign
+          WHERE campaign.id = ${campaignId}`,
+        ),
+      ),
+    ]);
+
+    const { data: results, error } = queryResult;
 
     if (error || !results) {
       return null;
@@ -449,6 +459,7 @@ export class GoogleAdsClient implements IMarketingClient {
       result.campaign,
       customerId,
       result.campaignBudget,
+      currency,
     );
   }
 

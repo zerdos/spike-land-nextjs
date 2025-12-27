@@ -36,6 +36,7 @@ platform documentation.
 | I want to...                  | Document                                                 |
 | ----------------------------- | -------------------------------------------------------- |
 | Set up development            | [../README.md](../README.md)                             |
+| Configure secrets/env vars    | [SECRETS_SETUP.md](./SECRETS_SETUP.md)                   |
 | Understand CI/CD              | [../README.md](../README.md#cicd-pipeline)               |
 | Debug CI/CD failures          | [CI_CD_DEBUGGING.md](./CI_CD_DEBUGGING.md)               |
 | Set up Vercel                 | [VERCEL_ANALYTICS_SETUP.md](./VERCEL_ANALYTICS_SETUP.md) |
@@ -53,6 +54,8 @@ docs/
 ├── TOKEN_SYSTEM.md            # Token economy details
 ├── DATABASE_SCHEMA.md         # Database models & relations
 ├── DATABASE_SETUP.md          # Database installation guide
+├── SECRETS_SETUP.md           # Secrets & environment variables
+├── TESTING_STRATEGY.md        # Comprehensive testing guide
 ├── DEPENDENCY_MANAGEMENT.md   # Dependency management guide
 ├── CI_CD_DEBUGGING.md         # CI/CD troubleshooting guide
 ├── api/                       # OpenAPI specs & examples
@@ -123,11 +126,12 @@ docs/
 
 ### Security & Operations
 
-| Document                                                   | Description                  |
-| ---------------------------------------------------------- | ---------------------------- |
-| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit |
-| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist         |
-| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                 |
+| Document                                                   | Description                            |
+| ---------------------------------------------------------- | -------------------------------------- |
+| [SECRETS_SETUP.md](./SECRETS_SETUP.md)                     | Secrets & environment variables (SSOT) |
+| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit           |
+| [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist                   |
+| [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                           |
 
 ### Maintenance
 

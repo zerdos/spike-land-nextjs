@@ -87,6 +87,9 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 This application uses [NextAuth.js v5](https://authjs.dev/) for authentication
 with support for GitHub and Google OAuth providers.
 
+**For complete secrets documentation**, see
+[docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md).
+
 #### 1. Generate AUTH_SECRET
 
 ```bash
@@ -384,6 +387,7 @@ git push origin feature/my-feature
 
 ## 📚 Documentation
 
+- **`docs/SECRETS_SETUP.md`** - Complete secrets and environment variables guide
 - **`.github/BRANCH_PROTECTION_SETUP.md`** - Branch protection setup guide
 - **`.github/workflows/README.md`** - CI/CD workflow documentation
 - **`e2e/README.md`** - E2E testing guide

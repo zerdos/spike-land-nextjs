@@ -62,6 +62,8 @@ export class FacebookMarketingClient implements IMarketingClient {
   private appId: string;
   private appSecret: string;
   private accessToken?: string;
+  // Cache for account currencies to avoid repeated API calls
+  private accountCurrencyCache: Map<string, string> = new Map();
 
   constructor(options?: { accessToken?: string; }) {
     // Trim whitespace/newlines that may be added by environment variable management systems
@@ -279,6 +281,15 @@ export class FacebookMarketingClient implements IMarketingClient {
       data: FacebookAdAccount[];
     }>("/me/adaccounts?fields=id,name,account_status,currency,timezone_name");
 
+    // Cache the currency for each account
+    for (const account of response.data) {
+      if (account.currency) {
+        this.accountCurrencyCache.set(account.id, account.currency);
+        // Also cache without act_ prefix for convenience
+        this.accountCurrencyCache.set(account.id.replace("act_", ""), account.currency);
+      }
+    }
+
     return response.data.map((account) => ({
       id: account.id,
       userId: "", // Will be set by caller
@@ -292,18 +303,55 @@ export class FacebookMarketingClient implements IMarketingClient {
   }
 
   /**
+   * Get account currency code (from cache or API)
+   */
+  private async getAccountCurrency(accountId: string): Promise<string> {
+    // Normalize account ID
+    const normalizedId = accountId.startsWith("act_") ? accountId : `act_${accountId}`;
+    const baseId = accountId.replace("act_", "");
+
+    // Check cache first (both formats)
+    const cached = this.accountCurrencyCache.get(normalizedId) ||
+      this.accountCurrencyCache.get(baseId);
+    if (cached) {
+      return cached;
+    }
+
+    // Fetch from API
+    const { data: response, error } = await tryCatch(
+      this.request<FacebookAdAccount>(
+        `/${normalizedId}?fields=currency`,
+      ),
+    );
+
+    if (error || !response?.currency) {
+      return "USD";
+    }
+
+    // Cache the result
+    this.accountCurrencyCache.set(normalizedId, response.currency);
+    this.accountCurrencyCache.set(baseId, response.currency);
+
+    return response.currency;
+  }
+
+  /**
    * List campaigns for an ad account
    */
   async listCampaigns(accountId: string): Promise<Campaign[]> {
     const actId = accountId.startsWith("act_") ? accountId : `act_${accountId}`;
 
-    const response = await this.request<{
-      data: FacebookCampaignResponse[];
-    }>(
-      `/${actId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time,created_time,updated_time`,
-    );
+    // Fetch currency and campaigns in parallel for better performance
+    const [currency, response] = await Promise.all([
+      this.getAccountCurrency(accountId),
+      this.request<{
+        data: FacebookCampaignResponse[];
+      }>(
+        `/${actId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time,created_time,updated_time`,
+      ),
+    ]);
 
-    return response.data.map((campaign) => this.mapCampaign(campaign, accountId));
+    return response.data.map((campaign) => this.mapCampaign(campaign, accountId, currency));
   }
 
   /**
@@ -313,24 +361,30 @@ export class FacebookMarketingClient implements IMarketingClient {
     accountId: string,
     campaignId: string,
   ): Promise<Campaign | null> {
-    const { data: response, error } = await tryCatch(
-      this.request<FacebookCampaignResponse>(
-        `/${campaignId}?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time,created_time,updated_time`,
+    // Fetch currency and campaign in parallel for better performance
+    const [currency, campaignResult] = await Promise.all([
+      this.getAccountCurrency(accountId),
+      tryCatch(
+        this.request<FacebookCampaignResponse>(
+          `/${campaignId}?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time,created_time,updated_time`,
+        ),
       ),
-    );
+    ]);
+
+    const { data: response, error } = campaignResult;
 
     if (error || !response) {
       return null;
     }
 
-    return this.mapCampaign(response, accountId);
+    return this.mapCampaign(response, accountId, currency);
   }
 
   /**
    * Get campaign metrics/insights
    */
   async getCampaignMetrics(
-    _accountId: string,
+    accountId: string,
     campaignId: string,
     startDate: Date,
     endDate: Date,
@@ -340,23 +394,27 @@ export class FacebookMarketingClient implements IMarketingClient {
       until: endDate.toISOString().split("T")[0],
     });
 
-    const response = await this.request<{
-      data: Array<{
-        impressions: string;
-        clicks: string;
-        spend: string;
-        conversions?: string;
-        reach: string;
-        frequency: string;
-        ctr: string;
-        cpc: string;
-        cpm: string;
-      }>;
-    }>(
-      `/${campaignId}/insights?fields=impressions,clicks,spend,conversions,reach,frequency,ctr,cpc,cpm&time_range=${
-        encodeURIComponent(dateRange)
-      }`,
-    );
+    // Fetch currency and metrics in parallel for better performance
+    const [currency, response] = await Promise.all([
+      this.getAccountCurrency(accountId),
+      this.request<{
+        data: Array<{
+          impressions: string;
+          clicks: string;
+          spend: string;
+          conversions?: string;
+          reach: string;
+          frequency: string;
+          ctr: string;
+          cpc: string;
+          cpm: string;
+        }>;
+      }>(
+        `/${campaignId}/insights?fields=impressions,clicks,spend,conversions,reach,frequency,ctr,cpc,cpm&time_range=${
+          encodeURIComponent(dateRange)
+        }`,
+      ),
+    ]);
 
     const data = response.data[0] ?? {
       impressions: "0",
@@ -377,7 +435,7 @@ export class FacebookMarketingClient implements IMarketingClient {
       impressions: parseInt(data.impressions, 10),
       clicks: parseInt(data.clicks, 10),
       spend: Math.round(parseFloat(data.spend) * 100), // Convert to cents
-      spendCurrency: "USD", // TODO: Get from account settings
+      spendCurrency: currency,
       conversions: parseInt(data.conversions ?? "0", 10),
       ctr: parseFloat(data.ctr),
       cpc: Math.round(parseFloat(data.cpc) * 100),
@@ -393,6 +451,7 @@ export class FacebookMarketingClient implements IMarketingClient {
   private mapCampaign(
     fb: FacebookCampaignResponse,
     accountId: string,
+    currency: string = "USD",
   ): Campaign {
     const hasDailyBudget = !!fb.daily_budget;
     const budget = fb.daily_budget || fb.lifetime_budget || "0";
@@ -410,7 +469,7 @@ export class FacebookMarketingClient implements IMarketingClient {
         ? "LIFETIME"
         : "UNKNOWN",
       budgetAmount: parseInt(budget, 10), // Facebook returns budget in cents
-      budgetCurrency: "USD", // TODO: Get from account settings
+      budgetCurrency: currency,
       startDate: fb.start_time ? new Date(fb.start_time) : null,
       endDate: fb.stop_time ? new Date(fb.stop_time) : null,
       createdAt: new Date(fb.created_time),
