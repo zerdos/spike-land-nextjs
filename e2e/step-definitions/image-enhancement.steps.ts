@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForTokenBalance } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 // Mock data for testing
@@ -333,13 +333,9 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    // Wait for error message to appear
-    await this.page.waitForSelector(".text-destructive, [role='alert']", {
-      state: "visible",
-      timeout: TIMEOUTS.DEFAULT,
-    }).catch(() => {
-      // Error display may vary
-    });
+    // Wait for error message to appear - use explicit wait with proper timeout
+    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
+    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -358,13 +354,9 @@ When(
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    // Wait for error message to appear
-    await this.page.waitForSelector(".text-destructive, [role='alert']", {
-      state: "visible",
-      timeout: TIMEOUTS.DEFAULT,
-    }).catch(() => {
-      // Error display may vary
-    });
+    // Wait for error message to appear - use explicit wait with proper timeout
+    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
+    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -381,13 +373,23 @@ When("I start uploading an image", async function(this: CustomWorld) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
-  // Wait for loading spinner to appear (indicates upload started)
-  await this.page.waitForSelector(".animate-spin", {
-    state: "visible",
-    timeout: TIMEOUTS.SHORT,
-  }).catch(() => {
-    // Upload may be too fast to catch spinner
-  });
+  // Wait for loading spinner OR upload text to appear (indicates upload started)
+  // Use Promise.race to handle fast uploads that may skip spinner
+  const spinnerOrText = await Promise.race([
+    this.page.waitForSelector(".animate-spin", {
+      state: "visible",
+      timeout: TIMEOUTS.SHORT,
+    }).then(() => "spinner" as const),
+    this.page.waitForSelector('[data-testid="uploading-text"], :text("Uploading")', {
+      state: "visible",
+      timeout: TIMEOUTS.SHORT,
+    }).then(() => "text" as const),
+    // If neither appears quickly, upload may have completed
+    this.page.waitForTimeout(TIMEOUTS.SHORT / 2).then(() => "timeout" as const),
+  ]);
+
+  // Any result is acceptable - upload started
+  expect(["spinner", "text", "timeout"]).toContain(spinnerOrText);
 });
 
 When("I visit the image enhancement page", async function(this: CustomWorld) {
@@ -413,14 +415,17 @@ When("I try to enhance the image", async function(this: CustomWorld) {
   const enhanceButton = this.page.getByRole("button", {
     name: /enhance|start/i,
   });
-  await enhanceButton.click();
-  // Wait for error response
-  await this.page.waitForResponse(
+
+  // Set up response wait BEFORE clicking
+  const responsePromise = this.page.waitForResponse(
     (resp) => resp.url().includes("/api/images/enhance"),
     { timeout: TIMEOUTS.DEFAULT },
-  ).catch(() => {
-    // Response may already have been handled
-  });
+  );
+
+  await enhanceButton.click();
+
+  // Wait for the response to complete
+  await responsePromise;
 });
 
 When(

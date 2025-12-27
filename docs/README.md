@@ -28,6 +28,7 @@ platform documentation.
 | Understand the schema  | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                 |
 | Set up Stripe payments | [STRIPE_INTEGRATION_PLAN.md](./STRIPE_INTEGRATION_PLAN.md) |
 | Run E2E tests          | [E2E_TEST_IMPLEMENTATION.md](./E2E_TEST_IMPLEMENTATION.md) |
+| Manage dependencies    | [DEPENDENCY_MANAGEMENT.md](./DEPENDENCY_MANAGEMENT.md)     |
 
 ### For Project Setup
 
@@ -35,6 +36,7 @@ platform documentation.
 | ----------------------------- | -------------------------------------------------------- |
 | Set up development            | [../README.md](../README.md)                             |
 | Understand CI/CD              | [../README.md](../README.md#cicd-pipeline)               |
+| Debug CI/CD failures          | [CI_CD_DEBUGGING.md](./CI_CD_DEBUGGING.md)               |
 | Set up Vercel                 | [VERCEL_ANALYTICS_SETUP.md](./VERCEL_ANALYTICS_SETUP.md) |
 | Understand business structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)         |
 
@@ -44,16 +46,17 @@ platform documentation.
 
 ```
 docs/
-├── README.md              # This index file
-├── FEATURES.md            # Platform features & roadmap
-├── API_REFERENCE.md       # Complete API documentation
-├── TOKEN_SYSTEM.md        # Token economy details
-├── DATABASE_SCHEMA.md     # Database models & relations
-├── DATABASE_SETUP.md      # Database installation guide
-├── api/                   # OpenAPI specs & examples
-├── best-practices/        # Development best practices
-├── database/              # Database-specific docs
-└── archive/               # Historical documentation
+├── README.md                  # This index file
+├── FEATURES.md                # Platform features & roadmap
+├── API_REFERENCE.md           # Complete API documentation
+├── TOKEN_SYSTEM.md            # Token economy details
+├── DATABASE_SCHEMA.md         # Database models & relations
+├── DATABASE_SETUP.md          # Database installation guide
+├── DEPENDENCY_MANAGEMENT.md   # Dependency management guide
+├── api/                       # OpenAPI specs & examples
+├── best-practices/            # Development best practices
+├── database/                  # Database-specific docs
+└── archive/                   # Historical documentation
 ```
 
 ---
@@ -121,6 +124,12 @@ docs/
 | [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)     | Security practices and audit |
 | [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)               | Pre-launch checklist         |
 | [PRODUCTION_FIXES_NEEDED.md](./PRODUCTION_FIXES_NEEDED.md) | Known issues                 |
+
+### Maintenance
+
+| Document                                               | Description                         |
+| ------------------------------------------------------ | ----------------------------------- |
+| [DEPENDENCY_MANAGEMENT.md](./DEPENDENCY_MANAGEMENT.md) | Adding, removing, auditing packages |
 
 ---
 

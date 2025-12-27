@@ -20,14 +20,22 @@ import { FatalError } from "workflow";
 import {
   calculateCropRegion,
   calculateTargetDimensions,
+  createWorkflowContext,
   cropDimensionsToPixels,
   DEFAULT_IMAGE_DIMENSION,
   ENHANCED_JPEG_QUALITY,
   type EnhanceImageInput,
+  ERROR_BOUNDARIES,
   generateEnhancedR2Key,
   PADDING_BACKGROUND,
+  recordFatalFailure,
+  recordSoftFailure,
+  recordStageSuccess,
   TIER_TO_SIZE,
   validateCropDimensions,
+  type WorkflowContext,
+  WorkflowStage,
+  WorkflowStageError,
 } from "./enhance-image.shared";
 
 export type { EnhanceImageInput };
@@ -47,8 +55,69 @@ interface EnhancedResult {
   sizeBytes: number;
 }
 
+/** Blend source input - either base64 data or R2 key */
+interface BlendSourceInput {
+  /** Base64 data provided directly (preferred) */
+  blendSource?: { base64: string; mimeType: string; } | null;
+  /** R2 key for backwards compatibility (deprecated) */
+  sourceImageR2Key?: string | null;
+}
+
+/**
+ * Resolves blend source from multiple input formats
+ *
+ * Handles two input formats:
+ * 1. blendSource (new): Base64 data provided directly from client upload
+ * 2. sourceImageR2Key (deprecated): R2 key requiring download
+ *
+ * Error Boundary: BLEND_SOURCE (recoverable)
+ * - On failure: Returns undefined, workflow continues without blend
+ *
+ * @param input - Blend source input containing either base64 or R2 key
+ * @param context - Workflow context for tracking
+ * @returns ReferenceImageData if successful, undefined if failed or not provided
+ */
+async function resolveBlendSource(
+  input: BlendSourceInput,
+  context: WorkflowContext,
+): Promise<ReferenceImageData | undefined> {
+  const { blendSource, sourceImageR2Key } = input;
+
+  // Priority 1: Use blendSource if provided (new approach - no download needed)
+  if (blendSource?.base64 && blendSource?.mimeType) {
+    recordStageSuccess(context, WorkflowStage.BLEND_SOURCE);
+    return {
+      imageData: blendSource.base64,
+      mimeType: blendSource.mimeType,
+      description: "Image to blend/merge with target",
+    };
+  }
+
+  // Priority 2: Download from R2 if key provided (deprecated approach)
+  if (sourceImageR2Key) {
+    const result = await downloadBlendSourceStep(sourceImageR2Key);
+    if (result) {
+      recordStageSuccess(context, WorkflowStage.BLEND_SOURCE);
+      return result;
+    }
+    // downloadBlendSourceStep handles its own error logging
+    recordSoftFailure(
+      context,
+      WorkflowStage.BLEND_SOURCE,
+      "Failed to download blend source from R2",
+    );
+    return undefined;
+  }
+
+  // No blend source provided - this is fine, not an error
+  return undefined;
+}
+
 /**
  * Step 1: Download original image from R2
+ *
+ * Error Boundary: DOWNLOAD (non-recoverable, retryable)
+ * - On failure: FatalError thrown, workflow stops
  */
 async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
   "use step";

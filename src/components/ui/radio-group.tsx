@@ -24,18 +24,20 @@ const RadioGroupItem = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
   return (
-    <RadioGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        "aspect-square h-5 w-5 rounded-full border border-primary text-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-70 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground transition-all duration-200",
-        className,
-      )}
-      {...props}
-    >
-      <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <DotFilledIcon className="h-4 w-4 fill-current" />
-      </RadioGroupPrimitive.Indicator>
-    </RadioGroupPrimitive.Item>
+    <div className="relative inline-flex items-center justify-center h-11 w-11 md:h-5 md:w-5">
+      <RadioGroupPrimitive.Item
+        ref={ref}
+        className={cn(
+          "aspect-square h-5 w-5 rounded-full border border-primary text-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-70 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground transition-all duration-200",
+          className,
+        )}
+        {...props}
+      >
+        <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
+          <DotFilledIcon className="h-4 w-4 fill-current" />
+        </RadioGroupPrimitive.Indicator>
+      </RadioGroupPrimitive.Item>
+    </div>
   );
 });
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;

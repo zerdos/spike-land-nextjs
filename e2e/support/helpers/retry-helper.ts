@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect, Locator, Page, Response } from "@playwright/test";
 
 /**
  * Environment-specific timeout configuration
@@ -254,5 +254,191 @@ export async function waitForTextWithRetry(
     },
     { timeout: options.timeout },
     `Text "${text}" not found`,
+  );
+}
+
+/**
+ * Wait for an API response matching a URL pattern
+ * Sets up the wait before the action that triggers the request
+ *
+ * @param page - Playwright Page instance
+ * @param urlPattern - String or RegExp to match against the URL
+ * @param options - Configuration options
+ * @returns Promise that resolves to the Response
+ */
+export async function waitForApiResponse(
+  page: Page,
+  urlPattern: string | RegExp,
+  options: { timeout?: number; } = {},
+): Promise<Response> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const pattern = typeof urlPattern === "string"
+    ? (url: string) => url.includes(urlPattern)
+    : (url: string) => urlPattern.test(url);
+
+  return page.waitForResponse(
+    (response) => pattern(response.url()),
+    { timeout },
+  );
+}
+
+/**
+ * Wait for modal animation to complete (visible or hidden)
+ * Handles modal open/close animations reliably
+ *
+ * @param page - Playwright Page instance
+ * @param state - Whether modal should be 'visible' or 'hidden'
+ * @param options - Configuration options
+ */
+export async function waitForModalState(
+  page: Page,
+  state: "visible" | "hidden",
+  options: { timeout?: number; } = {},
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const modal = page.locator('[role="dialog"]');
+
+  if (state === "visible") {
+    await expect(modal).toBeVisible({ timeout });
+    // Wait for animation to complete by checking for stable visibility
+    await page.waitForFunction(
+      () => {
+        const dialog = document.querySelector('[role="dialog"]');
+        if (!dialog) return false;
+        const style = window.getComputedStyle(dialog);
+        return style.opacity === "1" && style.transform === "none";
+      },
+      { timeout: TIMEOUTS.SHORT },
+    ).catch(() => {
+      // Animation may not use opacity/transform, visibility check is sufficient
+    });
+  } else {
+    await expect(modal).not.toBeVisible({ timeout });
+  }
+}
+
+/**
+ * Wait for dynamic content to match expected value
+ * Useful for elements that update asynchronously (e.g., balance displays)
+ *
+ * @param page - Playwright Page instance
+ * @param selector - CSS selector for the element
+ * @param expectedContent - String or RegExp the content should match
+ * @param options - Configuration options
+ */
+export async function waitForDynamicContent(
+  page: Page,
+  selector: string,
+  expectedContent: string | RegExp,
+  options: { timeout?: number; } = {},
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+
+  await page.waitForFunction(
+    ({ sel, expected }) => {
+      const element = document.querySelector(sel);
+      if (!element) return false;
+      const text = element.textContent || "";
+      if (typeof expected === "string") {
+        return text.includes(expected);
+      }
+      return new RegExp(expected).test(text);
+    },
+    {
+      sel: selector,
+      expected: expectedContent instanceof RegExp
+        ? expectedContent.source
+        : expectedContent,
+    },
+    { timeout },
+  );
+}
+
+/**
+ * Wait for localStorage to contain or not contain a key
+ * Useful for testing draft persistence and data sync
+ *
+ * @param page - Playwright Page instance
+ * @param key - localStorage key to check
+ * @param options - Configuration options
+ */
+export async function waitForLocalStorage(
+  page: Page,
+  key: string,
+  options: { shouldExist?: boolean; minLength?: number; timeout?: number; } = {},
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+  const shouldExist = options.shouldExist ?? true;
+  const minLength = options.minLength ?? 0;
+
+  await page.waitForFunction(
+    ({ k, exist, minLen }) => {
+      const value = localStorage.getItem(k);
+      if (exist) {
+        return value !== null && value.length >= minLen;
+      }
+      return value === null;
+    },
+    { k: key, exist: shouldExist, minLen: minLength },
+    { timeout },
+  );
+}
+
+/**
+ * Wait for pricing data to be fully rendered on the page
+ * Checks for price elements and ensures they contain actual values
+ *
+ * @param page - Playwright Page instance
+ * @param options - Configuration options
+ */
+export async function waitForPricingData(
+  page: Page,
+  options: { timeout?: number; } = {},
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+
+  // Wait for at least one price element with a value
+  await page.waitForFunction(
+    () => {
+      const priceElements = document.querySelectorAll('[class*="Card"]');
+      if (priceElements.length === 0) return false;
+
+      // Check if prices are rendered (contain £ symbol)
+      const hasPrices = Array.from(priceElements).some((el) => {
+        const text = el.textContent || "";
+        return text.includes("£") && /\d+/.test(text);
+      });
+
+      return hasPrices;
+    },
+    { timeout },
+  );
+}
+
+/**
+ * Wait for token balance to be displayed and contain a number
+ *
+ * @param page - Playwright Page instance
+ * @param options - Configuration options
+ */
+export async function waitForTokenBalance(
+  page: Page,
+  options: { timeout?: number; } = {},
+): Promise<void> {
+  const timeout = options.timeout || TIMEOUTS.DEFAULT;
+
+  // Wait for balance display with numeric value
+  await page.waitForFunction(
+    () => {
+      const balanceEl = document.querySelector('[data-testid="token-balance"]') ||
+        document.querySelector('[class*="token"]') ||
+        Array.from(document.querySelectorAll("*")).find((el) =>
+          /\d+\s*tokens?/i.test(el.textContent || "")
+        );
+
+      if (!balanceEl) return false;
+      return /\d+/.test(balanceEl.textContent || "");
+    },
+    { timeout },
   );
 }

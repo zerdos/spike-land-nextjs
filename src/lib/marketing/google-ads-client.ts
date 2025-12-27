@@ -65,6 +65,8 @@ export class GoogleAdsClient implements IMarketingClient {
   private developerToken: string;
   private accessToken?: string;
   private customerId?: string;
+  // Cache for customer currency codes to avoid repeated API calls
+  private customerCurrencyCache: Map<string, string> = new Map();
 
   constructor(options?: { accessToken?: string; customerId?: string; }) {
     // Trim whitespace/newlines that may be added by environment variable management systems
@@ -352,7 +354,29 @@ export class GoogleAdsClient implements IMarketingClient {
       return null;
     }
 
-    return results[0]?.customer || null;
+    const customer = results[0]?.customer || null;
+
+    // Cache the currency code for this customer
+    if (customer?.currencyCode) {
+      this.customerCurrencyCache.set(customerId, customer.currencyCode);
+    }
+
+    return customer;
+  }
+
+  /**
+   * Get customer currency code (from cache or API)
+   */
+  private async getCustomerCurrency(customerId: string): Promise<string> {
+    // Check cache first
+    const cached = this.customerCurrencyCache.get(customerId);
+    if (cached) {
+      return cached;
+    }
+
+    // Fetch from API
+    const customer = await this.getCustomerInfo(customerId);
+    return customer?.currencyCode || "USD";
   }
 
   /**

@@ -1,5 +1,14 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { AlbumPrivacy, PrismaClient } from "@prisma/client";
+import {
+  AlbumPrivacy,
+  EnhancementTier,
+  GalleryCategory,
+  JobStatus,
+  PrismaClient,
+  VoucherStatus,
+  VoucherType,
+} from "@prisma/client";
+import { createHash } from "crypto";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
@@ -8,21 +17,38 @@ config({ path: ".env.local" });
 /**
  * E2E Test Data Seed Script
  *
- * Creates test data for E2E tests including:
- * - Test user (matching auth bypass ID)
+ * Creates comprehensive test data for E2E tests including:
+ * - Test users (standard and admin, matching auth bypass IDs)
  * - Albums with images for canvas display tests
- * - Token balance for the test user
+ * - Token balance for test users
+ * - Enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)
+ * - API keys for MCP tests
+ * - Vouchers for token/referral tests
+ * - Featured gallery items
  *
  * Usage:
  *   npx tsx prisma/seed-e2e.ts
+ *   DATABASE_URL_E2E=<url> npx tsx prisma/seed-e2e.ts
  *
  * IMPORTANT: The user ID must match the one in src/auth.ts E2E bypass:
  *   id: "test-user-id"
+ *
+ * This script is idempotent - safe to run multiple times.
+ * All test data IDs are prefixed with "e2e-" for easy identification.
  */
 
-const connectionString = process.env.DATABASE_URL;
+// Use DATABASE_URL_E2E if available, otherwise fall back to DATABASE_URL
+const connectionString = process.env.DATABASE_URL_E2E || process.env.DATABASE_URL;
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is required");
+  throw new Error("DATABASE_URL_E2E or DATABASE_URL environment variable is required");
+}
+
+// Production database protection - prevent accidental seeding of production
+if (connectionString.includes("production") || connectionString.includes("prod-")) {
+  throw new Error(
+    "SAFETY: Refusing to seed what appears to be a production database. " +
+      "Use DATABASE_URL_E2E for test databases only.",
+  );
 }
 
 const adapter = new PrismaPg({ connectionString });
@@ -31,6 +57,10 @@ const prisma = new PrismaClient({ adapter });
 // Must match the ID in src/auth.ts E2E_BYPASS_AUTH
 const TEST_USER_ID = "test-user-id";
 const TEST_USER_EMAIL = "test@example.com";
+
+// Additional test users for ownership/permission tests
+const SECOND_USER_ID = "e2e-second-user-id";
+const SECOND_USER_EMAIL = "second-test@example.com";
 
 async function main() {
   console.log("Starting E2E seed...");
@@ -179,7 +209,161 @@ async function main() {
   }
   console.log("Added 2 images to private album");
 
-  // 7. Create test merch orders for order history tests
+  // 7. Create second test user for ownership tests
+  const secondUser = await prisma.user.upsert({
+    where: { id: SECOND_USER_ID },
+    update: {
+      name: "Second Test User",
+      email: SECOND_USER_EMAIL,
+    },
+    create: {
+      id: SECOND_USER_ID,
+      name: "Second Test User",
+      email: SECOND_USER_EMAIL,
+      emailVerified: new Date(),
+    },
+  });
+  console.log("Created second test user:", secondUser.id);
+
+  // 8. Create enhancement jobs in various states
+  const jobStatuses: { id: string; status: JobStatus; tier: EnhancementTier; }[] = [
+    { id: "e2e-job-pending", status: JobStatus.PENDING, tier: EnhancementTier.TIER_1K },
+    { id: "e2e-job-processing", status: JobStatus.PROCESSING, tier: EnhancementTier.TIER_2K },
+    { id: "e2e-job-completed", status: JobStatus.COMPLETED, tier: EnhancementTier.TIER_4K },
+    { id: "e2e-job-failed", status: JobStatus.FAILED, tier: EnhancementTier.TIER_1K },
+  ];
+
+  for (const jobConfig of jobStatuses) {
+    await prisma.imageEnhancementJob.upsert({
+      where: { id: jobConfig.id },
+      update: { status: jobConfig.status },
+      create: {
+        id: jobConfig.id,
+        imageId: "e2e-test-image-1",
+        userId: TEST_USER_ID,
+        tier: jobConfig.tier,
+        tokensCost: jobConfig.tier === EnhancementTier.TIER_1K
+          ? 2
+          : jobConfig.tier === EnhancementTier.TIER_2K
+          ? 5
+          : 10,
+        status: jobConfig.status,
+        geminiPrompt: `E2E test enhancement job in ${jobConfig.status} state`,
+        geminiModel: "gemini-2.0-flash-preview-image-generation",
+        processingStartedAt: jobConfig.status !== JobStatus.PENDING ? new Date() : null,
+        processingCompletedAt: jobConfig.status === JobStatus.COMPLETED ? new Date() : null,
+        enhancedUrl: jobConfig.status === JobStatus.COMPLETED
+          ? "https://placehold.co/2048x1536/333/white?text=Enhanced"
+          : null,
+        enhancedR2Key: jobConfig.status === JobStatus.COMPLETED ? "e2e-test/enhanced-1.jpg" : null,
+        enhancedWidth: jobConfig.status === JobStatus.COMPLETED ? 2048 : null,
+        enhancedHeight: jobConfig.status === JobStatus.COMPLETED ? 1536 : null,
+        errorMessage: jobConfig.status === JobStatus.FAILED ? "E2E test failure message" : null,
+      },
+    });
+  }
+  console.log("Created 4 enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)");
+
+  // 9. Create API keys for MCP tests
+  const apiKeyPlaintext = "e2e-test-api-key-12345";
+  const apiKeyHash = createHash("sha256").update(apiKeyPlaintext).digest("hex");
+  await prisma.apiKey.upsert({
+    where: { id: "e2e-api-key-1" },
+    update: {},
+    create: {
+      id: "e2e-api-key-1",
+      userId: TEST_USER_ID,
+      name: "E2E Test API Key",
+      keyHash: apiKeyHash,
+      keyPrefix: "e2e-test",
+      isActive: true,
+    },
+  });
+  console.log("Created API key for MCP tests");
+
+  // 10. Create vouchers for token/referral tests
+  await prisma.voucher.upsert({
+    where: { id: "e2e-voucher-active" },
+    update: {},
+    create: {
+      id: "e2e-voucher-active",
+      code: "E2E-ACTIVE-100",
+      type: VoucherType.FIXED_TOKENS,
+      value: 100,
+      maxUses: 10,
+      currentUses: 0,
+      status: VoucherStatus.ACTIVE,
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+    },
+  });
+
+  await prisma.voucher.upsert({
+    where: { id: "e2e-voucher-expired" },
+    update: {},
+    create: {
+      id: "e2e-voucher-expired",
+      code: "E2E-EXPIRED-50",
+      type: VoucherType.FIXED_TOKENS,
+      value: 50,
+      maxUses: 5,
+      currentUses: 5,
+      status: VoucherStatus.EXPIRED,
+      expiresAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+    },
+  });
+
+  await prisma.voucher.upsert({
+    where: { id: "e2e-voucher-bonus" },
+    update: {},
+    create: {
+      id: "e2e-voucher-bonus",
+      code: "E2E-BONUS-20",
+      type: VoucherType.PERCENTAGE_BONUS,
+      value: 20, // 20% bonus
+      status: VoucherStatus.ACTIVE,
+    },
+  });
+  console.log("Created 3 vouchers (active, expired, bonus)");
+
+  // 11. Create featured gallery items
+  await prisma.featuredGalleryItem.upsert({
+    where: { id: "e2e-gallery-item-1" },
+    update: {},
+    create: {
+      id: "e2e-gallery-item-1",
+      title: "E2E Test Portrait",
+      description: "A beautiful AI-enhanced portrait for E2E testing",
+      category: GalleryCategory.PORTRAIT,
+      originalUrl: "https://placehold.co/800x1200/333/white?text=Original+Portrait",
+      enhancedUrl: "https://placehold.co/2048x3072/333/white?text=Enhanced+Portrait",
+      width: 2,
+      height: 3,
+      sortOrder: 0,
+      isActive: true,
+      createdBy: adminUser.id,
+    },
+  });
+
+  await prisma.featuredGalleryItem.upsert({
+    where: { id: "e2e-gallery-item-2" },
+    update: {},
+    create: {
+      id: "e2e-gallery-item-2",
+      title: "E2E Test Landscape",
+      description: "A stunning AI-enhanced landscape for E2E testing",
+      category: GalleryCategory.LANDSCAPE,
+      originalUrl: "https://placehold.co/1200x800/333/white?text=Original+Landscape",
+      enhancedUrl: "https://placehold.co/3072x2048/333/white?text=Enhanced+Landscape",
+      width: 3,
+      height: 2,
+      sortOrder: 1,
+      isActive: true,
+      createdBy: adminUser.id,
+    },
+  });
+  console.log("Created 2 featured gallery items");
+
+  // 12. Create test merch orders for order history tests
   // First check if merch products exist
   const tshirtProduct = await prisma.merchProduct.findUnique({
     where: { id: "tshirt-classic" },
@@ -362,13 +546,19 @@ async function main() {
 
   console.log("\nE2E seed completed successfully!");
   console.log("\nTest data created:");
-  console.log(`  User ID: ${TEST_USER_ID}`);
-  console.log(`  User Email: ${TEST_USER_EMAIL}`);
+  console.log(`  Primary Test User ID: ${TEST_USER_ID}`);
+  console.log(`  Primary Test User Email: ${TEST_USER_EMAIL}`);
+  console.log(`  Second Test User ID: ${SECOND_USER_ID}`);
+  console.log(`  Admin User ID: admin-user-id`);
   console.log(
     `  Unlisted Album: /canvas/${unlistedAlbum.id}?token=${unlistedAlbum.shareToken}`,
   );
   console.log(`  Private Album: /albums/${privateAlbum.id}`);
   console.log(`  Token Balance: 100`);
+  console.log(`  Enhancement Jobs: 4 (PENDING, PROCESSING, COMPLETED, FAILED)`);
+  console.log(`  API Keys: 1 (for MCP tests)`);
+  console.log(`  Vouchers: 3 (active, expired, bonus)`);
+  console.log(`  Featured Gallery Items: 2`);
 }
 
 main()

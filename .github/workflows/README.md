@@ -14,43 +14,19 @@ application with comprehensive quality gates.
 
 ## Required Secrets
 
-To enable deployment, you need to add the following secrets to your GitHub
-repository:
+For complete secrets documentation including all environment variables, see:
+**[docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md)**
 
-### Vercel Deployment (Required)
+### Quick Reference for CI/CD
 
-1. **VERCEL_TOKEN**
-   - Go to https://vercel.com/account/tokens
-   - Create a new token
-   - Add it to GitHub: Settings → Secrets and variables → Actions → New
-     repository secret
-   - Name: `VERCEL_TOKEN`
-
-2. **VERCEL_ORG_ID** (Optional, for team deployments)
-   - Run `vercel link` in your project directory
-   - Find the value in `.vercel/project.json`
-
-3. **VERCEL_PROJECT_ID** (Optional, for specific project targeting)
-   - Run `vercel link` in your project directory
-   - Find the value in `.vercel/project.json`
-
-### Code Coverage (Optional)
-
-4. **CODECOV_TOKEN** (Optional, for coverage reporting)
-   - Go to https://codecov.io
-   - Link your GitHub repository
-   - Copy the token
-   - Add it to GitHub secrets with name: `CODECOV_TOKEN`
-
-### GitHub CLI Authentication (Required for Claude workflows)
-
-5. **GH_PAT_TOKEN**
-   - Go to https://github.com/settings/tokens?type=beta
-   - Create a fine-grained Personal Access Token
-   - Repository access: Select `zerdos/spike-land-nextjs`
-   - Permissions: `Contents` (read/write), `Issues` (read/write), `Pull requests` (read/write)
-   - Add it to GitHub secrets with name: `GH_PAT_TOKEN`
-   - Used by: `claude.yml`, `claude-code-review.yml` for `gh` CLI authentication
+| Secret                  | Required | Purpose                         |
+| ----------------------- | :------: | ------------------------------- |
+| DATABASE_URL            |   Yes    | E2E test database connection    |
+| AUTH_SECRET             |   Yes    | NextAuth session signing        |
+| E2E_BYPASS_SECRET       |   Yes    | E2E test authentication bypass  |
+| GH_PAT_TOKEN            |   Yes    | GitHub CLI for Claude workflows |
+| CODECOV_TOKEN           |    No    | Coverage reporting              |
+| CLAUDE_CODE_OAUTH_TOKEN |    No    | Claude Code GitHub Action auth  |
 
 ## How to Add Secrets
 
@@ -59,6 +35,8 @@ repository:
 3. Navigate to **Secrets and variables** → **Actions**
 4. Click **New repository secret**
 5. Add each secret with its respective name and value
+
+For detailed setup instructions, see [docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md).
 
 ## Local Testing
 
