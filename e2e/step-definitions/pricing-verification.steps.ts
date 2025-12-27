@@ -269,9 +269,9 @@ Then(
   "the starter pack should display:",
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
-    const starterCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /starter/i,
-    });
+    // Use data-testid for reliable selection
+    const starterCard = this.page.locator('[data-testid="package-card-starter"]');
+    await expect(starterCard).toBeVisible({ timeout: 10000 });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
@@ -291,9 +291,9 @@ Then(
   "the basic pack should display:",
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
-    const basicCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /basic/i,
-    });
+    // Use data-testid for reliable selection
+    const basicCard = this.page.locator('[data-testid="package-card-basic"]');
+    await expect(basicCard).toBeVisible({ timeout: 10000 });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
@@ -313,9 +313,9 @@ Then(
   "the pro pack should display:",
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
-    const proCard = this.page.locator('[class*="Card"]').filter({
-      hasText: /pro/i,
-    });
+    // Use data-testid for reliable selection
+    const proCard = this.page.locator('[data-testid="package-card-pro"]');
+    await expect(proCard).toBeVisible({ timeout: 10000 });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
