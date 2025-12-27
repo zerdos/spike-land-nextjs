@@ -406,6 +406,13 @@ When("I navigate to step 2", async function(this: CustomWorld) {
 Then(
   "the draft should contain step 1 and step 2 data",
   async function(this: CustomWorld) {
+    // Wait for localStorage to be populated with both steps
+    await waitForLocalStorage(this.page, "app-creation-draft", {
+      shouldExist: true,
+      minLength: 10, // Should have meaningful content
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const draft = await this.page.evaluate(() => {
       const data = localStorage.getItem("app-creation-draft");
       return data ? JSON.parse(data) : null;
@@ -424,6 +431,12 @@ When("I reload the page", async function(this: CustomWorld) {
 Then(
   "the draft should be removed from localStorage",
   async function(this: CustomWorld) {
+    // Wait for localStorage to be cleared
+    await waitForLocalStorage(this.page, "app-creation-draft", {
+      shouldExist: false,
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const draft = await this.page.evaluate(() => {
       return localStorage.getItem("app-creation-draft");
     });
@@ -460,6 +473,12 @@ When(
 Then(
   "the draft should only contain {string}",
   async function(this: CustomWorld, appName: string) {
+    // Wait for localStorage to be populated
+    await waitForLocalStorage(this.page, "app-creation-draft", {
+      shouldExist: true,
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const draft = await this.page.evaluate(() => {
       const data = localStorage.getItem("app-creation-draft");
       return data ? JSON.parse(data) : null;

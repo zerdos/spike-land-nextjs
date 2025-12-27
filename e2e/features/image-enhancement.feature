@@ -6,7 +6,7 @@ Feature: Image Enhancement
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  @flaky
+  
   Scenario: View enhance page as authenticated user
     When I visit "/apps/pixel"
     Then I should be on the "/apps/pixel" page
@@ -14,13 +14,13 @@ Feature: Image Enhancement
     And I should see the image upload section
     And I should see the token balance display
 
-  @flaky
+  
   Scenario: Unauthenticated user redirected from enhance page
     Given I am not logged in
     When I visit "/apps/pixel"
     Then I should be on the "/auth/signin" page
 
-  @flaky
+  
   Scenario: Image upload section displays correctly
     When I visit "/apps/pixel"
     Then I should see the upload icon
@@ -36,19 +36,19 @@ Feature: Image Enhancement
     Then I should be redirected to the image enhancement page
     And the URL should contain "/apps/pixel/"
 
-  @flaky
+  
   Scenario: Image upload shows validation error for large file
     Given I am on the enhance page
     When I attempt to upload a file larger than 50MB
     Then I should see upload error "File size must be less than 50MB"
 
-  @flaky
+  
   Scenario: Image upload shows validation error for non-image file
     Given I am on the enhance page
     When I attempt to upload a non-image file
     Then I should see upload error "Please select an image file"
 
-  @flaky
+  
   Scenario: Image upload shows loading state
     Given I am on the enhance page
     And I mock a slow image upload
