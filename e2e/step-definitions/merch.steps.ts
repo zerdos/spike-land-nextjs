@@ -180,7 +180,8 @@ Then("I should see the product mockup image", async function(this: CustomWorld) 
 });
 
 Then("I should see minimum image requirements", async function(this: CustomWorld) {
-  const requirements = this.page.getByText(/Minimum image size:/i);
+  // Match actual text format: "Min. 1024x1024px" (abbreviated, no colon)
+  const requirements = this.page.getByText(/Min\.\s*\d+\s*x\s*\d+\s*px/i);
   await expect(requirements).toBeVisible();
 });
 
