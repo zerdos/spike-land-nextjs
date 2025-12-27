@@ -238,8 +238,8 @@ COPY --link .env.local ./
 COPY --link --from=test-source /app/e2e ./e2e
 COPY --link --from=test-source /app/cucumber.js ./cucumber.js
 # Copy E2E cache scripts
-COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh ./scripts/
-RUN chmod +x ./scripts/run-cached-e2e.sh
+COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh scripts/e2e-shard.sh ./scripts/
+RUN chmod +x ./scripts/run-cached-e2e.sh ./scripts/e2e-shard.sh
 
 ARG DATABASE_URL=${DUMMY_DATABASE_URL}
 ARG AUTH_SECRET
