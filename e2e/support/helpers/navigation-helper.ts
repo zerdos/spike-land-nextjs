@@ -28,9 +28,7 @@ export async function clickButton(page: Page, buttonText: string) {
 }
 
 export async function clickAvatar(page: Page) {
-  const avatar = page.locator('[role="button"]').filter({
-    has: page.locator("img, .avatar-fallback"),
-  }).first();
+  const avatar = page.locator('[data-testid="user-avatar"]').first();
   await expect(avatar).toBeVisible();
   await avatar.click();
 }

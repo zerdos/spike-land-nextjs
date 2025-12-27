@@ -86,8 +86,7 @@ Then(
 );
 
 Then("I should still be logged in", async function(this: CustomWorld) {
-  const avatar = this.page.locator('.fixed.top-4.right-4 [role="button"]')
-    .first();
+  const avatar = this.page.locator('[data-testid="user-avatar"]').first();
   await expect(avatar).toBeVisible();
 });
 

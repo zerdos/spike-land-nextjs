@@ -74,12 +74,12 @@ export async function assertDropdownOptionVisible(
 }
 
 export async function assertAvatarVisible(page: Page) {
-  const avatar = page.locator('.fixed.top-4.right-4 [role="button"]').first();
+  const avatar = page.locator('[data-testid="user-avatar"]').first();
   await expect(avatar).toBeVisible();
 }
 
 export async function assertAvatarNotVisible(page: Page) {
-  const avatar = page.locator('.fixed.top-4.right-4 [role="button"]').first();
+  const avatar = page.locator('[data-testid="user-avatar"]').first();
   await expect(avatar).not.toBeVisible();
 }
 
