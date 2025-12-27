@@ -8228,6 +8228,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@spike-npm-land/mcp-server@workspace:packages/mcp-server":
+  version: 0.0.0-use.local
+  resolution: "@spike-npm-land/mcp-server@workspace:packages/mcp-server"
+  dependencies:
+    "@modelcontextprotocol/sdk": "npm:^1.25.1"
+    "@types/node": "npm:^25.0.3"
+    typescript: "npm:^5.9.3"
+    zod: "npm:^4.2.1"
+  bin:
+    spike-mcp: ./bin/spike-mcp.js
+  languageName: unknown
+  linkType: soft
+
 "@spike-npm-land/mobile@workspace:packages/mobile-app":
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/mobile@workspace:packages/mobile-app"
@@ -8238,6 +8251,7 @@ __metadata:
     "@spike-npm-land/shared": "workspace:*"
     "@tamagui/config": "npm:^1.121.6"
     "@tamagui/font-inter": "npm:^1.121.6"
+    "@tamagui/lucide-icons": "npm:^1.141.5"
     "@tanstack/react-query": "npm:^5.62.0"
     "@types/react": "npm:~18.3.0"
     eslint: "npm:^9.17.0"
@@ -8246,7 +8260,7 @@ __metadata:
     expo-camera: "npm:~16.0.0"
     expo-constants: "npm:~17.0.0"
     expo-crypto: "npm:~14.0.0"
-    expo-font: "npm:~13.0.0"
+    expo-font: "npm:~14.0.0"
     expo-image: "npm:~2.0.0"
     expo-image-picker: "npm:~16.0.0"
     expo-linking: "npm:~7.0.0"
@@ -8276,6 +8290,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter":
+  version: 0.0.0-use.local
+  resolution: "@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter"
+  dependencies:
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.0.16"
+  languageName: unknown
+  linkType: soft
+
 "@spike-npm-land/shared@workspace:*, @spike-npm-land/shared@workspace:packages/shared":
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/shared@workspace:packages/shared"
@@ -8283,28 +8306,6 @@ __metadata:
     tsup: "npm:^8.3.5"
     typescript: "npm:^5.9.2"
     zod: "npm:^3.24.1"
-  languageName: unknown
-  linkType: soft
-
-"@spike-npm-land/mcp-server@workspace:packages/mcp-server":
-  version: 0.0.0-use.local
-  resolution: "@spike-npm-land/mcp-server@workspace:packages/mcp-server"
-  dependencies:
-    "@modelcontextprotocol/sdk": "npm:^1.25.1"
-    "@types/node": "npm:^25.0.3"
-    typescript: "npm:^5.9.3"
-    zod: "npm:^4.2.1"
-  bin:
-    spike-mcp: ./bin/spike-mcp.js
-  languageName: unknown
-  linkType: soft
-
-"@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter":
-  version: 0.0.0-use.local
-  resolution: "@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter"
-  dependencies:
-    typescript: "npm:^5.9.3"
-    vitest: "npm:^4.0.16"
   languageName: unknown
   linkType: soft
 
@@ -9230,6 +9231,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tamagui/helpers-icon@npm:1.141.5":
+  version: 1.141.5
+  resolution: "@tamagui/helpers-icon@npm:1.141.5"
+  dependencies:
+    "@tamagui/core": "npm:1.141.5"
+  peerDependencies:
+    react: "*"
+    react-native-svg: ">=12"
+  checksum: 10c0/3df4514c6679f797c166b32cfc99737f4af81d8011573d69c230dd0265e71946005a1485ed8b26c6d4a7fc8929d3be2ee3b875043601f3904791864d89be3117
+  languageName: node
+  linkType: hard
+
 "@tamagui/helpers-tamagui@npm:1.141.5":
   version: 1.141.5
   resolution: "@tamagui/helpers-tamagui@npm:1.141.5"
@@ -9324,6 +9337,19 @@ __metadata:
   peerDependencies:
     react: "*"
   checksum: 10c0/93454d2dae9de194a4cbc1d12dd79a2f4a0b432ee68d52ffa040ab1daa63681daba2a1ac352084d178d663261f48e4fc4578df322bc639a83ba9d6bcb7de6963
+  languageName: node
+  linkType: hard
+
+"@tamagui/lucide-icons@npm:^1.141.5":
+  version: 1.141.5
+  resolution: "@tamagui/lucide-icons@npm:1.141.5"
+  dependencies:
+    "@tamagui/core": "npm:1.141.5"
+    "@tamagui/helpers-icon": "npm:1.141.5"
+  peerDependencies:
+    react: "*"
+    react-native-svg: ">=12"
+  checksum: 10c0/1ab605e971987efe556b48f3c90c0ff0cc2623ce69d602bfebea2453e2b15fc389752871d9aff8fb89e2e2ed67dd70d945ec94d1c87d8a20e8aa0ff9edbddc06
   languageName: node
   linkType: hard
 
@@ -16245,7 +16271,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:~13.0.0, expo-font@npm:~13.0.4":
+"expo-font@npm:~13.0.4":
   version: 13.0.4
   resolution: "expo-font@npm:13.0.4"
   dependencies:
@@ -16254,6 +16280,19 @@ __metadata:
     expo: "*"
     react: "*"
   checksum: 10c0/3b9835f622b9e7f436909d76a88f6593e7d75dead586cbb3269abc75edb2a8e69b6d8c4f0faf7f979276675449ba6455cda72c7483744c878afe85b2c871a9e8
+  languageName: node
+  linkType: hard
+
+"expo-font@npm:~14.0.0":
+  version: 14.0.10
+  resolution: "expo-font@npm:14.0.10"
+  dependencies:
+    fontfaceobserver: "npm:^2.1.0"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/67b5ea924319235426c27a4b69a8409438314bed635ad9c57bfbb4b5dcc873a575d2f44129683ec145785d3cdf591349078cc2e96d750ba2dea3aebf89e19e9f
   languageName: node
   linkType: hard
 

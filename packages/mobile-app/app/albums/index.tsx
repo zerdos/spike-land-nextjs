@@ -3,7 +3,7 @@
  * Displays all user albums with create button
  */
 
-import type { Album } from "@spike-land/shared";
+import type { Album } from "@spike-npm-land/shared ";
 import { ArrowLeft, Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
