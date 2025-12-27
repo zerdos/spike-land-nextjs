@@ -630,20 +630,26 @@ Then(
 When(
   "I type {string} in the {string} field",
   async function(this: CustomWorld, value: string, fieldName: string) {
-    // Try to find by testid first
+    // Try to find by testid first - with proper waiting
     const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
     const suffixes = ["", "-input", "-field", "-textarea"];
 
     for (const suffix of suffixes) {
       const field = this.page.locator(`[data-testid="${testId}${suffix}"]`);
-      if (await field.isVisible().catch(() => false)) {
+      try {
+        // Wait for element to be visible with a short timeout per suffix
+        await expect(field).toBeVisible({ timeout: 2000 });
         await field.fill(value);
         return;
+      } catch {
+        // Element not found with this suffix, try next
+        continue;
       }
     }
 
-    // Fall back to label
+    // Fall back to label - wait for it to be visible first
     const field = this.page.getByLabel(new RegExp(fieldName, "i"));
+    await expect(field).toBeVisible({ timeout: 10000 });
     await field.fill(value);
   },
 );
