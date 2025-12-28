@@ -234,7 +234,8 @@ When("I click on the user avatar", async function(this: CustomWorld) {
   // Find the avatar using the data-testid attribute
   const avatar = this.page.getByTestId("user-avatar");
   await expect(avatar).toBeVisible();
-  await avatar.click();
+  // Use force: true to bypass Radix overlay interception when dropdown is open
+  await avatar.click({ force: true });
 });
 
 When(
