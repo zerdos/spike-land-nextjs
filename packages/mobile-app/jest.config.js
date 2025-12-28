@@ -5,8 +5,10 @@
 
 /** @type {import('jest').Config} */
 const config = {
-  // Use jest-expo/ios preset to avoid web/winter runtime issues
-  preset: "jest-expo/ios",
+  // Use jest-expo preset
+  preset: "jest-expo",
+  // Set test environment to node to avoid winter runtime issues
+  testEnvironment: "node",
 
   // Setup file for mocks and test utilities
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
