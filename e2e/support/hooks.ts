@@ -56,10 +56,14 @@ Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
 // Note: This hook runs AFTER page initialization (hook order matters in Cucumber)
 Before(async function(this: CustomWorld) {
   if (this.page) {
-    await this.page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
+    try {
+      await this.page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+    } catch {
+      // Ignore SecurityError on about:blank - storage is already clean
+    }
   }
 });
 

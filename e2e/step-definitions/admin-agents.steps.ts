@@ -326,7 +326,7 @@ Then("I should see changed files information", async function(this: CustomWorld)
   await expect(changedFiles.first()).toBeVisible({ timeout: 5000 });
 });
 
-Then("I should see ahead/behind status", async function(this: CustomWorld) {
+Then("I should see ahead\\/behind status", async function(this: CustomWorld) {
   const syncStatus = this.page.getByText(/ahead|behind|up to date|sync/i);
   await expect(syncStatus.first()).toBeVisible({ timeout: 5000 });
 });
