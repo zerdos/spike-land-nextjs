@@ -43,8 +43,17 @@ BeforeAll(async function() {
   console.log("[Database] Connection verified for @requires-db scenarios\n");
 });
 
+// Only run generic setup for non-video-wall scenarios
+// Note: VideoWallWorld is the actual world constructor for all scenarios,
+// but we call the parent CustomWorld.init() for non-video-wall scenarios
+Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
+  // Call the parent CustomWorld.init() method explicitly
+  await CustomWorld.prototype.init.call(this);
+});
+
 // Clean localStorage before each scenario to prevent test pollution
 // This ensures each test starts with a clean slate
+// Note: This hook runs AFTER page initialization (hook order matters in Cucumber)
 Before(async function(this: CustomWorld) {
   if (this.page) {
     await this.page.evaluate(() => {
@@ -55,7 +64,7 @@ Before(async function(this: CustomWorld) {
 });
 
 // Set up API mocks for checkout scenarios
-// These mocks must be set up BEFORE navigating to /checkout to prevent redirects
+// These mocks must be set up AFTER page initialization but BEFORE navigation
 Before({ tags: "@requires-api-mock" }, async function(this: CustomWorld) {
   if (!this.page) return;
 
@@ -92,14 +101,31 @@ Before({ tags: "@requires-api-mock" }, async function(this: CustomWorld) {
       }),
     });
   });
-});
 
-// Only run generic setup for non-video-wall scenarios
-// Note: VideoWallWorld is the actual world constructor for all scenarios,
-// but we call the parent CustomWorld.init() for non-video-wall scenarios
-Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
-  // Call the parent CustomWorld.init() method explicitly
-  await CustomWorld.prototype.init.call(this);
+  // Mock /api/merch/checkout to return a valid PaymentIntent response
+  await this.page.route("**/api/merch/checkout", async (route) => {
+    const method = route.request().method();
+    if (method === "POST") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          clientSecret: "pi_mock_secret_test",
+          orderId: "e2e-mock-order-id",
+          orderNumber: "SL-E2E-MOCK",
+          summary: {
+            subtotal: 29.99,
+            shipping: 4.99,
+            tax: 6.00,
+            total: 40.98,
+            currency: "GBP",
+          },
+        }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
 });
 
 // Only run generic teardown for non-video-wall scenarios
