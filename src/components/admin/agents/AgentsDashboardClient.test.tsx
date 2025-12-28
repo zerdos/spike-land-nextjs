@@ -3,6 +3,56 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AgentsDashboardClient } from "./AgentsDashboardClient";
 
+const mockResourcesData = {
+  resources: {
+    devServer: { running: true, port: 3000, url: "http://localhost:3000" },
+    mcpServers: [
+      { name: "playwright", type: "stdio", configured: true },
+      { name: "docker", type: "stdio", configured: false },
+    ],
+    database: { connected: true, provider: "postgresql" },
+    environment: { nodeEnv: "development", julesConfigured: true, githubConfigured: true },
+  },
+  checkedAt: "2023-01-01T12:00:00Z",
+};
+
+const mockGitInfoData = {
+  repository: "owner/repo",
+  branch: "main",
+  baseBranch: "main",
+  changedFiles: [{ path: "file.ts", status: "modified" }],
+  uncommittedChanges: 1,
+  aheadBy: 2,
+  behindBy: 0,
+  lastCommit: { hash: "abc1234", message: "test commit", author: "test", date: "2023-01-01" },
+  timestamp: "2023-01-01T12:00:00Z",
+};
+
+const mockGitHubData = {
+  issues: [
+    {
+      number: 1,
+      title: "Fix bug",
+      state: "open",
+      labels: [],
+      createdAt: "2023-01-01",
+      url: "https://github.com",
+    },
+  ],
+  workflows: [
+    {
+      id: 1,
+      name: "CI",
+      status: "completed",
+      conclusion: "success",
+      createdAt: "2023-01-01",
+      url: "https://github.com",
+    },
+  ],
+  githubConfigured: true,
+  timestamp: "2023-01-01T12:00:00Z",
+};
+
 const mockAgentsData: any = {
   sessions: [
     {
@@ -65,6 +115,9 @@ describe("AgentsDashboardClient", () => {
     global.fetch = createFetchMock({
       "/api/admin/agents": mockAgentsData,
       "/api/admin/agents/sess_2/approve-plan": { success: true },
+      "/api/admin/agents/resources": mockResourcesData,
+      "/api/admin/agents/git": mockGitInfoData,
+      "/api/admin/agents/github/issues": mockGitHubData,
     });
   });
 
@@ -76,7 +129,10 @@ describe("AgentsDashboardClient", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
     expect(screen.getByText("Agents Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Active Agents")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
+    expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText("Failed")).toBeInTheDocument();
     // Check for stats
     expect(screen.getByText("2", { selector: ".text-cyan-600" })).toBeInTheDocument(); // Active count
   });
@@ -145,5 +201,60 @@ describe("AgentsDashboardClient", () => {
     expect(screen.getByText("View PR")).toBeInTheDocument();
     const viewPrLink = screen.getByText("View PR").closest("a");
     expect(viewPrLink).toHaveAttribute("href", "https://github.com/owner/repo/pull/1");
+  });
+
+  it("renders Resources panel with data", async () => {
+    render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Resources")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Dev Server")).toBeInTheDocument();
+      expect(screen.getByText("Running")).toBeInTheDocument();
+      expect(screen.getByText("Database")).toBeInTheDocument();
+    });
+  });
+
+  it("renders Git Info panel with data", async () => {
+    render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Git Info")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Branch")).toBeInTheDocument();
+      expect(screen.getByText("main")).toBeInTheDocument();
+      expect(screen.getByText("Changed files")).toBeInTheDocument();
+    });
+  });
+
+  it("renders GitHub Issues panel with data", async () => {
+    render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GitHub Issues")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Open Issues")).toBeInTheDocument();
+      expect(screen.getByText("Recent Workflow Runs")).toBeInTheDocument();
+    });
+  });
+
+  it("renders sessions list with data-testid", () => {
+    render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    const sessionsList = screen.getByTestId("sessions-list");
+    expect(sessionsList).toBeInTheDocument();
+  });
+
+  it("renders timestamp with data-testid", () => {
+    render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    const timestamp = screen.getByTestId("timestamp");
+    expect(timestamp).toBeInTheDocument();
   });
 });
