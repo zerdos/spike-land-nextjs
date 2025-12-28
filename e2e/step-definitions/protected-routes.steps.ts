@@ -140,12 +140,12 @@ When(
 
     for (const route of routes) {
       await navigateToPath(this.page, this.baseUrl, route);
-      // Wait for redirect to complete before checking URL
-      await this.page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
+      // Wait for redirect to auth/signin page (proxy.ts line 228 redirects here)
+      await this.page.waitForURL((url) => url.pathname === "/auth/signin", { timeout: 10000 });
 
       const currentUrl = await getCurrentUrl(this.page);
       const url = new URL(currentUrl);
-      expect(url.pathname).toBe("/");
+      expect(url.pathname).toBe("/auth/signin");
 
       const callbackUrl = await getQueryParam(this.page, "callbackUrl");
       expect(callbackUrl).toBeTruthy();
@@ -177,7 +177,8 @@ Then(
     const currentUrl = await getCurrentUrl(this.page);
     const url = new URL(currentUrl);
 
-    expect(url.pathname).toBe("/");
+    // Protected routes redirect to /auth/signin, not home page
+    expect(url.pathname).toBe("/auth/signin");
 
     const callbackUrl = await getQueryParam(this.page, "callbackUrl");
     expect(callbackUrl).toBeTruthy();

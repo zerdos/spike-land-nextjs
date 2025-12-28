@@ -60,7 +60,7 @@ async function createMobileToken(
   const token = await new SignJWT({ sub: userId, email })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(expiresAt)
+    .setExpirationTime(Math.floor(expiresAt.getTime() / 1000))
     .sign(secret);
 
   return { token, expiresAt };
