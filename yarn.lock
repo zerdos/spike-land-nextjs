@@ -8249,6 +8249,7 @@ __metadata:
     "@expo/vector-icons": "npm:^15.0.3"
     "@react-navigation/native": "npm:^7.1.8"
     "@spike-npm-land/shared": "workspace:*"
+    "@tamagui/animations-css": "npm:^1.141.5"
     "@tamagui/config": "npm:^1.121.6"
     "@tamagui/font-inter": "npm:^1.121.6"
     "@tamagui/lucide-icons": "npm:^1.141.5"
@@ -8754,7 +8755,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tamagui/animations-css@npm:1.141.5":
+"@tamagui/animations-css@npm:1.141.5, @tamagui/animations-css@npm:^1.141.5":
   version: 1.141.5
   resolution: "@tamagui/animations-css@npm:1.141.5"
   dependencies:

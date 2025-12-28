@@ -100,6 +100,24 @@ export function isProtectedPath(pathname: string): boolean {
 }
 
 /**
+ * Helper to add CORS headers for development
+ */
+function addCorsHeaders(response: NextResponse, origin: string): NextResponse {
+  if (process.env.NODE_ENV === "development") {
+    const allowedOrigins = [
+      "http://localhost:8081",
+      "http://localhost:3000",
+      "http://localhost:19006",
+    ];
+    if (allowedOrigins.includes(origin) || !origin) {
+      response.headers.set("Access-Control-Allow-Origin", origin || "*");
+      response.headers.set("Access-Control-Allow-Credentials", "true");
+    }
+  }
+  return response;
+}
+
+/**
  * Next.js Proxy Function
  *
  * Executed for every request that matches the config matcher.
@@ -111,6 +129,26 @@ export function isProtectedPath(pathname: string): boolean {
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const origin = request.headers.get("origin") || "";
+
+  // Handle CORS preflight requests for API routes
+  if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
+    const response = new NextResponse(null, { status: 204 });
+    if (process.env.NODE_ENV === "development") {
+      response.headers.set("Access-Control-Allow-Origin", origin || "*");
+      response.headers.set(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      );
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-API-Key, X-Requested-With",
+      );
+      response.headers.set("Access-Control-Max-Age", "86400");
+      response.headers.set("Access-Control-Allow-Credentials", "true");
+    }
+    return response;
+  }
 
   // Generate CSP Nonce and Header
   const nonce = generateNonce();
@@ -134,6 +172,10 @@ export async function proxy(request: NextRequest) {
   // Helper to apply headers to response
   const applyHeaders = (response: NextResponse) => {
     response.headers.set("Content-Security-Policy", cspHeader);
+    // Add CORS headers for API routes in development
+    if (pathname.startsWith("/api/")) {
+      addCorsHeaders(response, origin);
+    }
     return response;
   };
 

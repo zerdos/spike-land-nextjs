@@ -81,7 +81,7 @@ function ProductCard({ product }: { product: ProductWithDetails; }) {
   }, [product.id]);
 
   const minVariantPrice = useMemo(() => {
-    if (product.variants.length === 0) return product.retailPrice;
+    if (!product.variants || product.variants.length === 0) return product.retailPrice;
     const minDelta = Math.min(...product.variants.map((v) => v.priceDelta));
     return product.retailPrice + minDelta;
   }, [product]);

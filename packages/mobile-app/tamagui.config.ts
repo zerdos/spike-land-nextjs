@@ -1,7 +1,17 @@
+import { createAnimations } from "@tamagui/animations-css";
 import { themes, tokens } from "@tamagui/config/v3";
 import { createInterFont } from "@tamagui/font-inter";
 import { shorthands } from "@tamagui/shorthands";
 import { createTamagui } from "tamagui";
+
+// CSS animations for web compatibility
+const animations = createAnimations({
+  quick: "100ms ease-in-out",
+  medium: "200ms ease-in-out",
+  slow: "300ms ease-in-out",
+  bouncy: "200ms cubic-bezier(0.25, 0.1, 0.25, 1.5)",
+  lazy: "300ms ease-out",
+});
 
 const headingFont = createInterFont({
   size: {
@@ -48,6 +58,7 @@ export const config = createTamagui({
   shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: true,
   shorthands,
+  animations,
   fonts: {
     heading: headingFont,
     body: bodyFont,
